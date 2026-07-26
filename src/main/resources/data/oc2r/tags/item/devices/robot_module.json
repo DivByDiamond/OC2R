@@ -1,0 +1,7 @@
+{
+  "values": [
+    "oc2r:inventory_operations_module",
+    "oc2r:block_operations_module",
+    "oc2r:network_tunnel_module"
+  ]
+}

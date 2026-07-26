@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "oc2r:block/disk_drive"
+    },
+    "facing=south": {
+      "model": "oc2r:block/disk_drive",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "oc2r:block/disk_drive",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "oc2r:block/disk_drive",
+      "y": 90
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    }
+  },
+  "pattern": [
+    "IGT",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:network_interface_card"
+  }
+}

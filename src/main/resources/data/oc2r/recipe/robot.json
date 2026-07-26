@@ -1,0 +1,61 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "C": {
+      "tag": "c:chests/wooden"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "PTP",
+    "IBI"
+  ],
+  "result": {
+    "components": {
+      "oc2r:restricted_container": {
+        "items": {
+          "oc2r:devices/cpu": [
+            {}
+          ],
+          "oc2r:devices/flash_memory": [
+            {
+              "count": 1,
+              "id": "oc2r:flash_memory_custom"
+            }
+          ],
+          "oc2r:devices/hard_drive": [
+            {},
+            {}
+          ],
+          "oc2r:devices/memory": [
+            {},
+            {},
+            {},
+            {}
+          ],
+          "oc2r:devices/robot_module": [
+            {},
+            {},
+            {},
+            {}
+          ]
+        }
+      }
+    },
+    "count": 1,
+    "id": "oc2r:robot"
+  }
+}

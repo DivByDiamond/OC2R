@@ -1,0 +1,43 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  },
+  "vertex": "oc2r:projectors",
+  "fragment": "oc2r:projectors",
+  "attributes": ["Position", "UV0"],
+  "samplers": [
+    {"name": "MainCameraDepth"},
+    {"name": "ProjectorColor0"},
+    {"name": "ProjectorDepth0"},
+    {"name": "ProjectorColor1"},
+    {"name": "ProjectorDepth1"},
+    {"name": "ProjectorColor2"},
+    {"name": "ProjectorDepth2"},
+    {"name": "ProjectorColor3"},
+    {"name": "ProjectorDepth3"},
+    {"name": "ProjectorColor4"},
+    {"name": "ProjectorDepth4"},
+    {"name": "ProjectorColor5"},
+    {"name": "ProjectorDepth5"},
+    {"name": "ProjectorColor6"},
+    {"name": "ProjectorDepth6"},
+    {"name": "ProjectorColor7"},
+    {"name": "ProjectorDepth7"}
+  ],
+  "uniforms": [
+    {"name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "InverseMainCamera", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera0", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera1", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera2", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera3", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera4", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera5", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera6", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "ProjectorCamera7", "type": "matrix4x4", "count": 16, "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]},
+    {"name": "Count", "type": "int", "count": 1, "values": [0]}
+  ]
+}

@@ -1,0 +1,49 @@
+#file: noinspection UndefinedAction,UndefinedParamsPresent
+name: publish
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      matrix:
+        java: [ 21 ]
+        os: [ ubuntu-24.04 ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set release type to 'release'
+        run: |
+          echo "RELEASE_TYPE=release" >> $GITHUB_ENV
+        if: github.event.release.prerelease == false
+      - name: Set release type to 'alpha'
+        run: |
+          echo "RELEASE_TYPE=alpha" >> $GITHUB_ENV
+        if: github.event.release.prerelease == true
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
+      - name: Publish to Curseforge, Modrinth & GitHub Packages
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} publish publishGprPublicationToGitHubPackagesRepository
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+          CHANGELOG: ${{ github.event.release.body }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Add Artifacts to Github Release
+        uses: alexellis/upload-assets@0.4.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./build/libs/*.jar"]'

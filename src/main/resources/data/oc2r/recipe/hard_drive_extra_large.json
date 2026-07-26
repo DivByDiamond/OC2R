@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "E": {
+      "tag": "c:gems/emerald"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    }
+  },
+  "pattern": [
+    "ETE",
+    "DBD",
+    "EBE"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:hard_drive_extra_large"
+  }
+}

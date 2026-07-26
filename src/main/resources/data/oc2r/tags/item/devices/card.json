@@ -1,0 +1,10 @@
+{
+  "values": [
+    "oc2r:redstone_interface_card",
+    "oc2r:network_interface_card",
+    "oc2r:file_import_export_card",
+    "oc2r:sound_card",
+    "oc2r:network_tunnel_card",
+    "oc2r:internet_card"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "oc2r:wrench",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:manual"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "oc2r:block/flash_memory_flasher"
+    },
+    "facing=south": {
+      "model": "oc2r:block/flash_memory_flasher",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "oc2r:block/flash_memory_flasher",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "oc2r:block/flash_memory_flasher",
+      "y": 90
+    }
+  }
+}

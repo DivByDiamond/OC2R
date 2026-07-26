@@ -1,0 +1,25 @@
+{
+  "values": [
+    "oc2r:disk_drive",
+    "oc2r:flash_memory",
+    "oc2r:flash_memory_custom",
+    "oc2r:hard_drive_small",
+    "oc2r:hard_drive_medium",
+    "oc2r:hard_drive_large",
+    "oc2r:hard_drive_extra_large",
+    "oc2r:cpu_tier_1",
+    "oc2r:cpu_tier_2",
+    "oc2r:cpu_tier_3",
+    "oc2r:cpu_tier_4",
+    "oc2r:cpu_tier_inf",
+    "oc2r:keyboard",
+    "oc2r:memory_small",
+    "oc2r:memory_medium",
+    "oc2r:memory_large",
+    "oc2r:memory_extra_large",
+    "oc2r:network_interface_card",
+    "oc2r:network_tunnel_card",
+    "oc2r:network_tunnel_module",
+    "oc2r:projector"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "oc2r:bus_cable"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_transistor": {
+      "conditions": {
+        "items": [
+          {
+            "items": "oc2r:transistor"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_transistor"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "oc2r:bus_cable"
+    ]
+  }
+}

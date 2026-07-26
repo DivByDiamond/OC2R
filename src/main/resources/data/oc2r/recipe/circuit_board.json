@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:ingots/gold"
+    },
+    {
+      "item": "minecraft:clay_ball"
+    },
+    {
+      "item": "oc2r:transistor"
+    }
+  ],
+  "result": {
+    "count": 6,
+    "id": "oc2r:circuit_board"
+  }
+}

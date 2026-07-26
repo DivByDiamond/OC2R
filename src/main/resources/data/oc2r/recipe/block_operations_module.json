@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "P": {
+      "item": "minecraft:diamond_pickaxe"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    }
+  },
+  "pattern": [
+    "TPG",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:block_operations_module"
+  }
+}

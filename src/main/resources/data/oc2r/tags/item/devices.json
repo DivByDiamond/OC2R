@@ -1,0 +1,14 @@
+{
+  "values": [
+    "#oc2r:devices/memory",
+    "#oc2r:devices/hard_drive",
+    "#oc2r:devices/flash_memory",
+    "#oc2r:devices/card",
+    "#oc2r:devices/robot_module",
+    "#oc2r:devices/floppy",
+    "oc2r:computer",
+    "oc2r:redstone_interface",
+    "oc2r:disk_drive",
+    "oc2r:projector"
+  ]
+}

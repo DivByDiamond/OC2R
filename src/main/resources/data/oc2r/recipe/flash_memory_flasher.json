@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IUI",
+    "XTD",
+    "IBI"
+  ],
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "U": {
+      "tag": "minecraft:buttons"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    },
+    "X": {
+      "item": "oc2r:bus_interface"
+    },
+    "D": {
+      "item": "minecraft:dropper"
+    },
+    "B": {
+      "item": "oc2r:circuit_board"
+    }
+  },
+  "result": {
+    "id": "oc2r:flash_memory_flasher"
+  }
+}

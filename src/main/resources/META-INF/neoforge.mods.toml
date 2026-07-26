@@ -1,0 +1,71 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+issueTrackerURL = "https://github.com/North-Western-Development/oc2r/issues"
+license = "MIT"
+
+[[mods]]
+modId = "oc2r"
+version = "${file.jarVersion}"
+displayName = "OpenComputers II: Reimagined"
+authors = "North Western Development (Originally by Sangar)"
+description = '''
+Modern computers for the modern player.
+
+This mod uses the Terminus Font under the Open Font License. The full license can be found in the JAR of this mod.
+'''
+
+[[mixins]]
+config="mixins.oc2r.json"
+
+[[dependencies.oc2r]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.oc2r]]
+modId = "minecraft"
+type = "required"
+versionRange = "1.21.1"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.oc2r]]
+modId = "markdown_manual"
+type = "required"
+versionRange = "[1.2.1,)"
+side = "CLIENT"
+[[dependencies.oc2r]]
+modId = "projectred_transmission"
+type = "optional"
+versionRange = "[4.22.0,)"
+side = "BOTH"
+ordering = "AFTER"
+# Soft (optional) integrations. OC2R never links against these mods at
+# compile time — presence is detected via ModList at runtime and used to
+# decide how defensively the bus scan / chunk-tracking code paths behave.
+# They are listed here so the loader orders them BEFORE oc2r, which lets
+# any capability registrations they do happen first.
+[[dependencies.oc2r]]
+modId = "create"
+type = "optional"
+versionRange = "[6.0.0,)"
+side = "BOTH"
+ordering = "BEFORE"
+[[dependencies.oc2r]]
+modId = "create_aeronautics"
+type = "optional"
+versionRange = "[1.0.0,)"
+side = "BOTH"
+ordering = "BEFORE"
+[[dependencies.oc2r]]
+modId = "valkyrienskies"
+type = "optional"
+versionRange = "[2.0.0,)"
+side = "BOTH"
+ordering = "BEFORE"
+[[dependencies.oc2r]]
+modId = "sable"
+type = "optional"
+versionRange = "[1.0.0,)"
+side = "BOTH"
+ordering = "BEFORE"

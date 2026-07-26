@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SQ ",
+    "QQ "
+  ],
+  "key": {
+    "S": {
+      "tag": "c:sands"
+    },
+    "Q": {
+      "tag": "c:gems/quartz"
+    }
+  },
+  "result": {
+    "id": "oc2r:silicon_blend",
+    "count": 4
+  }
+}

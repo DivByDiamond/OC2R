@@ -1,0 +1,52 @@
+{
+  "computer_running": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.computer",
+    "sounds": [
+      {
+        "name": "oc2r:computer_running",
+        "stream": true,
+        "volume": 0.25
+      }
+    ]
+  },
+  "floppy_access": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.floppy",
+    "sounds": [
+      "oc2r:floppy_access1",
+      "oc2r:floppy_access2",
+      "oc2r:floppy_access3",
+      "oc2r:floppy_access4",
+      "oc2r:floppy_access5",
+      "oc2r:floppy_access6"
+    ]
+  },
+  "floppy_eject": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.floppy_eject",
+    "sounds": [
+      "oc2r:floppy_eject"
+    ]
+  },
+  "floppy_insert": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.floppy_insert",
+    "sounds": [
+      "oc2r:floppy_insert"
+    ]
+  },
+  "hdd_access": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.hdd",
+    "sounds": [
+      "oc2r:hdd_access1",
+      "oc2r:hdd_access2",
+      "oc2r:hdd_access3",
+      "oc2r:hdd_access4",
+      "oc2r:hdd_access5",
+      "oc2r:hdd_access6",
+      "oc2r:hdd_access7"
+    ]
+  }
+}

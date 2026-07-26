@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NNN",
+    "TST",
+    "GBG"
+  ],
+  "key": {
+    "N": {
+      "tag": "c:gems/emerald"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "T": {
+      "item": "oc2r:transistor"
+    },
+    "S": {
+      "item": "oc2r:silicon_wafer"
+    },
+    "B": {
+      "item": "oc2r:circuit_board"
+    }
+  },
+  "result": {
+    "id": "oc2r:cpu_tier_4"
+  }
+}

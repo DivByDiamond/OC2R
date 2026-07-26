@@ -1,0 +1,12 @@
+{
+  "values": [
+    "oc2r:computer",
+    "oc2r:bus_cable",
+    "oc2r:network_connector",
+    "oc2r:network_hub",
+    "oc2r:redstone_interface",
+    "oc2r:disk_drive",
+    "oc2r:charger",
+    "oc2r:projector"
+  ]
+}

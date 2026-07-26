@@ -1,0 +1,40 @@
+#file: noinspection UndefinedAction,UndefinedParamsPresent
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '1.21.1' ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        java: [ 21 ]
+        os: [ ubuntu-24.04 ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: build
+        run: |
+          ./gradlew build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oc2r-artifacts
+          path: build/libs/*.jar
