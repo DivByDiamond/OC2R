@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 build/
+bin/
 
 # IDE
 .idea/
@@ -9,6 +10,11 @@ build/
 *.iws
 .vscode/
 *.class
+.classpath
+.project
+.factorypath
+.settings/
+.eclipse/
 
 # OS
 .DS_Store
@@ -18,6 +24,9 @@ Thumbs.db
 run/
 out/
 eclipse/
+
+# Qodana
+qodana-report/
 
 # Misc
 *.log
