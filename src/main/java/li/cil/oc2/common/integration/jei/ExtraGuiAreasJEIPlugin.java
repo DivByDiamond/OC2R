@@ -5,7 +5,7 @@ package li.cil.oc2.common.integration.jei;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.AbstractMachineInventoryScreen;
 import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
-import li.cil.oc2.common.block.ComputerBlock;
+import li.cil.oc2.common.block.ComputerBlockFactory;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
@@ -31,7 +31,7 @@ public class ExtraGuiAreasJEIPlugin implements IModPlugin {
     public void registerRecipes(final IRecipeRegistration registration)
     {
         HashSet<ItemStack> removals = new HashSet<>();
-        removals.add(ComputerBlock.getPreconfiguredComputer());
+        removals.add(ComputerBlockFactory.getPreconfiguredComputer());
         registration.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, removals);
     }
 

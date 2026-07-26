@@ -66,7 +66,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
                 final String macAddressString = layerState.getString(MAC_ADDRESS_TAG);
                 if (!macAddressString.isEmpty()) {
                     try {
-                        myMacAddress = InetUtils.parseMacAddress(macAddressString);
+                        myMacAddress = MacAddressUtils.parseMacAddress(macAddressString);
                     } catch (final AddressParseException exception) {
                         LOGGER.error("Failed to parse internet adapter MAC address from NBT", exception);
                     }
@@ -92,7 +92,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             final String ipAddressString = InetUtils.ipv4AddressToString(myIpV4Address);
             layerState.putString(IPv4_ADDRESS_TAG, ipAddressString);
         }
-        layerState.putString(MAC_ADDRESS_TAG, InetUtils.macAddressToString(myMacAddress));
+        layerState.putString(MAC_ADDRESS_TAG, MacAddressUtils.macAddressToString(myMacAddress));
         networkLayer.onSave()
             .ifPresent(networkLayerState -> layerState.put(NetworkLayer.LAYER_NAME, networkLayerState));
         return Optional.of(layerState);

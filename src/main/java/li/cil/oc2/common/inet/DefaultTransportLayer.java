@@ -124,7 +124,7 @@ public final class DefaultTransportLayer implements TransportLayer {
         buffer.put(code);
         buffer.putShort((short) 0);
         buffer.position(position);
-        short checksum = InetUtils.rfc1071Checksum(buffer);
+        short checksum = Rfc1071Checksum.rfc1071Checksum(buffer);
         buffer.putShort(position + 2, checksum);
         buffer.position(position);
     }
@@ -157,6 +157,7 @@ public final class DefaultTransportLayer implements TransportLayer {
 
     private void reject(final ByteBuffer payload, final int srcIpAddress) {
         final byte[] data = InetUtils.quickICMPBody(payload);
+
         icmpReply = new ICMPReply(
                 ICMP_TYPE_ECHO_UNREACHABLE,
                 ICMP_CODE_ECHO_UNREACHABLE_PROHIBITED,
@@ -203,7 +204,7 @@ public final class DefaultTransportLayer implements TransportLayer {
             }
             case FORWARD -> {
                 data.position(position);
-                final short checksum = InetUtils.transportRfc1071Checksum(
+                final short checksum = Rfc1071Checksum.transportRfc1071Checksum(
                     data,
                     discriminator.getDstIpAddress(),
                     discriminator.getSrcIpAddress(),
@@ -319,7 +320,7 @@ public final class DefaultTransportLayer implements TransportLayer {
                         buffer.putShort(position + 2, discriminator.getSrcPort());
                         buffer.putShort(position + 4, (short) buffer.remaining());
                         buffer.putShort(position + 6, (short) 0);
-                        short checksum = InetUtils.transportRfc1071Checksum(
+                        short checksum = Rfc1071Checksum.transportRfc1071Checksum(
                             buffer,
                             discriminator.getDstIpAddress(),
                             discriminator.getSrcIpAddress(),

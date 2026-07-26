@@ -3,10 +3,8 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.DatagramSession;
-import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
-import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,32 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.Queue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 public final class DefaultSessionLayer implements SessionLayer {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
-
-    private static final Executor executor = Executors
-        .newSingleThreadExecutor(runnable -> new Thread(runnable, "internet/blocking-session"));
-
-    ///////////////////////////////////////////////////////////////////
-
     private final AtomicReference<EchoResponse> echoResponse = new AtomicReference<>(null);
 
-    ///////////////////////////////////////////////////////////////////
-
     private final ReadySessions readySessions = new ReadySessions();
-
     private final SocketManager socketManager;
 
     public DefaultSessionLayer(final LayerParameters layerParameters) {
@@ -54,16 +37,11 @@ public final class DefaultSessionLayer implements SessionLayer {
 
     @Override
     public void receiveSession(final Receiver receiver) {
-        final EchoResponse pending = echoResponse.getAndSet(null);
-        if (pending != null) {
-            final ByteBuffer data = receiver.receive(pending.session);
-            assert data != null;
-            data.put(pending.payload);
-            data.flip();
+        if (EchoHandler.deliverPendingResponse(echoResponse, receiver)) {
             return;
         }
 
-        final boolean somethingConnected = processQueue(readySessions.getToConnect(), session -> {
+        final boolean somethingConnected = SessionChannelHelper.processQueue(readySessions.getToConnect(), session -> {
             if (session instanceof StreamSession streamSession) {
                 LOGGER.trace("Connected {}", session);
                 if (session.getState() != Session.States.NEW) {
@@ -71,17 +49,17 @@ public final class DefaultSessionLayer implements SessionLayer {
                 }
                 receiver.receive(streamSession);
                 try {
-                    final SocketChannel channel = getChannel(streamSession);
+                    final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
                     channel.finishConnect();
                     streamSession.connect();
                     return true;
                 } catch (final ConnectException exception) {
                     LOGGER.trace("Connection rejected for {}", session);
-                    closeSession(session);
+                    SessionChannelHelper.closeSession(session);
                     return true;
                 } catch (final IOException exception) {
                     LOGGER.error("Error on socket.finishConnect()", exception);
-                    closeSession(session);
+                    SessionChannelHelper.closeSession(session);
                     return true;
                 }
             }
@@ -91,10 +69,10 @@ public final class DefaultSessionLayer implements SessionLayer {
             return;
         }
 
-        processQueue(readySessions.getToRead(), session -> {
+        SessionChannelHelper.processQueue(readySessions.getToRead(), session -> {
             if (session instanceof DatagramSession datagramSession) {
                 LOGGER.trace("Datagram received");
-                final DatagramChannel channel = getChannel(datagramSession);
+                final DatagramChannel channel = SessionChannelHelper.getChannel(datagramSession);
                 try {
                     final ByteBuffer datagram = receiver.receive(datagramSession);
                     assert datagram != null;
@@ -115,13 +93,13 @@ public final class DefaultSessionLayer implements SessionLayer {
                 LOGGER.trace("Stream received");
                 final ByteBuffer stream = receiver.receive(streamSession);
                 try {
-                    final SocketChannel channel = getChannel(streamSession);
+                    final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
                     assert stream != null;
                     assert false;
                     final int read = channel.read(stream);
                     LOGGER.trace("Read from real world: {}", read);
                     if (read == -1) {
-                        closeSession(session);
+                        SessionChannelHelper.closeSession(session);
                     }
                     return true;
                 } catch (final IOException exception) {
@@ -136,34 +114,11 @@ public final class DefaultSessionLayer implements SessionLayer {
 
     @Override
     public void sendSession(final Session session, @Nullable final ByteBuffer data) {
-        if (session instanceof final EchoSession echoSession) {
-            if (data == null) {
-                return; // session closed due expiration
-            }
-            final InetAddress address = session.getDestination().getAddress();
-            byte[] payload = new byte[data.remaining()];
-            int size = data.remaining();
-            data.get(payload);
-            if (Main.LoadedLibrary) {
-                byte[] responseData = sendICMP(address.getAddress(), payload, size, Config.defaultEchoRequestTimeoutMs);
-                if (responseData != null) {
-                    final EchoResponse response = new EchoResponse(ByteBuffer.wrap(responseData), echoSession);
-                    echoResponse.set(response);
-                }
-            }
-            else {
-                executor.execute(() -> {
-                    try {
-                        final EchoResponse response = new EchoResponse(data, echoSession);
-                        if (address.isReachable(null, echoSession.getTtl(), Config.defaultEchoRequestTimeoutMs)) {
-                            echoResponse.set(response);
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error("Failed to get echo response", e);
-                    }
-                });
-            }
-        } else if (session instanceof DatagramSession datagramSession) {
+        if (EchoHandler.handleEchoSession(session, data, echoResponse)) {
+            return;
+        }
+
+        if (session instanceof DatagramSession datagramSession) {
             try {
                 switch (session.getState()) {
                     case NEW: {
@@ -171,17 +126,16 @@ public final class DefaultSessionLayer implements SessionLayer {
                             socketManager.createDatagramChannel(datagramSession, readySessions);
                         datagramSession.setAttachment(channel);
                         LOGGER.trace("Open datagram socket {}", session.getDestination());
-                        /* Fallthrough */
                     }
                     case ESTABLISHED: {
                         LOGGER.trace("Send datagram");
-                        final DatagramChannel channel = getChannel(datagramSession);
+                        final DatagramChannel channel = SessionChannelHelper.getChannel(datagramSession);
                         assert data != null;
                         channel.send(data, session.getDestination());
                         break;
                     }
                     case EXPIRED: {
-                        closeSession(session);
+                        SessionChannelHelper.closeSession(session);
                         LOGGER.trace("Close datagram socket {}", session.getDestination());
                         break;
                     }
@@ -200,12 +154,12 @@ public final class DefaultSessionLayer implements SessionLayer {
                         LOGGER.trace("Open stream socket {}", streamSession.getDestination());
                     }
                     case ESTABLISHED -> {
-                        final SocketChannel channel = getChannel(streamSession);
+                        final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
                         assert data != null;
                         channel.write(data);
                     }
                     case FINISH, EXPIRED -> {
-                        closeSession(session);
+                        SessionChannelHelper.closeSession(session);
                         LOGGER.trace("Close stream socket {}", session.getDestination());
                     }
                 }
@@ -215,63 +169,6 @@ public final class DefaultSessionLayer implements SessionLayer {
             }
         } else {
             session.close();
-        }
-    }
-
-    private boolean processQueue(final Queue<Session> queue, final Function<Session, Boolean> action) {
-        while (true) {
-            final Session session = queue.poll();
-            if (session == null) {
-                return false;
-            }
-            if (session.isClosed()) {
-                continue;
-            }
-            if (action.apply(session)) {
-                return true;
-            }
-        }
-    }
-
-    private void closeSession(final Session session) {
-        try {
-            getChannel(session).close();
-            if (!session.isClosed()) {
-                session.close();
-            }
-        } catch (final IOException exception) {
-            LOGGER.error("Error on closing channel", exception);
-        }
-    }
-
-    private Object getExistingUserdata(final Session session) {
-        final Object channel = session.getAttachment();
-        assert channel != null;
-        return channel;
-    }
-
-    private SocketChannel getChannel(final StreamSession session) {
-        return (SocketChannel) getExistingUserdata(session);
-    }
-
-    private DatagramChannel getChannel(final DatagramSession session) {
-        return (DatagramChannel) getExistingUserdata(session);
-    }
-
-    private SelectableChannel getChannel(final Session session) {
-        return (SelectableChannel) getExistingUserdata(session);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private static final class EchoResponse {
-        final byte[] payload;
-        final EchoSession session;
-
-        public EchoResponse(final ByteBuffer payload, final EchoSession session) {
-            this.payload = new byte[payload.remaining()];
-            payload.get(this.payload);
-            this.session = session;
         }
     }
 }

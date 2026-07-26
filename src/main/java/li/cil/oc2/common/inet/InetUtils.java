@@ -14,52 +14,10 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public final class InetUtils {
-    private static int bufferChecksum(final ByteBuffer buffer, final int size) {
-        final int halfSize = size >>> 1;
-        int checksum = 0;
-        for (int i = 0; i < halfSize; ++i) {
-            checksum += Short.toUnsignedInt(buffer.getShort());
-        }
-        if ((size & 1) != 0) {
-            checksum += (buffer.get() << 8) & 0xFFFF;
-        }
-        return checksum;
-    }
-
-    private static short finishChecksum(int checksum) {
-        checksum = (checksum >>> 16) + (checksum & 0xFFFF);
-        checksum = (checksum >>> 16) + (checksum & 0xFFFF);
-        return (short) ~checksum;
-    }
-
-    public static short rfc1071Checksum(final ByteBuffer buffer, final int size) {
-        final int checksum = bufferChecksum(buffer, size);
-        return finishChecksum(checksum);
-    }
-
-    public static short rfc1071Checksum(final ByteBuffer buffer) {
-        return rfc1071Checksum(buffer, buffer.remaining());
-    }
-
-    public static short transportRfc1071Checksum(
-        final ByteBuffer buffer,
-        final int srcIpAddress,
-        final int dstIpAddress,
-        final byte protocol
-    ) {
-        final int size = buffer.remaining();
-        final int checksumPart = bufferChecksum(buffer, size);
-        final int checksum = checksumPart + Byte.toUnsignedInt(protocol) + size +
-            (srcIpAddress >>> 16) + (srcIpAddress & 0xFFFF) +
-            (dstIpAddress >>> 16) + (dstIpAddress & 0xFFFF);
-        return finishChecksum(checksum);
-    }
-
     private static InetAddress getInetAddressByBytes(final byte[] bytes) {
         try {
             return InetAddress.getByAddress(bytes);
         } catch (UnknownHostException e) {
-            /* should not be there */
             throw new Error("unreachable", e);
         }
     }
@@ -101,37 +59,6 @@ public final class InetUtils {
         final StringBuilder stringBuilder = new StringBuilder();
         ipv4AddressToString(stringBuilder, ipAddress);
         return stringBuilder.toString();
-    }
-
-    private static char hexCodeToChar(final int code) {
-        if (code < 10) {
-            return (char) ('0' + code);
-        } else {
-            return (char) ('A' + (code - 10));
-        }
-    }
-
-    private static void byteToHex(final StringBuilder builder, final byte code) {
-        builder.append(hexCodeToChar(code >>> 4));
-        builder.append(hexCodeToChar(code & 15));
-    }
-
-    public static void macAddressToString(final StringBuilder builder, final MacAddress macAddress) {
-        final short prefix = macAddress.prefix();
-        final int address = macAddress.address();
-        byteToHex(builder, (byte) (prefix >>> 8));
-        builder.append(':');
-        byteToHex(builder, (byte) prefix);
-        for (int i = 3; i >= 0; --i) {
-            builder.append(':');
-            byteToHex(builder, (byte) (address >>> (8 * i)));
-        }
-    }
-
-    public static String macAddressToString(final MacAddress macAddress) {
-        final StringBuilder builder = new StringBuilder();
-        macAddressToString(builder, macAddress);
-        return builder.toString();
     }
 
     public static void socketAddressToString(final StringBuilder builder, final int ipAddress, final short port) {
@@ -190,47 +117,6 @@ public final class InetUtils {
         return surelyParseValidIpv4Address(string);
     }
 
-    private static int hexCodeToInt(final char code) throws AddressParseException {
-        if (code >= '0' && code <= '9') {
-            return code - '0';
-        } else if (code >= 'a' && code <= 'f') {
-            return code - 'a' + 10;
-        } else if (code >= 'A' && code <= 'F') {
-            return code - 'A' + 10;
-        } else {
-            throw new AddressParseException("Illegal character '" + code + "' in address");
-        }
-    }
-
-    private static byte parseMacAddressByte(final CharSequence string, final int start) throws AddressParseException {
-        return (byte) ((hexCodeToInt(string.charAt(start)) << 4) | hexCodeToInt(string.charAt(start + 1)));
-    }
-
-    private static AddressParseException illegalDelimiter(final CharSequence string, final int index) {
-        final char illegal = string.charAt(index);
-        return new AddressParseException("Illegal character '" + illegal + "' at index " + index + " in MAC address \"" + string + "\"");
-    }
-
-    public static MacAddress parseMacAddress(final CharSequence string) throws AddressParseException {
-        if (string.length() != 17) {
-            throw new AddressParseException("MAC address length must be 17 characters: \"" + string + "\"");
-        }
-        final byte first = parseMacAddressByte(string, 0);
-        if (string.charAt(2) != ':') {
-            throw illegalDelimiter(string, 2);
-        }
-        final short prefix = (short) (first << 8 | parseMacAddressByte(string, 3));
-        int address = 0;
-        for (int i = 0; i < 4; ++i) {
-            final int pos = i * 3 + 5;
-            if (string.charAt(pos) != ':') {
-                throw illegalDelimiter(string, pos);
-            }
-            address = (address << 8) | parseMacAddressByte(string, pos + 1);
-        }
-        return new MacAddress(prefix, address);
-    }
-
     public static int getSubnetByPrefix(final int prefix) {
         if (prefix > 30 || prefix < 0) {
             throw new IllegalArgumentException("Wrong subnet prefix range");
@@ -274,7 +160,6 @@ public final class InetUtils {
 
     public static <PL, CL> PL createLayerIfNotStub(final CL currentLayer, final Function<CL, PL> getNextLayer) {
         if (currentLayer == NullLayer.INSTANCE) {
-            // noinspection unchecked
             return (PL) NullLayer.INSTANCE;
         } else {
             return getNextLayer.apply(currentLayer);

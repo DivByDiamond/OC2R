@@ -3,7 +3,7 @@
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.ComputerBlock;
+import li.cil.oc2.common.block.ComputerBlockFactory;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -26,8 +26,8 @@ public final class ItemGroup {
             output.accept(Items.BUS_CABLE.get());
             output.accept(Items.BUS_INTERFACE.get());
             output.accept(Items.CHARGER.get());
-            output.accept(ComputerBlock.getComputerWithFlash());
-            output.accept(ComputerBlock.getPreconfiguredComputer());
+            output.accept(ComputerBlockFactory.getComputerWithFlash());
+            output.accept(ComputerBlockFactory.getPreconfiguredComputer());
             output.accept(Items.CREATIVE_ENERGY.get());
             output.accept(Items.DISK_DRIVE.get());
             output.accept(Items.FLASH_MEMORY_FLASHER.get());

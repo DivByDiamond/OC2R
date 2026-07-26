@@ -2,7 +2,7 @@ package li.cil.oc2.common.event;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.util.AsyncUtils;
+import li.cil.oc2.common.util.AsyncExecutorHelper;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -41,7 +41,7 @@ public final class ForgeEventHandlers {
     public static void handleServerStopped(final ServerStoppedEvent event) {
         LOGGER.info("Server stopped, cleaning up async components");
         try {
-            AsyncUtils.shutdown();
+            AsyncExecutorHelper.shutdown();
         } catch (final Exception e) {
             LOGGER.error("Error during async component shutdown", e);
         } finally {

@@ -79,7 +79,7 @@ public final class DefaultNetworkLayer implements NetworkLayer {
 
         // Calculate header checksum
         packet.position(packet.position() - IPv4_HEADER_SIZE);
-        short checksum = InetUtils.rfc1071Checksum(packet, IPv4_HEADER_SIZE);
+        short checksum = Rfc1071Checksum.rfc1071Checksum(packet, IPv4_HEADER_SIZE);
         packet.position(packet.position() - 10);
         packet.putShort(checksum);
         packet.position(packet.position() + 8 - IPv4_HEADER_SIZE);

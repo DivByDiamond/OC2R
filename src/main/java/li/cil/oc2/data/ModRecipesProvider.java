@@ -2,7 +2,7 @@
 
 package li.cil.oc2.data;
 
-import li.cil.oc2.common.block.ComputerBlock;
+import li.cil.oc2.common.block.ComputerBlockFactory;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.RobotItem;
 import li.cil.oc2.common.item.crafting.WrenchRecipe;
@@ -25,7 +25,7 @@ public final class ModRecipesProvider extends RecipeProvider {
     @Override
     protected void buildRecipes(final RecipeOutput consumer) {
         ShapedRecipeBuilder
-            .shaped(RecipeCategory.MISC, ComputerBlock.getComputerWithFlash())
+            .shaped(RecipeCategory.MISC, ComputerBlockFactory.getComputerWithFlash())
             .pattern("ICI")
             .pattern("XTX")
             .pattern("IBI")
