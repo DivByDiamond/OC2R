@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class CH6 extends CSISequenceHandler { // Combined Handler 6 (XTSAVE, XTSHIFTESCAPE, DECSLRM, and SCOSC)
     public CH6(final Terminal terminal) {

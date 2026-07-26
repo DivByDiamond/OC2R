@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
 import li.cil.oc2.client.gui.terminal.TerminalInput;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
+import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -41,7 +42,7 @@ public final class MachineTerminalWidget {
     private final Terminal terminal;
     private int leftPos, topPos;
     private boolean isMouseOverTerminal;
-    private Terminal.RendererView rendererView;
+    private RendererView rendererView;
     private boolean isOver;
 
     ///////////////////////////////////////////////////////////////////

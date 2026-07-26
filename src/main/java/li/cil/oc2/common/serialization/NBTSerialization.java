@@ -10,6 +10,7 @@ import li.cil.ceres.api.SerializationVisitor;
 import li.cil.oc2.common.serialization.ceres.ColorDataSerializer;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
 import net.minecraft.nbt.*;
 import org.jetbrains.annotations.Contract;
 
@@ -72,7 +73,7 @@ public final class NBTSerialization {
         ARRAY_SERIALIZERS.put(Enum.class, new EnumArraySerializer());
         ARRAY_SERIALIZERS.put(String.class, new StringArraySerializer());
         ARRAY_SERIALIZERS.put(UUID.class, new UUIDArraySerializer());
-        ARRAY_SERIALIZERS.put(Terminal.ColorData.class, new ColorDataArraySerializer());
+        ARRAY_SERIALIZERS.put(TerminalColors.ColorData.class, new ColorDataArraySerializer());
     }
 
     private record Serializer(CompoundTag tag) implements SerializationVisitor {
@@ -195,7 +196,7 @@ public final class NBTSerialization {
             }
         }
 
-        private Tag putColorDataArray(final String name, final Terminal.ColorData[] array) {
+        private Tag putColorDataArray(final String name, final TerminalColors.ColorData[] array) {
             final IntArrayList values = new IntArrayList();
 
             for (var x: array) {
@@ -499,7 +500,7 @@ public final class NBTSerialization {
     private static final class ColorDataArraySerializer implements ArraySerializer {
         @Override
         public Tag serialize(final Object obj) {
-            final var input = (Terminal.ColorData[]) obj;
+            final var input = (TerminalColors.ColorData[]) obj;
             final IntArrayList values = new IntArrayList();
 
             for (var x: input) {
@@ -512,11 +513,11 @@ public final class NBTSerialization {
         @Override
         @Nullable
         public Object deserialize(final Tag tag, final Class<?> type, @Nullable final Object into) {
-            Terminal.ColorData[] data = (Terminal.ColorData[]) into;
+            TerminalColors.ColorData[] data = (TerminalColors.ColorData[]) into;
             if (tag instanceof final IntArrayTag intArrayTag) {
                 final int[] serializedData = intArrayTag.getAsIntArray();
                 if (data == null || data.length != serializedData.length) {
-                    data = new Terminal.ColorData[serializedData.length];
+                    data = new TerminalColors.ColorData[serializedData.length];
                 }
                 for (int i = 0; i < data.length; i++) {
                     data[i] = ColorDataSerializer.toColorData(serializedData[i]);
@@ -524,7 +525,7 @@ public final class NBTSerialization {
                 return data;
             } else {
                 // Legacy
-                return Deserializer.getGenericArray(tag, Terminal.ColorData.class, into);
+                return Deserializer.getGenericArray(tag, TerminalColors.ColorData.class, into);
             }
         }
     }

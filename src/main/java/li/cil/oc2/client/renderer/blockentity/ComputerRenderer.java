@@ -21,6 +21,7 @@ import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.ComputerBlockEntity;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.bus.CommonDeviceBusController;
 import net.minecraft.client.gui.Font;
@@ -56,7 +57,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
     private static final Material TEXTURE_STATUS = new Material(InventoryMenu.BLOCK_ATLAS, OVERLAY_STATUS_LOCATION);
     private static final Material TEXTURE_TERMINAL = new Material(InventoryMenu.BLOCK_ATLAS, OVERLAY_TERMINAL_LOCATION);
 
-    private static final Cache<Terminal, Terminal.RendererView> rendererViews = CacheBuilder.newBuilder()
+    private static final Cache<Terminal, RendererView> rendererViews = CacheBuilder.newBuilder()
         .expireAfterAccess(Duration.ofSeconds(5))
         .removalListener(ComputerRenderer::handleNoLongerRendering)
         .build();
@@ -356,9 +357,9 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         rendererViews.cleanUp();
     }
 
-    private static void handleNoLongerRendering(final RemovalNotification<Terminal, Terminal.RendererView> notification) {
+    private static void handleNoLongerRendering(final RemovalNotification<Terminal, RendererView> notification) {
         final Terminal key = notification.getKey();
-        final Terminal.RendererView value = notification.getValue();
+        final RendererView value = notification.getValue();
         if (key != null && value != null) {
             key.releaseRenderer(value);
         }

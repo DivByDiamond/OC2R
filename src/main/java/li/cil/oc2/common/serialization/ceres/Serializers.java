@@ -4,6 +4,7 @@ package li.cil.oc2.common.serialization.ceres;
 
 import com.google.gson.JsonArray;
 import li.cil.ceres.Ceres;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.context.global.MemoryRangeList;
 import li.cil.sedna.api.memory.MemoryRange;
@@ -27,7 +28,7 @@ public final class Serializers {
         Ceres.putSerializer(Component.class, new TextComponentSerializer());
         Ceres.putSerializer(MemoryRange.class, new MemoryRangeSerializer());
         Ceres.putSerializer(MemoryRangeList.class, new MemoryRangeListSerializer());
-        Ceres.putSerializer(Terminal.ColorMode.class, new ColorModeSerializer());
-        Ceres.putSerializer(Terminal.ColorData.class, new ColorDataSerializer());
+        Ceres.putSerializer(TerminalColors.ColorMode.class, new ColorModeSerializer());
+        Ceres.putSerializer(TerminalColors.ColorData.class, new ColorDataSerializer());
     }
 }

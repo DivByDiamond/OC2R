@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class NEL {
     public static void execute(Terminal terminal) {
