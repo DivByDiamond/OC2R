@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import li.cil.oc2.client.renderer.entity.model.RobotModel;
 import li.cil.oc2.common.entity.Robot;
+import li.cil.oc2.common.entity.robot.RobotAnimationState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -33,7 +34,7 @@ public final class RobotRenderer extends EntityRenderer<Robot> {
 
     @Override
     public void render(final Robot entity, final float entityYaw, final float partialTicks, final PoseStack stack, final MultiBufferSource bufferSource, final int packedLight) {
-        final Robot.AnimationState state = entity.getAnimationState();
+        final RobotAnimationState state = entity.getAnimationState();
         state.update(partialTicks, entity.level().random);
 
         stack.pushPose();

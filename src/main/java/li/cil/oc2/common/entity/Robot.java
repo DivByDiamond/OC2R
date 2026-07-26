@@ -107,16 +107,15 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
     ///////////////////////////////////////////////////////////////////
 
-    private final Consumer<ChunkEvent.Unload> chunkUnloadListener = this::handleChunkUnload;
-    private final Consumer<LevelEvent.Unload> worldUnloadListener = this::handleWorldUnload;
-    private final BlockPos.MutableBlockPos mutablePosition = new BlockPos.MutableBlockPos();
+    private RobotEventHandler eventHandler;
+    private RobotBlockCollider blockCollider;
 
-    private final AnimationState animationState = new AnimationState();
     private final RobotInventory robotInventory;
     private final RobotMovementController movementController;
     private final Terminal terminal = new Terminal();
     private final RobotVirtualMachine virtualMachine;
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.robotEnergyStorage);
+    private final RobotAnimationState animationState;
     private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
     private long lastPistonMovement;
 
@@ -136,15 +135,18 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         robotInventory = new RobotInventory(this);
         movementController = new RobotMovementController(this);
         final CommonDeviceBusController busController = new CommonDeviceBusController(robotInventory.getBusElement(), Config.robotEnergyPerTick);
-        virtualMachine = new RobotVirtualMachine(busController);
+        virtualMachine = new RobotVirtualMachine(this, busController, terminal, movementController);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
+        animationState = new RobotAnimationState(virtualMachine, () -> movementController.hasQueuedActions());
+        eventHandler = new RobotEventHandler(this, virtualMachine);
+        blockCollider = new RobotBlockCollider(this);
         robotInventory.setOnDeviceChanged(() -> virtualMachine.busController.scheduleBusScan());
     }
 
     ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
-    public AnimationState getAnimationState() {
+    public RobotAnimationState getAnimationState() {
         return animationState;
     }
 
@@ -154,6 +156,18 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
     public VirtualMachine getVirtualMachine() {
         return virtualMachine;
+    }
+
+    public FixedEnergyStorage getEnergyStorage() {
+        return energy;
+    }
+
+    public RobotMovementController getMovementController() {
+        return movementController;
+    }
+
+    public RobotInventory getRobotInventory() {
+        return robotInventory;
     }
 
     public VMItemStackHandlers getItemStackHandlers() {
@@ -270,7 +284,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             if (isClient) {
                 requestInitialState();
             } else {
-                registerListeners();
+                eventHandler.register();
                 RobotActions.initializeData(this);
                 if (movementController.getCurrentAction() != null) {
                     movementController.getCurrentAction().initialize(this);
@@ -290,37 +304,8 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
         movementController.tick();
 
-        if (!isClient && level() instanceof final ServerLevel serverLevel) {
-            final VoxelShape shape = Shapes.create(getBoundingBox());
-            final Cursor3D iterator = getBlockPosIterator();
-            while (iterator.advance()) {
-                final int x = iterator.nextX();
-                final int y = iterator.nextY();
-                final int z = iterator.nextZ();
-                mutablePosition.set(x, y, z);
-                final BlockState blockState = serverLevel.getBlockState(mutablePosition);
-                if (blockState.isAir() ||
-                    blockState.is(Blocks.MOVING_PISTON) ||
-                    blockState.is(Blocks.PISTON_HEAD)) {
-                    continue;
-                }
-
-                final VoxelShape blockShape = blockState.getCollisionShape(serverLevel, mutablePosition);
-                if (Shapes.joinIsNotEmpty(shape, blockShape.move(x, y, z), BooleanOp.AND)) {
-                    final BlockEntity blockEntity = serverLevel.getBlockEntity(mutablePosition);
-                    final LootParams.Builder builder = new LootParams.Builder(serverLevel)
-                        .withParameter(LootContextParams.THIS_ENTITY, this)
-                        .withParameter(LootContextParams.ORIGIN, position())
-                        .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                        .withParameter(LootContextParams.BLOCK_STATE, blockState)
-                        .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
-                    final List<ItemStack> drops = blockState.getDrops(builder);
-                    serverLevel.setBlockAndUpdate(mutablePosition, Blocks.AIR.defaultBlockState());
-                    for (final ItemStack drop : drops) {
-                        Block.popResource(serverLevel, mutablePosition, drop);
-                    }
-                }
-            }
+        if (!isClient) {
+            blockCollider.collideWithWorld();
         }
     }
 
@@ -478,233 +463,16 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         Network.sendToServer(new RobotInitializationRequestMessage(this));
     }
 
-    private void registerListeners() {
-        NeoForge.EVENT_BUS.addListener(chunkUnloadListener);
-        NeoForge.EVENT_BUS.addListener(worldUnloadListener);
-    }
 
-    private void unregisterListeners() {
-        NeoForge.EVENT_BUS.unregister(chunkUnloadListener);
-        NeoForge.EVENT_BUS.unregister(worldUnloadListener);
-    }
-
-    private void handleChunkUnload(final ChunkEvent.Unload event) {
-        if (event.getLevel() != level()) {
-            return;
-        }
-
-        final ChunkPos chunkPos = new ChunkPos(blockPosition());
-        if (!Objects.equals(chunkPos, event.getChunk().getPos())) {
-            return;
-        }
-
-        unregisterListeners();
-        virtualMachine.suspend();
-        virtualMachine.dispose();
-    }
-
-    private void handleWorldUnload(final LevelEvent.Unload event) {
-        if (event.getLevel() != level()) {
-            return;
-        }
-
-        unregisterListeners();
-        virtualMachine.suspend();
-        virtualMachine.dispose();
-    }
-
-    private Cursor3D getBlockPosIterator() {
-        final AABB bounds = getBoundingBox();
-        return new Cursor3D(
-            Mth.floor(bounds.minX), Mth.floor(bounds.minY), Mth.floor(bounds.minZ),
-            Mth.floor(bounds.maxX), Mth.floor(bounds.maxY), Mth.floor(bounds.maxZ)
-        );
-    }
-
-    private static float lerpClamped(final float from, final float to, final float delta) {
-        if (from < to) {
-            return Math.min(from + delta, to);
-        } else if (from > to) {
-            return Math.max(from - delta, to);
-        } else {
-            return from;
-        }
-    }
-
-    private static float remapFrom01To(final float x, final float a1, final float b1) {
-        if (a1 == b1) {
-            return a1;
-        } else {
-            return x * (b1 - a1) + a1;
-        }
-    }
 
     ///////////////////////////////////////////////////////////////////
 
-    public final class AnimationState {
-        private static final float TOP_IDLE_Y = -2f / 16f;
-        private static final float BASE_IDLE_Y = -1f / 16f;
-
-        private static final float TRANSLATION_SPEED = 0.005f;
-        private static final float ROTATION_SPEED = 1f;
-        private static final float MAX_ROTATION = 5f;
-        private static final float MIN_ROTATION_SPEED = 0.055f;
-        private static final float MAX_ROTATION_SPEED = 0.060f;
-        private static final float HOVER_ANIMATION_SPEED = 0.01f;
-
-        public float topRenderOffsetY = TOP_IDLE_Y;
-        public float baseRenderOffsetY = BASE_IDLE_Y;
-        public float topRenderRotationY;
-        public float topRenderTargetRotationY;
-        public float topRenderRotationSpeed;
-        public float topRenderHover = -(hashCode() & 0xFFFF); // init to "random" to avoid synchronous hovering
-
-        public void update(final float deltaTime, final RandomSource random) {
-            if (getVirtualMachine().isRunning() || movementController.hasQueuedActions()) {
-                topRenderHover = topRenderHover + deltaTime * HOVER_ANIMATION_SPEED;
-                final float topOffsetY = Mth.sin(topRenderHover) / 32f;
-
-                topRenderOffsetY = lerpClamped(topRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
-                baseRenderOffsetY = lerpClamped(baseRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
-
-                topRenderRotationY = lerpClamped(topRenderRotationY, topRenderTargetRotationY, deltaTime * topRenderRotationSpeed);
-                if (topRenderRotationY == topRenderTargetRotationY) {
-                    topRenderTargetRotationY = remapFrom01To(random.nextFloat(), -MAX_ROTATION, MAX_ROTATION);
-                    topRenderRotationSpeed = remapFrom01To(random.nextFloat(), MIN_ROTATION_SPEED, MAX_ROTATION_SPEED);
-                }
-            } else {
-                topRenderOffsetY = lerpClamped(topRenderOffsetY, TOP_IDLE_Y, deltaTime * TRANSLATION_SPEED * 2);
-                baseRenderOffsetY = lerpClamped(baseRenderOffsetY, BASE_IDLE_Y, deltaTime * TRANSLATION_SPEED);
-
-                topRenderRotationY = lerpClamped(topRenderRotationY, 0, deltaTime * ROTATION_SPEED);
-            }
-        }
-    }
 
 
 
 
 
-    private final class RobotVMRunner extends AbstractTerminalVMRunner {
-        public RobotVMRunner(final AbstractVirtualMachine virtualMachine, final Terminal terminal) {
-            super(virtualMachine, terminal);
-        }
 
-        @Override
-        protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            Network.sendToClientsTrackingEntity(new RobotTerminalOutputMessage(Robot.this, output), Robot.this);
-        }
-    }
 
-    private final class RobotVirtualMachine extends AbstractVirtualMachine {
-        private RobotVirtualMachine(final CommonDeviceBusController busController) {
-            super(busController);
-            state.vmAdapter.setBaseAddressProvider(robotInventory.getDeviceItems()::getDeviceAddressBase);
-        }
 
-        @Override
-        protected boolean consumeEnergy(final int amount, final boolean simulate) {
-            if (!Config.robotsUseEnergy()) {
-                return true;
-            }
-
-            if (amount > energy.getEnergyStored()) {
-                return false;
-            }
-
-            energy.extractEnergy(amount, simulate);
-            return true;
-        }
-
-        @Override
-        protected void stopRunnerAndReset() {
-            super.stopRunnerAndReset();
-
-            TerminalUtils.resetTerminal(terminal, output -> Network.sendToClientsTrackingEntity(
-                new RobotTerminalOutputMessage(Robot.this, output), Robot.this));
-
-            movementController.clear();
-        }
-
-        @Override
-        protected AbstractTerminalVMRunner createRunner() {
-            return new RobotVMRunner(this, terminal);
-        }
-
-        @Override
-        protected void handleBusStateChanged(final CommonDeviceBusController.BusState value) {
-            Network.sendToClientsTrackingEntity(new RobotBusStateMessage(Robot.this, value), Robot.this);
-        }
-
-        @Override
-        protected void handleRunStateChanged(final VMRunState value) {
-            Network.sendToClientsTrackingEntity(new RobotRunStateMessage(Robot.this, value), Robot.this);
-        }
-
-        @Override
-        protected void handleBootErrorChanged(@Nullable Component value) {
-            if (value == null) {
-                value = Component.literal("");
-            }
-            Network.sendToClientsTrackingEntity(new RobotBootErrorMessage(Robot.this, value), Robot.this);
-        }
-    }
-
-    public final class RobotDevice {
-        @Callback(synchronize = false)
-        public int getEnergyStored() {
-            return energy.getEnergyStored();
-        }
-
-        @Callback(synchronize = false)
-        public int getEnergyCapacity() {
-            return energy.getMaxEnergyStored();
-        }
-
-        @Callback(synchronize = false)
-        public int getSelectedSlot() {
-            return Robot.this.getSelectedSlot();
-        }
-
-        @Callback(synchronize = false)
-        public void setSelectedSlot(@Parameter("slot") final int slot) {
-            Robot.this.setSelectedSlot(slot);
-        }
-
-        @Callback
-        public ItemStack getStackInSlot(@Parameter("slot") final int slot) {
-            return robotInventory.getInventory().getStackInSlot(slot);
-        }
-
-        @Callback(synchronize = false)
-        public boolean move(@Parameter("direction") @Nullable final MovementDirection direction) {
-            if (direction == null) throw new IllegalArgumentException();
-            return movementController.move(direction);
-        }
-
-        @Callback(synchronize = false)
-        public boolean turn(@Parameter("direction") @Nullable final RotationDirection direction) {
-            if (direction == null) throw new IllegalArgumentException();
-            return movementController.rotate(direction);
-        }
-
-        @Callback(synchronize = false)
-        public int getLastActionId() {
-            return movementController.getLastActionId();
-        }
-
-        @Callback(synchronize = false)
-        public int getQueuedActionCount() {
-            return movementController.getQueuedActionCount();
-        }
-
-        @Nullable
-        @Callback(synchronize = false)
-        public RobotActionResult getActionResult(@Parameter("actionId") final int actionId) {
-            return movementController.findActionResult(actionId);
-        }
-
-        public RobotDevice() {
-        }
-    }
 }

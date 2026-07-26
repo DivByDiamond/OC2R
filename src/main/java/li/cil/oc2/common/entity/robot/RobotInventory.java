@@ -114,7 +114,7 @@ public class RobotInventory {
     private final class RobotBusElement extends AbstractDeviceBusElement {
         private static final String DEVICE_ID_TAG_NAME = "device_id";
 
-        private final Device device = new ObjectDevice(robot.new RobotDevice(), "robot");
+        private final Device device = new ObjectDevice(new RobotDevice(robot), "robot");
         private UUID deviceId = UUID.randomUUID();
 
         @Override

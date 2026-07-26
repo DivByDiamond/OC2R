@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
+import li.cil.oc2.common.entity.robot.RobotAnimationState;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -60,7 +61,7 @@ public final class RobotModel extends EntityModel<Robot> {
 
     @Override
     public void setupAnim(final Robot entity, final float limbSwing, final float limbSwingAmount, final float ageInTicks, final float netHeadYaw, final float headPitch) {
-        final Robot.AnimationState state = entity.getAnimationState();
+        final RobotAnimationState state = entity.getAnimationState();
         baseY = state.baseRenderOffsetY;
         topY = state.topRenderOffsetY;
         topRotation[1] = state.topRenderRotationY;

@@ -1,126 +1,105 @@
 # TODO
 
-## 0. Рефакторинг: структура и SOLID/KISS/DRY
+## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅
 
-**Правило**: ≤200 строк на файл, ≤4 файлов на папку.  
-**Цель**: Каждый файл — одна ответственность (SRP), читается без скролла.
+**Правило**: ≤200 строк на файл, ≤4 файлов на папку.
 
-### Terminal (сейчас: 1 папка, 1 файл — 1263 строки)
+### Выполнено
+- [x] Terminal.java (1263→420) → Terminal, TerminalBuffer, TerminalRenderer, TerminalColors
+- [x] ComputerVMRunner из ComputerBlockEntity
+- [x] Robot.java (964→710) → RobotInventory, RobotMovementController
+- [x] blockentity/ по подпапкам
+- [x] publish.gradle из build.gradle
+- [x] bus/ → adapter/, controller/, element/
+- [x] gui/ → screen/, widget/
+- [x] OldTerminal.java удалён
 
-```
-vm/terminal/
-├── Terminal.java           # парсер VT100 (~400 строк)
-├── TerminalBuffer.java     # буферы main + alt, scrollback (~200)
-├── TerminalRenderer.java   # VBO рендеринг (= бывший Renderer, ~400)
-└── TerminalColors.java     # палитры, ColorData, ColorMode (~200)
-```
+### >200 строк — план распила (build + commit после каждого)
 
-### Robot (сейчас: 1 папка, 4 файла — Robot.java 964 строки)
+Кап: 30 файлов >200 строк → довести все до <200.
 
-```
-entity/
-├── Robot.java              # Entity + lifecycle (~300)
-├── robot/
-│   ├── RobotInventory.java     # инвентарь (~200)
-│   ├── RobotMovementController.java  # движение, анимация (~200)
-│   └── RobotContainer.java     # container menu (~200)
-```
+#### Файл 1: `entity/Robot.java` (710)
+- `RobotEnergyStorage` — энергия (поля/методы по энергии)
+- `RobotNetworkHandler` — сетевые сообщения
+- `RobotUpgradeHandler` — проверки апгрейдов
+- `Robot` (остаток)
 
-### ComputerBlockEntity (сейчас: 693 строки)
+#### Файл 2: `serialization/NBTSerialization.java` (693)
+- `ItemStackSerialization`
+- `BlockStateSerialization` (+ Fluid, Energy, Collection)
+- `NBTSerialization` (остаток)
 
-```
-blockentity/
-├── ComputerBlockEntity.java    # BE (~300)
-├── computer/
-│   ├── ComputerVMRunner.java   # вынос из inner класса (~200)
-│   └── ComputerTerminalHandler.java  # terminal I/O (~150)
-```
+#### Файл 3: `blockentity/computer/ComputerBlockEntity.java` (685)
+- `ComputerEnergyStorage`
+- `ComputerItemStackHandlers`
+- `ComputerScreens`
+- `ComputerBlockEntity` (остаток)
 
-### build.gradle (сейчас: 382 строки)
+#### Файл 4: `renderer/ProjectorDepthRenderer.java` (614)
+- `ProjectorDepthMeshBuilder`
+- `ProjectorDepthShader`
+- `ProjectorDepthFrameBuffer`
+- `ProjectorFrustumCuller`
+- `ProjectorDepthRenderer` (остаток)
 
-```
-build.gradle          # сборка + deps (~200)
-publish.gradle        # curseforge + modrinth + gpr (~150)
-```
+#### Файл 5: `block/BusCableBlock.java` (584)
+- `BusCableShapeBuilder`
+- `BusCableConnectionManager`
+- `BusCableBlock` (остаток)
 
-### blockentity/ (сейчас: 15+ файлов в 1 папке)
+#### Файл 6: `bus/adapter/RPCDeviceBusAdapter.java` (560)
+- `RPCDeviceRegistry`
+- `RPCMethodDispatcher`
+- `RPCExecutionContext`
+- `RPCDeviceBusAdapter` (остаток)
 
-```            
-blockentity/
-├── ModBlockEntity.java
-├── computer/
-│   └── ComputerBlockEntity.java
-├── monitor/
-│   └── MonitorBlockEntity.java
-├── keyboard/
-│   └── KeyboardBlockEntity.java
-├── disk/
-│   └── DiskDriveBlockEntity.java
-├── network/
-│   ├── BusCableBlockEntity.java
-│   ├── NetworkConnectorBlockEntity.java
-│   └── NetworkHubBlockEntity.java
-├── energy/
-│   ├── ChargerBlockEntity.java
-│   └── CreativeEnergyBlockEntity.java
-├── misc/
-│   ├── FlashMemoryFlasherBlockEntity.java
-│   └── InternetGateWayBlockEntity.java
-├── projector/
-│   └── ProjectorBlockEntity.java
-└── robot/
-    └── RobotProxyBlockEntity.java
-```
+#### Файл 7: `inet/DefaultTransportLayer.java` (520)
+- `TcpConnectionManager`
+- `PacketFragmentation`
+- `DefaultTransportLayer` (остаток)
 
-### common/bus/ (сейчас: 10+ файлов)
+#### Файл 8: `blockentity/network/NetworkSwitchBlockEntity.java` (511)
+- `NetworkSwitchPortManager`
+- `NetworkSwitchPacketProcessor`
+- `NetworkSwitchRoutingTable`
+- `NetworkSwitchBlockEntity` (остаток)
 
-```
-bus/
-├── adapter/
-│   ├── RPCDeviceBusAdapter.java
-│   └── VMDeviceBusAdapter.java
-├── device/
-│   ├── rpc/
-│   └── vm/
-├── element/
-│   ├── AbstractBlockDeviceBusElement.java
-│   ├── AbstractItemDeviceBusElement.java
-│   └── AbstractGroupingDeviceBusElement.java
-└── controller/
-    └── DeviceBusController.java
-```
+#### Файлы 9-12: `ProjectorBlockEntity` (479), `BusCableBlockEntity` (477), `MonitorBlockEntity` (473), `NetworkConnectorBlockEntity` (472)
+Каждый:
+- `*EnergyStorage` — энергия
+- `*NetworkHandler` — сетевые сообщения
+- основа (~200)
 
-### client/gui/ (сейчас: 10+ файлов)
+#### Файл 13: `gui/screen/FileChooserScreen.java` (433)
+- `FileListWidget`
+- `FileActionsBar`
+- `FileChooserScreen` (остаток)
 
-```
-gui/
-├── screen/
-│   ├── ComputerTerminalScreen.java
-│   ├── MonitorDisplayScreen.java
-│   ├── KeyboardScreen.java
-│   └── RobotTerminalScreen.java
-├── widget/
-│   ├── MachineTerminalWidget.java
-│   ├── MonitorDisplayWidget.java
-│   └── ...
-├── container/
-│   └── ...
-└── Sprites.java, Textures.java
-```
+#### Файл 14: `vm/AbstractVirtualMachine.java` (428)
+- `VMStateMachine`
+- `VMDeviceManager`
+- `VMInterruptHandler`
+- `AbstractVirtualMachine` (остаток)
+
+#### Файл 15: `bus/device/vm/item/AbstractBlockStorageDevice.java` (414)
+- `BlockStorageGeometry`
+- `BlockStorageIO`
+- `AbstractBlockStorageDevice` (остаток)
+
+#### Файлы 16-20: `ComputerRenderer` (367), `StreamSessionImpl` (353), `TerminalRenderer` (351), `NetworkCableRenderer` (341), `CommonDeviceBusController` (332)
+Каждый → 2 части
+
+#### Файлы 21-25: `InventoryOperationsModuleDevice` (331), `RedstoneInterfaceBlockEntity` (330), `FileImportExportCardItemDevice` (324), `ProjectorLoadBalancer` (316), `MonitorLoadBalancer` (316)
+Каждый → utility/logic вынос
+
+#### Файлы 26-30: `MachineTerminalWidget` (313), `BlobStorage` (306), `BlockOperationsModuleDevice` (305), `NetworkInterfaceCardScreen` (302), `TerminalBuffer` (294)
+Каждый → split 2-3
+
+#### Остальные (200-290 строк, ~20 файлов)
+По 1 split на файл
 
 ### Deferred
-- jcodec/ (17k строк, H.264) — **не трогать**, внешняя либа
-- `Terminal.java` — без `OldTerminal.java` (дубль на удаление)
-
-### Порядок работ
-- [ ] Выделить TerminalBuffer, TerminalColors, TerminalRenderer из Terminal.java
-- [ ] Вынести ComputerVMRunner из ComputerBlockEntity
-- [ ] Разбить Robot.java на Robot + RobotInventory + RobotMovementController
-- [ ] Разложить blockentity/ по подпапкам
-- [ ] Вынести publish логику из build.gradle в publish.gradle
-- [ ] Разложить bus/ по подпапкам
-- [ ] Разложить gui/ по подпапкам
-- [ ] Удалить OldTerminal.java если не используется
+- jcodec/ — **не трогать**
 
 ---
 
