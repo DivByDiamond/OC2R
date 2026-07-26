@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
-import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
+import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.serialization.NBTSerialization;
@@ -26,11 +26,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import javax.annotation.Nullable;
 import java.util.logging.Logger;
 
-public record RobotInitializationMessage(int entityId, CommonDeviceBusController.BusState busState, VMRunState runState, @Nullable Component bootError, CompoundTag terminal) implements AbstractMessage {
+public record RobotInitializationMessage(int entityId, BusState busState, VMRunState runState, @Nullable Component bootError, CompoundTag terminal) implements AbstractMessage {
     public static final StreamCodec<RegistryFriendlyByteBuf, RobotInitializationMessage> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
         RobotInitializationMessage::entityId,
-        NeoForgeStreamCodecs.enumCodec(CommonDeviceBusController.BusState.class),
+        NeoForgeStreamCodecs.enumCodec(BusState.class),
         RobotInitializationMessage::busState,
         NeoForgeStreamCodecs.enumCodec(VMRunState.class),
         RobotInitializationMessage::runState,

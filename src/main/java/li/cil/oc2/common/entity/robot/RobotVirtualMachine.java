@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.entity.robot;
 
+import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.entity.Robot;
@@ -60,7 +61,7 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected void handleBusStateChanged(final CommonDeviceBusController.BusState value) {
+    protected void handleBusStateChanged(final BusState value) {
         Network.sendToClientsTrackingEntity(new RobotBusStateMessage(robot, value), robot);
     }
 

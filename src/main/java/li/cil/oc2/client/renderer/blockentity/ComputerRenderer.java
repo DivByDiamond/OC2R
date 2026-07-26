@@ -17,7 +17,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
+import li.cil.oc2.common.bus.controller.BusState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -60,7 +60,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         if (now - lastDiagnosticLog > 1000) {
             lastDiagnosticLog = now;
             final VMRunState runState = terminalSource.getVirtualMachine().getRunState();
-            final CommonDeviceBusController.BusState busState = terminalSource.getVirtualMachine().getBusState();
+            final BusState busState = terminalSource.getVirtualMachine().getBusState();
             final Terminal terminal = terminalSource.getTerminal();
             int nonSpaceCount = 0;
             final int visibleStart = Math.max(0, (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH);

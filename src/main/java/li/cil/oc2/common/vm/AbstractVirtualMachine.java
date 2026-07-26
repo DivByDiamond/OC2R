@@ -6,7 +6,7 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
+import li.cil.oc2.common.bus.controller.*;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.bus.device.rpc.item.CPUItemDevice;
 import li.cil.oc2.common.serialization.NBTSerialization;
@@ -45,7 +45,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     ///////////////////////////////////////////////////////////////////
 
     public final CommonDeviceBusController busController;
-    private CommonDeviceBusController.BusState busState = CommonDeviceBusController.BusState.SCAN_PENDING;
+    private BusState busState = BusState.SCAN_PENDING;
     private int loadDevicesDelay;
 
     public final SerializedState state = new SerializedState();
@@ -92,18 +92,18 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     @Override
     public boolean isRunning() {
-        return getBusState() == CommonDeviceBusController.BusState.READY &&
+        return getBusState() == BusState.READY &&
             getRunState() == VMRunState.RUNNING;
     }
 
     @Override
-    public CommonDeviceBusController.BusState getBusState() {
+    public BusState getBusState() {
         return busState;
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void setBusStateClient(final CommonDeviceBusController.BusState value) {
+    public void setBusStateClient(final BusState value) {
         busState = value;
     }
 
@@ -171,7 +171,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     public void tick() {
         busController.scan();
         setBusState(busController.getState());
-        if (busState != CommonDeviceBusController.BusState.READY) {
+        if (busState != BusState.READY) {
             return;
         }
 
@@ -229,7 +229,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     protected abstract boolean consumeEnergy(final int amount, final boolean simulate);
 
-    protected void handleBusStateChanged(final CommonDeviceBusController.BusState value) {
+    protected void handleBusStateChanged(final BusState value) {
     }
 
     protected void handleRunStateChanged(final VMRunState value) {
@@ -368,7 +368,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         runner.tick();
     }
 
-    private void setBusState(final CommonDeviceBusController.BusState value) {
+    private void setBusState(final BusState value) {
         if (value == busState) {
             return;
         }
@@ -403,16 +403,16 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         }
     }
 
-    private void handleAfterDeviceScan(final CommonDeviceBusController.AfterDeviceScanEvent event) {
+    private void handleAfterDeviceScan(final AfterDeviceScanEvent event) {
         state.rpcAdapter.resume(busController, event.didDevicesChange());
     }
 
-    private void handleDevicesAdded(final CommonDeviceBusController.DevicesChangedEvent event) {
+    private void handleDevicesAdded(final DevicesChangedEvent event) {
         joinWorkerThread();
         state.vmAdapter.addDevices(event.devices());
     }
 
-    private void handleDevicesRemoved(final CommonDeviceBusController.DevicesChangedEvent event) {
+    private void handleDevicesRemoved(final DevicesChangedEvent event) {
         joinWorkerThread();
         state.vmAdapter.removeDevices(event.devices());
     }

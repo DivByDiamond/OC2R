@@ -16,6 +16,8 @@ import li.cil.oc2.common.blockentity.computer.vm.ComputerVirtualMachine;
 import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.bus.controller.AfterDeviceScanEvent;
+import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.capabilities.Capabilities;
@@ -181,7 +183,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         }
     }
 
-    public void onAfterDeviceScan(final CommonDeviceBusController.AfterDeviceScanEvent event) {
+    public void onAfterDeviceScan(final AfterDeviceScanEvent event) {
         if (event.didDevicesChange()) {
             level.invalidateCapabilities(getBlockPos());
         }
@@ -351,7 +353,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
         // Only update client-side state on the client
         if (level != null && level.isClientSide()) {
-            virtualMachine.setBusStateClient(CommonDeviceBusController.BusState.values()[tag.getInt(AbstractVirtualMachine.BUS_STATE_TAG_NAME)]);
+            virtualMachine.setBusStateClient(BusState.values()[tag.getInt(AbstractVirtualMachine.BUS_STATE_TAG_NAME)]);
             virtualMachine.setRunStateClient(VMRunState.values()[tag.getInt(AbstractVirtualMachine.RUN_STATE_TAG_NAME)]);
             virtualMachine.setBootErrorClient(Component.Serializer.fromJson(tag.getString(AbstractVirtualMachine.BOOT_ERROR_TAG_NAME), registries));
         }

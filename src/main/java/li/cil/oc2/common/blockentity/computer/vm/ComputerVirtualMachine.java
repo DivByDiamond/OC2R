@@ -3,6 +3,7 @@ package li.cil.oc2.common.blockentity.computer.vm;
 import li.cil.oc2.client.audio.LoopingSoundManager;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerVMRunner;
+import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.message.ComputerBootErrorMessage;
@@ -88,11 +89,11 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected void handleBusStateChanged(final CommonDeviceBusController.BusState value) {
+    protected void handleBusStateChanged(final BusState value) {
         owner.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner, value));
 
         final Level level = owner.getLevel();
-        if (value == CommonDeviceBusController.BusState.READY && level != null) {
+        if (value == BusState.READY && level != null) {
             level.updateNeighborsAt(owner.getBlockPos(), owner.getBlockState().getBlock());
         }
     }
