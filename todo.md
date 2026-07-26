@@ -201,3 +201,36 @@ riscv64-linux-gnu-gcc -static -o program.elf program.c rpc.c
 
 - [ ] Решить: портировать как часть OC2R или сделать аддон
 - [ ] Если портировать — оценить объём кода из PR #63
+
+---
+
+## Lint инструменты (включить после рефакторинга)
+
+**Конфиги уже настроены**, но отключены чтобы не мешать рефакторингу.
+После рефакторинга — включить и пройтись по всем замечаниям.
+
+### Стек
+| Инструмент | Что делает | Включение |
+|---|---|---|
+| **Checkstyle** | Стиль кода | `tasks.withType(Checkstyle).configureEach { enabled = true }` |
+| **PMD** | Мёртвый код, дубли | `tasks.withType(Pmd).configureEach { enabled = true }` |
+| **SpotBugs** | NPE, утечки (Gradle 9 несовместим) | `plugins { id 'com.github.spotbugs' version '6.1.7' }` |
+| **Error Prone** | Баги при компиляции (Google) | Настройка компилятора |
+
+### Конфиги
+- `checkstyle.xml` — Google Style, 200 строк/файл, JavaDoc на public API
+- `config/pmd/ruleset.xml` — bestpractices + errorprone + performance
+- `qodana.yaml` — Qodana (IDEA движок)
+
+### Команды
+```bash
+# Lint
+./gradlew checkstyleMain
+./gradlew pmdMain
+
+# Qodana (Docker)
+docker run --rm -e QODANA_TOKEN -v .:/data/project -v ./qodana-report:/data/results jetbrains/qodana-jvm:latest
+
+# SpotBugs (требует Gradle <9 или новую версию плагина)
+./gradlew spotbugsMain
+```

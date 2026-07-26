@@ -1,0 +1,8 @@
+version: "1.0"
+linter: jetbrains/qodana-jvm:latest
+exclude:
+  - name: All
+    paths:
+      - build
+      - bin
+      - src/main/java/li/cil/oc2/jcodec

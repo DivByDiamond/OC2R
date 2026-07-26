@@ -13,6 +13,8 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.124'
     id "com.matthewprenger.cursegradle" version "1.4.0"
     id "com.modrinth.minotaur" version "2.+"
+    id 'checkstyle'
+    id 'pmd'
 }
 
 import org.apache.commons.io.IOUtils
@@ -290,6 +292,33 @@ idea {
 }
 
 apply from: 'publish.gradle'
+
+allprojects {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.compilerArgs += ['-Xlint:all', '-Xlint:-processing', '-Xlint:-path']
+        }
+    }
+}
+
+checkstyle {
+    configFile = rootProject.file('checkstyle.xml')
+    ignoreFailures = true
+}
+
+pmd {
+    toolVersion = '7.7.0'
+    ruleSetConfig = resources.text.fromFile('config/pmd/ruleset.xml')
+    ignoreFailures = true
+    consoleOutput = true
+}
+
+// Lint tools (отключены до завершения рефакторинга):
+//   ./gradlew checkstyleMain -x checkstyleTest (Checkstyle)
+//   ./gradlew pmdMain -x pmdTest (PMD)
+// Конфиги: checkstyle.xml, config/pmd/ruleset.xml
+tasks.withType(Checkstyle).configureEach { enabled = false }
+tasks.withType(Pmd).configureEach { enabled = false }
 
 test {
     useJUnitPlatform()
