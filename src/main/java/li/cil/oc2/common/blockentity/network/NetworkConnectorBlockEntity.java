@@ -1,38 +1,22 @@
-/* SPDX-License-Identifier: MIT */
-
 package li.cil.oc2.common.blockentity.network;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.client.renderer.NetworkCableRenderer;
 import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.block.NetworkConnectorBlock;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.NetworkConnectorConnectionsMessage;
-import li.cil.oc2.common.util.*;
+import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.util.TickUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -44,132 +28,22 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkConnectorBlockEntity extends ModBlockEntity implements TickableBlockEntity {
-    private static final String CONNECTIONS_TAG_NAME = "connections";
-    private static final String IS_OWNER_TAG_NAME = "is_owner";
-
-    private static final int RETRY_UNLOADED_CHUNK_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(5));
-    private static final int MAX_CONNECTION_COUNT = 2;
-    private static final int MAX_CONNECTION_DISTANCE = 16;
-    private static final int BYTES_PER_TICK = 64 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1)); // bytes / sec -> bytes / tick
+    private static final int BYTES_PER_TICK = 64 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1));
     private static final int MIN_ETHERNET_FRAME_SIZE = 42;
 
-    ///////////////////////////////////////////////////////////////////
-
     final NetworkConnectorInterface networkInterface = new NetworkConnectorInterface(this);
+    final NetworkConnectorConnectionManager connectionManager = new NetworkConnectorConnectionManager(this);
 
-    // NeoForge will only hold a weak reference to this listener (so that registering a listener cause a memory leak)
-    // Therefore we must hold the reference to keep it from being garbage collected while we're still around
     @SuppressWarnings("FieldCanBeLocal")
     private final ICapabilityInvalidationListener adjacentInterfaceListener = () -> { this.isAdjacentInterfaceDirty = true; return true; };
     private boolean isAdjacentInterfaceDirty = true;
     @Nullable NetworkInterface adjacentInterface = null;
 
-    private final HashSet<BlockPos> connectorPositions = new HashSet<>();
-    private final HashSet<BlockPos> ownedCables = new HashSet<>();
-    private final HashSet<BlockPos> dirtyConnectors = new HashSet<>();
-    final HashMap<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
-
-    ///////////////////////////////////////////////////////////////////
-
     public NetworkConnectorBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.NETWORK_CONNECTOR.get(), pos, state);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    public static ConnectionResult connect(final NetworkConnectorBlockEntity connectorA, final NetworkConnectorBlockEntity connectorB) {
-        if (connectorA == connectorB || !connectorA.isValid() || !connectorB.isValid()) {
-            return ConnectionResult.FAILURE;
-        }
-
-        final Level level = connectorA.level;
-        if (level == null || level.isClientSide()) {
-            return ConnectionResult.FAILURE;
-        }
-
-        if (connectorB.level != level) {
-            return ConnectionResult.FAILURE;
-        }
-
-        if (!connectorA.canConnectMore() || !connectorB.canConnectMore()) {
-            return ConnectionResult.FAILURE_FULL;
-        }
-
-        final BlockPos posA = connectorA.getBlockPos();
-        final BlockPos posB = connectorB.getBlockPos();
-
-        if (!posA.closerThan(posB, MAX_CONNECTION_DISTANCE)) {
-            return ConnectionResult.FAILURE_TOO_FAR;
-        }
-
-        if (isObstructed(level, posA, posB)) {
-            return ConnectionResult.FAILURE_OBSTRUCTED;
-        }
-
-        if (connectorA.connectorPositions.add(posB)) {
-            connectorA.dirtyConnectors.add(posB);
-            connectorA.onConnectedPositionsChanged();
-        }
-
-        if (connectorB.connectorPositions.add(posA)) {
-            connectorB.dirtyConnectors.add(posA);
-            connectorB.onConnectedPositionsChanged();
-        }
-
-        final ConnectionResult result;
-        if (connectorA.ownedCables.contains(posB) || connectorB.ownedCables.contains(posA)) {
-            connectorA.ownedCables.add(posB);
-            connectorB.ownedCables.remove(posA);
-            result = ConnectionResult.ALREADY_CONNECTED;
-        } else {
-            connectorA.ownedCables.add(posB);
-            result = ConnectionResult.SUCCESS;
-        }
-
-        connectorA.setChanged();
-        connectorB.setChanged();
-
-        return result;
-    }
-
-    public void disconnectFrom(final BlockPos pos) {
-        dirtyConnectors.remove(pos);
-        connectors.remove(pos);
-
-        if (ownedCables.remove(pos)) {
-            if (level != null) {
-                final Vec3 middle = Vec3.atCenterOf(getBlockPos().offset(pos)).scale(0.5f);
-                ItemStackUtils.spawnAsEntity(level, middle, new ItemStack(Items.NETWORK_CABLE.get()));
-            }
-        }
-
-        if (isValid()) {
-            if (connectorPositions.remove(pos)) {
-                onConnectedPositionsChanged();
-            }
-
-            setChanged();
-        }
-    }
-
-    public boolean canConnectMore() {
-        return connectorPositions.size() < MAX_CONNECTION_COUNT;
-    }
-
-    public Collection<BlockPos> getConnectedPositions() {
-        return connectorPositions;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void setConnectedPositionsClient(final ArrayList<BlockPos> positions) {
-        connectorPositions.clear();
-        connectorPositions.addAll(positions);
-        NetworkCableRenderer.invalidateConnections();
     }
 
     @Override
@@ -183,11 +57,11 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
             resolveLocalInterface();
         }
 
-        if (!dirtyConnectors.isEmpty()) {
-            final ArrayList<BlockPos> list = new ArrayList<>(dirtyConnectors);
-            dirtyConnectors.clear();
+        if (!connectionManager.dirtyConnectors.isEmpty()) {
+            final ArrayList<BlockPos> list = new ArrayList<>(connectionManager.dirtyConnectors);
+            connectionManager.dirtyConnectors.clear();
             for (final BlockPos connectedPosition : list) {
-                resolveConnectedInterface(connectedPosition);
+                connectionManager.resolveConnectedInterface(connectedPosition);
             }
         }
 
@@ -197,7 +71,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
         int byteBudget = BYTES_PER_TICK;
         byte[] frame;
         while ((frame = source.readEthernetFrame()) != null && byteBudget > 0) {
-            byteBudget -= Math.max(frame.length, MIN_ETHERNET_FRAME_SIZE); // Avoid bogus packets messing with us.
+            byteBudget -= Math.max(frame.length, MIN_ETHERNET_FRAME_SIZE);
             networkInterface.writeEthernetFrame(source, frame, Config.ethernetFrameTimeToLive);
         }
     }
@@ -205,66 +79,27 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
-
-        final ListTag connections = new ListTag();
-        for (final BlockPos position : connectorPositions) {
-            final CompoundTag connectionTag = new CompoundTag(1);
-            connectionTag.put("pos", NbtUtils.writeBlockPos(position));
-            connections.add(connectionTag);
-        }
-        tag.put(CONNECTIONS_TAG_NAME, connections);
-
+        NetworkConnectorConnectionStore.writeToUpdateTag(tag, registries, connectionManager.connectorPositions);
         return tag;
     }
 
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
-
-        final ListTag connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
-        for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
-            final CompoundTag connectionTag = connections.getCompound(i);
-            final BlockPos position = NbtUtils.readBlockPos(connectionTag, "pos").orElseThrow();
-            connectorPositions.add(position);
-            dirtyConnectors.add(position);
-        }
+        NetworkConnectorConnectionStore.readFromUpdateTag(tag, registries, connectionManager.connectorPositions, connectionManager.dirtyConnectors);
     }
 
     @Override
     protected void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-
-        final ListTag connections = new ListTag();
-        for (final BlockPos position : connectorPositions) {
-            final CompoundTag connectionTag = new CompoundTag(2);
-            connectionTag.put("pos", NbtUtils.writeBlockPos(position));
-            if (ownedCables.contains(position)) {
-                connectionTag.putBoolean(IS_OWNER_TAG_NAME, true);
-            }
-            connections.add(connectionTag);
-        }
-        tag.put(CONNECTIONS_TAG_NAME, connections);
+        NetworkConnectorConnectionStore.save(tag, registries, connectionManager.connectorPositions, connectionManager.ownedCables);
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-
-        final ListTag connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
-        for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
-            final CompoundTag connectionTag = connections.getCompound(i);
-            final BlockPos position = NbtUtils.readBlockPos(connectionTag, "pos")
-                .or(() -> NBTUtils.readBlockPosLegacy(connectionTag))
-                .orElseThrow();
-            connectorPositions.add(position);
-            dirtyConnectors.add(position);
-            if (connectionTag.getBoolean(IS_OWNER_TAG_NAME)) {
-                ownedCables.add(position);
-            }
-        }
+        NetworkConnectorConnectionStore.load(tag, registries, connectionManager.connectorPositions, connectionManager.dirtyConnectors, connectionManager.ownedCables);
     }
-
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -284,7 +119,6 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
     @Override
     protected void loadClient() {
         super.loadClient();
-
         NetworkCableRenderer.addNetworkConnector(this);
     }
 
@@ -295,7 +129,6 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
         final var level = (ServerLevel) this.level;
         final Direction facing = NetworkConnectorBlock.getFacing(getBlockState());
         final BlockPos sourcePos = getBlockPos().relative(facing.getOpposite());
-
         level.registerCapabilityListener(sourcePos, this.adjacentInterfaceListener);
     }
 
@@ -304,28 +137,22 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
         super.unloadServer(isRemove);
 
         if (isRemove) {
-            // When we're being removed we want to break the actual link to any connected
-            // connectors. This will also cause cables to be dropped.
-            final ArrayList<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors.values());
-            connectors.clear();
+            final ArrayList<NetworkConnectorBlockEntity> list = new ArrayList<>(connectionManager.connectors.values());
+            connectionManager.connectors.clear();
             for (final NetworkConnectorBlockEntity connector : list) {
-                disconnectFrom(connector.getBlockPos());
-                connector.disconnectFrom(getBlockPos());
+                connectionManager.disconnectFrom(connector.getBlockPos());
+                connector.connectionManager.disconnectFrom(getBlockPos());
             }
         } else {
-            // When unloading, we just want to remove the reference to this block entity
-            // from connected connectors; we don't want to actually break the link.
             final BlockPos pos = getBlockPos();
-            for (final NetworkConnectorBlockEntity connector : connectors.values()) {
-                connector.connectors.remove(pos);
-                if (connector.connectorPositions.contains(pos)) {
-                    connector.dirtyConnectors.add(pos);
+            for (final NetworkConnectorBlockEntity connector : connectionManager.connectors.values()) {
+                connector.connectionManager.connectors.remove(pos);
+                if (connector.connectionManager.connectorPositions.contains(pos)) {
+                    connector.connectionManager.dirtyConnectors.add(pos);
                 }
             }
         }
     }
-
-    ///////////////////////////////////////////////////////////////////
 
     private void resolveLocalInterface() {
         assert level != null;
@@ -343,80 +170,27 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
             return;
         }
 
-
         adjacentInterface = level.getCapability(Capabilities.NetworkInterface.BLOCK, sourcePos, facing);
     }
 
-    private void resolveConnectedInterface(final BlockPos connectedPosition) {
-        connectors.remove(connectedPosition);
-
-        if (!isValid()) {
-            return;
-        }
-
-        if (level == null || level.isClientSide()) {
-            return;
-        }
-
-        final ChunkPos destinationChunk = new ChunkPos(connectedPosition);
-        if (!level.hasChunk(destinationChunk.x, destinationChunk.z)) {
-            ServerScheduler.schedule(level, () -> dirtyConnectors.add(connectedPosition), RETRY_UNLOADED_CHUNK_INTERVAL);
-            return;
-        }
-
-        final BlockEntity blockEntity = level.getBlockEntity(connectedPosition);
-        if (!(blockEntity instanceof final NetworkConnectorBlockEntity networkConnector)) {
-            disconnectFrom(connectedPosition);
-            return;
-        }
-
-        if (!connectedPosition.closerThan(getBlockPos(), MAX_CONNECTION_DISTANCE)) {
-            disconnectFrom(connectedPosition);
-            networkConnector.disconnectFrom(getBlockPos());
-            return;
-        }
-
-        if (isObstructed(level, getBlockPos(), connectedPosition)) {
-            disconnectFrom(connectedPosition);
-            networkConnector.disconnectFrom(getBlockPos());
-            return;
-        }
-
-        connectors.put(connectedPosition, networkConnector);
+    public static ConnectionResult connect(final NetworkConnectorBlockEntity connectorA, final NetworkConnectorBlockEntity connectorB) {
+        return NetworkConnectorConnectionManager.connect(connectorA, connectorB);
     }
 
-    private static boolean isObstructed(final Level level, final BlockPos a, final BlockPos b) {
-        final Vec3 va = Vec3.atCenterOf(a);
-        final Vec3 vb = Vec3.atCenterOf(b);
-        final Vec3 ab = vb.subtract(va).normalize().scale(0.5);
-
-        // Because of floating point inaccuracies the raytrace is not necessarily
-        // symmetric. In particular when grazing corners perfectly, e.g. two connectors
-        // attached to the same block at a 90-degree angle. So we check both ways.
-        final BlockHitResult hitAB = level.clip(new ClipContext(
-            va.add(ab),
-            vb.subtract(ab),
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            (CollisionContext) null
-        ));
-        final BlockHitResult hitBA = level.clip(new ClipContext(
-            vb.subtract(ab),
-            va.add(ab),
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            (CollisionContext) null
-        ));
-
-        return hitAB.getType() != HitResult.Type.MISS ||
-            hitBA.getType() != HitResult.Type.MISS;
+    public void disconnectFrom(final BlockPos pos) {
+        connectionManager.disconnectFrom(pos);
     }
 
-    private void onConnectedPositionsChanged() {
-        if (level != null && !level.isClientSide()) {
-            final NetworkConnectorConnectionsMessage message = new NetworkConnectorConnectionsMessage(this);
-            Network.sendToClientsTrackingBlockEntity(message, this);
-        }
+    public boolean canConnectMore() {
+        return connectionManager.canConnectMore();
     }
 
+    public Collection<BlockPos> getConnectedPositions() {
+        return connectionManager.getConnectedPositions();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void setConnectedPositionsClient(final ArrayList<BlockPos> positions) {
+        connectionManager.setConnectedPositionsClient(positions);
+    }
 }

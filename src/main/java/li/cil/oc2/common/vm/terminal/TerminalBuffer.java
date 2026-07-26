@@ -103,7 +103,6 @@ public class TerminalBuffer {
     public void shiftLines(final int firstLine, final int lastLine, final int count) { scrolling.shiftLines(firstLine, lastLine, count); }
 
     public void putChar(int ch) {
-        if (terminal.continuationByte) terminal.continuationByte = false;
         if (Character.isISOControl(ch)) return;
 
         int curMode = (terminal.useG0) ? terminal.drawingModeG0 : terminal.drawingModeG1;

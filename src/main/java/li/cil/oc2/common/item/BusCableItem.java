@@ -3,7 +3,7 @@
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -59,7 +59,7 @@ public final class BusCableItem extends ModBlockItem {
         final BlockPos pos = context.getClickedPos();
         final BlockState state = level.getBlockState(pos);
 
-        if (!BusCableBlock.addCable(level, pos, state)) {
+        if (!BusCableStateProperties.addCable(level, pos, state)) {
             return InteractionResult.PASS;
         }
 

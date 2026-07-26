@@ -3,7 +3,7 @@
 package li.cil.oc2.client.model;
 
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
@@ -63,7 +63,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             }
         }
 
-        if (state == null || !state.getValue(BusCableBlock.HAS_CABLE) || !layer.equals(RenderType.solid())) {
+        if (state == null || !state.getValue(BusCableStateProperties.HAS_CABLE) || !layer.equals(RenderType.solid())) {
             return Collections.emptyList();
         }
 
@@ -118,7 +118,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     @Override
     @Nonnull
     public ModelData getModelData(final BlockAndTintGetter level, final BlockPos pos, final BlockState state, final ModelData blockEntityData) {
-        if (state.hasProperty(BusCableBlock.HAS_FACADE) && state.getValue(BusCableBlock.HAS_FACADE)) {
+        if (state.hasProperty(BusCableStateProperties.HAS_FACADE) && state.getValue(BusCableStateProperties.HAS_FACADE)) {
             final BlockEntity blockEntity = level.getBlockEntity(pos);
 
             BlockState facadeState = null;
@@ -142,7 +142,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
             if (isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
+                final EnumProperty<ConnectionType> property = BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
                 if (state.hasProperty(property) && state.getValue(property) == ConnectionType.INTERFACE) {
                     return blockEntityData; // Plug is already supporting us, bail.
                 }
@@ -171,7 +171,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
 
     private static boolean isStraightAlongAxis(final BlockState state, final Direction.Axis axis) {
         for (final Direction direction : Constants.DIRECTIONS) {
-            final EnumProperty<ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
+            final EnumProperty<ConnectionType> property = BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
             if (axis.test(direction)) {
                 if (state.getValue(property) != ConnectionType.CABLE) {
                     return false;

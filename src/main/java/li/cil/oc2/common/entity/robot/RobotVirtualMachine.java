@@ -1,5 +1,3 @@
-/* SPDX-License-Identifier: MIT */
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.bus.controller.BusState;
@@ -32,7 +30,7 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected boolean consumeEnergy(final int amount, final boolean simulate) {
+    public boolean consumeEnergy(final int amount, final boolean simulate) {
         if (!Config.robotsUseEnergy()) {
             return true;
         }
@@ -56,7 +54,7 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected AbstractTerminalVMRunner createRunner() {
+    public AbstractTerminalVMRunner createRunner() {
         return new RobotVMRunner(this, terminal);
     }
 

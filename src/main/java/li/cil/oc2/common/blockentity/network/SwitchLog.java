@@ -22,8 +22,8 @@ final class SwitchLog {
 
     void drop(String reason) {
         if (!ENABLED) return;
-        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        String inMac = PacketProcessor.macLongToString(srcMac);
+        String outMac = PacketProcessor.macLongToString(destMac);
         if (egressSide == null) {
             System.out.printf(
                 "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
@@ -48,8 +48,8 @@ final class SwitchLog {
 
     void emit() {
         if (!ENABLED) return;
-        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        String inMac = PacketProcessor.macLongToString(srcMac);
+        String outMac = PacketProcessor.macLongToString(destMac);
         System.out.printf(
             "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
             inMac,
@@ -63,8 +63,8 @@ final class SwitchLog {
 
     void flood() {
         if (!ENABLED) return;
-        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        String inMac = PacketProcessor.macLongToString(srcMac);
+        String outMac = PacketProcessor.macLongToString(destMac);
         System.out.printf(
             "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
             inMac,

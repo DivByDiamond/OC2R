@@ -4,7 +4,7 @@ package li.cil.oc2.common.item;
 
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
@@ -85,9 +85,9 @@ public final class BusInterfaceItem extends ModBlockItem {
         }
 
         final EnumProperty<ConnectionType> connectionTypeProperty =
-            BusCableBlock.FACING_TO_CONNECTION_MAP.get(context.getClickedFace().getOpposite());
+            BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(context.getClickedFace().getOpposite());
         return state
-            .setValue(BusCableBlock.HAS_CABLE, false)
+            .setValue(BusCableStateProperties.HAS_CABLE, false)
             .setValue(connectionTypeProperty, ConnectionType.INTERFACE);
     }
 
@@ -98,7 +98,7 @@ public final class BusInterfaceItem extends ModBlockItem {
         final BlockPos pos = context.getClickedPos();
         final BlockState state = level.getBlockState(pos);
 
-        if (!BusCableBlock.addInterface(level, pos, state, side)) {
+        if (!BusCableStateProperties.addInterface(level, pos, state, side)) {
             return InteractionResult.PASS;
         }
 

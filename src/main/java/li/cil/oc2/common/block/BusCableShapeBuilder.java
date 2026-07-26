@@ -104,7 +104,7 @@ final class BusCableShapeBuilder {
         for (int sideIndex = 0; sideIndex < Constants.BLOCK_FACE_COUNT; sideIndex++) {
             final int cableBit = 1 << sideIndex;
             final int interfaceBit = cableBit << 6;
-            switch (state.getValue(BusCableBlock.FACING_TO_CONNECTION_MAP.get(Constants.DIRECTIONS[sideIndex]))) {
+            switch (state.getValue(BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(Constants.DIRECTIONS[sideIndex]))) {
                 case CABLE -> index |= cableBit;
                 case INTERFACE -> index |= interfaceBit;
             }
@@ -112,7 +112,7 @@ final class BusCableShapeBuilder {
 
         index = index << 1;
 
-        if (state.getValue(BusCableBlock.HAS_CABLE)) {
+        if (state.getValue(BusCableStateProperties.HAS_CABLE)) {
             index |= 1;
         }
 

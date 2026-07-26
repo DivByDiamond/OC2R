@@ -7,7 +7,7 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.BusCableBlock;
+
 import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.core.BlockPos;

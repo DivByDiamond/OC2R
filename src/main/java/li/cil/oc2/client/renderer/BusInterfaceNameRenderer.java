@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
@@ -62,8 +62,8 @@ public enum BusInterfaceNameRenderer {
             return;
         }
 
-        final Direction side = BusCableBlock.getHitSide(blockPos, hit);
-        if (BusCableBlock.getConnectionType(level.getBlockState(blockPos), side) != ConnectionType.INTERFACE) {
+        final Direction side = BusCableStateProperties.getHitSide(blockPos, hit);
+        if (BusCableStateProperties.getConnectionType(level.getBlockState(blockPos), side) != ConnectionType.INTERFACE) {
             return;
         }
 

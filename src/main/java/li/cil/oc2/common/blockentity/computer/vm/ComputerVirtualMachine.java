@@ -63,7 +63,7 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected boolean consumeEnergy(final int amount, final boolean simulate) {
+    public boolean consumeEnergy(final int amount, final boolean simulate) {
         if (!Config.computersUseEnergy()) {
             return true;
         }
@@ -84,7 +84,7 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected AbstractTerminalVMRunner createRunner() {
+    public AbstractTerminalVMRunner createRunner() {
         return new ComputerVMRunner(owner, this, owner.terminal);
     }
 

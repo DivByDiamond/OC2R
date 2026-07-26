@@ -1,0 +1,58 @@
+package li.cil.oc2.common.blockentity.projector;
+
+import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
+import li.cil.oc2.jcodec.common.model.Picture;
+
+import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
+
+final class ProjectorVideoDecoder {
+    private final H264Decoder decoder = new H264Decoder();
+    private final ByteBuffer decoderBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+    @Nullable private CompletableFuture<?> runningDecode;
+    @Nullable private FrameConsumer frameConsumer;
+
+    void setFrameConsumer(final Picture picture, @Nullable final FrameConsumer consumer) {
+        if (consumer == frameConsumer) {
+            return;
+        }
+        synchronized (picture) {
+            this.frameConsumer = consumer;
+            if (frameConsumer != null) {
+                frameConsumer.processFrame(picture);
+            }
+        }
+    }
+
+    void applyNextFrameClient(final Picture picture, final ByteBuffer frameData) {
+        final CompletableFuture<?> lastDecode = runningDecode;
+        runningDecode = CompletableFuture.runAsync(() -> {
+            try {
+                try {
+                    if (lastDecode != null) lastDecode.join();
+                } catch (final CompletionException ignored) {
+                }
+
+                final Inflater inflater = new Inflater();
+                inflater.setInput(frameData);
+
+                decoderBuffer.clear();
+                inflater.inflate(decoderBuffer);
+                decoderBuffer.flip();
+
+                decoder.decodeFrame(decoderBuffer, picture.getData());
+
+                synchronized (picture) {
+                    if (frameConsumer != null) {
+                        frameConsumer.processFrame(picture);
+                    }
+                }
+            } catch (final DataFormatException ignored) {
+            }
+        }, ProjectorDecoderWorkers.INSTANCE);
+    }
+}

@@ -25,7 +25,7 @@ final class NetworkConnectorInterface implements NetworkInterface {
             adjDst.writeEthernetFrame(this, frame, timeToLive - 1);
         }
 
-        for (final NetworkConnectorBlockEntity dst : owner.connectors.values()) {
+        for (final NetworkConnectorBlockEntity dst : owner.connectionManager.connectors.values()) {
             if (!dst.isValid() || dst.networkInterface == source) continue;
             dst.networkInterface.writeEthernetFrame(this, frame, timeToLive - 1);
         }

@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.blockentity.network;
 
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.element.BlockEntry;
@@ -38,14 +38,14 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
 
     @Override
     public boolean canScanContinueTowards(@Nullable final Direction direction) {
-        final ConnectionType connectionType = BusCableBlock.getConnectionType(owner.getBlockState(), direction);
+        final ConnectionType connectionType = BusCableStateProperties.getConnectionType(owner.getBlockState(), direction);
         return connectionType == ConnectionType.CABLE ||
             connectionType == ConnectionType.INTERFACE;
     }
 
     @Override
     public boolean canDetectDevicesTowards(@Nullable final Direction direction) {
-        final ConnectionType connectionType = BusCableBlock.getConnectionType(owner.getBlockState(), direction);
+        final ConnectionType connectionType = BusCableStateProperties.getConnectionType(owner.getBlockState(), direction);
         return connectionType == ConnectionType.INTERFACE;
     }
 
@@ -67,6 +67,6 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
     public double getEnergyConsumption() {
         return super.getEnergyConsumption()
             + Config.busCableEnergyPerTick
-            + BusCableBlock.getInterfaceCount(owner.getBlockState()) * Config.busInterfaceEnergyPerTick;
+            + BusCableStateProperties.getInterfaceCount(owner.getBlockState()) * Config.busInterfaceEnergyPerTick;
     }
 }

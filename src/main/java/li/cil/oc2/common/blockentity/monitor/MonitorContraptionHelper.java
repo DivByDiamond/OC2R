@@ -21,7 +21,7 @@ public final class MonitorContraptionHelper {
         if (!isContraptionVirtualClone(monitor)) {
             return monitor;
         }
-        final MonitorBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(monitor.deviceId);
+        final MonitorBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(monitor.getDeviceId());
         if (primary != null && !primary.isRemoved()) {
             return primary;
         }
@@ -36,7 +36,7 @@ public final class MonitorContraptionHelper {
         if (isContraptionVirtualClone(monitor)) {
             return;
         }
-        PRIMARY_BY_DEVICE_ID.put(monitor.deviceId, monitor);
+        PRIMARY_BY_DEVICE_ID.put(monitor.getDeviceId(), monitor);
     }
 
     public static void unregisterFromClientRegistry(final MonitorBlockEntity monitor) {
@@ -44,6 +44,6 @@ public final class MonitorContraptionHelper {
         if (level == null || !level.isClientSide()) {
             return;
         }
-        PRIMARY_BY_DEVICE_ID.remove(monitor.deviceId, monitor);
+        PRIMARY_BY_DEVICE_ID.remove(monitor.getDeviceId(), monitor);
     }
 }

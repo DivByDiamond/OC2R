@@ -4,7 +4,7 @@ package li.cil.oc2.data;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.Direction;
@@ -86,7 +86,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
             .addModel()
             .end();
 
-        BusCableBlock.FACING_TO_CONNECTION_MAP.forEach((direction, connectionType) -> {
+        BusCableStateProperties.FACING_TO_CONNECTION_MAP.forEach((direction, connectionType) -> {
             final int rotationY = (int) direction.toYRot();
             final int rotationX;
             if (direction == Direction.UP) {
@@ -103,7 +103,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 .rotationX(rotationX)
                 .addModel()
                 .condition(connectionType, ConnectionType.CABLE)
-                .condition(BusCableBlock.HAS_FACADE, false)
+                .condition(BusCableStateProperties.HAS_FACADE, false)
                 .end();
 
             builder.part()
@@ -112,7 +112,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 .rotationX(rotationX)
                 .addModel()
                 .condition(connectionType, ConnectionType.INTERFACE)
-                .condition(BusCableBlock.HAS_FACADE, false)
+                .condition(BusCableStateProperties.HAS_FACADE, false)
                 .end();
         });
 
