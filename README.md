@@ -1,38 +1,110 @@
-# OpenComputers II: Reimagined
+<div align="center">
 
-[Searching for an Artist](#artists)
+# OC2R
 
-*OpenComputers II: Reimagined* is a Minecraft mod adding virtual computers to the game. It is a fork of the mod originally made by [Sangar (fnuecke)], this fork is maintained North Western Development. These computers run a virtual machine emulating a 64-Bit RISC-V architecture capable of booting Linux. On top of this, a high-level Lua API is provided to communicate with various devices in the game world. This enables adding virtual devices using a simple, Java-friendly API, without having to implement actual kernel drivers.
+Minecraft mod adding virtual computers with RISC-V emulation. Fork of [North-Western-Development/OC2R], itself a fork of [OpenComputers 2] by Sangar.
 
-The original mod was a successor to [OpenComputers]. At least in spirit. While many of the implementation details have changed quite dramatically, the core concepts of customizable hardware, persistence and sand-boxing are shared.
+![Java](https://img.shields.io/badge/Java-21+-orange?style=flat-square&logo=openjdk&logoColor=white)
+![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1-green?style=flat-square)
+![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
+![Version](https://img.shields.io/badge/version-0.1.0-darkgreen?style=flat-square)
 
-The underlying VM, which is written entirely in Java, is called [Sedna] and was written by [Sangar (fnuecke)] as well.
+[English](#english) | [Русский](#russian)
 
-## Artists
+</div>
 
-We are looking for artists to assist with models and textures going forward. Artists will be entitled to a negotiated percentage of CurseForge rewards or any other donation platforms that may be employed. Artists will also receive special credits throughout the mod and it's repos.
+---
 
-## Why the Fork?
+<a name="english"></a>
 
-*OpenComputers II: Reimagined* aims to fix bugs with OC2 while adding new features and attempting to keep up with the latest popular versions of Minecraft. We did attempt to reach [Sangar (fnuecke)] on Twitter but got no response, so we've decided to continue with the fork and release separately on Curse under a new name.
-The name change is simply an attempt to ensure it is well known that [Sangar (fnuecke)] is not responsible for this version, so they're not blasted with issues from it. We will be doing everything we can to ensure [Sangar (fnuecke)] does still get the credit they deserve for the mod though.
+## English
 
-## Gameplay Documentation
-For documentation on how the to get computers up and running, and how to use them, see the [documentation]. It is available as a manual item in the game.
+### Overview
 
-## Development Documentation
-The original section that was found here is preserved below, however it should be taken with a grain of salt as the current team has a ways to go in being 100% up to speed with where the device APIs are at the moment. So everything below is subject to change, though it is likely to remain mostly the same.
+OC2R is a Minecraft mod that adds fully functional virtual computers to the game. It runs a 64-bit RISC-V virtual machine (powered by [Sedna]) capable of booting Linux, with a high-level Lua API for interacting with in-game devices.
 
-~~While the mod isn't quite yet ready for release due to some remaining technical and usability issues, the API should be mostly stable at this point. For most people the high level device API will be sufficient, and is much more accessible. It centers around the [`RPCDevice`][RPC Device]. For a sample block implementation, see the [redstone interface]. For a sample item implementation, see the [sound card]. If you wish to dive deeper, and provide emulated hardware that requires a Linux driver, this centers around the [`VMDevice`][VM Device]. For a sample block implementation, see the [disk drive]. For a sample item implementation, see the [network card].~~
+This repository is a **fork** of [North-Western-Development/OC2R], which was itself a **fork** of Sangar's original [OpenComputers 2]. The goal is to continue maintenance, fix bugs, and support newer Minecraft versions.
 
-[OpenComputers]: https://github.com/MightyPirates/OpenComputers
-[RPC Device]: src/main/java/li/cil/oc2/api/bus/device/rpc/RPCDevice.java
-[redstone interface]: src/main/java/li/cil/oc2/common/blockentity/RedstoneInterfaceBlockEntity.java
-[sound card]: src/main/java/li/cil/oc2/common/bus/device/rpc/item/SoundCardItemDevice.java
-[VM Device]: src/main/java/li/cil/oc2/api/bus/device/vm/VMDevice.java
-[disk drive]: src/main/java/li/cil/oc2/common/blockentity/DiskDriveBlockEntity.java
-[network card]: src/main/java/li/cil/oc2/common/bus/device/vm/item/NetworkInterfaceCardDevice.java
-[documentation]: src/main/resources/assets/oc2r/doc/en_us/index.md
-[GithubPackagesGradle]: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry
-[Sangar (fnuecke)]: https://github.com/fnuecke
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| RISC-V VM | Full 64-bit RISC-V emulation, boots Linux |
+| Lua API | High-level device interaction without kernel drivers |
+| Custom hardware | Blocks, items, cables, screens, keyboards, etc. |
+| Native networking | Cross-platform native networking library |
+| Persistence | Computer state saved between reloads |
+| Device API | Simple Java API for adding virtual devices |
+
+### Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/computer` | — | Interact with computers |
+
+### Dependencies
+
+- Required: NeoForge 21.1.243+, Java 21+
+- Optional: JEI (recipe viewer)
+
+### Installation
+
+1. Download the jar from [Releases](../../releases)
+2. Place it in `mods/`
+3. Restart the server/client
+
+---
+
+<a name="russian"></a>
+
+## Русский
+
+### Обзор
+
+OC2R — мод для Minecraft, добавляющий полноценные виртуальные компьютеры. Он запускает 64-битную RISC-V виртуальную машину (на базе [Sedna]), способную загружать Linux, с высокоуровневым Lua API для взаимодействия с игровыми устройствами.
+
+Этот репозиторий является **форком** [North-Western-Development/OC2R], который сам был **форком** оригинального [OpenComputers 2] от Sangar. Цель — продолжать поддержку, исправлять баги и поддерживать актуальные версии Minecraft.
+
+### Возможности
+
+| Возможность | Описание |
+|-------------|----------|
+| RISC-V VM | Полная эмуляция 64-битного RISC-V, загрузка Linux |
+| Lua API | Взаимодействие с устройствами без драйверов ядра |
+| Кастомное железо | Блоки, предметы, провода, экраны, клавиатуры и т.д. |
+| Нативная сеть | Кроссплатформенная нативная библиотека |
+| Персистентность | Состояние компьютера сохраняется между перезагрузками |
+| Device API | Простой Java API для добавления устройств |
+
+### Команды
+
+| Команда | Право | Описание |
+|---------|-------|----------|
+| `/computer` | — | Взаимодействие с компьютерами |
+
+### Зависимости
+
+- Обязательные: NeoForge 21.1.243+, Java 21+
+- Опциональные: JEI (просмотр рецептов)
+
+### Установка
+
+1. Скачайте jar из [Releases](../../releases)
+2. Поместите в `mods/`
+3. Перезапустите сервер/клиент
+
+---
+
+### Building
+
+```bash
+./gradlew build
+```
+
+### License
+
+GNU General Public License v3.0
+
+[North-Western-Development/OC2R]: https://github.com/North-Western-Development/OC2R
+[OpenComputers 2]: https://github.com/fnuecke/oc2
 [Sedna]: https://github.com/fnuecke/sedna
