@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.gui.FileChooserScreen;
+import li.cil.oc2.client.gui.screen.FileChooserScreen;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

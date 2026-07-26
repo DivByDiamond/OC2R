@@ -1,6 +1,6 @@
 package li.cil.oc2.common.bus.device;
 
-import li.cil.oc2.common.bus.AbstractDeviceBusElement;
+import li.cil.oc2.common.bus.element.AbstractDeviceBusElement;
 
 
 public class BlockDeviceBusElement extends AbstractDeviceBusElement {

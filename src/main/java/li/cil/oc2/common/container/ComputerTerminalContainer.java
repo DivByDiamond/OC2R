@@ -3,7 +3,7 @@
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.bus.CommonDeviceBusController;
+import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;

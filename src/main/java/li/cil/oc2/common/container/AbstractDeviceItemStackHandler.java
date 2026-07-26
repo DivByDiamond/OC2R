@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.container;
 
-import li.cil.oc2.common.bus.AbstractItemDeviceBusElement;
+import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;

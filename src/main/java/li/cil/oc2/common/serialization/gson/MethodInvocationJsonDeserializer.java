@@ -3,7 +3,7 @@
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
-import li.cil.oc2.common.bus.RPCDeviceBusAdapter;
+import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 
 import java.lang.reflect.Type;
 import java.util.UUID;

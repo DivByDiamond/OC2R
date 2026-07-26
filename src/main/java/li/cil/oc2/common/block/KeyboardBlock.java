@@ -3,7 +3,7 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.client.gui.KeyboardScreen;
+import li.cil.oc2.client.gui.screen.KeyboardScreen;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.util.VoxelShapeUtils;

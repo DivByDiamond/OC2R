@@ -3,8 +3,8 @@
 package li.cil.oc2.common.integration.jei;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.gui.AbstractMachineInventoryScreen;
-import li.cil.oc2.client.gui.AbstractMachineTerminalScreen;
+import li.cil.oc2.client.gui.screen.AbstractMachineInventoryScreen;
+import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.block.ComputerBlock;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;

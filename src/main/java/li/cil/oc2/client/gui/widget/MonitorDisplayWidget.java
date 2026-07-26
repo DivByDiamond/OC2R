@@ -1,9 +1,12 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.client.gui;
+package li.cil.oc2.client.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.AbstractMonitorDisplayScreen;
+import li.cil.oc2.client.gui.screen.KeyCodeMapping;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.container.AbstractMonitorContainer;

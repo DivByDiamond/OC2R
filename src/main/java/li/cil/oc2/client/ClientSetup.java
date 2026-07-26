@@ -3,7 +3,7 @@
 package li.cil.oc2.client;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.gui.*;
+import li.cil.oc2.client.gui.screen.KeyboardScreen;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.model.BusCableModelLoader;

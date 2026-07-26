@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.client.gui;
+package li.cil.oc2.client.gui.screen;
 
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.ChatFormatting;

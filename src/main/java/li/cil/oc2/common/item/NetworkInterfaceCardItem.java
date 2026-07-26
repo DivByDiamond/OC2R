@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.item;
 
-import li.cil.oc2.client.gui.NetworkInterfaceCardScreen;
+import li.cil.oc2.client.gui.screen.NetworkInterfaceCardScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.NBTTagIds;

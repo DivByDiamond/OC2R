@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.client.gui;
+package li.cil.oc2.client.gui.screen;
+
+import li.cil.oc2.client.gui.Sprites;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.widget.ImageButton;

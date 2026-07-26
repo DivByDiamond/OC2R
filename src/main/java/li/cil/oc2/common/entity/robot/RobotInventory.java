@@ -7,7 +7,7 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-import li.cil.oc2.common.bus.AbstractDeviceBusElement;
+import li.cil.oc2.common.bus.element.AbstractDeviceBusElement;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.container.FixedSizeItemStackHandler;

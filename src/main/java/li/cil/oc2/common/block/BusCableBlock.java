@@ -4,7 +4,7 @@ package li.cil.oc2.common.block;
 
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.client.gui.BusInterfaceScreen;
+import li.cil.oc2.client.gui.screen.BusInterfaceScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;

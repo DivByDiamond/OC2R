@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.client.gui;
+package li.cil.oc2.client.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import li.cil.oc2.common.vm.terminal.modes.MouseMode;
 import li.cil.oc2.common.vm.terminal.modes.PrivateMode;
 import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
+import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
 import li.cil.oc2.client.gui.terminal.TerminalInput;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.vm.terminal.RendererView;

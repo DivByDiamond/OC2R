@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import li.cil.oc2.common.bus.RPCDeviceBusAdapter;
+import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 
 import java.lang.reflect.Type;
 
