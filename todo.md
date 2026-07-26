@@ -30,11 +30,11 @@
 - [ ] ProjectorBlockEntity.java (479) → извлечь FrameConsumer, VideoEncoder/Decoder логику
 - [ ] BusCableBlockEntity.java (477) → извлечь FacadeType, BusCableBusElement, NeighborListener
 
-#### Группа 3: 4 файла 428-473 строк
-- [ ] MonitorBlockEntity.java (473) → извлечь FrameConsumer, VideoEncoder/Decoder
-- [ ] NetworkConnectorBlockEntity.java (472) → извлечь ConnectionResult, NullNetworkInterface, NetworkConnectorNetworkInterface
-- [ ] FileChooserScreen.java (433) → извлечь FileChooserCallback, FileList, FileEntry
-- [ ] AbstractVirtualMachine.java (428) → извлечь SerializedState, lifecycle-методы
+#### Группа 3: 4 файла 428-473 строк ✅
+- [x] MonitorBlockEntity.java (473→401) → извлечены FrameConsumer, MonitorContraptionHelper, MonitorDecoderWorkers
+- [x] NetworkConnectorBlockEntity.java (472→422) → извлечены ConnectionResult, NullNetworkInterface, NetworkConnectorInterface
+- [x] FileChooserScreen.java (433→265) → извлечены FileChooserCallback, FileList (+FileEntry)
+- [x] AbstractVirtualMachine.java (428→419) → извлечено SerializedState в vm/state/
 
 #### Группа 4: 4 файла 367-420 строк
 - [ ] AbstractBlockStorageDevice.java (414) → split
@@ -91,8 +91,23 @@
 - [ ] NBTArraySerializers.java (206) → split
 - [ ] Main.java (205) → split
 - [ ] VxlanBlockEntity.java (203) → split
-- [ ] Terminal.java (420) → уже <200 не нужно? Нет, Terminal всё ещё >200
+- [ ] MonitorGUIRenderer.java (201) → split
 - [ ] Остальные ~2 файла
+
+### Вторая волна (довести до ≤200 самые большие)
+- [ ] ComputerBlockEntity.java (499) → extract registerCapabilities, persistence, contraption
+- [ ] ProjectorDepthRenderer.java (480) → extract rendering pipeline stages
+- [ ] BusCableBlock.java (454) → extract interaction logic
+- [ ] RPCDeviceBusAdapter.java (491) → extract mount/resume logic
+- [ ] DefaultTransportLayer.java (472) → extract session management
+- [ ] NetworkSwitchBlockEntity.java (362) → extract packet processing
+- [ ] ProjectorBlockEntity.java (391) → extract video encoding
+- [ ] BusCableBlockEntity.java (394) → extract facade/model logic
+- [ ] MonitorBlockEntity.java (401) → extract video encoding
+- [ ] NetworkConnectorBlockEntity.java (422) → extract connection logic
+- [ ] AbstractVirtualMachine.java (419) → extract load/run lifecycle
+- [ ] Terminal.java (420) → extract terminal logic
+- [ ] AbstractBlockStorageDevice.java (414) → extract geometry/IO
 
 ### Deferred
 - jcodec/ — **не трогать**
