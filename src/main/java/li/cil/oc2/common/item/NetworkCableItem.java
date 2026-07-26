@@ -5,7 +5,7 @@ package li.cil.oc2.common.item;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
-import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity.ConnectionResult;
+import li.cil.oc2.common.blockentity.network.ConnectionResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;

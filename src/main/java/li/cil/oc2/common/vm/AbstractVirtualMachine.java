@@ -2,7 +2,6 @@
 
 package li.cil.oc2.common.vm;
 
-import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -15,6 +14,7 @@ import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
 import li.cil.oc2.common.util.TickUtils;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
+import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.riscv.R5Board;
 import net.minecraft.nbt.CompoundTag;
@@ -47,15 +47,6 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     public final CommonDeviceBusController busController;
     private CommonDeviceBusController.BusState busState = CommonDeviceBusController.BusState.SCAN_PENDING;
     private int loadDevicesDelay;
-
-    @Serialized
-    public static final class SerializedState {
-        public R5Board board;
-        public GlobalVMContext context;
-        public BuiltinDevices builtinDevices;
-        public RPCDeviceBusAdapter rpcAdapter;
-        public transient VMDeviceBusAdapter vmAdapter;
-    }
 
     public final SerializedState state = new SerializedState();
     public AbstractTerminalVMRunner runner;

@@ -2,6 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
+import li.cil.oc2.client.gui.screen.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.FileChooserScreen;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import li.cil.oc2.common.network.Network;
@@ -48,7 +49,7 @@ public record RequestImportedFileMessage(int id) implements AbstractMessage {
     ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
-        FileChooserScreen.openFileChooserForLoad(new FileChooserScreen.FileChooserCallback() {
+        FileChooserScreen.openFileChooserForLoad(new FileChooserCallback() {
             @Override
             public void onFileSelected(final Path path) {
                 try {

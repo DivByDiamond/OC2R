@@ -16,6 +16,7 @@ import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.MonitorBlock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.monitor.MonitorContraptionHelper;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -77,7 +78,7 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         // Look up the primary monitor (same persistent device id, real
         // BlockPos) and render its framebuffer instead. Falls back to the
         // passed-in BlockEntity when not on a contraption.
-        final MonitorBlockEntity framebufferSource = monitor.getPrimaryForContraptionRendering();
+        final MonitorBlockEntity framebufferSource = MonitorContraptionHelper.getPrimaryForContraptionRendering(monitor);
 
         final Direction blockFacing = monitor.getBlockState().getValue(MonitorBlock.FACING);
 
@@ -95,7 +96,7 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         // not match the rendered orientation.
         final Vec3 blockCenterToCamera = blockCenterRelativeToCamera.scale(-1);
         final double projectedCameraPosition = blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getNormal()));
-        if (!monitor.isContraptionVirtualClone() && projectedCameraPosition <= 0) {
+        if (!MonitorContraptionHelper.isContraptionVirtualClone(monitor) && projectedCameraPosition <= 0) {
             return;
         }
 

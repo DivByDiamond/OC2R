@@ -49,15 +49,6 @@ import java.util.HashSet;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkConnectorBlockEntity extends ModBlockEntity implements TickableBlockEntity {
-    public enum ConnectionResult {
-        SUCCESS,
-        FAILURE,
-        FAILURE_FULL,
-        FAILURE_TOO_FAR,
-        FAILURE_OBSTRUCTED,
-        ALREADY_CONNECTED
-    }
-
     private static final String CONNECTIONS_TAG_NAME = "connections";
     private static final String IS_OWNER_TAG_NAME = "is_owner";
 
@@ -66,23 +57,22 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
     private static final int MAX_CONNECTION_DISTANCE = 16;
     private static final int BYTES_PER_TICK = 64 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1)); // bytes / sec -> bytes / tick
     private static final int MIN_ETHERNET_FRAME_SIZE = 42;
-    private static final int TTL_COST = 1;
 
     ///////////////////////////////////////////////////////////////////
 
-    private final NetworkConnectorNetworkInterface networkInterface = new NetworkConnectorNetworkInterface();
+    final NetworkConnectorInterface networkInterface = new NetworkConnectorInterface(this);
 
     // NeoForge will only hold a weak reference to this listener (so that registering a listener cause a memory leak)
     // Therefore we must hold the reference to keep it from being garbage collected while we're still around
     @SuppressWarnings("FieldCanBeLocal")
     private final ICapabilityInvalidationListener adjacentInterfaceListener = () -> { this.isAdjacentInterfaceDirty = true; return true; };
     private boolean isAdjacentInterfaceDirty = true;
-    private @Nullable NetworkInterface adjacentInterface = null;
+    @Nullable NetworkInterface adjacentInterface = null;
 
     private final HashSet<BlockPos> connectorPositions = new HashSet<>();
     private final HashSet<BlockPos> ownedCables = new HashSet<>();
     private final HashSet<BlockPos> dirtyConnectors = new HashSet<>();
-    private final HashMap<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
+    final HashMap<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
 
     ///////////////////////////////////////////////////////////////////
 
@@ -429,44 +419,4 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity implements
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    private static final class NullNetworkInterface implements NetworkInterface {
-        public static final NetworkInterface INSTANCE = new NullNetworkInterface();
-
-        @Override
-        public byte[] readEthernetFrame() {
-            return null;
-        }
-
-        @Override
-        public void writeEthernetFrame(final NetworkInterface source, final byte[] frame, final int timeToLive) {
-        }
-    }
-
-    private final class NetworkConnectorNetworkInterface implements NetworkInterface {
-        @Override
-        public byte[] readEthernetFrame() {
-            return null;
-        }
-
-        @Override
-        public void writeEthernetFrame(final NetworkInterface source, final byte[] frame, final int timeToLive) {
-            if (timeToLive <= 0) {
-                return;
-            }
-
-            NetworkInterface adjDst = adjacentInterface;
-            if (adjDst != null && adjDst != source) {
-                adjDst.writeEthernetFrame(this, frame, timeToLive - TTL_COST);
-            }
-
-            for (final NetworkConnectorBlockEntity dst : connectors.values()) {
-                if (!dst.isValid() || dst.networkInterface == source) {
-                    continue;
-                }
-                dst.networkInterface.writeEthernetFrame(this, frame, timeToLive - TTL_COST);
-            }
-        }
-    }
 }

@@ -43,9 +43,6 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -55,10 +52,6 @@ import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class MonitorBlockEntity extends ModBlockEntity implements TickableBlockEntity, ICaptureInputStateStorage {
-    @FunctionalInterface
-    public interface FrameConsumer {
-        void processFrame(final Picture picture);
-    }
 
     ///////////////////////////////////////////////////////////////////
 
@@ -67,25 +60,6 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
     private static final String IS_RENDERING_TAG_NAME = "projecting";
     private static final String HAS_ENERGY_TAG_NAME = "has_energy";
     private static final String DEVICE_ID_TAG_NAME = "device_id";
-
-    private static final ExecutorService DECODER_WORKERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        thread.setName("Monitor Frame Decoder");
-        return thread;
-    });
-
-    /**
-     * Client-side registry of "primary" (non-contraption) MonitorBlockEntities
-     * keyed by their persistent device id. Same idea as the equivalent map
-     * on ComputerBlockEntity: when Sable/Create:Aeronautics creates a
-     * virtual clone of the monitor at a far-away position, the clone never
-     * receives MonitorFramebufferMessage updates (server sends those with
-     * the original BlockPos). The BER uses this registry to find the
-     * primary monitor and render its framebuffer on the virtual clone.
-     */
-    private static final ConcurrentHashMap<UUID, MonitorBlockEntity> PRIMARY_BY_DEVICE_ID = new ConcurrentHashMap<>();
-    private static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 
     ///////////////////////////////////////////////////////////////////
 
@@ -104,7 +78,7 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
      * primary monitor (which actually receives framebuffer messages) when the
      * BER is asked to render a virtual clone.
      */
-    private UUID deviceId = UUID.randomUUID();
+    UUID deviceId = UUID.randomUUID();
 
     @Nullable private CompletableFuture<?> runningDecode;
     private final H264Decoder decoder = new H264Decoder();
@@ -140,52 +114,6 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
     public MonitorGUIRenderer getMonitor() { return monitor; }
 
     public UUID getDeviceId() { return deviceId; }
-
-    /**
-     * Returns true if this BlockEntity appears to be a Sable/Create:Aeronautics
-     * "virtual clone" — i.e. Sable has teleported its BlockPos to a far-away
-     * virtual position for contraption rendering.
-     */
-    public boolean isContraptionVirtualClone() {
-        final BlockPos pos = getBlockPos();
-        return Math.abs(pos.getX()) > VIRTUAL_POSITION_THRESHOLD
-            || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
-    }
-
-    /**
-     * Look up the "primary" (non-virtual) MonitorBlockEntity that shares the
-     * same persistent device id as this one. Used by the BER to render the
-     * primary's framebuffer (which receives MonitorFramebufferMessage
-     * updates) on a virtual clone's face.
-     */
-    @Nullable
-    public MonitorBlockEntity getPrimaryForContraptionRendering() {
-        if (!isContraptionVirtualClone()) {
-            return this;
-        }
-        final MonitorBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(deviceId);
-        if (primary != null && !primary.isRemoved()) {
-            return primary;
-        }
-        return this;
-    }
-
-    private void registerInClientRegistry() {
-        if (level == null || !level.isClientSide()) {
-            return;
-        }
-        if (isContraptionVirtualClone()) {
-            return;
-        }
-        PRIMARY_BY_DEVICE_ID.put(deviceId, this);
-    }
-
-    private void unregisterFromClientRegistry() {
-        if (level == null || !level.isClientSide()) {
-            return;
-        }
-        PRIMARY_BY_DEVICE_ID.remove(deviceId, this);
-    }
 
     private long lastKeepAliveSentAt;
 
@@ -314,14 +242,14 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
 
     @Override
     public void clientTick() {
-        registerInClientRegistry();
+        MonitorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
     protected void loadClient() {
         // Register as soon as we're added to a client level, so the BER can
         // find us even before the first clientTick() fires.
-        registerInClientRegistry();
+        MonitorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
@@ -378,7 +306,7 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
                 }
             } catch (final DataFormatException ignored) {
             }
-        }, DECODER_WORKERS);
+        }, MonitorDecoderWorkers.INSTANCE);
     }
 
     @Override
@@ -402,19 +330,19 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
             deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
         }
-        registerInClientRegistry();
+        MonitorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        unregisterFromClientRegistry();
+        MonitorContraptionHelper.unregisterFromClientRegistry(this);
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        unregisterFromClientRegistry();
+        MonitorContraptionHelper.unregisterFromClientRegistry(this);
     }
 
     @Override
