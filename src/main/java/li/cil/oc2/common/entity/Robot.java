@@ -103,15 +103,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     private static final String INVENTORY_TAG_NAME = "inventory";
     private static final String SELECTED_SLOT_TAG_NAME = "selected_slot";
 
-    private static final int MAX_QUEUED_ACTIONS = 16;
-    private static final int MAX_QUEUED_RESULTS = 16;
-
-    private static final int MEMORY_SLOTS = 4;
-    private static final int HARD_DRIVE_SLOTS = 2;
-    private static final int FLASH_MEMORY_SLOTS = 1;
-    private static final int MODULE_SLOTS = 4;
-    private static final int INVENTORY_SIZE = 12;
-    private static final int CPU_SLOTS = 1;
+    public static final int INVENTORY_SIZE = 12;
 
     ///////////////////////////////////////////////////////////////////
 
@@ -120,13 +112,11 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     private final BlockPos.MutableBlockPos mutablePosition = new BlockPos.MutableBlockPos();
 
     private final AnimationState animationState = new AnimationState();
-    private final RobotActionProcessor actionProcessor = new RobotActionProcessor();
+    private final RobotInventory robotInventory;
+    private final RobotMovementController movementController;
     private final Terminal terminal = new Terminal();
     private final RobotVirtualMachine virtualMachine;
-    private final RobotBusElement busElement = new RobotBusElement();
-    private final RobotItemStackHandlers deviceItems = new RobotItemStackHandlers(this::registryAccess);
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.robotEnergyStorage);
-    private final ItemStackHandler inventory = new FixedSizeItemStackHandler(INVENTORY_SIZE);
     private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
     private long lastPistonMovement;
 
@@ -143,9 +133,12 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             terminal.setDisplayOnly(true);
         }
 
-        final CommonDeviceBusController busController = new CommonDeviceBusController(busElement, Config.robotEnergyPerTick);
+        robotInventory = new RobotInventory(this);
+        movementController = new RobotMovementController(this);
+        final CommonDeviceBusController busController = new CommonDeviceBusController(robotInventory.getBusElement(), Config.robotEnergyPerTick);
         virtualMachine = new RobotVirtualMachine(busController);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
+        robotInventory.setOnDeviceChanged(() -> virtualMachine.busController.scheduleBusScan());
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -164,12 +157,12 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     }
 
     public VMItemStackHandlers getItemStackHandlers() {
-        return deviceItems;
+        return robotInventory.getItemStackHandlers();
     }
 
     @Override
     public ItemStackHandler getInventory() {
-        return inventory;
+        return robotInventory.getInventory();
     }
 
     @Override
@@ -198,7 +191,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             Capabilities.ItemHandler.ENTITY,
             Entities.ROBOT.get(),
             (robot, ctx) -> {
-                return robot.inventory;
+                return robot.robotInventory.getInventory();
             }
         );
         if (Config.robotsUseEnergy()) {
@@ -279,8 +272,8 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             } else {
                 registerListeners();
                 RobotActions.initializeData(this);
-                if (actionProcessor.action != null) {
-                    actionProcessor.action.initialize(this);
+                if (movementController.getCurrentAction() != null) {
+                    movementController.getCurrentAction().initialize(this);
                 }
             }
         }
@@ -295,7 +288,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             virtualMachine.tick();
         }
 
-        actionProcessor.tick();
+        movementController.tick();
 
         if (!isClient && level() instanceof final ServerLevel serverLevel) {
             final VoxelShape shape = Shapes.create(getBoundingBox());
@@ -398,7 +391,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
     public void exportToItemStack(final ItemStack stack) {
         var container = new RestrictedContainer();
-        deviceItems.saveItems(container);
+        robotInventory.saveItems(container);
         stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
 
         CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
@@ -413,10 +406,10 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         final CompoundTag itemsTag = NBTUtils.getChildTag(stack, MOD_TAG_NAME, ITEMS_TAG_NAME);
 
         if (container != null) {
-            deviceItems.loadItems(provider, container);
+            robotInventory.loadItems(provider, container);
         } else {
-            deviceItems.loadItems(provider, itemsTag);
-            inventory.deserializeNBT(provider, itemsTag.getCompound(INVENTORY_TAG_NAME));
+            robotInventory.loadItems(provider, itemsTag);
+            robotInventory.getInventory().deserializeNBT(provider, itemsTag.getCompound(INVENTORY_TAG_NAME));
         }
 
         energy.deserializeNBT(provider, NBTUtils.getChildTag(stack, MOD_TAG_NAME, ENERGY_TAG_NAME));
@@ -439,12 +432,12 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(terminal));
         }
 
-        tag.put(COMMAND_PROCESSOR_TAG_NAME, actionProcessor.serialize());
-        tag.put(BUS_ELEMENT_TAG_NAME, busElement.serialize());
-        tag.put(ITEMS_TAG_NAME, deviceItems.saveItems(provider));
-        tag.put(DEVICES_TAG_NAME, deviceItems.saveDevices(provider));
+        tag.put(COMMAND_PROCESSOR_TAG_NAME, movementController.serialize());
+        tag.put(BUS_ELEMENT_TAG_NAME, robotInventory.serializeBusElement(provider));
+        robotInventory.saveItems(provider, NBTUtils.getOrCreateChildTag(tag, ITEMS_TAG_NAME));
+        tag.put(DEVICES_TAG_NAME, robotInventory.saveDevices(provider));
         tag.put(ENERGY_TAG_NAME, energy.serializeNBT(provider));
-        tag.put(INVENTORY_TAG_NAME, inventory.serializeNBT(provider));
+        tag.put(INVENTORY_TAG_NAME, robotInventory.getInventory().serializeNBT(provider));
         tag.putByte(SELECTED_SLOT_TAG_NAME, getEntityData().get(SELECTED_SLOT));
     }
 
@@ -453,12 +446,12 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         final var provider = registryAccess();
         virtualMachine.deserialize(tag.getCompound(STATE_TAG_NAME));
         NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), terminal);
-        actionProcessor.deserialize(tag.getCompound(COMMAND_PROCESSOR_TAG_NAME));
-        busElement.deserialize(tag.getCompound(BUS_ELEMENT_TAG_NAME));
-        deviceItems.loadItems(provider, tag.getCompound(ITEMS_TAG_NAME));
-        deviceItems.loadDevices(provider, tag.getCompound(DEVICES_TAG_NAME));
+        movementController.deserialize(tag.getCompound(COMMAND_PROCESSOR_TAG_NAME));
+        robotInventory.deserializeBusElement(tag.getCompound(BUS_ELEMENT_TAG_NAME));
+        robotInventory.loadItems(provider, tag.getCompound(ITEMS_TAG_NAME));
+        robotInventory.loadDevices(provider, tag.getCompound(DEVICES_TAG_NAME));
         energy.deserializeNBT(provider, tag.getCompound(ENERGY_TAG_NAME));
-        inventory.deserializeNBT(provider, tag.getCompound(INVENTORY_TAG_NAME));
+        robotInventory.getInventory().deserializeNBT(provider, tag.getCompound(INVENTORY_TAG_NAME));
         setSelectedSlot(tag.getByte(SELECTED_SLOT_TAG_NAME));
     }
 
@@ -567,7 +560,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         public float topRenderHover = -(hashCode() & 0xFFFF); // init to "random" to avoid synchronous hovering
 
         public void update(final float deltaTime, final RandomSource random) {
-            if (getVirtualMachine().isRunning() || actionProcessor.hasQueuedActions()) {
+            if (getVirtualMachine().isRunning() || movementController.hasQueuedActions()) {
                 topRenderHover = topRenderHover + deltaTime * HOVER_ANIMATION_SPEED;
                 final float topOffsetY = Mth.sin(topRenderHover) / 32f;
 
@@ -588,237 +581,9 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
         }
     }
 
-    private static final class RobotActionProcessorResult {
-        private static final String ACTION_ID_TAG_NAME = "action_id";
-        private static final String RESULT_TAG_NAME = "result";
 
-        public int actionId;
-        public RobotActionResult result;
 
-        public RobotActionProcessorResult(final int actionId, final RobotActionResult result) {
-            this.actionId = actionId;
-            this.result = result;
-        }
 
-        public RobotActionProcessorResult(final CompoundTag tag) {
-            deserialize(tag);
-        }
-
-        public CompoundTag serialize() {
-            final CompoundTag tag = new CompoundTag();
-
-            tag.putInt(ACTION_ID_TAG_NAME, actionId);
-            NBTUtils.putEnum(tag, RESULT_TAG_NAME, result);
-
-            return tag;
-        }
-
-        public void deserialize(final CompoundTag tag) {
-            actionId = tag.getInt(ACTION_ID_TAG_NAME);
-            result = NBTUtils.getEnum(tag, RESULT_TAG_NAME, RobotActionResult.class);
-        }
-    }
-
-    private final class RobotActionProcessor {
-        private static final String QUEUE_TAG_NAME = "queue";
-        private static final String ACTION_TAG_NAME = "action";
-        private static final String RESULTS_TAG_NAME = "results";
-        private static final String LAST_ACTION_ID_TAG_NAME = "last_action_id";
-
-        private final Queue<AbstractRobotAction> queue = new ArrayDeque<>(MAX_QUEUED_ACTIONS - 1);
-        @Nullable private AbstractRobotAction action;
-
-        private final Queue<RobotActionProcessorResult> results = new ArrayDeque<>(MAX_QUEUED_RESULTS);
-        private int lastActionId;
-
-        public boolean hasQueuedActions() {
-            return action != null || !queue.isEmpty();
-        }
-
-        public int getQueuedActionCount() {
-            return (action != null ? 1 : 0) + queue.size();
-        }
-
-        public boolean move(final MovementDirection direction) {
-            return addAction(new RobotMovementAction(direction));
-        }
-
-        public boolean rotate(final RotationDirection direction) {
-            return addAction(new RobotRotationAction(direction));
-        }
-
-        public void tick() {
-            if (level().isClientSide()) {
-                RobotActions.performClient(Robot.this);
-            } else {
-                if (action != null) {
-                    final RobotActionResult result = action.perform(Robot.this);
-                    if (result != RobotActionResult.INCOMPLETE) {
-                        synchronized (results) {
-                            if (results.size() == MAX_QUEUED_RESULTS) {
-                                results.remove();
-                            }
-
-                            results.add(new RobotActionProcessorResult(action.getId(), result));
-                        }
-
-                        action = null;
-                    }
-                }
-                if (action == null) {
-                    action = queue.poll();
-                    if (action != null) {
-                        action.initialize(Robot.this);
-                    }
-                    else {
-                        return;
-                    }
-                }
-                RobotActions.performServer(Robot.this, action);
-            }
-        }
-
-        public void clear() {
-            queue.clear();
-            results.clear();
-            lastActionId = 0;
-        }
-
-        public CompoundTag serialize() {
-            final CompoundTag tag = new CompoundTag();
-
-            final ListTag queueTag = new ListTag();
-            for (final AbstractRobotAction action : queue) {
-                queueTag.add(RobotActions.serialize(action));
-            }
-            tag.put(QUEUE_TAG_NAME, queueTag);
-
-            if (action != null) {
-                tag.put(ACTION_TAG_NAME, RobotActions.serialize(action));
-            }
-
-            final ListTag resultsTag = new ListTag();
-            for (final RobotActionProcessorResult result : results) {
-                resultsTag.add(result.serialize());
-            }
-            tag.put(RESULTS_TAG_NAME, resultsTag);
-
-            tag.putInt(LAST_ACTION_ID_TAG_NAME, lastActionId);
-
-            return tag;
-        }
-
-        public void deserialize(final CompoundTag tag) {
-            queue.clear();
-            results.clear();
-
-            final ListTag queueTag = tag.getList(QUEUE_TAG_NAME, NBTTagIds.TAG_COMPOUND);
-            for (int i = 0; i < Math.min(queueTag.size(), MAX_QUEUED_ACTIONS - 1); i++) {
-                final AbstractRobotAction action = RobotActions.deserialize(queueTag.getCompound(i));
-                if (action != null) {
-                    queue.add(action);
-                }
-            }
-
-            action = RobotActions.deserialize(tag.getCompound(ACTION_TAG_NAME));
-
-            final ListTag resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
-            for (int i = 0; i < Math.min(resultsTag.size(), MAX_QUEUED_RESULTS); i++) {
-                final RobotActionProcessorResult result = new RobotActionProcessorResult(resultsTag.getCompound(i));
-                if (result.actionId != 0) {
-                    results.add(result);
-                }
-            }
-
-            lastActionId = tag.getInt(LAST_ACTION_ID_TAG_NAME);
-        }
-
-        private boolean addAction(final AbstractRobotAction action) {
-            if (level().isClientSide()) {
-                return false;
-            }
-
-            if (!getVirtualMachine().isRunning()) {
-                return false;
-            }
-
-            if (queue.size() < MAX_QUEUED_ACTIONS - 1) { // -1 for current action
-                lastActionId = (lastActionId + 1) & 0x7FFFFFFF; // only positive ids; unlikely to ever wrap, but eh.
-                action.setId(lastActionId);
-                synchronized (queue) {
-                    queue.add(action);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private final class RobotItemStackHandlers extends AbstractVMItemStackHandlers {
-        public RobotItemStackHandlers(Supplier<HolderLookup.Provider> providerSupplier) {
-            super(
-                providerSupplier,
-                new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS),
-                new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.ROBOT_MODULE, MODULE_SLOTS),
-                new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS)
-            );
-        }
-
-        @Override
-        protected ItemDeviceQuery makeQuery(final ItemStack stack) {
-            return Devices.makeQuery(Robot.this, stack);
-        }
-
-        @Override
-        protected void onChanged() {
-            super.onChanged();
-            if (!level().isClientSide()) {
-                virtualMachine.busController.scheduleBusScan();
-            }
-        }
-    }
-
-    private final class RobotBusElement extends AbstractDeviceBusElement {
-        private static final String DEVICE_ID_TAG_NAME = "device_id";
-
-        private final Device device = new ObjectDevice(new RobotDevice(), "robot");
-        private UUID deviceId = UUID.randomUUID();
-
-        @Override
-        public Optional<Collection<DeviceBusElement>> getNeighbors() {
-            return Optional.of(singleton(
-                deviceItems.busElement
-            ));
-        }
-
-        @Override
-        public Collection<Device> getLocalDevices() {
-            return singleton(device);
-        }
-
-        @Override
-        public Optional<UUID> getDeviceIdentifier(final Device device) {
-            if (device == this.device) {
-                return Optional.of(deviceId);
-            }
-            return super.getDeviceIdentifier(device);
-        }
-
-        public CompoundTag serialize() {
-            final CompoundTag tag = new CompoundTag();
-            tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
-            return tag;
-        }
-
-        public void deserialize(final CompoundTag tag) {
-            if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
-                deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
-            }
-        }
-    }
 
     private final class RobotVMRunner extends AbstractTerminalVMRunner {
         public RobotVMRunner(final AbstractVirtualMachine virtualMachine, final Terminal terminal) {
@@ -834,7 +599,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     private final class RobotVirtualMachine extends AbstractVirtualMachine {
         private RobotVirtualMachine(final CommonDeviceBusController busController) {
             super(busController);
-            state.vmAdapter.setBaseAddressProvider(deviceItems::getDeviceAddressBase);
+            state.vmAdapter.setBaseAddressProvider(robotInventory.getDeviceItems()::getDeviceAddressBase);
         }
 
         @Override
@@ -858,7 +623,7 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
             TerminalUtils.resetTerminal(terminal, output -> Network.sendToClientsTrackingEntity(
                 new RobotTerminalOutputMessage(Robot.this, output), Robot.this));
 
-            actionProcessor.clear();
+            movementController.clear();
         }
 
         @Override
@@ -908,57 +673,38 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
         @Callback
         public ItemStack getStackInSlot(@Parameter("slot") final int slot) {
-            return inventory.getStackInSlot(slot);
+            return robotInventory.getInventory().getStackInSlot(slot);
         }
 
         @Callback(synchronize = false)
         public boolean move(@Parameter("direction") @Nullable final MovementDirection direction) {
             if (direction == null) throw new IllegalArgumentException();
-            return actionProcessor.move(direction);
+            return movementController.move(direction);
         }
 
         @Callback(synchronize = false)
         public boolean turn(@Parameter("direction") @Nullable final RotationDirection direction) {
             if (direction == null) throw new IllegalArgumentException();
-            return actionProcessor.rotate(direction);
+            return movementController.rotate(direction);
         }
 
         @Callback(synchronize = false)
         public int getLastActionId() {
-            return actionProcessor.lastActionId;
+            return movementController.getLastActionId();
         }
 
         @Callback(synchronize = false)
         public int getQueuedActionCount() {
-            return actionProcessor.getQueuedActionCount();
+            return movementController.getQueuedActionCount();
         }
 
         @Nullable
         @Callback(synchronize = false)
         public RobotActionResult getActionResult(@Parameter("actionId") final int actionId) {
-            final AbstractRobotAction currentAction = actionProcessor.action;
-            if (currentAction != null && currentAction.getId() == actionId) {
-                return RobotActionResult.INCOMPLETE;
-            }
-            synchronized (actionProcessor.queue) {
-                for (final AbstractRobotAction action : actionProcessor.queue) {
-                    if (action.getId() == actionId) {
-                        return RobotActionResult.INCOMPLETE;
-                    }
-                }
-            }
-            synchronized (actionProcessor.results) {
-                for (final RobotActionProcessorResult result : actionProcessor.results) {
-                    if (result.actionId == actionId) {
-                        return result.result;
-                    }
-                }
-            }
-
-            return null;
+            return movementController.findActionResult(actionId);
         }
 
-        private RobotDevice() {
+        public RobotDevice() {
         }
     }
 }
