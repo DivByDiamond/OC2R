@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.util;
 
@@ -13,7 +12,6 @@ import net.neoforged.neoforge.common.util.FakePlayerFactory;
 public final class FakePlayerUtils {
     private static final String FAKE_PLAYER_NAME = "[" + API.MOD_ID + "]";
 
-    ///////////////////////////////////////////////////////////////////
 
     public static ServerPlayer getFakePlayer(final ServerLevel level, final Entity entity) {
         final ServerPlayer player = getFakePlayer(level);

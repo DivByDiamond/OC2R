@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -26,7 +25,6 @@ import java.util.Optional;
 public final class NetworkCableItem extends ModItem {
     private static final String LINK_START_TAG_NAME = API.MOD_ID + ":" + "network_cable_link_start";
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public InteractionResultHolder<ItemStack> use(final Level level, final Player player, final InteractionHand hand) {

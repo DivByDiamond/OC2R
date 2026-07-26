@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record ComputerRunStateMessage(BlockPos pos, VMRunState value) implements
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ComputerRunStateMessage(final ComputerBlockEntity computer, final VMRunState value) {
         this(computer.getBlockPos(), value);

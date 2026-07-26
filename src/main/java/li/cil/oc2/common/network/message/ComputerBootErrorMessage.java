@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -33,7 +32,6 @@ public record ComputerBootErrorMessage(BlockPos pos, @Nullable Component value) 
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ComputerBootErrorMessage(ComputerBlockEntity computer, @Nullable Component value) {
         this(computer.getBlockPos(), value);

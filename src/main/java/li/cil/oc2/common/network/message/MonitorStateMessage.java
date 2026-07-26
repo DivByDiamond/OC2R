@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -33,7 +32,6 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorStateMessage(final MonitorBlockEntity monitor, final boolean isMounted, final boolean hasEnergy) {
         this(monitor.getBlockPos(), isMounted, hasEnergy);

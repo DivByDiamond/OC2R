@@ -36,7 +36,6 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
         return BlockCodecs.VXLAN.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -52,7 +51,6 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -67,7 +65,6 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
         return TickableBlockEntity.createServerTicker(level, type, BlockEntities.VXLAN_HUB.get());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

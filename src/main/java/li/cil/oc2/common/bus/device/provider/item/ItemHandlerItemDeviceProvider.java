@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.item;
 
@@ -16,7 +15,6 @@ public final class ItemHandlerItemDeviceProvider extends AbstractItemStackCapabi
         super(() -> Capabilities.ItemHandler.ITEM);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query, final IItemHandler value) {

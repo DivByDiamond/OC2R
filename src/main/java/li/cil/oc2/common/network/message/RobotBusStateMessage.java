@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -32,7 +31,6 @@ public record RobotBusStateMessage(int entityId, BusState value) implements Abst
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotBusStateMessage(final Robot robot, final BusState value) {
         this(robot.getId(), value);

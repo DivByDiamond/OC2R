@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.global;
 
@@ -14,13 +13,11 @@ import java.util.Optional;
 final class GlobalMemoryMap implements MemoryMap {
     private final MemoryMap memoryMap;
 
-    ///////////////////////////////////////////////////////////////////
 
     GlobalMemoryMap(final MemoryMap memoryMap) {
         this.memoryMap = memoryMap;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public boolean addDevice(final long address, final MemoryMappedDevice device) {

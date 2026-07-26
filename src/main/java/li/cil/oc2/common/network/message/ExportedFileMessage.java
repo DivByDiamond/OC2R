@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -20,7 +19,6 @@ import java.nio.file.Files;
 public record ExportedFileMessage(String name, byte[] data) implements AbstractMessage {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final StreamCodec<ByteBuf, ExportedFileMessage> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.STRING_UTF8,
@@ -37,7 +35,6 @@ public record ExportedFileMessage(String name, byte[] data) implements AbstractM
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         FileChooserScreen.openFileChooserForSave(name, path -> {

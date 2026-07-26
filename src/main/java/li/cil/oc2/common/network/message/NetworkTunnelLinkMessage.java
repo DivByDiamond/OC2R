@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -29,7 +28,6 @@ public record NetworkTunnelLinkMessage(int containerId) implements AbstractMessa
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();

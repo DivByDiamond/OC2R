@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer.entity;
 
@@ -18,14 +17,12 @@ import net.minecraft.util.Mth;
 public final class RobotRenderer extends EntityRenderer<Robot> {
     private final RobotModel model;
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotRenderer(final EntityRendererProvider.Context context) {
         super(context);
         model = new RobotModel(context.bakeLayer(RobotModel.ROBOT_MODEL_LAYER));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public ResourceLocation getTextureLocation(final Robot entity) {

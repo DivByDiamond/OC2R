@@ -20,17 +20,14 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////
 
     private InternetConnection internetConnection = null;
 
-    ///////////////////////////////////////////////////////////////
 
     public InternetCardDevice(final ItemStack identity) {
         super(identity);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private void openInternetAccess() {
         LOGGER.debug("Connect internet card");

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -23,7 +22,6 @@ public class ModItem extends Item {
         this(createProperties());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -32,7 +30,6 @@ public class ModItem extends Item {
         TooltipUtils.tryAddDescription(stack, components);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected static Properties createProperties() {
         return new Properties();

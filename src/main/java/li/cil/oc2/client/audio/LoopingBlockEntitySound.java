@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.audio;
 
@@ -18,12 +17,10 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
     private static final float FADE_IN_DURATION_IN_TICKS = TickUtils.toTicks(Duration.ofSeconds(2));
     private static final float FADE_IN_PER_TICK = 1f / FADE_IN_DURATION_IN_TICKS;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final BlockEntity blockEntity;
     private boolean isCanceled;
 
-    ///////////////////////////////////////////////////////////////////
 
     public LoopingBlockEntitySound(final BlockEntity blockEntity, final SoundEvent sound) {
         super(sound, SoundSource.BLOCKS, RandomSource.create());
@@ -38,7 +35,6 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
         looping = true;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void cancel() {
         isCanceled = true;

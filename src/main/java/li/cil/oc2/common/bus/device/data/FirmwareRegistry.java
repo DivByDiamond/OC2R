@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.data;
 
@@ -17,15 +16,12 @@ import java.util.stream.Stream;
 public final class FirmwareRegistry {
     private static final DeferredRegister<Firmware> INITIALIZER = DeferredRegister.create(Registries.FIRMWARE, API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final Registry<Firmware> REGISTRY = INITIALIZER.makeRegistry(builder -> {});
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredHolder<Firmware, MinuxFirmware> MINUX = INITIALIZER.register("minux", MinuxFirmware::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         INITIALIZER.register(modBus);

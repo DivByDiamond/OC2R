@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.data;
 
@@ -18,15 +17,12 @@ import java.util.stream.Stream;
 public final class BlockDeviceDataRegistry {
     private static final DeferredRegister<BlockDeviceData> INITIALIZER = DeferredRegister.create(Registries.BLOCK_DEVICE_DATA, API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final Registry<BlockDeviceData> REGISTRY = INITIALIZER.makeRegistry(builder -> {});
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredHolder<BlockDeviceData, BuildrootBlockDeviceData> BUILDROOT = INITIALIZER.register("buildroot", BuildrootBlockDeviceData::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         INITIALIZER.register(modBus);

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.data;
 
@@ -15,7 +14,6 @@ import java.io.IOException;
 public final class BuildrootBlockDeviceData implements BlockDeviceData {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final ByteBufferBlockDevice INSTANCE;
 
@@ -30,7 +28,6 @@ public final class BuildrootBlockDeviceData implements BlockDeviceData {
         INSTANCE = instance;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public BlockDevice getBlockDevice() {
         return INSTANCE;

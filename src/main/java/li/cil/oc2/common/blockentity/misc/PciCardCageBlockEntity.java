@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity.misc;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -29,20 +28,17 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     private static final String ENERGY_TAG_NAME = "energy";
     private static final String HAS_ENERGY_TAG_NAME = "has_energy";
 
-    ///////////////////////////////////////////////////////////////
 
     private final PciCardCageDevice cardCageDevice = new PciCardCageDevice(this, this::handleMountedChanged);
     private boolean isMounted, hasEnergy;
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.cardCageEnergyStorage);
 
 
-    ///////////////////////////////////////////////////////////////
 
     public PciCardCageBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.PCI_CARD_CAGE.get(), pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private void handleMountedChanged(final boolean value) {
 
@@ -110,7 +106,6 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
 
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -141,7 +136,6 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         );
     }
 
-    ///////////////////////////////////////////////////////////////
 
 
 

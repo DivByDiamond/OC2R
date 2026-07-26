@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.rpc;
 
@@ -26,7 +25,6 @@ public final class RPCItemStackTagFilters {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ArrayList<RPCItemStackTagFilter> FILTERS = new ArrayList<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     public static CompoundTag getFilteredTag(final ItemStack stack, final CompoundTag tag) {
         final CompoundTag result = new CompoundTag();
@@ -40,14 +38,12 @@ public final class RPCItemStackTagFilters {
         return result;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void handleAddReloadListenerEvent(final AddReloadListenerEvent event) {
         event.addListener(ReloadListener.INSTANCE);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final class ReloadListener extends SimpleJsonResourceReloadListener {
         private static final Gson GSON = new GsonBuilder()

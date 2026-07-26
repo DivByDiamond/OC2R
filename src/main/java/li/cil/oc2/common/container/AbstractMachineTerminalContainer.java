@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -12,7 +11,6 @@ public abstract class AbstractMachineTerminalContainer extends AbstractMachineCo
         super(type, id, energyInfo);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public abstract void switchToTerminal();
 

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -23,7 +22,6 @@ import java.util.function.Supplier;
 public final class Items {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredItem<Item> BUS_CABLE = register(Blocks.BUS_CABLE, BusCableItem::new);
     public static final DeferredItem<BusInterfaceItem> BUS_INTERFACE = register("bus_interface", BusInterfaceItem::new);
@@ -43,7 +41,6 @@ public final class Items {
     public static final DeferredItem<Item> PCI_CARD_CAGE = register(Blocks.PCI_CARD_CAGE);
     public static final DeferredItem<Item> INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredItem<Item> WRENCH = register("wrench", WrenchItem::new);
     public static final DeferredItem<Item> MANUAL = register("manual", ManualItem::new);
@@ -108,14 +105,12 @@ public final class Items {
     public static final DeferredItem<Item> RAW_SILICON_WAFER = register("raw_silicon_wafer", ModItem::new);
     public static final DeferredItem<Item> CIRCUIT_BOARD = register("circuit_board", ModItem::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         ITEMS.addAlias(ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_memory_buildroot"), FLASH_MEMORY_CUSTOM.getId());
         ITEMS.register(modBus);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static DeferredItem<Item> register(final String name) {
         return register(name, ModItem::new);

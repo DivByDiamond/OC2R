@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record BusCableFacadeMessage(BlockPos pos, ItemStack stack) implements Ab
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(final IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(pos, BusCableBlockEntity.class,

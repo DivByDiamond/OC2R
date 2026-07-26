@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.integration;
 
@@ -30,7 +29,6 @@ public final class IMC {
         return map;
     });
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     private static void handleIMCMessages(final InterModProcessEvent event) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm;
 
@@ -26,13 +25,11 @@ import java.util.stream.Collectors;
 public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers {
     public record GroupDefinition(DeviceType deviceType, int count) { }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final long ITEM_DEVICE_BASE_ADDRESS = 0x20000000L;
     private static final int ITEM_DEVICE_STRIDE = 0x1000;
     private static final long OTHER_DEVICE_BASE_ADDRESS = 0x30000000L;
 
-    ///////////////////////////////////////////////////////////////////
 
     public final AbstractDeviceBusElement busElement = new VMBusElement();
 
@@ -42,7 +39,6 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
 
     public final IItemHandler combinedItemHandlers;
 
-    ///////////////////////////////////////////////////////////////////
 
     public AbstractVMItemStackHandlers(Supplier<HolderLookup.Provider> providerSupplier, final GroupDefinition... groups) {
         for (final GroupDefinition group : groups) {
@@ -52,7 +48,6 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
         combinedItemHandlers = new CombinedInvWrapper(itemHandlers.values().toArray(new IItemHandlerModifiable[0]));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public Optional<IItemHandler> getItemHandler(final DeviceType deviceType) {
@@ -149,14 +144,12 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
             handler.loadDevices(registries, tag.getCompound(deviceType.getName().toString())));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected abstract ItemDeviceQuery makeQuery(final ItemStack stack);
 
     protected void onChanged() {
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private final class VMItemHandler extends AbstractTypedDeviceItemStackHandler {
         private final VMItemBusElement busElement;

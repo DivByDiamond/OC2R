@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -10,7 +9,6 @@ import net.neoforged.bus.api.IEventBus;
 public final class Blocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredBlock<BusCableBlock> BUS_CABLE = BLOCKS.register("bus_cable", BusCableBlock::new);
     public static final DeferredBlock<ChargerBlock> CHARGER = BLOCKS.register("charger", ChargerBlock::new);
@@ -30,7 +28,6 @@ public final class Blocks {
 
     public static final DeferredBlock<InternetGatewayBlock> INTERNET_GATEWAY = BLOCKS.register("internet_gateway", InternetGatewayBlock::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         BLOCKS.register(modBus);

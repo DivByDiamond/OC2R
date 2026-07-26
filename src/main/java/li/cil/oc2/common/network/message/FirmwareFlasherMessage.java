@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -29,7 +28,6 @@ public record FirmwareFlasherMessage(BlockPos pos, ItemStack data) implements Ab
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public FirmwareFlasherMessage(final FlashMemoryFlasherBlockEntity diskDrive) {
         this(diskDrive.getBlockPos(), diskDrive.getFloppy());

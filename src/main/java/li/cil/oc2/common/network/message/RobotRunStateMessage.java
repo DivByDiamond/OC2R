@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -32,7 +31,6 @@ public record RobotRunStateMessage(int entityId, VMRunState value) implements Ab
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotRunStateMessage(final Robot robot, final VMRunState value) {
         this(robot.getId(), value);

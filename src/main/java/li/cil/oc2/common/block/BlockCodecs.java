@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -16,7 +15,6 @@ import java.util.function.Supplier;
 public final class BlockCodecs {
     public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final Supplier<MapCodec<BusCableBlock>> BUS_CABLE = BLOCK_TYPES.register(
         "bus_cable",
@@ -83,7 +81,6 @@ public final class BlockCodecs {
         () -> MapCodec.unit(InternetGatewayBlock::new)
     );
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         BLOCK_TYPES.register(modBus);

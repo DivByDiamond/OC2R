@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.util;
 
@@ -12,7 +11,6 @@ import javax.annotation.Nullable;
 public final class HorizontalBlockUtils {
     public static final int HORIZONTAL_DIRECTION_COUNT = 4;
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     public static Direction toLocal(final BlockState blockState, @Nullable final Direction direction) {

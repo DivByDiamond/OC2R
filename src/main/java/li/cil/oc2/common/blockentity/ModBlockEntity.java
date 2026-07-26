@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity;
 
@@ -13,13 +12,11 @@ public abstract class ModBlockEntity extends BlockEntity {
     private boolean needsWorldUnloadEvent;
     private boolean isUnloaded;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected ModBlockEntity(final BlockEntityType<?> blockEntityType, final BlockPos pos, final BlockState state) {
         super(blockEntityType, pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void onLoad() {
@@ -63,7 +60,6 @@ public abstract class ModBlockEntity extends BlockEntity {
         return !isRemoved() && !isUnloaded;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected void onUnload(final boolean isRemove) {
         if (level != null && !level.isClientSide()) {

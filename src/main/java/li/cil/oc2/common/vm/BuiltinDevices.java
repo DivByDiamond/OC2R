@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm;
 import java.io.IOException;
@@ -34,11 +33,9 @@ public final class BuiltinDevices {
     private static final int BFS_INTERRUPT = 0x6;
     private static final int RFS_INTERRUPT = 0x7;
 
-    ///////////////////////////////////////////////////////////////////
 
     public final MinecraftRealTimeCounter rtcMinecraft = new MinecraftRealTimeCounter();
 
-    ///////////////////////////////////////////////////////////////////
 
     @Serialized public final VirtIOConsoleDevice rpcSerialDevice;
     @Serialized public final UART16550A uart;
@@ -46,7 +43,6 @@ public final class BuiltinDevices {
     @Serialized public VirtIOBlockDevice bfs;
     @Serialized public VirtIOBlockDevice rfs;
 
-    ///////////////////////////////////////////////////////////////////
 
     public BuiltinDevices(final GlobalVMContext context) {
         initialize(context, new GoldfishRTC(SystemTimeRealTimeCounter.get()), RTC_HOST_INTERRUPT, GoldfishRTC::getInterrupt);
@@ -83,7 +79,6 @@ public final class BuiltinDevices {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static <T extends MemoryMappedDevice> T initialize(final GlobalVMContext context, final T device, final int interrupt, final Function<T, Interrupt> interruptSupplier) {
         if (!context.getInterruptAllocator().claimInterrupt(interrupt)) throw new IllegalStateException();

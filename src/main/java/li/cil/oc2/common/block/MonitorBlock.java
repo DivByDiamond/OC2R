@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -62,7 +61,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
     private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
     private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorBlock() {
         super(Properties
@@ -81,7 +79,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         return BlockCodecs.MONITOR.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -123,7 +120,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -138,7 +134,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         return TickableBlockEntity.createTicker(level, type, BlockEntities.MONITOR.get());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
@@ -151,5 +146,4 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         return Config.monitorEnergyPerTick;
     }
 
-    ///////////////////////////////////////////////////////////////////
 }

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -36,7 +35,6 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
         return BlockCodecs.REDSTONE_INTERFACE.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -75,7 +73,6 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
         ribe.neighborChanged(fromPos);
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -84,7 +81,6 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
         return BlockEntities.REDSTONE_INTERFACE.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.widget;
 
@@ -23,7 +22,6 @@ public abstract class ImageButton extends AbstractButton {
     private static final long PRESS_DURATION = 200;
     private static final long TOOLTIP_DELAY = 250;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final Sprite baseImage;
     private final Sprite pressedImage;
@@ -31,7 +29,6 @@ public abstract class ImageButton extends AbstractButton {
     private long lastPressedAt;
     private long hoveringStartedAt;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected ImageButton(final int x, final int y, final int width, final int height, final Sprite baseImage, final Sprite pressedImage) {
         super(x, y, width, height, Component.empty());
@@ -39,7 +36,6 @@ public abstract class ImageButton extends AbstractButton {
         this.pressedImage = pressedImage;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ImageButton withMessage(final Component component) {
         setMessage(component);
@@ -65,7 +61,6 @@ public abstract class ImageButton extends AbstractButton {
         renderBackground(graphics, mouseX, mouseY, partialTicks);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
         RenderSystem.enableDepthTest();

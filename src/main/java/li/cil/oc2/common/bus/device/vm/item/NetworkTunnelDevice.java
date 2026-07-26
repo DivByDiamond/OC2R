@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.item;
 
@@ -24,7 +23,6 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         super(identity);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -42,7 +40,6 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         TunnelManager.unregisterEndpoint(getNetworkInterface());
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @EventBusSubscriber(modid = API.MOD_ID)
     private static final class TunnelManager {

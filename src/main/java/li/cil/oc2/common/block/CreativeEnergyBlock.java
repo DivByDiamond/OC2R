@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -33,7 +32,6 @@ public final class CreativeEnergyBlock extends Block implements EntityBlock {
         return BlockCodecs.CREATIVE_ENERGY.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable

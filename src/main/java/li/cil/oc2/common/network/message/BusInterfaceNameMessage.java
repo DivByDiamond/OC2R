@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -34,7 +33,6 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static BusInterfaceNameMessage ToClient(final BusCableBlockEntity busCable, final Direction side, final String value) {
         return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);

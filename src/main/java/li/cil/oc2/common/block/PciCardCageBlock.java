@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -61,7 +60,6 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock implement
         return BlockCodecs.PCI_CARD_CAGE.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public int getEnergyConsumption() {
@@ -99,7 +97,6 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock implement
         return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LIT);

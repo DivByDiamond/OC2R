@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -12,7 +11,6 @@ public final class LockedSlot extends Slot {
         super(container, slot, x, y);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public boolean mayPlace(final ItemStack p_40231_) {

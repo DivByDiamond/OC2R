@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.item;
 
@@ -30,24 +29,20 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
     private static final String ADDRESS_TAG_NAME = "address";
 
-    ///////////////////////////////////////////////////////////////
 
     private final int size;
     private PhysicalMemory device;
 
-    ///////////////////////////////////////////////////////////////
 
     private final OptionalAddress address = new OptionalAddress();
     private UUID blobHandle;
 
-    ///////////////////////////////////////////////////////////////
 
     public MemoryDevice(final ItemStack identity, final int capacity) {
         super(identity);
         size = capacity;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -106,7 +101,6 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {

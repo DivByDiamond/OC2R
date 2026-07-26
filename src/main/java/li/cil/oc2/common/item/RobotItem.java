@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -111,7 +110,6 @@ public final class RobotItem extends ModItem {
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void initializeClient(final Consumer<IClientItemExtensions> consumer) {

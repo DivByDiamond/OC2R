@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -26,7 +25,6 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
     private final ComputerBlockEntity computer;
     private static boolean captureInputState = Config.captureInputDefaultState;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractComputerContainer(final MenuType<?> type, final int id, final Player player, final ComputerBlockEntity computer, final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
@@ -35,7 +33,6 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         this.computer.addTerminalUser(player);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void switchToInventory() {
@@ -101,7 +98,6 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         this.computer.removeTerminalUser(player);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected static IntPrecisionContainerData createEnergyInfo(final IEnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {

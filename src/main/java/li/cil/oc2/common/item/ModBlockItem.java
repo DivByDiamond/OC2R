@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -24,7 +23,6 @@ public class ModBlockItem extends BlockItem {
         this(block, createProperties());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -33,7 +31,6 @@ public class ModBlockItem extends BlockItem {
         super.appendHoverText(stack, context, tooltip, flag);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected static Properties createProperties() {
         return new Properties();

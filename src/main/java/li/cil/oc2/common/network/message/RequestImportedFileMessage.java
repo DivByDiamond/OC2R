@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,7 +30,6 @@ public record RequestImportedFileMessage(int id) implements AbstractMessage {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final MutableComponent FILE_TOO_LARGE_TEXT = text("message.{mod}.import_file.file_too_large");
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final StreamCodec<ByteBuf, RequestImportedFileMessage> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
@@ -46,7 +44,6 @@ public record RequestImportedFileMessage(int id) implements AbstractMessage {
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         FileChooserScreen.openFileChooserForLoad(new FileChooserCallback() {

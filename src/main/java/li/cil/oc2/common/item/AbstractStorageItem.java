@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -14,11 +13,9 @@ import net.minecraft.world.item.component.CustomData;
 public abstract class AbstractStorageItem extends ModItem {
     private static final String CAPACITY_TAG_NAME = "capacity";
 
-    ///////////////////////////////////////////////////////////////////
 
     private final int defaultCapacity;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractStorageItem(final Properties properties, final int defaultCapacity) {
         super(properties);
@@ -29,7 +26,6 @@ public abstract class AbstractStorageItem extends ModItem {
         this(createProperties(), capacity);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public int getCapacity(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -32,7 +31,6 @@ public record MonitorPowerMessage(BlockPos pos, boolean power) implements Abstra
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorPowerMessage(final MonitorBlockEntity monitor, final boolean power) {
         this(monitor.getBlockPos(), power);

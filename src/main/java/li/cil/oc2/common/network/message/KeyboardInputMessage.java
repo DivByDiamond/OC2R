@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,7 +30,6 @@ public record KeyboardInputMessage(BlockPos pos, int keycode, boolean isDown) im
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public KeyboardInputMessage(final KeyboardBlockEntity keyboard, final int keycode, final boolean isDown) {
         this(keyboard.getBlockPos(), keycode, isDown);

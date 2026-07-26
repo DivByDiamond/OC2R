@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -42,7 +41,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
     private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
     private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
-    ///////////////////////////////////////////////////////////////////
 
     public KeyboardBlock() {
         super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
@@ -54,7 +52,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         return BlockCodecs.KEYBOARD.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -86,7 +83,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -95,7 +91,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         return BlockEntities.KEYBOARD.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
@@ -103,7 +98,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         builder.add(FACING);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     private static void openKeyboardScreen(final KeyboardBlockEntity keyboard) {

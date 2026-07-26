@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault

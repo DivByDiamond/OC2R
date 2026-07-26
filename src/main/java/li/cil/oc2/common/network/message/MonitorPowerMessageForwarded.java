@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,7 +30,6 @@ public record MonitorPowerMessageForwarded(BlockPos pos, boolean power) implemen
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorPowerMessageForwarded(final MonitorBlockEntity monitor, final boolean power) {
         this(monitor.getBlockPos(), power);

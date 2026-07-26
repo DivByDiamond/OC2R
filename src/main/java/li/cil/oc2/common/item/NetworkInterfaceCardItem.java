@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -33,7 +32,6 @@ public final class NetworkInterfaceCardItem extends ModItem {
     private static final String SIDE_CONFIGURATION_TAG_NAME = "sides";
     private static final Component IS_CONFIGURED_TEXT = withFormat(text("item.{mod}.network_interface_card.is_configured"), ChatFormatting.GREEN);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void setSideConfiguration(final ItemStack stack, final Direction side, final boolean enabled) {
         final int index = side.get3DDataValue();
@@ -84,7 +82,6 @@ public final class NetworkInterfaceCardItem extends ModItem {
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
 
     @Override
@@ -108,7 +105,6 @@ public final class NetworkInterfaceCardItem extends ModItem {
         return InteractionResultHolder.sidedSuccess(itemStack, player.level().isClientSide());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     private void openConfigurationScreen(final Player player, final InteractionHand hand) {

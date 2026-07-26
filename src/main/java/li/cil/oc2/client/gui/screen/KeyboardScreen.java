@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -29,11 +28,9 @@ public final class KeyboardScreen extends Screen {
 
     private static final MutableComponent CLOSE_INFO = Component.translatable("gui.oc2r.keyboard.close_info");
 
-    ///////////////////////////////////////////////////////////////////
 
     private final KeyboardBlockEntity keyboard;
 
-    ///////////////////////////////////////////////////////////////////
 
     public static boolean hideHotbar = false;
 
@@ -42,7 +39,6 @@ public final class KeyboardScreen extends Screen {
         this.keyboard = keyboard;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void init() {
@@ -119,7 +115,6 @@ public final class KeyboardScreen extends Screen {
         hideHotbar = false;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void renderBorderOverlay(final GuiGraphics graphics) {
         graphics.fill(BORDER_SIZE, BORDER_SIZE, width - BORDER_SIZE, BORDER_SIZE * 2, BORDER_COLOR);

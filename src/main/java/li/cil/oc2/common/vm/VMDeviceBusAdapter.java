@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm;
 
@@ -18,17 +17,14 @@ public final class VMDeviceBusAdapter {
     private final ArrayList<VMDevice> unmountedDevices = new ArrayList<>();
     private BaseAddressProvider baseAddressProvider = unused -> OptionalLong.empty();
 
-    ///////////////////////////////////////////////////////////////////
 
     private final GlobalVMContext globalContext;
 
-    ///////////////////////////////////////////////////////////////////
 
     public VMDeviceBusAdapter(final GlobalVMContext context) {
         this.globalContext = context;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void setBaseAddressProvider(final BaseAddressProvider provider) {
         baseAddressProvider = provider;

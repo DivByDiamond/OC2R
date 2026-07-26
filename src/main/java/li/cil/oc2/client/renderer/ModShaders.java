@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer;
 
@@ -41,11 +40,9 @@ public final class ModShaders {
         "ProjectorCamera4", "ProjectorCamera5", "ProjectorCamera6", "ProjectorCamera7",
     };
 
-    ///////////////////////////////////////////////////////////////////
 
     private static ShaderInstance projectorsShader;
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     public static ShaderInstance getProjectorsShader() {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.item;
 
@@ -17,7 +16,6 @@ public final class BlockOperationsModuleDeviceProvider extends AbstractItemDevic
         super(Items.BLOCK_OPERATIONS_MODULE);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {

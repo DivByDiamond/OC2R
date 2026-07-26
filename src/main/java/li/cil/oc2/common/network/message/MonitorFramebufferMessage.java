@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,7 +30,6 @@ public record MonitorFramebufferMessage(BlockPos pos, ByteBuffer frame) implemen
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(pos, MonitorBlockEntity.class,

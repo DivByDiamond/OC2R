@@ -33,14 +33,12 @@ public final class NetworkSwitchBlock extends HorizontalDirectionalBlock impleme
         return BlockCodecs.NETWORK_SWITCH.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
         return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -49,7 +47,6 @@ public final class NetworkSwitchBlock extends HorizontalDirectionalBlock impleme
         return BlockEntities.NETWORK_SWITCH.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity.energy;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -15,13 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class CreativeEnergyBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     private final Direction[] SIDES = Direction.values();
 
-    ///////////////////////////////////////////////////////////////////
 
     public CreativeEnergyBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CREATIVE_ENERGY.get(), pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void serverTick() {

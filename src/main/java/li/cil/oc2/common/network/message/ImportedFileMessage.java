@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -17,7 +16,6 @@ import java.util.function.Supplier;
 public record ImportedFileMessage(int id, String name, byte[] data) implements AbstractMessage {
     private static final int MAX_NAME_LENGTH = 256;
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final StreamCodec<ByteBuf, ImportedFileMessage> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
@@ -36,7 +34,6 @@ public record ImportedFileMessage(int id, String name, byte[] data) implements A
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         FileImportExportCardItemDevice.setImportedFile(id, name, data);

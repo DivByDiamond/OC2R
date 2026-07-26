@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.util;
 
@@ -10,7 +9,6 @@ import net.minecraft.world.item.component.CustomData;
 public final class ItemDeviceUtils {
     private static final String ITEM_DEVICE_DATA_TAG_NAME = "item_device";
 
-    ///////////////////////////////////////////////////////////////////
 
     public static CompoundTag getItemDeviceData(final ItemStack stack) {
         return ItemStackUtils.getModDataTag(stack).getCompound(ITEM_DEVICE_DATA_TAG_NAME);

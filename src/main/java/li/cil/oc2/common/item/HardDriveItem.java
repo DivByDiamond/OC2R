@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -15,7 +14,6 @@ import javax.annotation.Nullable;
 public final class HardDriveItem extends AbstractStorageItem {
     @Nullable private String descriptionId;
 
-    ///////////////////////////////////////////////////////////////////
 
     public HardDriveItem(final int capacity, final DyeColor defaultColor) {
         super(
@@ -25,7 +23,6 @@ public final class HardDriveItem extends AbstractStorageItem {
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected String getOrCreateDescriptionId() {

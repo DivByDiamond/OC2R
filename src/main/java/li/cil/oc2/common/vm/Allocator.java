@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm;
 
@@ -25,12 +24,10 @@ import java.util.stream.Collectors;
 public final class Allocator {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final HashMap<UUID, Allocation> ALLOCATIONS = new HashMap<>();
     private static long allocated;
 
-    ///////////////////////////////////////////////////////////////////
 
     /**
      * Creates a new handle that can be used to claim memory.
@@ -92,14 +89,12 @@ public final class Allocator {
         allocated = 0;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void handleServerStopped(final ServerStoppedEvent event) {
         resetAndCheckLeaks();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static boolean checkArgs(final UUID handle, final int size) {
         if (ALLOCATIONS.containsKey(handle)) {

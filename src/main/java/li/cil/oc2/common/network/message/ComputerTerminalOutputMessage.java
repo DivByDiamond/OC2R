@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,7 +30,6 @@ public record ComputerTerminalOutputMessage(BlockPos pos, byte[] data) implement
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ComputerTerminalOutputMessage(final ComputerBlockEntity computer, final ByteBuffer data) {
         this(computer.getBlockPos(), data.array());

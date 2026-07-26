@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -37,7 +36,6 @@ public final class BusInterfaceScreen extends Screen {
 
     private int left, top;
 
-    ///////////////////////////////////////////////////////////////////
 
     public BusInterfaceScreen(final BusCableBlockEntity busCable, final Direction side) {
         super(Items.BUS_INTERFACE.get().getDescription());
@@ -45,7 +43,6 @@ public final class BusInterfaceScreen extends Screen {
         this.side = side;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void init() {
@@ -148,7 +145,6 @@ public final class BusInterfaceScreen extends Screen {
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void setInterfaceName(final String name) {
         Network.sendToServer(BusInterfaceNameMessage.ToServer(busCable, side, name));

@@ -29,7 +29,6 @@ public final class NetworkCableRenderer {
     private static final ArrayList<NetworkCableConnection> connections = new ArrayList<>();
     private static final WeakHashMap<NetworkConnectorBlockEntity, ArrayList<NetworkCableConnection>> connectionsByConnector = new WeakHashMap<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
         connectors.add(connector);
@@ -40,7 +39,6 @@ public final class NetworkCableRenderer {
         isDirty = true;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void handleChunkUnloadEvent(final ChunkEvent.Unload event) {

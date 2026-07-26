@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -35,7 +34,6 @@ public record ProjectorFramebufferMessage(BlockPos pos, ByteBuffer frame) implem
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(pos, ProjectorBlockEntity.class,

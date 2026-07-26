@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer.blockentity;
 
@@ -28,16 +27,13 @@ public final class ChargerRenderer implements BlockEntityRenderer<ChargerBlockEn
     private static final float EFFECT_SCALE_START = 0.6f;
     private static final float EFFECT_SCALE_END = 0.8f;
 
-    ///////////////////////////////////////////////////////////////////
 
     private float offset = 0;
 
-    ///////////////////////////////////////////////////////////////////
 
     public ChargerRenderer(final BlockEntityRendererProvider.Context ignoredContext) {
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void render(final ChargerBlockEntity charger, final float partialTicks, final PoseStack stack, final MultiBufferSource bufferSource, final int light, final int overlay) {

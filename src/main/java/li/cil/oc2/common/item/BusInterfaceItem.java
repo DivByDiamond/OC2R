@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -38,7 +37,6 @@ public final class BusInterfaceItem extends ModBlockItem {
         super(Blocks.BUS_CABLE.get());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -74,7 +72,6 @@ public final class BusInterfaceItem extends ModBlockItem {
     public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     @Override
@@ -91,7 +88,6 @@ public final class BusInterfaceItem extends ModBlockItem {
             .setValue(connectionTypeProperty, ConnectionType.INTERFACE);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static InteractionResult tryAddToBlock(final UseOnContext context, final Direction side) {
         final Level level = context.getLevel();

@@ -9,7 +9,6 @@ public class TcpHeader {
     private static final byte OPTION_NOOP = 1;
     private static final byte OPTION_MAX_SEGMENT_SIZE = 2;
 
-    ////////////////////////////////////////////////////////////////////////////
 
     public int sequenceNumber, acknowledgmentNumber;
     public boolean urg, ack, psh, rst, syn, fin; // flags
@@ -19,7 +18,6 @@ public class TcpHeader {
     // Options
     public int maxSegmentSize;
 
-    ////////////////////////////////////////////////////////////////////////////
 
     public boolean read(final ByteBuffer data) {
         if (data.remaining() < MIN_HEADER_SIZE_NO_PORTS) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.managed;
 
@@ -11,7 +10,6 @@ public final class ManagedInterruptController implements InterruptController {
     private int raisedInterruptMask;
     private boolean isValid = true;
 
-    ///////////////////////////////////////////////////////////////////
 
     public ManagedInterruptController(final InterruptController parent, final InterruptValidator validator) {
         this.parent = parent;
@@ -19,7 +17,6 @@ public final class ManagedInterruptController implements InterruptController {
         raisedInterruptMask = validator.getMaskedInterrupts(parent.getRaisedInterrupts());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void invalidate() {
         isValid = false;

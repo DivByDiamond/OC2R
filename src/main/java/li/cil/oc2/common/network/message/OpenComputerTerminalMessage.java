@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -29,13 +28,11 @@ public record OpenComputerTerminalMessage(BlockPos pos) implements AbstractMessa
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public OpenComputerTerminalMessage(final ComputerBlockEntity computer) {
         this(computer.getBlockPos());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(context, pos, ComputerBlockEntity.class,

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.widget;
 
@@ -37,7 +36,6 @@ public final class MonitorDisplayWidget {
     public static final int WIDTH = Sprites.MONITOR_SCREEN.width;
     public static final int HEIGHT = Sprites.MONITOR_SCREEN.height;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final AbstractMonitorDisplayScreen<?> parent;
     private final AbstractMonitorContainer container;
@@ -45,7 +43,6 @@ public final class MonitorDisplayWidget {
     private boolean isMouseOverTerminal;
     private MonitorGUIRenderer.RendererView rendererView;
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorDisplayWidget(final AbstractMonitorDisplayScreen<?> parent) {
         this.parent = parent;
@@ -138,7 +135,6 @@ public final class MonitorDisplayWidget {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private Minecraft getClient() {
         return parent.getMinecraft();

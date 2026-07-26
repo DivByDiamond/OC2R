@@ -28,7 +28,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
 
     private final MonitorDisplayWidget monitorDisplayWidget;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractMonitorDisplayScreen(final T container, final Inventory playerInventory, final Component title) {
         super(container, playerInventory, title);
@@ -37,7 +36,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         imageHeight = Sprites.MONITOR_SCREEN.height;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void containerTick() {
@@ -93,7 +91,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         monitorDisplayWidget.onClose();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     // We use this text box to indicate to Forge that we want all input, and event handlers should not be allowed
     // to steal input from us (e.g. via custom key bindings). Since Forge is lazy and just uses getDeclaredFields
@@ -149,7 +146,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
     protected void renderLabels(final GuiGraphics graphics, final int mouseX, final int mouseY) {
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private boolean shouldRenderEnergyBar() {
         return menu.getEnergyCapacity() > 0;

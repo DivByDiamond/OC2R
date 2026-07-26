@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.block;
 
@@ -19,13 +18,11 @@ import java.util.concurrent.CompletableFuture;
 public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryFlasherContainer> extends AbstractBlockStorageDevice<BlockDevice, T> {
     private static final ByteBufferBlockDevice EMPTY_BLOCK_DEVICE = ByteBufferBlockDevice.create(0, false);
 
-    ///////////////////////////////////////////////////////////////
 
     public FlashMemoryFlasherDevice(final T container) {
         super(container, false);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     public void updateBlockDevice(final CompoundTag tag) {
         joinOpenJob();
@@ -75,7 +72,6 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @Override
     protected CompletableFuture<BlockDevice> createBlockDevice() {

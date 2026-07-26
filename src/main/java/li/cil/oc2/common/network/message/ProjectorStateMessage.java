@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -33,7 +32,6 @@ public record ProjectorStateMessage(BlockPos pos, boolean isMounted, boolean has
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ProjectorStateMessage(final ProjectorBlockEntity projector, final boolean isMounted, final boolean hasEnergy) {
         this(projector.getBlockPos(), isMounted, hasEnergy);

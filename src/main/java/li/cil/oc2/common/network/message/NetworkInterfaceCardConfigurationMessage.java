@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -37,7 +36,6 @@ public record NetworkInterfaceCardConfigurationMessage(InteractionHand hand, Dir
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();

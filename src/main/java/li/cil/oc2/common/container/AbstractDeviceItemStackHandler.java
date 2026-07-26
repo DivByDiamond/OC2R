@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -23,7 +22,6 @@ public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackH
         this.providerSupplier = providerSupplier;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public abstract AbstractItemDeviceBusElement getBusElement();
 
@@ -85,7 +83,6 @@ public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackH
         return 1;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void onContentsChanged(final int slot) {

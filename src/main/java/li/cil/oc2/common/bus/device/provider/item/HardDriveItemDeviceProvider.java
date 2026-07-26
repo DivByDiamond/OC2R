@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.item;
 
@@ -21,7 +20,6 @@ public final class HardDriveItemDeviceProvider extends AbstractItemDeviceProvide
         super(HardDriveItem.class);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void unmount(@Nullable final ItemDeviceQuery query, final CompoundTag tag) {
@@ -29,7 +27,6 @@ public final class HardDriveItemDeviceProvider extends AbstractItemDeviceProvide
         HardDriveDevice.unmount(tag);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
@@ -41,7 +38,6 @@ public final class HardDriveItemDeviceProvider extends AbstractItemDeviceProvide
         return Math.max(1, (int) Math.round(getCapacity(query) * Config.hardDriveEnergyPerMegabytePerTick / Constants.MEGABYTE));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static int getCapacity(final ItemDeviceQuery query) {
         final ItemStack stack = query.getItemStack();

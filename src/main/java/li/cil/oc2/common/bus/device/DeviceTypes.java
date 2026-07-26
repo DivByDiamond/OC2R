@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device;
 
@@ -31,14 +30,12 @@ public final class DeviceTypes {
     public static final DeviceType NETWORK_TUNNEL = register(ItemTags.DEVICES_NETWORK_TUNNEL);
     public static final DeviceType CPU = register(ItemTags.DEVICES_CPU);
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent // on the mod event bus
     public static void registerRegistries(NewRegistryEvent event) {
         event.register(DeviceType.REGISTRY);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static DeviceType register(final TagKey<Item> tag) {
         final String id = tag.location().getPath().replaceFirst("^devices/", "");

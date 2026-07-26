@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.item;
 
@@ -18,7 +17,6 @@ public final class FileImportExportCardItemDeviceProvider extends AbstractItemDe
         super(Items.FILE_IMPORT_EXPORT_CARD);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected boolean matches(final ItemDeviceQuery query) {
@@ -36,7 +34,6 @@ public final class FileImportExportCardItemDeviceProvider extends AbstractItemDe
         return Config.fileImportExportCardEnergyPerTick;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private Optional<TerminalUserProvider> getTerminalUserProvider(final ItemDeviceQuery query) {
         if (query.getContainerBlockEntity().isPresent()) {

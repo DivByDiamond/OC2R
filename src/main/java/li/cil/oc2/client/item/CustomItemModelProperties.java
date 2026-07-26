@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.item;
 
@@ -10,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 public final class CustomItemModelProperties {
     public static final ResourceLocation COLOR_PROPERTY = ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "color");
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize() {
         ItemProperties.register(Items.HARD_DRIVE_SMALL.get(), CustomItemModelProperties.COLOR_PROPERTY,

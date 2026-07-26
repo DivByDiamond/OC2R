@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.device;
 
@@ -15,14 +14,12 @@ import java.util.BitSet;
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public static final int STRIDE = 2;
 
-    ///////////////////////////////////////////////////////////////
 
     private final int width, height;
     private final ByteBuffer buffer;
     private int length;
     private final BitSet dirtyLines;
 
-    ///////////////////////////////////////////////////////////////
 
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
@@ -38,7 +35,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         this.dirtyLines.set(0, height / 2);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     public void close() {
         synchronized (buffer) {
@@ -148,7 +144,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private void setDirty(final int offset) {
         final int pixelY = offset / (width * STRIDE);

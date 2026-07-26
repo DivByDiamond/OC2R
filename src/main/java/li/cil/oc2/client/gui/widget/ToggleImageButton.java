@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.widget;
 
@@ -8,7 +7,6 @@ public abstract class ToggleImageButton extends ImageButton {
     private final Sprite activeImage;
     private boolean isToggled;
 
-    ///////////////////////////////////////////////////////////////////
 
     public ToggleImageButton(
         final int x, final int y,
@@ -20,7 +18,6 @@ public abstract class ToggleImageButton extends ImageButton {
         this.activeImage = activeImage;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public boolean isToggled() {
         return isToggled;

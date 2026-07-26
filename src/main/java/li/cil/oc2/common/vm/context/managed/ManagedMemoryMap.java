@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.managed;
 
@@ -15,13 +14,11 @@ final class ManagedMemoryMap implements MemoryMap {
     private final MemoryMap memoryMap;
     private boolean isValid = true;
 
-    ///////////////////////////////////////////////////////////////////
 
     ManagedMemoryMap(final MemoryMap memoryMap) {
         this.memoryMap = memoryMap;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void invalidate() {
         isValid = false;

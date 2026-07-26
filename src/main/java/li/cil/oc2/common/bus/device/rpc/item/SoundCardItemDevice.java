@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.rpc.item;
 
@@ -26,19 +25,16 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     private final int COOLDOWN_IN_TICKS = TickUtils.toTicks(Duration.ofSeconds(Config.soundCardCoolDownSeconds));
     private static final int MAX_FIND_RESULTS = 25;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final Supplier<Optional<BlockLocation>> location;
     private long gameTimeCooldownExpiresAt;
 
-    ///////////////////////////////////////////////////////////////////
 
     public SoundCardItemDevice(final ItemStack identity, final Supplier<Optional<BlockLocation>> location) {
         super(identity, "sound");
         this.location = location;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Callback
     public void playSound(@Nullable @Parameter("name") final String name) {

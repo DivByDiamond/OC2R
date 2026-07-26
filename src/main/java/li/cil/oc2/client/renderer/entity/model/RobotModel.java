@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer.entity.model;
 
@@ -23,7 +22,6 @@ public final class RobotModel extends EntityModel<Robot> {
     public static final ModelLayerLocation ROBOT_MODEL_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "robot"), "main");
     public static final ResourceLocation ROBOT_ENTITY_TEXTURE = ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "textures/entity/robot/robot.png");
 
-    ///////////////////////////////////////////////////////////////////
 
     private final ModelPart topRenderer;
     private final ModelPart baseRenderer;
@@ -31,7 +29,6 @@ public final class RobotModel extends EntityModel<Robot> {
     private float baseY, topY;
     private final float[] topRotation = new float[3];
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotModel(final ModelPart modelPart) {
         topRenderer = modelPart.getChild("top");
@@ -57,7 +54,6 @@ public final class RobotModel extends EntityModel<Robot> {
         return LayerDefinition.create(meshDefinition, 64, 64);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void setupAnim(final Robot entity, final float limbSwing, final float limbSwingAmount, final float ageInTicks, final float netHeadYaw, final float headPitch) {

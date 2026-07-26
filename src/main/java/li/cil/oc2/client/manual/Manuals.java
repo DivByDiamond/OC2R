@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.manual;
 
@@ -31,11 +30,9 @@ public final class Manuals {
     private static final DeferredRegister<DocumentProvider> CONTENT_PROVIDERS = DeferredRegister.create(Constants.DOCUMENT_PROVIDER_REGISTRY, Constants.MOD_ID);
     private static final DeferredRegister<Tab> TABS = DeferredRegister.create(Constants.TAB_REGISTRY, Constants.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredHolder<ManualModel, Manual> MANUAL = MANUALS.register("manual", Manual::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         MANUALS.register(modBus);

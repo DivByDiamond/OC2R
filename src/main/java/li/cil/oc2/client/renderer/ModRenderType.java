@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer;
 
@@ -55,7 +54,6 @@ public abstract class ModRenderType extends RenderType {
             .setCullState(CULL)
             .createCompositeState(false));
 
-    ///////////////////////////////////////////////////////////////////
 
     public static RenderType getNetworkCable() {
         return NETWORK_CABLE;
@@ -105,7 +103,6 @@ public abstract class ModRenderType extends RenderType {
         return GATEWAY_PARTICLE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private ModRenderType(final String name, final VertexFormat format, final VertexFormat.Mode drawMode, final int bufferSize, final boolean useDelegate, final boolean needsSorting, final Runnable setupTask, final Runnable clearTask) {
         super(name, format, drawMode, bufferSize, useDelegate, needsSorting, setupTask, clearTask);

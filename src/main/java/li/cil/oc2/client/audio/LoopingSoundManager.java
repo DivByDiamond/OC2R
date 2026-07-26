@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.audio;
 
@@ -11,7 +10,6 @@ import java.util.WeakHashMap;
 public final class LoopingSoundManager {
     private static final WeakHashMap<BlockEntity, LoopingBlockEntitySound> BLOCK_ENTITY_SOUNDS = new WeakHashMap<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void play(final BlockEntity blockEntity, final SoundEvent sound, final int delay) {
         stop(blockEntity);

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.util;
 
@@ -15,7 +14,6 @@ import java.util.function.Predicate;
 public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     private final Predicate<Item> predicate;
 
-    ///////////////////////////////////////////////////////////////////
 
     private AbstractItemDeviceProvider(final Predicate<Item> predicate) {
         this.predicate = predicate;
@@ -33,7 +31,6 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
         this.predicate = i -> true;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public final Optional<ItemDevice> getDevice(final ItemDeviceQuery query) {
@@ -45,7 +42,6 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
         return matches(query) ? getItemDeviceEnergyConsumption(query) : 0;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected boolean matches(final ItemDeviceQuery query) {
         final ItemStack stack = query.getItemStack();

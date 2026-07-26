@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -35,14 +34,12 @@ public final class NetworkHubBlock extends HorizontalDirectionalBlock implements
         return BlockCodecs.NETWORK_HUB.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
         return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -51,7 +48,6 @@ public final class NetworkHubBlock extends HorizontalDirectionalBlock implements
         return BlockEntities.NETWORK_HUB.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

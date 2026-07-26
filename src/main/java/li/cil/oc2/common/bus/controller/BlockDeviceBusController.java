@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.controller;
 
@@ -38,14 +37,12 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
 
     private final BlockEntity blockEntity;
 
-    ///////////////////////////////////////////////////////////////////
 
     public BlockDeviceBusController(final DeviceBusElement root, final int baseEnergyConsumption, final BlockEntity blockEntity) {
         super(root, baseEnergyConsumption);
         this.blockEntity = blockEntity;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void setDeviceContainersChanged() {
@@ -65,7 +62,6 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
         busChunks.clear();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void onAfterBusScan() {
@@ -112,7 +108,6 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
         trackedChunks.addAll(newTrackedChunks);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void addListeners(final Collection<ChunkLocation> trackedChunks) {
         for (final ChunkLocation trackedChunk : trackedChunks) {

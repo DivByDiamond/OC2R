@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.global;
 
@@ -22,7 +21,6 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     private final GlobalMemoryAllocator memoryAllocator;
     private final GlobalEventBus eventBus;
 
-    ///////////////////////////////////////////////////////////////////
 
     // We track currently claimed interrupts and memory ranges so that after loading we
     // avoid potentially new devices (due external code changes, etc.) to grab interrupts
@@ -37,7 +35,6 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     @SuppressWarnings("FieldMayBeFinal")
     private final MemoryRangeList reservedMemoryRanges = new MemoryRangeList();
 
-    ///////////////////////////////////////////////////////////////////
 
     public GlobalVMContext(final Board board) {
         this.memoryMap = new GlobalMemoryMap(board.getMemoryMap());
@@ -48,7 +45,6 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
         this.eventBus = new GlobalEventBus();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void updateReservations() {
         reservedInterrupts.clear();

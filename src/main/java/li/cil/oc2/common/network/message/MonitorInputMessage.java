@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -31,13 +30,11 @@ public record MonitorInputMessage(BlockPos pos, int keycode, boolean isDown) imp
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorInputMessage(final MonitorBlockEntity keyboard, final int keycode, final boolean isDown) {
         this(keyboard.getBlockPos(), keycode, isDown);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(context, pos, MonitorBlockEntity.class,

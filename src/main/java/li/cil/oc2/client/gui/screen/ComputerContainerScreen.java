@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -20,7 +19,6 @@ public final class ComputerContainerScreen extends AbstractMachineInventoryScree
         inventoryLabelY = imageHeight - 94;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void renderBg(final GuiGraphics graphics, final float partialTicks, final int mouseX, final int mouseY) {

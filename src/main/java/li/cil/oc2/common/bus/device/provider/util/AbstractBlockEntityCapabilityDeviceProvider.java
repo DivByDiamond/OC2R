@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.util;
 
@@ -19,7 +18,6 @@ import java.util.function.Supplier;
 public abstract class AbstractBlockEntityCapabilityDeviceProvider<TCapability, TBlockEntity extends BlockEntity> extends AbstractBlockEntityDeviceProvider<TBlockEntity> {
     private final Supplier<BlockCapability<TCapability, @Nullable Direction>> capabilitySupplier;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractBlockEntityCapabilityDeviceProvider(final BlockEntityType<TBlockEntity> blockEntityType, final Supplier<BlockCapability<TCapability, @Nullable Direction>> capabilitySupplier) {
         super(blockEntityType);
@@ -30,7 +28,6 @@ public abstract class AbstractBlockEntityCapabilityDeviceProvider<TCapability, T
         this.capabilitySupplier = capabilitySupplier;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected final Optional<Device> getBlockDevice(final BlockDeviceQuery query, final TBlockEntity blockEntity) {

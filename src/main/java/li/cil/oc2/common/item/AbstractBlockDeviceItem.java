@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -18,11 +17,9 @@ import javax.annotation.Nullable;
 public abstract class AbstractBlockDeviceItem extends ModItem {
     public static final String DATA_TAG_NAME = "data";
 
-    ///////////////////////////////////////////////////////////////////
 
     private final ResourceLocation defaultData;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractBlockDeviceItem(final Properties properties, final ResourceLocation defaultData) {
         super(properties.stacksTo(1));
@@ -33,7 +30,6 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
         this(createProperties(), defaultData);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     public BlockDeviceData getData(final ItemStack stack) {
@@ -90,7 +86,6 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("unused")
     protected ResourceLocation getDefaultData() {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -42,7 +41,6 @@ public final class NetworkInterfaceCardScreen extends Screen {
     public static final int INFO_TEXT_WIDTH = UI_WIDTH - 16;
     public static final int MAX_BLOCK_PITCH = 30;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final Player player;
     private final InteractionHand hand;
@@ -55,7 +53,6 @@ public final class NetworkInterfaceCardScreen extends Screen {
     private boolean isDraggingBlock, hasDraggedBlock;
     private double dragStartX, dragStartY;
 
-    ///////////////////////////////////////////////////////////////////
 
     public NetworkInterfaceCardScreen(final Player player, final InteractionHand hand) {
         super(Items.NETWORK_INTERFACE_CARD.get().getDescription());
@@ -63,7 +60,6 @@ public final class NetworkInterfaceCardScreen extends Screen {
         this.hand = hand;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void init() {
@@ -159,7 +155,6 @@ public final class NetworkInterfaceCardScreen extends Screen {
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private boolean isMouseInBlockArea(final double mouseX, final double mouseY) {
         return mouseX >= left + 37 && mouseX <= left + (37 + 102) &&

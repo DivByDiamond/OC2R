@@ -17,12 +17,10 @@ public final class DefaultNetworkLayer implements NetworkLayer {
 
     private static final Random random = new Random();
 
-    ////////////////////////////////////////////////////////////////////////
 
     private static final int IPv4_HEADER_SIZE = 20;
     private static final int IPv4_VERSION = 4; // obviously...
 
-    ////////////////////////////////////////////////////////////////////////
 
     private final TransportLayer transportLayer;
 

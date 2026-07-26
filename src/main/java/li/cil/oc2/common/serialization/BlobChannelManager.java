@@ -19,12 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 final class BlobChannelManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final Map<UUID, FileChannel> BLOBS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<FileChannel>> PENDING_OPERATIONS = new ConcurrentHashMap<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     private static Path getBlobPath(final UUID handle) {
         if (BlobStorage.dataDirectory == null) {
@@ -33,7 +31,6 @@ final class BlobChannelManager {
         return BlobStorage.dataDirectory.resolve(handle.toString());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     static CompletableFuture<FileChannel> openAsync(final UUID handle) {
         final FileChannel existingChannel = BLOBS.get(handle);
@@ -57,7 +54,6 @@ final class BlobChannelManager {
             }, "Open blob " + h));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     static CompletableFuture<Void> closeAsync(final UUID handle) {
         boolean debug = false;
@@ -83,7 +79,6 @@ final class BlobChannelManager {
         }, "Close blob " + handle);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     static CompletableFuture<Void> deleteAsync(final UUID handle) {
         boolean debug = false;
@@ -108,7 +103,6 @@ final class BlobChannelManager {
         }, "Deleting blob " + handle);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     static void closeAll() {
         for (final CompletableFuture<FileChannel> future : PENDING_OPERATIONS.values()) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer.entity;
 
@@ -16,14 +15,12 @@ import net.minecraft.world.item.ItemStack;
 public final class RobotWithoutLevelRenderer extends BlockEntityWithoutLevelRenderer {
     private final RobotModel model;
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotWithoutLevelRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet) {
         super(dispatcher, modelSet);
         model = new RobotModel(modelSet.bakeLayer(RobotModel.ROBOT_MODEL_LAYER));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void renderByItem(final ItemStack itemStack, final ItemDisplayContext transformType, final PoseStack poseStack, final MultiBufferSource bufferSource, final int combinedLight, final int combinedOverlay) {

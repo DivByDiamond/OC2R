@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.item;
 
@@ -14,13 +13,11 @@ import java.util.function.Supplier;
 public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability> extends AbstractItemDeviceProvider {
     private final Supplier<ItemCapability<TCapability, @Nullable Void>> capabilitySupplier;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractItemStackCapabilityDeviceProvider(final Supplier<ItemCapability<TCapability, @Nullable Void>> capabilitySupplier) {
         this.capabilitySupplier = capabilitySupplier;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {

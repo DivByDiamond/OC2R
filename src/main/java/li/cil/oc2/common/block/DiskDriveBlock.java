@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -41,7 +40,6 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
         return BlockCodecs.DISK_DRIVE.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -99,7 +97,6 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
         return super.useWithoutItem(state, level, pos, player, hitResult);
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -108,7 +105,6 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
         return BlockEntities.DISK_DRIVE.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

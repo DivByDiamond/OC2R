@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.device;
 
@@ -13,12 +12,10 @@ import java.nio.ByteOrder;
 public final class PciRootPortDevice implements MemoryMappedDevice {
 
 
-    ///////////////////////////////////////////////////////////////
 
     private final ByteBuffer buffer;
     private int length;
 
-    ///////////////////////////////////////////////////////////////
 
     public PciRootPortDevice(final int bus_count, final int window_size, final ByteBuffer buffer) {
 
@@ -39,7 +36,6 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
 
     }
 
-    ///////////////////////////////////////////////////////////////
 
     public void close() {
         synchronized (buffer) {
@@ -90,6 +86,5 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
 }

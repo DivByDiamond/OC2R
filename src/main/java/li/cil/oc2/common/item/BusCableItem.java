@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -31,7 +30,6 @@ public final class BusCableItem extends ModBlockItem {
         super(block);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -52,7 +50,6 @@ public final class BusCableItem extends ModBlockItem {
         return result.consumesAction() ? result : super.place(context);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static InteractionResult tryAddToBlock(final UseOnContext context) {
         final Level level = context.getLevel();

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.model;
 
@@ -23,7 +22,6 @@ public final class BusCableModel implements IUnbakedGeometry<BusCableModel> {
         this.proxy = proxy;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BakedModel bake(final IGeometryBakingContext owner, final ModelBaker baker, final Function<Material, TextureAtlasSprite> spriteGetter, final ModelState modelTransform, final ItemOverrides overrides) {

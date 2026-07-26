@@ -19,18 +19,15 @@ import java.util.concurrent.CompletionException;
 public final class BlobStorage {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final LevelResource BLOBS_FOLDER_NAME = new LevelResource(API.MOD_ID + "-blobs");
     static volatile Path dataDirectory;
 
-    ///////////////////////////////////////////////////////////////////
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(BlobStorage::close, "OC2 BlobStorage Shutdown"));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void setServer(final MinecraftServer server) {
         final Path newDataDir = server.getWorldPath(BLOBS_FOLDER_NAME);
@@ -61,7 +58,6 @@ public final class BlobStorage {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static UUID allocateHandle() {
         return UUID.randomUUID();
@@ -75,7 +71,6 @@ public final class BlobStorage {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static CompletableFuture<FileChannel> getOrOpenAsync(final UUID handle) {
         return BlobChannelManager.openAsync(handle);
@@ -93,7 +88,6 @@ public final class BlobStorage {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static CompletableFuture<Void> closeAsync(final UUID handle) {
         return BlobChannelManager.closeAsync(handle);
@@ -108,7 +102,6 @@ public final class BlobStorage {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static CompletableFuture<Void> deleteAsync(final UUID handle) {
         return BlobChannelManager.deleteAsync(handle);

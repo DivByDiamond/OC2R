@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -22,14 +21,12 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
     private final MonitorBlockEntity monitor;
     private static boolean captureInputState = Config.captureInputDefaultState;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractMonitorContainer(final MenuType<?> type, final int id, final Player player, final MonitorBlockEntity monitor, final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
         this.monitor = monitor;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void switchToInventory() {}
@@ -78,7 +75,6 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
         return level != null && stillValid(ContainerLevelAccess.create(level, monitor.getBlockPos()), player, Blocks.MONITOR.get());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected static IntPrecisionContainerData createEnergyInfo(final IEnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {

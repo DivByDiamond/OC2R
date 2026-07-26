@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record ComputerPowerMessage(BlockPos pos, boolean power) implements Abstr
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ComputerPowerMessage(final ComputerBlockEntity computer, final boolean power) {
         this(computer.getBlockPos(), power);

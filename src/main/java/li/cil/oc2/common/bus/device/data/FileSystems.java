@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.data;
 
@@ -42,7 +41,6 @@ public final class FileSystems {
 
     public static ResourceManager _resourceManager = null;
 
-    ///////////////////////////////////////////////////////////////////
 
     public static FileSystem getLayeredFileSystem() {
         return LAYERED_FILE_SYSTEM;
@@ -79,7 +77,6 @@ public final class FileSystems {
         BLOCK_DEVICE_DATA.clear();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void handleAddReloadListenerEvent(final AddReloadListenerEvent event) {
@@ -91,7 +88,6 @@ public final class FileSystems {
         reset();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static void reload(final ResourceManager resourceManager) {
         _resourceManager = resourceManager;
@@ -165,7 +161,6 @@ public final class FileSystems {
         fileSystems.forEach(LAYERED_FILE_SYSTEM::addLayer);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final class ReloadListener implements PreparableReloadListener {
         public static final ReloadListener INSTANCE = new ReloadListener();

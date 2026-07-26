@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -40,7 +39,6 @@ public final class ComputerTerminalContainer extends AbstractComputerContainer {
         throw new IllegalArgumentException();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private ComputerTerminalContainer(final int id, final Player player, final ComputerBlockEntity computer, final IntPrecisionContainerData energyInfo) {
         super(Containers.COMPUTER_TERMINAL.get(), id, player, computer, energyInfo);

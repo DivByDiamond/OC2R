@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -31,13 +30,11 @@ public final class NetworkTunnelItem extends ModItem {
     private static final String TUNNEL_ID_TAG_NAME = "tunnel";
     private static final String TUNNEL_ID_TEXT = key("tooltip.{mod}.network_tunnel_id");
 
-    ///////////////////////////////////////////////////////////////////
 
     public NetworkTunnelItem() {
         super(createProperties().stacksTo(1));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static Optional<UUID> getTunnelId(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
@@ -54,7 +51,6 @@ public final class NetworkTunnelItem extends ModItem {
         });
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void appendHoverText(final ItemStack stack, final TooltipContext context, final List<Component> components, final TooltipFlag flag) {
@@ -75,7 +71,6 @@ public final class NetworkTunnelItem extends ModItem {
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void openContainerScreen(final ServerPlayer player, final InteractionHand hand) {
         NetworkTunnelContainer.createServer(player, hand);

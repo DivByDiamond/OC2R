@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.model;
 
@@ -41,7 +40,6 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel[] supportModelByFace;
 
 
-    ///////////////////////////////////////////////////////////////////
 
     BusCableBakedModel(BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel[] supportModelByFace) {
         this.proxy = proxy;
@@ -162,7 +160,6 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         return blockEntityData;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static boolean isNeighborInDirectionSolid(final BlockAndTintGetter level, final BlockPos pos, final Direction direction) {
         final BlockPos neighborPos = pos.relative(direction);
@@ -186,7 +183,6 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         return true;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public record BusCableSupportSide(Direction value) { }
 

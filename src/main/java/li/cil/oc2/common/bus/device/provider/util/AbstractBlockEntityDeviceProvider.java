@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.util;
 
@@ -12,7 +11,6 @@ import java.util.Optional;
 public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> extends AbstractBlockDeviceProvider {
     private final BlockEntityType<T> blockEntityType;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractBlockEntityDeviceProvider(final BlockEntityType<T> blockEntityType) {
         this.blockEntityType = blockEntityType;
@@ -22,7 +20,6 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> e
         this.blockEntityType = null;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("unchecked")
     @Override
@@ -43,7 +40,6 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> e
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected abstract Optional<Device> getBlockDevice(final BlockDeviceQuery query, final T blockEntity);
 }

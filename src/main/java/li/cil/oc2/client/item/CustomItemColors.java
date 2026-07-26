@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.item;
 
@@ -32,11 +31,9 @@ public final class CustomItemColors {
     public static final int BROWN = 0xFF745C42;
     public static final int YELLOW = 0xFFFFFC49;
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final int NO_TINT = 0xFFFFFFFF;
 
-    ///////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("deprecation")
     public static void initialize() {

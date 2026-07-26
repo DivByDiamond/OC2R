@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record RobotPowerMessage(int entityId, boolean power) implements Abstract
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotPowerMessage(final Robot robot, final boolean power) {
         this(robot.getId(), power);

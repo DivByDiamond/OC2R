@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -26,7 +25,6 @@ public final class ManualItem extends AbstractManualItem {
         super(new Item.Properties());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @OnlyIn(Dist.CLIENT)
     @Override
@@ -35,7 +33,6 @@ public final class ManualItem extends AbstractManualItem {
         TooltipUtils.tryAddDescription(stack, tooltip);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected ManualModel getManualModel() {

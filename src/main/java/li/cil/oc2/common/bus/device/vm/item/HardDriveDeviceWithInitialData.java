@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.item;
 
@@ -18,14 +17,12 @@ import java.util.function.Supplier;
 public final class HardDriveDeviceWithInitialData extends HardDriveDevice {
     private final BlockDevice base;
 
-    ///////////////////////////////////////////////////////////////////
 
     public HardDriveDeviceWithInitialData(final ItemStack identity, final BlockDevice base, final boolean readonly, final Supplier<Optional<BlockLocation>> location) {
         super(identity, (int) base.getCapacity(), readonly, location);
         this.base = base;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected CompletableFuture<ByteBufferBlockDevice> createBlockDevice() {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.terminal;
 
@@ -79,7 +78,6 @@ public final class TerminalInput {
         addDECCKMSequence(GLFW.GLFW_KEY_LEFT, "\033OD");
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     public static byte[] getSequence(final int keyCode) {
@@ -95,7 +93,6 @@ public final class TerminalInput {
         return map.get(keyCode);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Nullable
     public static byte[] getDECCKMSequence(final int keyCode) {
@@ -111,7 +108,6 @@ public final class TerminalInput {
         return map.get(keyCode);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static void addSequence(final int keyCode, final char ch) {
         addSequence(keyCode, (byte) ch);
@@ -140,7 +136,6 @@ public final class TerminalInput {
             .put(keyCode, sequence);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static void addDECCKMSequence(final int keyCode, final char ch) {
         addDECCKMSequence(keyCode, (byte) ch);

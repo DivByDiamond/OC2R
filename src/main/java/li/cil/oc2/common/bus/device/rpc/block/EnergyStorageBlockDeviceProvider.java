@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.rpc.block;
 
@@ -18,7 +17,6 @@ public final class EnergyStorageBlockDeviceProvider extends AbstractBlockEntityC
         super(() -> Capabilities.EnergyStorage.BLOCK);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<Device> getBlockDevice(final BlockDeviceQuery query, final IEnergyStorage value) {

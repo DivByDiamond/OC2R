@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -88,7 +87,6 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
         screen.updateButtons();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private FileEntry createFileEntry(final Path file) {
         return new FileEntry(file, Component.literal(file.getFileName().toString()));
@@ -106,7 +104,6 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
             .withStyle(s -> s.withColor(color)));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     final class FileEntry extends ObjectSelectionList.Entry<FileEntry> {
         @Nullable final Path file;

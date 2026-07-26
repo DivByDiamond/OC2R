@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity.network;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -32,18 +31,15 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
     private int frameCount;
     private long lastGameTime;
 
-    ///////////////////////////////////////////////////////////////////
 
     private final NetworkInterface[] adjacentBlockInterfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT];
     private boolean haveAdjacentBlocksChanged = true;
 
-    ///////////////////////////////////////////////////////////////////
 
     public NetworkHubBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.NETWORK_HUB.get(), pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public byte[] readEthernetFrame() {
@@ -76,7 +72,6 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
         });
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -92,7 +87,6 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private Stream<NetworkInterface> getAdjacentInterfaces() {
         validateAdjacentBlocks();

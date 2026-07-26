@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.global;
 
@@ -21,14 +20,12 @@ final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, MemoryRa
     private final ArrayList<MemoryRange> reservedMemoryRanges;
     private final Object2LongArrayMap<MemoryMappedDevice> claimedMemoryRanges = new Object2LongArrayMap<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     public GlobalMemoryRangeAllocator(final Board board, final ArrayList<MemoryRange> reservedMemoryRanges) {
         this.board = board;
         this.reservedMemoryRanges = reservedMemoryRanges;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public Collection<MemoryRange> getClaimedMemoryRanges() {
         final ArrayList<MemoryRange> result = new ArrayList<>();

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.block;
 
@@ -30,25 +29,21 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
     public static final int WINDOW_SIZE = 16 * 1024 * 1024;
 
 
-    ///////////////////////////////////////////////////////////////
 
     private final BooleanConsumer onMountedChanged;
 
     @Nullable private PciRootPortDevice device;
 
-    ///////////////////////////////////////////////////////////////
 
     private final OptionalAddress address = new OptionalAddress();
     @Nullable private UUID blobHandle;
 
-    ///////////////////////////////////////////////////////////////
 
     public PciCardCageDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
         super(identity);
         this.onMountedChanged = onMountedChanged;
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -115,7 +110,6 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {

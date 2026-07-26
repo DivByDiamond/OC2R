@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value) implements A
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ComputerBusStateMessage(final ComputerBlockEntity computer, final BusState value) {
         this(computer.getBlockPos(), value);

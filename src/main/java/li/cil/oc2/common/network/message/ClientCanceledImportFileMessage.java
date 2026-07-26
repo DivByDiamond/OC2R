@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -26,7 +25,6 @@ public record ClientCanceledImportFileMessage(int id) implements AbstractMessage
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();

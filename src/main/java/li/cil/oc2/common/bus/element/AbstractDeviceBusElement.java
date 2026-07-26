@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.element;
 
@@ -15,7 +14,6 @@ public abstract class AbstractDeviceBusElement implements DeviceBusElement {
     protected final Object2IntArrayMap<Device> devices = new Object2IntArrayMap<>();
     protected final HashSet<DeviceBusController> controllers = new HashSet<>();
 
-    ///////////////////////////////////////////////////////////////////
 
     public void addDevice(final Device device) {
         devices.put(device, 0);
@@ -79,7 +77,6 @@ public abstract class AbstractDeviceBusElement implements DeviceBusElement {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected void scanDevices() {
         for (final DeviceBusController controller : controllers) {

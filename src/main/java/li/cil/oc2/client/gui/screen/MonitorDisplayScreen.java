@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -15,13 +14,11 @@ public final class MonitorDisplayScreen extends AbstractMonitorDisplayScreen<Mon
 
     public static boolean hideHotbar = false;
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorDisplayScreen(final MonitorDisplayContainer container, final Inventory playerInventory, final Component title) {
         super(container, playerInventory, title);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void setFocusIndicatorEditBox(final EditBox editBox) {

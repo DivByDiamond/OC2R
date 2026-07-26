@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -18,7 +17,6 @@ import net.neoforged.bus.api.IEventBus;
 public final class Containers {
     private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(BuiltInRegistries.MENU, API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredHolder<MenuType<?>, MenuType<ComputerInventoryContainer>> COMPUTER = CONTAINERS.register("computer", () -> IMenuTypeExtension.create(ComputerInventoryContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<ComputerTerminalContainer>> COMPUTER_TERMINAL = CONTAINERS.register("computer_terminal", () -> IMenuTypeExtension.create(ComputerTerminalContainer::createClient));
@@ -27,7 +25,6 @@ public final class Containers {
     public static final DeferredHolder<MenuType<?>, MenuType<RobotTerminalContainer>> ROBOT_TERMINAL = CONTAINERS.register("robot_terminal", () -> IMenuTypeExtension.create(RobotTerminalContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<NetworkTunnelContainer>> NETWORK_TUNNEL = CONTAINERS.register("network_tunnel", () -> IMenuTypeExtension.create(NetworkTunnelContainer::createClient));
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         CONTAINERS.register(modBus);

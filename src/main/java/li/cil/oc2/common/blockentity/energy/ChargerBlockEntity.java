@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity.energy;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -42,20 +41,17 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         EntitySelector.NO_SPECTATORS
             .and(EntitySelector.ENTITY_STILL_ALIVE);
 
-    ///////////////////////////////////////////////////////////////////
 
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.chargerEnergyStorage);
     private boolean isCharging;
     private final AABB renderBoundingBox;
 
-    ///////////////////////////////////////////////////////////////////
 
     public ChargerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CHARGER.get(), pos, state);
         renderBoundingBox = new AABB(pos.above());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public void clientTick() {
@@ -105,7 +101,6 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         return singletonList("charger");
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -121,7 +116,6 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void chargeBlock() {
         assert level != null;

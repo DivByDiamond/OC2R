@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity.keyboard;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -23,19 +22,16 @@ import org.jetbrains.annotations.Nullable;
 public final class KeyboardBlockEntity extends ModBlockEntity {
     private final KeyboardDevice<BlockEntity> keyboardDevice = new KeyboardDevice<>(this);
 
-    ///////////////////////////////////////////////////////////////////
 
     public KeyboardBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.KEYBOARD.get(), pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleInput(final int keycode, final boolean isDown) {
         keyboardDevice.sendKeyEvent(keycode, isDown);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {

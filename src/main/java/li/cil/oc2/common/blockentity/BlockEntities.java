@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.blockentity;
 
@@ -32,7 +31,6 @@ import net.neoforged.bus.api.IEventBus;
 public final class BlockEntities {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, API.MOD_ID);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BusCableBlockEntity>> BUS_CABLE = register(Blocks.BUS_CABLE, BusCableBlockEntity::new);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChargerBlockEntity>> CHARGER = register(Blocks.CHARGER, ChargerBlockEntity::new);
@@ -52,13 +50,11 @@ public final class BlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<InternetGateWayBlockEntity>> INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY, InternetGateWayBlockEntity::new);
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize(IEventBus modBus) {
         BLOCK_ENTITIES.register(modBus);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("ConstantConditions") // .build(null) is fine
     private static <B extends Block, T extends BlockEntity> DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> register(final DeferredBlock<B> block, final BlockEntityType.BlockEntitySupplier<T> factory) {

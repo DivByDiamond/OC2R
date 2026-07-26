@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -33,13 +32,11 @@ public record NetworkConnectorConnectionsMessage(BlockPos pos, ArrayList<BlockPo
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public NetworkConnectorConnectionsMessage(final NetworkConnectorBlockEntity networkConnector) {
         this(networkConnector.getBlockPos(), new ArrayList<>(networkConnector.getConnectedPositions()));
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(pos, NetworkConnectorBlockEntity.class,

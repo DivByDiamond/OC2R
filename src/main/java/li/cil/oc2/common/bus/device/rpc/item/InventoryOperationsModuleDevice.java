@@ -22,7 +22,6 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
     private final Robot robot;
     private final InventoryOperationsHelper helper;
 
-    ///////////////////////////////////////////////////////////////////
 
     public InventoryOperationsModuleDevice(final ItemStack identity, final Entity entity, final Robot robot) {
         super(identity, "inventory_operations");
@@ -31,7 +30,6 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
         this.helper = new InventoryOperationsHelper(entity, robot);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Callback
     public void move(@Parameter("fromSlot") final int fromSlot,

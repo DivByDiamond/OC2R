@@ -16,7 +16,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Random random = new Random();
 
-    ///////////////////////////////////////////////////
 
     private static final short MAC_PREFIX = 0x5ed1;
 
@@ -26,7 +25,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     private static final String MAC_ADDRESS_TAG = "MACAddress";
     private static final String IPv4_ADDRESS_TAG = "IPv4Address";
 
-    ///////////////////////////////////////////////////
 
     private final NetworkLayer networkLayer;
 
@@ -39,7 +37,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private boolean needArpResponse = false;
 
-    ///////////////////////////////////////////////////
 
     public DefaultLinkLocalLayer(final LayerParameters layerParameters, final NetworkLayer networkLayer) {
         layerParameters.getSavedState().ifPresent(tag -> {

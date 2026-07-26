@@ -31,7 +31,6 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     boolean needsAcknowledgment = false;
 
-    /////////////////////////////////////////////////////////////////////////
 
     public StreamSessionImpl(
         final int ipAddress,

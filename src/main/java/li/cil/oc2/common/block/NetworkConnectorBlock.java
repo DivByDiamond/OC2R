@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -34,7 +33,6 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
     private static final VoxelShape NEG_Y_SHAPE = Block.box(5, 0, 5, 11, 9, 11);
     private static final VoxelShape POS_Y_SHAPE = Block.box(5, 7, 5, 11, 16, 11);
 
-    ///////////////////////////////////////////////////////////////////
 
     public NetworkConnectorBlock() {
         super(Properties
@@ -52,7 +50,6 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
         return BlockCodecs.NETWORK_CONNECTOR.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static Direction getFacing(final BlockState state) {
         return FaceAttachedHorizontalDirectionalBlock.getConnectedDirection(state);
@@ -73,7 +70,6 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
         };
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -88,7 +84,6 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
         return TickableBlockEntity.createServerTicker(level, type, BlockEntities.NETWORK_CONNECTOR.get());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACE, FACING);

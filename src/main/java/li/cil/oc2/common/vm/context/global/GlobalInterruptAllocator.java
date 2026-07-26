@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.vm.context.global;
 
@@ -15,7 +14,6 @@ final class GlobalInterruptAllocator implements InterruptAllocator, InterruptVal
     private final int interruptCount;
     private int managedMask;
 
-    ///////////////////////////////////////////////////////////////////
 
     public GlobalInterruptAllocator(final int interruptCount, final BitSet reservedInterrupts) {
         this.reservedInterrupts = reservedInterrupts;
@@ -25,7 +23,6 @@ final class GlobalInterruptAllocator implements InterruptAllocator, InterruptVal
         this.claimedInterrupts.set(0);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public BitSet getClaimedInterrupts() {
         return claimedInterrupts;

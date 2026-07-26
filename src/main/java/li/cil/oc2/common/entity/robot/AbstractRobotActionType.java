@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.entity.robot;
 
@@ -8,13 +7,11 @@ import net.minecraft.nbt.CompoundTag;
 public abstract class AbstractRobotActionType {
     private final int id;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractRobotActionType(final int id) {
         this.id = id;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public int getId() {
         return id;

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.gui.screen;
 
@@ -21,7 +20,6 @@ public abstract class AbstractModContainerScreen<T extends AbstractContainerMenu
         super(container, playerInventory, title);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public boolean isMouseOver(final int mouseX, final int mouseY, final int x, final int y, final int width, final int height) {
         final int localMouseX = mouseX - leftPos;
@@ -46,7 +44,6 @@ public abstract class AbstractModContainerScreen<T extends AbstractContainerMenu
         renderTooltip(graphics, mouseX, mouseY);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void renderTooltip(final GuiGraphics graphics, final int mouseX, final int mouseY) {

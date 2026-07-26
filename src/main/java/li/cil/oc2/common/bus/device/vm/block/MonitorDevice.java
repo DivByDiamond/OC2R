@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.block;
 
@@ -30,25 +29,21 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     public static final int WIDTH = 640;
     public static final int HEIGHT = 480;
 
-    ///////////////////////////////////////////////////////////////
 
     private final BooleanConsumer onMountedChanged;
 
     @Nullable private SimpleFramebufferDevice device;
 
-    ///////////////////////////////////////////////////////////////
 
     private final OptionalAddress address = new OptionalAddress();
     @Nullable private UUID blobHandle;
 
-    ///////////////////////////////////////////////////////////////
 
     public MonitorDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
         super(identity);
         this.onMountedChanged = onMountedChanged;
     }
 
-    ///////////////////////////////////////////////////////////////
 
     public boolean hasChanges() {
         final SimpleFramebufferDevice framebufferDevice = device;
@@ -125,7 +120,6 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         }
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {

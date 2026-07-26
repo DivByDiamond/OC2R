@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -46,7 +45,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -58,7 +56,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
             4 /* multipart message id */ +
             2 /* length */;
 
-    ///////////////////////////////////////////////////////////////////
 
     /**
      * Cache for collecting multipart messages on the server into one big buffer again. Discard them after some
@@ -69,7 +66,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         .build();
     private static int lastAssignedMultipartMessageId;
 
-    ///////////////////////////////////////////////////////////////////
 
     private static final Map<Class<? extends AbstractMessage>, Entry> ENTRY_BY_TYPE = new HashMap<>();
     private static final Int2ObjectMap<Entry> ENTRY_BY_ID = new Int2ObjectArrayMap<>();
@@ -86,7 +82,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         ENTRY_BY_ID.put(id, entry);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void sendToServer(final AbstractMessage message) {
         final Entry entry = ENTRY_BY_TYPE.get(message.getClass());
@@ -119,7 +114,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MultipartMessage(final int messageId, final int multipartMessageId, final byte[] data) {
         this.messageId = messageId;
@@ -127,7 +121,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         this.data = data;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         try {
@@ -161,7 +154,6 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private record Entry(int id, StreamCodec<? super FriendlyByteBuf, AbstractMessage> streamCodec) { }
 }

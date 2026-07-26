@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -35,7 +34,6 @@ public record RobotBootErrorMessage(int entityId, @Nullable Component value) imp
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotBootErrorMessage(final Robot robot, @Nullable final Component value) {
         this(robot.getId(), value);

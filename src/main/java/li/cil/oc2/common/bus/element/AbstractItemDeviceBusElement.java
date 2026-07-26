@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.element;
 
@@ -29,7 +28,6 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         super(groupCount);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public boolean groupContains(final int groupIndex, final Device device) {
         for (final ItemEntry entry : groups.get(groupIndex)) {
@@ -68,7 +66,6 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected abstract ItemDeviceQuery makeQuery(final ItemStack stack);
 
@@ -108,7 +105,6 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private void importDeviceDataFromItemStack(final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
         final CompoundTag exportedTag = ItemDeviceUtils.getItemDeviceData(query.getItemStack());
@@ -126,7 +122,6 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     protected final class ItemQueryResult extends GroupQueryResult<ItemEntry, ItemDeviceQuery> {
         @Nullable private final ItemDeviceQuery query;

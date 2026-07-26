@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.client.renderer;
 
@@ -28,7 +27,6 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public enum BusInterfaceNameRenderer {
     INSTANCE;
 
-    ///////////////////////////////////////////////////////////////////
 
     public static void initialize() {
         NeoForge.EVENT_BUS.register(INSTANCE);

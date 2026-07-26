@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network;
 
@@ -25,7 +24,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public final class Network {
     private static final String PROTOCOL_VERSION = "1";
 
-    ///////////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {

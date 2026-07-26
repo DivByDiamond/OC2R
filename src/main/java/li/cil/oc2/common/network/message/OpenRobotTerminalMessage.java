@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -29,7 +28,6 @@ public record OpenRobotTerminalMessage(int entityId) implements AbstractMessage 
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public OpenRobotTerminalMessage(final Robot robot) {
         this(robot.getId());

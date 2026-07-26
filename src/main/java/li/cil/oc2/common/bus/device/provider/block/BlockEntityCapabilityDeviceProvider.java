@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.provider.block;
 
@@ -15,7 +14,6 @@ public final class BlockEntityCapabilityDeviceProvider extends AbstractBlockEnti
         super(() -> Capabilities.Device.BLOCK);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<Device> getBlockDevice(final BlockDeviceQuery query, final Device device) {

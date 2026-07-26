@@ -15,7 +15,6 @@ public class CPUItemDeviceProvider extends AbstractItemDeviceProvider {
         super(CPUItem.class);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {

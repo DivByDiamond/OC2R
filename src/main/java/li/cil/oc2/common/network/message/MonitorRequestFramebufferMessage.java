@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,13 +29,11 @@ public record MonitorRequestFramebufferMessage(BlockPos pos) implements Abstract
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public MonitorRequestFramebufferMessage(final MonitorBlockEntity projector) {
         this(projector.getBlockPos());
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntity(context, pos, MonitorBlockEntity.class,

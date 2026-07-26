@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.rpc.item;
 
@@ -14,14 +13,12 @@ import java.util.List;
 public abstract class AbstractItemRPCDevice extends IdentityProxy<ItemStack> implements RPCDevice, ItemDevice {
     private final ObjectDevice device;
 
-    ///////////////////////////////////////////////////////////////////
 
     protected AbstractItemRPCDevice(final ItemStack identity, final String typeName) {
         super(identity);
         this.device = new ObjectDevice(this, typeName);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public List<String> getTypeNames() {

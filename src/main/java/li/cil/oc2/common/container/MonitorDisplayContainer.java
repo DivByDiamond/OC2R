@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.container;
 
@@ -39,7 +38,6 @@ public final class MonitorDisplayContainer extends AbstractMonitorContainer {
         throw new IllegalArgumentException();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private MonitorDisplayContainer(final int id, final Player player, final MonitorBlockEntity monitor, final IntPrecisionContainerData energyInfo) {
         super(Containers.MONITOR.get(), id, player, monitor, energyInfo);

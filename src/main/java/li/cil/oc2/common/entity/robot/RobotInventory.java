@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.entity.robot;
 
@@ -85,7 +84,6 @@ public class RobotInventory {
         deviceItems.loadItems(provider, container);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private final class RobotItemStackHandlers extends AbstractVMItemStackHandlers {
         public RobotItemStackHandlers(final java.util.function.Supplier<HolderLookup.Provider> providerSupplier) {

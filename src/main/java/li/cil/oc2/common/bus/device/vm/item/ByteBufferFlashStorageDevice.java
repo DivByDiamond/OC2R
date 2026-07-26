@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.item;
 
@@ -34,19 +33,16 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
     private ByteBuffer data;
     private FlashMemoryDevice device;
 
-    ///////////////////////////////////////////////////////////////
 
     // Online persisted data.
     private final OptionalAddress address = new OptionalAddress();
 
-    ///////////////////////////////////////////////////////////////
 
     public ByteBufferFlashStorageDevice(final ItemStack identity, final int size) {
         super(identity);
         this.size = size;
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -103,7 +99,6 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         this.data = bufferData;
     }
 
-    ///////////////////////////////////////////////////////////////
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(12*Constants.MEGABYTE)) {

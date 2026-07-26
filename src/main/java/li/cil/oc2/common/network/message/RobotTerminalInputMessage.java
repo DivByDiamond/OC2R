@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -32,7 +31,6 @@ public record RobotTerminalInputMessage(int entityId, byte[] data) implements Ab
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotTerminalInputMessage(final Robot robot, final ByteBuffer data) {
         this(robot.getId(), data.array());

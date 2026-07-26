@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.bus.device.vm.item;
 
@@ -18,7 +17,6 @@ public final class NetworkInterfaceCardDevice extends AbstractNetworkInterfaceDe
         super(identity);
     }
 
-    ///////////////////////////////////////////////////////////////
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {

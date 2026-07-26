@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.block;
 
@@ -41,7 +40,6 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
         return BlockCodecs.FLASH_MEMORY_FLASHER.get();
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -99,7 +97,6 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
         return super.playerWillDestroy(level, pos, state, player);
     }
 
-    ///////////////////////////////////////////////////////////////////
     // EntityBlock
 
     @Nullable
@@ -108,7 +105,6 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
         return BlockEntities.FLASH_MEMORY_FLASHER.get().create(pos, state);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

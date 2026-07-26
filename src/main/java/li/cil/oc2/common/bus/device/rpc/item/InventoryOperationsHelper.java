@@ -112,7 +112,6 @@ final class InventoryOperationsHelper {
         return taken;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     private ItemStack insertStartingAt(final IItemHandler handler, ItemStack stack, final int startSlot, final boolean simulate) {
         for (int i = 0; i < handler.getSlots(); i++) {

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.item;
 
@@ -11,13 +10,11 @@ import javax.annotation.Nullable;
 public final class MemoryItem extends AbstractStorageItem {
     @Nullable private String descriptionId;
 
-    ///////////////////////////////////////////////////////////////////
 
     public MemoryItem(final int defaultCapacity) {
         super(defaultCapacity);
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     @Override
     protected String getOrCreateDescriptionId() {

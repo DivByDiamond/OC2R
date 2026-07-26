@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -30,7 +29,6 @@ public record ProjectorRequestFramebufferMessage(BlockPos pos) implements Abstra
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public ProjectorRequestFramebufferMessage(final ProjectorBlockEntity projector) {
         this(projector.getBlockPos());

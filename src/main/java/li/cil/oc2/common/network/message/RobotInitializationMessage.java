@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 package li.cil.oc2.common.network.message;
 
@@ -48,7 +47,6 @@ public record RobotInitializationMessage(int entityId, BusState busState, VMRunS
         return TYPE;
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public RobotInitializationMessage(final Robot robot) {
         this (
@@ -60,7 +58,6 @@ public record RobotInitializationMessage(int entityId, BusState busState, VMRunS
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withClientEntity(entityId, Robot.class,
