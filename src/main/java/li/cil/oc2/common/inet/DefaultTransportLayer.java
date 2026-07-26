@@ -236,14 +236,14 @@ public final class DefaultTransportLayer implements TransportLayer {
 
             if (icmpReply != null) {
                 // ICMP message
-                message.updateIpv4(icmpReply.srcIpAddress, icmpReply.dstIpAddress);
+                message.updateIpv4(icmpReply.srcIpAddress(), icmpReply.dstIpAddress());
                 final ByteBuffer data = message.getData();
                 final int position = data.position();
                 data.putInt(0);
-                data.put(icmpReply.payload);
+                data.put(icmpReply.payload());
                 data.limit(data.position());
                 data.position(position);
-                prepareIcmpHeader(data, icmpReply.type, icmpReply.code);
+                prepareIcmpHeader(data, icmpReply.type(), icmpReply.code());
                 icmpReply = null;
                 return PROTOCOL_ICMP;
             }
@@ -466,54 +466,6 @@ public final class DefaultTransportLayer implements TransportLayer {
                         case DROP -> closeSession(session);
                     }
                 }
-            }
-        }
-    }
-
-    private record ICMPReply(byte type, byte code, int srcIpAddress, int dstIpAddress, byte[] payload) {
-    }
-
-    private static final class SessionReceiver implements SessionLayer.Receiver {
-        private SessionBase session = null;
-        private ByteBuffer buffer = null;
-        private int position = 0;
-        private int limit = 0;
-
-        private void prepare(final ByteBuffer buffer) {
-            session = null;
-            this.buffer = buffer;
-            position = buffer.position();
-            limit = buffer.limit();
-        }
-
-        private ByteBuffer getBuffer() {
-            buffer.position(position);
-            return buffer;
-        }
-
-        @Nullable
-        @Override
-        public ByteBuffer receive(final Session session) {
-            buffer.position(position);
-            buffer.limit(limit);
-            this.session = (SessionBase) session;
-            switch (session.getState()) {
-                case NEW:
-                case FINISH:
-                case REJECT:
-                    return null;
-                case ESTABLISHED:
-                    if (session instanceof EchoSession || session instanceof DatagramSession) {
-                        buffer.putLong(0);
-                        return buffer;
-                    } else if (session instanceof StreamSession) {
-                        final StreamSessionImpl stream = (StreamSessionImpl) session;
-                        return stream.getReceiveBuffer();
-                    } else {
-                        throw new IllegalArgumentException("session");
-                    }
-                default:
-                    throw new IllegalStateException();
             }
         }
     }

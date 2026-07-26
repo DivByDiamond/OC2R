@@ -18,11 +18,11 @@
 
 Очерёдность: от самых больших файлов к маленьким, группами по 4 параллельных агента.
 
-#### Группа 1: 4 самых больших файла
-- [ ] ComputerBlockEntity.java (685) → извлечь ComputerItemStackHandlers, ComputerBusElement, ComputerVirtualMachine, ComputerContraptionHelper, ComputerBlockEntityPersistence
-- [ ] ProjectorDepthRenderer.java (614) → извлечь RenderInfo, DepthOnlyRenderTarget, ProjectorCameraEntity
-- [ ] BusCableBlock.java (584) → извлечь ConnectionType, shape-методы
-- [ ] RPCDeviceBusAdapter.java (560) → извлечь RPCDeviceWithIdentifier, EmptyMethodGroup, Message, MethodInvocation, RPCInvocationImpl
+#### Группа 1: 4 самых больших файла ✅
+- [x] ComputerBlockEntity.java (685→499) → извлечены 3 inner класса в подпакеты (bus/, vm/, handler/)
+- [x] ProjectorDepthRenderer.java (614→480) → извлечены DepthOnlyRenderTarget, ProjectorCameraEntity, ProjectorDepthRenderInfo
+- [x] BusCableBlock.java (584→454) → извлечены ConnectionType, BusCableShapeBuilder
+- [x] RPCDeviceBusAdapter.java (560→491) → извлечены все 5 внутренних типов
 
 #### Группа 2: 4 файла 472-520 строк
 - [ ] DefaultTransportLayer.java (520) → извлечь ICMPReply, SessionReceiver

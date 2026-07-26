@@ -1,13 +1,13 @@
 package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
+import li.cil.oc2.common.blockentity.projector.FrameConsumer;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 
-record ProjectorDepthRenderInfo(DynamicTexture texture) implements ProjectorBlockEntity.FrameConsumer {
+record ProjectorDepthRenderInfo(DynamicTexture texture) implements FrameConsumer {
     private static final ThreadLocal<byte[]> RGB = ThreadLocal.withInitial(() -> new byte[3]);
 
     public void close() {

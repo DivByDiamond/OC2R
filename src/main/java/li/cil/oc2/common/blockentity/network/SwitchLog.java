@@ -1,0 +1,76 @@
+package li.cil.oc2.common.blockentity.network;
+
+final class SwitchLog {
+    private static final boolean ENABLED = true;
+    short ingressVlan = 0;
+    short egressVlan = 0;
+    int ingressSide = 0;
+    private final long srcMac;
+    private final long destMac;
+    Integer egressSide = null;
+
+    SwitchLog(short ingressVlan, int ingressSide, long srcMac, long destMac) {
+        this.ingressVlan = ingressVlan;
+        this.ingressSide = ingressSide;
+        this.srcMac = srcMac;
+        this.destMac = destMac;
+    }
+
+    void egressPort(int side) {
+        egressSide = side;
+    }
+
+    void drop(String reason) {
+        if (!ENABLED) return;
+        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
+        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        if (egressSide == null) {
+            System.out.printf(
+                "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
+                inMac,
+                ingressSide,
+                ingressVlan,
+                outMac,
+                reason
+            );
+        } else {
+            System.out.printf(
+                "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s) drop (%s)\n",
+                inMac,
+                ingressSide,
+                ingressVlan,
+                outMac,
+                egressSide,
+                reason
+            );
+        }
+    }
+
+    void emit() {
+        if (!ENABLED) return;
+        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
+        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        System.out.printf(
+            "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
+            inMac,
+            ingressSide,
+            ingressVlan,
+            outMac,
+            egressSide,
+            egressVlan
+        );
+    }
+
+    void flood() {
+        if (!ENABLED) return;
+        String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
+        String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
+        System.out.printf(
+            "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
+            inMac,
+            ingressSide,
+            ingressVlan,
+            outMac
+        );
+    }
+}

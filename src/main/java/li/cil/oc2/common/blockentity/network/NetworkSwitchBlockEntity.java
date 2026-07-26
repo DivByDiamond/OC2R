@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 public final class NetworkSwitchBlockEntity extends ModBlockEntity implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
@@ -285,7 +284,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
         return Optional.empty();
     }
 
-    private static String macLongToString(long mac) {
+    static String macLongToString(long mac) {
         StringBuilder ret = new StringBuilder();
         for (int i = 0; i < 6; i++) {
             if (i != 0) {
@@ -359,153 +358,5 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
         haveAdjacentBlocksChanged = true;
     }
 
-    private static class HostEntry {
-        public final int iface;
-        public final long timestamp;
-        public HostEntry(int iface, long timestamp) {
-            this.iface = iface;
-            this.timestamp = timestamp;
-        }
-    }
 
-    public static class LuaHostEntry {
-        public final String mac;
-        public final long age;
-        public final int side;
-
-        public LuaHostEntry(String mac, long age, int iface) {
-            this.mac = mac;
-            this.age = age;
-            this.side = iface;
-        }
-    }
-
-    private static class PortSettings {
-        /**
-         * The VLAN that is both PVID and untagged vlan. It will be removed on egress and added on ingress. If set to 0
-         * this port is put on the global untagged vlan. The global untagged vlan can ever only be used as an untagged vlan
-         */
-        public short untagged;
-        /**
-         * A list of tagged vlans that will be accepted on both ingress and egress. 0 (the global untagged vlan) is not a valid
-         * value
-         */
-        public final List<Short> tagged;
-        /**
-         * If enabled, packets entering on this port may also leave via this port again
-         */
-        public final boolean hairpin;
-        /**
-         * If this is set, tagged will be ignored. Instead all tagged vlans will be accepted. untagged will still be honored
-         */
-        public final boolean trunkAll;
-
-        public PortSettings(final short untagged, final List<Short> tagged, final boolean hairpin, final boolean trunkAll) {
-            this.untagged = untagged;
-            this.tagged = tagged;
-            this.hairpin = hairpin;
-            this.trunkAll = trunkAll;
-        }
-
-        /**
-         * Default configuration of an unmanaged switch, which just forwards all tagged vlans as well as the untagged vlan
-         * straight through
-         */
-        public PortSettings() {
-            this((short) 0, emptyList(), false, true);
-        }
-
-        public void save(final CompoundTag tag) {
-            tag.put("untagged", ShortTag.valueOf(untagged));
-            tag.put("tagged", new IntArrayTag(tagged.stream().map(s -> (int) s).collect(Collectors.toList())));
-            tag.put("hairpin", ByteTag.valueOf(hairpin));
-            tag.put("trunkAll", ByteTag.valueOf(trunkAll));
-        }
-
-        public static PortSettings load(final CompoundTag tag) {
-            short untagged = tag.getShort("untagged");
-            List<Short> tagged = Arrays.stream(tag.getIntArray("tagged"))
-                .mapToObj(i -> (short) i)
-                .collect(Collectors.toList());
-            boolean hairpin = tag.getBoolean("hairpin");
-            boolean trunkAll = tag.getBoolean("trunkAll");
-
-            return new PortSettings(untagged, tagged, hairpin, trunkAll);
-        }
-    }
-
-    private static class SwitchLog {
-        private static final boolean ENABLED = true;
-        private short ingressVlan = 0;
-        private short egressVlan = 0;
-        private int ingressSide = 0;
-        private final long srcMac;
-        private final long destMac;
-        private Integer egressSide = null;
-
-        public SwitchLog(short ingressVlan, int ingressSide, long srcMac, long destMac) {
-            this.ingressVlan = ingressVlan;
-            this.ingressSide = ingressSide;
-            this.srcMac = srcMac;
-            this.destMac = destMac;
-        }
-
-        public void egressPort(int side) {
-            egressSide = side;
-        }
-
-        public void drop(String reason) {
-            if (!ENABLED) return;
-            String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-            String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
-            if (egressSide == null) {
-                System.out.printf(
-                    "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
-                    inMac,
-                    ingressSide,
-                    ingressVlan,
-                    outMac,
-                    reason
-                );
-            } else {
-                System.out.printf(
-                    "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s) drop (%s)\n",
-                    inMac,
-                    ingressSide,
-                    ingressVlan,
-                    outMac,
-                    egressSide,
-                    reason
-                );
-            }
-        }
-
-        public void emit() {
-            if (!ENABLED) return;
-            String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-            String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
-            System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
-                inMac,
-                ingressSide,
-                ingressVlan,
-                outMac,
-                egressSide,
-                egressVlan
-            );
-        }
-
-        public void flood() {
-            if (!ENABLED) return;
-            String inMac = NetworkSwitchBlockEntity.macLongToString(srcMac);
-            String outMac = NetworkSwitchBlockEntity.macLongToString(destMac);
-            System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
-                inMac,
-                ingressSide,
-                ingressVlan,
-                outMac
-            );
-        }
-    }
 }

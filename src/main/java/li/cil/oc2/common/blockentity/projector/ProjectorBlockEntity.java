@@ -40,20 +40,12 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorBlockEntity extends ModBlockEntity implements TickableBlockEntity {
-    @FunctionalInterface
-    public interface FrameConsumer {
-        void processFrame(final Picture picture);
-    }
-
     ///////////////////////////////////////////////////////////////
 
     public static final int MAX_RENDER_DISTANCE = 16;
@@ -65,27 +57,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     private static final String IS_PROJECTING_TAG_NAME = "projecting";
     private static final String HAS_ENERGY_TAG_NAME = "has_energy";
     private static final String DEVICE_ID_TAG_NAME = "device_id";
-
-    private static final ExecutorService DECODER_WORKERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        thread.setName("Projector Frame Decoder");
-        return thread;
-    });
-
-    /**
-     * Client-side registry of "primary" (non-contraption) ProjectorBlockEntities
-     * keyed by their persistent device id. Same idea as the equivalent map
-     * on ComputerBlockEntity / MonitorBlockEntity: Sable / Create:Aeronautics
-     * creates a virtual clone of the projector at a far-away position for
-     * contraption rendering. The clone never receives
-     * ProjectorFramebufferMessage updates. The BER uses this registry to
-     * find the primary projector (same device id, real BlockPos) and use
-     * its framebuffer + actual world position when setting up the depth
-     * camera.
-     */
-    private static final ConcurrentHashMap<UUID, ProjectorBlockEntity> PRIMARY_BY_DEVICE_ID = new ConcurrentHashMap<>();
-    private static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 
     ///////////////////////////////////////////////////////////////
 
@@ -101,20 +72,20 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
      * the primary projector (which actually receives framebuffer messages)
      * when the BER / depth renderer is asked to render a virtual clone.
      */
-    private UUID deviceId = UUID.randomUUID();
+    UUID deviceId = UUID.randomUUID(); // package-private for ProjectorContraptionHelper
 
     // Video encoding.
     private final H264Encoder encoder = new H264Encoder(new CQPRateControl(12));
-    private final ByteBuffer encoderBuffer = ByteBuffer.allocateDirect(1024 * 1024); // Re-used decompression buffer.
-    private boolean needsIDR; // Whether we need to send a keyframe next.
+    private final ByteBuffer encoderBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+    private boolean needsIDR;
 
     // Video decoding.
     private final H264Decoder decoder = new H264Decoder();
-    @Nullable private CompletableFuture<?> runningDecode; // Current decoding operation, if any, to avoid race conditions.
-    private final ByteBuffer decoderBuffer = ByteBuffer.allocateDirect(1024 * 1024); // Re-used decompression buffer.
-    @Nullable private FrameConsumer frameConsumer; // Where to throw received frames.
+    @Nullable private CompletableFuture<?> runningDecode;
+    private final ByteBuffer decoderBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+    @Nullable private FrameConsumer frameConsumer;
 
-    private AABB renderBounds; // Maximum possible render bounds, assuming we project on furthest away surface.
+    private AABB renderBounds;
     private long lastKeepAliveSentAt;
 
     ///////////////////////////////////////////////////////////////
@@ -134,15 +105,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
             return false;
         }
 
-        // Previously this required the immediate neighbor block in the
-        // projector's facing direction to be non-solid. That broke projectors
-        // placed on Create: Aeronautics airships and other Valkyrien Skies
-        // ship worlds, where the surrounding geometry lives in a separate
-        // ship level and the projector's own level may just be air around
-        // the projector block. We now just require the neighbor chunk to be
-        // loaded (so we don't try to project into unloaded territory) and
-        // let the depth-buffer based projection in ProjectorDepthRenderer
-        // sort out where the light actually lands.
         final Direction facing = getBlockState().getValue(ProjectorBlock.FACING);
         final BlockPos neighborPos = getBlockPos().relative(facing);
         final int neighborChunkX = SectionPos.blockToSectionCoord(neighborPos.getX());
@@ -156,51 +118,8 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
 
     public UUID getDeviceId() { return deviceId; }
 
-    /**
-     * Returns true if this BlockEntity appears to be a Sable/Create:Aeronautics
-     * "virtual clone" — i.e. Sable has teleported its BlockPos to a far-away
-     * virtual position for contraption rendering.
-     */
-    public boolean isContraptionVirtualClone() {
-        final BlockPos pos = getBlockPos();
-        return Math.abs(pos.getX()) > VIRTUAL_POSITION_THRESHOLD
-            || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
-    }
-
-    /**
-     * Look up the "primary" (non-virtual) ProjectorBlockEntity that shares
-     * the same persistent device id as this one. Used by the BER and
-     * ProjectorDepthRenderer to use the primary's framebuffer and actual
-     * world position (the virtual clone's raw BlockPos is a far-away
-     * virtual coordinate unsuitable for depth-camera setup).
-     */
-    @Nullable
     public ProjectorBlockEntity getPrimaryForContraptionRendering() {
-        if (!isContraptionVirtualClone()) {
-            return this;
-        }
-        final ProjectorBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(deviceId);
-        if (primary != null && !primary.isRemoved()) {
-            return primary;
-        }
-        return this;
-    }
-
-    private void registerInClientRegistry() {
-        if (level == null || !level.isClientSide()) {
-            return;
-        }
-        if (isContraptionVirtualClone()) {
-            return;
-        }
-        PRIMARY_BY_DEVICE_ID.put(deviceId, this);
-    }
-
-    private void unregisterFromClientRegistry() {
-        if (level == null || !level.isClientSide()) {
-            return;
-        }
-        PRIMARY_BY_DEVICE_ID.remove(deviceId, this);
+        return ProjectorContraptionHelper.getPrimaryForContraptionRendering(this);
     }
 
     public void setRequiresKeyframe() {
@@ -229,16 +148,12 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
 
     @Override
     public void clientTick() {
-        registerInClientRegistry();
+        ProjectorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
     protected void loadClient() {
-        // ProjectorBlock.getTicker uses createServerTicker, so clientTick()
-        // is never called for projectors. Register here instead — loadClient
-        // is invoked from ModBlockEntity.onLoad() once the BE is added to
-        // a client-side level.
-        registerInClientRegistry();
+        ProjectorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
@@ -286,19 +201,19 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
             deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
         }
-        registerInClientRegistry();
+        ProjectorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        unregisterFromClientRegistry();
+        ProjectorContraptionHelper.unregisterFromClientRegistry(this);
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        unregisterFromClientRegistry();
+        ProjectorContraptionHelper.unregisterFromClientRegistry(this);
     }
 
     @Override
@@ -369,7 +284,7 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
                 }
             } catch (final DataFormatException ignored) {
             }
-        }, DECODER_WORKERS);
+        }, ProjectorDecoderWorkers.INSTANCE);
     }
 
     ///////////////////////////////////////////////////////////////
@@ -413,8 +328,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
             return;
         }
 
-        // We may get called from unmount() of our device, which can be triggered due to chunk unload.
-        // Hence, we need to check the loaded state here, lest we ghost load the chunk, breaking everything.
         if (level != null && !level.isClientSide() && level.isLoaded(getBlockPos())) {
             if (this.isMounted && !isMounted) {
                 Arrays.fill(picture.getPlaneData(0), (byte) -128);
@@ -471,7 +384,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         final BlockPos screenBasePos = projectorPos.relative(blockFacing, MAX_RENDER_DISTANCE);
         final BlockPos screenMinPos = screenBasePos.relative(canvasLeft.getOpposite(), MAX_WIDTH / 2);
         final BlockPos screenMaxPos = screenBasePos.relative(canvasLeft, MAX_WIDTH / 2)
-            // -1 for the MAX_HEIGHT padding, -1 for auto-expansion of AABB constructor
             .relative(canvasUp, MAX_HEIGHT - 2);
 
         renderBounds = new AABB(getBlockPos()).minmax(new AABB(screenMinPos)).minmax(new AABB(screenMaxPos));

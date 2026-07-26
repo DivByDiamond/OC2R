@@ -7,13 +7,10 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.model.BusCableBakedModel;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableBlock;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
-import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
-import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusCableFacadeMessage;
@@ -33,10 +30,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -51,7 +46,6 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
@@ -59,12 +53,6 @@ import static li.cil.oc2.client.model.BusCableBakedModel.*;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class BusCableBlockEntity extends ModBlockEntity {
-    public enum FacadeType {
-        NOT_A_BLOCK,
-        INVALID_BLOCK,
-        VALID_BLOCK,
-    }
-
     private ModelData currentModelData = ModelData.EMPTY;
 
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
@@ -73,7 +61,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
 
     ///////////////////////////////////////////////////////////////////
 
-    private final AbstractBlockDeviceBusElement busElement = new BusCableBusElement();
+    private final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
     private final String[] interfaceNames = new String[Constants.BLOCK_FACE_COUNT];
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
     private final ICapabilityInvalidationListener[] neighborListeners = new NeighborListener[Constants.BLOCK_FACE_COUNT];
@@ -402,77 +390,5 @@ public final class BusCableBlockEntity extends ModBlockEntity {
                 }
             }
         });
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private final class BusCableBusElement extends AbstractBlockDeviceBusElement {
-        @Nullable
-        @Override
-        public Level getLevel() {
-            return BusCableBlockEntity.this.getLevel();
-        }
-
-        @Override
-        public BlockPos getPosition() {
-            return getBlockPos();
-        }
-
-        @Override
-        public boolean canScanContinueTowards(@Nullable final Direction direction) {
-            final ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
-            return connectionType == ConnectionType.CABLE ||
-                connectionType == ConnectionType.INTERFACE;
-        }
-
-        @Override
-        public boolean canDetectDevicesTowards(@Nullable final Direction direction) {
-            final ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
-            return connectionType == ConnectionType.INTERFACE;
-        }
-
-        @Override
-        protected void collectSyntheticDevices(final LevelAccessor level, final BlockPos pos, @Nullable final Direction side, final HashSet<BlockEntry> entries) {
-            super.collectSyntheticDevices(level, pos, side, entries);
-
-            if (side == null || entries.isEmpty()) {
-                return;
-            }
-
-            final String interfaceName = interfaceNames[side.get3DDataValue()];
-            if (!StringUtil.isNullOrEmpty(interfaceName)) {
-                entries.add(new BlockEntry(new BlockDeviceInfo(null, new TypeNameRPCDevice(interfaceName)), side));
-            }
-        }
-
-        @Override
-        public double getEnergyConsumption() {
-            return super.getEnergyConsumption()
-                + Config.busCableEnergyPerTick
-                + BusCableBlock.getInterfaceCount(getBlockState()) * Config.busInterfaceEnergyPerTick;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private static final class NeighborListener implements ICapabilityInvalidationListener {
-        ServerLevel level;
-        AbstractBlockDeviceBusElement busElement;
-        Direction side;
-
-        public NeighborListener(ServerLevel level, AbstractBlockDeviceBusElement busElement, Direction side) {
-            this.level = level;
-            this.busElement = busElement;
-            this.side = side;
-        }
-
-        @Override
-        public boolean onInvalidate() {
-            // We can't touch the level during an invalidate, so schedule it
-            ServerScheduler.schedule(level, () -> {
-                busElement.updateDevicesForNeighbor(side);
-            });
-            return true;
-        }
     }
 }
