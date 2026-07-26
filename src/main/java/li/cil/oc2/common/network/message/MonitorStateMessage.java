@@ -3,7 +3,7 @@
 package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -40,7 +40,7 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
             monitor -> monitor.applyMonitorStateClient(isMounted, hasEnergy));
     }
 }

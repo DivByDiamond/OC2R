@@ -5,7 +5,7 @@ package li.cil.oc2.common.network.message;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -38,7 +38,7 @@ public record ComputerTerminalOutputMessage(BlockPos pos, byte[] data) implement
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
             computer -> computer.getTerminal().putOutput(ByteBuffer.wrap(data)));
     }
 }

@@ -8,7 +8,6 @@ import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.bus.device.vm.event.VMResumedRunningEvent;
-import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.OptionalAddress;
 import li.cil.oc2.common.bus.device.util.OptionalInterrupt;
@@ -24,57 +23,42 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TIdentity> extends IdentityProxy<TIdentity> implements VMDevice, ItemDevice {
     protected static final Logger LOGGER = LogManager.getLogger();
+
+    protected static final ExecutorService WORKERS = DeviceLifecycle.WORKERS;
 
     private static final String DEVICE_TAG_NAME = "device";
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String INTERRUPT_TAG_NAME = "interrupt";
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
 
-    protected static final ExecutorService WORKERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r, "Block Device Initializer");
-        thread.setDaemon(false);
-        return thread;
-    });
-
-    ///////////////////////////////////////////////////////////////
-
     protected final boolean readonly;
+    private final DeviceLifecycle lifecycle = new DeviceLifecycle();
+
     protected VirtIOBlockDevice device;
-    private CompletableFuture<Void> openJob;
 
-    ///////////////////////////////////////////////////////////////
-
-    // Online persisted data.
     private final OptionalAddress address = new OptionalAddress();
     private final OptionalInterrupt interrupt = new OptionalInterrupt();
     private CompoundTag deviceTag;
 
-    // Offline persisted data.
     @Nullable protected UUID blobHandle;
-
-    ///////////////////////////////////////////////////////////////
 
     protected AbstractBlockStorageDevice(final TIdentity identity, final boolean readonly) {
         super(identity);
         this.readonly = readonly;
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
-        if (!allocateDevice(context)) {
+        if (!lifecycle.allocate(context, readonly, createBlockDevice(), this::handleDataAccess)) {
             return VMDeviceLoadResult.fail();
         }
+        device = lifecycle.device;
 
         if (!address.claim(context, device)) {
             return VMDeviceLoadResult.fail();
@@ -97,7 +81,8 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
     @Override
     public void unmount() {
-        closeDevice();
+        lifecycle.close();
+        device = null;
 
         if (blobHandle != null) {
             if (AsyncConfig.SERVER.asyncStorageOperations.get()) {
@@ -189,72 +174,19 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
     @Subscribe
     public void handleResumedRunningEvent(final VMResumedRunningEvent event) {
-        joinOpenJob();
+        lifecycle.joinOpenJob();
     }
 
-    ///////////////////////////////////////////////////////////////
-
-    protected void setOpenJob(final CompletableFuture<Void> job) {
-        joinOpenJob();
-        openJob = job;
+    protected final void joinOpenJob() {
+        lifecycle.joinOpenJob();
     }
 
-    protected void joinOpenJob() {
-        if (openJob != null) {
-            try {
-                openJob.join();
-            } catch (final CompletionException e) {
-                LOGGER.error(e);
-            } finally {
-                openJob = null;
-            }
-        }
+    protected final void setOpenJob(final CompletableFuture<Void> job) {
+        lifecycle.setOpenJob(job);
     }
 
     protected abstract CompletableFuture<TBlock> createBlockDevice();
 
     protected void handleDataAccess() {
     }
-
-    ///////////////////////////////////////////////////////////////
-
-    private boolean allocateDevice(final VMContext context) {
-        if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {
-            return false;
-        }
-
-        device = new VirtIOBlockDevice(context.getMemoryMap(), readonly);
-
-        setOpenJob(createBlockDevice().thenAcceptAsync(blockDevice -> {
-            try {
-                final ListenableBlockDevice listenableData = new ListenableBlockDevice(blockDevice);
-                listenableData.onAccess.add(this::handleDataAccess);
-                device.setBlock(listenableData);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, WORKERS));
-
-        return true;
-    }
-
-    private void closeDevice() {
-        // Join the init job before releasing the device to avoid writes from thread to closed device.
-        // Since we use memory mapped memory, closing the device leads to it holding a dead pointer,
-        // meaning further access to it will hard-crash the JVM.
-        joinOpenJob();
-
-        if (device == null) {
-            return;
-        }
-
-        try {
-            device.close();
-        } catch (final IOException e) {
-            LOGGER.error(e);
-        }
-
-        device = null;
-    }
-
 }

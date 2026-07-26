@@ -1,17 +1,10 @@
 package li.cil.oc2.common.blockentity.misc;
+
+import li.cil.oc2.api.capabilities.NetworkInterface;
+import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.blockentity.TickableBlockEntity;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import li.cil.oc2.api.API;
-import li.cil.oc2.api.capabilities.NetworkInterface;
-import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.inet.InternetAdapter;
 import li.cil.oc2.common.inet.InternetConnection;
@@ -28,14 +21,12 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@EventBusSubscriber(modid = API.MOD_ID)
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public class InternetGateWayBlockEntity extends ModBlockEntity implements NetworkInterface, InternetAdapter {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -47,38 +38,27 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     private static final String STATE_TAG = "internet_adapter";
     private Tag internetState;
 
-    private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.gatewayEnergyStorage);
+    final FixedEnergyStorage energy = new FixedEnergyStorage(Config.gatewayEnergyStorage);
 
-    // Animation stuff
-    public static final int EMITTER_SIDE_PIXELS = 4;
-    public float animProgress[];
-    public boolean animReversed[];
-    public int inboundCount = 0;
-    public int outboundCount = 0;
-    public int handledInboundCount = 0;
-    public int handledOutboundCount = 0;
-    public long lastRender = 0;
-    public int pointer = 0;
+    public final GatewayAnimationState animation = new GatewayAnimationState();
 
     public InternetGateWayBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.INTERNET_GATEWAY.get(), pos, state);
         inboundQueue = new ArrayDeque<>();
         outboundQueue = new ArrayDeque<>();
-        animProgress = new float[EMITTER_SIDE_PIXELS*EMITTER_SIDE_PIXELS];
-        animReversed = new boolean[EMITTER_SIDE_PIXELS*EMITTER_SIDE_PIXELS];
         internetState = null;
         setNeedsLevelUnloadEvent();
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries)  {
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         internetState = tag.get(Constants.INTERNET_ADAPTER_TAG_NAME);
         energy.deserializeNBT(registries, tag.getCompound(Constants.ENERGY_TAG_NAME));
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries)  {
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (internetConnection != null) {
             internetConnection.saveAdapterState()
@@ -91,14 +71,13 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
-        tag.putInt("inbound_count", inboundCount);
-        tag.putInt("outbound_count", outboundCount);
+        tag.putInt("inbound_count", animation.inboundCount);
+        tag.putInt("outbound_count", animation.outboundCount);
         return tag;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider)
-    {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         CompoundTag compoundtag = pkt.getTag();
         if (compoundtag != null) {
             handleUpdateTag(compoundtag, lookupProvider);
@@ -107,10 +86,10 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
 
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
-        inboundCount = tag.getInt("inbound_count");
-        outboundCount = tag.getInt("outbound_count");
-        handledInboundCount = Math.max(handledInboundCount, inboundCount-128);
-        handledOutboundCount = Math.max(handledOutboundCount, outboundCount-128);
+        animation.inboundCount = tag.getInt("inbound_count");
+        animation.outboundCount = tag.getInt("outbound_count");
+        animation.handledInboundCount = Math.max(animation.handledInboundCount, animation.inboundCount - 128);
+        animation.handledOutboundCount = Math.max(animation.handledOutboundCount, animation.outboundCount - 128);
     }
 
     @Override
@@ -136,30 +115,6 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
         }
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlock(
-            Capabilities.NetworkInterface.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final InternetGateWayBlockEntity self) {
-                    return self;
-                }
-                return null;
-            },
-            Blocks.INTERNET_GATEWAY.get()
-        );
-        event.registerBlock(
-            Capabilities.EnergyStorage.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final InternetGateWayBlockEntity self) {
-                    return self.energy;
-                }
-                return null;
-            },
-            Blocks.INTERNET_GATEWAY.get()
-        );
-    }
-
     @Override
     public byte[] receiveEthernetFrame() {
         return outboundQueue.pollFirst();
@@ -183,12 +138,13 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
         }
     }
+
     @Override
     public void sendEthernetFrame(byte[] frame) {
         LOGGER.trace("Got inbound packet");
         if (inboundQueue.size() < QUEUE_MAX) {
             if (tryUseEnergy()) {
-                inboundCount += 1;
+                animation.inboundCount += 1;
                 notifyPlayers();
                 inboundQueue.addLast(frame);
             }
@@ -205,7 +161,7 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
         LOGGER.trace("Got outbound packet");
         if (outboundQueue.size() < QUEUE_MAX) {
             if (tryUseEnergy()) {
-                outboundCount += 1;
+                animation.outboundCount += 1;
                 notifyPlayers();
                 outboundQueue.addLast(frame);
             }
@@ -216,5 +172,4 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
         var orig = new AABB(getBlockPos());
         return orig.setMaxY(orig.getMaxPosition().y + 1);
     }
-
 }

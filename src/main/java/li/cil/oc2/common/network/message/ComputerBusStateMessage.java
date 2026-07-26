@@ -5,7 +5,7 @@ package li.cil.oc2.common.network.message;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.BusState;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -37,7 +37,7 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value) implements A
     }
 
     public void handleMessage(final IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
             computer -> computer.getVirtualMachine().setBusStateClient(value));
     }
 }

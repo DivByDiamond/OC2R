@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -36,7 +36,7 @@ public record DiskDriveFloppyMessage(BlockPos pos, ItemStack data) implements Ab
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, DiskDriveBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, DiskDriveBlockEntity.class,
             diskDrive -> diskDrive.setFloppyClient(data));
     }
 }

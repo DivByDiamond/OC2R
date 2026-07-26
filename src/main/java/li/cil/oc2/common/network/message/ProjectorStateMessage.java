@@ -3,7 +3,7 @@
 package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -40,7 +40,7 @@ public record ProjectorStateMessage(BlockPos pos, boolean isMounted, boolean has
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ProjectorBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ProjectorBlockEntity.class,
             projector -> projector.applyProjectorStateClient(isMounted, hasEnergy));
     }
 }

@@ -5,6 +5,7 @@ package li.cil.oc2.common.network.message;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,7 +41,7 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
     }
 
     public void handleClientMessage(final IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, BusCableBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, BusCableBlockEntity.class,
             busCable -> busCable.setInterfaceName(side, value));
     }
 

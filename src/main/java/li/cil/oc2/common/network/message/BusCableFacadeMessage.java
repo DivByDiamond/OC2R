@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -33,7 +33,7 @@ public record BusCableFacadeMessage(BlockPos pos, ItemStack stack) implements Ab
     ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(final IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, BusCableBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, BusCableBlockEntity.class,
             busCable -> busCable.setFacade(stack));
     }
 }

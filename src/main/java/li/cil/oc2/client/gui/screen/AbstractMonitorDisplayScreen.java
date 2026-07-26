@@ -1,11 +1,8 @@
-/* SPDX-License-Identifier: MIT */
-
 package li.cil.oc2.client.gui.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.MonitorDisplayWidget;
-import li.cil.oc2.client.gui.widget.ToggleImageButton;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMonitorContainer;
@@ -13,7 +10,6 @@ import li.cil.oc2.common.util.TooltipUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
@@ -56,8 +52,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
             return true;
         }
 
-        // Don't close with inventory binding since we usually want to use that as terminal input
-        // even without input capture enabled.
         final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
         if (getMinecraft().options.keyInventory.isActiveAndMatches(input)) {
             return true;
@@ -72,8 +66,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
             return true;
         }
 
-        // Don't close with inventory binding since we usually want to use that as terminal input
-        // even without input capture enabled.
         final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
         if (getMinecraft().options.keyInventory.isActiveAndMatches(input)) {
             return true;
@@ -91,58 +83,8 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         focusIndicatorEditBox.setFocused(true);
         setFocusIndicatorEditBox(focusIndicatorEditBox);
 
-        addRenderableWidget(new ToggleImageButton(
-            leftPos - Sprites.MONITOR_SIDEBAR_1.width + 4, topPos + CONTROLS_TOP + 4,
-            12, 12,
-            Sprites.POWER_BUTTON_BASE,
-            Sprites.POWER_BUTTON_PRESSED,
-            Sprites.POWER_BUTTON_ACTIVE
-        ) {
-            @Override
-            protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {
-            }
-
-            @Override
-            public void onPress() {
-                super.onPress();
-                menu.sendPowerStateToServer(!menu.getPowerState());
-            }
-
-            @Override
-            public boolean isToggled() {
-                return menu.getPowerState();
-            }
-        }).withTooltip(
-            Component.translatable(Constants.COMPUTER_SCREEN_POWER_CAPTION),
-            Component.translatable(Constants.COMPUTER_SCREEN_POWER_DESCRIPTION)
-        );
-
-        addRenderableWidget(new ToggleImageButton(
-            leftPos - Sprites.MONITOR_SIDEBAR_1.width + 4, topPos + CONTROLS_TOP + 4 + 14,
-            12, 12,
-            Sprites.INPUT_BUTTON_BASE,
-            Sprites.INPUT_BUTTON_PRESSED,
-            Sprites.INPUT_BUTTON_ACTIVE
-        ) {
-            @Override
-            protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {
-            }
-
-            @Override
-            public void onPress() {
-                super.onPress();
-
-                getMenu().toggleCaptureInputState();
-            }
-
-            @Override
-            public boolean isToggled() {
-                return getMenu().getCaptureInputState();
-            }
-        }).withTooltip(
-            Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_CAPTION),
-            Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_DESCRIPTION)
-        );
+        addRenderableWidget(new MonitorPowerButton(leftPos - Sprites.MONITOR_SIDEBAR_1.width + 4, topPos + CONTROLS_TOP + 4, menu));
+        addRenderableWidget(new MonitorInputCaptureButton(leftPos - Sprites.MONITOR_SIDEBAR_1.width + 4, topPos + CONTROLS_TOP + 4 + 14, menu));
     }
 
     @Override
@@ -205,7 +147,6 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
 
     @Override
     protected void renderLabels(final GuiGraphics graphics, final int mouseX, final int mouseY) {
-        // This is required to prevent the labels from being rendered
     }
 
     ///////////////////////////////////////////////////////////////////

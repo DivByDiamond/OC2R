@@ -3,7 +3,7 @@
 package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -42,7 +42,7 @@ public record NetworkConnectorConnectionsMessage(BlockPos pos, ArrayList<BlockPo
     ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, NetworkConnectorBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, NetworkConnectorBlockEntity.class,
             networkConnector -> networkConnector.setConnectedPositionsClient(connectedPositions));
     }
 }

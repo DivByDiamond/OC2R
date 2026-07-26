@@ -3,7 +3,7 @@
 package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import li.cil.oc2.common.util.Oc2rStreamCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -38,7 +38,7 @@ public record ProjectorFramebufferMessage(BlockPos pos, ByteBuffer frame) implem
     ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ProjectorBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ProjectorBlockEntity.class,
             projector -> projector.applyNextFrameClient(frame));
     }
 }

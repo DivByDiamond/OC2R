@@ -7,6 +7,7 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
 import li.cil.oc2.client.renderer.ModRenderType;
+import li.cil.oc2.common.blockentity.misc.GatewayAnimationState;
 import li.cil.oc2.common.blockentity.misc.InternetGateWayBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -31,12 +32,12 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
         stack.translate(0.5f, BLOCK_HEIGHT, 0.5f);
         stack.pushPose();
         long time = System.currentTimeMillis();
-        long dt = time - gateWay.lastRender;
-        gateWay.lastRender = time;
+        long dt = time - gateWay.animation.lastRender;
+        gateWay.animation.lastRender = time;
         if (dt > 1000) {
             //Catch up if rendering stopped
-            gateWay.handledInboundCount = gateWay.inboundCount;
-            gateWay.handledOutboundCount = gateWay.outboundCount;
+            gateWay.animation.handledInboundCount = gateWay.animation.inboundCount;
+            gateWay.animation.handledOutboundCount = gateWay.animation.outboundCount;
         }
         double phase = ((double)time)/1000d;
         stack.translate(0f, PORTAL_POSITION+Math.sin(phase/2)*0.03f, 0f);
@@ -50,36 +51,36 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
         stack.popPose();
         stack.translate(0, EMITTER_POSITION, 0);
         matrix = stack.last().pose();
-        int pendingPackets = Math.max(0, gateWay.inboundCount - gateWay.handledInboundCount) + Math.max(0, gateWay.outboundCount - gateWay.handledOutboundCount);
+        int pendingPackets = Math.max(0, gateWay.animation.inboundCount - gateWay.animation.handledInboundCount) + Math.max(0, gateWay.animation.outboundCount - gateWay.animation.handledOutboundCount);
         float speedMod = Math.max(1f, Math.min(1.5f, pendingPackets * 0.025f));
         VertexConsumer packet = bufferSource.getBuffer(ModRenderType.getGateWayParticle());
-        for (int x=0;x<InternetGateWayBlockEntity.EMITTER_SIDE_PIXELS;x++) {
-            for (int z=0;z<InternetGateWayBlockEntity.EMITTER_SIDE_PIXELS;z++) {
-                int flatPos = x * InternetGateWayBlockEntity.EMITTER_SIDE_PIXELS + z;
-                if (gateWay.animProgress[flatPos] < 1f) {
-                    float animPos = gateWay.animProgress[flatPos];
-                    gateWay.animProgress[flatPos] += dt/1000f * speedMod;
-                    if (gateWay.animReversed[flatPos]) {
+        for (int x=0;x<GatewayAnimationState.EMITTER_SIDE_PIXELS;x++) {
+            for (int z=0;z<GatewayAnimationState.EMITTER_SIDE_PIXELS;z++) {
+                int flatPos = x * GatewayAnimationState.EMITTER_SIDE_PIXELS + z;
+                if (gateWay.animation.animProgress[flatPos] < 1f) {
+                    float animPos = gateWay.animation.animProgress[flatPos];
+                    gateWay.animation.animProgress[flatPos] += dt/1000f * speedMod;
+                    if (gateWay.animation.animReversed[flatPos]) {
                         animPos = 1 - animPos;
                     }
                     renderCube(packet, matrix, EMITTER_PIXEL_SIZE/2, (x*2-3f)*EMITTER_PIXEL_SIZE, animPos*(PORTAL_POSITION-EMITTER_POSITION), (z*2-3f)*EMITTER_PIXEL_SIZE, true);
                 }
             }
         }
-        while (gateWay.handledInboundCount<gateWay.inboundCount || gateWay.handledOutboundCount<gateWay.outboundCount) {
-            int scrambledPointer = SCRAMBLER[gateWay.pointer];
-            if (gateWay.animProgress[scrambledPointer]>=1f) {
-                gateWay.pointer += 1;
-                if (gateWay.pointer>=InternetGateWayBlockEntity.EMITTER_SIDE_PIXELS*InternetGateWayBlockEntity.EMITTER_SIDE_PIXELS) {
-                    gateWay.pointer = 0;
+        while (gateWay.animation.handledInboundCount<gateWay.animation.inboundCount || gateWay.animation.handledOutboundCount<gateWay.animation.outboundCount) {
+            int scrambledPointer = SCRAMBLER[gateWay.animation.pointer];
+            if (gateWay.animation.animProgress[scrambledPointer]>=1f) {
+                gateWay.animation.pointer += 1;
+                if (gateWay.animation.pointer>=GatewayAnimationState.EMITTER_SIDE_PIXELS*GatewayAnimationState.EMITTER_SIDE_PIXELS) {
+                    gateWay.animation.pointer = 0;
                 }
-                gateWay.animProgress[scrambledPointer] = 0f - (float)Math.random() * 0.1f;
-                if (gateWay.handledInboundCount<gateWay.inboundCount) {
-                    gateWay.animReversed[scrambledPointer] = true;
-                    gateWay.handledInboundCount += 1;
+                gateWay.animation.animProgress[scrambledPointer] = 0f - (float)Math.random() * 0.1f;
+                if (gateWay.animation.handledInboundCount<gateWay.animation.inboundCount) {
+                    gateWay.animation.animReversed[scrambledPointer] = true;
+                    gateWay.animation.handledInboundCount += 1;
                 } else {
-                    gateWay.animReversed[scrambledPointer] = false;
-                    gateWay.handledOutboundCount += 1;
+                    gateWay.animation.animReversed[scrambledPointer] = false;
+                    gateWay.animation.handledOutboundCount += 1;
                 }
             } else {
                 break;

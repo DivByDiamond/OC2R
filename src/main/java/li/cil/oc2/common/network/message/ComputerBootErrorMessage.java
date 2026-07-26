@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -40,7 +40,7 @@ public record ComputerBootErrorMessage(BlockPos pos, @Nullable Component value) 
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
             computer -> computer.getVirtualMachine().setBootErrorClient(value));
     }
 }

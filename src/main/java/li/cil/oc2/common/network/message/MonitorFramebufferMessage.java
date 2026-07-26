@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import li.cil.oc2.common.util.Oc2rStreamCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -34,7 +34,7 @@ public record MonitorFramebufferMessage(BlockPos pos, ByteBuffer frame) implemen
     ///////////////////////////////////////////////////////////////////
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, MonitorBlockEntity.class,
             monitor -> monitor.applyNextFrameClient(frame));
     }
 }

@@ -4,7 +4,7 @@ package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.network.MessageUtils;
+import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -37,7 +37,7 @@ public record ComputerRunStateMessage(BlockPos pos, VMRunState value) implements
     }
 
     public void handleMessage(IPayloadContext context) {
-        MessageUtils.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
+        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
             computer -> computer.getVirtualMachine().setRunStateClient(value));
     }
 }
