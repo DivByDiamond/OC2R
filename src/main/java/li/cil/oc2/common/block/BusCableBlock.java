@@ -7,7 +7,7 @@ import com.mojang.serialization.MapCodec;
 import li.cil.oc2.client.gui.BusInterfaceScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.ItemStackUtils;

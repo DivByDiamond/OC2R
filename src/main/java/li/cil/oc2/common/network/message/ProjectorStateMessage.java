@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
-import li.cil.oc2.common.blockentity.ProjectorBlockEntity;
+import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

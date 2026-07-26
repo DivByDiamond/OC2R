@@ -4,7 +4,7 @@ package li.cil.oc2.client.model;
 
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableBlock;
-import li.cil.oc2.common.blockentity.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;

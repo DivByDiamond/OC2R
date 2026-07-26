@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.blockentity.computer;
 
-import li.cil.oc2.common.blockentity.ComputerBlockEntity;
+import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.message.ComputerTerminalOutputMessage;
 import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;

@@ -8,7 +8,7 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.ModRenderType;
-import li.cil.oc2.common.blockentity.ChargerBlockEntity;
+import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;

@@ -25,7 +25,7 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.common.util.TriState;
 import org.joml.Matrix4f;
-import li.cil.oc2.common.blockentity.ProjectorBlockEntity;
+import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
 import li.cil.oc2.common.ext.MinecraftExt;
 import li.cil.oc2.common.mixin.LevelRendererMixin;

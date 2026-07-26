@@ -15,7 +15,7 @@ import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.MonitorBlock;
-import li.cil.oc2.common.blockentity.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;

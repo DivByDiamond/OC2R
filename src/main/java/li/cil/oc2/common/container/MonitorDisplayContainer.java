@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.container;
 
-import li.cil.oc2.common.blockentity.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;

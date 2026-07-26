@@ -1,4 +1,7 @@
-package li.cil.oc2.common.blockentity;
+package li.cil.oc2.common.blockentity.misc;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -57,7 +60,7 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     public long lastRender = 0;
     public int pointer = 0;
 
-    protected InternetGateWayBlockEntity(final BlockPos pos, final BlockState state) {
+    public InternetGateWayBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.INTERNET_GATEWAY.get(), pos, state);
         inboundQueue = new ArrayDeque<>();
         outboundQueue = new ArrayDeque<>();

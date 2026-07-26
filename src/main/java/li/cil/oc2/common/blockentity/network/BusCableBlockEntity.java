@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.common.blockentity;
+package li.cil.oc2.common.blockentity.network;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.model.BusCableBakedModel;

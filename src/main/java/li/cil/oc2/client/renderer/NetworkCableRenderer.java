@@ -11,7 +11,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.NetworkConnectorBlockEntity;
+import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;

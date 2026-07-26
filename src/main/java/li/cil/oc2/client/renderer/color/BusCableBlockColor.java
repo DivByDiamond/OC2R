@@ -2,7 +2,7 @@
 
 package li.cil.oc2.client.renderer.color;
 
-import li.cil.oc2.common.blockentity.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;

@@ -4,7 +4,7 @@ package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.DiskDriveBlockEntity;
+import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;

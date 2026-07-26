@@ -3,7 +3,7 @@
 package li.cil.oc2.common.network.message;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.DiskDriveBlockEntity;
+import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;

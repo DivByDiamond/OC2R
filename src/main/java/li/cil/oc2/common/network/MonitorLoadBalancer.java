@@ -4,7 +4,7 @@ package li.cil.oc2.common.network;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.blockentity.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.network.message.MonitorFramebufferMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;

@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 
-package li.cil.oc2.common.blockentity;
+package li.cil.oc2.common.blockentity.energy;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.object.Callback;
@@ -47,7 +50,7 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
 
     ///////////////////////////////////////////////////////////////////
 
-    ChargerBlockEntity(final BlockPos pos, final BlockState state) {
+    public ChargerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CHARGER.get(), pos, state);
         renderBoundingBox = new AABB(pos.above());
     }

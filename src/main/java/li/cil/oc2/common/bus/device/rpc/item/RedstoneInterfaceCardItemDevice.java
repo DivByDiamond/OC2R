@@ -10,7 +10,7 @@ import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.api.util.Side;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.blockentity.ComputerBlockEntity;
+import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
 import net.minecraft.core.BlockPos;

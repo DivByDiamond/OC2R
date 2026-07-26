@@ -8,7 +8,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 import li.cil.oc2.common.block.BusCableBlock;
-import li.cil.oc2.common.blockentity.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

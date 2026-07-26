@@ -5,7 +5,7 @@ package li.cil.oc2.common.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.Level;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.RedstoneInterfaceBlockEntity;
+import li.cil.oc2.common.blockentity.misc.RedstoneInterfaceBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;

@@ -2,7 +2,7 @@
 
 package li.cil.oc2.common.network.message;
 
-import li.cil.oc2.common.blockentity.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.network.MonitorLoadBalancer;
 import net.minecraft.core.BlockPos;

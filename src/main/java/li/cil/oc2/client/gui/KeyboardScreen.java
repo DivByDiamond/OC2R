@@ -5,7 +5,7 @@ package li.cil.oc2.client.gui;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import li.cil.oc2.common.blockentity.KeyboardBlockEntity;
+import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.KeyboardInputMessage;
