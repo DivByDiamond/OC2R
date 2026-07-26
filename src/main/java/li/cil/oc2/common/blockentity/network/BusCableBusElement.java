@@ -5,6 +5,7 @@ package li.cil.oc2.common.blockentity.network;
 import li.cil.oc2.common.block.BusCableBlock;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
+import li.cil.oc2.common.bus.element.BlockEntry;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.config.Config;

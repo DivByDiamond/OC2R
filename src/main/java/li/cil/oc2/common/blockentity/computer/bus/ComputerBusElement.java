@@ -5,6 +5,7 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
+import li.cil.oc2.common.bus.element.BlockEntry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
