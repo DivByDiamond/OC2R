@@ -128,7 +128,7 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
 
     ///////////////////////////////////////////////////////////////////
 
-    protected final class ItemQueryResult extends QueryResult {
+    protected final class ItemQueryResult extends GroupQueryResult<ItemEntry, ItemDeviceQuery> {
         @Nullable private final ItemDeviceQuery query;
         private final Set<ItemEntry> entries;
 
@@ -149,7 +149,7 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         }
     }
 
-    protected record ItemEntry(ItemDeviceInfo deviceInfo) implements Entry {
+    protected record ItemEntry(ItemDeviceInfo deviceInfo) implements GroupEntry {
         @Override
         public Optional<String> getDeviceDataKey() {
             return optionalKey(deviceInfo.provider);

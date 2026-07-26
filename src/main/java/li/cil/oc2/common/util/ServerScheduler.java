@@ -22,8 +22,6 @@ public final class ServerScheduler {
     private static final WeakHashMap<LevelAccessor, HashMap<ChunkPos, ListenerCollection>> chunkLoadSchedulers = new WeakHashMap<>();
     private static final WeakHashMap<LevelAccessor, HashMap<ChunkPos, ListenerCollection>> chunkUnloadSchedulers = new WeakHashMap<>();
 
-    ///////////////////////////////////////////////////////////////////
-
     public static void initialize() {
         NeoForge.EVENT_BUS.register(EventHandler.class);
     }
@@ -114,8 +112,6 @@ public final class ServerScheduler {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     private static final class EventHandler {
         @SubscribeEvent
         public static void handleServerStoppedEvent(final ServerStoppedEvent event) {
@@ -182,79 +178,6 @@ public final class ServerScheduler {
             final TickScheduler scheduler = levelTickSchedulers.get(event.getLevel());
             if (scheduler != null) {
                 scheduler.processQueue();
-            }
-        }
-    }
-
-    private static final class TickScheduler {
-        private final PriorityQueue<ScheduledRunnable> queue = new PriorityQueue<>();
-        private int currentTick;
-
-        public void schedule(final Runnable runnable, final int afterTicks) {
-            queue.add(new ScheduledRunnable(currentTick + afterTicks, runnable));
-        }
-
-        public void processQueue() {
-            while (!queue.isEmpty() && queue.peek().tick <= currentTick) {
-                queue.poll().runnable.run();
-            }
-        }
-
-        public void tick() {
-            currentTick++;
-        }
-
-        public void clear() {
-            currentTick = 0;
-            queue.clear();
-        }
-    }
-
-    private record ScheduledRunnable(int tick, Runnable runnable) implements Comparable<ScheduledRunnable> {
-        @Override
-        public int compareTo(final ServerScheduler.ScheduledRunnable o) {
-            return Integer.compare(tick, o.tick);
-        }
-    }
-
-    private static final class SimpleScheduler {
-        private final Set<Runnable> listeners = Collections.newSetFromMap(new WeakHashMap<>());
-
-        public void add(final Runnable listener) {
-            listeners.add(listener);
-        }
-
-        public void remove(final Runnable listener) {
-            listeners.remove(listener);
-        }
-
-        public void run() {
-            for (final Runnable runnable : listeners) {
-                runnable.run();
-            }
-
-            listeners.clear();
-        }
-    }
-
-    private static final class ListenerCollection {
-        private final Set<Runnable> listeners = Collections.newSetFromMap(new WeakHashMap<>());
-
-        public void add(final Runnable listener) {
-            listeners.add(listener);
-        }
-
-        public void remove(final Runnable listener) {
-            listeners.remove(listener);
-        }
-
-        public boolean isEmpty() {
-            return listeners.isEmpty();
-        }
-
-        public void run() {
-            for (final Runnable runnable : listeners) {
-                runnable.run();
             }
         }
     }

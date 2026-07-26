@@ -12,19 +12,14 @@ import net.minecraft.network.chat.Component;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 public final class FileChooserScreen extends Screen {
 
-    ///////////////////////////////////////////////////////////////////
-
     private static final int MARGIN = 30;
     private static final int WIDGET_SPACING = 8;
-
     private static final int TEXT_FIELD_HEIGHT = 20;
     private static final int BUTTON_HEIGHT = 20;
     private static final int LIST_ENTRY_HEIGHT = 12;
@@ -32,29 +27,21 @@ public final class FileChooserScreen extends Screen {
     private static final Component OPEN_TITLE_TEXT = text("gui.{mod}.file_chooser.title.load");
     private static final Component SAVE_TITLE_TEXT = text("gui.{mod}.file_chooser.title.save");
     private static final Component FILE_NAME_TEXT = text("gui.{mod}.file_chooser.text_field.filename");
-    private static final Component LOAD_TEXT = text("gui.{mod}.file_chooser.confirm_button.load");
-    private static final Component SAVE_TEXT = text("gui.{mod}.file_chooser.confirm_button.save");
-    private static final Component OVERWRITE_TEXT = text("gui.{mod}.file_chooser.confirm_button.overwrite");
+    static final Component LOAD_TEXT = text("gui.{mod}.file_chooser.confirm_button.load");
+    static final Component SAVE_TEXT = text("gui.{mod}.file_chooser.confirm_button.save");
+    static final Component OVERWRITE_TEXT = text("gui.{mod}.file_chooser.confirm_button.overwrite");
     private static final Component CANCEL_TEXT = text("gui.{mod}.file_chooser.cancel_button");
-
-    ///////////////////////////////////////////////////////////////////
 
     static Path directory = Paths.get("").toAbsolutePath();
 
-    ///////////////////////////////////////////////////////////////////
-
     private final FileChooserCallback callback;
     private final boolean isLoad;
-
     private final Screen previousScreen;
 
     private FileList fileList;
     EditBox fileNameTextField;
     Button okButton;
-
-    private boolean isComplete;
-
-    ///////////////////////////////////////////////////////////////////
+    private FileChooserController controller;
 
     public static void openFileChooserForSave(final String name, final FileChooserCallback callback) {
         final Screen currentScreen = Minecraft.getInstance().screen;
@@ -77,8 +64,6 @@ public final class FileChooserScreen extends Screen {
         Minecraft.getInstance().setScreen(screen);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     public FileChooserScreen(final FileChooserCallback callback, final boolean isLoad) {
         super(isLoad ? OPEN_TITLE_TEXT : SAVE_TITLE_TEXT);
 
@@ -88,11 +73,9 @@ public final class FileChooserScreen extends Screen {
         this.previousScreen = Minecraft.getInstance().screen;
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     @Override
     public void onClose() {
-        if (!isComplete) {
+        if (!controller.isComplete()) {
             callback.onCanceled();
         }
 
@@ -111,8 +94,6 @@ public final class FileChooserScreen extends Screen {
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     @Override
     protected void init() {
         super.init();
@@ -126,7 +107,7 @@ public final class FileChooserScreen extends Screen {
         fileNameTextField = new EditBox(font, MARGIN, fileNameTop, widgetsWidth, TEXT_FIELD_HEIGHT, FILE_NAME_TEXT);
         fileNameTextField.setResponder(s -> {
             fileList.setSelected(null);
-            updateButtons();
+            controller.updateButtons();
         });
         fileNameTextField.setMaxLength(1024);
         addRenderableWidget(fileNameTextField);
@@ -147,9 +128,11 @@ public final class FileChooserScreen extends Screen {
                 .build()
         );
 
+        controller = new FileChooserController(this, fileList, fileNameTextField, okButton, callback, isLoad);
+
         fileList.refreshFiles(directory);
 
-        updateButtons();
+        controller.updateButtons();
     }
 
     @Override
@@ -163,94 +146,16 @@ public final class FileChooserScreen extends Screen {
         }).findFirst().ifPresent(fileList::selectPath);
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    private boolean isParentPath() {
-        if (directory == null) {
-            return false;
-        }
-
-        final FileList.FileEntry selected = fileList.getSelected();
-        if (selected != null) {
-            return Objects.equals(selected.file, directory.getParent());
-        }
-
-        final String selectedFileEntry = fileNameTextField.getValue();
-        return "..".equals(selectedFileEntry);
-    }
-
-    private Optional<Path> getPath() {
-        final FileList.FileEntry selected = fileList.getSelected();
-        if (selected != null) {
-            return Optional.ofNullable(selected.file);
-        }
-
-        if (directory == null) {
-            return Optional.empty();
-        }
-
-        final String selectedFileEntry = fileNameTextField.getValue();
-        if (selectedFileEntry.isEmpty() || ".".equals(selectedFileEntry)) {
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(directory.resolve(selectedFileEntry));
-        } catch (final InvalidPathException e) {
-            return Optional.empty();
-        }
+    void updateButtons() {
+        controller.updateButtons();
     }
 
     void confirm() {
-        if (isParentPath()) {
-            fileList.refreshFiles(getPath().orElse(null));
-            return;
-        }
-
-        getPath().ifPresent(path -> {
-            if (Files.isDirectory(path)) {
-                fileList.refreshFiles(path);
-                return;
-            }
-            if (Files.isRegularFile(path)) {
-                isComplete = true;
-                callback.onFileSelected(path);
-                onClose();
-            } else if (!isLoad) {
-                isComplete = true;
-                callback.onFileSelected(path);
-                onClose();
-            }
-        });
+        controller.confirm();
     }
 
     private void cancel() {
-        isComplete = true;
-        callback.onCanceled();
-        onClose();
-    }
-
-    void updateButtons() {
-        okButton.active = false;
-        okButton.setMessage(isLoad ? LOAD_TEXT : SAVE_TEXT);
-        okButton.clearFGColor();
-
-        if (isParentPath()) {
-            okButton.active = true;
-            return;
-        }
-
-        getPath().ifPresent(path -> {
-            if (isLoad) {
-                okButton.active = Files.exists(path);
-            } else {
-                okButton.active = true;
-                if (Files.isRegularFile(path)) {
-                    okButton.setMessage(OVERWRITE_TEXT);
-                    okButton.setFGColor(0xFF0000);
-                }
-            }
-        });
+        controller.cancel();
     }
 
     private void handleOkPressed(final Button button) {
@@ -260,6 +165,4 @@ public final class FileChooserScreen extends Screen {
     private void handleCancelPressed(final Button button) {
         cancel();
     }
-
-    ///////////////////////////////////////////////////////////////////
 }

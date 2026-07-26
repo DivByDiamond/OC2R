@@ -177,7 +177,7 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
 
     ///////////////////////////////////////////////////////////////////
 
-    protected final class BlockQueryResult extends QueryResult {
+    protected final class BlockQueryResult extends GroupQueryResult<BlockEntry, BlockDeviceQuery> {
         private final BlockDeviceQuery query;
         private final Set<BlockEntry> entries;
 
@@ -196,7 +196,7 @@ public abstract class AbstractBlockDeviceBusElement extends AbstractGroupingDevi
         }
     }
 
-    protected static final class BlockEntry implements Entry {
+    protected static final class BlockEntry implements GroupEntry {
         private final BlockDeviceInfo deviceInfo;
         @Nullable private final String dataKey;
         private final Device device;
