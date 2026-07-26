@@ -10,6 +10,7 @@ import li.cil.oc2.client.model.BusCableBakedModel;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
@@ -230,8 +231,8 @@ public final class BusCableBlockEntity extends ModBlockEntity {
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
             if (isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<BusCableBlock.ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
-                if (state.hasProperty(property) && state.getValue(property) == BusCableBlock.ConnectionType.INTERFACE) {
+                final EnumProperty<ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
+                if (state.hasProperty(property) && state.getValue(property) == ConnectionType.INTERFACE) {
                     return currentModelData; // Plug is already supporting us, bail.
                 }
 
@@ -314,7 +315,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
             Capabilities.DeviceBusElement.BLOCK,
             (level, pos, state, be, side) -> {
                 if (be instanceof final BusCableBlockEntity self) {
-                    if (BusCableBlock.getConnectionType(be.getBlockState(), side) != BusCableBlock.ConnectionType.NONE) {
+                    if (BusCableBlock.getConnectionType(be.getBlockState(), side) != ConnectionType.NONE) {
                         return self.busElement;
                     }
                 }
@@ -419,15 +420,15 @@ public final class BusCableBlockEntity extends ModBlockEntity {
 
         @Override
         public boolean canScanContinueTowards(@Nullable final Direction direction) {
-            final BusCableBlock.ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
-            return connectionType == BusCableBlock.ConnectionType.CABLE ||
-                connectionType == BusCableBlock.ConnectionType.INTERFACE;
+            final ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
+            return connectionType == ConnectionType.CABLE ||
+                connectionType == ConnectionType.INTERFACE;
         }
 
         @Override
         public boolean canDetectDevicesTowards(@Nullable final Direction direction) {
-            final BusCableBlock.ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
-            return connectionType == BusCableBlock.ConnectionType.INTERFACE;
+            final ConnectionType connectionType = BusCableBlock.getConnectionType(getBlockState(), direction);
+            return connectionType == ConnectionType.INTERFACE;
         }
 
         @Override

@@ -5,7 +5,7 @@ package li.cil.oc2.common.item;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.block.BusCableBlock;
-import li.cil.oc2.common.block.BusCableBlock.ConnectionType;
+import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
 import net.minecraft.advancements.CriteriaTriggers;

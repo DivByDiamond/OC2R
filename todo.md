@@ -14,92 +14,89 @@
 - [x] gui/ → screen/, widget/
 - [x] OldTerminal.java удалён
 
-### >200 строк — план распила (build + commit после каждого)
+### План распила (build + commit после каждого)
 
-Кап: 30 файлов >200 строк → довести все до <200.
+Очерёдность: от самых больших файлов к маленьким, группами по 4 параллельных агента.
 
-#### Файл 1: `entity/Robot.java` (710)
-- `RobotEnergyStorage` — энергия (поля/методы по энергии)
-- `RobotNetworkHandler` — сетевые сообщения
-- `RobotUpgradeHandler` — проверки апгрейдов
-- `Robot` (остаток)
+#### Группа 1: 4 самых больших файла
+- [ ] ComputerBlockEntity.java (685) → извлечь ComputerItemStackHandlers, ComputerBusElement, ComputerVirtualMachine, ComputerContraptionHelper, ComputerBlockEntityPersistence
+- [ ] ProjectorDepthRenderer.java (614) → извлечь RenderInfo, DepthOnlyRenderTarget, ProjectorCameraEntity
+- [ ] BusCableBlock.java (584) → извлечь ConnectionType, shape-методы
+- [ ] RPCDeviceBusAdapter.java (560) → извлечь RPCDeviceWithIdentifier, EmptyMethodGroup, Message, MethodInvocation, RPCInvocationImpl
 
-#### Файл 2: `serialization/NBTSerialization.java` (693)
-- `ItemStackSerialization`
-- `BlockStateSerialization` (+ Fluid, Energy, Collection)
-- `NBTSerialization` (остаток)
+#### Группа 2: 4 файла 472-520 строк
+- [ ] DefaultTransportLayer.java (520) → извлечь ICMPReply, SessionReceiver
+- [ ] NetworkSwitchBlockEntity.java (511) → извлечь HostEntry, LuaHostEntry, PortSettings, SwitchLog
+- [ ] ProjectorBlockEntity.java (479) → извлечь FrameConsumer, VideoEncoder/Decoder логику
+- [ ] BusCableBlockEntity.java (477) → извлечь FacadeType, BusCableBusElement, NeighborListener
 
-#### Файл 3: `blockentity/computer/ComputerBlockEntity.java` (685)
-- `ComputerEnergyStorage`
-- `ComputerItemStackHandlers`
-- `ComputerScreens`
-- `ComputerBlockEntity` (остаток)
+#### Группа 3: 4 файла 428-473 строк
+- [ ] MonitorBlockEntity.java (473) → извлечь FrameConsumer, VideoEncoder/Decoder
+- [ ] NetworkConnectorBlockEntity.java (472) → извлечь ConnectionResult, NullNetworkInterface, NetworkConnectorNetworkInterface
+- [ ] FileChooserScreen.java (433) → извлечь FileChooserCallback, FileList, FileEntry
+- [ ] AbstractVirtualMachine.java (428) → извлечь SerializedState, lifecycle-методы
 
-#### Файл 4: `renderer/ProjectorDepthRenderer.java` (614)
-- `ProjectorDepthMeshBuilder`
-- `ProjectorDepthShader`
-- `ProjectorDepthFrameBuffer`
-- `ProjectorFrustumCuller`
-- `ProjectorDepthRenderer` (остаток)
+#### Группа 4: 4 файла 367-420 строк
+- [ ] AbstractBlockStorageDevice.java (414) → split
+- [ ] ComputerRenderer.java (367) → split
+- [ ] StreamSessionImpl.java (353) → split
+- [ ] TerminalRenderer.java (351) → split
 
-#### Файл 5: `block/BusCableBlock.java` (584)
-- `BusCableShapeBuilder`
-- `BusCableConnectionManager`
-- `BusCableBlock` (остаток)
+#### Группа 5: 4 файла 306-341 строк
+- [ ] NetworkCableRenderer.java (341) → split
+- [ ] CommonDeviceBusController.java (332) → split
+- [ ] InventoryOperationsModuleDevice.java (331) → split
+- [ ] RedstoneInterfaceBlockEntity.java (330) → split
 
-#### Файл 6: `bus/adapter/RPCDeviceBusAdapter.java` (560)
-- `RPCDeviceRegistry`
-- `RPCMethodDispatcher`
-- `RPCExecutionContext`
-- `RPCDeviceBusAdapter` (остаток)
+#### Группа 6: 4 файла 286-324 строк
+- [ ] FileImportExportCardItemDevice.java (324) → split
+- [ ] ProjectorLoadBalancer.java (316) → split
+- [ ] MonitorLoadBalancer.java (316) → split
+- [ ] MachineTerminalWidget.java (313) → split
 
-#### Файл 7: `inet/DefaultTransportLayer.java` (520)
-- `TcpConnectionManager`
-- `PacketFragmentation`
-- `DefaultTransportLayer` (остаток)
+#### Группа 7: 4 файла 274-306 строк
+- [ ] BlobStorage.java (306) → split
+- [ ] BlockOperationsModuleDevice.java (305) → split
+- [ ] NetworkInterfaceCardScreen.java (302) → split
+- [ ] TerminalBuffer.java (294) → split
 
-#### Файл 8: `blockentity/network/NetworkSwitchBlockEntity.java` (511)
-- `NetworkSwitchPortManager`
-- `NetworkSwitchPacketProcessor`
-- `NetworkSwitchRoutingTable`
-- `NetworkSwitchBlockEntity` (остаток)
+#### Группа 8: 4 файла 252-286 строк
+- [ ] InetUtils.java (291) → split
+- [ ] AsyncUtils.java (286) → split
+- [ ] DefaultSessionLayer.java (277) → split
+- [ ] ComputerBlock.java (274) → split
 
-#### Файлы 9-12: `ProjectorBlockEntity` (479), `BusCableBlockEntity` (477), `MonitorBlockEntity` (473), `NetworkConnectorBlockEntity` (472)
-Каждый:
-- `*EnergyStorage` — энергия
-- `*NetworkHandler` — сетевые сообщения
-- основа (~200)
+#### Группа 9: 4 файла 246-272 строк
+- [ ] AbstractMachineTerminalScreen.java (272) → split
+- [ ] AbstractGroupingDeviceBusElement.java (268) → split
+- [ ] ServerScheduler.java (261) → split
+- [ ] MonitorRenderer.java (256) → split
 
-#### Файл 13: `gui/screen/FileChooserScreen.java` (433)
-- `FileListWidget`
-- `FileActionsBar`
-- `FileChooserScreen` (остаток)
+#### Группа 10: 4 файла 240-256 строк
+- [ ] RobotMovementController.java (256) → split
+- [ ] DiskDriveBlockEntity.java (255) → split
+- [ ] FlashMemoryFlasherBlockEntity.java (252) → split
+- [ ] InternetManagerImpl.java (246) → split
 
-#### Файл 14: `vm/AbstractVirtualMachine.java` (428)
-- `VMStateMachine`
-- `VMDeviceManager`
-- `VMInterruptHandler`
-- `AbstractVirtualMachine` (остаток)
+#### Группа 11: 4 файла 205-240 строк
+- [ ] ProjectorRenderer.java (240) → split
+- [ ] InternetGateWayBlockEntity.java (220) → split
+- [ ] MessageUtils.java (217) → split
+- [ ] AbstractMonitorDisplayScreen.java (216) → split
 
-#### Файл 15: `bus/device/vm/item/AbstractBlockStorageDevice.java` (414)
-- `BlockStorageGeometry`
-- `BlockStorageIO`
-- `AbstractBlockStorageDevice` (остаток)
-
-#### Файлы 16-20: `ComputerRenderer` (367), `StreamSessionImpl` (353), `TerminalRenderer` (351), `NetworkCableRenderer` (341), `CommonDeviceBusController` (332)
-Каждый → 2 части
-
-#### Файлы 21-25: `InventoryOperationsModuleDevice` (331), `RedstoneInterfaceBlockEntity` (330), `FileImportExportCardItemDevice` (324), `ProjectorLoadBalancer` (316), `MonitorLoadBalancer` (316)
-Каждый → utility/logic вынос
-
-#### Файлы 26-30: `MachineTerminalWidget` (313), `BlobStorage` (306), `BlockOperationsModuleDevice` (305), `NetworkInterfaceCardScreen` (302), `TerminalBuffer` (294)
-Каждый → split 2-3
-
-#### Остальные (200-290 строк, ~20 файлов)
-По 1 split на файл
+#### Группа 12: остальные (200-210 строк, ~8 файлов)
+- [ ] CH2.java (210) → split
+- [ ] TooltipUtils.java (208) → split
+- [ ] DefaultLinkLocalLayer.java (208) → split
+- [ ] NBTArraySerializers.java (206) → split
+- [ ] Main.java (205) → split
+- [ ] VxlanBlockEntity.java (203) → split
+- [ ] Terminal.java (420) → уже <200 не нужно? Нет, Terminal всё ещё >200
+- [ ] Остальные ~2 файла
 
 ### Deferred
 - jcodec/ — **не трогать**
+- api/ — **не трогать**
 
 ---
 

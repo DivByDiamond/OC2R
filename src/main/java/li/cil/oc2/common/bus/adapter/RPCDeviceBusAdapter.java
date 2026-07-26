@@ -3,7 +3,6 @@
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.DeviceBusController;
@@ -294,38 +293,38 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
         final InputStreamReader stream = new InputStreamReader(new ByteArrayInputStream(messageData));
         try {
             final Message message = gson.fromJson(stream, Message.class);
-            switch (message.type) {
+            switch (message.type()) {
                 case Message.MESSAGE_TYPE_LIST -> writeDeviceList();
                 case Message.MESSAGE_TYPE_METHODS -> {
-                    if (message.data != null) {
-                        writeDeviceMethods((UUID) message.data);
+                    if (message.data() != null) {
+                        writeDeviceMethods((UUID) message.data());
                     } else {
                         writeError("missing device id");
                     }
                 }
                 case Message.MESSAGE_TYPE_INVOKE_METHOD -> {
-                    if (message.data != null) {
-                        processMethodInvocation((MethodInvocation) message.data, false);
+                    if (message.data() != null) {
+                        processMethodInvocation((MethodInvocation) message.data(), false);
                     } else {
                         writeError("missing invocation data");
                     }
                 }
                 case Message.MESSAGE_TYPE_SUBSCRIBE -> {
-                    if (message.data != null) {
-                        subscribe((UUID)message.data);
+                    if (message.data() != null) {
+                        subscribe((UUID)message.data());
                     } else {
                         writeError("missing invocation data");
                     }
                 }
                 case Message.MESSAGE_TYPE_UNSUBSCRIBE -> {
-                    if (message.data != null) {
-                        unsubscribe((UUID)message.data);
+                    if (message.data() != null) {
+                        unsubscribe((UUID)message.data());
                     } else {
                         writeError("missing invocation data");
                     }
                 }
 
-                default -> writeError(ERROR_UNKNOWN_MESSAGE_TYPE + message.type);
+                default -> writeError(ERROR_UNKNOWN_MESSAGE_TYPE + message.type());
             }
         } catch (final Throwable e) {
             writeError(e.getMessage());
@@ -489,72 +488,4 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
         this.receiveBuffer = receiveBuffer;
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    public record RPCDeviceWithIdentifier(UUID identifier, RPCDevice device) { }
-
-    public record EmptyMethodGroup(String name) { }
-
-    public record Message(String type, @Nullable Object data) {
-        // Device -> VM
-        public static final String MESSAGE_TYPE_LIST = "list";
-        public static final String MESSAGE_TYPE_METHODS = "methods";
-        public static final String MESSAGE_TYPE_RESULT = "result";
-        public static final String MESSAGE_TYPE_ERROR = "error";
-        public static final String MESSAGE_TYPE_EVENT = "event";
-
-        // VM -> Device
-        public static final String MESSAGE_TYPE_INVOKE_METHOD = "invoke";
-        public static final String MESSAGE_TYPE_SUBSCRIBE = "subscribe";
-        public static final String MESSAGE_TYPE_UNSUBSCRIBE = "unsubscribe";
-    }
-
-    @Serialized
-    public static final class MethodInvocation {
-        public UUID deviceId;
-        public String methodName;
-        public JsonArray parameters;
-
-        @SuppressWarnings("unused") // For deserialization.
-        public MethodInvocation() {
-        }
-
-        public MethodInvocation(final UUID deviceId, final String methodName, final JsonArray parameters) {
-            this.deviceId = deviceId;
-            this.methodName = methodName;
-            this.parameters = parameters;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private record RPCInvocationImpl(JsonArray parameters, Gson gson) implements RPCInvocation {
-        @Override
-        public JsonArray getParameters() {
-            return parameters;
-        }
-
-        @Override
-        public Gson getGson() {
-            return gson;
-        }
-
-        @Override
-        public Optional<Object[]> tryDeserializeParameters(final RPCParameter... parameterTypes) {
-            if (parameterTypes.length != parameters.size()) {
-                return Optional.empty();
-            }
-
-            final Object[] result = new Object[parameterTypes.length];
-            for (int i = 0; i < parameterTypes.length; i++) {
-                final RPCParameter parameterInfo = parameterTypes[i];
-                try {
-                    result[i] = gson.fromJson(parameters.get(i), parameterInfo.getType());
-                } catch (final Throwable e) {
-                    return Optional.empty();
-                }
-            }
-            return Optional.of(result);
-        }
-    }
 }

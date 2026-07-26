@@ -8,6 +8,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
 import net.minecraft.client.Camera;
@@ -62,7 +63,7 @@ public enum BusInterfaceNameRenderer {
         }
 
         final Direction side = BusCableBlock.getHitSide(blockPos, hit);
-        if (BusCableBlock.getConnectionType(level.getBlockState(blockPos), side) != BusCableBlock.ConnectionType.INTERFACE) {
+        if (BusCableBlock.getConnectionType(level.getBlockState(blockPos), side) != ConnectionType.INTERFACE) {
             return;
         }
 

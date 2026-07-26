@@ -6,19 +6,16 @@ import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.api.bus.device.DeviceTypes;
-import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
-import li.cil.oc2.client.audio.LoopingSoundManager;
 import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.bus.controller.BlockDeviceBusController;
+import li.cil.oc2.common.blockentity.computer.bus.ComputerBusElement;
+import li.cil.oc2.common.blockentity.computer.handler.ComputerItemStackHandlers;
+import li.cil.oc2.common.blockentity.computer.vm.ComputerVirtualMachine;
 import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.block.ComputerBlock;
-import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
-import li.cil.oc2.common.bus.controller.BlockDeviceBusController;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.capabilities.Capabilities;
@@ -53,11 +50,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import static li.cil.oc2.common.Constants.ITEMS_TAG_NAME;
 
@@ -69,13 +63,11 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
     private static final String STATE_TAG_NAME = "state";
     private static final String ENERGY_TAG_NAME = "energy";
 
-    private static final int MEMORY_SLOTS = 4;
-    private static final int HARD_DRIVE_SLOTS = 4;
-    private static final int FLASH_MEMORY_SLOTS = 1;
-    private static final int CARD_SLOTS = 4;
-    private static final int CPU_SLOTS = 1;
-
-    private static final int MAX_RUNNING_SOUND_DELAY = TickUtils.toTicks(Duration.ofSeconds(2));
+    public static final int MEMORY_SLOTS = 4;
+    public static final int HARD_DRIVE_SLOTS = 4;
+    public static final int FLASH_MEMORY_SLOTS = 1;
+    public static final int CARD_SLOTS = 4;
+    public static final int CPU_SLOTS = 1;
 
     /**
      * Client-side registry of "primary" (non-contraption) ComputerBlockEntities
@@ -103,23 +95,18 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
     ///////////////////////////////////////////////////////////////////
 
-    private boolean hasAddedOwnDevices;
-    private boolean isNeighborUpdateScheduled;
-    // Volatile: this field is written on the server tick thread but read from
-    // the VM runner background thread (via sendToClientsTrackingComputer).
-    // Without volatile the runner can see a stale null forever, which makes
-    // every ComputerTerminalOutputMessage a no-op — i.e. "VM appears on, but
-    // the UART screen never updates".
-    private volatile LevelChunk chunk;
+    boolean hasAddedOwnDevices;
+    public boolean isNeighborUpdateScheduled;
+    public volatile LevelChunk chunk;
 
     ///////////////////////////////////////////////////////////////////
 
-    private final Terminal terminal = new Terminal();
-    private final ComputerBusElement busElement = new ComputerBusElement();
-    private final ComputerItemStackHandlers deviceItems = new ComputerItemStackHandlers(() -> this.getLevel().registryAccess());
-    private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.computerEnergyStorage);
-    private final ComputerVirtualMachine virtualMachine = new ComputerVirtualMachine(new BlockDeviceBusController(busElement, Config.computerEnergyPerTick, this), deviceItems::getDeviceAddressBase);
-    private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
+    public final Terminal terminal = new Terminal();
+    public final ComputerBusElement busElement = new ComputerBusElement(this);
+    public final ComputerItemStackHandlers deviceItems = new ComputerItemStackHandlers(this, () -> this.getLevel().registryAccess());
+    public final FixedEnergyStorage energy = new FixedEnergyStorage(Config.computerEnergyStorage);
+    public final ComputerVirtualMachine virtualMachine = new ComputerVirtualMachine(this, new BlockDeviceBusController(busElement, Config.computerEnergyPerTick, this), deviceItems::getDeviceAddressBase);
+    final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
     private boolean captureInputState;
 
     ///////////////////////////////////////////////////////////////////
@@ -509,177 +496,4 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         }
     }
 
-    ///////////////////////////////////////////////////////////////////
-
-    private final class ComputerItemStackHandlers extends AbstractVMItemStackHandlers {
-        public ComputerItemStackHandlers(Supplier<HolderLookup.Provider> providerSupplier) {
-            super(providerSupplier, new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS), new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS), new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS), new GroupDefinition(DeviceTypes.CARD, CARD_SLOTS), new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS));
-        }
-
-        @Override
-        protected ItemDeviceQuery makeQuery(final ItemStack stack) {
-            return Devices.makeQuery(ComputerBlockEntity.this, stack);
-        }
-
-        @Override
-        protected void onChanged() {
-            super.onChanged();
-            if (level != null && !level.isClientSide()) {
-                virtualMachine.busController.scheduleBusScan();
-                ChunkUtils.setLazyUnsaved(level, getBlockPos());
-            }
-            isNeighborUpdateScheduled = true;
-        }
-    }
-
-    private final class ComputerBusElement extends AbstractBlockDeviceBusElement {
-        private static final String DEVICE_ID_TAG_NAME = "device_id";
-
-        private final HashSet<Device> devices = new HashSet<>();
-        private UUID deviceId = UUID.randomUUID();
-
-        @Nullable
-        @Override
-        public Level getLevel() {
-            return ComputerBlockEntity.this.getLevel();
-        }
-
-        @Override
-        public BlockPos getPosition() {
-            return getBlockPos();
-        }
-
-        public void addOwnDevices() {
-            assert level != null;
-
-            collectDevices(level, getPosition(), null).ifPresent(result -> {
-                for (final BlockEntry info : result.getEntries()) {
-                    devices.add(info.getDevice());
-                    super.addDevice(info.getDevice());
-                }
-            });
-        }
-
-        @Override
-        public Optional<Collection<DeviceBusElement>> getNeighbors() {
-            return super.getNeighbors().map(neighbors -> {
-                // If we have valid neighbors (complete bus) also add a connection to the bus
-                // element hosting our item devices.
-                final ArrayList<DeviceBusElement> list = new ArrayList<>(neighbors);
-                list.add(deviceItems.busElement);
-                return list;
-            });
-        }
-
-        @Override
-        public boolean canScanContinueTowards(@Nullable final Direction direction) {
-            return getBlockState().getValue(ComputerBlock.FACING) != direction;
-        }
-
-        @Override
-        protected boolean canDetectDevicesTowards(@Nullable final Direction direction) {
-            return direction == null;
-        }
-
-        @Override
-        public Optional<UUID> getDeviceIdentifier(final Device device) {
-            if (devices.contains(device)) {
-                return Optional.of(deviceId);
-            }
-            return super.getDeviceIdentifier(device);
-        }
-
-        @Override
-        public CompoundTag save(HolderLookup.Provider registries) {
-            final CompoundTag tag = super.save(registries);
-            tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
-            return tag;
-        }
-
-        public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
-            super.loadAdditional(tag, registries);
-            if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
-                deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
-            }
-        }
-    }
-
-    private final class ComputerVirtualMachine extends AbstractVirtualMachine {
-        private ComputerVirtualMachine(final CommonDeviceBusController busController, final BaseAddressProvider baseAddressProvider) {
-            super(busController);
-            state.vmAdapter.setBaseAddressProvider(baseAddressProvider);
-        }
-
-        @Override
-        public void setRunStateClient(final VMRunState value) {
-            super.setRunStateClient(value);
-
-            if (value == VMRunState.RUNNING) {
-                if (!LoopingSoundManager.isPlaying(ComputerBlockEntity.this) && level != null) {
-                    LoopingSoundManager.play(ComputerBlockEntity.this, SoundEvents.COMPUTER_RUNNING.get(), level.getRandom().nextInt(MAX_RUNNING_SOUND_DELAY));
-                }
-            } else {
-                LoopingSoundManager.stop(ComputerBlockEntity.this);
-            }
-        }
-
-        @Override
-        public void tick() {
-            assert level != null;
-
-            if (isRunning()) {
-                ChunkUtils.setLazyUnsaved(level, getBlockPos());
-                busController.setDeviceContainersChanged();
-            }
-
-            super.tick();
-        }
-
-        @Override
-        protected boolean consumeEnergy(final int amount, final boolean simulate) {
-            if (!Config.computersUseEnergy()) {
-                return true;
-            }
-
-            if (amount > energy.getEnergyStored()) {
-                return false;
-            }
-
-            energy.extractEnergy(amount, simulate);
-            return true;
-        }
-
-        @Override
-        protected void stopRunnerAndReset() {
-            super.stopRunnerAndReset();
-
-            TerminalUtils.resetTerminal(terminal, output -> sendToClientsTrackingComputer(new ComputerTerminalOutputMessage(ComputerBlockEntity.this, output)));
-        }
-
-        @Override
-        protected AbstractTerminalVMRunner createRunner() {
-            return new li.cil.oc2.common.blockentity.computer.ComputerVMRunner(ComputerBlockEntity.this, this, terminal);
-        }
-
-        @Override
-        protected void handleBusStateChanged(final CommonDeviceBusController.BusState value) {
-            sendToClientsTrackingComputer(new ComputerBusStateMessage(ComputerBlockEntity.this, value));
-
-            if (value == CommonDeviceBusController.BusState.READY && level != null) {
-                // Bus just became ready, meaning new devices may be available, meaning new
-                // capabilities may be available, so we need to tell our neighbors.
-                level.updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
-            }
-        }
-
-        @Override
-        protected void handleRunStateChanged(final VMRunState value) {
-            sendToClientsTrackingComputer(new ComputerRunStateMessage(ComputerBlockEntity.this, value));
-        }
-
-        @Override
-        protected void handleBootErrorChanged(@Nullable final Component value) {
-            sendToClientsTrackingComputer(new ComputerBootErrorMessage(ComputerBlockEntity.this, value));
-        }
-    }
 }

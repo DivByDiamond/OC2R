@@ -4,6 +4,7 @@ package li.cil.oc2.client.model;
 
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableBlock;
+import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
 import net.minecraft.client.Minecraft;
@@ -141,8 +142,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
             if (isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<BusCableBlock.ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
-                if (state.hasProperty(property) && state.getValue(property) == BusCableBlock.ConnectionType.INTERFACE) {
+                final EnumProperty<ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
+                if (state.hasProperty(property) && state.getValue(property) == ConnectionType.INTERFACE) {
                     return blockEntityData; // Plug is already supporting us, bail.
                 }
 
@@ -170,13 +171,13 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
 
     private static boolean isStraightAlongAxis(final BlockState state, final Direction.Axis axis) {
         for (final Direction direction : Constants.DIRECTIONS) {
-            final EnumProperty<BusCableBlock.ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
+            final EnumProperty<ConnectionType> property = BusCableBlock.FACING_TO_CONNECTION_MAP.get(direction);
             if (axis.test(direction)) {
-                if (state.getValue(property) != BusCableBlock.ConnectionType.CABLE) {
+                if (state.getValue(property) != ConnectionType.CABLE) {
                     return false;
                 }
             } else {
-                if (state.getValue(property) != BusCableBlock.ConnectionType.NONE) {
+                if (state.getValue(property) != ConnectionType.NONE) {
                     return false;
                 }
             }

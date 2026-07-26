@@ -16,8 +16,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.util.StringRepresentable;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +39,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -52,28 +50,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 public final class BusCableBlock extends BaseEntityBlock {
-    public enum ConnectionType implements StringRepresentable {
-        NONE,
-        CABLE,
-        INTERFACE;
-
-        @Override
-        public String getSerializedName() {
-            return switch (this) {
-                case NONE -> "none";
-                case CABLE -> "cable";
-                case INTERFACE -> "interface";
-            };
-        }
-    }
-
     ///////////////////////////////////////////////////////////////////
 
     public static final BooleanProperty HAS_CABLE = BooleanProperty.create("has_cable");
@@ -138,7 +120,7 @@ public final class BusCableBlock extends BaseEntityBlock {
         defaultState = defaultState.setValue(HAS_FACADE, false);
         registerDefaultState(defaultState);
 
-        shapes = makeShapes();
+        shapes = BusCableShapeBuilder.makeShapes();
     }
 
     @Override
@@ -157,7 +139,7 @@ public final class BusCableBlock extends BaseEntityBlock {
             return false;
         }
 
-        final EnumProperty<BusCableBlock.ConnectionType> property = FACING_TO_CONNECTION_MAP.get(side);
+        final EnumProperty<ConnectionType> property = FACING_TO_CONNECTION_MAP.get(side);
         if (state.getValue(property) != ConnectionType.NONE) {
             return false;
         }
@@ -345,7 +327,7 @@ public final class BusCableBlock extends BaseEntityBlock {
             return Shapes.block();
         }
 
-        return shapes[getShapeIndex(state)];
+        return shapes[BusCableShapeBuilder.getShapeIndex(state)];
     }
 
     @Override
@@ -469,116 +451,4 @@ public final class BusCableBlock extends BaseEntityBlock {
         Minecraft.getInstance().setScreen(screen);
     }
 
-    private static VoxelShape[] makeShapes() {
-        final VoxelShape ownCableBounds = Block.box(5, 5, 5, 11, 11, 11);
-        final VoxelShape[] cableShapes = new VoxelShape[Constants.BLOCK_FACE_COUNT];
-        final VoxelShape[] interfaceShapes = new VoxelShape[Constants.BLOCK_FACE_COUNT];
-        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
-            cableShapes[i] = getCableShape(Constants.DIRECTIONS[i]);
-            interfaceShapes[i] = getInterfaceShape(Constants.DIRECTIONS[i]);
-        }
-
-        // We pack info as such:
-        // [has interface on side] [has cable on side] [has own cable]
-        // Which is a total of 13 bits (6 + 6 + 1), so 8k combinations.
-        // It's a lot, but not so much that it's not ok to still cache
-        // it and avoid recomputing the bounds all the time.
-
-        final int configurations = 1 << (6 + 6 + 1);
-        final VoxelShape[] result = new VoxelShape[configurations];
-        Arrays.fill(result, Shapes.empty());
-
-        for (int i = 0; i < result.length; i++) {
-            final int mask = i >> 1;
-            for (int sideIndex = 0; sideIndex < Constants.BLOCK_FACE_COUNT; sideIndex++) {
-                final int cableBit = 1 << sideIndex;
-                if ((mask & cableBit) != 0) {
-                    result[i] = Shapes.or(result[i], cableShapes[sideIndex]);
-                }
-
-                final int interfaceBit = cableBit << 6;
-                if ((mask & interfaceBit) != 0) {
-                    result[i] = Shapes.or(result[i], interfaceShapes[sideIndex]);
-                }
-            }
-
-            if ((i & 1) != 0) {
-                result[i] = Shapes.or(result[i], ownCableBounds);
-            }
-        }
-
-        return result;
-    }
-
-
-    private static VoxelShape getCableShape(final Direction zDirection) {
-        final int xSize = 6;
-        final int ySize = 6;
-        final int zSize = 5;
-
-        final Direction yDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
-        final Direction xDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.WEST : zDirection.getClockWise();
-
-        final Vec3i min = new Vec3i(8, 8, 8)
-            .relative(xDirection, -xSize / 2)
-            .relative(yDirection, -ySize / 2)
-            .relative(zDirection, 8 - zSize);
-        final Vec3i max = new Vec3i(8, 8, 8)
-            .relative(xDirection, xSize / 2)
-            .relative(yDirection, ySize / 2)
-            .relative(zDirection, 8);
-
-        final AABB bounds = new AABB(
-            Vec3.atLowerCornerOf(min).scale(1 / 16.0),
-            Vec3.atLowerCornerOf(max).scale(1 / 16.0)
-        );
-
-        return Shapes.create(bounds);
-    }
-
-    private static VoxelShape getInterfaceShape(final Direction zDirection) {
-        final int xSize = 8;
-        final int ySize = 8;
-        final int zSize = 1;
-
-        final Direction yDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
-        final Direction xDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.WEST : zDirection.getClockWise();
-
-        final Vec3i min = new Vec3i(8, 8, 8)
-            .relative(xDirection, -xSize / 2)
-            .relative(yDirection, -ySize / 2)
-            .relative(zDirection, 8 - zSize);
-        final Vec3i max = new Vec3i(8, 8, 8)
-            .relative(xDirection, xSize / 2)
-            .relative(yDirection, ySize / 2)
-            .relative(zDirection, 8);
-
-        final AABB bounds = new AABB(
-            Vec3.atLowerCornerOf(min).scale(1 / 16.0),
-            Vec3.atLowerCornerOf(max).scale(1 / 16.0)
-        );
-
-        return Shapes.or(getCableShape(zDirection), Shapes.create(bounds));
-    }
-
-    private static int getShapeIndex(final BlockState state) {
-        int index = 0;
-
-        for (int sideIndex = 0; sideIndex < Constants.BLOCK_FACE_COUNT; sideIndex++) {
-            final int cableBit = 1 << sideIndex;
-            final int interfaceBit = cableBit << 6;
-            switch (state.getValue(FACING_TO_CONNECTION_MAP.get(Constants.DIRECTIONS[sideIndex]))) {
-                case CABLE -> index |= cableBit;
-                case INTERFACE -> index |= interfaceBit;
-            }
-        }
-
-        index = index << 1;
-
-        if (state.getValue(HAS_CABLE)) {
-            index |= 1;
-        }
-
-        return index;
-    }
 }

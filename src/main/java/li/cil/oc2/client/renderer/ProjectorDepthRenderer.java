@@ -7,10 +7,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
@@ -29,9 +26,7 @@ import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
 import li.cil.oc2.common.ext.MinecraftExt;
 import li.cil.oc2.common.mixin.LevelRendererMixin;
-import li.cil.oc2.common.util.FakePlayerUtils;
-import li.cil.oc2.jcodec.common.model.Picture;
-import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -41,10 +36,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4fStack;
@@ -54,11 +46,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import static org.lwjgl.opengl.GL11.GL_NONE;
-import static org.lwjgl.opengl.GL11.glDrawBuffer;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 @EventBusSubscriber(modid = API.MOD_ID, value=Dist.CLIENT)
 public final class ProjectorDepthRenderer {
@@ -91,7 +78,7 @@ public final class ProjectorDepthRenderer {
     private static final int FRUSTUM_HEIGHT = ProjectorBlockEntity.MAX_HEIGHT - 1;
     private static final Matrix4f DEPTH_CAMERA_PROJECTION_MATRIX = (new Matrix4f()).frustum(-calculateFrustumComponent(FRUSTUM_WIDTH), calculateFrustumComponent(FRUSTUM_WIDTH), 0, calculateFrustumComponent(FRUSTUM_HEIGHT), PROJECTOR_NEAR, PROJECTOR_FAR);
 
-    private static final Cache<ProjectorBlockEntity, RenderInfo> RENDER_INFO = CacheBuilder.newBuilder()
+    private static final Cache<ProjectorBlockEntity, ProjectorDepthRenderInfo> RENDER_INFO = CacheBuilder.newBuilder()
         .expireAfterAccess(Duration.ofSeconds(5))
         .removalListener(ProjectorDepthRenderer::handleProjectorNoLongerRendering)
         .build();
@@ -117,12 +104,12 @@ public final class ProjectorDepthRenderer {
         return (originalValue / (ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE + 4f)) / ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE;
     }
 
-    private static void handleProjectorNoLongerRendering(final RemovalNotification<ProjectorBlockEntity, RenderInfo> notification) {
+    private static void handleProjectorNoLongerRendering(final RemovalNotification<ProjectorBlockEntity, ProjectorDepthRenderInfo> notification) {
         final ProjectorBlockEntity projector = notification.getKey();
         if (projector != null) {
             projector.setFrameConsumer(null);
         }
-        final RenderInfo renderInfo = notification.getValue();
+        final ProjectorDepthRenderInfo renderInfo = notification.getValue();
         if (renderInfo != null) {
             renderInfo.close();
         }
@@ -479,7 +466,7 @@ public final class ProjectorDepthRenderer {
             return RENDER_INFO.get(projector, () -> {
                 final DynamicTexture texture = new DynamicTexture(ProjectorDevice.WIDTH, ProjectorDevice.HEIGHT, false);
                 texture.upload();
-                final RenderInfo renderInfo = new RenderInfo(texture);
+                final ProjectorDepthRenderInfo renderInfo = new ProjectorDepthRenderInfo(texture);
                 projector.setFrameConsumer(renderInfo);
                 return renderInfo;
             }).texture();
@@ -490,125 +477,4 @@ public final class ProjectorDepthRenderer {
 
     ///////////////////////////////////////////////////////////////////
 
-    /**
-     * Tracks a render texture holding color info for rendering projectors.
-     * <p>
-     * Automatically updated by projectors when new data arrives (from a worker thread).
-     */
-    private record RenderInfo(DynamicTexture texture) implements ProjectorBlockEntity.FrameConsumer {
-        private static final ThreadLocal<byte[]> RGB = ThreadLocal.withInitial(() -> new byte[3]);
-
-        public synchronized void close() {
-            texture.close();
-        }
-
-        @Override
-        public synchronized void processFrame(final Picture picture) {
-            final NativeImage image = texture.getPixels();
-            if (image == null) {
-                return;
-            }
-
-            final byte[] y = picture.getPlaneData(0);
-            final byte[] u = picture.getPlaneData(1);
-            final byte[] v = picture.getPlaneData(2);
-
-            // Convert in quads, based on the half resolution of UV. As such, skip every other row, since
-            // we're setting the current and the next.
-            int lumaIndex = 0, chromaIndex = 0;
-            for (int halfRow = 0; halfRow < ProjectorDevice.HEIGHT / 2; halfRow++, lumaIndex += ProjectorDevice.WIDTH * 2) {
-                final int row = halfRow * 2;
-                for (int halfCol = 0; halfCol < ProjectorDevice.WIDTH / 2; halfCol++, chromaIndex++) {
-                    final int col = halfCol * 2;
-                    final int yIndex = lumaIndex + col;
-                    final byte cb = u[chromaIndex];
-                    final byte cr = v[chromaIndex];
-                    setFromYUV420(image, col, row, y[yIndex], cb, cr);
-                    setFromYUV420(image, col + 1, row, y[yIndex + 1], cb, cr);
-                    setFromYUV420(image, col, row + 1, y[yIndex + ProjectorDevice.WIDTH], cb, cr);
-                    setFromYUV420(image, col + 1, row + 1, y[yIndex + ProjectorDevice.WIDTH + 1], cb, cr);
-                }
-            }
-
-            texture.upload();
-        }
-
-        private static void setFromYUV420(final NativeImage image, final int col, final int row, final byte y, final byte cb, final byte cr) {
-            final byte[] bytes = RGB.get();
-            Yuv420jToRgb.YUVJtoRGB(y, cb, cr, bytes, 0);
-            final int r = bytes[0] + 128;
-            final int g = bytes[1] + 128;
-            final int b = bytes[2] + 128;
-            image.setPixelRGBA(col, row, r | (g << 8) | (b << 16) | (0xFF << 24));
-        }
-    }
-
-    /**
-     * Optimized texture target that doesn't have a color texture, so we can completely skip that when rendering
-     * projector depth buffers.
-     */
-    private static final class DepthOnlyRenderTarget extends TextureTarget {
-        public DepthOnlyRenderTarget(final int width, final int height) {
-            super(width, height, true, Minecraft.ON_OSX);
-        }
-
-        @Override
-        public void createBuffers(final int width, final int height, final boolean isOnOSX) {
-            super.createBuffers(width, height, isOnOSX);
-            if (colorTextureId > -1) {
-                if (frameBufferId > -1) {
-                    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-                    glDrawBuffer(GL_NONE);
-                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                }
-                TextureUtil.releaseTextureId(this.colorTextureId);
-                this.colorTextureId = -1;
-            }
-        }
-    }
-
-    /**
-     * Fake entity used as rendering context when rendering projector depth buffers.
-     */
-    private static final class ProjectorCameraEntity extends Player {
-        private static ProjectorCameraEntity instance;
-
-        /**
-         * Singleton getter for the fake render entity, to avoid unnecessary allocations.
-         */
-        public static ProjectorCameraEntity get(final Level level, final Vec3 pos, final float rotationY) {
-            if (instance == null) {
-                instance = new ProjectorCameraEntity(level, BlockPos.ZERO, rotationY);
-            }
-
-            instance.setLevel(level);
-            instance.moveTo(pos.x(), pos.y(), pos.z(), rotationY, 0);
-
-            return instance;
-        }
-
-        private ProjectorCameraEntity(final Level level, final BlockPos blockPos, final float rotationY) {
-            super(level, blockPos, rotationY, FakePlayerUtils.getFakePlayerProfile());
-        }
-
-        @Override
-        public float getViewYRot(final float partialTicks) {
-            return yRotO;
-        }
-
-        @Override
-        public float getViewXRot(final float partialTicks) {
-            return xRotO;
-        }
-
-        @Override
-        public boolean isSpectator() {
-            return false;
-        }
-
-        @Override
-        public boolean isCreative() {
-            return true;
-        }
-    }
 }
