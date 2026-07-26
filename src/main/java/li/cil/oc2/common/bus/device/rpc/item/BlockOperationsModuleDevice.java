@@ -6,16 +6,13 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.api.util.RobotOperationSide;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.FakePlayerUtils;
-import li.cil.oc2.common.util.TickUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -23,39 +20,19 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.CommandBlock;
-import net.minecraft.world.level.block.JigsawBlock;
-import net.minecraft.world.level.block.StructureBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.List;
 
 public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
-    private static final String LAST_OPERATION_TAG_NAME = "cooldown";
-
-    private static final int COOLDOWN = TickUtils.toTicks(Duration.ofSeconds(1));
-
-    ///////////////////////////////////////////////////////////////////
-
     private final Entity entity;
     private final Robot robot;
-    private long lastOperation;
-
-    ///////////////////////////////////////////////////////////////////
+    private final BlockOperationCooldown cooldown = new BlockOperationCooldown();
 
     public BlockOperationsModuleDevice(final ItemStack identity, final Entity entity, final Robot robot) {
         super(identity, "block_operations");
@@ -63,18 +40,14 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         this.robot = robot;
     }
 
-    ///////////////////////////////////////////////////////////////////
-
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        final CompoundTag tag = new CompoundTag();
-        tag.putLong(LAST_OPERATION_TAG_NAME, lastOperation);
-        return tag;
+    public CompoundTag serializeNBT(final HolderLookup.Provider provider) {
+        return cooldown.serializeNBT(provider);
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
-        lastOperation = (long) Mth.clamp(tag.getLong(LAST_OPERATION_TAG_NAME), 0, entity.level().getGameTime());
+    public void deserializeNBT(final HolderLookup.Provider provider, final CompoundTag tag) {
+        cooldown.deserializeNBT(provider, tag, entity.level());
     }
 
     @Callback
@@ -84,33 +57,32 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean excavate(@Parameter("side") @Nullable final RobotOperationSide side) {
-        if (isOnCooldown()) {
+        if (cooldown.isOnCooldown(entity.level())) {
             return false;
         }
-
-        beginCooldown();
+        cooldown.beginCooldown(entity.level());
 
         final Level level = entity.level();
         if (!(level instanceof final ServerLevel serverLevel)) {
             return false;
         }
 
-        final int selectedSlot = robot.getSelectedSlot(); // Get once to avoid change due to threading.
+        final int selectedSlot = robot.getSelectedSlot();
         final ItemStackHandler inventory = robot.getInventory();
 
-        final List<ItemEntity> oldItems = getItemsInRange();
+        final List<ItemEntity> oldItems = InventoryHelper.getItemsInRange(entity);
 
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
-        if (!tryHarvestBlock(serverLevel, entity.blockPosition().relative(direction))) {
+        if (!BlockHarvestHelper.tryHarvestBlock(serverLevel, entity.blockPosition().relative(direction), entity, identity)) {
             return false;
         }
 
-        final List<ItemEntity> droppedItems = getItemsInRange();
+        final List<ItemEntity> droppedItems = InventoryHelper.getItemsInRange(entity);
         droppedItems.removeAll(oldItems);
 
         for (final ItemEntity itemEntity : droppedItems) {
             ItemStack stack = itemEntity.getItem();
-            stack = insertStartingAt(inventory, stack, selectedSlot, false);
+            stack = InventoryHelper.insertStartingAt(inventory, stack, selectedSlot, false);
             itemEntity.setItem(stack);
         }
 
@@ -124,18 +96,17 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean place(@Parameter("side") @Nullable final RobotOperationSide side) {
-        if (isOnCooldown()) {
+        if (cooldown.isOnCooldown(entity.level())) {
             return false;
         }
-
-        beginCooldown();
+        cooldown.beginCooldown(entity.level());
 
         final Level level = entity.level();
         if (!(level instanceof final ServerLevel serverLevel)) {
             return false;
         }
 
-        final int selectedSlot = robot.getSelectedSlot(); // Get once to avoid change due to threading.
+        final int selectedSlot = robot.getSelectedSlot();
         final ItemStackHandler inventory = robot.getInventory();
 
         final ItemStack extracted = inventory.extractItem(selectedSlot, 1, true);
@@ -175,22 +146,21 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean repair() {
-        if (isOnCooldown()) {
+        if (cooldown.isOnCooldown(entity.level())) {
             return false;
         }
-
-        beginCooldown();
+        cooldown.beginCooldown(entity.level());
 
         if (identity.getDamageValue() == 0) {
             return false;
         }
 
-        final int selectedSlot = robot.getSelectedSlot(); // Get once to avoid change due to threading.
+        final int selectedSlot = robot.getSelectedSlot();
         final ItemStackHandler inventory = robot.getInventory();
 
         final ItemStack extracted = inventory.extractItem(selectedSlot, 1, true);
 
-        final Tier tier = getRepairItemTier(extracted);
+        final Tier tier = RepairHelper.getRepairItemTier(extracted);
         if (tier == null) {
             return false;
         }
@@ -200,7 +170,6 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
             return false;
         }
 
-        // Extra check just to ease my paranoia.
         if (inventory.extractItem(selectedSlot, 1, false).isEmpty()) {
             return false;
         }
@@ -208,98 +177,5 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         identity.setDamageValue(identity.getDamageValue() - repairValue);
 
         return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private void beginCooldown() {
-        lastOperation = entity.level().getGameTime();
-    }
-
-    private boolean isOnCooldown() {
-        return entity.level().getGameTime() - lastOperation < COOLDOWN;
-    }
-
-    private List<ItemEntity> getItemsInRange() {
-        return entity.level().getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(2));
-    }
-
-    private boolean tryHarvestBlock(final ServerLevel level, final BlockPos blockPos) {
-        // This method is based on PlayerInteractionManager::tryHarvestBlock. Simplified for our needs.
-        final BlockState blockState = level.getBlockState(blockPos);
-        if (blockState.isAir()) {
-            return false;
-        }
-
-        final ServerPlayer player = FakePlayerUtils.getFakePlayer(level, entity);
-        final var breakEvent = net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, GameType.DEFAULT_MODE, player, blockPos, blockState);
-        if (breakEvent.isCanceled()) {
-            return false;
-        }
-
-        final BlockEntity blockEntity = level.getBlockEntity(blockPos);
-        final Block block = blockState.getBlock();
-        final boolean isCommandBlock = block instanceof CommandBlock || block instanceof StructureBlock || block instanceof JigsawBlock;
-        if (isCommandBlock && !player.canUseGameMasterBlocks()) {
-            return false;
-        }
-
-        if (player.blockActionRestricted(level, blockPos, GameType.DEFAULT_MODE)) {
-            return false;
-        }
-
-        Tier toolTier;
-        try {
-            toolTier = Tiers.valueOf( Config.blockOperationsModuleToolTier );
-        } catch (IllegalArgumentException e) {
-            toolTier = null;
-        }
-        if (toolTier == null || blockState.is(toolTier.getIncorrectBlocksForDrops())) {
-            return false;
-        }
-
-        if (!EventHooks.doPlayerHarvestCheck(player, blockState, level, blockPos)) {
-            return false;
-        }
-
-        var damage = identity.getDamageValue();
-        if (damage >= identity.getMaxDamage())
-            return false;
-        damage += 1;
-        identity.setDamageValue(damage);
-
-        if (!blockState.onDestroyedByPlayer(level, blockPos, player, true, level.getFluidState(blockPos))) {
-            return false;
-        }
-
-        block.destroy(level, blockPos, blockState);
-        block.playerDestroy(level, player, blockPos, blockState, blockEntity, ItemStack.EMPTY);
-
-        return true;
-    }
-
-    @Nullable
-    private Tier getRepairItemTier(final ItemStack stack) {
-        if (stack.isEmpty()) {
-            return null;
-        }
-
-        if (stack.getItem() instanceof final TieredItem tieredItem) {
-            return tieredItem.getTier();
-        }
-
-        return null;
-    }
-
-    private ItemStack insertStartingAt(final IItemHandler handler, ItemStack stack, final int startSlot, final boolean simulate) {
-        for (int i = 0; i < handler.getSlots(); i++) {
-            final int slot = (startSlot + i) % handler.getSlots();
-            stack = handler.insertItem(slot, stack, simulate);
-            if (stack.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-        }
-
-        return stack;
     }
 }
