@@ -500,7 +500,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
     ///////////////////////////////////////////////////////////////////
 
-    private void sendToClientsTrackingComputer(final CustomPacketPayload message) {
+    public void sendToClientsTrackingComputer(final CustomPacketPayload message) {
         if (chunk != null) {
             Network.sendToClientsTrackingChunk(message, chunk);
         }
@@ -601,17 +601,6 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
         }
     }
 
-    private final class ComputerVMRunner extends AbstractTerminalVMRunner {
-        public ComputerVMRunner(final AbstractVirtualMachine virtualMachine, final Terminal terminal) {
-            super(virtualMachine, terminal);
-        }
-
-        @Override
-        protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            sendToClientsTrackingComputer(new ComputerTerminalOutputMessage(ComputerBlockEntity.this, output));
-        }
-    }
-
     private final class ComputerVirtualMachine extends AbstractVirtualMachine {
         private ComputerVirtualMachine(final CommonDeviceBusController busController, final BaseAddressProvider baseAddressProvider) {
             super(busController);
@@ -666,7 +655,7 @@ public final class ComputerBlockEntity extends ModBlockEntity implements Termina
 
         @Override
         protected AbstractTerminalVMRunner createRunner() {
-            return new ComputerVMRunner(this, terminal);
+            return new li.cil.oc2.common.blockentity.computer.ComputerVMRunner(ComputerBlockEntity.this, this, terminal);
         }
 
         @Override
