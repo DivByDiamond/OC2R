@@ -3,7 +3,6 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.InternetManager;
 import li.cil.oc2.api.inet.provider.InternetProvider;
-import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 import li.cil.oc2.common.config.Config;
 import net.minecraft.nbt.Tag;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -14,20 +13,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public final class InternetManagerImpl implements InternetManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static InternetManagerImpl INSTANCE = null;
-
-    //////////////////////////////////////////////////////////////
 
     private final InternetProvider internetProvider;
     private final List<InternetConnectionImpl> connections = new LinkedList<>();
@@ -72,7 +66,7 @@ public final class InternetManagerImpl implements InternetManager {
     public InternetConnection connect(final InternetAdapter internetAdapter, @Nullable final Tag savedState) {
         final LayerParameters layerParameters = new LayerParametersImpl(Optional.ofNullable(savedState), this);
         final InternetConnectionImpl internetConnection =
-            new InternetConnectionImpl(internetAdapter, internetProvider.provideInternet(layerParameters));
+            new InternetConnectionImpl(executor, internetAdapter, internetProvider.provideInternet(layerParameters));
         connections.add(internetConnection);
         LOGGER.debug("A new internet access provided");
         return internetConnection;
@@ -123,8 +117,6 @@ public final class InternetManagerImpl implements InternetManager {
         connectionsToProcess.forEach(InternetConnectionImpl::process);
     }
 
-    //////////////////////////////////////////////////////////////
-
     @SubscribeEvent
     public void onTick(final ServerTickEvent.Pre event) {
         final List<InternetConnectionImpl> connectionsToStop = connections.stream()
@@ -147,100 +139,5 @@ public final class InternetManagerImpl implements InternetManager {
     @SubscribeEvent
     public void onStopping(final ServerStoppingEvent event) {
         connections.clear();
-    }
-
-    //////////////////////////////////////////////////////////////
-
-    private static final class TaskImpl implements Task {
-
-        private final Runnable action;
-        private boolean closed = false;
-
-        public TaskImpl(final Runnable action) {
-            this.action = action;
-        }
-
-        public Runnable getAction() {
-            return action;
-        }
-
-        public boolean isClosed() {
-            return closed;
-        }
-
-        @Override
-        public void close() {
-            closed = true;
-        }
-    }
-
-
-    private final class InternetConnectionImpl implements InternetConnection {
-
-        public final PendingFrame incoming = new PendingFrame();
-        public final PendingFrame outcoming = new PendingFrame();
-
-        private final ByteBuffer receiveBuffer = ByteBuffer.allocate(LinkLocalLayer.FRAME_SIZE);
-        private final LinkLocalLayer ethernet;
-        private final InternetAdapter adapter;
-        private boolean isStopped = false;
-
-        //////////////////////////////////////////////////////////////
-
-        public InternetConnectionImpl(final InternetAdapter adapter, final LinkLocalLayer ethernet) {
-            this.adapter = adapter;
-            this.ethernet = ethernet;
-        }
-
-        @Override
-        public Optional<Tag> saveAdapterState() {
-            try {
-                // TODO: blocking code; should reconsider it
-                return executor.submit(ethernet::onSave).get();
-            } catch (final InterruptedException | ExecutionException exception) {
-                LOGGER.error("Error on saving internet adapter state", exception);
-                return Optional.empty();
-            }
-        }
-
-        public void process() {
-            try {
-                final byte[] outFrame = outcoming.get();
-                if (outFrame != null) {
-                    ethernet.sendEthernetFrame(ByteBuffer.wrap(outFrame));
-                }
-                receiveBuffer.clear();
-                if (ethernet.receiveEthernetFrame(receiveBuffer)) {
-                    final byte[] inFrame = new byte[receiveBuffer.remaining()];
-                    receiveBuffer.get(inFrame);
-                    incoming.put(inFrame);
-                }
-            } catch (Exception e) {
-                LOGGER.error("Uncaught exception", e);
-            }
-        }
-
-        @Override
-        public void stop() {
-            isStopped = true;
-        }
-
-        //////////////////////////////////////////////////////////////
-
-        private static final class PendingFrame {
-
-            private final AtomicReference<byte[]> pendingFrame = new AtomicReference<>();
-
-            //////////////////////////////////////////////////////////////
-
-            @Nullable
-            public byte[] get() {
-                return pendingFrame.getAndSet(null);
-            }
-
-            public void put(final byte[] frame) {
-                pendingFrame.set(frame);
-            }
-        }
     }
 }

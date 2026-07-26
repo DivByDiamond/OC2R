@@ -27,7 +27,7 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     final TcpHeader header = new TcpHeader();
 
-    TcpStates state = TcpStates.CONNECT;
+    TcpState state = TcpStates.CONNECT;
 
     boolean needsAcknowledgment = false;
 
@@ -57,16 +57,16 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     @Override
     public ByteBuffer getReceiveBuffer() {
-        switch (state) {
-            case EXPIRED, FINISH, REJECT -> throw new IllegalStateException();
+        if (state == TcpStates.EXPIRED || state == TcpStates.FINISH || state == TcpStates.REJECT) {
+            throw new IllegalStateException();
         }
         return receiveBuffer;
     }
 
     @Override
     public ByteBuffer getSendBuffer() {
-        switch (state) {
-            case EXPIRED, REJECT -> throw new IllegalStateException();
+        if (state == TcpStates.EXPIRED || state == TcpStates.REJECT) {
+            throw new IllegalStateException();
         }
         return sendBuffer;
     }
@@ -96,15 +96,14 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     @Override
     public void close() {
-        state = switch (state) {
-            case ESTABLISHED -> TcpStates.FINISH;
-            case CONNECT -> TcpStates.REJECT;
-            case FINISH, REJECT, EXPIRED -> state;
-            case ACCEPT -> {
-                LOGGER.warn("Closing session in ACCEPT state, forcing to REJECT");
-                yield TcpStates.REJECT;
-            }
-        };
+        if (state == TcpStates.ESTABLISHED) {
+            state = TcpStates.FINISH;
+        } else if (state == TcpStates.CONNECT) {
+            state = TcpStates.REJECT;
+        } else if (state == TcpStates.ACCEPT) {
+            LOGGER.warn("Closing session in ACCEPT state, forcing to REJECT");
+            state = TcpStates.REJECT;
+        }
     }
 
     public TcpHeader getHeader() {
