@@ -6,7 +6,7 @@ import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.widget.Sprite;
 import li.cil.oc2.common.container.DeviceTypeSlotItemHandler;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.TooltipRenderer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -65,7 +65,7 @@ public final class GuiUtils {
 
         findFirstSlotOfTypeIfAllSlotsOfTypeEmpty(screen.getMenu(), type).ifPresent(slot -> {
             if (slot == hoveredSlot) {
-                TooltipUtils.drawTooltip(graphics, Collections.singletonList(tooltip), mouseX, mouseY);
+                TooltipRenderer.drawTooltip(graphics, Collections.singletonList(tooltip), mouseX, mouseY);
             }
         });
     }

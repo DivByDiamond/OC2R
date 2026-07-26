@@ -7,7 +7,7 @@ import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.TooltipRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -158,7 +158,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
                     Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION,
                         withFormat(String.valueOf(menu.getEnergyConsumption()), ChatFormatting.GREEN))
                 );
-                TooltipUtils.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
+                TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
             }
         }
     }

@@ -1,10 +1,9 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.modes.ImplementedPrivateModes;
 
-public class CH2 extends CSISequenceHandler { // Combined Handler 2 (SM & DECSET)
+public class CH2 extends CSISequenceHandler {
     public CH2(final Terminal terminal) {
         super(terminal);
     }
@@ -31,7 +30,7 @@ public class CH2 extends CSISequenceHandler { // Combined Handler 2 (SM & DECSET
                 }
                 case 7 -> terminal.currentPrivateModeState.DECAWM = true;
                 case 8 -> terminal.currentPrivateModeState.DECARM = true;
-                case 9 ->  {
+                case 9 -> {
                     terminal.currentPrivateModeState.X11MM = false;
                     terminal.currentPrivateModeState.CELL_MOTION_MOUSE = false;
                     terminal.currentPrivateModeState.ALL_MOTION_MOUSE_TRACKING = false;
@@ -66,12 +65,7 @@ public class CH2 extends CSISequenceHandler { // Combined Handler 2 (SM & DECSET
                     terminal.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.ALT_BUFFER = true;
-                    int dirtyLinesMask = 0;
-                    for (int j = 0; j <= 23; j++) {
-                        dirtyLinesMask |= 1 << j;
-                    }
-                    final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    markScreenDirty();
                 }
                 case 66 -> terminal.currentPrivateModeState.DECNKM = true;
                 case 67 -> terminal.currentPrivateModeState.DECBKM = true;
@@ -142,40 +136,18 @@ public class CH2 extends CSISequenceHandler { // Combined Handler 2 (SM & DECSET
                     terminal.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = true;
-                    int dirtyLinesMask = 0;
-                    for (int j = 0; j <= 23; j++) {
-                        dirtyLinesMask |= 1 << j;
-                    }
-                    final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    markScreenDirty();
                 }
                 case 1048 -> {
-                    if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                        terminal.altSavedX = terminal.x;
-                        terminal.altSavedY = terminal.y;
-                    } else {
-                        terminal.savedX = terminal.x;
-                        terminal.savedY = terminal.y;
-                    }
+                    saveCursorPosition();
                     terminal.currentPrivateModeState.SAVE_CURSOR = true;
                 }
                 case 1049 -> {
-                    if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                        terminal.altSavedX = terminal.x;
-                        terminal.altSavedY = terminal.y;
-                    } else {
-                        terminal.savedX = terminal.x;
-                        terminal.savedY = terminal.y;
-                    }
+                    saveCursorPosition();
                     terminal.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = true;
-                    int dirtyLinesMask = 0;
-                    for (int j = 0; j <= 23; j++) {
-                        dirtyLinesMask |= 1 << j;
-                    }
-                    final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    markScreenDirty();
                 }
                 case 1050 -> terminal.currentPrivateModeState.SET_TERMINFO_FUNC_KEY_MODE = true;
                 case 1051 -> terminal.currentPrivateModeState.SET_SUN_KEY_MODE = true;
@@ -205,6 +177,24 @@ public class CH2 extends CSISequenceHandler { // Combined Handler 2 (SM & DECSET
                 case 12 -> terminal.currentModeState.SRM = true;
                 case 20 -> terminal.currentModeState.LNM = true;
             }
+        }
+    }
+    private void markScreenDirty() {
+        int dirtyLinesMask = 0;
+        for (int j = 0; j <= 23; j++) {
+            dirtyLinesMask |= 1 << j;
+        }
+        final int finalDirtyLinesMask = dirtyLinesMask;
+        terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+    }
+
+    private void saveCursorPosition() {
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            terminal.altSavedX = terminal.x;
+            terminal.altSavedY = terminal.y;
+        } else {
+            terminal.savedX = terminal.x;
+            terminal.savedY = terminal.y;
         }
     }
 }

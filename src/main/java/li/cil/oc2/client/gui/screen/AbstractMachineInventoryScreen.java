@@ -11,7 +11,7 @@ import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.client.gui.widget.ToggleImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.TooltipRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -159,7 +159,7 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
                 Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION,
                     withFormat(String.valueOf(menu.getEnergyConsumption()), ChatFormatting.GREEN))
             );
-            TooltipUtils.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
+            TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
         }
     }
 

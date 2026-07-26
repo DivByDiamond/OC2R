@@ -1,33 +1,19 @@
-/* SPDX-License-Identifier: MIT */
-
 package li.cil.oc2.common.util;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-import li.cil.oc2.common.components.RestrictedContainer;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.EnergyConsumingBlock;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.components.RestrictedContainer;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.ItemTags;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.StringSplitter;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.ClientHooks;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -41,39 +27,6 @@ public final class TooltipUtils {
             .withStyle(s -> s.withColor(TextColor.fromLegacyFormat(ChatFormatting.YELLOW)));
 
     private static final ThreadLocal<List<ItemStack>> ITEM_STACKS = ThreadLocal.withInitial(ArrayList::new);
-    private static final ThreadLocal<IntList> ITEM_STACKS_SIZES = ThreadLocal.withInitial(IntArrayList::new);
-
-    ///////////////////////////////////////////////////////////////////
-
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y) {
-        drawTooltip(graphics, tooltip, x, y, 200, ItemStack.EMPTY);
-    }
-
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y, final int widthHint) {
-        drawTooltip(graphics, tooltip, x, y, widthHint, ItemStack.EMPTY);
-    }
-
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y, final int widthHint, final ItemStack itemStack) {
-        final Minecraft minecraft = Minecraft.getInstance();
-        final Screen screen = minecraft.screen;
-        if (screen == null) {
-            return;
-        }
-
-        final int availableWidth = Math.max(x, screen.width - x);
-        final int targetWidth = Math.min(availableWidth, widthHint);
-        final Font font = ClientHooks.getTooltipFont(itemStack, minecraft.font);
-
-        final boolean needsWrapping = tooltip.stream().anyMatch(line -> font.width(line) > targetWidth);
-        if (!needsWrapping) {
-            graphics.renderComponentTooltip(font, tooltip, x, y, itemStack);
-        } else {
-            final StringSplitter splitter = font.getSplitter();
-            final List<? extends FormattedText> wrappedTooltip = tooltip.stream().flatMap(line ->
-                splitter.splitLines(line, targetWidth, Style.EMPTY).stream()).toList();
-            graphics.renderComponentTooltip(font, wrappedTooltip, x, y, itemStack);
-        }
-    }
 
     public static void tryAddDescription(final ItemStack stack, final List<Component> tooltip) {
         if (stack.isEmpty()) {
@@ -105,7 +58,6 @@ public final class TooltipUtils {
             tooltip.add(withFormat(Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION, energy), ChatFormatting.GRAY));
         }
 
-        // Additional tooltips for InternetGateWay
         if (stack.getItem() == Items.INTERNET_GATEWAY.get()) {
             if (Config.gatewayEnergyPerPacket > 0) {
                 final MutableComponent energy = withFormat(String.valueOf(Config.gatewayEnergyPerPacket), ChatFormatting.GREEN);
@@ -134,7 +86,7 @@ public final class TooltipUtils {
                 var found = false;
                 for (final var y : itemStacks) {
                     if (y.getItem() == item) {
-                        y.setCount(y.getCount()+1);
+                        y.setCount(y.getCount() + 1);
                         found = true;
                         break;
                     }
@@ -171,38 +123,6 @@ public final class TooltipUtils {
     public static void addEnergyConsumption(final double value, final List<Component> tooltip) {
         if (value > 0) {
             tooltip.add(withFormat(Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION, withFormat(new DecimalFormat("#.##").format(value), ChatFormatting.GREEN)), ChatFormatting.GRAY));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    private static String[] getDeviceTypeNames() {
-        return DeviceType.REGISTRY.stream().map(RegistryUtils::key).toArray(String[]::new);
-    }
-
-    private static void collectItemStacks(final CompoundTag tag, final List<ItemStack> stacks, final IntList stackSizes) {
-        final ListTag itemsTag = tag.getList("Items", NBTTagIds.TAG_COMPOUND);
-        for (int i = 0; i < itemsTag.size(); i++) {
-            final CompoundTag itemTag = itemsTag.getCompound(i);
-            final var itemStackParsed = ItemStack.CODEC.parse(NbtOps.INSTANCE, itemTag);
-            final ItemStack itemStack = itemStackParsed.getOrThrow();
-
-            boolean didMerge = false;
-            for (int j = 0; j < stacks.size(); j++) {
-                final ItemStack existingStack = stacks.get(j);
-                if (ItemStack.matches(existingStack, itemStack) &&
-                    ItemStack.matches(existingStack, itemStack)) {
-                    final int existingCount = stackSizes.getInt(j);
-                    stackSizes.set(j, existingCount + itemStack.getCount());
-                    didMerge = true;
-                    break;
-                }
-            }
-
-            if (!didMerge) {
-                stacks.add(itemStack);
-                stackSizes.add(itemStack.getCount());
-            }
         }
     }
 }

@@ -6,7 +6,7 @@ import li.cil.oc2.client.gui.widget.MonitorDisplayWidget;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMonitorContainer;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.TooltipRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -140,7 +140,7 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
                     Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION,
                         withFormat(String.valueOf(Config.monitorEnergyPerTick), ChatFormatting.GREEN))
                 );
-                TooltipUtils.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
+                TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
             }
         }
     }

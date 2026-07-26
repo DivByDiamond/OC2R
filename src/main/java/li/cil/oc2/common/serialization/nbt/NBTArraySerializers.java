@@ -2,14 +2,6 @@ package li.cil.oc2.common.serialization.nbt;
 
 import net.minecraft.nbt.*;
 
-import java.lang.reflect.Array;
-
-interface NBTArraySerializer {
-    Tag serialize(Object value);
-
-    Object deserialize(Tag tag, Class<?> type, Object into);
-}
-
 final class BooleanArraySerializer implements NBTArraySerializer {
     @Override
     public Tag serialize(final Object value) {

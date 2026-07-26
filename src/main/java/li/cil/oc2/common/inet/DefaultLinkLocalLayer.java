@@ -20,19 +20,8 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private static final short MAC_PREFIX = 0x5ed1;
 
-    private static final short PROTOCOL_ARP = 0x0806;
-
-    private static final short HW_TYPE_ETHERNET = 0x0001;
-
-    private static final int ARP_MESSAGE_SIZE = 28;
-    private static final int ARP_ADDRESS_TYPE = (HW_TYPE_ETHERNET << 16) | NetworkLayer.PROTOCOL_IPv4;
-    private static final short ARP_ADDRESSES_SIZES = (6 << 8) | 4;
-
-    private static final short ARP_REQUEST = 0x0001;
-    private static final short ARP_RESPONSE = 0x0002;
-
-    private static final int IP_VER4 = 4; // obviously
-    private static final int IP_VER6 = 6; // obviously
+    private static final int IP_VER4 = 4;
+    private static final int IP_VER6 = 6;
 
     private static final String MAC_ADDRESS_TAG = "MACAddress";
     private static final String IPv4_ADDRESS_TAG = "IPv4Address";
@@ -77,7 +66,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     }
 
     private void prepareEthernetHeader(final ByteBuffer frame, final short protocol) {
-        // Prepare ethernet header
         frame.putShort(cardMacPrefix);
         frame.putInt(cardMacAddress);
         frame.putShort(myMacAddress.prefix());
@@ -106,32 +94,17 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     @Override
     public boolean receiveEthernetFrame(final ByteBuffer frame) {
         if (needArpResponse) {
-            // Make ARP response before anything else
             needArpResponse = false;
-
-            prepareEthernetHeader(frame, PROTOCOL_ARP);
-
-            // Prepare ARP response
-            frame.putInt(ARP_ADDRESS_TYPE);
-            frame.putShort(ARP_ADDRESSES_SIZES);
-            frame.putShort(ARP_RESPONSE);
-            frame.putShort(myMacAddress.prefix());
-            frame.putInt(myMacAddress.address());
-            frame.putInt(myIpV4Address);
-            frame.putShort(cardMacPrefix);
-            frame.putInt(cardMacAddress);
-            frame.putInt(cardIpAddress);
-            frame.position(frame.position() - FRAME_HEADER_SIZE - ARP_MESSAGE_SIZE);
-            LOGGER.trace("ARP message sent");
+            prepareEthernetHeader(frame, ArpProtocol.PROTOCOL_ARP);
+            ArpProtocol.writeResponse(frame, myMacAddress, myIpV4Address,
+                cardMacPrefix, cardMacAddress, cardIpAddress, FRAME_HEADER_SIZE);
         } else {
-            // Wrap IP message
             frame.position(frame.position() + FRAME_HEADER_SIZE);
             short protocol = networkLayer.receivePacket(frame);
             if (protocol == NetworkLayer.PROTOCOL_NONE) {
                 return false;
             }
             if (protocol == NetworkLayer.PROTOCOL_IP) {
-                // This code block exists to make Network layer implementation a bit easier
                 final int version = Byte.toUnsignedInt(frame.get(frame.position())) >>> 4;
                 if (version == IP_VER6) {
                     protocol = NetworkLayer.PROTOCOL_IPv6;
@@ -147,61 +120,28 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     @Override
     public void sendEthernetFrame(final ByteBuffer frame) {
-        /// Read ethernet header
         if (frame.remaining() < FRAME_HEADER_SIZE) {
             LOGGER.trace("Ethernet header too low");
             return;
         }
-        // Get destination
         final short dstMacPrefix = frame.getShort();
         final int dstMacAddress = frame.getInt();
-        // Get source
         final short srcMacPrefix = frame.getShort();
         final int srcMacAddress = frame.getInt();
-        // Get protocol type
         final short protocol = frame.getShort();
 
-        /// Protocol action
-        if (protocol == PROTOCOL_ARP) {
+        if (protocol == ArpProtocol.PROTOCOL_ARP) {
             LOGGER.trace("ARP message received");
-            /// ARP message verification
-            if (frame.remaining() < ARP_MESSAGE_SIZE) {
-                return;
+            final var arpData = ArpProtocol.readRequest(frame, srcMacPrefix, srcMacAddress);
+            if (arpData != null) {
+                cardIpAddress = arpData.senderIpAddress();
+                myIpV4Address = arpData.targetIpAddress();
+                cardMacPrefix = arpData.senderMacPrefix();
+                cardMacAddress = arpData.senderMacAddress();
+                needArpResponse = true;
             }
-            final int hwAndProtocolAddressesTypes = frame.getInt();
-            if (hwAndProtocolAddressesTypes != ARP_ADDRESS_TYPE) {
-                LOGGER.trace("Wrong ARP address type, drop");
-                return;
-            }
-            final short addressesSizes = frame.getShort();
-            if (addressesSizes != ARP_ADDRESSES_SIZES) {
-                LOGGER.trace("Wrong ARP address size, drop");
-                return;
-            }
-            final short messageType = frame.getShort();
-            if (messageType != ARP_REQUEST) {
-                LOGGER.trace("Not an ARP request, drop");
-                return;
-            }
-            final short senderMacPrefix = frame.getShort();
-            final int senderMacAddress = frame.getInt();
-            if (senderMacPrefix != srcMacPrefix || senderMacAddress != srcMacAddress) {
-                LOGGER.trace("Wrong sender, drop");
-                return;
-            }
-
-            /// Valid message, extracting useful data
-            cardIpAddress = frame.getInt();
-            // Do not care what target MAC address is
-            frame.getShort();
-            frame.getInt();
-            myIpV4Address = frame.getInt();
-            cardMacPrefix = senderMacPrefix;
-            cardMacAddress = senderMacAddress;
-            needArpResponse = true;
         } else {
             LOGGER.trace("Network message received");
-            /// Network message forwarding
             networkLayer.sendPacket(protocol, frame);
         }
     }
