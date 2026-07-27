@@ -6,6 +6,9 @@ package li.cil.oc2.api.bus.device;
  */
 @SuppressWarnings("unused")
 public final class DeviceTypes {
+    private DeviceTypes() {
+    }
+
     public static final DeviceType MEMORY = li.cil.oc2.common.bus.device.DeviceTypes.MEMORY;
 
     public static final DeviceType HARD_DRIVE = li.cil.oc2.common.bus.device.DeviceTypes.HARD_DRIVE;

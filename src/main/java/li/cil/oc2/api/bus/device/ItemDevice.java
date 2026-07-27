@@ -7,12 +7,12 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Specialized device type provided by {@link ItemDeviceProvider}s.
- * <p>
- * This interface provides methods that allow the context in which an item based device is
+ *
+ * <p>This interface provides methods that allow the context in which an item based device is
  * created to copy data from and to the {@link ItemStack} the device was
  * created for.
- * <p>
- * By default, no data is copied to and from the {@link ItemStack}. Use
+ *
+ * <p>By default, no data is copied to and from the {@link ItemStack}. Use
  * these methods for storing data that should survive the item the device is based on being
  * removed from the context (e.g. a computer) and being put back in some context.
  */

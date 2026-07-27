@@ -1,10 +1,10 @@
 
 package li.cil.oc2.api.bus;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-
-import javax.annotation.Nullable;
 
 /**
  * Implementing this interface allows providing positional information to the {@link DeviceBusController}.

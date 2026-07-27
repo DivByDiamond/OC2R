@@ -353,6 +353,10 @@ checkstyle {
     isIgnoreFailures = true
 }
 
+tasks.withType<Checkstyle>().configureEach {
+    exclude("**/jcodec/**")
+}
+
 pmd {
     toolVersion = "7.7.0"
     ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))

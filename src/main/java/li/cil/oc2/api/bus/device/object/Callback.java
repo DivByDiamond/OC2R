@@ -1,20 +1,18 @@
-
 package li.cil.oc2.api.bus.device.object;
-
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 
 /**
  * Utility annotation to allow generating lists of {@link RPCMethod}s using
  * {@link Callbacks#collectMethods(Object)}.
- * <p>
- * Intended to be used in classes instances of which are used as a target of {@link ObjectDevice}.
- * <p>
- * Method parameters are serialized and deserialized using Gson. When using custom
+ *
+ * <p>Intended to be used in classes instances of which are used as a target of {@link ObjectDevice}.
+ *
+ * <p>Method parameters are serialized and deserialized using Gson. When using custom
  * parameter types it may be necessary to register a custom type adapter for them
  * via {@link li.cil.oc2.api.API#IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER}.
  */
@@ -23,11 +21,11 @@ import java.lang.annotation.Target;
 public @interface Callback {
     /**
      * Allows automatically moving method invocation into the main thread.
-     * <p>
-     * Note that this will lead to dramatically slower method calls as viewed from
+     *
+     * <p>Note that this will lead to dramatically slower method calls as viewed from
      * the caller as each call will take at least one tick (50ms).
-     * <p>
-     * Use this when the targeted method interacts with data that is not thread
+     *
+     * <p>Use this when the targeted method interacts with data that is not thread
      * safe, for example the level or any objects inside the level, such as
      * entities and block entities.
      *

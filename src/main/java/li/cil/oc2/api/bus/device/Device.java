@@ -11,21 +11,21 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 
 /**
  * Base interface for objects that can be registered as devices on a {@link DeviceBus}.
- * <p>
- * Which types are handled/supported by a bus depends on context of the {@link DeviceBusController}
+ *
+ * <p>Which types are handled/supported by a bus depends on context of the {@link DeviceBusController}
  * managing the bus.
- * <p>
- * May be provided as a capability on {@link BlockEntity}s and {@link ItemStack}s.
- * <p>
- * Note that it is strongly encouraged for implementations to provide an overloaded
+ *
+ * <p>May be provided as a capability on {@link BlockEntity}s and {@link ItemStack}s.
+ *
+ * <p>Note that it is strongly encouraged for implementations to provide an overloaded
  * {@link Object#equals(Object)} and {@link Object#hashCode()} so that identical
  * devices can be detected.
  */
 public interface Device extends INBTSerializable<CompoundTag> {
     /**
      * Called to dispose this device.
-     * <p>
-     * Called when the connected virtual machine stops or the device is removed from a {@link DeviceBus}.
+     *
+     * <p>Called when the connected virtual machine stops or the device is removed from a {@link DeviceBus}.
      */
     default void dispose() {
     }
@@ -42,8 +42,8 @@ public interface Device extends INBTSerializable<CompoundTag> {
 
     /**
      * Called to deserialize this device from its items's persistent storage.
-     * <p>
-     * The passed tag will be what was last returned by {@link #serializeNBT()}.
+     *
+     * <p>The passed tag will be what was last returned by {@link #serializeNBT()}.
      *
      * @param tag the serialized state of this device.
      */

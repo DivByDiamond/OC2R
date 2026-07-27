@@ -8,10 +8,10 @@ import net.minecraft.network.chat.Component;
  * Implementations of this interface that are registered with the registry for
  * this type can be used as read-only base block devices for read-write block
  * devices.
- * <p>
- * This is used for the built-in Linux root file-system, for example.
- * <p>
- * To make use of registered implementations, a hard drive item with the
+ *
+ * <p>This is used for the built-in Linux root file-system, for example.
+ *
+ * <p>To make use of registered implementations, a hard drive item with the
  * string tag {@code oc2.base} referencing the implementation's registry id
  * must be created. For example, if the implementation's registry name is
  * {@code my_mod:my_block_device}:

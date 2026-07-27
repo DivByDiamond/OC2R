@@ -14,18 +14,19 @@ import net.neoforged.neoforge.registries.RegistryBuilder;
  * Implementations describe individual slot types. Slot types are only used
  * for item devices, and mimic the connection type of devices in the real world,
  * such as PCI vs SATA, in a simplified manner.
- * <p>
- * For built-in slot types, see {@link DeviceTypes}.
+ *
+ * <p>For built-in slot types, see {@link DeviceTypes}.
  */
 public interface DeviceType {
     /**
      * The registry name of the registry holding device types.
      */
-    ResourceKey<Registry<DeviceType>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "device_type"));
+    ResourceKey<Registry<DeviceType>> REGISTRY_KEY = ResourceKey.createRegistryKey(
+            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "device_type"));
     @SuppressWarnings("unused")
-    public static final Registry<DeviceType> REGISTRY = new RegistryBuilder<>(REGISTRY_KEY)
-        .sync(true)
-        .create();
+    Registry<DeviceType> REGISTRY = new RegistryBuilder<>(REGISTRY_KEY)
+            .sync(true)
+            .create();
 
     /**
      * The tag representing this device type.
