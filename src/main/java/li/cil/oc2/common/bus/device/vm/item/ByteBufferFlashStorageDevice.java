@@ -106,7 +106,7 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
                 data.clear();
                 CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompound(DATA_TAG_NAME);
                 if (tag.hasUUID("blob")) {
-                    BlobStorage.getOrOpen(tag.getUUID("blob")).read(data, 0);
+                    BlobStorage.getOrOpenAsync(tag.getUUID("blob")).join().read(data, 0);
                 }
             } catch (Exception e) {
                 System.out.println("Error message: " + e.getMessage());

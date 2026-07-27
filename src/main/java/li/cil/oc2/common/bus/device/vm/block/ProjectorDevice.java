@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -17,10 +18,14 @@ import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.HolderLookup;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements VMDevice {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
 
@@ -74,7 +79,11 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         }
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            try {
+                BlobStorage.closeAsync(blobHandle).join();
+            } catch (final CompletionException e) {
+                LOGGER.error("Error in close operation for blob: " + blobHandle, e);
+            }
         }
 
         onMountedChanged.accept(false);
@@ -83,7 +92,11 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
     @Override
     public void dispose() {
         if (blobHandle != null) {
-            BlobStorage.delete(blobHandle);
+            try {
+                BlobStorage.deleteAsync(blobHandle).join();
+            } catch (final CompletionException e) {
+                LOGGER.error("Error in delete operation for blob: " + blobHandle, e);
+            }
             blobHandle = null;
         }
 
@@ -130,7 +143,15 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
 
     private SimpleFramebufferDevice createFrameBufferDevice() throws IOException {
         blobHandle = BlobStorage.validateHandle(blobHandle);
-        final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+        final FileChannel channel;
+        try {
+            channel = BlobStorage.getOrOpenAsync(blobHandle).join();
+        } catch (final CompletionException e) {
+            if (e.getCause() instanceof final IOException ioe) {
+                throw ioe;
+            }
+            throw new IOException("Failed to open blob: " + blobHandle, e);
+        }
         final MappedByteBuffer buffer =
                 channel.map(
                         FileChannel.MapMode.READ_WRITE,

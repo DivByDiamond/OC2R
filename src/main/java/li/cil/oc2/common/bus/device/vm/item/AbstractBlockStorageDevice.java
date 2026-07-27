@@ -92,7 +92,11 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
                                     return null;
                                 });
             } else {
-                BlobStorage.close(blobHandle);
+                try {
+                    BlobStorage.closeAsync(blobHandle).join();
+                } catch (final java.util.concurrent.CompletionException e) {
+                    LOGGER.error("Error in close operation for blob: " + blobHandle, e);
+                }
             }
         }
     }
@@ -173,7 +177,11 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
                                     return null;
                                 });
             } else {
-                BlobStorage.close(blobHandle);
+                try {
+                    BlobStorage.closeAsync(blobHandle).join();
+                } catch (final java.util.concurrent.CompletionException e) {
+                    LOGGER.error("Error closing blob asynchronously during unmount: " + blobHandle, e);
+                }
             }
         }
     }

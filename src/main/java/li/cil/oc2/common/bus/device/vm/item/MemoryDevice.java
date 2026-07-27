@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -56,7 +57,11 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
         closeDevice();
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            try {
+                BlobStorage.closeAsync(blobHandle).join();
+            } catch (final CompletionException e) {
+                LOGGER.error("Error in close operation for blob: " + blobHandle, e);
+            }
         }
     }
 
@@ -64,7 +69,11 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
     public void dispose() {
         // Memory is volatile, so free up our persisted blob when device is disposed.
         if (blobHandle != null) {
-            BlobStorage.delete(blobHandle);
+            try {
+                BlobStorage.deleteAsync(blobHandle).join();
+            } catch (final CompletionException e) {
+                LOGGER.error("Error in delete operation for blob: " + blobHandle, e);
+            }
             blobHandle = null;
         }
 
@@ -102,7 +111,15 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
 
         try {
             blobHandle = BlobStorage.validateHandle(blobHandle);
-            final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+            final FileChannel channel;
+            try {
+                channel = BlobStorage.getOrOpenAsync(blobHandle).join();
+            } catch (final CompletionException e) {
+                if (e.getCause() instanceof final IOException ioe) {
+                    throw ioe;
+                }
+                throw new IOException("Failed to open blob: " + blobHandle, e);
+            }
             final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
             device = new ByteBufferMemory(size, buffer);
         } catch (final IOException e) {

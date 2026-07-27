@@ -81,7 +81,7 @@ public class HardDriveDevice extends AbstractBlockStorageDevice<ByteBufferBlockD
             return CompletableFuture.supplyAsync(
                     () -> {
                         try {
-                            final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+                            final FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
                             final MappedByteBuffer buffer =
                                     channel.map(MapMode.READ_WRITE, 0, size);
                             return ByteBufferBlockDevice.wrap(buffer, readonly);
