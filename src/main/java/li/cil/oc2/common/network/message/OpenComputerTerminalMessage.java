@@ -31,6 +31,7 @@ public record OpenComputerTerminalMessage(BlockPos pos) implements AbstractMessa
         this(computer.getBlockPos());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

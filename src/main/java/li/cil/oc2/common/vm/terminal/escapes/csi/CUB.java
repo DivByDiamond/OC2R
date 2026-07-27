@@ -7,6 +7,7 @@ public class CUB extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argsCount, CSIState state) {
         terminal.setClampedCursorPos(terminal.x - Math.max(1, args[0]), terminal.y);
     }

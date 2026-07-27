@@ -1,6 +1,5 @@
 package li.cil.oc2.common.bus.device.rpc;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,9 +8,9 @@ import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
-public record RPCDeviceList(ArrayList<RPCDevice> devices) implements RPCDevice {
+public record RPCDeviceList(List<RPCDevice> devices) implements RPCDevice {
 
-    public ArrayList<RPCDevice> getDevices() {
+    public List<RPCDevice> getDevices() {
         return devices;
     }
 

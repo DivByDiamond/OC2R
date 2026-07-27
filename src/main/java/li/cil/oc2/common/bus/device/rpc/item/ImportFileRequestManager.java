@@ -1,12 +1,13 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ServerCanceledImportFileMessage;
 import net.minecraft.server.level.ServerPlayer;
 
 final class ImportFileRequestManager {
-    private static final Int2ObjectArrayMap<ImportFileRequest> importingDevices =
+    private static final Int2ObjectMap<ImportFileRequest> importingDevices =
             new Int2ObjectArrayMap<>();
     private static int nextImportId = 1;
 

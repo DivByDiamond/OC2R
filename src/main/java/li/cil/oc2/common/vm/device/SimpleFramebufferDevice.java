@@ -12,7 +12,8 @@ import li.cil.sedna.utils.DirectByteBufferUtils;
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public static final int STRIDE = 2;
 
-    private final int width, height;
+    private final int width;
+    private final int height;
     private final ByteBuffer buffer;
     private int length;
     private final BitSet dirtyLines;

@@ -65,13 +65,14 @@ final class BusElementManager {
         if (scanDelay < 0) {
             return;
         }
-        if (scanDelay-- > 0) {
+        final int delay = scanDelay--;
+        if (delay > 0) {
             return;
         }
         collectBusElements()
                 .ifPresent(
                         optionals -> {
-                            final HashSet<DeviceBusElement> addedElements =
+                            final Set<DeviceBusElement> addedElements =
                                     updateElements(optionals.keySet());
                             if (checkOtherBusControllers()) {
                                 return;
@@ -92,10 +93,10 @@ final class BusElementManager {
         controller.scanDevices();
     }
 
-    private Optional<HashMap<DeviceBusElement, DeviceBusElement>> collectBusElements() {
-        final HashSet<DeviceBusElement> closed = new HashSet<>();
-        final Stack<DeviceBusElement> open = new Stack<>();
-        final HashMap<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
+    private Optional<Map<DeviceBusElement, DeviceBusElement>> collectBusElements() {
+        final Set<DeviceBusElement> closed = new HashSet<>();
+        final Deque<DeviceBusElement> open = new ArrayDeque<>();
+        final Map<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
 
         closed.add(root);
         open.add(root);
@@ -132,8 +133,8 @@ final class BusElementManager {
         return Optional.of(optionals);
     }
 
-    private HashSet<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {
-        final HashSet<DeviceBusElement> removedElements = new HashSet<>(elements);
+    private Set<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {
+        final Set<DeviceBusElement> removedElements = new HashSet<>(elements);
         removedElements.removeAll(newElements);
 
         elements.removeAll(removedElements);
@@ -145,7 +146,7 @@ final class BusElementManager {
             }
         }
 
-        final HashSet<DeviceBusElement> addedElements = new HashSet<>(newElements);
+        final Set<DeviceBusElement> addedElements = new HashSet<>(newElements);
         addedElements.removeAll(elements);
 
         elements.addAll(addedElements);
@@ -157,7 +158,7 @@ final class BusElementManager {
     }
 
     private boolean checkOtherBusControllers() {
-        final HashSet<DeviceBusController> controllers = new HashSet<>();
+        final Set<DeviceBusController> controllers = new HashSet<>();
         for (final DeviceBusElement element : elements) {
             controllers.addAll(element.getControllers());
         }

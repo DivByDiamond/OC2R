@@ -26,7 +26,7 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
 
     @Nullable
     public Firmware getFirmware(final ItemStack stack) {
-        if (stack.isEmpty() || stack.getItem() != this) {
+        if (stack.isEmpty() || !stack.getItem().equals(this)) {
             return null;
         }
 
@@ -45,7 +45,7 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
     }
 
     public ItemStack withFirmware(final ItemStack stack, final Firmware firmware) {
-        if (stack.isEmpty() || stack.getItem() != this) {
+        if (stack.isEmpty() || !stack.getItem().equals(this)) {
             return ItemStack.EMPTY;
         }
 

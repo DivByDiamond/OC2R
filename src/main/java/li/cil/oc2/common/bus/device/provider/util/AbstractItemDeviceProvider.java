@@ -17,7 +17,7 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     }
 
     protected AbstractItemDeviceProvider(final DeferredItem<? extends Item> item) {
-        this(i -> i == item.get());
+        this(i -> i.equals(item.get()));
     }
 
     protected AbstractItemDeviceProvider(final Class<? extends Item> type) {

@@ -74,7 +74,7 @@ public final class BusCableStateProperties {
 
     public static boolean addInterface(
             final Level level, final BlockPos pos, final BlockState state, final Direction side) {
-        if (state.getBlock() != Blocks.BUS_CABLE.get()) {
+        if (!state.getBlock().equals(Blocks.BUS_CABLE.get())) {
             return false;
         }
         if (state.getValue(HAS_FACADE)) {
@@ -93,7 +93,7 @@ public final class BusCableStateProperties {
     }
 
     public static boolean addCable(final Level level, final BlockPos pos, final BlockState state) {
-        if (state.getBlock() != Blocks.BUS_CABLE.get()) {
+        if (!state.getBlock().equals(Blocks.BUS_CABLE.get())) {
             return false;
         }
         if (state.getValue(HAS_CABLE)) {
@@ -123,7 +123,7 @@ public final class BusCableStateProperties {
     }
 
     static boolean canHaveCableTo(final BlockState state, final Direction side) {
-        return state.getBlock() == Blocks.BUS_CABLE.get()
+        return state.getBlock().equals(Blocks.BUS_CABLE.get())
                 && state.getValue(HAS_CABLE)
                 && state.getValue(FACING_TO_CONNECTION_MAP.get(side)) != ConnectionType.INTERFACE;
     }

@@ -15,7 +15,7 @@ public abstract class AbstractRobotAction {
 
     public AbstractRobotAction(final AbstractRobotActionType type, final CompoundTag tag) {
         this(type);
-        deserialize(tag);
+        id = tag.getInt(ID_TAG_NAME);
     }
 
     public AbstractRobotActionType getType() {

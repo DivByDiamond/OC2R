@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 
@@ -18,7 +19,7 @@ public class CSIManager {
     private boolean exclamation = false;
 
     private final Terminal terminal;
-    private final HashMap<Character, CSISequenceHandler> sequences = new HashMap<>();
+    private final Map<Character, CSISequenceHandler> sequences = new HashMap<>();
 
     public CSIManager(Terminal terminal) {
         this.terminal = terminal;

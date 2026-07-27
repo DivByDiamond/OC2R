@@ -155,13 +155,12 @@ class TerminalIO {
                                             TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
                             case '1' -> {}
                             case '2' -> {}
+                            default -> {}
                         }
                     }
                     case HASH -> {
                         terminal.state = State.NORMAL;
-                        switch (ch) {
-                            case '3', '4', '5', '6' -> {}
-                            case '8' -> {
+                        if (ch == '8') {
                                 if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
                                     Arrays.fill(terminal.altBuffer, 'E');
                                 } else {
@@ -177,7 +176,6 @@ class TerminalIO {
                                 }
                                 terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
                             }
-                        }
                     }
                     case DCS -> terminal.dcsManager.handle(ch);
                     case OSC -> terminal.oscManager.handle(ch);

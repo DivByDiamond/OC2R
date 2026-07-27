@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.controller;
 import static java.util.Collections.emptySet;
 
 import java.util.*;
+import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -10,18 +11,18 @@ import li.cil.oc2.common.util.Event;
 import li.cil.oc2.common.util.ParameterizedEvent;
 
 public class CommonDeviceBusController implements DeviceBusController {
-    public final Event onAfterBusScan = new Event();
-    public final Event onBeforeDeviceScan = new Event();
-    public final ParameterizedEvent<AfterDeviceScanEvent> onAfterDeviceScan =
+    public final Set<Runnable> afterBusScanListeners = new Event();
+    public final Set<Runnable> beforeDeviceScanListeners = new Event();
+    public final Set<Consumer<AfterDeviceScanEvent>> afterDeviceScanListeners =
             new ParameterizedEvent<>();
-    public final ParameterizedEvent<DevicesChangedEvent> onDevicesAdded =
+    public final Set<Consumer<DevicesChangedEvent>> devicesAddedListeners =
             new ParameterizedEvent<>();
-    public final ParameterizedEvent<DevicesChangedEvent> onDevicesRemoved =
+    public final Set<Consumer<DevicesChangedEvent>> devicesRemovedListeners =
             new ParameterizedEvent<>();
 
     private final BusElementManager manager;
-    private final HashSet<Device> devices = new HashSet<>();
-    private final HashMap<Device, Set<UUID>> deviceIds = new HashMap<>();
+    private final Set<Device> devices = new HashSet<>();
+    private final Map<Device, Set<UUID>> deviceIds = new HashMap<>();
 
     public CommonDeviceBusController(final DeviceBusElement root, final int baseEnergyConsumption) {
         this.manager = new BusElementManager(this, root, baseEnergyConsumption);
@@ -50,8 +51,8 @@ public class CommonDeviceBusController implements DeviceBusController {
     public void scanDevices() {
         onBeforeDeviceScan();
 
-        final HashSet<Device> newDevices = new HashSet<>();
-        final HashMap<Device, Set<UUID>> newDeviceIds = new HashMap<>();
+        final Set<Device> newDevices = new HashSet<>();
+        final Map<Device, Set<UUID>> newDeviceIds = new HashMap<>();
         for (final DeviceBusElement element : manager.getElements()) {
             for (final Device device : element.getLocalDevices()) {
                 newDevices.add(device);
@@ -64,11 +65,11 @@ public class CommonDeviceBusController implements DeviceBusController {
             }
         }
 
-        final HashSet<Device> removedDevices = new HashSet<>(devices);
+        final Set<Device> removedDevices = new HashSet<>(devices);
         removedDevices.removeAll(newDevices);
         onDevicesRemoved(removedDevices);
 
-        final HashSet<Device> addedDevices = new HashSet<>(newDevices);
+        final Set<Device> addedDevices = new HashSet<>(newDevices);
         addedDevices.removeAll(devices);
         onDevicesAdded(addedDevices);
 
@@ -116,22 +117,25 @@ public class CommonDeviceBusController implements DeviceBusController {
     }
 
     protected void onAfterBusScan() {
-        onAfterBusScan.run();
+        afterBusScanListeners.forEach(Runnable::run);
     }
 
     protected void onBeforeDeviceScan() {
-        onBeforeDeviceScan.run();
+        beforeDeviceScanListeners.forEach(Runnable::run);
     }
 
     protected void onAfterDeviceScan(final boolean didDevicesChange) {
-        onAfterDeviceScan.accept(new AfterDeviceScanEvent(didDevicesChange));
+        final var event = new AfterDeviceScanEvent(didDevicesChange);
+        afterDeviceScanListeners.forEach(c -> c.accept(event));
     }
 
     protected void onDevicesAdded(final Collection<Device> devices) {
-        onDevicesAdded.accept(new DevicesChangedEvent(devices));
+        final var event = new DevicesChangedEvent(devices);
+        devicesAddedListeners.forEach(c -> c.accept(event));
     }
 
     protected void onDevicesRemoved(final Collection<Device> devices) {
-        onDevicesRemoved.accept(new DevicesChangedEvent(devices));
+        final var event = new DevicesChangedEvent(devices);
+        devicesRemovedListeners.forEach(c -> c.accept(event));
     }
 }

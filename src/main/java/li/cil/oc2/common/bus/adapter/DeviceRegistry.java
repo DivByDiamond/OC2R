@@ -9,11 +9,11 @@ import li.cil.oc2.api.bus.device.rpc.*;
 import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
 
 class DeviceRegistry {
-    final ArrayList<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();
-    final HashMap<UUID, RPCDeviceList> devicesById = new HashMap<>();
+    final List<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();
+    final Map<UUID, RPCDeviceList> devicesById = new HashMap<>();
     final Set<RPCDeviceList> unmountedDevices = new HashSet<>();
     final Set<RPCDeviceList> mountedDevices = new HashSet<>();
-    final ArrayList<RPCEventSource> subscriptions = new ArrayList<>();
+    final List<RPCEventSource> subscriptions = new ArrayList<>();
 
     void mountDevices() {
         for (final RPCDevice device : unmountedDevices) {
@@ -40,7 +40,7 @@ class DeviceRegistry {
     }
 
     void rebuild(final DeviceBusController controller) {
-        final HashMap<UUID, ArrayList<RPCDevice>> devicesByIdentifier = new HashMap<>();
+        final Map<UUID, List<RPCDevice>> devicesByIdentifier = new HashMap<>();
         for (final Device device : controller.getDevices()) {
             if (device instanceof final RPCDevice rpcDevice) {
                 final Set<UUID> identifiers = controller.getDeviceIdentifiers(device);
@@ -52,7 +52,7 @@ class DeviceRegistry {
             }
         }
 
-        final HashMap<RPCDeviceList, ArrayList<UUID>> identifiersByDevice = new HashMap<>();
+        final Map<RPCDeviceList, List<UUID>> identifiersByDevice = new HashMap<>();
         devicesByIdentifier.forEach(
                 (identifier, devices) -> {
                     final RPCDeviceList device = new RPCDeviceList(devices);
@@ -77,7 +77,7 @@ class DeviceRegistry {
                     }
                 });
 
-        final HashSet<RPCDeviceList> removedMountedDevices = new HashSet<>(mountedDevices);
+        final Set<RPCDeviceList> removedMountedDevices = new HashSet<>(mountedDevices);
         removedMountedDevices.removeAll(devices);
         mountedDevices.removeAll(removedMountedDevices);
         removedMountedDevices.forEach(RPCDeviceList::unmount);
@@ -127,7 +127,7 @@ class DeviceRegistry {
         }
     }
 
-    private UUID selectIdentifierDeterministically(final ArrayList<UUID> identifiers) {
+    private UUID selectIdentifierDeterministically(final List<UUID> identifiers) {
         UUID lowest = identifiers.get(0);
         for (int i = 1; i < identifiers.size(); i++) {
             final UUID identifier = identifiers.get(i);

@@ -29,7 +29,7 @@ public final class MonitorDisplayContainer extends AbstractMonitorContainer {
                     public AbstractContainerMenu createMenu(
                             final int id, final Inventory inventory, final Player player) {
                         return new MonitorDisplayContainer(
-                                id, player, monitor, createEnergyInfo(energy));
+                                id, monitor, createEnergyInfo(energy));
                     }
                 },
                 monitor.getBlockPos());
@@ -41,7 +41,7 @@ public final class MonitorDisplayContainer extends AbstractMonitorContainer {
         final BlockEntity blockEntity = inventory.player.level().getBlockEntity(pos);
         if (blockEntity instanceof final MonitorBlockEntity monitor) {
             return new MonitorDisplayContainer(
-                    id, inventory.player, monitor, createClientEnergyInfo());
+                    id, monitor, createClientEnergyInfo());
         }
 
         throw new IllegalArgumentException();
@@ -49,9 +49,8 @@ public final class MonitorDisplayContainer extends AbstractMonitorContainer {
 
     private MonitorDisplayContainer(
             final int id,
-            final Player player,
             final MonitorBlockEntity monitor,
             final IntPrecisionContainerData energyInfo) {
-        super(Containers.MONITOR.get(), id, player, monitor, energyInfo);
+        super(Containers.MONITOR.get(), id, monitor, energyInfo);
     }
 }

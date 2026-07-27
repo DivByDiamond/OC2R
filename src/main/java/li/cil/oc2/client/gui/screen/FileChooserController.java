@@ -15,7 +15,7 @@ class FileChooserController {
     private final Button okButton;
     private final FileChooserCallback callback;
     private final boolean isLoad;
-    private boolean isComplete;
+    private boolean complete;
 
     FileChooserController(
             final FileChooserScreen screen,
@@ -33,7 +33,7 @@ class FileChooserController {
     }
 
     boolean isComplete() {
-        return isComplete;
+        return complete;
     }
 
     void confirm() {
@@ -50,11 +50,11 @@ class FileChooserController {
                                 return;
                             }
                             if (Files.isRegularFile(path)) {
-                                isComplete = true;
+                                complete = true;
                                 callback.onFileSelected(path);
                                 screen.onClose();
                             } else if (!isLoad) {
-                                isComplete = true;
+                                complete = true;
                                 callback.onFileSelected(path);
                                 screen.onClose();
                             }
@@ -62,7 +62,7 @@ class FileChooserController {
     }
 
     void cancel() {
-        isComplete = true;
+        complete = true;
         callback.onCanceled();
         screen.onClose();
     }

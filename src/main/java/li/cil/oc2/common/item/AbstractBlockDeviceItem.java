@@ -29,7 +29,7 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
 
     @Nullable
     public BlockDeviceData getData(final ItemStack stack) {
-        if (stack.isEmpty() || stack.getItem() != this) {
+        if (stack.isEmpty() || !stack.getItem().equals(this)) {
             return null;
         }
 
@@ -47,7 +47,7 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
     }
 
     public ItemStack withData(final ItemStack stack, final BlockDeviceData data) {
-        if (stack.isEmpty() || stack.getItem() != this) {
+        if (stack.isEmpty() || !stack.getItem().equals(this)) {
             return ItemStack.EMPTY;
         }
 

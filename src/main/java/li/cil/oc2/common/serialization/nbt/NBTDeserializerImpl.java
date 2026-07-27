@@ -2,6 +2,7 @@ package li.cil.oc2.common.serialization.nbt;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import li.cil.ceres.Ceres;
@@ -137,13 +138,14 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
         }
 
         Object[] data = (Object[]) into;
-        final ListTag listTag;
+        final List<Tag> listTag;
         final int[] nulls;
         int nullsIndex = 0;
-        if (tag instanceof final ListTag plainListTag) {
-            listTag = plainListTag;
+        if (tag instanceof ListTag) {
+            listTag = (ListTag) tag;
             nulls = new int[0];
-        } else if (tag instanceof final CompoundTag compoundTag) {
+        } else if (tag instanceof CompoundTag) {
+            final CompoundTag compoundTag = (CompoundTag) tag;
             listTag = (ListTag) compoundTag.get("value");
             nulls = compoundTag.getIntArray("nulls");
         } else {

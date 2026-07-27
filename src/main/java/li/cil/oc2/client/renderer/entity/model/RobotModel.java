@@ -27,7 +27,8 @@ public final class RobotModel extends EntityModel<Robot> {
     private final ModelPart topRenderer;
     private final ModelPart baseRenderer;
     private final ModelPart coreRenderer;
-    private float baseY, topY;
+    private float baseY;
+    private float topY;
     private final float[] topRotation = new float[3];
 
     public RobotModel(final ModelPart modelPart) {

@@ -47,7 +47,7 @@ final class DeviceLifecycle {
 
         try {
             device.close();
-        } catch (final IOException e) {
+        } catch (final IOException ignored) {
             // logged in caller
         }
 
@@ -58,7 +58,7 @@ final class DeviceLifecycle {
         if (openJob != null) {
             try {
                 openJob.join();
-            } catch (final CompletionException e) {
+            } catch (final CompletionException ignored) {
                 // logged in caller
             } finally {
                 openJob = null;
@@ -80,7 +80,7 @@ final class DeviceLifecycle {
                             try {
                                 final ListenableBlockDevice listenableData =
                                         new ListenableBlockDevice(blockDevice);
-                                listenableData.onAccess.add(onDataAccess);
+                                listenableData.accessCallbacks.add(onDataAccess);
                                 device.setBlock(listenableData);
                             } catch (final IOException e) {
                                 throw new RuntimeException(e);

@@ -31,14 +31,9 @@ public class TerminalRenderer implements RendererModel, RendererView {
         validateLineCache();
         renderBuffer(stack, projectionMatrix, renderingToBlock);
 
-        boolean steady =
-                switch (terminal.cursorMode) {
-                    case TerminalColors.CursorMode.STEADY_BLOCK,
-                                    TerminalColors.CursorMode.STEADY_UNDERLINE,
-                                    TerminalColors.CursorMode.STEADY_BAR_LINE ->
-                            true;
-                    default -> false;
-                };
+        boolean steady = terminal.cursorMode == TerminalColors.CursorMode.STEADY_BLOCK
+                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_UNDERLINE
+                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_BAR_LINE;
 
         if (steady || (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500) {
             TerminalCursorRenderer.renderCursor(terminal, stack);
@@ -64,7 +59,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
     public int findLineIndex(VertexBuffer[] vba, VertexBuffer vb) {
         int i = 0;
         while (i < vba.length) {
-            if (vba[i] == vb) {
+            if (vba[i].equals(vb)) {
                 return i;
             }
             i++;
@@ -128,7 +123,6 @@ public class TerminalRenderer implements RendererModel, RendererView {
         RenderSystem.defaultBlendFunc();
     }
 
-    @SuppressWarnings("resource")
     public void validateLineCache() {
         if (dirty.get() == 0) return;
 

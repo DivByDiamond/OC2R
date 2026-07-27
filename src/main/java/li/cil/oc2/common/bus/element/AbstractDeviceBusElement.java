@@ -9,8 +9,8 @@ import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 
 public abstract class AbstractDeviceBusElement implements DeviceBusElement {
-    protected final Object2IntArrayMap<Device> devices = new Object2IntArrayMap<>();
-    protected final HashSet<DeviceBusController> controllers = new HashSet<>();
+    protected final Object2IntMap<Device> devices = new Object2IntArrayMap<>();
+    protected final Set<DeviceBusController> controllers = new HashSet<>();
 
     public void addDevice(final Device device) {
         devices.put(device, 0);

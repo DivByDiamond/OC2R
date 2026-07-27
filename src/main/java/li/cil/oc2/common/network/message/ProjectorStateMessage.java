@@ -39,6 +39,7 @@ public record ProjectorStateMessage(BlockPos pos, boolean isMounted, boolean has
         this(projector.getBlockPos(), isMounted, hasEnergy);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

@@ -35,7 +35,6 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
     private final Deque<byte[]> outboundQueue;
 
     private InternetConnection internetConnection;
-    private static final String STATE_TAG = "internet_adapter";
     private Tag internetState;
 
     final FixedEnergyStorage energy = new FixedEnergyStorage(Config.gatewayEnergyStorage);
@@ -118,6 +117,7 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
         }
     }
 
+    @Override
     protected void unloadServer(final boolean isRemove) {
         if (internetConnection != null) {
             internetConnection.stop();

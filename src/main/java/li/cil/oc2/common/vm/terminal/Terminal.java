@@ -21,8 +21,10 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class Terminal {
     public boolean Use1006 = false;
 
-    public static final int WIDTH = 80, HEIGHT = 24;
-    public static final int CHAR_WIDTH = 8, CHAR_HEIGHT = 16;
+    public static final int WIDTH = 80;
+    public static final int HEIGHT = 24;
+    public static final int CHAR_WIDTH = 8;
+    public static final int CHAR_HEIGHT = 16;
 
     public static final int STYLE_BOLD_MASK = 1;
     public static final int STYLE_DIM_MASK = 1 << 1;
@@ -49,10 +51,16 @@ public class Terminal {
     public final byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
     public final boolean[] tabs = new boolean[WIDTH];
     public State state = State.NORMAL;
-    public int scrollFirst = 0, scrollLast = HEIGHT - 1;
-    public int x, y;
-    public int savedX, savedY, altSavedX, altSavedY;
-    public int lastRowToDisplay = 24, lastRowToDisplayMax = 24;
+    public int scrollFirst = 0;
+    public int scrollLast = HEIGHT - 1;
+    public int x;
+    public int y;
+    public int savedX;
+    public int savedY;
+    public int altSavedX;
+    public int altSavedY;
+    public int lastRowToDisplay = 24;
+    public int lastRowToDisplayMax = 24;
 
     public final int[] altBuffer = new int[WIDTH * HEIGHT];
     public final ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
@@ -62,14 +70,19 @@ public class Terminal {
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-    public transient boolean displayOnly, hasPendingBell;
+    public transient boolean displayOnly;
+    public transient boolean hasPendingBell;
     public boolean continuationByte;
-    public int unicode, bytesRead, bytesToRead;
+    public int unicode;
+    public int bytesRead;
+    public int bytesToRead;
     public boolean useG0 = true;
-    public int drawingModeG0, drawingModeG1, cursorMode;
+    public int drawingModeG0;
+    public int drawingModeG1;
+    public int cursorMode;
     public ModeState currentModeState = new ModeState();
-    public PrivateModeState currentPrivateModeState = new PrivateModeState(),
-            savePrivateModeState = new PrivateModeState();
+    public PrivateModeState currentPrivateModeState = new PrivateModeState();
+    public PrivateModeState savePrivateModeState = new PrivateModeState();
 
     public enum State {
         NORMAL,

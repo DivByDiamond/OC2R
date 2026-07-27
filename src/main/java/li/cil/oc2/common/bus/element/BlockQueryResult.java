@@ -12,6 +12,7 @@ public final class BlockQueryResult extends GroupQueryResult<BlockEntry, BlockDe
         this.entries = entries;
     }
 
+    @Override
     public BlockDeviceQuery getQuery() {
         return query;
     }

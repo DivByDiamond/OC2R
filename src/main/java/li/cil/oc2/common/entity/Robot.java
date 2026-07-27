@@ -221,7 +221,7 @@ public final class Robot extends Entity
 
     @Override
     public boolean canCollideWith(final Entity entity) {
-        return entity != this;
+        return !entity.equals(this);
     }
 
     @Override

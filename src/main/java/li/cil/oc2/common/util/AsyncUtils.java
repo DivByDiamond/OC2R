@@ -40,7 +40,7 @@ public final class AsyncUtils {
                     () -> {
                         try {
                             return task.get();
-                        } catch (Throwable t) {
+                        } catch (final Exception t) {
                             LOGGER.error("Error in async task: " + description, t);
                             throw t;
                         } finally {
@@ -79,9 +79,9 @@ public final class AsyncUtils {
         try {
             if (AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get()) {
                 StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                StringBuilder sb = new StringBuilder(message).append("\n");
+                StringBuilder sb = new StringBuilder(message).append('\n');
                 for (int i = 2; i < stackTrace.length; i++) {
-                    sb.append("\tat ").append(stackTrace[i]).append("\n");
+                    sb.append("\tat ").append(stackTrace[i]).append('\n');
                 }
                 LOGGER.info(sb.toString());
             }
@@ -106,7 +106,7 @@ public final class AsyncUtils {
 
                     try {
                         future.complete(task.get());
-                    } catch (final Throwable t) {
+                    } catch (final Exception t) {
                         LOGGER.error("Error in server thread task", t);
                         future.completeExceptionally(t);
                     }

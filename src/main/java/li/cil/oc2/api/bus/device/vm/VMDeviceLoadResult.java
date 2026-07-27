@@ -26,11 +26,11 @@ public final class VMDeviceLoadResult {
         return new VMDeviceLoadResult(false);
     }
 
-    private final boolean wasSuccessful;
+    private final boolean successful;
     @Nullable private Component message;
 
-    private VMDeviceLoadResult(final boolean wasSuccessful) {
-        this.wasSuccessful = wasSuccessful;
+    private VMDeviceLoadResult(final boolean successful) {
+        this.successful = successful;
     }
 
     /**
@@ -39,7 +39,7 @@ public final class VMDeviceLoadResult {
      * @return {@code true} if the load was successful; {@code false} otherwise.
      */
     public boolean wasSuccessful() {
-        return wasSuccessful;
+        return successful;
     }
 
     /**

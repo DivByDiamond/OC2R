@@ -81,18 +81,19 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         private static void pumpMessages(final Collection<NetworkInterface> tunnel) {
             for (final NetworkInterface source : tunnel) {
                 int byteBudget = BYTES_PER_TICK;
-                byte[] frame;
-                while ((frame = source.readEthernetFrame()) != null && byteBudget > 0) {
+                byte[] frame = source.readEthernetFrame();
+                while (frame != null && byteBudget > 0) {
                     byteBudget -=
                             Math.max(
                                     frame.length,
                                     MIN_ETHERNET_FRAME_SIZE); // Avoid bogus packets messing with
                     // us.
                     for (final NetworkInterface destination : tunnel) {
-                        if (destination != source) {
+                        if (!destination.equals(source)) {
                             destination.writeEthernetFrame(source, frame, 1);
                         }
                     }
+                    frame = source.readEthernetFrame();
                 }
             }
         }

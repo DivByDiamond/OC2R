@@ -31,6 +31,7 @@ public class FontHandling {
             case ITALIC -> italicFontRenderer.getGlyph(character);
             case BOLD -> boldFontRenderer.getGlyph(character);
             case BOLD_ITALIC -> boldItalicFontRenderer.getGlyph(character);
+            default -> throw new AssertionError(style);
         };
     }
 

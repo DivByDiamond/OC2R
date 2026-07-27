@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import li.cil.oc2.api.API;
@@ -22,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 public final class Allocator {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final HashMap<UUID, Allocation> ALLOCATIONS = new HashMap<>();
+    private static final Map<UUID, Allocation> ALLOCATIONS = new HashMap<>();
     private static long allocated;
 
     /**

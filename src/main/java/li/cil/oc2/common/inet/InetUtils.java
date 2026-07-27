@@ -47,13 +47,13 @@ public final class InetUtils {
     }
 
     public static void ipv4AddressToString(final StringBuilder builder, final int ipAddress) {
-        builder.append(Integer.toUnsignedString(ipAddress >>> 24));
-        builder.append('.');
-        builder.append(Integer.toUnsignedString((ipAddress >>> 16) & 0xFF));
-        builder.append('.');
-        builder.append(Integer.toUnsignedString((ipAddress >>> 8) & 0xFF));
-        builder.append('.');
-        builder.append(Integer.toUnsignedString(ipAddress & 0xFF));
+        builder.append(Integer.toUnsignedString(ipAddress >>> 24))
+                .append('.')
+                .append(Integer.toUnsignedString((ipAddress >>> 16) & 0xFF))
+                .append('.')
+                .append(Integer.toUnsignedString((ipAddress >>> 8) & 0xFF))
+                .append('.')
+                .append(Integer.toUnsignedString(ipAddress & 0xFF));
     }
 
     public static String ipv4AddressToString(final int ipAddress) {
@@ -65,8 +65,7 @@ public final class InetUtils {
     public static void socketAddressToString(
             final StringBuilder builder, final int ipAddress, final short port) {
         ipv4AddressToString(builder, ipAddress);
-        builder.append(':');
-        builder.append(Short.toUnsignedInt(port));
+        builder.append(':').append(Short.toUnsignedInt(port));
     }
 
     public static byte[] quickICMPBody(final ByteBuffer data) {
@@ -95,7 +94,8 @@ public final class InetUtils {
     }
 
     public static int indexOf(final CharSequence string, final char character, final int start) {
-        for (int i = start, length = string.length(); i < length; ++i) {
+        final int length = string.length();
+        for (int i = start; i < length; ++i) {
             if (string.charAt(i) == character) {
                 return i;
             }
@@ -139,7 +139,7 @@ public final class InetUtils {
                 ipSpace.put(rangeString);
             } catch (final Exception e) {
                 throw new IllegalArgumentException(
-                        "Failed to parse IPv4 address range #" + i + ": " + e.getMessage());
+                        "Failed to parse IPv4 address range #" + i + ": " + e.getMessage(), e);
             }
             ++i;
         }

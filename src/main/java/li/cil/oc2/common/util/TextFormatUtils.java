@@ -11,11 +11,12 @@ public final class TextFormatUtils {
 
     public static String formatSize(long size) {
         int index = 0;
-        while (size > SIZE_STEP && index < SIZE_FORMAT.length) {
-            size /= SIZE_STEP;
+        long current = size;
+        while (current > SIZE_STEP && index < SIZE_FORMAT.length) {
+            current /= SIZE_STEP;
             index++;
         }
-        return String.format(SIZE_FORMAT[index], size);
+        return String.format(SIZE_FORMAT[index], current);
     }
 
     public static MutableComponent withFormat(final String value, final ChatFormatting formatting) {

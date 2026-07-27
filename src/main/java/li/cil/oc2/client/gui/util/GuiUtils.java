@@ -20,7 +20,7 @@ public final class GuiUtils {
     private static final Map<DeviceType, Component> WARNING_BY_DEVICE_TYPE =
             Util.make(
                     () -> {
-                        final HashMap<DeviceType, Component> map = new HashMap<>();
+                        final Map<DeviceType, Component> map = new HashMap<>();
 
                         map.put(
                                 DeviceTypes.FLASH_MEMORY,
@@ -90,7 +90,7 @@ public final class GuiUtils {
         findFirstSlotOfTypeIfAllSlotsOfTypeEmpty(screen.getMenu(), type)
                 .ifPresent(
                         slot -> {
-                            if (slot == hoveredSlot) {
+                            if (slot.equals(hoveredSlot)) {
                                 TooltipRenderer.drawTooltip(
                                         graphics,
                                         Collections.singletonList(tooltip),
@@ -106,7 +106,7 @@ public final class GuiUtils {
         for (final Slot slot : container.slots) {
             if (slot instanceof final DeviceTypeSlotItemHandler typedSlot) {
                 final DeviceType slotType = typedSlot.getDeviceType();
-                if (slotType == type) {
+                if (slotType.equals(type)) {
                     if (slot.hasItem()) {
                         return Optional.empty();
                     } else if (firstSlot == null) {

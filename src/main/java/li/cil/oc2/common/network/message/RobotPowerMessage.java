@@ -32,6 +32,7 @@ public record RobotPowerMessage(int entityId, boolean power) implements Abstract
         this(robot.getId(), power);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerEntity(
                 context,

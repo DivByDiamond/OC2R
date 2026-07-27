@@ -34,8 +34,9 @@ public final class MonitorDisplayWidget {
 
     private final AbstractMonitorDisplayScreen<?> parent;
     private final AbstractMonitorContainer container;
-    private int leftPos, topPos;
-    private boolean isMouseOverTerminal;
+    private int leftPos;
+    private int topPos;
+    private boolean mouseOverTerminal;
     private MonitorGUIRenderer.RendererView rendererView;
 
     public MonitorDisplayWidget(final AbstractMonitorDisplayScreen<?> parent) {
@@ -44,7 +45,7 @@ public final class MonitorDisplayWidget {
     }
 
     public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY) {
-        isMouseOverTerminal = isMouseOverTerminal(mouseX, mouseY);
+        mouseOverTerminal = isMouseOverTerminal(mouseX, mouseY);
 
         Sprites.MONITOR_SCREEN.draw(graphics, leftPos, topPos);
 
@@ -151,7 +152,7 @@ public final class MonitorDisplayWidget {
     }
 
     private boolean shouldCaptureInput() {
-        return isMouseOverTerminal && container.getCaptureInputState();
+        return mouseOverTerminal && container.getCaptureInputState();
     }
 
     private boolean isMouseOverTerminal(final int mouseX, final int mouseY) {

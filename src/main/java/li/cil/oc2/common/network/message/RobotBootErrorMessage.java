@@ -36,6 +36,7 @@ public record RobotBootErrorMessage(int entityId, @Nullable Component value)
         this(robot.getId(), value);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withClientEntity(
                 entityId,

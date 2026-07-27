@@ -75,6 +75,7 @@ class TerminalCursorRenderer {
                 buffer.addVertex(matrix, 1, 0, 0).setColor(r, g, b, 1);
                 buffer.addVertex(matrix, 0, 0, 0).setColor(r, g, b, 1);
             }
+            default -> {}
         }
 
         MeshData rb = buffer.buildOrThrow();

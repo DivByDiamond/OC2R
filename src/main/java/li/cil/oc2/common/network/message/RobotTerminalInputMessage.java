@@ -34,6 +34,7 @@ public record RobotTerminalInputMessage(int entityId, byte[] data) implements Ab
         this(robot.getId(), data.array());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerEntity(
                 context,

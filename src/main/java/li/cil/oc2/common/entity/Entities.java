@@ -11,7 +11,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class Entities {
-    private static final DeferredRegister<EntityType<?>> ENTITIES =
+    private static final DeferredRegister<EntityType<?>> REGISTRY =
             DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, API.MOD_ID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<Robot>> ROBOT =
@@ -22,7 +22,7 @@ public final class Entities {
                     b -> b.sized(14f / 16f, 14f / 16f).fireImmune().noSummon());
 
     public static void initialize(IEventBus modBus) {
-        ENTITIES.register(modBus);
+        REGISTRY.register(modBus);
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -31,7 +31,7 @@ public final class Entities {
             final EntityType.EntityFactory<T> factory,
             final MobCategory classification,
             final Function<EntityType.Builder<T>, EntityType.Builder<T>> customizer) {
-        return ENTITIES.register(
+        return REGISTRY.register(
                 name,
                 () -> customizer.apply(EntityType.Builder.of(factory, classification)).build(name));
     }

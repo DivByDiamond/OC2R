@@ -18,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -93,8 +94,8 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     @Override
     public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
-        tag.put(INTERFACE_NAMES_TAG_NAME, interfaceNameManager.serialize());
-        if (facadeManager.getFacade() == ItemStack.EMPTY) {
+        tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
+        if (facadeManager.getFacade().equals(ItemStack.EMPTY)) {
             tag.put(FACADE_TAG_NAME, new CompoundTag());
         } else {
             tag.put(
@@ -123,7 +124,7 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(BUS_ELEMENT_TAG_NAME, busElement.save(registries));
-        tag.put(INTERFACE_NAMES_TAG_NAME, interfaceNameManager.serialize());
+        tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
         tag.put(
                 FACADE_TAG_NAME,
                 ItemStack.OPTIONAL_CODEC

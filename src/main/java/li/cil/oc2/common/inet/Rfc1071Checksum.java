@@ -15,10 +15,10 @@ final class Rfc1071Checksum {
         return checksum;
     }
 
-    private static short finishChecksum(int checksum) {
-        checksum = (checksum >>> 16) + (checksum & 0xFFFF);
-        checksum = (checksum >>> 16) + (checksum & 0xFFFF);
-        return (short) ~checksum;
+    private static short finishChecksum(final int checksum) {
+        int result = (checksum >>> 16) + (checksum & 0xFFFF);
+        result = (result >>> 16) + (result & 0xFFFF);
+        return (short) ~result;
     }
 
     static short rfc1071Checksum(final ByteBuffer buffer, final int size) {

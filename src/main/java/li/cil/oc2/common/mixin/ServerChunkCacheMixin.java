@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerChunkCache.class)
 public abstract class ServerChunkCacheMixin extends ChunkSource {
     @Inject(method = "save", at = @At("HEAD"), remap = false)
-    private void applyLazyUnsavedChunks(final CallbackInfo ci) {
+    private void applyLazyUnsavedChunks(final CallbackInfo ignored) {
         ChunkUtils.applyChunkLazyUnsaved();
     }
 }

@@ -61,7 +61,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
     public ComputerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.COMPUTER.get(), pos, state);
         setNeedsLevelUnloadEvent();
-        virtualMachine.busController.onAfterDeviceScan.add(this::onAfterDeviceScan);
+        virtualMachine.busController.afterDeviceScanListeners.add(this::onAfterDeviceScan);
     }
 
     public Terminal getTerminal() {

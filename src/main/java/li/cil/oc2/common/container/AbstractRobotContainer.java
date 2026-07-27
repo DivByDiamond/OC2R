@@ -67,6 +67,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
             case PER_BLOCK -> robot.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
             case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
+            default -> throw new AssertionError(Config.captureInputMode);
         };
     }
 
@@ -76,6 +77,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
             case PER_BLOCK -> robot.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
             case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
+            default -> throw new AssertionError(Config.captureInputMode);
         }
     }
 

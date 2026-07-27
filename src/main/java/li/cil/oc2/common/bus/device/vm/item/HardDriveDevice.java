@@ -46,7 +46,7 @@ public class HardDriveDevice extends AbstractBlockStorageDevice<ByteBufferBlockD
             if (AsyncConfig.SERVER != null) {
                 useAsync = AsyncConfig.SERVER.asyncStorageOperations.get();
             }
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException ignored) {
             LOGGER.trace("Config not loaded yet, using default async storage operations setting");
         }
 
@@ -60,8 +60,8 @@ public class HardDriveDevice extends AbstractBlockStorageDevice<ByteBufferBlockD
                                         if (AsyncConfig.SERVER != null) {
                                             debug = AsyncConfig.SERVER.enableSuperDebug.get();
                                         }
-                                    } catch (IllegalStateException e) {
-                                        // Config not loaded yet, use default debug setting
+                                    } catch (final IllegalStateException ignored) {
+                                        // Config not loaded yet
                                     }
 
                                     if (debug) {

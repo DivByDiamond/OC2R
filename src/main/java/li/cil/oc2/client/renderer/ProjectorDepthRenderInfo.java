@@ -25,7 +25,8 @@ record ProjectorDepthRenderInfo(DynamicTexture texture) implements FrameConsumer
         final byte[] u = picture.getPlaneData(1);
         final byte[] v = picture.getPlaneData(2);
 
-        int lumaIndex = 0, chromaIndex = 0;
+        int lumaIndex = 0;
+        int chromaIndex = 0;
         for (int halfRow = 0;
                 halfRow < ProjectorDevice.HEIGHT / 2;
                 halfRow++, lumaIndex += ProjectorDevice.WIDTH * 2) {

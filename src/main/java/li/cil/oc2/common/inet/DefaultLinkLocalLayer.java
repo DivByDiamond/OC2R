@@ -17,7 +17,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private static final short MAC_PREFIX = 0x5ed1;
 
-    private static final int IP_VER4 = 4;
     private static final int IP_VER6 = 6;
 
     private static final String MAC_ADDRESS_TAG = "MACAddress";
@@ -138,8 +137,8 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             LOGGER.trace("Ethernet header too low");
             return;
         }
-        final short dstMacPrefix = frame.getShort();
-        final int dstMacAddress = frame.getInt();
+        frame.getShort();
+        frame.getInt();
         final short srcMacPrefix = frame.getShort();
         final int srcMacAddress = frame.getInt();
         final short protocol = frame.getShort();

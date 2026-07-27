@@ -78,10 +78,10 @@ public class VMRunner implements Runnable {
         if (lastSchedule != null) {
             try {
                 lastSchedule.get();
-            } catch (final InterruptedException e) {
+            } catch (final InterruptedException ignored) {
                 // We do not mind this.
             } catch (final ExecutionException e) {
-                throw new RuntimeException(e.getCause());
+                throw new RuntimeException(e);
             }
         }
     }
@@ -117,15 +117,7 @@ public class VMRunner implements Runnable {
                 final int elapsed = (int) (System.currentTimeMillis() - start);
                 timeQuotaInMillis.addAndGet(-elapsed);
             } while (cycles < cycleLimit && timeQuotaInMillis.get() > 0);
-        } catch (final Throwable t) {
-            // Anything that escapes the inner helpers (NPE from a missing
-            // Buildroot resource, ClassCastException from a non-ServerLevel
-            // chunk when sending terminal output to clients on a contraption,
-            // etc.) used to silently kill the runner thread. The outer
-            // tick()-loop would just reschedule us, hit the same fault, and
-            // spin forever — leaving the computer visibly "on" but with a
-            // blank UART. Capture it as a runtime error so the GUI surface
-            // shows the message instead of looking healthy.
+        } catch (final Exception t) {
             LOGGER.error("Unhandled exception in VM runner", t);
             runtimeError = Component.literal(t.getClass().getSimpleName() + ": " + t.getMessage());
             board.setRunning(false);
@@ -143,7 +135,7 @@ public class VMRunner implements Runnable {
                         e.getErrorMessage()
                                 .orElse(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN));
                 return;
-            } catch (final Throwable t) {
+            } catch (final Exception t) {
                 // Firmware loaders that fail with something other than
                 // VMInitializationException (e.g. NPE from a missing
                 // Buildroot resource, IOException from a corrupt firmware
@@ -162,7 +154,7 @@ public class VMRunner implements Runnable {
             firedResumedRunningEvent = true;
             try {
                 context.postEvent(new VMResumedRunningEvent());
-            } catch (final Throwable t) {
+            } catch (final Exception t) {
                 LOGGER.error("Failed to dispatch VMResumedRunningEvent", t);
             }
         }

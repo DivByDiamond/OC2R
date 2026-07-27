@@ -11,7 +11,7 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry
     protected final GroupManager<TEntry, TQuery> groupManager;
 
     protected final int groupCount;
-    protected final ArrayList<HashSet<TEntry>> groups;
+    protected final List<Set<TEntry>> groups;
     protected final UUID[] groupIds;
     protected final CompoundTag[] groupData;
 

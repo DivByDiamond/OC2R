@@ -17,8 +17,10 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
         super(type, id);
         this.energyInfo = energyInfo;
 
-        checkContainerDataCount(energyInfo, ENERGY_INFO_SIZE);
-        addDataSlots(energyInfo);
+        if (energyInfo.getCount() != ENERGY_INFO_SIZE) {
+            throw new IllegalArgumentException("Invalid data count " + energyInfo.getCount() + ", expected " + ENERGY_INFO_SIZE);
+        }
+        super.addDataSlots(energyInfo);
     }
 
     public abstract void switchToInventory();

@@ -20,7 +20,7 @@ import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
  */
 public final class ObjectDevice implements RPCDevice, ItemDevice {
     private final Object object;
-    private final ArrayList<String> typeNames;
+    private final List<String> typeNames;
     private final List<RPCMethodGroup> methods;
     private final String className;
 

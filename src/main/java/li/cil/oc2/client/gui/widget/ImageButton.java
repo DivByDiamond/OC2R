@@ -18,13 +18,10 @@ import net.minecraft.util.Mth;
 
 public abstract class ImageButton extends AbstractButton {
     private static final long PRESS_DURATION = 200;
-    private static final long TOOLTIP_DELAY = 250;
-
     private final Sprite baseImage;
     private final Sprite pressedImage;
     private List<Component> tooltip = emptyList();
     private long lastPressedAt;
-    private long hoveringStartedAt;
 
     protected ImageButton(
             final int x,
@@ -43,7 +40,7 @@ public abstract class ImageButton extends AbstractButton {
         return this;
     }
 
-    public ImageButton withTooltip(final Component... components) {
+    public final ImageButton withTooltip(final Component... components) {
         tooltip = Arrays.asList(components);
         for (int i = 1; i < tooltip.size(); i++) {
             final Component component = tooltip.get(i);

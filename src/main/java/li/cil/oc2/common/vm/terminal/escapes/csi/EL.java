@@ -7,6 +7,7 @@ public class EL extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         switch (args[0]) {
             case 0 -> // From cursor to end of line
@@ -15,6 +16,7 @@ public class EL extends CSISequenceHandler {
                     terminal.clearLine(terminal.y, 0, terminal.x + 1);
             case 2 -> // Entire line containing cursor
                     terminal.clearLine(terminal.y);
+            default -> {}
         }
     }
 }

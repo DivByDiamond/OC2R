@@ -34,6 +34,7 @@ public record RobotBusStateMessage(int entityId, BusState value) implements Abst
         this(robot.getId(), value);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withClientEntity(
                 entityId, Robot.class, robot -> robot.getVirtualMachine().setBusStateClient(value));

@@ -152,6 +152,8 @@ public final class DefaultSessionLayer implements SessionLayer {
                             LOGGER.trace("Close datagram socket {}", session.getDestination());
                             break;
                         }
+                    default:
+                        throw new AssertionError(session.getState());
                 }
             } catch (IOException e) {
                 LOGGER.error("Datagram session failure", e);
@@ -177,6 +179,7 @@ public final class DefaultSessionLayer implements SessionLayer {
                         SessionChannelHelper.closeSession(session);
                         LOGGER.trace("Close stream socket {}", session.getDestination());
                     }
+                    default -> throw new AssertionError(session.getState());
                 }
             } catch (IOException e) {
                 LOGGER.error("Stream session failure", e);

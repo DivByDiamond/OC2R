@@ -1,10 +1,10 @@
 package li.cil.oc2.common.serialization;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -43,8 +43,11 @@ final class BlobChannelManager {
                                     try {
                                         final Path path = getBlobPath(h);
                                         final FileChannel channel =
-                                                new RandomAccessFile(path.toFile(), "rw")
-                                                        .getChannel();
+                                                FileChannel.open(
+                                                        path,
+                                                        StandardOpenOption.READ,
+                                                        StandardOpenOption.WRITE,
+                                                        StandardOpenOption.CREATE);
                                         BLOBS.put(h, channel);
                                         return channel;
                                     } catch (final IOException e) {

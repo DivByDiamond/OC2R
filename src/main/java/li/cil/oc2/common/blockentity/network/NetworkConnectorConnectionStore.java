@@ -1,6 +1,6 @@
 package li.cil.oc2.common.blockentity.network;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
@@ -9,6 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 
 final class NetworkConnectorConnectionStore {
     private static final String CONNECTIONS_TAG_NAME = "connections";
@@ -19,23 +20,23 @@ final class NetworkConnectorConnectionStore {
             final CompoundTag tag,
             final HolderLookup.Provider registries,
             final Set<BlockPos> connectorPositions) {
-        final ListTag connections = new ListTag();
+        final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
             final CompoundTag connectionTag = new CompoundTag(1);
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
             connections.add(connectionTag);
         }
-        tag.put(CONNECTIONS_TAG_NAME, connections);
+        tag.put(CONNECTIONS_TAG_NAME, (ListTag) connections);
     }
 
     static void readFromUpdateTag(
             final CompoundTag tag,
             final HolderLookup.Provider registries,
-            final HashSet<BlockPos> connectorPositions,
-            final HashSet<BlockPos> dirtyConnectors) {
-        final ListTag connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+            final Set<BlockPos> connectorPositions,
+            final Set<BlockPos> dirtyConnectors) {
+        final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
-            final CompoundTag connectionTag = connections.getCompound(i);
+            final CompoundTag connectionTag = (CompoundTag) connections.get(i);
             final BlockPos position = NbtUtils.readBlockPos(connectionTag, "pos").orElseThrow();
             connectorPositions.add(position);
             dirtyConnectors.add(position);
@@ -47,7 +48,7 @@ final class NetworkConnectorConnectionStore {
             final HolderLookup.Provider registries,
             final Set<BlockPos> connectorPositions,
             final Set<BlockPos> ownedCables) {
-        final ListTag connections = new ListTag();
+        final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
             final CompoundTag connectionTag = new CompoundTag(2);
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
@@ -56,18 +57,18 @@ final class NetworkConnectorConnectionStore {
             }
             connections.add(connectionTag);
         }
-        tag.put(CONNECTIONS_TAG_NAME, connections);
+        tag.put(CONNECTIONS_TAG_NAME, (ListTag) connections);
     }
 
     static void load(
             final CompoundTag tag,
             final HolderLookup.Provider registries,
-            final HashSet<BlockPos> connectorPositions,
-            final HashSet<BlockPos> dirtyConnectors,
-            final HashSet<BlockPos> ownedCables) {
-        final ListTag connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+            final Set<BlockPos> connectorPositions,
+            final Set<BlockPos> dirtyConnectors,
+            final Set<BlockPos> ownedCables) {
+        final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
-            final CompoundTag connectionTag = connections.getCompound(i);
+            final CompoundTag connectionTag = (CompoundTag) connections.get(i);
             final BlockPos position =
                     NbtUtils.readBlockPos(connectionTag, "pos")
                             .or(() -> NBTUtils.readBlockPosLegacy(connectionTag))

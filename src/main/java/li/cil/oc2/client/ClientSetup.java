@@ -84,7 +84,7 @@ public final class ClientSetup {
      */
     @SubscribeEvent
     public static void renderHotbar(final RenderGuiLayerEvent.Pre event) {
-        if (event.getName() == VanillaGuiLayers.HOTBAR && KeyboardScreen.hideHotbar) {
+        if (event.getName().equals(VanillaGuiLayers.HOTBAR) && KeyboardScreen.hideHotbar) {
             event.setCanceled(true);
         }
     }

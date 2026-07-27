@@ -130,12 +130,12 @@ public final class FileChooserScreen extends Screen {
         final int buttonWidth = widgetsWidth / buttonCount - WIDGET_SPACING;
         okButton =
                 addRenderableWidget(
-                        Button.builder(Component.empty(), this::handleOkPressed)
+                        Button.builder(Component.empty(), b -> handleOkPressed())
                                 .bounds(MARGIN, buttonTop, buttonWidth, BUTTON_HEIGHT)
                                 .createNarration(Supplier::get)
                                 .build());
         addRenderableWidget(
-                Button.builder(CANCEL_TEXT, this::handleCancelPressed)
+                Button.builder(CANCEL_TEXT, b -> handleCancelPressed())
                         .bounds(
                                 MARGIN + buttonWidth + WIDGET_SPACING,
                                 buttonTop,
@@ -180,11 +180,11 @@ public final class FileChooserScreen extends Screen {
         controller.cancel();
     }
 
-    private void handleOkPressed(final Button button) {
+    private void handleOkPressed() {
         confirm();
     }
 
-    private void handleCancelPressed(final Button button) {
+    private void handleCancelPressed() {
         cancel();
     }
 }

@@ -25,8 +25,8 @@ public final class NetworkCableRenderer {
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
-    private static final ArrayList<NetworkCableConnection> connections = new ArrayList<>();
-    private static final WeakHashMap<NetworkConnectorBlockEntity, ArrayList<NetworkCableConnection>>
+    private static final List<NetworkCableConnection> connections = new ArrayList<>();
+    private static final Map<NetworkConnectorBlockEntity, List<NetworkCableConnection>>
             connectionsByConnector = new WeakHashMap<>();
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
@@ -43,7 +43,7 @@ public final class NetworkCableRenderer {
         if (event.getLevel().isClientSide()) {
             final ChunkPos chunkPos = event.getChunk().getPos();
 
-            final ArrayList<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
+            final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
                 final ChunkPos connectorChunkPos = new ChunkPos(connector.getBlockPos());
                 if (Objects.equals(connectorChunkPos, chunkPos)) {
@@ -60,9 +60,9 @@ public final class NetworkCableRenderer {
         if (event.getLevel().isClientSide()) {
             final LevelAccessor level = event.getLevel();
 
-            final ArrayList<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
+            final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
-                if (connector.getLevel() == level) {
+                if (connector.getLevel().equals(level)) {
                     connectors.remove(connector);
                 }
             }
@@ -114,7 +114,7 @@ public final class NetworkCableRenderer {
     }
 
     private static void validateConnectors() {
-        final ArrayList<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
+        final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
         for (final NetworkConnectorBlockEntity connector : list) {
             if (!connector.isValid()) {
                 connectors.remove(connector);
@@ -138,7 +138,7 @@ public final class NetworkCableRenderer {
         connections.clear();
         connectionsByConnector.clear();
 
-        final HashSet<NetworkCableConnection> seen = new HashSet<>();
+        final Set<NetworkCableConnection> seen = new HashSet<>();
         for (final NetworkConnectorBlockEntity connector : connectors) {
             final BlockPos position = connector.getBlockPos();
             for (final BlockPos connectedPosition : connector.getConnectedPositions()) {

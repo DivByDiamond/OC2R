@@ -2,7 +2,8 @@ package li.cil.oc2.common.vm.terminal;
 
 class Utf8Decoder {
     private boolean continuationByte;
-    private int bytesToRead, bytesRead;
+    private int bytesToRead;
+    private int bytesRead;
     private int codepoint;
 
     boolean hasActiveSequence() {
@@ -20,14 +21,11 @@ class Utf8Decoder {
     boolean process(final byte value) {
         final int ch = value & 0xFF;
         if (!continuationByte && (ch & 0x80) != 0) {
-            continuationByte = true;
-            bytesToRead = 0;
-            bytesRead = 0;
-            codepoint = 0;
             if ((ch & 0x40) != 0) {
+                bytesRead = 0;
+                continuationByte = true;
                 bytesToRead++;
             } else {
-                continuationByte = false;
                 return false;
             }
             if ((ch & 0x20) != 0) {

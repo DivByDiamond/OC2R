@@ -30,9 +30,10 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
     protected void handleBeforeRun() {
         super.handleBeforeRun();
 
-        int value;
-        while ((value = terminal.readInput()) != -1) {
+        int value = terminal.readInput();
+        while (value != -1) {
             inputBuffer.enqueue((byte) value);
+            value = terminal.readInput();
         }
     }
 
@@ -45,9 +46,10 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
         }
         uart.flush();
 
-        int value;
-        while ((value = uart.read()) != -1) {
+        int value = uart.read();
+        while (value != -1) {
             outputBuffer.enqueue((byte) value);
+            value = uart.read();
         }
     }
 
@@ -80,7 +82,7 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
         // re-render / re-open of the GUI still shows the buffered output.
         try {
             terminal.putOutput(output);
-        } catch (final Throwable t) {
+        } catch (final Exception t) {
             LOGGER.error("Failed to update server-side terminal", t);
         }
 
@@ -88,7 +90,7 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
 
         try {
             sendTerminalUpdateToClient(output);
-        } catch (final Throwable t) {
+        } catch (final Exception t) {
             // Don't let a network-layer failure (ClassCastException on a
             // non-ServerLevel, disconnected client, etc.) kill the runner
             // thread — that would freeze the VM in an "appears on, no UART

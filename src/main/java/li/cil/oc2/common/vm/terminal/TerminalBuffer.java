@@ -3,7 +3,6 @@ package li.cil.oc2.common.vm.terminal;
 import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
-import li.cil.oc2.common.vm.terminal.TerminalColors.DrawingMode;
 import li.cil.oc2.common.vm.terminal.escapes.NEL;
 
 public class TerminalBuffer {
@@ -152,27 +151,8 @@ public class TerminalBuffer {
         scrolling.shiftLines(firstLine, lastLine, count);
     }
 
-    public void putChar(int ch) {
+    public void putChar(final int ch) {
         if (Character.isISOControl(ch)) return;
-
-        int curMode = (terminal.useG0) ? terminal.drawingModeG0 : terminal.drawingModeG1;
-
-        if (curMode == DrawingMode.SPECIAL_GRAPHICS) {
-            switch (ch) {
-                case 'l' -> ch = "┌".codePointAt(0);
-                case 'k' -> ch = "┐".codePointAt(0);
-                case 'm' -> ch = "└".codePointAt(0);
-                case 'j' -> ch = "┘".codePointAt(0);
-                case 'q' -> ch = "─".codePointAt(0);
-                case 'x' -> ch = "│".codePointAt(0);
-                case 'n' -> ch = "┼".codePointAt(0);
-                case '~' -> ch = "B".codePointAt(0);
-                case 'u' -> ch = "┤".codePointAt(0);
-                case 't' -> ch = "├".codePointAt(0);
-                case 'v' -> ch = "┴".codePointAt(0);
-                case 'w' -> ch = "┬".codePointAt(0);
-            }
-        }
 
         if (terminal.x >= Terminal.WIDTH) {
             if (terminal.currentPrivateModeState.DECAWM) {
@@ -199,6 +179,7 @@ public class TerminalBuffer {
                 case TRUE_COLOR -> terminal.altColors[index] = terminal.foregroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.altColors[index] = terminal.sixteenColorBright.Copy();
+                default -> {}
             }
 
             switch (terminal.currentBackgroundColorMode) {
@@ -210,6 +191,7 @@ public class TerminalBuffer {
                         terminal.altColorsBackground[index] = terminal.backgroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.altColorsBackground[index] = terminal.sixteenColorBright.Copy();
+                default -> {}
             }
 
             terminal.altStyles[index] = terminal.style;
@@ -230,6 +212,7 @@ public class TerminalBuffer {
                 case TRUE_COLOR -> terminal.colors[index] = terminal.foregroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.colors[index] = terminal.sixteenColorBright.Copy();
+                default -> {}
             }
 
             switch (terminal.currentBackgroundColorMode) {
@@ -241,6 +224,7 @@ public class TerminalBuffer {
                         terminal.colorsBackground[index] = terminal.backgroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.colorsBackground[index] = terminal.sixteenColorBright.Copy();
+                default -> {}
             }
 
             terminal.styles[index] = terminal.style;

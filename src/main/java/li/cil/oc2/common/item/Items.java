@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 @SuppressWarnings("unused")
 public final class Items {
-    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(API.MOD_ID);
+    private static final DeferredRegister.Items REGISTRY = DeferredRegister.createItems(API.MOD_ID);
 
     public static final DeferredItem<Item> BUS_CABLE =
             register(Blocks.BUS_CABLE, BusCableItem::new);
@@ -123,10 +123,10 @@ public final class Items {
     public static final DeferredItem<Item> CIRCUIT_BOARD = register("circuit_board", ModItem::new);
 
     public static void initialize(IEventBus modBus) {
-        ITEMS.addAlias(
+        REGISTRY.addAlias(
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_memory_buildroot"),
                 FLASH_MEMORY_CUSTOM.getId());
-        ITEMS.register(modBus);
+        REGISTRY.register(modBus);
     }
 
     private static DeferredItem<Item> register(final String name) {
@@ -135,7 +135,7 @@ public final class Items {
 
     private static <T extends Item> DeferredItem<T> register(
             final String name, final Supplier<T> factory) {
-        return ITEMS.register(name, factory);
+        return REGISTRY.register(name, factory);
     }
 
     private static <T extends Block> DeferredItem<Item> register(final DeferredBlock<T> block) {

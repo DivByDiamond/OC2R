@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
@@ -15,18 +16,18 @@ import li.cil.sedna.api.memory.MemoryRangeAllocationStrategy;
 
 final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, MemoryRangeManager {
     private final Board board;
-    private final ArrayList<MemoryRange> reservedMemoryRanges;
-    private final Object2LongArrayMap<MemoryMappedDevice> claimedMemoryRanges =
+    private final List<MemoryRange> reservedMemoryRanges;
+    private final Object2LongMap<MemoryMappedDevice> claimedMemoryRanges =
             new Object2LongArrayMap<>();
 
     public GlobalMemoryRangeAllocator(
-            final Board board, final ArrayList<MemoryRange> reservedMemoryRanges) {
+            final Board board, final List<MemoryRange> reservedMemoryRanges) {
         this.board = board;
         this.reservedMemoryRanges = reservedMemoryRanges;
     }
 
     public Collection<MemoryRange> getClaimedMemoryRanges() {
-        final ArrayList<MemoryRange> result = new ArrayList<>();
+        final List<MemoryRange> result = new ArrayList<>();
         for (final Object2LongMap.Entry<MemoryMappedDevice> entry :
                 claimedMemoryRanges.object2LongEntrySet()) {
             final MemoryMappedDevice device = entry.getKey();

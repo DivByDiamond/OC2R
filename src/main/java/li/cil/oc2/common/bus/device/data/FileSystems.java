@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -94,17 +95,19 @@ public final class FileSystems {
                         .listResources("file_systems", s -> s.toString().endsWith(".json"))
                         .keySet();
 
-        final ArrayList<ZipStreamFileSystem> fileSystems = new ArrayList<>();
-        final Object2IntArrayMap<ZipStreamFileSystem> fileSystemOrder = new Object2IntArrayMap<>();
+        final List<ZipStreamFileSystem> fileSystems = new ArrayList<>();
+        final Object2IntMap<ZipStreamFileSystem> fileSystemOrder = new Object2IntArrayMap<>();
 
         for (final ResourceLocation fileSystemDescriptorLocation : fileSystemDescriptorLocations) {
             LOGGER.info("Found [{}]", fileSystemDescriptorLocation);
             try {
                 final Resource fileSystemDescriptor =
                         resourceManager.getResource(fileSystemDescriptorLocation).get();
-                final JsonObject json =
-                        JsonParser.parseReader(new InputStreamReader(fileSystemDescriptor.open()))
-                                .getAsJsonObject();
+                final JsonObject json;
+                try (final InputStreamReader reader =
+                        new InputStreamReader(fileSystemDescriptor.open())) {
+                    json = JsonParser.parseReader(reader).getAsJsonObject();
+                }
                 final String type = json.getAsJsonPrimitive("type").getAsString();
                 switch (type) {
                     case "layer" -> {
@@ -165,7 +168,7 @@ public final class FileSystems {
                     }
                     default -> LOGGER.error("Unsupported file system type [{}].", type);
                 }
-            } catch (final Throwable e) {
+            } catch (final Exception e) {
                 LOGGER.error(e);
             }
         }

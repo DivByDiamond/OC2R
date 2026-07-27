@@ -37,6 +37,7 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
         this(monitor.getBlockPos(), isMounted, hasEnergy);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

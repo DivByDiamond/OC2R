@@ -31,7 +31,7 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
 
     // NB: linked hash map such that order of parameters in constructor is retained.
     //     This is relevant when assigning default addresses for devices.
-    private final LinkedHashMap<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
+    private final Map<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
             new LinkedHashMap<>();
 
     public final IItemHandler combinedItemHandlers;

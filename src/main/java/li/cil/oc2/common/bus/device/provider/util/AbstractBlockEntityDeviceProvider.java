@@ -26,7 +26,7 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity>
             return Optional.empty();
         }
 
-        if (blockEntityType != null && blockEntity.getType() != blockEntityType) {
+        if (blockEntityType != null && !blockEntity.getType().equals(blockEntityType)) {
             return Optional.empty();
         }
 

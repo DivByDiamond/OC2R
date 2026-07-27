@@ -18,10 +18,10 @@ import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.HolderLookup;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements VMDevice {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -147,8 +147,8 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         try {
             channel = BlobStorage.getOrOpenAsync(blobHandle).join();
         } catch (final CompletionException e) {
-            if (e.getCause() instanceof final IOException ioe) {
-                throw ioe;
+            if (e.getCause() instanceof IOException) {
+                throw new IOException("Failed to open blob: " + blobHandle, e);
             }
             throw new IOException("Failed to open blob: " + blobHandle, e);
         }

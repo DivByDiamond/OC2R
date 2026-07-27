@@ -13,6 +13,6 @@ public final class BlockEntityUtils {
             BlockEntityType<A> haveType,
             BlockEntityType<E> wantType,
             BlockEntityTicker<? super E> ticker) {
-        return wantType == haveType ? (BlockEntityTicker<A>) ticker : null;
+        return wantType.equals(haveType) ? (BlockEntityTicker<A>) ticker : null;
     }
 }

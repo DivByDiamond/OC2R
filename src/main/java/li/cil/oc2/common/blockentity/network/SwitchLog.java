@@ -2,9 +2,9 @@ package li.cil.oc2.common.blockentity.network;
 
 final class SwitchLog {
     private static final boolean ENABLED = true;
-    short ingressVlan = 0;
-    short egressVlan = 0;
-    int ingressSide = 0;
+    short ingressVlan;
+    short egressVlan;
+    int ingressSide;
     private final long srcMac;
     private final long destMac;
     Integer egressSide = null;

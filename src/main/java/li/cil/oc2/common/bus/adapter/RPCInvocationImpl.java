@@ -28,7 +28,7 @@ record RPCInvocationImpl(JsonArray parameters, Gson gson) implements RPCInvocati
             final RPCParameter parameterInfo = parameterTypes[i];
             try {
                 result[i] = gson.fromJson(parameters.get(i), parameterInfo.getType());
-            } catch (final Throwable e) {
+            } catch (final Exception e) {
                 return Optional.empty();
             }
         }

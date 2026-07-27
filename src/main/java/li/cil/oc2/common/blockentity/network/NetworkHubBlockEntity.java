@@ -36,9 +36,11 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
         super(BlockEntities.NETWORK_HUB.get(), pos, state);
     }
 
+    private static final byte[] NO_FRAME = new byte[0];
+
     @Override
     public byte[] readEthernetFrame() {
-        return null;
+        return NO_FRAME;
     }
 
     @Override
@@ -64,7 +66,7 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
         getAdjacentInterfaces()
                 .forEach(
                         adjacentInterface -> {
-                            if (adjacentInterface != source) {
+                            if (!adjacentInterface.equals(source)) {
                                 adjacentInterface.writeEthernetFrame(
                                         this, frame, timeToLive - TTL_COST);
                             }

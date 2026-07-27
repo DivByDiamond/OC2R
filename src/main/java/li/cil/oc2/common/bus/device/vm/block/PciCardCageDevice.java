@@ -23,7 +23,6 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
 
-    public static final int BUS_COUNT = 16;
     public static final int WINDOW_SIZE = 16 * 1024 * 1024;
 
     private final BooleanConsumer onMountedChanged;
@@ -122,6 +121,6 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
         final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
         final MappedByteBuffer buffer =
                 channel.map(FileChannel.MapMode.READ_WRITE, 0, WINDOW_SIZE * 2);
-        return new PciRootPortDevice(BUS_COUNT, WINDOW_SIZE, buffer);
+        return new PciRootPortDevice(WINDOW_SIZE, buffer);
     }
 }

@@ -148,7 +148,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
 
     @Callback(name = SET_BUNDLED_OUTPUTS)
     public void setBundledOutputs(
-            @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int[] values) {
+            @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int... values) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
 

@@ -9,6 +9,7 @@ public class ECH extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         int chars = args[0];
         TerminalColors.ColorData c;

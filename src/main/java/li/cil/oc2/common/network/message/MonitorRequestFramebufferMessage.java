@@ -32,6 +32,7 @@ public record MonitorRequestFramebufferMessage(BlockPos pos) implements Abstract
         this(projector.getBlockPos());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntity(
                 context,

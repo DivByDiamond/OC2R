@@ -19,8 +19,9 @@ public final class ResourceBlockDeviceData implements BlockDeviceData, AutoClose
             final String name)
             throws IOException {
         this.name = name;
-        final InputStream stream = resourceManager.getResource(location).get().open();
-        this.blockDevice = ByteBufferBlockDevice.createFromStream(stream, true);
+        try (final InputStream stream = resourceManager.getResource(location).get().open()) {
+            this.blockDevice = ByteBufferBlockDevice.createFromStream(stream, true);
+        }
     }
 
     @Override

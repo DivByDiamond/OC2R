@@ -31,7 +31,7 @@ public class UnicodeFontRenderer {
         return Character.isValidCodePoint(character) ? character : 0xFFFD;
     }
 
-    public Glyph getGlyph(int character) {
+    public final Glyph getGlyph(int character) {
         return glyphCache.computeIfAbsent(sanitizeCharacter(character), this::rasterizeGlyph);
     }
 

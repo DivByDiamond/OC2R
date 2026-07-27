@@ -45,9 +45,9 @@ final class EchoSessionDiscriminator implements SessionDiscriminator<EchoSession
     public String toString() {
         final StringBuilder builder = new StringBuilder("Echo(");
         InetUtils.ipv4AddressToString(builder, srcIpAddress);
-        builder.append("<-[");
-        builder.append(Short.toUnsignedInt(identity));
-        builder.append("]->");
+        builder.append("<-[")
+                .append(Short.toUnsignedInt(identity))
+                .append("]->");
         InetUtils.ipv4AddressToString(builder, dstIpAddress);
         builder.append(')');
         return builder.toString();

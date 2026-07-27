@@ -1,6 +1,7 @@
 package li.cil.oc2.common.blockentity.projector;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.zip.DataFormatException;
@@ -16,7 +17,7 @@ final class ProjectorVideoDecoder {
     @Nullable private FrameConsumer frameConsumer;
 
     void setFrameConsumer(final Picture picture, @Nullable final FrameConsumer consumer) {
-        if (consumer == frameConsumer) {
+        if (Objects.equals(consumer, frameConsumer)) {
             return;
         }
         synchronized (picture) {

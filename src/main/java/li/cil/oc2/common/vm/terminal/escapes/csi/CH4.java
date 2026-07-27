@@ -39,6 +39,7 @@ public class CH4
                                 "\033[6;" + Terminal.CHAR_HEIGHT + ";" + Terminal.CHAR_WIDTH);
                 case 18 -> terminal.putResponse("\033[8;" + Terminal.HEIGHT + ";" + Terminal.WIDTH);
                 case 19 -> terminal.putResponse("\033[9;" + Terminal.HEIGHT + ";" + Terminal.WIDTH);
+                default -> {}
             }
         }
     }

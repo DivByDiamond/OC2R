@@ -21,10 +21,8 @@ public interface Session {
     Instant getLastUpdateTime();
 
     default boolean isClosed() {
-        return switch (getState()) {
-            case FINISH, REJECT, EXPIRED -> true;
-            default -> false;
-        };
+        final States state = getState();
+        return state == States.FINISH || state == States.REJECT || state == States.EXPIRED;
     }
 
     enum States {

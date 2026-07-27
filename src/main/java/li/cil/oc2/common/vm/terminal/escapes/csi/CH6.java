@@ -9,6 +9,7 @@ public class CH6
         super(terminal);
     }
 
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.questionMark) { // XTSAVE
             handleXTSAVE(args[0]);
@@ -234,6 +235,7 @@ public class CH6
             case 7727 ->
                     terminal.savePrivateModeState.APPLICATION_ESC_MODE =
                             terminal.currentPrivateModeState.APPLICATION_ESC_MODE;
+            default -> {}
         }
     }
 }

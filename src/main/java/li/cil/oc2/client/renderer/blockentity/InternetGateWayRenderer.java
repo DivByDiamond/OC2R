@@ -2,6 +2,7 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.Objects;
 import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.blockentity.misc.GatewayAnimationState;
 import li.cil.oc2.common.blockentity.misc.InternetGateWayBlockEntity;
@@ -21,7 +22,7 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
     private static final int[] SCRAMBLER = {1, 2, 0, 3, 13, 5, 15, 12, 6, 14, 10, 11, 7, 8, 9, 4};
 
     public InternetGateWayRenderer(final BlockEntityRendererProvider.Context context) {
-        // this.renderer = context.getBlockEntityRenderDispatcher();
+        Objects.requireNonNull(context);
     }
 
     @Override

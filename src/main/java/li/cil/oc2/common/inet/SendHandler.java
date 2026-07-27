@@ -90,19 +90,19 @@ final class SendHandler {
             icmpHandler.reject(data, srcIpAddress);
         } else {
             LOGGER.trace("GOT TCP");
-            switch (session.send(data)) {
-                case FORWARD -> {
-                    switch (session.getState()) {
-                        case NEW, FINISH -> sessionLayer.sendSession(session, null);
-                        case ESTABLISHED ->
-                                sessionLayer.sendSession(session, session.getSendBuffer());
-                    }
-                    final Session.States state = session.getState();
-                    if (state == Session.States.REJECT || state == Session.States.FINISH)
-                        rejectedStream = session;
-                    if (session.isNeedsAcknowledgment()) streamToAck = session;
+            final SessionActions sendResult = session.send(data);
+            if (sendResult == SessionActions.FORWARD) {
+                final Session.States state = session.getState();
+                if (state == Session.States.NEW || state == Session.States.FINISH) {
+                    sessionLayer.sendSession(session, null);
+                } else if (state == Session.States.ESTABLISHED) {
+                    sessionLayer.sendSession(session, session.getSendBuffer());
                 }
-                case DROP -> sessionManager.closeSession(session);
+                if (state == Session.States.REJECT || state == Session.States.FINISH)
+                    rejectedStream = session;
+                if (session.isNeedsAcknowledgment()) streamToAck = session;
+            } else if (sendResult == SessionActions.DROP) {
+                sessionManager.closeSession(session);
             }
         }
     }

@@ -25,10 +25,12 @@ public final class BuildrootBlockDeviceData implements BlockDeviceData {
         INSTANCE = instance;
     }
 
+    @Override
     public BlockDevice getBlockDevice() {
         return INSTANCE;
     }
 
+    @Override
     public Component getDisplayName() {
         return Component.literal("Sedna Linux");
     }

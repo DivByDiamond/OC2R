@@ -8,37 +8,39 @@ public class SGR extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         for (int i = 0; i < argCount; i++) {
             int v1 = args[i];
             if (v1 == 38 || v1 == 48) {
-                int v2 = args[++i];
+                int index = i + 1;
+                int v2 = args[index];
                 if (v1 == 38) {
                     if (v2 == 5) {
                         terminal.currentForegroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
-                        terminal.twoFiftySixColor.R = args[++i];
+                        terminal.twoFiftySixColor.R = args[++index];
                     } else if (v2 == 2) {
                         terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.foregroundColor =
                                 new TerminalColors.ColorData(
-                                        args[++i],
-                                        args[++i],
-                                        args[++i],
+                                        args[++index],
+                                        args[++index],
+                                        args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
                     }
                 } else {
                     if (v2 == 5) {
                         terminal.currentBackgroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
-                        terminal.twoFiftySixColor.G = args[++i];
+                        terminal.twoFiftySixColor.G = args[++index];
                     } else if (v2 == 2) {
                         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.backgroundColor =
                                 new TerminalColors.ColorData(
-                                        args[++i],
-                                        args[++i],
-                                        args[++i],
+                                        args[++index],
+                                        args[++index],
+                                        args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
                     }
                 }
@@ -101,6 +103,7 @@ public class SGR extends CSISequenceHandler {
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT;
                 terminal.sixteenColorBright.G = arg - 100;
             }
+            default -> {}
         }
     }
 }

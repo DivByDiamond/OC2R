@@ -43,22 +43,25 @@ final class FacadeManager {
         return FacadeType.VALID_BLOCK;
     }
 
-    void setFacade(ItemStack stack) {
+    void setFacade(final ItemStack stack) {
         final var level = owner.getLevel();
         if (level == null) {
             return;
         }
 
         final BlockState facadeState = ItemStackUtils.getBlockState(stack);
+        final ItemStack effectiveStack;
         if (getFacadeType(facadeState) != FacadeType.VALID_BLOCK) {
-            stack = ItemStack.EMPTY;
+            effectiveStack = ItemStack.EMPTY;
+        } else {
+            effectiveStack = stack;
         }
 
-        if (ItemStack.isSameItem(stack, facade)) {
+        if (ItemStack.isSameItem(effectiveStack, facade)) {
             return;
         }
 
-        facade = stack.copy();
+        facade = effectiveStack.copy();
         facade.setCount(1);
         BusCableStateProperties.setHasFacade(
                 level, owner.getBlockPos(), owner.getBlockState(), facadeState, true);

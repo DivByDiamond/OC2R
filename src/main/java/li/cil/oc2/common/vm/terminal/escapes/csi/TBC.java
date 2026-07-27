@@ -8,15 +8,16 @@ public class TBC extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        switch (args[0]) {
-            case 0 -> { // Clear tab at current column
-                if (terminal.x >= 0 && terminal.x < Terminal.WIDTH) {
-                    terminal.tabs[terminal.x] = false;
-                }
+        if (args[0] == 0) {
+            // Clear tab at current column
+            if (terminal.x >= 0 && terminal.x < Terminal.WIDTH) {
+                terminal.tabs[terminal.x] = false;
             }
-            case 3 -> // Clear all tabs
-                    Arrays.fill(terminal.tabs, false);
+        } else if (args[0] == 3) {
+            // Clear all tabs
+            Arrays.fill(terminal.tabs, false);
         }
     }
 }

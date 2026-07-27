@@ -65,19 +65,18 @@ public final class BuiltinDevices {
                                 FileSystems.getLayeredFileSystem()),
                         VFS_INTERRUPT,
                         VirtIOFileSystemDevice::getInterrupt);
-        final InputStream ris = Buildroot.getRootFilesystem();
-        final InputStream bis = Buildroot.getBootFilesystem();
-        if (ris == null) {
-            LOGGER.error(
-                    "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"
-                            + " sedna-buildroot.jar — VM will boot but have no rootfs.");
-        }
-        if (bis == null) {
-            LOGGER.error(
-                    "Buildroot boot filesystem (generated/bootfs.squashfs) is missing from"
-                            + " sedna-buildroot.jar — VM will boot but have no bootfs.");
-        }
-        try {
+        try (final InputStream ris = Buildroot.getRootFilesystem();
+             final InputStream bis = Buildroot.getBootFilesystem()) {
+            if (ris == null) {
+                LOGGER.error(
+                        "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"
+                                + " sedna-buildroot.jar — VM will boot but have no rootfs.");
+            }
+            if (bis == null) {
+                LOGGER.error(
+                        "Buildroot boot filesystem (generated/bootfs.squashfs) is missing from"
+                                + " sedna-buildroot.jar — VM will boot but have no bootfs.");
+            }
             if (bis != null) {
                 bfs =
                         initialize(
@@ -105,11 +104,7 @@ public final class BuiltinDevices {
             LOGGER.error(
                     "Failed to load one of the Buildroot block devices (bootfs/rootfs) into the VM",
                     e);
-        } catch (final Throwable t) {
-            // NPE from createFromStream(null) used to escape here — and since
-            // this constructor runs during AbstractVirtualMachine setup (i.e.
-            // inside the ComputerBlockEntity constructor), it would crash the
-            // block entity creation entirely. Capture it instead.
+        } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Buildroot block devices into the VM", t);
         }
     }

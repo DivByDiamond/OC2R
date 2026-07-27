@@ -115,28 +115,28 @@ final class InventoryOperationsHelper {
 
     private ItemStack insertStartingAt(
             final IItemHandler handler,
-            ItemStack stack,
+            final ItemStack stack,
             final int startSlot,
             final boolean simulate) {
+        ItemStack remaining = stack;
         for (int i = 0; i < handler.getSlots(); i++) {
             final int slot = (startSlot + i) % handler.getSlots();
-            stack = handler.insertItem(slot, stack, simulate);
-            if (stack.isEmpty()) {
+            remaining = handler.insertItem(slot, remaining, simulate);
+            if (remaining.isEmpty()) {
                 return ItemStack.EMPTY;
             }
         }
 
-        return stack;
+        return remaining;
     }
 
     private Stream<IItemHandler> getItemStackHandlersAt(
             final BlockPos blockPos, final Direction side) {
         return Stream.concat(
-                getEntityItemHandlersAt(blockPos, side), getBlockItemHandlersAt(blockPos, side));
+                getEntityItemHandlersAt(blockPos), getBlockItemHandlersAt(blockPos, side));
     }
 
-    private Stream<IItemHandler> getEntityItemHandlersAt(
-            final BlockPos blockPos, final Direction side) {
+    private Stream<IItemHandler> getEntityItemHandlersAt(final BlockPos blockPos) {
         var position = Vec3.atCenterOf(blockPos);
         final AABB bounds = AABB.unitCubeFromLowerCorner(position.subtract(0.5, 0.5, 0.5));
         return entity.level().getEntities(entity, bounds).stream()

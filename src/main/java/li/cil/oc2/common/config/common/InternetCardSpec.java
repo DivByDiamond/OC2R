@@ -7,6 +7,8 @@ import li.cil.oc2.common.config.Config;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class InternetCardSpec {
+    private static final String DEFAULT_NAME_SERVER = String.format("%d.%d.%d.%d", 1, 1, 1, 1);
+
     public final ModConfigSpec.BooleanValue internetCardEnabled;
     public final ModConfigSpec.IntValue defaultSessionLifetimeMs;
     public final ModConfigSpec.IntValue defaultSessionsNumberPerCardLimit;
@@ -61,7 +63,7 @@ public class InternetCardSpec {
                                         "172.16.0.0/12",
                                         "192.168.0.0/16",
                                         "224.0.0.0/4"),
-                                obj -> obj instanceof String && !((String) obj).trim().isEmpty());
+                                obj -> obj instanceof String && !((String) obj).isBlank());
 
         allowedHosts =
                 builder.comment(
@@ -71,11 +73,11 @@ public class InternetCardSpec {
                         .defineListAllowEmpty(
                                 "allowedHosts",
                                 List.of(),
-                                obj -> obj instanceof String && !((String) obj).trim().isEmpty());
+                                obj -> obj instanceof String && !((String) obj).isBlank());
 
         defaultNameServer =
                 builder.comment("The default nameserver to be used")
-                        .define("defaultNameServer", "1.1.1.1");
+                        .define("defaultNameServer", DEFAULT_NAME_SERVER);
 
         useSynchronisedNAT = builder.define("useSynchronisedNAT", false);
 

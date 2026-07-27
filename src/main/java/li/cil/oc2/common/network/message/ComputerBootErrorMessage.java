@@ -39,6 +39,7 @@ public record ComputerBootErrorMessage(BlockPos pos, @Nullable Component value)
         this(computer.getBlockPos(), value);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

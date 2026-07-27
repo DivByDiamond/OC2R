@@ -5,8 +5,10 @@ import net.minecraft.util.Mth;
 
 public final class Sprite {
     public final Texture texture;
-    public final int width, height;
-    public final int u0, v0;
+    public final int width;
+    public final int height;
+    public final int u0;
+    public final int v0;
 
     public Sprite(final Texture texture) {
         this.texture = texture;

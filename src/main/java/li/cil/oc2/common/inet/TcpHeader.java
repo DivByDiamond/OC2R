@@ -9,8 +9,14 @@ public class TcpHeader {
     private static final byte OPTION_NOOP = 1;
     private static final byte OPTION_MAX_SEGMENT_SIZE = 2;
 
-    public int sequenceNumber, acknowledgmentNumber;
-    public boolean urg, ack, psh, rst, syn, fin; // flags
+    public int sequenceNumber;
+    public int acknowledgmentNumber;
+    public boolean urg;
+    public boolean ack;
+    public boolean psh;
+    public boolean rst;
+    public boolean syn;
+    public boolean fin; // flags
     public int window;
     public int urgentPointer;
 
@@ -39,13 +45,14 @@ public class TcpHeader {
         data.getShort(); // checksum
         urgentPointer = Short.toUnsignedInt(data.getShort());
 
-        maxSegmentSize = -1;
+        int mss = -1;
 
         while (dataOffset > data.position()) {
             final byte type = data.get();
             switch (type) {
                 case OPTION_END:
                     data.position(dataOffset);
+                    maxSegmentSize = mss;
                     return true;
                 case OPTION_NOOP:
                     continue;
@@ -56,15 +63,17 @@ public class TcpHeader {
             if (type == OPTION_MAX_SEGMENT_SIZE) {
                 if (size != 4) {
                     data.position(position);
+                    maxSegmentSize = mss;
                     return false;
                 }
-                maxSegmentSize = Short.toUnsignedInt(data.getShort());
+                mss = Short.toUnsignedInt(data.getShort());
             } else {
                 // Skip unknown option
                 data.position(data.position() + size - 2);
             }
         }
         data.position(dataOffset);
+        maxSegmentSize = mss;
         return true;
     }
 

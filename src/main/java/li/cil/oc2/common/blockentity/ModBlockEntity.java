@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ModBlockEntity extends BlockEntity {
-    private final Runnable onWorldUnloaded = this::onWorldUnloaded;
+    private final Runnable unloadHandler = this::onWorldUnloaded;
     private boolean needsWorldUnloadEvent;
     private boolean isUnloaded;
 
@@ -30,7 +30,7 @@ public abstract class ModBlockEntity extends BlockEntity {
             loadServer();
 
             if (needsWorldUnloadEvent) {
-                ServerScheduler.scheduleOnUnload(level, onWorldUnloaded);
+                ServerScheduler.scheduleOnUnload(level, unloadHandler);
             }
         }
     }
@@ -61,11 +61,11 @@ public abstract class ModBlockEntity extends BlockEntity {
     protected void onUnload(final boolean isRemove) {
         if (level != null && !level.isClientSide()) {
             unloadServer(isRemove);
-            ServerScheduler.cancelOnUnload(level, onWorldUnloaded);
+            ServerScheduler.cancelOnUnload(level, unloadHandler);
         }
     }
 
-    protected void setNeedsLevelUnloadEvent() {
+    protected final void setNeedsLevelUnloadEvent() {
         needsWorldUnloadEvent = true;
     }
 

@@ -30,6 +30,7 @@ public record BusCableFacadeMessage(BlockPos pos, ItemStack stack) implements Ab
         return TYPE;
     }
 
+    @Override
     public void handleMessage(final IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos, BusCableBlockEntity.class, busCable -> busCable.setFacade(stack));

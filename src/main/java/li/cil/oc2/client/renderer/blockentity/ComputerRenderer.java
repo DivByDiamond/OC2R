@@ -6,6 +6,7 @@ import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.time.Duration;
+import java.util.Objects;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
@@ -110,7 +111,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
                                     + "@"
                                     + Integer.toHexString(System.identityHashCode(mainLevel))
                             : "null",
-                    computerLevel == mainLevel,
+                    Objects.equals(computerLevel, mainLevel),
                     computer.getBlockPos(),
                     poseMatrix.m30(),
                     poseMatrix.m31(),
@@ -180,8 +181,12 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
                     case RUNNING:
                         OverlayRenderer.renderPower(matrix, bufferSource);
                         break;
+                    default:
+                        throw new AssertionError(terminalSource.getVirtualMachine().getRunState());
                 }
                 break;
+            default:
+                throw new AssertionError(terminalSource.getVirtualMachine().getBusState());
         }
 
         stack.popPose();

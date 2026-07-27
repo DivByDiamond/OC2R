@@ -56,8 +56,7 @@ public class FontAtlas {
         glyphs.add(square);
     }
 
-    // Method to add a glyph to the atlas, resizing it if needed
-    public void addGlyph(Glyph glyph) {
+    public final void addGlyph(Glyph glyph) {
         if (currentX + glyph.image.getWidth() > atlasWidth) {
             currentX = 0;
             currentY += glyph.image.getHeight() + PADDING;
@@ -95,14 +94,16 @@ public class FontAtlas {
         int newWidth = atlasWidth * 2;
         int newHeight = atlasHeight * 2;
 
+        final NativeImage oldAtlasImage = atlasImage;
         NativeImage newAtlasImage = new NativeImage(newWidth, newHeight, false);
 
         for (int y = 0; y < atlasHeight; y++) {
             for (int x = 0; x < atlasWidth; x++) {
-                int color = atlasImage.getPixelRGBA(x, y);
+                int color = oldAtlasImage.getPixelRGBA(x, y);
                 newAtlasImage.setPixelRGBA(x, y, color);
             }
         }
+        oldAtlasImage.close();
 
         for (Glyph glyph : glyphs) {
             glyph.setUV(glyph.uStart / 2f, glyph.vStart / 2f, glyph.uEnd / 2f, glyph.vEnd / 2f);

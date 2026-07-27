@@ -35,6 +35,7 @@ public record ComputerRunStateMessage(BlockPos pos, VMRunState value) implements
         this(computer.getBlockPos(), value);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

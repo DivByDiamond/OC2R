@@ -33,6 +33,7 @@ public record RobotInitializationRequestMessage(int entityId) implements Abstrac
         this(robot.getId());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withServerEntity(
                 context,

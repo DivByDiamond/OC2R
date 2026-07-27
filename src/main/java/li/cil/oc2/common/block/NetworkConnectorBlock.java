@@ -85,6 +85,7 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
                 level, type, BlockEntities.NETWORK_CONNECTOR.get());
     }
 
+    @Override
     protected void createBlockStateDefinition(
             final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACE, FACING);

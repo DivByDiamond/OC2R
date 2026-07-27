@@ -11,11 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class MessageUtils {
-    private static final Logger LOGGER = LogManager.getLogger();
 
     public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(
             final IPayloadContext context,

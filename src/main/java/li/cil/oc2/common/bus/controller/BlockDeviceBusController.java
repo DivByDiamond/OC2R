@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.controller;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.ChunkLocation;
@@ -22,14 +23,14 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
      * <p>Specifically, this is used to mark chunks with bus interfaces dirty when a VM using the
      * bus is running, to ensure changes in devices will be persisted.
      */
-    private final HashSet<ChunkLocation> busChunks = new HashSet<>();
+    private final Set<ChunkLocation> busChunks = new HashSet<>();
 
     /**
      * Chunks that contain or are adjacent to bus elements. This is used to trigger bus scans if
      * these chunks load or unload, which is used to re-scan the bus, since we only allow the bus to
      * run when all chunks it (potentially) touches are loaded.
      */
-    private final HashSet<ChunkLocation> trackedChunks = new HashSet<>();
+    private final Set<ChunkLocation> trackedChunks = new HashSet<>();
 
     private final BlockEntity blockEntity;
 
@@ -69,7 +70,7 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
         }
 
         busChunks.clear();
-        final HashSet<ChunkLocation> newTrackedChunks = new HashSet<>();
+        final Set<ChunkLocation> newTrackedChunks = new HashSet<>();
         for (final DeviceBusElement element : getElements()) {
             if (element instanceof final BlockDeviceBusElement blockElement) {
                 final LevelAccessor elementLevel = blockElement.getLevel();
@@ -102,11 +103,11 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
         busChunks.remove(controllerChunkLocation);
         newTrackedChunks.remove(controllerChunkLocation);
 
-        final HashSet<ChunkLocation> removedChunks = new HashSet<>(trackedChunks);
+        final Set<ChunkLocation> removedChunks = new HashSet<>(trackedChunks);
         removedChunks.removeAll(newTrackedChunks);
         removeListeners(removedChunks);
 
-        final HashSet<ChunkLocation> addedChunks = new HashSet<>(newTrackedChunks);
+        final Set<ChunkLocation> addedChunks = new HashSet<>(newTrackedChunks);
         newTrackedChunks.removeAll(trackedChunks);
         addListeners(addedChunks);
 

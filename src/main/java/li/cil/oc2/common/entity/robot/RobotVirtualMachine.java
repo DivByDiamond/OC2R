@@ -76,11 +76,9 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
     }
 
     @Override
-    protected void handleBootErrorChanged(@Nullable Component value) {
-        if (value == null) {
-            value = Component.literal("");
-        }
-        Network.sendToClientsTrackingEntity(new RobotBootErrorMessage(robot, value), robot);
+    protected void handleBootErrorChanged(@Nullable final Component value) {
+        final Component effective = value == null ? Component.literal("") : value;
+        Network.sendToClientsTrackingEntity(new RobotBootErrorMessage(robot, effective), robot);
     }
 
     private final class RobotVMRunner extends AbstractTerminalVMRunner {

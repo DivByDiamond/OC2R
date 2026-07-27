@@ -34,7 +34,8 @@ public abstract class AbstractBlockEntityCapabilityDeviceProvider<
         final BlockCapability<TCapability, @Nullable Direction> capability =
                 capabilitySupplier.get();
         if (capability == null) throw new IllegalStateException();
-        if (!(blockEntity.getLevel() instanceof ServerLevel level))
+        final var blockEntityLevel = blockEntity.getLevel();
+        if (!(blockEntityLevel instanceof ServerLevel level))
             throw new IllegalStateException();
 
         final var blockPos = blockEntity.getBlockPos();

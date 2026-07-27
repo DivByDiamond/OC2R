@@ -31,6 +31,7 @@ public record OpenComputerInventoryMessage(BlockPos pos) implements AbstractMess
         this(computer.getBlockPos());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

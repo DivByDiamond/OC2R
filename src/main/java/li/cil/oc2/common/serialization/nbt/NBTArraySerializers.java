@@ -16,8 +16,8 @@ final class BooleanArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         boolean[] data = (boolean[]) into;
-        if (tag instanceof final ByteArrayTag byteArrayTag) {
-            final byte[] convertedData = byteArrayTag.getAsByteArray();
+        if (tag instanceof ByteArrayTag) {
+            final byte[] convertedData = ((ByteArrayTag) tag).getAsByteArray();
             if (data == null || data.length != convertedData.length) {
                 data = new boolean[convertedData.length];
             }
@@ -38,8 +38,8 @@ final class ByteArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         final byte[] data = (byte[]) into;
-        if (tag instanceof final ByteArrayTag byteArrayTag) {
-            final byte[] serializedData = byteArrayTag.getAsByteArray();
+        if (tag instanceof ByteArrayTag) {
+            final byte[] serializedData = ((ByteArrayTag) tag).getAsByteArray();
             if (data == null || data.length != serializedData.length) {
                 return serializedData;
             }
@@ -63,8 +63,8 @@ final class CharArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         char[] data = (char[]) into;
-        if (tag instanceof final IntArrayTag intArrayTag) {
-            final int[] convertedData = intArrayTag.getAsIntArray();
+        if (tag instanceof IntArrayTag) {
+            final int[] convertedData = ((IntArrayTag) tag).getAsIntArray();
             if (data == null || data.length != convertedData.length) {
                 data = new char[convertedData.length];
             }
@@ -90,8 +90,8 @@ final class ShortArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         short[] data = (short[]) into;
-        if (tag instanceof final IntArrayTag intArrayTag) {
-            final int[] convertedData = intArrayTag.getAsIntArray();
+        if (tag instanceof IntArrayTag) {
+            final int[] convertedData = ((IntArrayTag) tag).getAsIntArray();
             if (data == null || data.length != convertedData.length) {
                 data = new short[convertedData.length];
             }
@@ -112,8 +112,8 @@ final class IntArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         final int[] data = (int[]) into;
-        if (tag instanceof final IntArrayTag intArrayTag) {
-            final int[] serializedData = intArrayTag.getAsIntArray();
+        if (tag instanceof IntArrayTag) {
+            final int[] serializedData = ((IntArrayTag) tag).getAsIntArray();
             if (data == null || data.length != serializedData.length) {
                 return serializedData;
             }
@@ -132,8 +132,8 @@ final class LongArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         final long[] data = (long[]) into;
-        if (tag instanceof final LongArrayTag longArrayTag) {
-            final long[] serializedData = longArrayTag.getAsLongArray();
+        if (tag instanceof LongArrayTag) {
+            final long[] serializedData = ((LongArrayTag) tag).getAsLongArray();
             if (data == null || data.length != serializedData.length) {
                 return serializedData;
             }
@@ -157,8 +157,8 @@ final class FloatArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         float[] data = (float[]) into;
-        if (tag instanceof final IntArrayTag intArrayTag) {
-            final int[] convertedData = intArrayTag.getAsIntArray();
+        if (tag instanceof IntArrayTag) {
+            final int[] convertedData = ((IntArrayTag) tag).getAsIntArray();
             if (data == null || data.length != convertedData.length) {
                 data = new float[convertedData.length];
             }
@@ -184,8 +184,8 @@ final class DoubleArraySerializer implements NBTArraySerializer {
     @Override
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         double[] data = (double[]) into;
-        if (tag instanceof final LongArrayTag longArrayTag) {
-            final long[] convertedData = longArrayTag.getAsLongArray();
+        if (tag instanceof LongArrayTag) {
+            final long[] convertedData = ((LongArrayTag) tag).getAsLongArray();
             if (data == null || data.length != convertedData.length) {
                 data = new double[convertedData.length];
             }

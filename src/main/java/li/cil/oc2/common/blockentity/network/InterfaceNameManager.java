@@ -1,5 +1,6 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.util.List;
 import java.util.Objects;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.Network;
@@ -7,6 +8,7 @@ import li.cil.oc2.common.network.message.BusInterfaceNameMessage;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 
 final class InterfaceNameManager {
     private final BusCableBlockEntity owner;
@@ -44,17 +46,17 @@ final class InterfaceNameManager {
         }
     }
 
-    ListTag serialize() {
-        final ListTag tag = new ListTag();
+    List<Tag> serialize() {
+        final List<Tag> tag = new ListTag();
         for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
             tag.add(StringTag.valueOf(getInterfaceName(Direction.from3DDataValue(i))));
         }
         return tag;
     }
 
-    void deserialize(final ListTag tag) {
+    void deserialize(final List<Tag> tag) {
         for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
-            final String name = tag.getString(i).trim();
+            final String name = ((StringTag) tag.get(i)).getAsString().trim();
             interfaceNames[i] = name.substring(0, Math.min(32, name.length()));
         }
     }

@@ -7,6 +7,7 @@ public class CUD extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argsCount, CSIState state) {
         terminal.setClampedCursorPos(terminal.x, terminal.y + Math.max(1, args[0]));
     }

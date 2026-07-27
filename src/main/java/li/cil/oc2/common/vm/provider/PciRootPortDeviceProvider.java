@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.provider;
 
 import java.util.Optional;
-import li.cil.oc2.common.vm.device.PciRootPortDevice;
 import li.cil.sedna.api.device.Device;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.devicetree.DeviceNames;
@@ -34,9 +33,6 @@ public final class PciRootPortDeviceProvider implements DeviceTreeProvider {
 
     @Override
     public void visit(final DeviceTree node, final MemoryMap memoryMap, final Device device) {
-        final PciRootPortDevice pr = (PciRootPortDevice) device;
-        final Optional<MappedMemoryRange> range =
-                memoryMap.getMemoryRange((MemoryMappedDevice) device);
         node.addProp(DevicePropertyNames.COMPATIBLE, "pci-host-cam-generic")
                 .addProp(DevicePropertyNames.DEVICE_TYPE, DeviceNames.PCI)
                 .addProp(DevicePropertyNames.NUM_ADDRESS_CELLS, 3)

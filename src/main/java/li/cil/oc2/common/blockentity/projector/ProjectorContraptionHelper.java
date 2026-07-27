@@ -2,10 +2,11 @@ package li.cil.oc2.common.blockentity.projector;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 final class ProjectorContraptionHelper {
-    static final ConcurrentHashMap<UUID, ProjectorBlockEntity> PRIMARY_BY_DEVICE_ID =
+    static final ConcurrentMap<UUID, ProjectorBlockEntity> PRIMARY_BY_DEVICE_ID =
             new ConcurrentHashMap<>();
     static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 

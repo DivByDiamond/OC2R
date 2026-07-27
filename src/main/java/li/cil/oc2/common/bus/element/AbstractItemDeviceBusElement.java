@@ -71,7 +71,7 @@ public abstract class AbstractItemDeviceBusElement
 
     protected ItemQueryResult collectDevices(final ItemStack stack) {
         final ItemDeviceQuery query = makeQuery(stack);
-        final HashSet<ItemEntry> entries = new HashSet<>();
+        final Set<ItemEntry> entries = new HashSet<>();
 
         for (final ItemDeviceInfo deviceInfo : Devices.getDevices(query)) {
             entries.add(new ItemEntry(deviceInfo));
@@ -86,7 +86,7 @@ public abstract class AbstractItemDeviceBusElement
 
     @SuppressWarnings("ConstantValue")
     protected void collectSyntheticDevices(
-            final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
+            final ItemDeviceQuery query, final Set<ItemEntry> entries) {
         if (entries.isEmpty()) {
             return;
         }
@@ -114,7 +114,7 @@ public abstract class AbstractItemDeviceBusElement
     }
 
     private void importDeviceDataFromItemStack(
-            final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
+            final ItemDeviceQuery query, final Set<ItemEntry> entries) {
         final CompoundTag exportedTag = ItemDeviceUtils.getItemDeviceData(query.getItemStack());
         if (!exportedTag.isEmpty()) {
             for (final ItemEntry entry : entries) {

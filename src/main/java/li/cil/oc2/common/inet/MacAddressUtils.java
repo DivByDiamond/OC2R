@@ -10,8 +10,8 @@ final class MacAddressUtils {
     }
 
     private static void byteToHex(final StringBuilder builder, final byte code) {
-        builder.append(hexCodeToChar(code >>> 4));
-        builder.append(hexCodeToChar(code & 15));
+        builder.append(hexCodeToChar(code >>> 4))
+                .append(hexCodeToChar(code & 15));
     }
 
     static void macAddressToString(final StringBuilder builder, final MacAddress macAddress) {

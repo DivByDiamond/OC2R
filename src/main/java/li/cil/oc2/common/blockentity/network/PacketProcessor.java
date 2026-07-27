@@ -15,7 +15,7 @@ final class PacketProcessor {
         StringBuilder ret = new StringBuilder();
         for (int i = 0; i < 6; i++) {
             if (i != 0) {
-                ret.append(":");
+                ret.append(':');
             }
             ret.append(String.format("%02x", (mac >> (i * 8)) & 0xff));
         }

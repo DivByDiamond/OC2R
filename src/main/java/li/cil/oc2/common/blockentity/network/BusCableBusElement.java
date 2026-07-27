@@ -1,6 +1,6 @@
 package li.cil.oc2.common.blockentity.network;
 
-import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
@@ -52,7 +52,7 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
             final LevelAccessor level,
             final BlockPos pos,
             @Nullable final Direction side,
-            final HashSet<BlockEntry> entries) {
+            final Set<BlockEntry> entries) {
         super.collectSyntheticDevices(level, pos, side, entries);
 
         if (side == null || entries.isEmpty()) {

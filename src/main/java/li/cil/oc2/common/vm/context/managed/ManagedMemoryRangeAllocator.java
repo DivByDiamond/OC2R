@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.context.managed;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
@@ -11,7 +12,7 @@ final class ManagedMemoryRangeAllocator implements MemoryRangeAllocator {
     private final MemoryRangeAllocator parent;
     private final MemoryRangeManager memoryRangeManager;
     private final Supplier<OptionalLong> baseAddressSupplier;
-    private final ArrayList<MemoryMappedDevice> managedDevices = new ArrayList<>();
+    private final List<MemoryMappedDevice> managedDevices = new ArrayList<>();
     private boolean isFrozen;
 
     public ManagedMemoryRangeAllocator(

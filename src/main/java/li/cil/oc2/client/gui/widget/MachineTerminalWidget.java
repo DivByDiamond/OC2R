@@ -32,8 +32,9 @@ public final class MachineTerminalWidget {
     private final Terminal terminal;
     private final TerminalMouseHandler mouseHandler;
     private final TerminalKeyboardHandler keyboardHandler;
-    private int leftPos, topPos;
-    private boolean isMouseOverTerminal;
+    private int leftPos;
+    private int topPos;
+    private boolean mouseOverTerminal;
     private RendererView rendererView;
     private boolean isOver;
 
@@ -46,7 +47,7 @@ public final class MachineTerminalWidget {
     }
 
     public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY) {
-        isMouseOverTerminal = isMouseOverTerminal(mouseX, mouseY);
+        mouseOverTerminal = isMouseOverTerminal(mouseX, mouseY);
 
         Sprites.TERMINAL_SCREEN.draw(graphics, leftPos, topPos);
 
@@ -186,7 +187,7 @@ public final class MachineTerminalWidget {
     }
 
     private boolean shouldCaptureInput() {
-        return isMouseOverTerminal
+        return mouseOverTerminal
                 && container.getCaptureInputState()
                 && container.getVirtualMachine().isRunning();
     }

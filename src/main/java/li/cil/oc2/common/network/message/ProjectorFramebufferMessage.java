@@ -33,6 +33,7 @@ public record ProjectorFramebufferMessage(BlockPos pos, ByteBuffer frame)
         return TYPE;
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

@@ -5,7 +5,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public final class Texture {
     public final ResourceLocation location;
-    public final int width, height;
+    public final int width;
+    public final int height;
 
     public Texture(final String location, final int width, final int height) {
         this(ResourceLocation.fromNamespaceAndPath(API.MOD_ID, location), width, height);

@@ -15,7 +15,7 @@ public final class EnergyStorageItemStack implements IEnergyStorage {
             final ItemStack stack, final int capacity, final String... tagPath) {
         this.stack = stack;
         this.capacity = capacity;
-        this.tagPath = tagPath;
+        this.tagPath = tagPath.clone();
     }
 
     @Override

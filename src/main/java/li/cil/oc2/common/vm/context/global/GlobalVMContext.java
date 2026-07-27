@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.context.global;
 
 import java.util.BitSet;
+import java.util.List;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.device.vm.context.*;
 import li.cil.oc2.common.vm.context.EventManager;
@@ -10,6 +11,7 @@ import li.cil.oc2.common.vm.context.VMContextManagerCollection;
 import li.cil.sedna.api.Board;
 import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
+import li.cil.sedna.api.memory.MemoryRange;
 
 public final class GlobalVMContext implements VMContext, VMContextManagerCollection {
     private final GlobalMemoryMap memoryMap;
@@ -30,7 +32,7 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
 
     @Serialized
     @SuppressWarnings("FieldMayBeFinal")
-    private final MemoryRangeList reservedMemoryRanges = new MemoryRangeList();
+    private final List<MemoryRange> reservedMemoryRanges = new MemoryRangeList();
 
     public GlobalVMContext(final Board board) {
         this.memoryMap = new GlobalMemoryMap(board.getMemoryMap());

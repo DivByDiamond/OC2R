@@ -8,8 +8,12 @@ import net.minecraft.world.phys.Vec3;
 final class NetworkCableConnection {
     private static final Vec3 POS_Y = new Vec3(0, 1, 0);
 
-    public final BlockPos fromPos, toPos;
-    public final Vec3 from, to, forward, right;
+    public final BlockPos fromPos;
+    public final BlockPos toPos;
+    public final Vec3 from;
+    public final Vec3 to;
+    public final Vec3 forward;
+    public final Vec3 right;
     public final AABB bounds;
 
     NetworkCableConnection(final BlockPos fromPos, final BlockPos toPos) {

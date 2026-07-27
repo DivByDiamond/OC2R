@@ -1,12 +1,14 @@
 package li.cil.oc2.common.entity.robot;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Queue;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 final class RobotActionProcessor {
     private static final int MAX_QUEUED_ACTIONS = 16;
@@ -76,21 +78,21 @@ final class RobotActionProcessor {
     CompoundTag serialize() {
         final CompoundTag tag = new CompoundTag();
 
-        final ListTag queueTag = new ListTag();
+        final List<Tag> queueTag = new ListTag();
         for (final AbstractRobotAction action : queue) {
             queueTag.add(RobotActions.serialize(action));
         }
-        tag.put(QUEUE_TAG_NAME, queueTag);
+        tag.put(QUEUE_TAG_NAME, (ListTag) queueTag);
 
         if (action != null) {
             tag.put(ACTION_TAG_NAME, RobotActions.serialize(action));
         }
 
-        final ListTag resultsTag = new ListTag();
+        final List<Tag> resultsTag = new ListTag();
         for (final RobotActionProcessorResult result : results) {
             resultsTag.add(result.serialize());
         }
-        tag.put(RESULTS_TAG_NAME, resultsTag);
+        tag.put(RESULTS_TAG_NAME, (ListTag) resultsTag);
 
         tag.putInt(LAST_ACTION_ID_TAG_NAME, lastActionId);
 
@@ -101,9 +103,9 @@ final class RobotActionProcessor {
         queue.clear();
         results.clear();
 
-        final ListTag queueTag = tag.getList(QUEUE_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        final List<Tag> queueTag = tag.getList(QUEUE_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(queueTag.size(), MAX_QUEUED_ACTIONS - 1); i++) {
-            final AbstractRobotAction action = RobotActions.deserialize(queueTag.getCompound(i));
+            final AbstractRobotAction action = RobotActions.deserialize((CompoundTag) queueTag.get(i));
             if (action != null) {
                 queue.add(action);
             }
@@ -111,10 +113,10 @@ final class RobotActionProcessor {
 
         action = RobotActions.deserialize(tag.getCompound(ACTION_TAG_NAME));
 
-        final ListTag resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        final List<Tag> resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(resultsTag.size(), MAX_QUEUED_RESULTS); i++) {
             final RobotActionProcessorResult result =
-                    new RobotActionProcessorResult(resultsTag.getCompound(i));
+                    new RobotActionProcessorResult((CompoundTag) resultsTag.get(i));
             if (result.actionId != 0) {
                 results.add(result);
             }

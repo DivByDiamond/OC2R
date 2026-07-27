@@ -90,7 +90,7 @@ public final class Ipv4Space extends IntegerSpace {
                 final NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
                 return putNetworkInterface(networkInterface);
             } catch (IOException e) {
-                throw new IllegalStateException("Failed to get a network interface by name");
+                throw new IllegalStateException("Failed to get a network interface by name", e);
             }
         }
 
@@ -101,7 +101,7 @@ public final class Ipv4Space extends IntegerSpace {
                 final NetworkInterface networkInterface = NetworkInterface.getByIndex(interfaceId);
                 return putNetworkInterface(networkInterface);
             } catch (IOException e) {
-                throw new IllegalStateException("Failed to get a network interface by index");
+                throw new IllegalStateException("Failed to get a network interface by index", e);
             }
         }
 
@@ -118,7 +118,7 @@ public final class Ipv4Space extends IntegerSpace {
             }
             return result;
         } catch (UnknownHostException e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 

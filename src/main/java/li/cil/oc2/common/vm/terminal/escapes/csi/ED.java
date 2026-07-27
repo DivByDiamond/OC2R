@@ -7,6 +7,7 @@ public class ED extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) {
             System.out.println("DECSED is not implemented");
@@ -26,6 +27,7 @@ public class ED extends CSISequenceHandler {
                 }
                 case 2 -> // Entire screen
                         terminal.clear();
+                default -> {}
             }
         }
     }

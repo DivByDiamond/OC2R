@@ -22,7 +22,6 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
     protected AbstractMonitorContainer(
             final MenuType<?> type,
             final int id,
-            final Player player,
             final MonitorBlockEntity monitor,
             final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
@@ -59,6 +58,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
             case PER_BLOCK -> monitor.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
             case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
+            default -> throw new AssertionError(Config.captureInputMode);
         };
     }
 
@@ -67,6 +67,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
             case PER_BLOCK -> monitor.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
             case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
+            default -> throw new AssertionError(Config.captureInputMode);
         }
     }
 

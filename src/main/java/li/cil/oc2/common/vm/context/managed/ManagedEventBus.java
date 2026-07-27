@@ -1,13 +1,14 @@
 package li.cil.oc2.common.vm.context.managed;
 
 import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.bus.device.vm.context.VMLifecycleEventBus;
 import li.cil.oc2.common.vm.context.EventManager;
 
 final class ManagedEventBus implements VMLifecycleEventBus {
     private final VMLifecycleEventBus parent;
     private final EventManager manager;
-    private final ArrayList<Object> subscribers = new ArrayList<>();
+    private final List<Object> subscribers = new ArrayList<>();
     private boolean isFrozen;
 
     public ManagedEventBus(final VMLifecycleEventBus parent, final EventManager manager) {

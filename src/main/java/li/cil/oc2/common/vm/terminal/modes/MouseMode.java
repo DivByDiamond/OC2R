@@ -4,9 +4,9 @@ public class MouseMode {
     public int PrimaryMode;
     public int[] SecondaryModes;
 
-    public MouseMode(int primaryMode, int[] secondaryModes) {
+    public MouseMode(int primaryMode, int... secondaryModes) {
         PrimaryMode = primaryMode;
-        SecondaryModes = secondaryModes;
+        SecondaryModes = secondaryModes.clone();
     }
 
     public boolean isSecondaryModeEnabled(int mode) {

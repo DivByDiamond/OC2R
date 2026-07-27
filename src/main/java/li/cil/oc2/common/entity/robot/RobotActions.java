@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
@@ -9,7 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 public final class RobotActions {
     private static final String ACTION_TYPE_TAG_NAME = "action_type";
 
-    private static final ArrayList<AbstractRobotActionType> ACTIONS = new ArrayList<>();
+    private static final List<AbstractRobotActionType> ACTIONS = new ArrayList<>();
 
     public static final AbstractRobotActionType MOVEMENT = register(RobotMovementActionType::new);
     public static final AbstractRobotActionType ROTATION = register(RobotRotationActionType::new);

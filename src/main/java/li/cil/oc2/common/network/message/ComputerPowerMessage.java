@@ -33,6 +33,7 @@ public record ComputerPowerMessage(BlockPos pos, boolean power) implements Abstr
         this(computer.getBlockPos(), power);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

@@ -34,7 +34,7 @@ public class BundledRedstone {
         if (handler != null) {
             return handler.getBundledInput(level, blockPos, side);
         } else {
-            return null;
+            return new byte[0];
         }
     }
 }

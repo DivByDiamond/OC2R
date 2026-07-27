@@ -1,9 +1,10 @@
 package li.cil.oc2.common.util;
 
 import java.util.PriorityQueue;
+import java.util.Queue;
 
 class TickScheduler {
-    private final PriorityQueue<ScheduledRunnable> queue = new PriorityQueue<>();
+    private final Queue<ScheduledRunnable> queue = new PriorityQueue<>();
     private int currentTick;
 
     public void schedule(final Runnable runnable, final int afterTicks) {

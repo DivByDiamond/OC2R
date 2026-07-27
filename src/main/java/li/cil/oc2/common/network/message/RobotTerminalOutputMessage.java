@@ -34,6 +34,7 @@ public record RobotTerminalOutputMessage(int entityId, byte[] data) implements A
         this(robot.getId(), data.array());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withClientEntity(
                 entityId,

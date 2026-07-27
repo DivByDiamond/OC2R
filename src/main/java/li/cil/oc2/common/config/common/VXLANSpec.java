@@ -4,6 +4,8 @@ import li.cil.oc2.common.config.Config;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class VXLANSpec {
+    private static final String DEFAULT_VXLAN_HOST = String.format("::%d", 1);
+
     public final ModConfigSpec.BooleanValue enable;
     public final ModConfigSpec.ConfigValue<String> remoteHost;
     public final ModConfigSpec.IntValue remotePort;
@@ -19,13 +21,13 @@ public class VXLANSpec {
 
         remoteHost =
                 builder.comment("The remote host that the VXLAN protocol is running on")
-                        .define("remoteHost", "::1");
+                        .define("remoteHost", DEFAULT_VXLAN_HOST);
 
         remotePort =
                 builder.comment("The remote port that the VXLAN protocol is exposed on")
                         .defineInRange("remotePort", 4789, 1, 65535);
 
-        bindHost = builder.comment("The address to bind VXLAN to").define("bindHost", "::1");
+        bindHost = builder.comment("The address to bind VXLAN to").define("bindHost", DEFAULT_VXLAN_HOST);
 
         bindPort =
                 builder.comment("The port to bind VXLAN to")

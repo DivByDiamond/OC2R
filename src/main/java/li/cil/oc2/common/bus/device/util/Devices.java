@@ -57,7 +57,7 @@ public final class Devices {
         }
 
         final Registry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();
-        final ArrayList<BlockDeviceInfo> devices = new ArrayList<>();
+        final List<BlockDeviceInfo> devices = new ArrayList<>();
         for (final BlockDeviceProvider provider : registry) {
             final Optional<Device> device = provider.getDevice(query);
             if (device.isPresent()) {
@@ -80,7 +80,7 @@ public final class Devices {
         }
 
         final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
-        final ArrayList<ItemDeviceInfo> devices = new ArrayList<>();
+        final List<ItemDeviceInfo> devices = new ArrayList<>();
         for (final ItemDeviceProvider provider : registry) {
             final Optional<ItemDevice> device = provider.getDevice(query);
             device.ifPresent(

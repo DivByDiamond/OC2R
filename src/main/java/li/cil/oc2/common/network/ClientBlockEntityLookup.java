@@ -32,24 +32,21 @@ public final class ClientBlockEntityLookup {
             return;
         }
 
-        boolean found = false;
         final java.util.List<ClientLevel> allLevels = findAllClientLevels(mc, level);
         for (final ClientLevel otherLevel : allLevels) {
-            if (otherLevel == level) {
+            if (otherLevel.equals(level)) {
                 continue;
             }
             try {
                 final BlockEntity otherBlockEntity = otherLevel.getBlockEntity(pos);
                 if (type.isInstance(otherBlockEntity)) {
                     callback.accept((T) otherBlockEntity);
-                    found = true;
                     return;
                 }
-            } catch (final Throwable ignored) {
-            }
+            } catch (final Exception ignored) { /* ignored */ }
         }
 
-        if (!found) {
+        {
             final long now = System.currentTimeMillis();
             if (now - lastMissingBeLog > 5000) {
                 lastMissingBeLog = now;
@@ -96,13 +93,11 @@ public final class ClientBlockEntityLookup {
                     continue;
                 }
                 try {
-                    field.setAccessible(true);
                     final Object value = field.get(root);
                     if (value instanceof final ClientLevel cl && !result.contains(cl)) {
                         result.add(cl);
                     }
-                } catch (final Throwable ignored) {
-                }
+                } catch (final Exception ignored) { /* ignored */ }
             }
             cls = cls.getSuperclass();
         }

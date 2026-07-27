@@ -33,6 +33,7 @@ public record FirmwareFlasherMessage(BlockPos pos, ItemStack data) implements Ab
         this(diskDrive.getBlockPos(), diskDrive.getFloppy());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

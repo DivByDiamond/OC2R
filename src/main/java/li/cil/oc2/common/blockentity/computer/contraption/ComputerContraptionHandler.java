@@ -2,11 +2,12 @@ package li.cil.oc2.common.blockentity.computer.contraption;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 
 public final class ComputerContraptionHandler {
-    private static final ConcurrentHashMap<UUID, ComputerBlockEntity> PRIMARY_BY_DEVICE_ID =
+    private static final ConcurrentMap<UUID, ComputerBlockEntity> PRIMARY_BY_DEVICE_ID =
             new ConcurrentHashMap<>();
     private static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 

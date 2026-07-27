@@ -37,6 +37,7 @@ public record MonitorInputMessage(BlockPos pos, int keycode, boolean isDown)
         this(keyboard.getBlockPos(), keycode, isDown);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

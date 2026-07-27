@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc;
 
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.serialization.gson.DirectionJsonSerializer;
 import li.cil.oc2.common.serialization.gson.ItemStackJsonSerializer;
@@ -9,7 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 
 public final class RPCMethodParameterTypeAdapters {
-    private static final ArrayList<RPCMethodParameterTypeAdapter> TYPE_ADAPTERS = new ArrayList<>();
+    private static final List<RPCMethodParameterTypeAdapter> TYPE_ADAPTERS = new ArrayList<>();
 
     public static void initialize() {
         addTypeAdapter(ItemStack.class, new ItemStackJsonSerializer());

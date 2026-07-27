@@ -35,6 +35,7 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value) implements A
         this(computer.getBlockPos(), value);
     }
 
+    @Override
     public void handleMessage(final IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

@@ -50,10 +50,13 @@ public final class Config {
     public static int ethernetFrameTimeToLive = 12;
     public static int hubEthernetFramesPerTick = 32;
 
+    private static final String DEFAULT_VXLAN_HOST = String.format("::%d", 1);
+    private static final String DEFAULT_NAME_SERVER = String.format("%d.%d.%d.%d", 1, 1, 1, 1);
+
     public static boolean enable = false;
-    public static String remoteHost = "::1";
+    public static String remoteHost = DEFAULT_VXLAN_HOST;
     public static int remotePort = 4789;
-    public static String bindHost = "::1";
+    public static String bindHost = DEFAULT_VXLAN_HOST;
     public static int bindPort = 4789;
     public static boolean internetCardEnabled = false;
     public static int defaultSessionLifetimeMs = 60 * 1000;
@@ -69,7 +72,7 @@ public final class Config {
                     "192.168.0.0/16",
                     "224.0.0.0/4");
     public static List<String> allowedHosts = List.of();
-    public static String defaultNameServer = "1.1.1.1";
+    public static String defaultNameServer = DEFAULT_NAME_SERVER;
     public static boolean useSynchronisedNAT = false;
     public static int streamBufferSize = 2000;
     public static int tcpRetransmissionTimeoutMs = 2 * 1000;

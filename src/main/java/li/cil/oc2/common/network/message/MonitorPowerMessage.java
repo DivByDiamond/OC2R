@@ -34,6 +34,7 @@ public record MonitorPowerMessage(BlockPos pos, boolean power) implements Abstra
         this(monitor.getBlockPos(), power);
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

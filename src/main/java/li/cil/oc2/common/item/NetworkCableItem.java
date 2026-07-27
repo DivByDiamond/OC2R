@@ -46,7 +46,7 @@ public final class NetworkCableItem extends ModItem {
         }
 
         final ItemStack stack = player.getItemInHand(context.getHand());
-        if (stack.isEmpty() || stack.getItem() != this) {
+        if (stack.isEmpty() || !stack.getItem().equals(this)) {
             return super.useOn(context);
         }
 
@@ -109,6 +109,8 @@ public final class NetworkCableItem extends ModItem {
                         player.displayClientMessage(
                                 Component.translatable(Constants.CONNECTOR_ERROR_OBSTRUCTED), true);
                         break;
+                    default:
+                        throw new AssertionError(connectionResult);
                 }
             }
         }

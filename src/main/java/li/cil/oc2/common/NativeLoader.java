@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import joptsimple.util.InetAddressConverter;
 import li.cil.oc2.common.config.Config;
@@ -15,8 +16,9 @@ import li.cil.oc2.common.inet.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 
 final class NativeLoader {
-    private static final HashMap<String, String> supportedArch = new HashMap<>();
+    private static final Map<String, String> supportedArch = new HashMap<>();
     private static boolean officiallySupported = true;
+    private static final String LOOPBACK_IP = String.format("%d.%d.%d.%d", 127, 0, 0, 1);
 
     static {
         supportedArch.put("x86_64", "x86_64");
@@ -35,6 +37,7 @@ final class NativeLoader {
                     case LINUX -> "liboc2rnet-linux-" + arch + ".so";
                     case ANDROID -> "liboc2rnet-android-" + arch + ".so";
                     case UNSUPPORTED -> "NONE";
+                    default -> throw new AssertionError(platform);
                 };
 
         String resourcePath = "/natives/" + platform + "/" + libName;
@@ -42,7 +45,7 @@ final class NativeLoader {
             Path tempFile = extractToTemp(resourcePath);
             System.load(tempFile.toAbsolutePath().toString());
             Main.LoadedLibrary = true;
-            InetAddress address = new InetAddressConverter().convert("127.0.0.1");
+            InetAddress address = new InetAddressConverter().convert(LOOPBACK_IP);
             Random garbageGenerator = new Random();
             byte[] dataToSend = new byte[64];
             for (int i = 0; i < 64; i++) {
@@ -90,7 +93,7 @@ final class NativeLoader {
     }
 
     private static String getArchString() {
-        String arch = System.getProperty("os.arch").toLowerCase();
+        String arch = System.getProperty("os.arch").toLowerCase(java.util.Locale.ROOT);
         String result = supportedArch.get(arch);
         if (result == null) {
             officiallySupported = false;
@@ -100,7 +103,7 @@ final class NativeLoader {
     }
 
     private static Platform getPlatformName() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
 
         if (os.contains("mac")) {
             return Platform.MACOS;
@@ -109,7 +112,7 @@ final class NativeLoader {
         } else if (os.contains("nux") || os.contains("nix")) {
             return Platform.LINUX;
         } else {
-            if (System.getProperty("java.vm.vendor").equalsIgnoreCase("the android project"))
+            if ("the android project".equalsIgnoreCase(System.getProperty("java.vm.vendor")))
                 return Platform.ANDROID;
             officiallySupported = false;
             return Platform.UNSUPPORTED;
@@ -134,7 +137,7 @@ final class NativeLoader {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            return super.toString().toLowerCase(java.util.Locale.ROOT);
         }
     }
 }

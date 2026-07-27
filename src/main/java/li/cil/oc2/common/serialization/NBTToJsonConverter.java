@@ -1,6 +1,7 @@
 package li.cil.oc2.common.serialization;
 
 import com.google.gson.*;
+import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.nbt.*;
@@ -43,7 +44,7 @@ public final class NBTToJsonConverter {
             }
             case NBTTagIds.TAG_LIST -> {
                 final JsonArray json = new JsonArray();
-                final ListTag listTag = (ListTag) tag;
+                final List<Tag> listTag = (ListTag) tag;
                 for (final Tag item : listTag) {
                     json.add(convert(item));
                 }

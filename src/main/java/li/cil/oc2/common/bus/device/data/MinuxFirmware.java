@@ -15,9 +15,8 @@ public final class MinuxFirmware implements Firmware {
 
     @Override
     public boolean run(final MemoryMap memory, final long startAddress) {
-        try {
-            final InputStream firmware = Buildroot.getFirmware();
-            final InputStream linuxImage = Buildroot.getLinuxImage();
+        try (final InputStream firmware = Buildroot.getFirmware();
+             final InputStream linuxImage = Buildroot.getLinuxImage()) {
             if (firmware == null) {
                 LOGGER.error(
                         "Minux firmware resource (generated/fw_jump.bin) is missing from"
@@ -36,11 +35,7 @@ public final class MinuxFirmware implements Firmware {
         } catch (final IOException e) {
             LOGGER.error("Failed to load Minux firmware into VM memory", e);
             return false;
-        } catch (final Throwable t) {
-            // Anything else (NPE from MemoryMaps.store on a closed stream,
-            // MemoryAccessException wrapped in a runtime, etc.) used to
-            // escape here and silently kill the VM runner thread, leaving
-            // the computer in an "appears on, no UART output" state.
+        } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Minux firmware into VM memory", t);
             return false;
         }

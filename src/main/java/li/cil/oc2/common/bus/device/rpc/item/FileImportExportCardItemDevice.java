@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc.item;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
@@ -27,7 +28,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
     private static final String REQUEST_IMPORT_FILE = "requestImportFile";
     private static final String BEGIN_IMPORT_FILE = "beginImportFile";
     private static final String READ_IMPORT_FILE = "readImportFile";
-    private static final String RESET = "reset";
+    private static final String RESET_CMD = "reset";
     private static final String NAME = "name";
     private static final String DATA = "data";
 
@@ -96,7 +97,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
     @Callback(name = REQUEST_IMPORT_FILE)
     public boolean requestImportFile() {
         if (state != ImportExportState.IDLE) throw new IllegalStateException("invalid state");
-        final ArrayList<ServerPlayer> players = new ArrayList<>();
+        final List<ServerPlayer> players = new ArrayList<>();
         for (final Player player : userProvider.getTerminalUsers()) {
             if (player instanceof final ServerPlayer serverPlayer) players.add(serverPlayer);
         }
@@ -137,7 +138,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
         final int count = importedFile.data.read(buffer);
         if (count <= 0) {
             reset();
-            return null;
+            return new byte[0];
         }
         if (count < buffer.length) {
             final byte[] data = new byte[count];
@@ -148,7 +149,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
         }
     }
 
-    @Callback(name = RESET)
+    @Callback(name = RESET_CMD)
     public void reset() {
         state = ImportExportState.IDLE;
         exportedFile = null;

@@ -31,6 +31,7 @@ public record MonitorFramebufferMessage(BlockPos pos, ByteBuffer frame) implemen
         return TYPE;
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos, MonitorBlockEntity.class, monitor -> monitor.applyNextFrameClient(frame));

@@ -46,12 +46,12 @@ public final class DefaultTransportLayer implements TransportLayer {
                 final StreamSessionImpl stream = sendHandler.streamToAck;
                 sendHandler.streamToAck = null;
                 sessionManager.updateSession(stream);
-                switch (TcpUtils.prepareTCPSegment(message, stream)) {
-                    case FORWARD -> {
-                        if (stream.isClosed()) sessionManager.closeSession(stream);
-                        return PROTOCOL_TCP;
-                    }
-                    case DROP -> sessionManager.closeSession(stream);
+                final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, stream);
+                if (segmentResult == SessionActions.FORWARD) {
+                    if (stream.isClosed()) sessionManager.closeSession(stream);
+                    return PROTOCOL_TCP;
+                } else if (segmentResult == SessionActions.DROP) {
+                    sessionManager.closeSession(stream);
                 }
             }
             receiver.prepare(message.getData());
@@ -67,12 +67,12 @@ public final class DefaultTransportLayer implements TransportLayer {
                 if (result != PROTOCOL_NONE) return result;
             } else if (session instanceof StreamSession) {
                 final StreamSessionImpl streamSession = (StreamSessionImpl) session;
-                switch (TcpUtils.prepareTCPSegment(message, streamSession)) {
-                    case FORWARD -> {
-                        if (streamSession.isClosed()) sessionManager.closeSession(streamSession);
-                        return PROTOCOL_TCP;
-                    }
-                    case DROP -> sessionManager.closeSession(streamSession);
+                final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, streamSession);
+                if (segmentResult == SessionActions.FORWARD) {
+                    if (streamSession.isClosed()) sessionManager.closeSession(streamSession);
+                    return PROTOCOL_TCP;
+                } else if (segmentResult == SessionActions.DROP) {
+                    sessionManager.closeSession(streamSession);
                 }
             } else {
                 throw new IllegalStateException();
@@ -165,6 +165,7 @@ public final class DefaultTransportLayer implements TransportLayer {
                     sendHandler.sendIcmpMessage(data, srcIpAddress, dstIpAddress, message);
             case PROTOCOL_UDP -> sendHandler.sendUdpMessage(data, srcIpAddress, dstIpAddress);
             case PROTOCOL_TCP -> sendHandler.sendTcpMessage(data, srcIpAddress, dstIpAddress);
+            default -> throw new AssertionError(protocol);
         }
     }
 }

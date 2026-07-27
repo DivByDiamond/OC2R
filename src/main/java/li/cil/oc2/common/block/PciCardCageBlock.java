@@ -108,6 +108,7 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
+    @Override
     protected void createBlockStateDefinition(
             final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LIT);

@@ -14,41 +14,41 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class Containers {
-    private static final DeferredRegister<MenuType<?>> CONTAINERS =
+    private static final DeferredRegister<MenuType<?>> REGISTRY =
             DeferredRegister.create(BuiltInRegistries.MENU, API.MOD_ID);
 
     public static final DeferredHolder<MenuType<?>, MenuType<ComputerInventoryContainer>> COMPUTER =
-            CONTAINERS.register(
+            REGISTRY.register(
                     "computer",
                     () -> IMenuTypeExtension.create(ComputerInventoryContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<ComputerTerminalContainer>>
             COMPUTER_TERMINAL =
-                    CONTAINERS.register(
+                    REGISTRY.register(
                             "computer_terminal",
                             () ->
                                     IMenuTypeExtension.create(
                                             ComputerTerminalContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<MonitorDisplayContainer>> MONITOR =
-            CONTAINERS.register(
+            REGISTRY.register(
                     "monitor",
                     () -> IMenuTypeExtension.create(MonitorDisplayContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<RobotInventoryContainer>> ROBOT =
-            CONTAINERS.register(
+            REGISTRY.register(
                     "robot",
                     () -> IMenuTypeExtension.create(RobotInventoryContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<RobotTerminalContainer>>
             ROBOT_TERMINAL =
-                    CONTAINERS.register(
+                    REGISTRY.register(
                             "robot_terminal",
                             () -> IMenuTypeExtension.create(RobotTerminalContainer::createClient));
     public static final DeferredHolder<MenuType<?>, MenuType<NetworkTunnelContainer>>
             NETWORK_TUNNEL =
-                    CONTAINERS.register(
+                    REGISTRY.register(
                             "network_tunnel",
                             () -> IMenuTypeExtension.create(NetworkTunnelContainer::createClient));
 
     public static void initialize(IEventBus modBus) {
-        CONTAINERS.register(modBus);
+        REGISTRY.register(modBus);
     }
 
     @SubscribeEvent

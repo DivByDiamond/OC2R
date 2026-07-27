@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class RedstoneInterfaceEventDispatcher {
-    private final HashMap<IEventSink, UUID> subscribers = new HashMap<>();
+    private final Map<IEventSink, UUID> subscribers = new HashMap<>();
 
     public void subscribe(final IEventSink sink, final UUID id) {
         subscribers.put(sink, id);

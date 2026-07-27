@@ -1,6 +1,7 @@
 package li.cil.oc2.common.item.crafting;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
 import li.cil.oc2.common.integration.Wrenches;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -30,7 +31,7 @@ public final class WrenchRecipe extends ShapelessRecipe {
 
     @Override
     public NonNullList<ItemStack> getRemainingItems(final CraftingInput input) {
-        final NonNullList<ItemStack> result = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+        final List<ItemStack> result = NonNullList.withSize(input.size(), ItemStack.EMPTY);
 
         for (int slot = 0; slot < input.size(); slot++) {
             final ItemStack stack = input.getItem(slot);
@@ -43,7 +44,7 @@ public final class WrenchRecipe extends ShapelessRecipe {
             }
         }
 
-        return result;
+        return (NonNullList<ItemStack>) result;
     }
 
     @Override
@@ -53,19 +54,19 @@ public final class WrenchRecipe extends ShapelessRecipe {
 
     public static final class Serializer implements RecipeSerializer<WrenchRecipe> {
         public static final Serializer INSTANCE = new Serializer();
-        public static final MapCodec<WrenchRecipe> CODEC =
+        public static final MapCodec<WrenchRecipe> CODEC_INSTANCE =
                 RecipeSerializer.SHAPELESS_RECIPE.codec().xmap(WrenchRecipe::new, x -> x);
-        public static final StreamCodec<RegistryFriendlyByteBuf, WrenchRecipe> STREAM_CODEC =
+        public static final StreamCodec<RegistryFriendlyByteBuf, WrenchRecipe> STREAM_CODEC_INSTANCE =
                 RecipeSerializer.SHAPELESS_RECIPE.streamCodec().map(WrenchRecipe::new, x -> x);
 
         @Override
         public MapCodec<WrenchRecipe> codec() {
-            return CODEC;
+            return CODEC_INSTANCE;
         }
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, WrenchRecipe> streamCodec() {
-            return STREAM_CODEC;
+            return STREAM_CODEC_INSTANCE;
         }
     }
 

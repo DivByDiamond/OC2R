@@ -36,6 +36,7 @@ public record ComputerTerminalOutputMessage(BlockPos pos, byte[] data) implement
         this(computer.getBlockPos(), data.array());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

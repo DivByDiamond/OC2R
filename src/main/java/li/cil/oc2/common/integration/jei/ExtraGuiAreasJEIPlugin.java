@@ -2,6 +2,7 @@ package li.cil.oc2.common.integration.jei;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.AbstractMachineInventoryScreen;
 import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
@@ -26,7 +27,7 @@ public class ExtraGuiAreasJEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(final IRecipeRegistration registration) {
-        HashSet<ItemStack> removals = new HashSet<>();
+        Set<ItemStack> removals = new HashSet<>();
         removals.add(ComputerBlockFactory.getPreconfiguredComputer());
         registration
                 .getIngredientManager()

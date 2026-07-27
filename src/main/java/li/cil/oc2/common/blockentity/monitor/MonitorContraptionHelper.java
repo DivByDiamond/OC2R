@@ -2,10 +2,11 @@ package li.cil.oc2.common.blockentity.monitor;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 public final class MonitorContraptionHelper {
-    static final ConcurrentHashMap<UUID, MonitorBlockEntity> PRIMARY_BY_DEVICE_ID =
+    static final ConcurrentMap<UUID, MonitorBlockEntity> PRIMARY_BY_DEVICE_ID =
             new ConcurrentHashMap<>();
     static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 

@@ -79,36 +79,33 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
 
     private static void stableRestrictedContainerToString(
             final RestrictedContainer container, final StringBuilder stringBuilder) {
-        stringBuilder.append("{");
+        stringBuilder.append('{');
         container.items().keySet().stream()
                 .sorted(Comparator.comparing(TagKey::location))
                 .forEach(
                         key -> {
                             var values = container.items().get(key);
                             if (values.isEmpty()) return;
-                            stringBuilder.append(key).append(":");
+                            stringBuilder.append(key).append(':');
                             stableItemStackListToString(values, stringBuilder);
-                            stringBuilder.append(",");
+                            stringBuilder.append(',');
                         });
         if (stringBuilder.length() > 1) {
             stringBuilder.setLength(stringBuilder.length() - 1); // remove last comma
         }
-        stringBuilder.append("}");
+        stringBuilder.append('}');
     }
 
     private static void stableItemStackListToString(
             final List<ItemStack> items, final StringBuilder stringBuilder) {
-        stringBuilder.append("[");
+        stringBuilder.append('[');
         for (final ItemStack stack : items) {
             if (stack.isEmpty()) continue;
-            stringBuilder.append(stack.getCount());
-            stringBuilder.append("x ");
-            stringBuilder.append(stack.getDisplayName());
-            stringBuilder.append(",");
+            stringBuilder.append(stack.getCount()).append("x ").append(stack.getDisplayName()).append(',');
         }
         if (stringBuilder.length() > 1) {
             stringBuilder.setLength(stringBuilder.length() - 1); // remove last comma
         }
-        stringBuilder.append("]");
+        stringBuilder.append(']');
     }
 }

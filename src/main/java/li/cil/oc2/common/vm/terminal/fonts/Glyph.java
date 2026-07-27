@@ -4,9 +4,13 @@ import java.awt.image.BufferedImage;
 
 public class Glyph {
     public final BufferedImage image;
-    public final int width, height;
+    public final int width;
+    public final int height;
     public final int advance;
-    public float uStart = 0, vStart = 0, uEnd = 0, vEnd = 0;
+    public float uStart = 0;
+    public float vStart = 0;
+    public float uEnd = 0;
+    public float vEnd = 0;
 
     public Glyph(BufferedImage image, int width, int height, int advance) {
         this.image = image;

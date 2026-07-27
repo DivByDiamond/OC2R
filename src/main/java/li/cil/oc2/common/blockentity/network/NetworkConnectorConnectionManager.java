@@ -1,10 +1,12 @@
 package li.cil.oc2.common.blockentity.network;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import li.cil.oc2.client.renderer.NetworkCableRenderer;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
@@ -29,10 +31,10 @@ final class NetworkConnectorConnectionManager {
 
     private final NetworkConnectorBlockEntity owner;
 
-    final HashSet<BlockPos> connectorPositions = new HashSet<>();
-    final HashSet<BlockPos> ownedCables = new HashSet<>();
-    final HashSet<BlockPos> dirtyConnectors = new HashSet<>();
-    final HashMap<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
+    final Set<BlockPos> connectorPositions = new HashSet<>();
+    final Set<BlockPos> ownedCables = new HashSet<>();
+    final Set<BlockPos> dirtyConnectors = new HashSet<>();
+    final Map<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
 
     NetworkConnectorConnectionManager(final NetworkConnectorBlockEntity owner) {
         this.owner = owner;
@@ -41,7 +43,7 @@ final class NetworkConnectorConnectionManager {
     static ConnectionResult connect(
             final NetworkConnectorBlockEntity connectorA,
             final NetworkConnectorBlockEntity connectorB) {
-        if (connectorA == connectorB || !connectorA.isValid() || !connectorB.isValid()) {
+        if (connectorA.equals(connectorB) || !connectorA.isValid() || !connectorB.isValid()) {
             return ConnectionResult.FAILURE;
         }
 
@@ -50,7 +52,7 @@ final class NetworkConnectorConnectionManager {
             return ConnectionResult.FAILURE;
         }
 
-        if (connectorB.getLevel() != level) {
+        if (!level.equals(connectorB.getLevel())) {
             return ConnectionResult.FAILURE;
         }
 
@@ -128,7 +130,7 @@ final class NetworkConnectorConnectionManager {
     }
 
     @OnlyIn(Dist.CLIENT)
-    void setConnectedPositionsClient(final ArrayList<BlockPos> positions) {
+    void setConnectedPositionsClient(final List<BlockPos> positions) {
         connectorPositions.clear();
         connectorPositions.addAll(positions);
         NetworkCableRenderer.invalidateConnections();

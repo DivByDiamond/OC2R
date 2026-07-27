@@ -10,7 +10,7 @@ import java.util.Objects;
 import li.cil.sedna.fs.*;
 
 public final class LayeredFileSystem implements FileSystem {
-    private final ArrayList<FileSystem> fileSystems = new ArrayList<>();
+    private final List<FileSystem> fileSystems = new ArrayList<>();
 
     public void addLayer(final FileSystem fileSystem) {
         fileSystems.add(0, fileSystem);
@@ -117,7 +117,7 @@ public final class LayeredFileSystem implements FileSystem {
         }
 
         if (isDirectory(path)) {
-            final ArrayList<FileHandle> fileHandles = new ArrayList<>();
+            final List<FileHandle> fileHandles = new ArrayList<>();
             for (final FileSystem fileSystem : fileSystems) {
                 if (fileSystem.isDirectory(path)) {
                     fileHandles.add(fileSystem.open(path, flags));
@@ -151,9 +151,9 @@ public final class LayeredFileSystem implements FileSystem {
     }
 
     private static final class LayeredDirectoryFileHandle implements FileHandle {
-        private final ArrayList<DirectoryEntry> entries = new ArrayList<>();
+        private final List<DirectoryEntry> entries = new ArrayList<>();
 
-        public LayeredDirectoryFileHandle(final ArrayList<FileHandle> fileHandles) {
+        public LayeredDirectoryFileHandle(final List<FileHandle> fileHandles) {
             for (final FileHandle fileHandle : fileHandles) {
                 try {
                     final List<DirectoryEntry> layer = fileHandle.readdir();

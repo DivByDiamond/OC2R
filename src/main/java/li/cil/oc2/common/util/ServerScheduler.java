@@ -14,13 +14,13 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class ServerScheduler {
     private static final TickScheduler globalTickScheduler = new TickScheduler();
-    private static final WeakHashMap<LevelAccessor, TickScheduler> levelTickSchedulers =
+    private static final Map<LevelAccessor, TickScheduler> levelTickSchedulers =
             new WeakHashMap<>();
-    private static final WeakHashMap<LevelAccessor, SimpleScheduler> levelUnloadSchedulers =
+    private static final Map<LevelAccessor, SimpleScheduler> levelUnloadSchedulers =
             new WeakHashMap<>();
-    private static final WeakHashMap<LevelAccessor, HashMap<ChunkPos, ListenerCollection>>
+    private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
             chunkLoadSchedulers = new WeakHashMap<>();
-    private static final WeakHashMap<LevelAccessor, HashMap<ChunkPos, ListenerCollection>>
+    private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
             chunkUnloadSchedulers = new WeakHashMap<>();
 
     public static void initialize() {
@@ -76,7 +76,7 @@ public final class ServerScheduler {
             return;
         }
 
-        final HashMap<ChunkPos, ListenerCollection> chunkMap = chunkLoadSchedulers.get(level);
+        final Map<ChunkPos, ListenerCollection> chunkMap = chunkLoadSchedulers.get(level);
         if (chunkMap == null) {
             return;
         }
@@ -104,7 +104,7 @@ public final class ServerScheduler {
             return;
         }
 
-        final HashMap<ChunkPos, ListenerCollection> chunkMap = chunkUnloadSchedulers.get(level);
+        final Map<ChunkPos, ListenerCollection> chunkMap = chunkUnloadSchedulers.get(level);
         if (chunkMap == null) {
             return;
         }
@@ -144,7 +144,7 @@ public final class ServerScheduler {
 
         @SubscribeEvent
         public static void handleChunkLoad(final ChunkEvent.Load event) {
-            final HashMap<ChunkPos, ListenerCollection> chunkMap =
+            final Map<ChunkPos, ListenerCollection> chunkMap =
                     chunkLoadSchedulers.get(event.getLevel());
             if (chunkMap == null) {
                 return;
@@ -158,7 +158,7 @@ public final class ServerScheduler {
 
         @SubscribeEvent
         public static void handleChunkUnload(final ChunkEvent.Unload event) {
-            final HashMap<ChunkPos, ListenerCollection> chunkMap =
+            final Map<ChunkPos, ListenerCollection> chunkMap =
                     chunkUnloadSchedulers.get(event.getLevel());
             if (chunkMap == null) {
                 return;

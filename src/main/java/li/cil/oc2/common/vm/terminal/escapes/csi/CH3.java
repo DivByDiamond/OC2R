@@ -8,6 +8,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) {
             handleDECRST(args, argCount);
@@ -152,6 +153,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 case 2006 -> terminal.currentPrivateModeState.ENABLE_READLINE_NEWLINE_PASTE = false;
                 case 2026 -> terminal.currentPrivateModeState.APPLICATION_SYNC = false;
                 case 7727 -> terminal.currentPrivateModeState.APPLICATION_ESC_MODE = false;
+                default -> {}
             }
 
             ImplementedPrivateModes.instance.modeUsed(args[i], false);
@@ -165,6 +167,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 case 4 -> terminal.currentModeState.IRM = false;
                 case 12 -> terminal.currentModeState.SRM = false;
                 case 20 -> terminal.currentModeState.LNM = false;
+                default -> {}
             }
         }
     }

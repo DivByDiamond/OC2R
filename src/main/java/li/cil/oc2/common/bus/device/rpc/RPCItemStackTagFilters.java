@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import li.cil.oc2.api.API;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class RPCItemStackTagFilters {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final ArrayList<RPCItemStackTagFilter> FILTERS = new ArrayList<>();
+    private static final List<RPCItemStackTagFilter> FILTERS = new ArrayList<>();
 
     public static CompoundTag getFilteredTag(final ItemStack stack, final CompoundTag tag) {
         final CompoundTag result = new CompoundTag();

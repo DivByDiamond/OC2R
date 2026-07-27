@@ -3,6 +3,7 @@ package li.cil.oc2.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.util.Vec3Utils;
@@ -31,7 +32,7 @@ final class CableRenderUtils {
     private static final Vector3f CABLE_COLOR = new Vector3f(0.0f, 0.33f, 0.4f);
     private static final int MAX_RENDER_DISTANCE = 100;
 
-    private static final ArrayList<NetworkCablePoint> cablePoints = new ArrayList<>();
+    private static final List<NetworkCablePoint> cablePoints = new ArrayList<>();
 
     private CableRenderUtils() {}
 
@@ -39,7 +40,7 @@ final class CableRenderUtils {
             final BlockAndTintGetter level,
             final PoseStack stack,
             final Vec3 eye,
-            final ArrayList<NetworkCableConnection> connections,
+            final List<NetworkCableConnection> connections,
             final Predicate<AABB> filter) {
         final Matrix4f viewMatrix = stack.last().pose();
 

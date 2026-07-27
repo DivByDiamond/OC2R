@@ -19,7 +19,7 @@ public abstract class AbstractRPCMethod implements RPCMethod {
         this.name = name;
         this.synchronize = synchronize;
         this.returnType = returnType;
-        this.parameters = parameters;
+        this.parameters = parameters.clone();
     }
 
     protected AbstractRPCMethod(
@@ -55,10 +55,11 @@ public abstract class AbstractRPCMethod implements RPCMethod {
 
     @Override
     public RPCParameter[] getParameters() {
-        return parameters;
+        return parameters.clone();
     }
 
     @Nullable
+    @Override
     public Object invoke(final RPCInvocation invocation) throws Throwable {
         return invoke(
                 invocation

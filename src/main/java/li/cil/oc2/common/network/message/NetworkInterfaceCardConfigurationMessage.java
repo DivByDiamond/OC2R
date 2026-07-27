@@ -38,6 +38,7 @@ public record NetworkInterfaceCardConfigurationMessage(
         return TYPE;
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();
 

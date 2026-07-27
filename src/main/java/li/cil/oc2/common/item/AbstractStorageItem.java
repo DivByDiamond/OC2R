@@ -53,6 +53,7 @@ public abstract class AbstractStorageItem extends ModItem {
                 .append(super.getName(stack))
                 .append(" (")
                 .append(TextFormatUtils.formatSize(capacity))
-                .append(")");
+                                .append(")");
     }
 }
+

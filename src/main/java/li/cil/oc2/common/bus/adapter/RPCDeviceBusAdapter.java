@@ -112,6 +112,7 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
         }
     }
 
+    @Override
     public void step(final int cycles) {
         if (isPaused || !pauseLock.tryLock()) return;
         try {
@@ -123,10 +124,10 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     }
 
     private void readFromDevice() {
-        int value;
         while (receiveBuffer == null
-                && synchronizedInvocation == null
-                && (value = serialDevice.read()) >= 0) {
+                && synchronizedInvocation == null) {
+            final int value = serialDevice.read();
+            if (value < 0) break;
             if (value == 0 || value == 13) {
                 crmode = value == 13;
                 if (transmitBuffer.limit() > 0) {
@@ -161,10 +162,9 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     }
 
     private void processMessage(final byte[] messageData) {
-        if (new String(messageData).trim().isEmpty()) return;
-        final InputStreamReader stream =
-                new InputStreamReader(new ByteArrayInputStream(messageData));
-        try {
+        if (new String(messageData).isBlank()) return;
+        try (final InputStreamReader stream =
+                new InputStreamReader(new ByteArrayInputStream(messageData))) {
             final Message message = gson.fromJson(stream, Message.class);
             switch (message.type()) {
                 case Message.MESSAGE_TYPE_LIST ->
@@ -208,7 +208,7 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
                 }
                 default -> messageWriter.writeError(ERROR_UNKNOWN_MESSAGE_TYPE + message.type());
             }
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             messageWriter.writeError(e.getMessage());
         }
     }

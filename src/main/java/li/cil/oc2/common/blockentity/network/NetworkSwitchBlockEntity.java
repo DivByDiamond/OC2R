@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.network;
 
 import static java.util.Collections.singletonList;
 
-import com.google.gson.internal.LinkedTreeMap;
 import com.mojang.datafixers.util.Pair;
 import java.util.*;
 import li.cil.oc2.api.bus.device.object.Callback;
@@ -55,22 +54,24 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
                             side.getOpposite(),
                             () -> !this.isRemoved(),
                             this::handleNeighborChanged));
-        adjacentBlockCaches = (BlockCapabilityCache<NetworkInterface, Direction>[]) adj.toArray();
+        adjacentBlockCaches = adj.toArray(new BlockCapabilityCache[0]);
     }
 
+    @Override
     public void writeEthernetFrame(
-            final NetworkInterface source, byte[] frame, final int timeToLive) {
+            final NetworkInterface source, byte[] frame_bytes, final int timeToLive) {
         validateAdjacentBlocks();
         long tickTime = getLevel().getGameTime();
-        long destMac = PacketProcessor.macToLong(frame, 0);
-        long srcMac = PacketProcessor.macToLong(frame, 6);
-        short vlan = PacketProcessor.getVLAN(frame);
+        long destMac = PacketProcessor.macToLong(frame_bytes, 0);
+        long srcMac = PacketProcessor.macToLong(frame_bytes, 6);
+        short vlan = PacketProcessor.getVLAN(frame_bytes);
         Optional<Integer> optSide = sideReverseLookup(source);
         if (!optSide.isPresent()) return;
         int side = optSide.get();
         hostTable.put(srcMac, side, tickTime);
         PortSettings ingressSettings = portManager.portSettings[side];
         SwitchLog log = new SwitchLog(vlan, side, srcMac, destMac);
+        byte[] frame = frame_bytes;
         if (vlan == 0) {
             Pair<Short, byte[]> pair = PacketProcessor.removeVLANTag(frame);
             frame = pair.getSecond();
@@ -100,7 +101,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
 
     @Override
     public byte[] readEthernetFrame() {
-        return null;
+        return new byte[0];
     }
 
     private void writeToSide(byte[] frame, int side, short vlan, SwitchLog log, int timeToLive) {
@@ -112,18 +113,20 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
                 log.drop("inner tag untagged");
                 return;
             }
+            byte[] egressFrame;
             if (egressSettings.untagged == vlan) {
                 Pair<Short, byte[]> pair = PacketProcessor.removeVLANTag(frame);
-                frame = pair.getSecond();
+                egressFrame = pair.getSecond();
                 log.egressVlan = 0;
             } else if (!(egressSettings.trunkAll || egressSettings.tagged.contains(vlan))) {
                 log.drop("Tag not allowed for egress");
                 return;
             } else {
+                egressFrame = frame;
                 log.egressVlan = vlan;
             }
             log.emit();
-            iface.writeEthernetFrame(this, frame, timeToLive - TTL_COST);
+            iface.writeEthernetFrame(this, egressFrame, timeToLive - TTL_COST);
         }
     }
 
@@ -133,7 +136,8 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void serverTick() {
         if (level == null) return;
-        if (tickCount++ % 20 == 0) {
+        tickCount++;
+        if ((tickCount) % 20 == 1) {
             long threshold = getLevel().getGameTime() - HOST_TTL;
             if (threshold < 0) return;
             hostTable.removeExpired(threshold);
@@ -157,21 +161,21 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        ListTag hosts = new ListTag();
+        List<Tag> hosts = new ListTag();
         hostTable.save(hosts);
-        tag.put("hosts", hosts);
-        ListTag ports = new ListTag();
+        tag.put("hosts", (ListTag) hosts);
+        List<Tag> ports = new ListTag();
         portManager.save(ports);
-        tag.put("ports", ports);
+        tag.put("ports", (ListTag) ports);
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         Tag hosts = tag.get("hosts");
-        if (hosts != null) hostTable.load((ListTag) hosts);
+        if (hosts != null) hostTable.load((List<Tag>) hosts);
         Tag ports = tag.get("ports");
-        if (ports != null) portManager.load((ListTag) ports);
+        if (ports != null) portManager.load((List<Tag>) ports);
     }
 
     @Callback(name = "getHostTable")
@@ -185,7 +189,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     }
 
     @Callback(name = "setPortConfig")
-    public void setPortSettings(List<LinkedTreeMap> settings) {
+    public void setPortSettings(List<Map> settings) {
         portManager.setPortSettings(settings);
     }
 
@@ -200,7 +204,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
 
     private Optional<Integer> sideReverseLookup(NetworkInterface iface) {
         for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
-            if (iface == adjacentBlockInterfaces[i]) return Optional.of(i);
+            if (iface.equals(adjacentBlockInterfaces[i])) return Optional.of(i);
         return Optional.empty();
     }
 

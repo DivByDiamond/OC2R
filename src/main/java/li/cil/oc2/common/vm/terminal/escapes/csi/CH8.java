@@ -8,6 +8,7 @@ public class CH8
         super(terminal);
     }
 
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.questionMark) { // XTSMGRAPHICS
             System.out.println("XTSMGRAPHICS not implemented");

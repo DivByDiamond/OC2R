@@ -26,60 +26,60 @@ final class TerminalMouseHandler {
         if (currentMouseMode.isMouseDisabled()) return false;
         final Vector2i position = getMousePosition(x, y, leftPos, topPos);
         if (overTerminal && shouldCapture) {
-            switch (currentMouseMode.PrimaryMode) {
-                case PrivateMode.X11MM, PrivateMode.CELL_MOTION_MOUSE -> {
-                    if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
-                        terminal.putInput(
-                                "\033[<" + button + ";" + position.x + ";" + position.y + "M");
-                        return true;
-                    } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
-                        byte[] csiMBytes = "\033[M".getBytes(StandardCharsets.UTF_8);
-                        byte[] buttonBytes = utf8(button + 32);
-                        byte[] colBytes = utf8(position.x + 32);
-                        byte[] rowBytes = utf8(position.y + 32);
-                        byte[] finalBytes =
-                                new byte
-                                        [csiMBytes.length
-                                                + buttonBytes.length
-                                                + colBytes.length
-                                                + rowBytes.length];
-                        System.arraycopy(csiMBytes, 0, finalBytes, 0, csiMBytes.length);
-                        System.arraycopy(
-                                buttonBytes, 0, finalBytes, csiMBytes.length, buttonBytes.length);
-                        System.arraycopy(
-                                colBytes,
-                                0,
-                                finalBytes,
-                                csiMBytes.length + buttonBytes.length,
-                                colBytes.length);
-                        System.arraycopy(
-                                rowBytes,
-                                0,
-                                finalBytes,
-                                csiMBytes.length + buttonBytes.length + colBytes.length,
-                                rowBytes.length);
-                        terminal.putInput(ByteBuffer.wrap(finalBytes));
-                        return true;
-                    } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
-                        terminal.putInput(
-                                "\033["
-                                        + (button + 32)
-                                        + ";"
-                                        + position.x
-                                        + ";"
-                                        + position.y
-                                        + "M");
-                    } else {
-                        terminal.putInput('\033');
-                        terminal.putInput('[');
-                        terminal.putInput('M');
-                        terminal.putInput((byte) (button + 32));
-                        terminal.putInput((byte) (position.x + 32));
-                        terminal.putInput((byte) (position.y + 32));
-                        return true;
-                    }
+            if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
+                    || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
+                if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
+                    terminal.putInput(
+                            "\033[<" + button + ";" + position.x + ";" + position.y + "M");
+                    return true;
+                } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
+                    byte[] csiMBytes = "\033[M".getBytes(StandardCharsets.UTF_8);
+                    byte[] buttonBytes = utf8(button + 32);
+                    byte[] colBytes = utf8(position.x + 32);
+                    byte[] rowBytes = utf8(position.y + 32);
+                    byte[] finalBytes =
+                            new byte
+                                    [csiMBytes.length
+                                            + buttonBytes.length
+                                            + colBytes.length
+                                            + rowBytes.length];
+                    System.arraycopy(csiMBytes, 0, finalBytes, 0, csiMBytes.length);
+                    System.arraycopy(
+                            buttonBytes, 0, finalBytes, csiMBytes.length, buttonBytes.length);
+                    System.arraycopy(
+                            colBytes,
+                            0,
+                            finalBytes,
+                            csiMBytes.length + buttonBytes.length,
+                            colBytes.length);
+                    System.arraycopy(
+                            rowBytes,
+                            0,
+                            finalBytes,
+                            csiMBytes.length + buttonBytes.length + colBytes.length,
+                            rowBytes.length);
+                    terminal.putInput(ByteBuffer.wrap(finalBytes));
+                    return true;
+                } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
+                    terminal.putInput(
+                            "\033["
+                                    + (button + 32)
+                                    + ";"
+                                    + position.x
+                                    + ";"
+                                    + position.y
+                                    + "M");
+                } else {
+                    terminal.putInput('\033');
+                    terminal.putInput('[');
+                    terminal.putInput('M');
+                    terminal.putInput((byte) (button + 32));
+                    terminal.putInput((byte) (position.x + 32));
+                    terminal.putInput((byte) (position.y + 32));
+                    return true;
                 }
-                default -> System.out.println("ERR: Unsupported primary mode");
+            } else {
+                System.out.println("ERR: Unsupported primary mode");
             }
         }
         return false;
@@ -97,53 +97,53 @@ final class TerminalMouseHandler {
         if (currentMouseMode.isMouseDisabled()) return false;
         final Vector2i position = getMousePosition(x, y, leftPos, topPos);
         if (overTerminal && shouldCapture) {
-            switch (currentMouseMode.PrimaryMode) {
-                case PrivateMode.X11MM, PrivateMode.CELL_MOTION_MOUSE -> {
-                    if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
-                        terminal.putInput(
-                                "\033[<" + button + ";" + position.x + ";" + position.y + "m");
-                        return true;
-                    } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
-                        byte[] csiMBytes = "\033[M".getBytes(StandardCharsets.UTF_8);
-                        byte[] buttonBytes = utf8(35);
-                        byte[] colBytes = utf8(position.x + 32);
-                        byte[] rowBytes = utf8(position.y + 32);
-                        byte[] finalBytes =
-                                new byte
-                                        [csiMBytes.length
-                                                + buttonBytes.length
-                                                + colBytes.length
-                                                + rowBytes.length];
-                        System.arraycopy(csiMBytes, 0, finalBytes, 0, csiMBytes.length);
-                        System.arraycopy(
-                                buttonBytes, 0, finalBytes, csiMBytes.length, buttonBytes.length);
-                        System.arraycopy(
-                                colBytes,
-                                0,
-                                finalBytes,
-                                csiMBytes.length + buttonBytes.length,
-                                colBytes.length);
-                        System.arraycopy(
-                                rowBytes,
-                                0,
-                                finalBytes,
-                                csiMBytes.length + buttonBytes.length + colBytes.length,
-                                rowBytes.length);
-                        terminal.putInput(ByteBuffer.wrap(finalBytes));
-                        return true;
-                    } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
-                        terminal.putInput("\033[" + 35 + ";" + position.x + ";" + position.y + "M");
-                    } else {
-                        terminal.putInput('\033');
-                        terminal.putInput('[');
-                        terminal.putInput('M');
-                        terminal.putInput((byte) 35);
-                        terminal.putInput((byte) (position.x + 32));
-                        terminal.putInput((byte) (position.y + 32));
-                        return true;
-                    }
+            if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
+                    || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
+                if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
+                    terminal.putInput(
+                            "\033[<" + button + ";" + position.x + ";" + position.y + "m");
+                    return true;
+                } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
+                    byte[] csiMBytes = "\033[M".getBytes(StandardCharsets.UTF_8);
+                    byte[] buttonBytes = utf8(35);
+                    byte[] colBytes = utf8(position.x + 32);
+                    byte[] rowBytes = utf8(position.y + 32);
+                    byte[] finalBytes =
+                            new byte
+                                    [csiMBytes.length
+                                            + buttonBytes.length
+                                            + colBytes.length
+                                            + rowBytes.length];
+                    System.arraycopy(csiMBytes, 0, finalBytes, 0, csiMBytes.length);
+                    System.arraycopy(
+                            buttonBytes, 0, finalBytes, csiMBytes.length, buttonBytes.length);
+                    System.arraycopy(
+                            colBytes,
+                            0,
+                            finalBytes,
+                            csiMBytes.length + buttonBytes.length,
+                            colBytes.length);
+                    System.arraycopy(
+                            rowBytes,
+                            0,
+                            finalBytes,
+                            csiMBytes.length + buttonBytes.length + colBytes.length,
+                            rowBytes.length);
+                    terminal.putInput(ByteBuffer.wrap(finalBytes));
+                    return true;
+                } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
+                    terminal.putInput("\033[" + 35 + ";" + position.x + ";" + position.y + "M");
+                } else {
+                    terminal.putInput('\033');
+                    terminal.putInput('[');
+                    terminal.putInput('M');
+                    terminal.putInput((byte) 35);
+                    terminal.putInput((byte) (position.x + 32));
+                    terminal.putInput((byte) (position.y + 32));
+                    return true;
                 }
-                default -> System.out.println("ERR: Unsupported primary mode");
+            } else {
+                System.out.println("ERR: Unsupported primary mode");
             }
         }
         return false;

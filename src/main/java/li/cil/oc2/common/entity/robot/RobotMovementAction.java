@@ -67,6 +67,7 @@ public final class RobotMovementAction extends AbstractRobotAction {
                     case DOWNWARD -> target = target.relative(Direction.DOWN);
                     case FORWARD -> target = target.relative(robot.getDirection());
                     case BACKWARD -> target = target.relative(robot.getDirection().getOpposite());
+                    default -> throw new AssertionError(direction);
                 }
             }
         }

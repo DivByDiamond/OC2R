@@ -5,9 +5,11 @@ import li.cil.oc2.api.capabilities.NetworkInterface;
 final class NullNetworkInterface implements NetworkInterface {
     static final NetworkInterface INSTANCE = new NullNetworkInterface();
 
+    private static final byte[] NO_FRAME = new byte[0];
+
     @Override
     public byte[] readEthernetFrame() {
-        return null;
+        return NO_FRAME;
     }
 
     @Override

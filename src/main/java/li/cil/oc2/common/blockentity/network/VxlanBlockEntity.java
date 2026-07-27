@@ -41,10 +41,12 @@ public final class VxlanBlockEntity extends ModBlockEntity
         adjacentInterfaces.handleNeighborChanged();
     }
 
+    private static final byte[] NO_FRAME = new byte[0];
+
     @Override
     @Nullable
     public byte[] readEthernetFrame() {
-        return null;
+        return NO_FRAME;
     }
 
     @Override
@@ -68,7 +70,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
                 .getAll()
                 .forEach(
                         adjacentInterface -> {
-                            if (adjacentInterface != source) {
+                            if (!adjacentInterface.equals(source)) {
                                 adjacentInterface.writeEthernetFrame(
                                         this, frame, timeToLive - TTL_COST);
                             }

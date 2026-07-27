@@ -40,10 +40,10 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel[] supportModelByFace;
 
     BusCableBakedModel(
-            BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel[] supportModelByFace) {
+            BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel... supportModelByFace) {
         this.proxy = proxy;
-        this.straightModelByAxis = straightModelByAxis;
-        this.supportModelByFace = supportModelByFace;
+        this.straightModelByAxis = straightModelByAxis.clone();
+        this.supportModelByFace = supportModelByFace.clone();
     }
 
     @Override
@@ -80,7 +80,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             }
         }
 
-        final ArrayList<BakedQuad> quads =
+        final List<BakedQuad> quads =
                 new ArrayList<>(proxy.getQuads(state, side, rand, extraData, RenderType.solid()));
 
         final BusCableSupportSide supportSide = extraData.get(BUS_CABLE_SUPPORT_PROPERTY);

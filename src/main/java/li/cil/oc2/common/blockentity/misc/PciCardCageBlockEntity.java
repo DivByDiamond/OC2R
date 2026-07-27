@@ -26,17 +26,18 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
 
     private final PciCardCageDevice cardCageDevice =
             new PciCardCageDevice(this, this::handleMountedChanged);
-    private boolean isMounted, hasEnergy;
+    private boolean isMounted;
+    private boolean energyPresent;
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.cardCageEnergyStorage);
 
     public PciCardCageBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.PCI_CARD_CAGE.get(), pos, state);
     }
 
-    private void handleMountedChanged(final boolean value) {}
+    private void handleMountedChanged(final boolean ignored) {}
 
     public boolean hasEnergy() {
-        return hasEnergy;
+        return energyPresent;
     }
 
     @Override
@@ -45,16 +46,11 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
             return;
         }
 
-        final boolean isPowered;
         if (Config.cardCagesUseEnergy()) {
-            isPowered =
-                    energy.extractEnergy(Config.cardCageEnergyPerTick, true)
-                            >= Config.cardCageEnergyPerTick;
-            if (isPowered) {
+            if (energy.extractEnergy(Config.cardCageEnergyPerTick, true)
+                    >= Config.cardCageEnergyPerTick) {
                 energy.extractEnergy(Config.cardCageEnergyPerTick, false);
             }
-        } else {
-            isPowered = true;
         }
     }
 
@@ -62,7 +58,7 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
 
-        tag.putBoolean(HAS_ENERGY_TAG_NAME, hasEnergy);
+        tag.putBoolean(HAS_ENERGY_TAG_NAME, energyPresent);
 
         return tag;
     }
@@ -71,7 +67,7 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
 
-        hasEnergy = tag.getBoolean(HAS_ENERGY_TAG_NAME);
+        energyPresent = tag.getBoolean(HAS_ENERGY_TAG_NAME);
     }
 
     @Override

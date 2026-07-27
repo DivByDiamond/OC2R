@@ -16,15 +16,17 @@ public final class SocketManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static int socketManagerUsesCount = 0;
-    private static SocketManager socketManager = null;
+    private static SocketManager managerInstance = null;
 
     public static SocketManager attach(final InternetManager internetManager) {
-        if (socketManagerUsesCount++ == 0) {
-            assert socketManager == null;
-            socketManager = new SocketManager(internetManager);
+        final int oldCount = socketManagerUsesCount;
+        socketManagerUsesCount++;
+        if (oldCount == 0) {
+            assert managerInstance == null;
+            managerInstance = new SocketManager(internetManager);
         }
-        assert socketManager != null;
-        return socketManager;
+        assert managerInstance != null;
+        return managerInstance;
     }
 
     private final Selector selector;
@@ -96,9 +98,10 @@ public final class SocketManager {
     }
 
     public void detach() {
-        if (--socketManagerUsesCount == 0) {
+        socketManagerUsesCount--;
+        if (socketManagerUsesCount == 0) {
             shutdown();
-            socketManager = null;
+            managerInstance = null;
         }
     }
 }

@@ -34,10 +34,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         this.bootError = Component.literal("");
 
         lifecycle = new VMLifecycle(this);
-        busController.onBeforeDeviceScan.add(lifecycle::handleBeforeDeviceScan);
-        busController.onAfterDeviceScan.add(lifecycle::handleAfterDeviceScan);
-        busController.onDevicesAdded.add(lifecycle::handleDevicesAdded);
-        busController.onDevicesRemoved.add(lifecycle::handleDevicesRemoved);
+        busController.beforeDeviceScanListeners.add(lifecycle::handleBeforeDeviceScan);
+        busController.afterDeviceScanListeners.add(lifecycle::handleAfterDeviceScan);
+        busController.devicesAddedListeners.add(lifecycle::handleDevicesAdded);
+        busController.devicesRemovedListeners.add(lifecycle::handleDevicesRemoved);
 
         state.board = new R5Board();
         state.context = new GlobalVMContext(state.board);
@@ -113,12 +113,12 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
             case MULTIPLE_CONTROLLERS:
                 return Component.translatable(Constants.COMPUTER_BUS_STATE_MULTIPLE_CONTROLLERS);
             case READY:
-                switch (runState) {
-                    case STOPPED:
-                    case LOADING_DEVICES:
-                        return bootError;
-                }
+        if (runState == VMRunState.STOPPED || runState == VMRunState.LOADING_DEVICES) {
+            return bootError;
+        }
                 break;
+            default:
+                throw new AssertionError(busState);
         }
         return null;
     }
@@ -147,9 +147,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
             start();
         }
 
-        switch (runState) {
-            case LOADING_DEVICES -> lifecycle.load();
-            case RUNNING -> lifecycle.run();
+        if (runState == VMRunState.LOADING_DEVICES) {
+            lifecycle.load();
+        } else if (runState == VMRunState.RUNNING) {
+            lifecycle.run();
         }
     }
 
@@ -175,10 +176,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         error(message, true);
     }
 
-    public void error(@Nullable Component message, final boolean reset) {
+    public void error(@Nullable final Component message, final boolean reset) {
         if (reset) stopRunnerAndReset();
-        if (message == null) message = Component.literal("");
-        setBootError(message);
+        final Component effective = message == null ? Component.literal("") : message;
+        setBootError(effective);
     }
 
     protected void stopRunnerAndReset() {

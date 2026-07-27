@@ -41,9 +41,10 @@ public final class RobotRotationAction extends AbstractRobotAction {
         if (target == null) {
             target = robot.getDirection();
             if (direction != null) {
-                switch (direction) {
-                    case LEFT -> target = target.getCounterClockWise();
-                    case RIGHT -> target = target.getClockWise();
+                if (direction == RotationDirection.LEFT) {
+                    target = target.getCounterClockWise();
+                } else if (direction == RotationDirection.RIGHT) {
+                    target = target.getClockWise();
                 }
             }
         }

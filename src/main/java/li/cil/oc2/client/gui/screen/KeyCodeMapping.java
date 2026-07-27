@@ -1,11 +1,12 @@
 package li.cil.oc2.client.gui.screen;
 
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import li.cil.sedna.evdev.EvdevKeys;
 import org.lwjgl.glfw.GLFW;
 
 public final class KeyCodeMapping {
-    public static final Int2IntArrayMap MAPPING = new Int2IntArrayMap();
+    public static final Int2IntMap MAPPING = new Int2IntArrayMap();
 
     static {
         MAPPING.put(GLFW.GLFW_KEY_ESCAPE, EvdevKeys.KEY_ESC);

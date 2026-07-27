@@ -33,7 +33,7 @@ public final class Callbacks {
     /** Collects Callback-annotated methods and generates RPCMethods. */
     public static List<RPCMethodGroup> collectMethods(final Object methodContainer) {
         final List<Method> reflectedMethods = getMethods(methodContainer.getClass());
-        final ArrayList<RPCMethodGroup> methods = new ArrayList<>();
+        final List<RPCMethodGroup> methods = new ArrayList<>();
         for (final Method method : reflectedMethods) {
             try {
                 methods.add(new ObjectRpcMethod(methodContainer, method));
@@ -84,17 +84,17 @@ public final class Callbacks {
                     Strings.isNotBlank(annotation.returnValueDescription())
                             ? annotation.returnValueDescription()
                             : null;
-            final HashMap<String, String> paramDescs = new HashMap<>();
+            final Map<String, String> paramDescs = new HashMap<>();
             if (target instanceof final DocumentedDevice dd) {
                 final VisitorImpl dv = new VisitorImpl();
                 dd.getDeviceDocumentation(dv);
                 final VisitorImpl cv = dv.callbacks.get(methodName);
                 if (cv != null) {
-                    if (Strings.isNotBlank(cv.description)) {
-                        desc = cv.description;
+                    if (Strings.isNotBlank(cv.desc)) {
+                        desc = cv.desc;
                     }
-                    if (Strings.isNotBlank(cv.returnValueDescription)) {
-                        retDesc = cv.returnValueDescription;
+                    if (Strings.isNotBlank(cv.retValDesc)) {
+                        retDesc = cv.retValDesc;
                     }
                     paramDescs.putAll(cv.parameterDescriptions);
                 }
@@ -194,10 +194,10 @@ public final class Callbacks {
 
     private static final class VisitorImpl
             implements DocumentedDevice.DeviceVisitor, DocumentedDevice.CallbackVisitor {
-        public final HashMap<String, VisitorImpl> callbacks = new HashMap<>();
-        public String description;
-        public String returnValueDescription;
-        public final HashMap<String, String> parameterDescriptions = new HashMap<>();
+        public final Map<String, VisitorImpl> callbacks = new HashMap<>();
+        public String desc;
+        public String retValDesc;
+        public final Map<String, String> parameterDescriptions = new HashMap<>();
 
         @Override
         public DocumentedDevice.CallbackVisitor visitCallback(final String n) {
@@ -206,13 +206,13 @@ public final class Callbacks {
 
         @Override
         public DocumentedDevice.CallbackVisitor description(final String v) {
-            this.description = v;
+            this.desc = v;
             return this;
         }
 
         @Override
         public DocumentedDevice.CallbackVisitor returnValueDescription(final String v) {
-            this.returnValueDescription = v;
+            this.retValDesc = v;
             return this;
         }
 

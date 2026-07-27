@@ -63,6 +63,7 @@ public final class CustomItemColors {
             case GREEN -> GREEN;
             case RED -> RED;
             case BLACK -> BLACK;
+            default -> throw new AssertionError(dye);
         };
     }
 

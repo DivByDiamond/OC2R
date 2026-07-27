@@ -1,6 +1,5 @@
 package li.cil.oc2.client.gui.screen;
 
-import static li.cil.oc2.common.util.TranslationUtils.key;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import javax.annotation.Nullable;
@@ -15,7 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -24,12 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 public final class NetworkInterfaceCardScreen extends Screen {
-    private static final String SIDE_STATE_TEXT =
-            key("gui.{mod}.network_interface_card.side_state");
-    private static final Component CONNECTIVITY_ENABLED_TEXT =
-            text("gui.{mod}.network_interface_card.connectivity.enabled");
-    private static final Component CONNECTIVITY_DISABLED_TEXT =
-            text("gui.{mod}.network_interface_card.connectivity.disabled");
     private static final Component INFO_TEXT = text("gui.{mod}.network_interface_card.info");
 
     public static final int UI_WIDTH = Sprites.NETWORK_INTERFACE_CARD_SCREEN.width;
@@ -48,10 +40,13 @@ public final class NetworkInterfaceCardScreen extends Screen {
             new ComputerBlockItemRenderer();
 
     private Vector3f blockRotation = new Vector3f(0, 0, 0);
-    private int left, top;
+    private int left;
+    private int top;
     @Nullable private Direction focusedSide;
-    private boolean isDraggingBlock, hasDraggedBlock;
-    private double dragStartX, dragStartY;
+    private boolean isDraggingBlock;
+    private boolean hasDraggedBlock;
+    private double dragStartX;
+    private double dragStartY;
 
     public NetworkInterfaceCardScreen(final Player player, final InteractionHand hand) {
         super(Items.NETWORK_INTERFACE_CARD.get().getDescription());
@@ -156,15 +151,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
                         blockX - mouseX, blockY - mouseY, blockRotation);
         computerBlockItemRenderer.render(blockX, blockY, blockRotation, focusedSide, this);
 
-        if (focusedSide != null) {
-            final Component enabledComponent =
-                    getConfiguration(focusedSide)
-                            ? CONNECTIVITY_ENABLED_TEXT
-                            : CONNECTIVITY_DISABLED_TEXT;
-            final MutableComponent tooltip =
-                    Component.translatable(SIDE_STATE_TEXT, enabledComponent);
-            // renderTooltip(stack, tooltip, mouseX, mouseY);
-        }
+        // renderTooltip was here, left as comment for future reference
 
         graphics.drawWordWrap(
                 font,

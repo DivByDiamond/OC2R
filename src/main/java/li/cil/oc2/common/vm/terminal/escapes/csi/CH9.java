@@ -7,6 +7,7 @@ public class CH9 extends CSISequenceHandler { // Combined Handler 9 (SD, XTHIMOU
         super(terminal);
     }
 
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.greaterThan) { // XTRMTITLE
             System.out.println("XTRMTITLE not implemented");

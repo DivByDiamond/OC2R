@@ -121,7 +121,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
     public MultipartMessage(final int messageId, final int multipartMessageId, final byte[] data) {
         this.messageId = messageId;
         this.multipartMessageId = multipartMessageId;
-        this.data = data;
+        this.data = data.clone();
     }
 
     public void handleMessage(IPayloadContext context) {

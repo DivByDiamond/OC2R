@@ -43,6 +43,7 @@ public record RequestImportedFileMessage(int id) implements AbstractMessage {
         return TYPE;
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         FileChooserScreen.openFileChooserForLoad(
                 new FileChooserCallback() {

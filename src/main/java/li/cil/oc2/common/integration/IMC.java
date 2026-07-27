@@ -1,6 +1,7 @@
 package li.cil.oc2.common.integration;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import li.cil.oc2.api.API;
@@ -18,10 +19,10 @@ import org.apache.logging.log4j.Logger;
 public final class IMC {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final HashMap<String, Consumer<InterModComms.IMCMessage>> METHODS =
+    private static final Map<String, Consumer<InterModComms.IMCMessage>> METHODS =
             Util.make(
                     () -> {
-                        HashMap<String, Consumer<InterModComms.IMCMessage>> map = new HashMap<>();
+                        Map<String, Consumer<InterModComms.IMCMessage>> map = new HashMap<>();
 
                         map.put(
                                 API.IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER,

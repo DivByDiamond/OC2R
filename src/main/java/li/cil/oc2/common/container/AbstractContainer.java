@@ -27,10 +27,11 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
 
-        final boolean intoPlayerInventory = from.container != player.getInventory();
+        final boolean intoPlayerInventory = !from.container.equals(player.getInventory());
         final ItemStack fromStack = from.getItem();
 
-        final int step, begin;
+        final int step;
+        final int begin;
         if (intoPlayerInventory) {
             step = -1;
             begin = slots.size() - 1;
@@ -42,7 +43,7 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
         if (fromStack.getMaxStackSize() > 1) {
             for (int i = begin; i >= 0 && i < slots.size(); i += step) {
                 final Slot into = slots.get(i);
-                if (into.container == from.container) {
+                if (into.container.equals(from.container)) {
                     continue;
                 }
 
@@ -87,7 +88,7 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
             }
 
             final Slot into = slots.get(i);
-            if (into.container == from.container) {
+            if (into.container.equals(from.container)) {
                 continue;
             }
 

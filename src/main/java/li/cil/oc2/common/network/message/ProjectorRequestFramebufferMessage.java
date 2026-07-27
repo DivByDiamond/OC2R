@@ -32,6 +32,7 @@ public record ProjectorRequestFramebufferMessage(BlockPos pos) implements Abstra
         this(projector.getBlockPos());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntity(
                 context,

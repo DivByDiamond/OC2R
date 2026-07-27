@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
@@ -17,7 +18,7 @@ public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackH
     }
 
     public AbstractDeviceItemStackHandler(
-            Supplier<HolderLookup.Provider> providerSupplier, final NonNullList<ItemStack> stacks) {
+            Supplier<HolderLookup.Provider> providerSupplier, final List<ItemStack> stacks) {
         super(stacks);
         this.providerSupplier = providerSupplier;
     }

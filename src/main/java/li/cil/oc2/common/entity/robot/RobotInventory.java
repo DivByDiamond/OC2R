@@ -140,7 +140,7 @@ public class RobotInventory {
 
         @Override
         public Optional<UUID> getDeviceIdentifier(final Device device) {
-            if (device == this.device) {
+            if (device.equals(this.device)) {
                 return Optional.of(deviceId);
             }
             return super.getDeviceIdentifier(device);

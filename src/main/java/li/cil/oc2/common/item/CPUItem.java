@@ -22,6 +22,7 @@ public class CPUItem extends ModItem {
                 .append(" (")
                 .append(String.valueOf(frequency / 1_000_000))
                 .append(" MHz")
-                .append(")");
+                                .append(")");
     }
 }
+

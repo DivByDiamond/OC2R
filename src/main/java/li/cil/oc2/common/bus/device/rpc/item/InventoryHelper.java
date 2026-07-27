@@ -14,16 +14,17 @@ class InventoryHelper {
 
     static ItemStack insertStartingAt(
             final IItemHandler handler,
-            ItemStack stack,
+            final ItemStack stack,
             final int startSlot,
             final boolean simulate) {
+        ItemStack remaining = stack;
         for (int i = 0; i < handler.getSlots(); i++) {
             final int slot = (startSlot + i) % handler.getSlots();
-            stack = handler.insertItem(slot, stack, simulate);
-            if (stack.isEmpty()) {
+            remaining = handler.insertItem(slot, remaining, simulate);
+            if (remaining.isEmpty()) {
                 return ItemStack.EMPTY;
             }
         }
-        return stack;
+        return remaining;
     }
 }

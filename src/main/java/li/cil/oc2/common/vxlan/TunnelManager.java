@@ -3,6 +3,7 @@ package li.cil.oc2.common.vxlan;
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.config.Config;
@@ -14,9 +15,9 @@ import org.jetbrains.annotations.NotNull;
 public class TunnelManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final HashMap<Integer, TunnelInterface> tunnels = new HashMap<>();
+    private final Map<Integer, TunnelInterface> tunnels = new HashMap<>();
     private DatagramSocket socket;
-    private static TunnelManager INSTANCE;
+    private static TunnelManager managerInstance;
     private final InetAddress remoteHost;
     private final short remotePort;
     private final InetAddress bindHost;
@@ -35,7 +36,7 @@ public class TunnelManager {
         LOGGER.info("Initializing outernet tunnel manager");
 
         try {
-            INSTANCE =
+            managerInstance =
                     new TunnelManager(
                             InetAddress.getByName(Config.bindHost), (short) Config.bindPort,
                             InetAddress.getByName(Config.remoteHost), (short) Config.remotePort);
@@ -49,7 +50,7 @@ public class TunnelManager {
                     new Thread(
                             () -> {
                                 try {
-                                    INSTANCE.listen();
+                                    managerInstance.listen();
                                 } catch (IOException e) {
                                     LOGGER.error(e);
                                 }
@@ -111,7 +112,7 @@ public class TunnelManager {
     }
 
     public static TunnelManager instance() {
-        return INSTANCE;
+        return managerInstance;
     }
 
     public void sendToOuternet(int vti, byte[] payload) {
@@ -158,9 +159,11 @@ public class TunnelManager {
             this.packetQueue = packetQueue;
         }
 
+        private static final byte[] NO_FRAME = new byte[0];
+
         @Override
         public byte[] readEthernetFrame() {
-            return null;
+            return NO_FRAME;
         }
 
         @Override

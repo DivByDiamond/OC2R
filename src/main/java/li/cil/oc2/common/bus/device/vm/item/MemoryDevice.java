@@ -115,8 +115,8 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
             try {
                 channel = BlobStorage.getOrOpenAsync(blobHandle).join();
             } catch (final CompletionException e) {
-                if (e.getCause() instanceof final IOException ioe) {
-                    throw ioe;
+                if (e.getCause() instanceof IOException) {
+                    throw new IOException("Failed to open blob: " + blobHandle, e);
                 }
                 throw new IOException("Failed to open blob: " + blobHandle, e);
             }

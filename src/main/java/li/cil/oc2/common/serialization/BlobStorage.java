@@ -79,7 +79,7 @@ public final class BlobStorage {
             return getOrOpenAsync(handle).join();
         } catch (final CompletionException e) {
             if (e.getCause() instanceof IOException) {
-                throw (IOException) e.getCause();
+                throw new IOException("Failed to open blob: " + handle, e);
             }
             throw new IOException("Failed to open blob: " + handle, e);
         }

@@ -66,6 +66,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
             case PER_BLOCK -> computer.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
             case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
+            default -> throw new AssertionError(Config.captureInputMode);
         };
     }
 
@@ -75,6 +76,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
             case PER_BLOCK -> computer.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
             case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
+            default -> throw new AssertionError(Config.captureInputMode);
         }
     }
 

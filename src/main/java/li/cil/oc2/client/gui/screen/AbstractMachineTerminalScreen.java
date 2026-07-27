@@ -26,7 +26,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
     private static final int CONTROLS_TOP = 8;
     private static final int ENERGY_TOP = CONTROLS_TOP + Sprites.SIDEBAR_3.height + 4;
 
-    private boolean mouseClicked;
+    private boolean wasMouseClicked;
 
     private final MachineTerminalWidget terminalWidget;
 
@@ -55,7 +55,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
 
     @Override
     public boolean mouseClicked(final double x, final double y, final int button) {
-        mouseClicked = true;
+        wasMouseClicked = true;
         if (!terminalWidget.mouseClicked(x, y, button)) {
             return super.mouseClicked(x, y, button);
         }
@@ -75,7 +75,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
 
     @Override
     public boolean mouseReleased(final double x, final double y, final int button) {
-        if (!mouseClicked) return super.mouseReleased(x, y, button);
+        if (!wasMouseClicked) return super.mouseReleased(x, y, button);
         if (!terminalWidget.mouseReleased(x, y, button)) {
             return super.mouseReleased(x, y, button);
         }

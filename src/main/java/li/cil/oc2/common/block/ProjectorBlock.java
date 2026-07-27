@@ -107,6 +107,7 @@ public final class ProjectorBlock extends HorizontalDirectionalBlock
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
+    @Override
     protected void createBlockStateDefinition(
             final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LIT);

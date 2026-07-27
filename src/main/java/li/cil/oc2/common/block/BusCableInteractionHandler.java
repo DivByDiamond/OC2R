@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.screen.BusInterfaceScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.FacadeType;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.ItemStackUtils;
@@ -43,8 +44,8 @@ final class BusCableInteractionHandler {
             final Player player,
             final InteractionHand hand,
             final BlockHitResult hitResult) {
-        if (heldItem.getItem() == Items.BUS_CABLE.get()
-                || heldItem.getItem() == Items.BUS_INTERFACE.get()) {
+        if (heldItem.getItem().equals(Items.BUS_CABLE.get())
+                || heldItem.getItem().equals(Items.BUS_INTERFACE.get())) {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
 
@@ -90,23 +91,21 @@ final class BusCableInteractionHandler {
         } else if (!player.isShiftKeyDown()
                 && !state.getValue(HAS_FACADE)
                 && getInterfaceCount(state) == 0) {
-            switch (busCableBlockEntity.getFacadeType(heldItem)) {
-                case INVALID_BLOCK -> {
-                    if (!level.isClientSide()) {
-                        player.displayClientMessage(
-                                text("message.{mod}.invalid_facade_block"), true);
-                    }
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            final var facadeType = busCableBlockEntity.getFacadeType(heldItem);
+            if (facadeType == FacadeType.INVALID_BLOCK) {
+                if (!level.isClientSide()) {
+                    player.displayClientMessage(
+                            text("message.{mod}.invalid_facade_block"), true);
                 }
-                case VALID_BLOCK -> {
-                    if (!level.isClientSide()) {
-                        busCableBlockEntity.setFacade(heldItem);
-                        if (!player.getAbilities().instabuild) {
-                            heldItem.shrink(1);
-                        }
+                return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            } else if (facadeType == FacadeType.VALID_BLOCK) {
+                if (!level.isClientSide()) {
+                    busCableBlockEntity.setFacade(heldItem);
+                    if (!player.getAbilities().instabuild) {
+                        heldItem.shrink(1);
                     }
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
+                return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
         }
 

@@ -32,7 +32,8 @@ public final class BusInterfaceScreen extends Screen {
 
     private EditBox nameField;
 
-    private int left, top;
+    private int left;
+    private int top;
 
     /**
      * Creates a new bus interface screen.

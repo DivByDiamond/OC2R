@@ -7,6 +7,7 @@ public class DA extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         terminal.putResponse("\033[?1;0c");
     }

@@ -92,13 +92,13 @@ public final class NetworkTunnelContainer extends AbstractContainer {
 
     @Override
     protected boolean isSlotLocked(final Inventory inventory, final int slot) {
-        return inventory.getItem(slot) == player.getItemInHand(hand);
+        return inventory.getItem(slot).equals(player.getItemInHand(hand));
     }
 
     private int getHandSlot() {
         final Inventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            if (inventory.getItem(slot) == player.getItemInHand(hand)) {
+            if (inventory.getItem(slot).equals(player.getItemInHand(hand))) {
                 return slot;
             }
         }

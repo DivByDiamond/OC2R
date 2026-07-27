@@ -3,7 +3,6 @@ package li.cil.oc2.common.blockentity.network;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import net.minecraft.nbt.*;
 
 final class SwitchHostTable {
@@ -31,10 +30,10 @@ final class SwitchHostTable {
                                         PacketProcessor.macLongToString(e.getKey()),
                                         now - e.getValue().timestamp,
                                         e.getValue().iface))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    void save(ListTag hosts) {
+    void save(final List<Tag> hosts) {
         for (Map.Entry<Long, HostEntry> host : hostTable.entrySet()) {
             CompoundTag thisHost = new CompoundTag();
             thisHost.put("mac", LongTag.valueOf(host.getKey()));
@@ -44,7 +43,7 @@ final class SwitchHostTable {
         }
     }
 
-    void load(ListTag hosts) {
+    void load(List<Tag> hosts) {
         for (Tag host_ : hosts) {
             CompoundTag host = (CompoundTag) host_;
             hostTable.put(

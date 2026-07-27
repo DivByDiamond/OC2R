@@ -5,6 +5,7 @@ import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
@@ -63,7 +64,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
-        if (consumer == frameConsumer) return;
+        if (Objects.equals(consumer, frameConsumer)) return;
         synchronized (picture) {
             this.frameConsumer = consumer;
             if (frameConsumer != null) frameConsumer.processFrame(picture);

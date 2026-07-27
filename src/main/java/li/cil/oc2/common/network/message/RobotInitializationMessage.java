@@ -59,6 +59,7 @@ public record RobotInitializationMessage(
                 NBTSerialization.serialize(robot.getTerminal()));
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withClientEntity(
                 entityId,

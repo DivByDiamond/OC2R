@@ -32,7 +32,7 @@ public final class RobotEventHandler {
     }
 
     private void handleChunkUnload(final ChunkEvent.Unload event) {
-        if (event.getLevel() != robot.level()) {
+        if (!event.getLevel().equals(robot.level())) {
             return;
         }
 
@@ -47,7 +47,7 @@ public final class RobotEventHandler {
     }
 
     private void handleWorldUnload(final LevelEvent.Unload event) {
-        if (event.getLevel() != robot.level()) {
+        if (!event.getLevel().equals(robot.level())) {
             return;
         }
 

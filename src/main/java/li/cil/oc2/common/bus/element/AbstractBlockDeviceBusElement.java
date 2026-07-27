@@ -41,7 +41,7 @@ public abstract class AbstractBlockDeviceBusElement
             return Optional.of(Collections.emptyList());
         }
 
-        final ArrayList<DeviceBusElement> neighbors = new ArrayList<>();
+        final List<DeviceBusElement> neighbors = new ArrayList<>();
         for (final Direction neighborDirection : Constants.DIRECTIONS) {
             if (!canScanContinueTowards(neighborDirection)) {
                 continue;
@@ -117,7 +117,7 @@ public abstract class AbstractBlockDeviceBusElement
             final LevelAccessor level, final BlockPos pos, @Nullable final Direction side) {
         final BlockDeviceQuery query =
                 Devices.makeQuery(level, pos, side != null ? side.getOpposite() : null);
-        final HashSet<BlockEntry> entries = new HashSet<>();
+        final Set<BlockEntry> entries = new HashSet<>();
 
         if (canDetectDevicesTowards(side)) {
             final Optional<List<BlockDeviceInfo>> loadedDevices = Devices.getDevices(query);
@@ -139,7 +139,7 @@ public abstract class AbstractBlockDeviceBusElement
             final LevelAccessor level,
             final BlockPos pos,
             @Nullable final Direction side,
-            final HashSet<BlockEntry> entries) {
+            final Set<BlockEntry> entries) {
         if (entries.isEmpty()) {
             return;
         }

@@ -2,6 +2,7 @@ package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.network.ClientBlockEntityLookup;
@@ -13,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record NetworkConnectorConnectionsMessage(
-        BlockPos pos, ArrayList<BlockPos> connectedPositions) implements AbstractMessage {
+        BlockPos pos, List<BlockPos> connectedPositions) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, NetworkConnectorConnectionsMessage> STREAM_CODEC =
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC,
@@ -38,6 +39,7 @@ public record NetworkConnectorConnectionsMessage(
                 new ArrayList<>(networkConnector.getConnectedPositions()));
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,

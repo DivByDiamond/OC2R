@@ -59,7 +59,7 @@ public abstract class LevelRendererMixin {
     private Frustum capturedFrustum;
 
     @Inject(method = "renderLevel", at = @At("HEAD"), remap = false)
-    private void prepareDepthRendering(final CallbackInfo ci) {
+    private void prepareDepthRendering(final CallbackInfo ignored) {
         if (ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
             itemEntityTargetBak = itemEntityTarget;
             itemEntityTarget = null;
@@ -69,7 +69,7 @@ public abstract class LevelRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At("TAIL"), remap = false)
-    private void cleanupDepthRendering(final CallbackInfo ci) {
+    private void cleanupDepthRendering(final CallbackInfo ignored) {
         if (ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
             cleanupDepthRendering();
         }
@@ -92,9 +92,9 @@ public abstract class LevelRendererMixin {
             remap = false)
     private void captureDepthAndEarlyExit(
             DeltaTracker deltaTracker,
-            boolean renderBlockOutline,
+            boolean ignored,
             Camera camera,
-            GameRenderer gameRenderer,
+            GameRenderer ignored2,
             LightTexture lightTexture,
             Matrix4f frustumMatrix,
             Matrix4f projectionMatrix,
@@ -153,7 +153,7 @@ public abstract class LevelRendererMixin {
                             target = "Lcom/mojang/blaze3d/systems/RenderSystem;depthMask(Z)V",
                             shift = At.Shift.AFTER),
             remap = false)
-    private void enableDepthForWeatherInDepthBuffer(final CallbackInfo ci) {
+    private void enableDepthForWeatherInDepthBuffer(final CallbackInfo ignored) {
         if (ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
             RenderSystem.depthMask(true);
         }

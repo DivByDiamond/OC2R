@@ -63,7 +63,7 @@ public final class TooltipUtils {
                             ChatFormatting.GRAY));
         }
 
-        if (stack.getItem() == Items.INTERNET_GATEWAY.get()) {
+        if (stack.getItem().equals(Items.INTERNET_GATEWAY.get())) {
             if (Config.gatewayEnergyPerPacket > 0) {
                 final MutableComponent energy =
                         withFormat(
@@ -107,7 +107,7 @@ public final class TooltipUtils {
                 var item = x.getItem();
                 var found = false;
                 for (final var y : itemStacks) {
-                    if (y.getItem() == item) {
+                    if (y.getItem().equals(item)) {
                         y.setCount(y.getCount() + 1);
                         found = true;
                         break;

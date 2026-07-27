@@ -18,7 +18,7 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     private static final String DEVICE_ID_TAG_NAME = "device_id";
 
     private final ComputerBlockEntity owner;
-    private final HashSet<Device> devices = new HashSet<>();
+    private final Set<Device> devices = new HashSet<>();
     public UUID deviceId = UUID.randomUUID();
 
     public ComputerBusElement(final ComputerBlockEntity owner) {
@@ -55,7 +55,7 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
         return super.getNeighbors()
                 .map(
                         neighbors -> {
-                            final ArrayList<DeviceBusElement> list = new ArrayList<>(neighbors);
+                            final List<DeviceBusElement> list = new ArrayList<>(neighbors);
                             list.add(owner.deviceItems.busElement);
                             return list;
                         });
@@ -86,6 +86,7 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
         return tag;
     }
 
+    @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {

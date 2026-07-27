@@ -8,6 +8,7 @@ import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 class GroupManager<TEntry extends GroupEntry, TQuery> {
     private static final String GROUPS_TAG_NAME = "groups";
@@ -21,7 +22,7 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
     }
 
     CompoundTag save(final HolderLookup.Provider registries) {
-        final ListTag listTag = new ListTag();
+        final List<Tag> listTag = new ListTag();
         for (int i = 0; i < element.groupCount; i++) {
             saveGroup(registries, i);
 
@@ -33,16 +34,16 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
         }
 
         final CompoundTag tag = new CompoundTag();
-        tag.put(GROUPS_TAG_NAME, listTag);
+        tag.put(GROUPS_TAG_NAME, (ListTag) listTag);
         return tag;
     }
 
     void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
-        final ListTag listTag = tag.getList(GROUPS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        final List<Tag> listTag = tag.getList(GROUPS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
 
         final int count = Math.min(element.groupCount, listTag.size());
         for (int i = 0; i < count; i++) {
-            final CompoundTag sideTag = listTag.getCompound(i);
+            final CompoundTag sideTag = (CompoundTag) listTag.get(i);
 
             if (sideTag.hasUUID(GROUP_ID_TAG_NAME)) {
                 element.groupIds[i] = sideTag.getUUID(GROUP_ID_TAG_NAME);
@@ -66,7 +67,7 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
 
     Optional<UUID> getDeviceIdentifier(final Device device) {
         for (int i = 0; i < element.groupCount; i++) {
-            final HashSet<TEntry> group = element.groups.get(i);
+            final Set<TEntry> group = element.groups.get(i);
             for (final TEntry deviceInfo : group) {
                 if (Objects.equals(device, deviceInfo.getDevice())) {
                     return Optional.of(element.groupIds[i]);
@@ -77,7 +78,7 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
     }
 
     void setEntriesForGroupUnloaded(final HolderLookup.Provider registries, final int index) {
-        final HashSet<TEntry> oldEntries = element.groups.get(index);
+        final Set<TEntry> oldEntries = element.groups.get(index);
         if (oldEntries.isEmpty()) {
             return;
         }
@@ -99,7 +100,7 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
             final int index,
             final GroupQueryResult<TEntry, TQuery> queryResult) {
         final Set<TEntry> newEntries = queryResult.getEntries();
-        final HashSet<TEntry> entries = element.groups.get(index);
+        final Set<TEntry> entries = element.groups.get(index);
         if (Objects.equals(newEntries, entries)) {
             if (entries.isEmpty()) {
                 final CompoundTag devicesTag = element.groupData[index];
@@ -120,14 +121,14 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
 
         final boolean hadOldEntries = !entries.isEmpty();
 
-        final HashSet<TEntry> removedEntries = new HashSet<>(entries);
+        final Set<TEntry> removedEntries = new HashSet<>(entries);
         removedEntries.removeAll(newEntries);
         for (final TEntry entry : removedEntries) {
             element.devices.removeInt(entry.getDevice());
             element.onEntryRemoved(entry);
         }
 
-        final HashSet<TEntry> addedEntries = new HashSet<>(newEntries);
+        final Set<TEntry> addedEntries = new HashSet<>(newEntries);
         addedEntries.removeAll(entries);
         for (final TEntry entry : addedEntries) {
             element.devices.put(entry.getDevice(), entry.getDeviceEnergyConsumption());
@@ -142,7 +143,7 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
             entry.getDeviceDataKey().ifPresent(devicesTag::remove);
         }
 
-        final HashSet<String> invalidDataKeys = new HashSet<>(devicesTag.getAllKeys());
+        final Set<String> invalidDataKeys = new HashSet<>(devicesTag.getAllKeys());
         for (final TEntry entry : addedEntries) {
             entry.getDeviceDataKey()
                     .ifPresent(

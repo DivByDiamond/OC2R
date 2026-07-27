@@ -18,14 +18,11 @@ class TerminalBackgroundRenderer {
         float tx = 0f;
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
-        for (int col = 0,
-                        index =
-                                useAltBuffer
-                                        ? row * Terminal.WIDTH
-                                        : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT))
-                                                * Terminal.WIDTH;
-                col < Terminal.WIDTH;
-                col++, index++) {
+        int index =
+                useAltBuffer
+                        ? row * Terminal.WIDTH
+                        : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT)) * Terminal.WIDTH;
+        for (int col = 0; col < Terminal.WIDTH; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
             final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
             final ColorData color =
@@ -50,6 +47,7 @@ class TerminalBackgroundRenderer {
                         case SIXTEEN_COLOR_BRIGHT ->
                                 TerminalColors.BRIGHT_COLORS[!invertBackground ? color.G : color.R];
                         case DEFAULT_BACKGROUND -> 0x000000;
+                        default -> throw new AssertionError(color.Mode);
                     };
 
             final boolean hadBackground = backgroundStartX >= 0;

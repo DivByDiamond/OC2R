@@ -32,6 +32,7 @@ public record OpenRobotInventoryMessage(int entityId) implements AbstractMessage
         this(robot.getId());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();
         MessageUtils.withNearbyServerEntity(

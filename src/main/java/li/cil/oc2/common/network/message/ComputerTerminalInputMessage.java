@@ -35,6 +35,7 @@ public record ComputerTerminalInputMessage(BlockPos pos, byte[] data) implements
         this(computer.getBlockPos(), data.array());
     }
 
+    @Override
     public void handleMessage(IPayloadContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,

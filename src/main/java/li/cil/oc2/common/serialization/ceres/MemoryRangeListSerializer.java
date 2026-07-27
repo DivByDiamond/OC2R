@@ -1,6 +1,7 @@
 package li.cil.oc2.common.serialization.ceres;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
@@ -16,7 +17,7 @@ public final class MemoryRangeListSerializer implements Serializer<MemoryRangeLi
             final Class<MemoryRangeList> type,
             final Object value)
             throws SerializationException {
-        final MemoryRangeList list = (MemoryRangeList) value;
+        final List<MemoryRange> list = (MemoryRangeList) value;
         visitor.putObject("value", MemoryRange[].class, list.toArray(new MemoryRange[0]));
     }
 
@@ -27,15 +28,15 @@ public final class MemoryRangeListSerializer implements Serializer<MemoryRangeLi
             final Class<MemoryRangeList> type,
             @Nullable final Object value)
             throws SerializationException {
-        MemoryRangeList list = (MemoryRangeList) value;
+        List<MemoryRange> list = (MemoryRangeList) value;
         if (!visitor.exists("value")) {
-            return list;
+            return (MemoryRangeList) list;
         }
 
         final MemoryRange[] array =
                 (MemoryRange[]) visitor.getObject("value", MemoryRange[].class, null);
         if (array == null) {
-            return null;
+            return new MemoryRangeList();
         }
 
         if (list == null) {
@@ -46,6 +47,6 @@ public final class MemoryRangeListSerializer implements Serializer<MemoryRangeLi
 
         list.addAll(Arrays.asList(array));
 
-        return list;
+        return (MemoryRangeList) list;
     }
 }

@@ -1,6 +1,8 @@
 package li.cil.oc2.common.serialization.nbt;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.List;
 import java.util.UUID;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.SerializationException;
@@ -108,8 +110,8 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
                         };
             }
 
-            final ListTag listTag = new ListTag();
-            final IntArrayList nullIndices = new IntArrayList();
+            final List<Tag> listTag = new ListTag();
+            final IntList nullIndices = new IntArrayList();
 
             final Object[] data = (Object[]) value;
             for (int i = 0; i < data.length; i++) {
@@ -129,10 +131,10 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
             }
 
             if (nullIndices.isEmpty()) {
-                return listTag;
+                return (ListTag) listTag;
             } else {
                 final CompoundTag arrayTag = new CompoundTag();
-                arrayTag.put("value", listTag);
+                arrayTag.put("value", (ListTag) listTag);
                 arrayTag.putIntArray("nulls", nullIndices);
                 return arrayTag;
             }

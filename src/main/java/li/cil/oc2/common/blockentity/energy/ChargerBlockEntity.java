@@ -40,7 +40,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
             EntitySelector.NO_SPECTATORS.and(EntitySelector.ENTITY_STILL_ALIVE);
 
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.chargerEnergyStorage);
-    private boolean isCharging;
+    private boolean charging;
     private final AABB renderBoundingBox;
 
     public ChargerBlockEntity(final BlockPos pos, final BlockState state) {
@@ -63,11 +63,11 @@ public final class ChargerBlockEntity extends ModBlockEntity
             return;
         }
 
-        isCharging = false;
+        charging = false;
         chargeBlock();
         chargeEntities();
 
-        if (isCharging) {
+        if (charging) {
             ChunkUtils.setLazyUnsaved(level, getBlockPos());
         }
     }
@@ -88,7 +88,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
 
     @Callback
     public boolean isCharging() {
-        return isCharging;
+        return charging;
     }
 
     @Override
@@ -168,7 +168,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
         final int amount = Math.min(energy.getEnergyStored(), Config.chargerEnergyPerTick);
         final boolean simulate = level.isClientSide;
         if (energy.extractEnergy(energyStorage.receiveEnergy(amount, simulate), simulate) > 0) {
-            isCharging = true;
+            charging = true;
         }
     }
 

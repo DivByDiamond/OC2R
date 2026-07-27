@@ -89,8 +89,8 @@ public final class MonitorLoadBalancer {
     }
 
     private static void removeProjectorInfo(final MonitorProjectorInfo info) {
-        if (lastSender == info) {
-            if (lastSender.next == lastSender) {
+        if (java.util.Objects.equals(lastSender, info)) {
+            if (java.util.Objects.equals(lastSender.next, lastSender)) {
                 lastSender = null;
             } else {
                 lastSender = info.next;
@@ -110,6 +110,6 @@ public final class MonitorLoadBalancer {
             if (lastSender.sendIfReady()) {
                 return;
             }
-        } while (lastSender != start);
+        } while (!lastSender.equals(start));
     }
 }

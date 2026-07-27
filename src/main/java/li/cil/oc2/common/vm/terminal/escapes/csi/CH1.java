@@ -7,6 +7,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) { // XTRESTORE
             handleXTRESTORE(args[0]);
@@ -227,11 +228,13 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
             case 7727 ->
                     terminal.currentPrivateModeState.APPLICATION_ESC_MODE =
                             terminal.savePrivateModeState.APPLICATION_ESC_MODE;
+            default -> {}
         }
     }
 
     private void handleDECSTBM(int[] args, int argCount) {
-        final int first, last;
+        final int first;
+        final int last;
         if (argCount == 2) {
             first = args[0] - 1;
             last = args[1] - 1;

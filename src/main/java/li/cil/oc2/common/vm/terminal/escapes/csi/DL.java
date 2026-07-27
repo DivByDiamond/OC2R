@@ -7,6 +7,7 @@ public class DL extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         terminal.setCursorPos(0, terminal.y);
 

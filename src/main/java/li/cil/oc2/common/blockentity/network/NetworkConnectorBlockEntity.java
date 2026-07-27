@@ -3,6 +3,7 @@ package li.cil.oc2.common.blockentity.network;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
@@ -64,7 +65,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         }
 
         if (!connectionManager.dirtyConnectors.isEmpty()) {
-            final ArrayList<BlockPos> list = new ArrayList<>(connectionManager.dirtyConnectors);
+            final List<BlockPos> list = new ArrayList<>(connectionManager.dirtyConnectors);
             connectionManager.dirtyConnectors.clear();
             for (final BlockPos connectedPosition : list) {
                 connectionManager.resolveConnectedInterface(connectedPosition);
@@ -75,10 +76,11 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         if (source == null) source = NullNetworkInterface.INSTANCE;
 
         int byteBudget = BYTES_PER_TICK;
-        byte[] frame;
-        while ((frame = source.readEthernetFrame()) != null && byteBudget > 0) {
+        byte[] frame = source.readEthernetFrame();
+        while (frame != null && byteBudget > 0) {
             byteBudget -= Math.max(frame.length, MIN_ETHERNET_FRAME_SIZE);
             networkInterface.writeEthernetFrame(source, frame, Config.ethernetFrameTimeToLive);
+            frame = source.readEthernetFrame();
         }
     }
 
@@ -157,7 +159,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         super.unloadServer(isRemove);
 
         if (isRemove) {
-            final ArrayList<NetworkConnectorBlockEntity> list =
+            final List<NetworkConnectorBlockEntity> list =
                     new ArrayList<>(connectionManager.connectors.values());
             connectionManager.connectors.clear();
             for (final NetworkConnectorBlockEntity connector : list) {
@@ -179,9 +181,8 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
     private void resolveLocalInterface() {
         assert level != null;
 
-        adjacentInterface = null;
-
         if (!isValid()) {
+            adjacentInterface = null;
             return;
         }
 
@@ -189,6 +190,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         final BlockPos sourcePos = getBlockPos().relative(facing.getOpposite());
 
         if (!level.isLoaded(sourcePos)) {
+            adjacentInterface = null;
             return;
         }
 
@@ -215,7 +217,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setConnectedPositionsClient(final ArrayList<BlockPos> positions) {
+    public void setConnectedPositionsClient(final List<BlockPos> positions) {
         connectionManager.setConnectedPositionsClient(positions);
     }
 }

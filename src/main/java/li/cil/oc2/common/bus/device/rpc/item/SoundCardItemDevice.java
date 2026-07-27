@@ -97,7 +97,7 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     public List<String> findSound(@Nullable @Parameter("name") final String name) {
         if (name == null || name.isEmpty()) throw new IllegalArgumentException();
 
-        final ArrayList<String> matches = new ArrayList<>();
+        final List<String> matches = new ArrayList<>();
 
         for (final ResourceLocation key : BuiltInRegistries.SOUND_EVENT.keySet()) {
             final String keyName = key.toString();

@@ -8,6 +8,7 @@ public class CH2 extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) {
             handleDECSET(args, argCount);
@@ -164,6 +165,7 @@ public class CH2 extends CSISequenceHandler {
                 case 2006 -> terminal.currentPrivateModeState.ENABLE_READLINE_NEWLINE_PASTE = true;
                 case 2026 -> terminal.currentPrivateModeState.APPLICATION_SYNC = true;
                 case 7727 -> terminal.currentPrivateModeState.APPLICATION_ESC_MODE = true;
+                default -> {}
             }
 
             ImplementedPrivateModes.instance.modeUsed(args[i], true);
@@ -177,6 +179,7 @@ public class CH2 extends CSISequenceHandler {
                 case 4 -> terminal.currentModeState.IRM = true;
                 case 12 -> terminal.currentModeState.SRM = true;
                 case 20 -> terminal.currentModeState.LNM = true;
+                default -> {}
             }
         }
     }

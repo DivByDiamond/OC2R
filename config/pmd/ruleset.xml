@@ -2,7 +2,7 @@
 <ruleset name="OC2R PMD Rules"
     xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    xsi:schemaLocation="http://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
     <description>OC2R PMD rules: best practices, error prone, performance</description>
 
@@ -14,59 +14,33 @@
         <exclude name="AccessorMethodGeneration"/>
         <exclude name="AvoidPrintStackTrace"/>
         <exclude name="SystemPrintln"/>
-        <exclude name="LooseCoupling"/>
-        <exclude name="MissingOverride"/>
-        <exclude name="NonExhaustiveSwitch"/>
-        <exclude name="OneDeclarationPerLine"/>
-        <exclude name="UnusedFormalParameter"/>
-        <exclude name="UnusedPrivateMethod"/>
-        <exclude name="UnusedPrivateField"/>
-        <exclude name="UnusedLocalVariable"/>
-        <exclude name="ArrayIsStoredDirectly"/>
-        <exclude name="MethodReturnsInternalArray"/>
-        <exclude name="AvoidReassigningParameters"/>
-        <exclude name="PreserveStackTrace"/>
-        <exclude name="ForLoopVariableCount"/>
-        <exclude name="UseVarargs"/>
-        <exclude name="UnusedAssignment"/>
-        <exclude name="AvoidReassigningLoopVariables"/>
-        <exclude name="LiteralsFirstInComparisons"/>
-        <exclude name="AvoidUsingHardCodedIP"/>
         <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
         <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="UnitTestContainsTooManyAsserts"/>
+        <!-- Unavoidable: mixin callbacks called by Mixin framework, not by Java code -->
+        <exclude name="UnusedPrivateMethod"/>
+        <!-- Unavoidable: Ceres serialization framework requires concrete MemoryRangeList type -->
+        <exclude name="LooseCoupling"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml">
-        <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="NullAssignment"/>
         <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
-        <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseCorrectExceptionLogging"/>
         <exclude name="MissingSerialVersionUID"/>
-        <exclude name="AvoidFieldNameMatchingMethodName"/>
-        <exclude name="AvoidFieldNameMatchingTypeName"/>
-        <exclude name="CompareObjectsWithEquals"/>
-        <exclude name="AvoidCatchingThrowable"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="AssignmentInOperand"/>
-        <exclude name="EmptyCatchBlock"/>
-        <exclude name="AvoidAccessibilityAlteration"/>
-        <exclude name="ClassCastExceptionWithToArray"/>
-        <exclude name="UseLocaleWithCaseConversions"/>
-        <exclude name="CloseResource"/>
-        <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="ImplicitSwitchFallThrough"/>
+        <!-- Excluded: NeoForge types (Level, Minecraft, etc.) implement AutoCloseable as global singletons;
+             cached resources (BlobStorage FileChannels, rendering VertexBuffers) are managed by owners -->
+        <exclude name="CloseResource"/>
+        <!-- Unavoidable: RPCMethod.invoke() declares throws Throwable -->
+        <exclude name="AvoidCatchingThrowable"/>
     </rule>
 
     <rule ref="category/java/performance.xml">
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
         <exclude name="RedundantFieldInitializer"/>
-        <exclude name="InefficientEmptyStringCheck"/>
+        <!-- Unavoidable: NBTArraySerializers copies between different primitive types, System.arraycopy won't work -->
         <exclude name="AvoidArrayLoops"/>
-        <exclude name="ConsecutiveAppendsShouldReuse"/>
-        <exclude name="AppendCharacterWithChar"/>
-        <exclude name="TooFewBranchesForSwitch"/>
     </rule>
 </ruleset>

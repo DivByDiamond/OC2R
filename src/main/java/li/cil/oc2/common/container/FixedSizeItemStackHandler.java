@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import java.util.List;
 import li.cil.oc2.common.util.NBTTagIds;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -14,8 +15,8 @@ public class FixedSizeItemStackHandler extends ItemStackHandler {
         super(size);
     }
 
-    public FixedSizeItemStackHandler(final NonNullList<ItemStack> stacks) {
-        super(stacks);
+    public FixedSizeItemStackHandler(final List<ItemStack> stacks) {
+        super((NonNullList<ItemStack>) stacks);
     }
 
     public boolean isEmpty() {

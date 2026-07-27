@@ -65,8 +65,8 @@ public final class ModLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return Blocks.BLOCKS.getEntries().stream()
-                    .filter(blockRegObj -> blockRegObj.get() != Blocks.BUS_CABLE.get())
+            return Blocks.REGISTRY.getEntries().stream()
+                    .filter(blockRegObj -> !blockRegObj.get().equals(Blocks.BUS_CABLE.get()))
                     .map(DeferredHolder::get)
                     .collect(Collectors.toList());
         }
@@ -92,8 +92,5 @@ public final class ModLootTableProvider extends LootTableProvider {
                                                                                             .get())))));
         }
 
-        private static String concat(final String... paths) {
-            return String.join(".", paths);
-        }
     }
 }

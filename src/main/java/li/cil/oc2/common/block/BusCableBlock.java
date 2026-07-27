@@ -70,7 +70,7 @@ public final class BusCableBlock extends BaseEntityBlock {
                 FACING_TO_CONNECTION_MAP.entrySet()) {
             final Direction facing = entry.getKey();
             final BlockPos facingPos = position.relative(facing);
-            if (context.getItemInHand().getItem() == Items.BUS_CABLE.get()
+            if (context.getItemInHand().getItem().equals(Items.BUS_CABLE.get())
                     && canHaveCableTo(level.getBlockState(facingPos), facing.getOpposite())) {
                 state = state.setValue(entry.getValue(), ConnectionType.CABLE);
             }
@@ -80,7 +80,7 @@ public final class BusCableBlock extends BaseEntityBlock {
 
     @Override
     public BlockState updateShape(
-            BlockState state,
+            final BlockState state,
             final Direction facing,
             final BlockState facingState,
             final LevelAccessor level,
@@ -91,15 +91,16 @@ public final class BusCableBlock extends BaseEntityBlock {
             return state;
         }
         final boolean neighborChanged;
-        if (state.getValue(HAS_CABLE) && canHaveCableTo(facingState, facing.getOpposite())) {
-            neighborChanged = state.getValue(property) != ConnectionType.CABLE;
-            state = state.setValue(property, ConnectionType.CABLE);
+        BlockState result = state;
+        if (result.getValue(HAS_CABLE) && canHaveCableTo(facingState, facing.getOpposite())) {
+            neighborChanged = result.getValue(property) != ConnectionType.CABLE;
+            result = result.setValue(property, ConnectionType.CABLE);
         } else {
-            neighborChanged = state.getValue(property) != ConnectionType.NONE;
-            state = state.setValue(property, ConnectionType.NONE);
+            neighborChanged = result.getValue(property) != ConnectionType.NONE;
+            result = result.setValue(property, ConnectionType.NONE);
         }
         onConnectionTypeChanged(level, currentPos, facing, neighborChanged);
-        return state;
+        return result;
     }
 
     @Override

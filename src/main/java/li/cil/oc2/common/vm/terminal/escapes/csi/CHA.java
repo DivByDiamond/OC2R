@@ -7,6 +7,7 @@ public class CHA extends CSISequenceHandler {
         super(terminal);
     }
 
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         terminal.setClampedCursorPos(args[0] - 1, terminal.y);
     }

@@ -48,7 +48,7 @@ public final class BundledCableHandler implements IBundledTileInteraction {
         if (entity instanceof RedstoneInterfaceBlockEntity rs) {
             return rs.getBundledSignal(direction);
         } else {
-            return null;
+            return new byte[0];
         }
     }
 

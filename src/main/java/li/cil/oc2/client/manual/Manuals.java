@@ -24,7 +24,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 @OnlyIn(Dist.CLIENT)
 public final class Manuals {
-    private static final DeferredRegister<ManualModel> MANUALS =
+    private static final DeferredRegister<ManualModel> MANUAL_REGISTRY =
             DeferredRegister.create(Constants.MANUAL_REGISTRY, Constants.MOD_ID);
     private static final DeferredRegister<PathProvider> PATH_PROVIDERS =
             DeferredRegister.create(Constants.PATH_PROVIDER_REGISTRY, Constants.MOD_ID);
@@ -34,10 +34,10 @@ public final class Manuals {
             DeferredRegister.create(Constants.TAB_REGISTRY, Constants.MOD_ID);
 
     public static final DeferredHolder<ManualModel, Manual> MANUAL =
-            MANUALS.register("manual", Manual::new);
+            MANUAL_REGISTRY.register("manual", Manual::new);
 
     public static void initialize(IEventBus modBus) {
-        MANUALS.register(modBus);
+        MANUAL_REGISTRY.register(modBus);
 
         PATH_PROVIDERS.register(modBus);
         CONTENT_PROVIDERS.register(modBus);

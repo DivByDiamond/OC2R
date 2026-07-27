@@ -125,8 +125,10 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         try {
             MemoryMaps.store(memoryMap, startAddress, data);
         } catch (final MemoryAccessException e) {
-            throw new VMInitializationException(
+            final VMInitializationException ex = new VMInitializationException(
                     Component.translatable(Constants.COMPUTER_ERROR_INSUFFICIENT_MEMORY));
+            ex.initCause(e);
+            throw ex;
         }
     }
 }

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 
 public abstract class ToggleImageButton extends ImageButton {
     private final Sprite activeImage;
-    private boolean isToggled;
+    private boolean toggled;
 
     public ToggleImageButton(
             final int x,
@@ -19,11 +19,11 @@ public abstract class ToggleImageButton extends ImageButton {
     }
 
     public boolean isToggled() {
-        return isToggled;
+        return toggled;
     }
 
     public void setToggled(final boolean value) {
-        isToggled = value;
+        toggled = value;
     }
 
     @Override
