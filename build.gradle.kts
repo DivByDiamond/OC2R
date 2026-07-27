@@ -214,7 +214,7 @@ dependencies {
     add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:0.0.64")
 
     implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
-    implementation("curse.maven:markdownmanual-${markdownmanual_project_id}:${markdownmanual_file_id}")
+    // Provided via libs/markdown_manual-1.3.1.jar (Modrinth)
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}-api:${jei_version}")
