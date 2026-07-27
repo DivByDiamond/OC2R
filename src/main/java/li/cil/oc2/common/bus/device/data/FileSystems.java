@@ -140,7 +140,7 @@ public final class FileSystems {
                         if (BlockDeviceDataRegistry.getValue(location) != null) {
                             LOGGER.error(
                                     "Block device from datapack collides with already registered"
-                                        + " location [{}].",
+                                            + " location [{}].",
                                     location);
                             continue;
                         }

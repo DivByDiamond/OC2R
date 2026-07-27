@@ -16,7 +16,7 @@ public class GameplaySpec {
         soundCardCoolDownSeconds =
                 builder.comment(
                                 "The number of seconds between sound card uses, to prevent"
-                                    + " spam/abuse")
+                                        + " spam/abuse")
                         .defineInRange("soundCardCoolDownSeconds", 2, 1, Long.MAX_VALUE);
     }
 

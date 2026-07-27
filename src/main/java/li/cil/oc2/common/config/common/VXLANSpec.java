@@ -14,7 +14,7 @@ public class VXLANSpec {
         enable =
                 builder.comment(
                                 "Whether to enable VXLAN support, must be on for the internet card"
-                                    + " to work")
+                                        + " to work")
                         .define("enable", false);
 
         remoteHost =

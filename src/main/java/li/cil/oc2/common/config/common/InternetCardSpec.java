@@ -36,22 +36,22 @@ public class InternetCardSpec {
         defaultSessionsNumberLimit =
                 builder.comment(
                                 "Number of sessions (connections) allowed in total across all"
-                                    + " cards")
+                                        + " cards")
                         .defineInRange("defaultSessionsNumberLimit", 100, 0, Integer.MAX_VALUE);
 
         defaultEchoRequestTimeoutMs =
                 builder.comment(
                                 "Number of milliseconds before a timeout should be assumed on"
-                                    + " ICMP/Echo (ping) packets")
+                                        + " ICMP/Echo (ping) packets")
                         .defineInRange("defaultEchoRequestTimeoutMs", 1000, 1, Integer.MAX_VALUE);
 
         deniedHosts =
                 builder.comment(
                                 "A list of hosts (IPs) that VMs are not allowed to access",
                                 "By default all local network address are disallowed, we recommend"
-                                    + " leaving it this way",
+                                        + " leaving it this way",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
-                                    + " will occur")
+                                        + " will occur")
                         .defineListAllowEmpty(
                                 "deniedHosts",
                                 Arrays.asList(
@@ -67,7 +67,7 @@ public class InternetCardSpec {
                 builder.comment(
                                 "A list of hosts (IPs) that VMs are allowed to access",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
-                                    + " will occur")
+                                        + " will occur")
                         .defineListAllowEmpty(
                                 "allowedHosts",
                                 List.of(),

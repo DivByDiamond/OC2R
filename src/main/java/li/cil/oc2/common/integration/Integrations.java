@@ -34,23 +34,23 @@ public class Integrations {
         if (createLoaded) {
             LOGGER.info(
                     "Create detected — OC2R will treat contraption-hosted computers defensively (no"
-                        + " chunk-tracking assumptions).");
+                            + " chunk-tracking assumptions).");
         }
         if (createAeronauticsLoaded) {
             LOGGER.info(
                     "Create: Aeronautics detected — OC2R computer blocks on ships will boot with"
-                        + " their own devices only when the surrounding level is not a"
-                        + " ServerLevel.");
+                            + " their own devices only when the surrounding level is not a"
+                            + " ServerLevel.");
         }
         if (valkyrienSkiesLoaded) {
             LOGGER.info(
                     "Valkyrien Skies detected — non-ServerLevel ship worlds will be tolerated by"
-                        + " the OC2R bus scan and terminal output paths.");
+                            + " the OC2R bus scan and terminal output paths.");
         }
         if (sableLoaded) {
             LOGGER.info(
                     "Sable detected — OC2R will not assume its peripheral blocks expose standard"
-                        + " capabilities.");
+                            + " capabilities.");
         }
 
         if (modList.isLoaded("projectred_transmission")) {

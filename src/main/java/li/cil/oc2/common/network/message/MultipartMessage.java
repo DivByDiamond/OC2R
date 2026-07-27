@@ -152,7 +152,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
                 if (entry == null) {
                     LOGGER.error(
                             "Received multipart message for unregistered message from client [{}]."
-                                + " Are the mod version on the server and client the same?",
+                                    + " Are the mod version on the server and client the same?",
                             context.player());
                     return;
                 }

@@ -70,12 +70,12 @@ public final class BuiltinDevices {
         if (ris == null) {
             LOGGER.error(
                     "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"
-                        + " sedna-buildroot.jar — VM will boot but have no rootfs.");
+                            + " sedna-buildroot.jar — VM will boot but have no rootfs.");
         }
         if (bis == null) {
             LOGGER.error(
                     "Buildroot boot filesystem (generated/bootfs.squashfs) is missing from"
-                        + " sedna-buildroot.jar — VM will boot but have no bootfs.");
+                            + " sedna-buildroot.jar — VM will boot but have no bootfs.");
         }
         try {
             if (bis != null) {

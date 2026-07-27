@@ -87,7 +87,7 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
                             Math.max(
                                     frame.length,
                                     MIN_ETHERNET_FRAME_SIZE); // Avoid bogus packets messing with
-                                                              // us.
+                    // us.
                     for (final NetworkInterface destination : tunnel) {
                         if (destination != source) {
                             destination.writeEthernetFrame(source, frame, 1);

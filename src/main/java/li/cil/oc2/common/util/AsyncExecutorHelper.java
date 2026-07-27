@@ -49,11 +49,11 @@ public final class AsyncExecutorHelper {
                 if (debug) {
                     LOGGER.warn(
                             "Async executor did not shut down within timeout, forcing immediate"
-                                + " shutdown");
+                                    + " shutdown");
                 } else {
                     LOGGER.warn(
                             "Async executor did not shut down within timeout, forcing immediate"
-                                + " shutdown");
+                                    + " shutdown");
                 }
 
                 final var runningTasks = executor.shutdownNow();
@@ -69,7 +69,7 @@ public final class AsyncExecutorHelper {
         } catch (final InterruptedException e) {
             LOGGER.warn(
                     "Interrupted while waiting for async executor to shut down, forcing immediate"
-                        + " shutdown",
+                            + " shutdown",
                     e);
             executor.shutdownNow();
             Thread.currentThread().interrupt();

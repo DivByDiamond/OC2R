@@ -25,20 +25,20 @@ public final class AsyncConfig {
             enableSuperDebug =
                     builder.comment(
                                     "Enable super debug mode for async operations. This will log"
-                                        + " stack traces for all async operations.")
+                                            + " stack traces for all async operations.")
                             .translation("config.oc2.async.super_debug")
                             .define("superDebug", false);
 
             runAsyncTests =
                     builder.comment(
                                     "Run async operation tests during server startup. Enable this"
-                                        + " to verify async functionality.")
+                                            + " to verify async functionality.")
                             .define("runAsyncTests", true);
 
             asyncStorageOperations =
                     builder.comment(
                                     "Enables asynchronous storage operations for better"
-                                        + " performance")
+                                            + " performance")
                             .translation("config.oc2.async.storage_operations")
                             .define("storageOperations", true);
 

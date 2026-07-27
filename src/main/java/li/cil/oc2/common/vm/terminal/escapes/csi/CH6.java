@@ -4,7 +4,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class CH6
         extends CSISequenceHandler { // Combined Handler 6 (XTSAVE, XTSHIFTESCAPE, DECSLRM, and
-                                     // SCOSC)
+    // SCOSC)
     public CH6(final Terminal terminal) {
         super(terminal);
     }

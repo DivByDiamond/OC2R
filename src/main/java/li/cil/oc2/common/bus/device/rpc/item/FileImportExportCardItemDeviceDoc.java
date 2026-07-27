@@ -41,9 +41,9 @@ final class FileImportExportCardItemDeviceDoc {
         visitor.visitCallback(BEGIN_IMPORT_FILE)
                 .description(
                         "Begins a file import operation. This will prompt present users to select"
-                            + " an externally stored file for import. If multiple users are"
-                            + " present, the first user to select a file will have their file"
-                            + " uploaded. Use the "
+                                + " an externally stored file for import. If multiple users are"
+                                + " present, the first user to select a file will have their file"
+                                + " uploaded. Use the "
                                 + READ_IMPORT_FILE
                                 + "() method to read the contents of the file being imported.\n"
                                 + "This method may error if the device is currently exporting or"
@@ -59,6 +59,6 @@ final class FileImportExportCardItemDeviceDoc {
         visitor.visitCallback(RESET)
                 .description(
                         "Resets the device and cancels any currently running export or import"
-                            + " operation.");
+                                + " operation.");
     }
 }

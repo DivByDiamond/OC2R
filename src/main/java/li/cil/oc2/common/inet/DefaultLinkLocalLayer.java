@@ -61,7 +61,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
                                     } catch (final AddressParseException exception) {
                                         LOGGER.error(
                                                 "Failed to parse internet adapter MAC address from"
-                                                    + " NBT",
+                                                        + " NBT",
                                                 exception);
                                     }
                                 }

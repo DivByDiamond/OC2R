@@ -45,8 +45,8 @@ public class ImplementedPrivateModes {
         modeStatus.put(
                 1002,
                 true); // CELL_MOTION_MOUSE; -- PARTIAL SUPPORT: Treated as X11MM currently, no
-                       // motion events are sent. This actually seems to match Window Terminal's
-                       // level of implementation.
+        // motion events are sent. This actually seems to match Window Terminal's
+        // level of implementation.
         modeStatus.put(1003, false); // ALL_MOTION_MOUSE_TRACKING;
         modeStatus.put(1004, true); // FOCUS_IN_FOCUS_OUT;
         modeStatus.put(1005, true); // UTF8_MOUSE;

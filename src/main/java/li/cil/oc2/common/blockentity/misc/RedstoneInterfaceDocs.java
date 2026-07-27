@@ -74,7 +74,7 @@ final class RedstoneInterfaceDocs {
                     .parameterDescription(
                             VALUES,
                             "the output levels to set in array form, each value will be clamped to"
-                                + " [0, 255], 16 entries.");
+                                    + " [0, 255], 16 entries.");
         }
     }
 

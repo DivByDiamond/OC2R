@@ -4,7 +4,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class CH4
         extends CSISequenceHandler { // Combined Handler 4 (XTWINOPS, XTSMTITLE, DECSWBV, and
-                                     // DECRARA)
+    // DECRARA)
     public CH4(final Terminal terminal) {
         super(terminal);
     }
@@ -24,11 +24,10 @@ public class CH4
                                 "\033[4;"
                                         + Terminal.HEIGHT
                                         + ";"
-                                        + Terminal
-                                                .WIDTH); // terminal.putResponse("\033[4;" +
-                                                         // (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
-                                                         // + ";" + (Terminal.WIDTH *
-                                                         // Terminal.CHAR_WIDTH));
+                                        + Terminal.WIDTH); // terminal.putResponse("\033[4;" +
+                    // (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
+                    // + ";" + (Terminal.WIDTH *
+                    // Terminal.CHAR_WIDTH));
                 case 15 ->
                         terminal.putResponse(
                                 "\033[5;"

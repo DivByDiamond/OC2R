@@ -49,7 +49,7 @@ public final class PrivateMode {
     public static final int SGR_MOUSE_PIXEL = 1016;
     public static final int META_KEY =
             1034; // Interpret "meta" key (Zero Affect in our implementation as this would typically
-                  // mess with the 8th bit of input in a 7bit setup, but we always send 8)
+    // mess with the 8th bit of input in a 7bit setup, but we always send 8)
     public static final int SPECIAL_MODIFIERS = 1035; // Enable special alt and numlock modifiers
     public static final int META_SENDS_ESCAPE = 1036; // Meta sends ESC when pressed
     public static final int DEL_EDIT_KEYPAD_DEL = 1037; // Send DEL from editing-keypad DEL key

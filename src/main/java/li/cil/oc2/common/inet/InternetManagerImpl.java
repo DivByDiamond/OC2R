@@ -106,7 +106,7 @@ public final class InternetManagerImpl implements InternetManager {
                         } catch (final Exception exception) {
                             LOGGER.error(
                                     "Uncaught exception while running internet thread task; this"
-                                        + " task removed from schedule",
+                                            + " task removed from schedule",
                                     exception);
                             return true;
                         }

@@ -21,13 +21,13 @@ public final class MinuxFirmware implements Firmware {
             if (firmware == null) {
                 LOGGER.error(
                         "Minux firmware resource (generated/fw_jump.bin) is missing from"
-                            + " sedna-buildroot.jar — VM will not boot.");
+                                + " sedna-buildroot.jar — VM will not boot.");
                 return false;
             }
             if (linuxImage == null) {
                 LOGGER.error(
                         "Minux Linux image resource (generated/Image) is missing from"
-                            + " sedna-buildroot.jar — VM will not boot.");
+                                + " sedna-buildroot.jar — VM will not boot.");
                 return false;
             }
             MemoryMaps.store(memory, startAddress, firmware);

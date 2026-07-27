@@ -60,7 +60,7 @@ final class NativeLoader {
                         LogManager.getLogger()
                                 .error(
                                         "ICMP data does not match, falling back to JVM UDP"
-                                            + " implementation");
+                                                + " implementation");
                         Main.LoadedLibrary = false;
                     }
                 }
@@ -69,7 +69,7 @@ final class NativeLoader {
                 LogManager.getLogger()
                         .error(
                                 "Loaded native library successfully but ICMP still failed, falling"
-                                    + " back to JVM UDP implementation");
+                                        + " back to JVM UDP implementation");
             }
         } catch (FileNotFoundException fileNotFoundException) {
             if (officiallySupported) {
@@ -77,7 +77,7 @@ final class NativeLoader {
                 LogManager.getLogger()
                         .warn(
                                 "Failed to load native library, jar file is corrupted or build"
-                                    + " failed, attempted to load from path: {}",
+                                        + " failed, attempted to load from path: {}",
                                 resourcePath);
             } else {
                 Main.LoadedLibrary = false;

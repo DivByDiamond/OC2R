@@ -112,40 +112,40 @@ public class EnergySpec {
         memoryEnergyPerMegabytePerTick =
                 builder.comment(
                                 "The amount of energy consumed per megabyte per tick for memory"
-                                    + " modules")
+                                        + " modules")
                         .defineInRange("memoryEnergyPerMegabytePerTick", 0.05, 0, Double.MAX_VALUE);
 
         hardDriveEnergyPerMegabytePerTick =
                 builder.comment(
                                 "The amount of energy consumed per megabyte per tick for hard drive"
-                                    + " modules")
+                                        + " modules")
                         .defineInRange(
                                 "hardDriveEnergyPerMegabytePerTick", 1.0, 0, Double.MAX_VALUE);
 
         cpuEnergyPerMegahertzPerTick =
                 builder.comment(
                                 "The amount of energy consumed per megahertz per tick for CPU"
-                                    + " modules")
+                                        + " modules")
                         .defineInRange("cpuEnergyPerMegahertzPerTick", 0.1, 0, Double.MAX_VALUE);
 
         redstoneInterfaceCardEnergyPerTick =
                 builder.comment(
                                 "The amount of energy consumed per tick for redstone interface"
-                                    + " cards")
+                                        + " cards")
                         .defineInRange(
                                 "redstoneInterfaceCardEnergyPerTick", 1, 0, Integer.MAX_VALUE);
 
         networkInterfaceEnergyPerTick =
                 builder.comment(
                                 "The amount of energy consumed per tick for network interface"
-                                    + " cards")
+                                        + " cards")
                         .defineInRange(
                                 "redstoneInterfaceCardEnergyPerTick", 1, 0, Integer.MAX_VALUE);
 
         fileImportExportCardEnergyPerTick =
                 builder.comment(
                                 "The amount of energy consumed per tick for file import/export"
-                                    + " cards")
+                                        + " cards")
                         .defineInRange(
                                 "fileImportExportCardEnergyPerTick", 1, 0, Integer.MAX_VALUE);
 
@@ -156,14 +156,14 @@ public class EnergySpec {
         blockOperationsModuleEnergyPerTick =
                 builder.comment(
                                 "The amount of energy consumed per tick for block operations"
-                                    + " modules")
+                                        + " modules")
                         .defineInRange(
                                 "blockOperationsModuleEnergyPerTick", 2, 0, Integer.MAX_VALUE);
 
         inventoryOperationsModuleEnergyPerTick =
                 builder.comment(
                                 "The amount of energy consumed per tick for inventory operations"
-                                    + " modules")
+                                        + " modules")
                         .defineInRange(
                                 "inventoryOperationsModuleEnergyPerTick", 1, 0, Integer.MAX_VALUE);
 

@@ -23,7 +23,7 @@ public class AdminSpec {
         projectorAverageMaxBytesPerSecond =
                 builder.comment(
                                 "The maximum number of bytes a projector will send per second on"
-                                    + " average")
+                                        + " average")
                         .defineInRange(
                                 "projectorAverageMaxBytesPerSecond",
                                 160 * 1024,
@@ -37,13 +37,13 @@ public class AdminSpec {
         ethernetFrameTimeToLive =
                 builder.comment(
                                 "The time to live of an ethernet frame sent over the virtual"
-                                    + " network")
+                                        + " network")
                         .defineInRange("ethernetFrameTimeToLive", 12, 0, Integer.MAX_VALUE);
 
         hubEthernetFrameTimeToLive =
                 builder.comment(
                                 "The time to live of an ethernet frame sent over the virtual"
-                                    + " network to a hub")
+                                        + " network to a hub")
                         .defineInRange("hubEthernetFrameTimeToLive", 32, 0, Integer.MAX_VALUE);
 
         builder.pop();

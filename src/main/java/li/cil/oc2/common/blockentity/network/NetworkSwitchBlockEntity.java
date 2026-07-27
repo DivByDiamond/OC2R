@@ -146,7 +146,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
                 .description("Returns the MAC address table of the switch")
                 .returnValueDescription(
                         "The MAC table. For each host the mac address, the age (in ticks) and the"
-                            + " face is returned");
+                                + " face is returned");
     }
 
     @Override

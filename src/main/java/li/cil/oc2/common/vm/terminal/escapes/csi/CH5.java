@@ -4,7 +4,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class CH5
         extends CSISequenceHandler { // Combined Handler 5 (XTSMPOINTER, DECSTR, DECSCL, and
-                                     // DECRARA)
+    // DECRARA)
     public CH5(final Terminal terminal) {
         super(terminal);
     }

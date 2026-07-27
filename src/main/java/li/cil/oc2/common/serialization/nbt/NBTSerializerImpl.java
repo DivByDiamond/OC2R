@@ -121,7 +121,7 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
                         throw new SerializationException(
                                 String.format(
                                         "Polymorphism detected in generic array [%s]. This is not"
-                                            + " supported.",
+                                                + " supported.",
                                         name));
                     }
                     listTag.add(componentSerializer.serialize(componentType, datum));

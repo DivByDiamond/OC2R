@@ -42,7 +42,7 @@ public final class IMC {
                             } else {
                                 LOGGER.error(
                                         "Received unknown IMC message [{}] from mod [{}],"
-                                            + " ignoring.",
+                                                + " ignoring.",
                                         message.method(),
                                         message.senderModId());
                             }
@@ -58,7 +58,7 @@ public final class IMC {
                             } catch (final IllegalArgumentException e) {
                                 LOGGER.error(
                                         "Received invalid type adapter registration [{}] for type"
-                                            + " [{}] from mod [{}].",
+                                                + " [{}] from mod [{}].",
                                         value.typeAdapter(),
                                         value.type(),
                                         message.senderModId());
@@ -75,7 +75,7 @@ public final class IMC {
         } else {
             LOGGER.error(
                     "Received incompatible parameter [{}] for IMC message [{}] from mod [{}]."
-                        + " Expected type is [{}].",
+                            + " Expected type is [{}].",
                     message.messageSupplier().get(),
                     message.method(),
                     message.senderModId(),
