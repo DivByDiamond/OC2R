@@ -33,6 +33,5 @@
 @MethodsReturnNonnullByDefault
 package li.cil.oc2.api.bus;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;

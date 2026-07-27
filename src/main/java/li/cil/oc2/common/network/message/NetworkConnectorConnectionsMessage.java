@@ -1,19 +1,16 @@
 package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
-
+import java.util.ArrayList;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.network.ClientBlockEntityLookup;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-import java.util.ArrayList;
 
 public record NetworkConnectorConnectionsMessage(
         BlockPos pos, ArrayList<BlockPos> connectedPositions) implements AbstractMessage {

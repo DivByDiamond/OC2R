@@ -1,19 +1,17 @@
 package li.cil.oc2.common.bus.device.vm.block;
 
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.concurrent.CompletableFuture;
 import li.cil.oc2.common.bus.device.vm.item.AbstractBlockStorageDevice;
 import li.cil.oc2.common.item.FloppyItem;
 import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.concurrent.CompletableFuture;
 
 public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer>
         extends AbstractBlockStorageDevice<BlockDevice, T> {

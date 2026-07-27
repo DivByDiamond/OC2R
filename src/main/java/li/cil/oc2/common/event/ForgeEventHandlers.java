@@ -1,18 +1,15 @@
 package li.cil.oc2.common.event;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.util.AsyncExecutorHelper;
-
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nullable;
 
 /**
  * Handles Forge lifecycle events to ensure proper initialization and cleanup of async operations.

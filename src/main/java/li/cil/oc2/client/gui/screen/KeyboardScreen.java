@@ -4,7 +4,6 @@ import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.KeyboardInputMessage;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,7 +13,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
-
 import org.lwjgl.glfw.GLFW;
 
 public final class KeyboardScreen extends Screen {

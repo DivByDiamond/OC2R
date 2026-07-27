@@ -1,25 +1,21 @@
 package li.cil.oc2.common.inet;
 
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.InternetManager;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.provider.InternetProvider;
 import li.cil.oc2.common.config.Config;
-
 import net.minecraft.nbt.Tag;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 public final class InternetManagerImpl implements InternetManager {
     private static final Logger LOGGER = LogManager.getLogger();

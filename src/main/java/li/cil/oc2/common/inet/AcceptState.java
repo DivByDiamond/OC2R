@@ -1,8 +1,7 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.Session;
-
 import java.nio.ByteBuffer;
+import li.cil.oc2.api.inet.session.Session;
 
 final class AcceptState extends TcpState {
     @Override

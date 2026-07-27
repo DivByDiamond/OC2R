@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.device;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public final class PciRootPortDevice implements MemoryMappedDevice {
 

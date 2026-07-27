@@ -3,7 +3,6 @@ package li.cil.oc2.common.network.message;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
-
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;

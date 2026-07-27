@@ -1,12 +1,10 @@
 package li.cil.oc2.common.inet;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.TransportMessage;
 import li.cil.oc2.api.inet.layer.TransportLayer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.ByteBuffer;
 
 final class TcpUtils {
     private static final Logger LOGGER = LogManager.getLogger();

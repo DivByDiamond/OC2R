@@ -1,7 +1,6 @@
 package li.cil.oc2.common.config.common;
 
 import li.cil.oc2.common.config.Config;
-
 import net.minecraft.world.item.Tiers;
 import net.neoforged.neoforge.common.ModConfigSpec;
 

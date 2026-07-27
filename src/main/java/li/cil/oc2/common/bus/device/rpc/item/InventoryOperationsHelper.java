@@ -1,8 +1,10 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.common.capabilities.Capabilities;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -12,10 +14,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 final class InventoryOperationsHelper {
     private final Entity entity;

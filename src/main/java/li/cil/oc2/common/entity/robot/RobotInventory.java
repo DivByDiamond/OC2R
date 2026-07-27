@@ -1,5 +1,6 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.util.*;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.DeviceTypes;
@@ -12,13 +13,10 @@ import li.cil.oc2.common.container.FixedSizeItemStackHandler;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.vm.AbstractVMItemStackHandlers;
 import li.cil.oc2.common.vm.VMItemStackHandlers;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import java.util.*;
 
 public class RobotInventory {
     public static final int INVENTORY_SIZE = 12;

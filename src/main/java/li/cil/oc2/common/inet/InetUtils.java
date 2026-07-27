@@ -1,11 +1,5 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.LayerParameters;
-import li.cil.oc2.api.inet.layer.LinkLocalLayer;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,6 +7,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import li.cil.oc2.api.inet.LayerParameters;
+import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 public final class InetUtils {
     private static InetAddress getInetAddressByBytes(final byte[] bytes) {

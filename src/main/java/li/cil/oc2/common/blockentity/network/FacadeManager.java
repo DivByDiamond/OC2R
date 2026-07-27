@@ -1,17 +1,15 @@
 package li.cil.oc2.common.blockentity.network;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusCableFacadeMessage;
 import li.cil.oc2.common.util.ItemStackUtils;
-
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
 
 final class FacadeManager {
     private final BusCableBlockEntity owner;

@@ -1,10 +1,8 @@
 package li.cil.oc2.common.container;
 
-import li.cil.oc2.common.vm.terminal.Terminal;
-
-import net.minecraft.world.inventory.MenuType;
-
 import java.nio.ByteBuffer;
+import li.cil.oc2.common.vm.terminal.Terminal;
+import net.minecraft.world.inventory.MenuType;
 
 public abstract class AbstractMachineTerminalContainer extends AbstractMachineContainer {
     protected AbstractMachineTerminalContainer(

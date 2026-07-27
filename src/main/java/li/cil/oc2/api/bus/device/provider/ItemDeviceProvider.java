@@ -1,14 +1,11 @@
 package li.cil.oc2.api.bus.device.provider;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
-
 import net.minecraft.nbt.CompoundTag;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 /**
  * This is used to query for devices given an item stack.

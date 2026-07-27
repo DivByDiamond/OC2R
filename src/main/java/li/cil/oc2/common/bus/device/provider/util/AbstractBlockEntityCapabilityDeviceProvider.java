@@ -1,18 +1,15 @@
 package li.cil.oc2.common.bus.device.provider.util;
 
+import java.util.Optional;
+import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
-
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public abstract class AbstractBlockEntityCapabilityDeviceProvider<
                 TCapability, TBlockEntity extends BlockEntity>

@@ -1,9 +1,7 @@
 package li.cil.oc2.common.integration;
 
 import li.cil.oc2.common.integration.projectred.BundledCableHandler;
-
 import net.neoforged.fml.ModList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

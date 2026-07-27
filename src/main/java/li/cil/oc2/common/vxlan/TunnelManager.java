@@ -1,17 +1,15 @@
 package li.cil.oc2.common.vxlan;
 
-import li.cil.oc2.api.capabilities.NetworkInterface;
-import li.cil.oc2.common.config.Config;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Queue;
+import li.cil.oc2.api.capabilities.NetworkInterface;
+import li.cil.oc2.common.config.Config;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 public class TunnelManager {
     private static final Logger LOGGER = LogManager.getLogger();

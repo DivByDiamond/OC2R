@@ -1,7 +1,6 @@
 package li.cil.oc2.common.inet;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.annotation.Nullable;
 
 final class PendingFrame {

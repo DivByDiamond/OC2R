@@ -1,8 +1,7 @@
 package li.cil.oc2.common.item;
 
-import net.minecraft.Util;
-
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 
 public final class FlashMemoryItem extends AbstractStorageItem {
     @Nullable private String descriptionId;

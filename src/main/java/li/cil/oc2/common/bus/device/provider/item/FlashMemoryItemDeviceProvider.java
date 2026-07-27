@@ -1,14 +1,12 @@
 package li.cil.oc2.common.bus.device.provider.item;
 
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.vm.item.ByteBufferFlashStorageDevice;
 import li.cil.oc2.common.item.FlashMemoryItem;
-
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Optional;
 
 public final class FlashMemoryItemDeviceProvider extends AbstractItemDeviceProvider {
     public FlashMemoryItemDeviceProvider() {

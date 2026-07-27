@@ -1,7 +1,6 @@
 package li.cil.oc2.common.config;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 public final class AsyncConfig {

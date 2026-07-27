@@ -1,12 +1,11 @@
 package li.cil.oc2.common.util;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelAccessor;
-
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
 
 public record ChunkLocation(WeakReference<LevelAccessor> level, ChunkPos position) {
     public static ChunkLocation of(final LevelAccessor level, final BlockPos position) {

@@ -2,7 +2,6 @@ package li.cil.oc2.api.inet.session;
 
 import java.net.InetSocketAddress;
 import java.time.Instant;
-
 import javax.annotation.Nullable;
 
 public interface Session {

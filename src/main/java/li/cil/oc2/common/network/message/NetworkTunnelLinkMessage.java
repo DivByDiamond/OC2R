@@ -1,10 +1,8 @@
 package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
-
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
-
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

@@ -1,19 +1,16 @@
 package li.cil.oc2.common.blockentity.monitor;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-
+import java.util.UUID;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.UUID;
 
 final class MonitorStateManager {
     final DeviceGroup deviceGroup;

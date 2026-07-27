@@ -1,10 +1,9 @@
 package li.cil.oc2.api.bus.device.rpc;
 
+import java.util.List;
 import li.cil.oc2.api.bus.DeviceBus;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
-
-import java.util.List;
 
 /**
  * Provides an interface for an RPC device, describing the methods that can be called on it and the

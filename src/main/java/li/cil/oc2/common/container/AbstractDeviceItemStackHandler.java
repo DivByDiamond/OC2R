@@ -1,15 +1,12 @@
 package li.cil.oc2.common.container;
 
+import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
 
 public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackHandler {
     private final Supplier<HolderLookup.Provider> providerSupplier;

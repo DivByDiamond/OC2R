@@ -1,13 +1,12 @@
 package li.cil.oc2.common.container;
 
+import javax.annotation.Nullable;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractContainer extends AbstractContainerMenu {
     protected static final int HOTBAR_SIZE = 9;

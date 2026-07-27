@@ -1,11 +1,9 @@
 package li.cil.oc2.client.gui.widget;
 
+import java.util.function.Supplier;
 import li.cil.oc2.client.gui.terminal.TerminalInput;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import org.lwjgl.glfw.GLFW;
-
-import java.util.function.Supplier;
 
 final class TerminalKeyboardHandler {
     private final Terminal terminal;

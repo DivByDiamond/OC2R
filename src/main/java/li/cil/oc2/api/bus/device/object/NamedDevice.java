@@ -1,9 +1,8 @@
 package li.cil.oc2.api.bus.device.object;
 
+import java.util.Collection;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.Collection;
 
 /**
  * This interface is used to declare additional type names for a device on targets of an {@link

@@ -1,22 +1,20 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.*;
-import li.cil.oc2.api.inet.layer.SessionLayer;
-import li.cil.oc2.api.inet.session.DatagramSession;
-import li.cil.oc2.api.inet.session.Session;
-import li.cil.oc2.api.inet.session.StreamSession;
-import li.cil.oc2.common.config.Config;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.concurrent.atomic.AtomicReference;
+import li.cil.oc2.api.inet.*;
+import li.cil.oc2.api.inet.layer.SessionLayer;
+import li.cil.oc2.api.inet.session.DatagramSession;
+import li.cil.oc2.api.inet.session.Session;
+import li.cil.oc2.api.inet.session.StreamSession;
+import li.cil.oc2.common.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 public final class DefaultSessionLayer implements SessionLayer {
     private static final Logger LOGGER = LogManager.getLogger();

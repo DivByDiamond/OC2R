@@ -1,10 +1,10 @@
 package li.cil.oc2.common.item;
 
+import java.util.List;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
-
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -21,8 +21,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.List;
 
 public final class BusCableItem extends ModBlockItem {
     public BusCableItem(final Block block) {

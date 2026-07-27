@@ -1,11 +1,10 @@
 package li.cil.oc2.api.bus;
 
-import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 
 /**
  * Represents a single connection point on a device bus.

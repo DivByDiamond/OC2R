@@ -1,18 +1,15 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.LayerParameters;
-import li.cil.oc2.api.inet.layer.LinkLocalLayer;
-import li.cil.oc2.api.inet.layer.NetworkLayer;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Random;
+import li.cil.oc2.api.inet.LayerParameters;
+import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+import li.cil.oc2.api.inet.layer.NetworkLayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     private static final Logger LOGGER = LogManager.getLogger();

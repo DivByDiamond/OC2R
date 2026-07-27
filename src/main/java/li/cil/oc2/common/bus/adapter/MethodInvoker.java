@@ -1,18 +1,16 @@
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
-
-import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-import li.cil.oc2.api.bus.device.rpc.RPCInvocation;
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
-import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
-import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import li.cil.oc2.api.bus.device.rpc.RPCDevice;
+import li.cil.oc2.api.bus.device.rpc.RPCInvocation;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
+import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
+import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
 
 class MethodInvoker {
     private final Gson gson;

@@ -2,6 +2,8 @@ package li.cil.oc2.common.item;
 
 import static li.cil.oc2.common.Constants.*;
 
+import java.util.List;
+import java.util.function.Consumer;
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
@@ -13,7 +15,6 @@ import li.cil.oc2.common.entity.robot.RobotActions;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -33,9 +34,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 public final class RobotItem extends ModItem {
     @Override

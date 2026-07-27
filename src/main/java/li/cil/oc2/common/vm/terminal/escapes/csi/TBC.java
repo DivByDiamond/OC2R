@@ -1,8 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
-import li.cil.oc2.common.vm.terminal.Terminal;
-
 import java.util.Arrays;
+import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class TBC extends CSISequenceHandler {
     public TBC(final Terminal terminal) {

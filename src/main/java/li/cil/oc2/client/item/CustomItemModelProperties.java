@@ -2,7 +2,6 @@ package li.cil.oc2.client.item;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
-
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 

@@ -1,9 +1,7 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-
 import li.cil.oc2.common.blockentity.BlockEntities;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HalfTransparentBlock;

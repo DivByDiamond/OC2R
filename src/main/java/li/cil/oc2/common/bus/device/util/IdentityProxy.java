@@ -1,7 +1,6 @@
 package li.cil.oc2.common.bus.device.util;
 
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 public abstract class IdentityProxy<T> {

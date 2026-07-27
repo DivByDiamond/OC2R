@@ -1,18 +1,16 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.DatagramSession;
-import li.cil.oc2.api.inet.session.Session;
-import li.cil.oc2.api.inet.session.StreamSession;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Queue;
 import java.util.function.Function;
+import li.cil.oc2.api.inet.session.DatagramSession;
+import li.cil.oc2.api.inet.session.Session;
+import li.cil.oc2.api.inet.session.StreamSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class SessionChannelHelper {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,15 +1,13 @@
 package li.cil.oc2.common.item;
 
+import java.util.List;
 import li.cil.oc2.common.util.TooltipUtils;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.List;
 
 public class ModItem extends Item {
     public ModItem(final Properties properties) {

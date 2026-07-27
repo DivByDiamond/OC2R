@@ -1,13 +1,11 @@
 package li.cil.oc2.common.serialization;
 
+import javax.annotation.Nullable;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.SerializationException;
 import li.cil.oc2.common.serialization.nbt.NBTDeserializerImpl;
 import li.cil.oc2.common.serialization.nbt.NBTSerializerImpl;
-
 import net.minecraft.nbt.CompoundTag;
-
-import javax.annotation.Nullable;
 
 /**
  * Utility for serializing/deserializing arbitrary objects to/from NBT using Ceres serialization

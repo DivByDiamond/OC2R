@@ -3,7 +3,7 @@ package li.cil.oc2.common.bus.device.vm.item;
 import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
 
 import com.google.common.eventbus.Subscribe;
-
+import java.nio.ByteBuffer;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
@@ -20,13 +20,10 @@ import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.device.flash.FlashMemoryDevice;
 import li.cil.sedna.memory.MemoryMaps;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-
-import java.nio.ByteBuffer;
 
 public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         implements VMDevice, ItemDevice, FirmwareLoader {

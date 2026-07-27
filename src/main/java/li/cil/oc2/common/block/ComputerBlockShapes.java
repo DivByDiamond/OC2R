@@ -1,7 +1,6 @@
 package li.cil.oc2.common.block;
 
 import li.cil.oc2.common.util.VoxelShapeUtils;
-
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;

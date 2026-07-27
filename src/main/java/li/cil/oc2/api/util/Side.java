@@ -1,9 +1,8 @@
 package li.cil.oc2.api.util;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-
-import javax.annotation.Nullable;
 
 /**
  * This enum indicates a side of a block device.

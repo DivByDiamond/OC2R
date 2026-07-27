@@ -2,18 +2,16 @@ package li.cil.oc2.common.vm.context.global;
 
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
 import li.cil.oc2.common.vm.context.MemoryRangeManager;
 import li.cil.sedna.api.Board;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryRange;
 import li.cil.sedna.api.memory.MemoryRangeAllocationStrategy;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.OptionalLong;
 
 final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, MemoryRangeManager {
     private final Board board;

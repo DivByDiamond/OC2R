@@ -1,11 +1,10 @@
 package li.cil.oc2.common.blockentity.network;
 
-import net.minecraft.nbt.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.minecraft.nbt.*;
 
 final class SwitchHostTable {
     private final Map<Long, HostEntry> hostTable = new HashMap<>();

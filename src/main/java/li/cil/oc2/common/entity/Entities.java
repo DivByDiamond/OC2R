@@ -1,7 +1,7 @@
 package li.cil.oc2.common.entity;
 
+import java.util.function.Function;
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -9,8 +9,6 @@ import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Function;
 
 public final class Entities {
     private static final DeferredRegister<EntityType<?>> ENTITIES =

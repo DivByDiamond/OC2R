@@ -1,11 +1,9 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.util.function.Supplier;
 import li.cil.oc2.common.vm.VirtualMachine;
-
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-
-import java.util.function.Supplier;
 
 public final class RobotAnimationState {
     private static final float TOP_IDLE_Y = -2f / 16f;

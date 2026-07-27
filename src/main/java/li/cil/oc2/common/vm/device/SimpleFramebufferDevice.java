@@ -1,14 +1,13 @@
 package li.cil.oc2.common.vm.device;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.BitSet;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.RgbToYuv420j;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.BitSet;
 
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public static final int STRIDE = 2;

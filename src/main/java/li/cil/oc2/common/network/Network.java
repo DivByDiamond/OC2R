@@ -2,7 +2,6 @@ package li.cil.oc2.common.network;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.network.message.*;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

@@ -2,14 +2,12 @@ package li.cil.oc2.common.bus.element;
 
 import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
 
+import java.util.*;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.util.NBTTagIds;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-
-import java.util.*;
 
 class GroupManager<TEntry extends GroupEntry, TQuery> {
     private static final String GROUPS_TAG_NAME = "groups";

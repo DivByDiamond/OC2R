@@ -5,7 +5,6 @@ import static li.cil.oc2.common.util.TranslationUtils.text;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.ItemTags;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;

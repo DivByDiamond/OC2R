@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.context.global;
 
+import java.util.BitSet;
+import java.util.OptionalInt;
 import li.cil.oc2.api.bus.device.vm.context.InterruptAllocator;
 import li.cil.oc2.common.vm.context.InterruptManager;
 import li.cil.oc2.common.vm.context.InterruptValidator;
-
-import java.util.BitSet;
-import java.util.OptionalInt;
 
 final class GlobalInterruptAllocator
         implements InterruptAllocator, InterruptValidator, InterruptManager {

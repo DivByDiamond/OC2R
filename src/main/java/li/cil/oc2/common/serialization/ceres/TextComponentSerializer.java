@@ -1,14 +1,12 @@
 package li.cil.oc2.common.serialization.ceres;
 
+import javax.annotation.Nullable;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
 import li.cil.ceres.api.SerializationVisitor;
 import li.cil.ceres.api.Serializer;
-
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-
-import javax.annotation.Nullable;
 
 public final class TextComponentSerializer implements Serializer<Component> {
     @Override

@@ -1,18 +1,15 @@
 package li.cil.oc2.common.bus.device.data;
 
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.util.Registries;
-
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public final class BlockDeviceDataRegistry {

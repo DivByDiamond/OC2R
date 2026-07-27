@@ -1,13 +1,10 @@
 package li.cil.oc2.common.bus.element;
 
+import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-
-import java.util.*;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry, TQuery>
         extends AbstractDeviceBusElement {

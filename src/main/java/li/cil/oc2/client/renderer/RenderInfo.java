@@ -1,12 +1,10 @@
 package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-
 import li.cil.oc2.common.blockentity.monitor.FrameConsumer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
-
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;

@@ -2,13 +2,11 @@ package li.cil.oc2.common.bus.element;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-
+import java.util.*;
+import java.util.stream.Collectors;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class AbstractDeviceBusElement implements DeviceBusElement {
     protected final Object2IntArrayMap<Device> devices = new Object2IntArrayMap<>();

@@ -1,7 +1,6 @@
 package li.cil.oc2.data;
 
 import li.cil.oc2.common.item.Items;
-
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;

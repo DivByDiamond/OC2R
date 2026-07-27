@@ -1,12 +1,10 @@
 package li.cil.oc2.common.vm.terminal.fonts;
 
-import li.cil.oc2.common.Main;
-
-import net.minecraft.resources.ResourceLocation;
-
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import li.cil.oc2.common.Main;
+import net.minecraft.resources.ResourceLocation;
 
 public class FontHandling {
     public static final FontAtlas FontAtlas = new FontAtlas(1024, 1024, "font_atlas");

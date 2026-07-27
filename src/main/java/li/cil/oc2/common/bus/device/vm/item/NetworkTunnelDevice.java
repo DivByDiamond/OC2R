@@ -2,22 +2,19 @@ package li.cil.oc2.common.bus.device.vm.item;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
+import java.time.Duration;
+import java.util.*;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.item.NetworkTunnelItem;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
-import java.time.Duration;
-import java.util.*;
 
 public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
     public NetworkTunnelDevice(final ItemStack identity) {

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
@@ -8,14 +9,11 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.*;
 import li.cil.oc2.common.vm.VirtualMachine;
-
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractMonitorContainer extends AbstractMachineContainer {
     private final MonitorBlockEntity monitor;

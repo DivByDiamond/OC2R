@@ -18,7 +18,6 @@ import li.cil.oc2.common.blockentity.network.NetworkHubBlockEntity;
 import li.cil.oc2.common.blockentity.network.NetworkSwitchBlockEntity;
 import li.cil.oc2.common.blockentity.network.VxlanBlockEntity;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;

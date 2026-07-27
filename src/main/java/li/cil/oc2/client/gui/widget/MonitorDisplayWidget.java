@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.AbstractMonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.KeyCodeMapping;
@@ -11,18 +11,14 @@ import li.cil.oc2.common.container.AbstractMonitorContainer;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.MonitorInputMessage;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
-
-import javax.annotation.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public final class MonitorDisplayWidget {

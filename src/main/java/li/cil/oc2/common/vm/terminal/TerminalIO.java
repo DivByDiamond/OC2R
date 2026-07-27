@@ -1,12 +1,10 @@
 package li.cil.oc2.common.vm.terminal;
 
-import li.cil.oc2.common.vm.terminal.Terminal.State;
-import li.cil.oc2.common.vm.terminal.escapes.*;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.vm.terminal.Terminal.State;
+import li.cil.oc2.common.vm.terminal.escapes.*;
 
 class TerminalIO {
     private final Terminal terminal;

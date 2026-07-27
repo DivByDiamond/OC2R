@@ -1,13 +1,11 @@
 package li.cil.oc2.common.config;
 
-import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.config.client.GUISpec;
-
-import net.minecraft.world.item.Tiers;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.config.client.GUISpec;
+import net.minecraft.world.item.Tiers;
 
 @SuppressWarnings("FieldMayBeFinal")
 public final class Config {

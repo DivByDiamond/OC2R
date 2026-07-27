@@ -1,9 +1,7 @@
 package li.cil.oc2.common.mixin;
 
 import li.cil.oc2.client.renderer.ProjectorDepthRenderer;
-
 import net.minecraft.client.renderer.culling.Frustum;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

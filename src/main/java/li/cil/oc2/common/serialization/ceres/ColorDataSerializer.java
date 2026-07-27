@@ -6,7 +6,6 @@ import li.cil.ceres.api.SerializationVisitor;
 import li.cil.ceres.api.Serializer;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
-
 import org.jetbrains.annotations.Nullable;
 
 public class ColorDataSerializer implements Serializer<ColorData> {

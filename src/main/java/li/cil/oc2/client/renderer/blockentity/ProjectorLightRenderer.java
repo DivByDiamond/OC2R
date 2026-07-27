@@ -2,11 +2,8 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import li.cil.oc2.client.renderer.ModRenderType;
-
 import net.minecraft.client.renderer.MultiBufferSource;
-
 import org.joml.Matrix4f;
 
 final class ProjectorLightRenderer {

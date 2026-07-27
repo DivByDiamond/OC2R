@@ -1,5 +1,7 @@
 package li.cil.oc2.common.vm.lifecycle;
 
+import java.time.Duration;
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -11,15 +13,10 @@ import li.cil.oc2.common.util.TickUtils;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.sedna.api.memory.MemoryAccessException;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.time.Duration;
-import java.util.Optional;
 
 public final class VMLifecycle {
     private static final Logger LOGGER = LogManager.getLogger();

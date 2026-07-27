@@ -1,5 +1,7 @@
 package li.cil.oc2.common.util;
 
+import java.util.*;
+import javax.annotation.Nullable;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -9,10 +11,6 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
-import java.util.*;
-
-import javax.annotation.Nullable;
 
 public final class ServerScheduler {
     private static final TickScheduler globalTickScheduler = new TickScheduler();

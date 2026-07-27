@@ -1,17 +1,5 @@
 package li.cil.oc2.common.bus.device.vm.item;
 
-import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.serialization.BlobStorage;
-import li.cil.oc2.common.util.BlockLocation;
-import li.cil.oc2.common.util.SoundEvents;
-import li.cil.oc2.common.util.ThrottledSoundEmitter;
-import li.cil.sedna.device.block.ByteBufferBlockDevice;
-
-import net.minecraft.world.item.ItemStack;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -21,6 +9,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
+import li.cil.oc2.common.config.AsyncConfig;
+import li.cil.oc2.common.serialization.BlobStorage;
+import li.cil.oc2.common.util.BlockLocation;
+import li.cil.oc2.common.util.SoundEvents;
+import li.cil.oc2.common.util.ThrottledSoundEmitter;
+import li.cil.sedna.device.block.ByteBufferBlockDevice;
+import net.minecraft.world.item.ItemStack;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HardDriveDevice extends AbstractBlockStorageDevice<ByteBufferBlockDevice, ItemStack> {
     private final int size;

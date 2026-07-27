@@ -1,9 +1,8 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
-
-import java.util.Arrays;
 
 public class ECH extends CSISequenceHandler {
     public ECH(final Terminal terminal) {

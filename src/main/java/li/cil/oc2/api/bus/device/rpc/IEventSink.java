@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device.rpc;
 
 import com.google.gson.JsonElement;
-
 import java.util.UUID;
 
 /**

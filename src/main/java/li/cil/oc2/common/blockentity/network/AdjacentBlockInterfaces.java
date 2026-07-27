@@ -1,22 +1,19 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 class AdjacentBlockInterfaces {
     private static final int TUNNEL_INDEX = 0;

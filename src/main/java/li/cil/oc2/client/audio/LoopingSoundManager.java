@@ -1,10 +1,9 @@
 package li.cil.oc2.client.audio;
 
+import java.util.WeakHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.WeakHashMap;
 
 public final class LoopingSoundManager {
     private static final WeakHashMap<BlockEntity, LoopingBlockEntitySound> BLOCK_ENTITY_SOUNDS =

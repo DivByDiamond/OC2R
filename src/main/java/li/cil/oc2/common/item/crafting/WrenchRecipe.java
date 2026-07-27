@@ -1,9 +1,7 @@
 package li.cil.oc2.common.item.crafting;
 
 import com.mojang.serialization.MapCodec;
-
 import li.cil.oc2.common.integration.Wrenches;
-
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.NonNullList;
@@ -19,7 +17,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.neoforged.neoforge.common.conditions.ICondition;
-
 import org.jetbrains.annotations.Nullable;
 
 public final class WrenchRecipe extends ShapelessRecipe {

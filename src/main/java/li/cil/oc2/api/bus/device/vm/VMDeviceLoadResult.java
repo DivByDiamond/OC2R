@@ -1,10 +1,8 @@
 package li.cil.oc2.api.bus.device.vm;
 
-import li.cil.oc2.api.bus.device.vm.context.VMContext;
-
-import net.minecraft.network.chat.Component;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.vm.context.VMContext;
+import net.minecraft.network.chat.Component;
 
 /**
  * {@link VMDevice}s may signal the result of their {@link VMDevice#mount(VMContext)} operations.

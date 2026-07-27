@@ -1,12 +1,10 @@
 package li.cil.oc2.common.bus.device.provider.util;
 
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
-
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-
-import java.util.Optional;
 
 public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity>
         extends AbstractBlockDeviceProvider {

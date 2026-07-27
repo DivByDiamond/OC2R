@@ -1,18 +1,16 @@
 package li.cil.oc2.common.network.message;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.ClientBlockEntityLookup;
 import li.cil.oc2.common.util.Oc2rStreamCodecs;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-import java.nio.ByteBuffer;
 
 public record ProjectorFramebufferMessage(BlockPos pos, ByteBuffer frame)
         implements AbstractMessage {

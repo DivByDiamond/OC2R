@@ -2,7 +2,6 @@ package li.cil.oc2.api.bus.device.rpc;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-
 import java.util.Optional;
 
 /**

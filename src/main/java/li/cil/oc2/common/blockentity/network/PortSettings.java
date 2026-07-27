@@ -2,11 +2,10 @@ package li.cil.oc2.common.blockentity.network;
 
 import static java.util.Collections.emptyList;
 
-import net.minecraft.nbt.*;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.minecraft.nbt.*;
 
 final class PortSettings {
     public short untagged;

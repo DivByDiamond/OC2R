@@ -1,7 +1,6 @@
 package li.cil.oc2.common.block;
 
 import li.cil.oc2.api.API;
-
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;

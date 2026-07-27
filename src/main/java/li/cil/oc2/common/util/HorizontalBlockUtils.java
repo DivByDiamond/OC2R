@@ -1,12 +1,10 @@
 package li.cil.oc2.common.util;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.util.Side;
-
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
 
 public final class HorizontalBlockUtils {
     public static final int HORIZONTAL_DIRECTION_COUNT = 4;

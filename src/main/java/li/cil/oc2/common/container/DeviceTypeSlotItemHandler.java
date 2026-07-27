@@ -1,15 +1,12 @@
 package li.cil.oc2.common.container;
 
 import com.mojang.datafixers.util.Pair;
-
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.DeviceType;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
-
-import javax.annotation.Nullable;
 
 public final class DeviceTypeSlotItemHandler extends SlotItemHandler {
     private final DeviceType deviceType;

@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.terminal.escapes;
 
+import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.modes.ModeState;
 import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
-
-import java.util.Arrays;
 
 public class RIS {
     public static void execute(Terminal terminal) {

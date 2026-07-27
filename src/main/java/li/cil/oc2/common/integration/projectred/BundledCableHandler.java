@@ -2,16 +2,13 @@ package li.cil.oc2.common.integration.projectred;
 
 import li.cil.oc2.common.blockentity.misc.RedstoneInterfaceBlockEntity;
 import li.cil.oc2.common.integration.util.BundledRedstone;
-
 import mrtjp.projectred.api.IBundledTileInteraction;
 import mrtjp.projectred.api.ITransmissionAPI;
 import mrtjp.projectred.api.ProjectRedAPI;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 import org.jetbrains.annotations.Nullable;
 
 public final class BundledCableHandler implements IBundledTileInteraction {

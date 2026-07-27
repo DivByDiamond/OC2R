@@ -1,12 +1,10 @@
 package li.cil.oc2.api.bus.device.rpc;
 
-import li.cil.oc2.api.bus.device.object.ObjectDevice;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.object.ObjectDevice;
 
 /**
  * Represents a single method that can be exposed by a {@link RPCDevice}.

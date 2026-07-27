@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.element;
 
+import java.util.*;
 import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
@@ -11,7 +12,6 @@ import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -22,10 +22,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
 
 public abstract class AbstractBlockDeviceBusElement
         extends AbstractGroupingDeviceBusElement<BlockEntry, BlockDeviceQuery>

@@ -1,12 +1,5 @@
 package li.cil.oc2.common;
 
-import joptsimple.util.InetAddressConverter;
-
-import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.inet.DefaultSessionLayer;
-
-import org.apache.logging.log4j.LogManager;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Random;
+import joptsimple.util.InetAddressConverter;
+import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.inet.DefaultSessionLayer;
+import org.apache.logging.log4j.LogManager;
 
 final class NativeLoader {
     private static final HashMap<String, String> supportedArch = new HashMap<>();

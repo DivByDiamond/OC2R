@@ -1,8 +1,7 @@
 package li.cil.oc2.common.inet;
 
-import net.minecraft.nbt.Tag;
-
 import java.util.Optional;
+import net.minecraft.nbt.Tag;
 
 public interface InternetConnection {
     Optional<Tag> saveAdapterState();

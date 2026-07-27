@@ -1,11 +1,9 @@
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
-
+import java.lang.reflect.Type;
 import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 import li.cil.oc2.api.bus.device.rpc.RPCParameter;
-
-import java.lang.reflect.Type;
 
 public final class RPCMethodJsonSerializer implements JsonSerializer<RPCMethod> {
     @Override

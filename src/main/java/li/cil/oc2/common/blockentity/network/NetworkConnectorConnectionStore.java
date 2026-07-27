@@ -1,16 +1,14 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.util.HashSet;
+import java.util.Set;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-
-import java.util.HashSet;
-import java.util.Set;
 
 final class NetworkConnectorConnectionStore {
     private static final String CONNECTIONS_TAG_NAME = "connections";

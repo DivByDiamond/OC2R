@@ -1,14 +1,11 @@
 package li.cil.oc2.common.vm;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
-
+import java.nio.ByteBuffer;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.sedna.device.serial.UART16550A;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.ByteBuffer;
 
 public abstract class AbstractTerminalVMRunner extends VMRunner {
     private static final Logger LOGGER = LogManager.getLogger();

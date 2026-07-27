@@ -1,5 +1,8 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
@@ -9,7 +12,6 @@ import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -18,10 +20,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkHubBlockEntity extends ModBlockEntity implements NetworkInterface {

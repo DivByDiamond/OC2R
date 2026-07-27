@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
@@ -12,11 +13,8 @@ import li.cil.oc2.common.network.message.RobotPowerMessage;
 import li.cil.oc2.common.network.message.RobotTerminalInputMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
-
-import java.nio.ByteBuffer;
 
 public abstract class AbstractRobotContainer extends AbstractMachineTerminalContainer {
     private final Robot robot;

@@ -1,21 +1,19 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.layer.SessionLayer;
-import li.cil.oc2.api.inet.session.EchoSession;
-import li.cil.oc2.api.inet.session.Session;
-import li.cil.oc2.common.Main;
-import li.cil.oc2.common.config.Config;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import li.cil.oc2.api.inet.layer.SessionLayer;
+import li.cil.oc2.api.inet.session.EchoSession;
+import li.cil.oc2.api.inet.session.Session;
+import li.cil.oc2.common.Main;
+import li.cil.oc2.common.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 final class EchoHandler {
     private static final Logger LOGGER = LogManager.getLogger();

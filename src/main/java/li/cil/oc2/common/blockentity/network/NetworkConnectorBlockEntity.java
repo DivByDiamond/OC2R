@@ -1,5 +1,9 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.client.renderer.NetworkCableRenderer;
@@ -11,7 +15,6 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -24,12 +27,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkConnectorBlockEntity extends ModBlockEntity

@@ -1,11 +1,9 @@
 package li.cil.oc2.common.blockentity.computer.contraption;
 
-import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 
 public final class ComputerContraptionHandler {
     private static final ConcurrentHashMap<UUID, ComputerBlockEntity> PRIMARY_BY_DEVICE_ID =

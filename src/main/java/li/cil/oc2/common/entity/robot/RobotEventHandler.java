@@ -1,15 +1,13 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.util.Objects;
+import java.util.function.Consumer;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
-
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
-
-import java.util.Objects;
-import java.util.function.Consumer;
 
 public final class RobotEventHandler {
     private final Robot robot;

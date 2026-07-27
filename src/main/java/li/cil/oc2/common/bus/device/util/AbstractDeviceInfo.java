@@ -1,10 +1,8 @@
 package li.cil.oc2.common.bus.device.util;
 
-import li.cil.oc2.api.bus.device.Device;
-
 import java.util.Objects;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.Device;
 
 public abstract class AbstractDeviceInfo<TProvider, TDevice extends Device> {
     @Nullable public final TProvider provider;

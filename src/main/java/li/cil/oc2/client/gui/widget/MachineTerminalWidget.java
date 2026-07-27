@@ -1,25 +1,20 @@
 package li.cil.oc2.client.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import java.nio.ByteBuffer;
+import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
 import org.joml.Matrix4f;
-
-import java.nio.ByteBuffer;
-
-import javax.annotation.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public final class MachineTerminalWidget {

@@ -6,23 +6,19 @@ import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-
-import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
-
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-
-import org.joml.Matrix4f;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 
 public class MonitorGUIRenderer {
     private final transient Set<RendererModel> renderers =

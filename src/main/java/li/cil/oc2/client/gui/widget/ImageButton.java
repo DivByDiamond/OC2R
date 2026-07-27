@@ -1,11 +1,13 @@
 package li.cil.oc2.client.gui.widget;
 
+import static java.util.Collections.emptyList;
 import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
 
-import static java.util.Collections.emptyList;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,12 +15,6 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 public abstract class ImageButton extends AbstractButton {
     private static final long PRESS_DURATION = 200;

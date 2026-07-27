@@ -1,19 +1,16 @@
 package li.cil.oc2.common.vm;
 
-import li.cil.oc2.api.API;
-import li.cil.oc2.common.config.Config;
-
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import li.cil.oc2.api.API;
+import li.cil.oc2.common.config.Config;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Cooperative memory allocation limit enforcement.

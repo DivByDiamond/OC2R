@@ -3,7 +3,6 @@ package li.cil.oc2.data;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.Items;
-
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;

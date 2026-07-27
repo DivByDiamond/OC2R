@@ -1,5 +1,7 @@
 package li.cil.oc2.common.bus.device.provider.item;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
@@ -9,13 +11,8 @@ import li.cil.oc2.common.bus.device.vm.item.HardDriveDeviceWithInitialData;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.HardDriveWithExternalDataItem;
 import li.cil.oc2.common.util.LocationSupplierUtils;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractItemDeviceProvider {
     public HardDriveWithExternalDataItemDeviceProvider() {

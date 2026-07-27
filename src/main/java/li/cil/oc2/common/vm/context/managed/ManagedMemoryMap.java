@@ -1,14 +1,12 @@
 package li.cil.oc2.common.vm.context.managed;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MappedMemoryRange;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.api.memory.MemoryRange;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 final class ManagedMemoryMap implements MemoryMap {
     private final MemoryMap memoryMap;

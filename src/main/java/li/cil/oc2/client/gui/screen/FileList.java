@@ -1,5 +1,10 @@
 package li.cil.oc2.client.gui.screen;
 
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -7,16 +12,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 final class FileList extends ObjectSelectionList<FileList.FileEntry> {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.config.client;
 
 import li.cil.oc2.common.config.Config;
-
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class GUISpec {

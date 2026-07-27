@@ -1,10 +1,8 @@
 package li.cil.oc2.client.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.common.container.RobotInventoryContainer;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;

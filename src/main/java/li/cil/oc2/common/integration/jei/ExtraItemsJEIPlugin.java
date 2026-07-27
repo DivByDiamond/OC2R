@@ -1,26 +1,22 @@
 package li.cil.oc2.common.integration.jei;
 
 import com.google.common.base.Strings;
-
+import java.util.Comparator;
+import java.util.List;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.item.AbstractBlockDeviceItem;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.ItemStackUtils;
-
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.ISubtypeRegistration;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Comparator;
-import java.util.List;
 
 @JeiPlugin
 @SuppressWarnings("unused")

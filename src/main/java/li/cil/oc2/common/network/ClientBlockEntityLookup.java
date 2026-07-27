@@ -1,17 +1,15 @@
 package li.cil.oc2.common.network;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.function.Consumer;
 
 public final class ClientBlockEntityLookup {
     private static final Logger LOGGER = LogManager.getLogger();

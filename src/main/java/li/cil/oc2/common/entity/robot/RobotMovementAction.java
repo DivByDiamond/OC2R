@@ -1,22 +1,19 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.time.Duration;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
-
-import java.time.Duration;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 public final class RobotMovementAction extends AbstractRobotAction {
     public static final double TARGET_EPSILON = 0.0001;

@@ -3,7 +3,6 @@ package li.cil.oc2.client.gui.screen;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.Constants;
@@ -11,7 +10,6 @@ import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusInterfaceNameMessage;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -19,7 +17,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
-
 import org.lwjgl.glfw.GLFW;
 
 public final class BusInterfaceScreen extends Screen {

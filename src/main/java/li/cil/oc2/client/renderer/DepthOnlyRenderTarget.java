@@ -7,7 +7,6 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.TextureUtil;
-
 import net.minecraft.client.Minecraft;
 
 final class DepthOnlyRenderTarget extends TextureTarget {

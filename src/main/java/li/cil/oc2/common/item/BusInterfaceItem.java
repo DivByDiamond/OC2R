@@ -1,12 +1,14 @@
 package li.cil.oc2.common.item;
 
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
-
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,11 +29,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {

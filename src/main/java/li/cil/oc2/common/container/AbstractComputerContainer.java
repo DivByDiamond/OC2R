@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
@@ -12,14 +13,11 @@ import li.cil.oc2.common.network.message.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.OpenComputerTerminalMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-
-import java.nio.ByteBuffer;
 
 public abstract class AbstractComputerContainer extends AbstractMachineTerminalContainer {
     private final ComputerBlockEntity computer;

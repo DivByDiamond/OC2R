@@ -1,5 +1,7 @@
 package li.cil.oc2.common.util;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -8,10 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 public final class NBTUtils {
     public static <T extends Enum<T>> void putEnum(

@@ -1,8 +1,7 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.EchoSession;
-
 import java.nio.ByteBuffer;
+import li.cil.oc2.api.inet.session.EchoSession;
 
 final class EchoResponse {
     final byte[] payload;

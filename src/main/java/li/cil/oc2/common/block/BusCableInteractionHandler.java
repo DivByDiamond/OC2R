@@ -3,6 +3,8 @@ package li.cil.oc2.common.block;
 import static li.cil.oc2.common.block.BusCableStateProperties.*;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import java.util.List;
+import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.screen.BusInterfaceScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
@@ -10,7 +12,6 @@ import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,10 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 final class BusCableInteractionHandler {
     @Nullable

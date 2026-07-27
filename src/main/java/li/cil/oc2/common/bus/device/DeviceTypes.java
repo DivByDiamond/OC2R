@@ -2,11 +2,11 @@ package li.cil.oc2.common.bus.device;
 
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.common.bus.device.util.DeviceTypeImpl;
 import li.cil.oc2.common.tags.ItemTags;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -14,8 +14,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
-
-import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class DeviceTypes {

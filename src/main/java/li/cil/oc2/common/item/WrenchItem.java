@@ -1,7 +1,7 @@
 package li.cil.oc2.common.item;
 
+import java.util.Objects;
 import li.cil.oc2.common.tags.BlockTags;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
@@ -15,8 +15,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Objects;
 
 public final class WrenchItem extends ModItem {
     @Override

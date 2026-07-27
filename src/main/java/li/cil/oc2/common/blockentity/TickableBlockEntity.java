@@ -1,13 +1,11 @@
 package li.cil.oc2.common.blockentity;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.util.BlockEntityUtils;
-
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-
-import javax.annotation.Nullable;
 
 /**
  * Convenience interface for enabling side-specific ticking of {@link BlockEntity}s using {@link

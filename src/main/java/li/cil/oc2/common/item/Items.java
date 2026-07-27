@@ -1,11 +1,12 @@
 package li.cil.oc2.common.item;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.config.Config;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -14,9 +15,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public final class Items {

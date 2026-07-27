@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device.object;
 
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 

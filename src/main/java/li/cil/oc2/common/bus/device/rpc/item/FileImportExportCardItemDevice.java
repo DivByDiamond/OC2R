@@ -1,5 +1,8 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.Parameter;
@@ -8,16 +11,10 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ExportedFileMessage;
 import li.cil.oc2.common.network.message.RequestImportedFileMessage;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice

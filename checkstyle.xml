@@ -18,9 +18,20 @@
 
   <module name="SuppressWarningsFilter"/>
 
-  <module name="SuppressionFilter">
-    <property name="file" value="checkstyle-suppressions.xml"/>
-    <property name="optional" value="true"/>
+  <module name="SuppressionSingleFilter">
+    <property name="files" value=".*[/\\]jcodec[/\\].*"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value="(?!.*[/\\]api[/\\]).*"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="HideUtilityClassConstructor"/>
+    <property name="files" value=".*[/\\]data[/\\].*"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MethodLength"/>
+    <property name="files" value=".*[/\\]data[/\\].*"/>
   </module>
 
   <module name="FileTabCharacter">

@@ -1,12 +1,10 @@
 package li.cil.oc2.common.integration;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.tags.ItemTags;
-
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-
-import javax.annotation.Nullable;
 
 public final class Wrenches {
     public static boolean isWrench(@Nullable final ItemStack stack) {

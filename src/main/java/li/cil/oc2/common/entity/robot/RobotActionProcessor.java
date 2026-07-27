@@ -1,15 +1,12 @@
 package li.cil.oc2.common.entity.robot;
 
-import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.util.NBTTagIds;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-
 import java.util.ArrayDeque;
 import java.util.Queue;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.entity.Robot;
+import li.cil.oc2.common.util.NBTTagIds;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 
 final class RobotActionProcessor {
     private static final int MAX_QUEUED_ACTIONS = 16;

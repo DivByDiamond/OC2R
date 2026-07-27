@@ -1,7 +1,6 @@
 package li.cil.oc2.common.components;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;

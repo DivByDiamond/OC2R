@@ -2,11 +2,9 @@ package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.rpc.RPCInvocation;
 import li.cil.oc2.api.bus.device.rpc.RPCParameter;
-
-import java.util.Optional;
 
 record RPCInvocationImpl(JsonArray parameters, Gson gson) implements RPCInvocation {
     @Override

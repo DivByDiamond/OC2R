@@ -3,7 +3,6 @@ package li.cil.oc2.client.gui.screen;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
 import li.cil.oc2.common.container.RobotTerminalContainer;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;

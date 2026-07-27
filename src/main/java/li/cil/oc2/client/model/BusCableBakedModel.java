@@ -1,11 +1,15 @@
 package li.cil.oc2.client.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -25,13 +29,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class BusCableBakedModel implements IDynamicBakedModel {
     public static final ModelProperty<BusCableSupportSide> BUS_CABLE_SUPPORT_PROPERTY =

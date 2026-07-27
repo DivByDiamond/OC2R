@@ -3,10 +3,12 @@ package li.cil.oc2.common.block;
 import static li.cil.oc2.common.block.BusCableStateProperties.*;
 
 import com.mojang.serialization.MapCodec;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.item.Items;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -33,12 +35,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public final class BusCableBlock extends BaseEntityBlock {
     private final VoxelShape[] shapes;

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 

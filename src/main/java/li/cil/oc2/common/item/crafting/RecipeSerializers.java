@@ -1,7 +1,6 @@
 package li.cil.oc2.common.item.crafting;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.bus.api.IEventBus;

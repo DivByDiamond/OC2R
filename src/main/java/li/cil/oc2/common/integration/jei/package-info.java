@@ -2,6 +2,5 @@
 @MethodsReturnNonnullByDefault
 package li.cil.oc2.common.integration.jei;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;

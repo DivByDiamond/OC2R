@@ -1,7 +1,6 @@
 package li.cil.oc2.common.blockentity.projector;
 
 import li.cil.oc2.common.block.ProjectorBlock;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;

@@ -1,7 +1,9 @@
 package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
-
+import java.nio.ByteBuffer;
+import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
@@ -12,14 +14,8 @@ import li.cil.oc2.common.vm.terminal.escapes.dcs.DCSManager;
 import li.cil.oc2.common.vm.terminal.escapes.osc.OSCManager;
 import li.cil.oc2.common.vm.terminal.modes.ModeState;
 import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.nio.ByteBuffer;
-import java.util.*;
-
-import javax.annotation.Nullable;
 
 @Serialized
 public class Terminal {

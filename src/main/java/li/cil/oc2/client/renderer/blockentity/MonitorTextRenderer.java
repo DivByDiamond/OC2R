@@ -6,14 +6,15 @@ import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.Material;
@@ -22,12 +23,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-
 import org.joml.Matrix4f;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 final class MonitorTextRenderer {
     static final ResourceLocation OVERLAY_POWER_LOCATION =

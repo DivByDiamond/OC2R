@@ -1,20 +1,17 @@
 package li.cil.oc2.common.inet;
 
+import java.nio.ByteBuffer;
+import java.util.Optional;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
 import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.StreamSession;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.ByteBuffer;
-import java.util.Optional;
 
 public final class DefaultTransportLayer implements TransportLayer {
     private static final Logger LOGGER = LogManager.getLogger();

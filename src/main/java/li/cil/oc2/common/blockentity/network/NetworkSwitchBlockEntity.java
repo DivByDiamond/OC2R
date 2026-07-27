@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.mojang.datafixers.util.Pair;
-
+import java.util.*;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
@@ -14,7 +14,6 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -22,8 +21,6 @@ import net.minecraft.nbt.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
-
-import java.util.*;
 
 public final class NetworkSwitchBlockEntity extends ModBlockEntity
         implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {

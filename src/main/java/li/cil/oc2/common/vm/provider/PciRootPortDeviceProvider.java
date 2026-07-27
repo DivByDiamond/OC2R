@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.provider;
 
+import java.util.Optional;
 import li.cil.oc2.common.vm.device.PciRootPortDevice;
 import li.cil.sedna.api.device.Device;
 import li.cil.sedna.api.device.MemoryMappedDevice;
@@ -9,8 +10,6 @@ import li.cil.sedna.api.devicetree.DeviceTree;
 import li.cil.sedna.api.devicetree.DeviceTreeProvider;
 import li.cil.sedna.api.memory.MappedMemoryRange;
 import li.cil.sedna.api.memory.MemoryMap;
-
-import java.util.Optional;
 
 public final class PciRootPortDeviceProvider implements DeviceTreeProvider {
     @Override

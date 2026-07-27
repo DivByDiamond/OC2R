@@ -1,10 +1,8 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ServerCanceledImportFileMessage;
-
 import net.minecraft.server.level.ServerPlayer;
 
 final class ImportFileRequestManager {

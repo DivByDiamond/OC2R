@@ -2,17 +2,16 @@ package li.cil.oc2.client.gui.screen;
 
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.List;
-import java.util.function.Supplier;
 
 public final class FileChooserScreen extends Screen {
 

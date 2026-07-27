@@ -1,23 +1,20 @@
 package li.cil.oc2.common.network;
 
-import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import li.cil.oc2.common.config.Config;
-
-import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.API;
+import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
+import li.cil.oc2.common.config.Config;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorLoadBalancer {

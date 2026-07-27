@@ -1,10 +1,8 @@
 package li.cil.oc2.common.config.common;
 
-import li.cil.oc2.common.config.Config;
-
-import net.neoforged.neoforge.common.ModConfigSpec;
-
 import java.util.UUID;
+import li.cil.oc2.common.config.Config;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class AdminSpec {
     // ROOT //

@@ -2,17 +2,14 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.blockentity.misc.GatewayAnimationState;
 import li.cil.oc2.common.blockentity.misc.InternetGateWayBlockEntity;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.phys.AABB;
-
 import org.joml.Matrix4f;
 
 public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGateWayBlockEntity> {

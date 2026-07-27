@@ -1,5 +1,8 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.block.Blocks;
@@ -9,7 +12,6 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.vxlan.TunnelManager;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -18,11 +20,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class VxlanBlockEntity extends ModBlockEntity

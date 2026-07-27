@@ -1,10 +1,9 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import javax.annotation.Nullable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
-
-import javax.annotation.Nullable;
 
 class RepairHelper {
     @Nullable

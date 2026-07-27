@@ -1,11 +1,10 @@
 package li.cil.oc2.api.bus.device.object;
 
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 
 /**
  * Utility annotation to allow generating lists of {@link RPCMethod}s using {@link

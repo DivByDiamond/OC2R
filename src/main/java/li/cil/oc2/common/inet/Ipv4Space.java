@@ -1,14 +1,12 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.common.util.IntegerSpace;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
 import javax.annotation.RegEx;
+import li.cil.oc2.common.util.IntegerSpace;
 
 public final class Ipv4Space extends IntegerSpace {
 

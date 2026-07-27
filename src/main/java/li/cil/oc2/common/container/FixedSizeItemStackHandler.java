@@ -1,7 +1,6 @@
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.common.util.NBTTagIds;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;

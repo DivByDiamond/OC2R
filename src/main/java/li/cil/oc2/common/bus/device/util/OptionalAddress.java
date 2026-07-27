@@ -1,9 +1,8 @@
 package li.cil.oc2.common.bus.device.util;
 
+import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.sedna.api.device.MemoryMappedDevice;
-
-import java.util.OptionalLong;
 
 public final class OptionalAddress {
     private Long value;

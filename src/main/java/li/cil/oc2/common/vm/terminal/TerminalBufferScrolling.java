@@ -1,8 +1,7 @@
 package li.cil.oc2.common.vm.terminal;
 
-import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
-
 import java.util.Arrays;
+import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 
 class TerminalBufferScrolling {
     private final Terminal terminal;

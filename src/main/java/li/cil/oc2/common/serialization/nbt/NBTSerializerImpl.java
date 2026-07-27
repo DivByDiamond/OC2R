@@ -1,17 +1,13 @@
 package li.cil.oc2.common.serialization.nbt;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-
+import java.util.UUID;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.SerializationException;
 import li.cil.ceres.api.SerializationVisitor;
-
 import net.minecraft.nbt.*;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.UUID;
 
 public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor {
     private static final String IS_NULL_KEY = "<is_null>";

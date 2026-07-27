@@ -1,5 +1,7 @@
 package li.cil.oc2.common.blockentity.misc;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -10,7 +12,6 @@ import li.cil.oc2.common.inet.InternetAdapter;
 import li.cil.oc2.common.inet.InternetConnection;
 import li.cil.oc2.common.inet.InternetManagerImpl;
 import li.cil.oc2.common.util.ChunkUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -22,12 +23,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 public class InternetGateWayBlockEntity extends ModBlockEntity
         implements NetworkInterface, InternetAdapter {

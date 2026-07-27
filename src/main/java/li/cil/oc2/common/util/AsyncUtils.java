@@ -1,17 +1,13 @@
 package li.cil.oc2.common.util;
 
-import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.event.ForgeEventHandlers;
-
-import net.minecraft.server.MinecraftServer;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.concurrent.*;
 import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.config.AsyncConfig;
+import li.cil.oc2.common.event.ForgeEventHandlers;
+import net.minecraft.server.MinecraftServer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class AsyncUtils {
     private static final Logger LOGGER = LogManager.getLogger();

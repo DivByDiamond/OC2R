@@ -2,16 +2,13 @@ package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
-import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
-
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
+import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 
 class MessageWriter {
     private static final byte[] MESSAGE_DELIMITER = "\0".getBytes();

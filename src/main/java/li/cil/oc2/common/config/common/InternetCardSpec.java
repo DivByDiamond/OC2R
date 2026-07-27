@@ -1,12 +1,10 @@
 package li.cil.oc2.common.config.common;
 
-import li.cil.oc2.common.config.Config;
-
-import net.neoforged.neoforge.common.ModConfigSpec;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import li.cil.oc2.common.config.Config;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class InternetCardSpec {
     public final ModConfigSpec.BooleanValue internetCardEnabled;

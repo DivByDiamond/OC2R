@@ -1,8 +1,7 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.TransportMessage;
-
 import java.nio.ByteBuffer;
+import li.cil.oc2.api.inet.TransportMessage;
 
 final class IcmpHandler {
     static final byte ICMP_TYPE_ECHO_REPLY = 0;

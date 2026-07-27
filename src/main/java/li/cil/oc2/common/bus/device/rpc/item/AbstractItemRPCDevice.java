@@ -1,14 +1,12 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import java.util.List;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
-
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public abstract class AbstractItemRPCDevice extends IdentityProxy<ItemStack>
         implements RPCDevice, ItemDevice {

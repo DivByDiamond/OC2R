@@ -3,7 +3,6 @@ package li.cil.oc2.client.item;
 import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
 import li.cil.oc2.common.item.Items;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.component.DataComponentPatch;

@@ -1,12 +1,10 @@
 package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
-
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.network.ProjectorLoadBalancer;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

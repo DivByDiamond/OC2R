@@ -1,19 +1,16 @@
 package li.cil.oc2.common.bus.device.vm.item;
 
 import com.google.common.io.ByteStreams;
-
-import li.cil.oc2.common.util.BlockLocation;
-import li.cil.sedna.api.device.BlockDevice;
-import li.cil.sedna.device.block.ByteBufferBlockDevice;
-
-import net.minecraft.world.item.ItemStack;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import li.cil.oc2.common.util.BlockLocation;
+import li.cil.sedna.api.device.BlockDevice;
+import li.cil.sedna.device.block.ByteBufferBlockDevice;
+import net.minecraft.world.item.ItemStack;
 
 public final class HardDriveDeviceWithInitialData extends HardDriveDevice {
     private final BlockDevice base;

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.bus.device.util;
 
 import li.cil.oc2.api.bus.device.DeviceType;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

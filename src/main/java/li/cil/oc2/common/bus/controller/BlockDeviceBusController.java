@@ -1,18 +1,16 @@
 package li.cil.oc2.common.bus.controller;
 
+import java.util.Collection;
+import java.util.HashSet;
 import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.ChunkLocation;
 import li.cil.oc2.common.util.ChunkUtils;
 import li.cil.oc2.common.util.ServerScheduler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.Collection;
-import java.util.HashSet;
 
 public final class BlockDeviceBusController extends CommonDeviceBusController {
     /** Memoized closure for event callback, to allow unregistering it. */

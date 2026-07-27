@@ -1,8 +1,10 @@
 package li.cil.oc2.common.util;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.mixin.ServerChunkCacheMixin;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
@@ -11,10 +13,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.ChunkEvent;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ChunkUtils {

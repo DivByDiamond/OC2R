@@ -1,7 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.util.List;
 import li.cil.oc2.common.entity.Robot;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.server.level.ServerLevel;
@@ -17,8 +17,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import java.util.List;
 
 public final class RobotBlockCollider {
     private final Robot robot;

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.context.global;
 
+import java.util.BitSet;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.device.vm.context.*;
 import li.cil.oc2.common.vm.context.EventManager;
@@ -9,8 +10,6 @@ import li.cil.oc2.common.vm.context.VMContextManagerCollection;
 import li.cil.sedna.api.Board;
 import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
-
-import java.util.BitSet;
 
 public final class GlobalVMContext implements VMContext, VMContextManagerCollection {
     private final GlobalMemoryMap memoryMap;

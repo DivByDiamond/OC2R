@@ -1,18 +1,15 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.*;
-import li.cil.oc2.api.inet.layer.NetworkLayer;
-import li.cil.oc2.api.inet.layer.TransportLayer;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Random;
+import li.cil.oc2.api.inet.*;
+import li.cil.oc2.api.inet.layer.NetworkLayer;
+import li.cil.oc2.api.inet.layer.TransportLayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class DefaultNetworkLayer implements NetworkLayer {
     private static final Logger LOGGER = LogManager.getLogger();

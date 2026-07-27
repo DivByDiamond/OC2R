@@ -1,10 +1,8 @@
 package li.cil.oc2.client.gui.terminal;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-
-import org.lwjgl.glfw.GLFW;
-
 import javax.annotation.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 public final class TerminalInput {
     private static final Int2ObjectArrayMap<Int2ObjectArrayMap<byte[]>> KEYCODE_SEQUENCES =

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.bus.controller.BusState;
@@ -8,13 +9,10 @@ import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.lifecycle.VMLifecycle;
 import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractVirtualMachine implements VirtualMachine {
     public static final String BUS_STATE_TAG_NAME = "busState";

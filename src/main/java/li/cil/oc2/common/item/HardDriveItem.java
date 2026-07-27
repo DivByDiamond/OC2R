@@ -1,15 +1,13 @@
 package li.cil.oc2.common.item;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
-
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.DyedItemColor;
-
-import javax.annotation.Nullable;
 
 public final class HardDriveItem extends AbstractStorageItem {
     @Nullable private String descriptionId;

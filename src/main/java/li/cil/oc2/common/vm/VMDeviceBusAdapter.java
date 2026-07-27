@@ -1,15 +1,14 @@
 package li.cil.oc2.common.vm;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.context.managed.ManagedVMContext;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.OptionalLong;
 
 public final class VMDeviceBusAdapter {
     private final HashMap<VMDevice, ManagedVMContext> mountedDevices = new HashMap<>();

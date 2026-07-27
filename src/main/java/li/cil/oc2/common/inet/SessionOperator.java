@@ -1,10 +1,8 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.Session;
-
 import java.nio.ByteBuffer;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.inet.session.Session;
 
 public interface SessionOperator extends Session {
     @Nullable

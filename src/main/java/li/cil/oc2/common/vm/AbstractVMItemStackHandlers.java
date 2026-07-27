@@ -1,5 +1,8 @@
 package li.cil.oc2.common.vm;
 
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
@@ -10,17 +13,12 @@ import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.container.AbstractDeviceItemStackHandler;
 import li.cil.oc2.common.container.AbstractTypedDeviceItemStackHandler;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers {
     public record GroupDefinition(DeviceType deviceType, int count) {}

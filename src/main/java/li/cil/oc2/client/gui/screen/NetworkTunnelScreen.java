@@ -3,13 +3,11 @@ package li.cil.oc2.client.gui.screen;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.NetworkTunnelLinkMessage;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;

@@ -1,10 +1,9 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
-import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
-
 import java.util.Arrays;
 import java.util.HashMap;
+import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 
 public class CSIManager {
     private final int[] args = new int[10];

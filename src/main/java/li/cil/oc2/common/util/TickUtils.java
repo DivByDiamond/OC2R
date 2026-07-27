@@ -1,8 +1,7 @@
 package li.cil.oc2.common.util;
 
-import li.cil.oc2.common.Constants;
-
 import java.time.Duration;
+import li.cil.oc2.common.Constants;
 
 public final class TickUtils {
     public static int toTicks(final Duration duration) {

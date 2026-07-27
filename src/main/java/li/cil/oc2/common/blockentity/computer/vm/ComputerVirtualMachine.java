@@ -1,5 +1,7 @@
 package li.cil.oc2.common.blockentity.computer.vm;
 
+import java.time.Duration;
+import javax.annotation.Nullable;
 import li.cil.oc2.client.audio.LoopingSoundManager;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerVMRunner;
@@ -18,13 +20,8 @@ import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.BaseAddressProvider;
 import li.cil.oc2.common.vm.VMRunState;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
-
-import java.time.Duration;
-
-import javax.annotation.Nullable;
 
 public class ComputerVirtualMachine extends AbstractVirtualMachine {
     private static final int MAX_RUNNING_SOUND_DELAY = TickUtils.toTicks(Duration.ofSeconds(2));

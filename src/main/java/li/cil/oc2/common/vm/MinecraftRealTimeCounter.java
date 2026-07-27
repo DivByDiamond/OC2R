@@ -1,10 +1,8 @@
 package li.cil.oc2.common.vm;
 
-import li.cil.sedna.api.device.rtc.RealTimeCounter;
-
-import net.minecraft.world.level.Level;
-
 import javax.annotation.Nullable;
+import li.cil.sedna.api.device.rtc.RealTimeCounter;
+import net.minecraft.world.level.Level;
 
 public final class MinecraftRealTimeCounter implements RealTimeCounter {
     private static final int TICKS_PER_DAY = 24000;

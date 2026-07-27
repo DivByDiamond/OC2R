@@ -1,23 +1,20 @@
 package li.cil.oc2.common.integration.jei;
 
+import java.util.HashSet;
+import java.util.List;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.AbstractMachineInventoryScreen;
 import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.block.ComputerBlockFactory;
-
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.HashSet;
-import java.util.List;
 
 @JeiPlugin
 @SuppressWarnings("unused")

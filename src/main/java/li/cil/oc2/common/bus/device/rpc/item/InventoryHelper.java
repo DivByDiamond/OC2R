@@ -1,11 +1,10 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
-
-import java.util.List;
 
 class InventoryHelper {
     static List<ItemEntity> getItemsInRange(final Entity entity) {

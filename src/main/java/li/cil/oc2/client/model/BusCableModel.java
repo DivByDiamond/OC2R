@@ -2,16 +2,14 @@ package li.cil.oc2.client.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.function.Function;
 import li.cil.oc2.api.API;
-
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
-
-import java.util.function.Function;
 
 public final class BusCableModel implements IUnbakedGeometry<BusCableModel> {
     private static final ResourceLocation BUS_CABLE_STRAIGHT_MODEL =

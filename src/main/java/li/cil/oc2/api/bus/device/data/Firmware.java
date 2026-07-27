@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device.data;
 
 import li.cil.sedna.api.memory.MemoryMap;
-
 import net.minecraft.network.chat.Component;
 
 /**

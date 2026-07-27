@@ -3,9 +3,7 @@ package li.cil.oc2.client.renderer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-
 import net.minecraft.client.Minecraft;
-
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 

@@ -2,6 +2,9 @@ package li.cil.oc2.common.blockentity.misc;
 
 import static java.util.Collections.singletonList;
 
+import java.util.Collection;
+import java.util.UUID;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
@@ -14,7 +17,6 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.integration.util.BundledRedstone;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -23,11 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.fml.ModList;
-
-import java.util.Collection;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public final class RedstoneInterfaceBlockEntity extends ModBlockEntity

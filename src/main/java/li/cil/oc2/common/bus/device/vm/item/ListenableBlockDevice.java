@@ -1,11 +1,10 @@
 package li.cil.oc2.common.bus.device.vm.item;
 
-import li.cil.oc2.common.util.Event;
-import li.cil.sedna.api.device.BlockDevice;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import li.cil.oc2.common.util.Event;
+import li.cil.sedna.api.device.BlockDevice;
 
 final class ListenableBlockDevice implements BlockDevice {
     private final BlockDevice inner;

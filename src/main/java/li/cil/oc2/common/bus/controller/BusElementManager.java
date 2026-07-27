@@ -1,11 +1,10 @@
 package li.cil.oc2.common.bus.controller;
 
+import java.time.Duration;
+import java.util.*;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.TickUtils;
-
-import java.time.Duration;
-import java.util.*;
 
 final class BusElementManager {
     private static final int MAX_BUS_ELEMENT_COUNT = 128;

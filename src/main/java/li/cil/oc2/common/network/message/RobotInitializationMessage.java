@@ -1,12 +1,12 @@
 package li.cil.oc2.common.network.message;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.MessageUtils;
 import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.vm.VMRunState;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -17,8 +17,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-import javax.annotation.Nullable;
 
 public record RobotInitializationMessage(
         int entityId,

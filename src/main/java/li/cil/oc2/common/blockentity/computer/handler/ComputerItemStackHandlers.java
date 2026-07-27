@@ -1,17 +1,15 @@
 package li.cil.oc2.common.blockentity.computer.handler;
 
+import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.util.ChunkUtils;
 import li.cil.oc2.common.vm.AbstractVMItemStackHandlers;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-
-import java.util.function.Supplier;
 
 public class ComputerItemStackHandlers extends AbstractVMItemStackHandlers {
     private final ComputerBlockEntity owner;

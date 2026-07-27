@@ -1,17 +1,14 @@
 package li.cil.oc2.common.bus.device.data;
 
+import java.io.IOException;
+import java.io.InputStream;
 import li.cil.oc2.api.bus.device.data.Firmware;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.buildroot.Buildroot;
 import li.cil.sedna.memory.MemoryMaps;
-
 import net.minecraft.network.chat.Component;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public final class MinuxFirmware implements Firmware {
     private static final Logger LOGGER = LogManager.getLogger();

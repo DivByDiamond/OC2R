@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import org.joml.Matrix4f;
 
 public interface RendererView {

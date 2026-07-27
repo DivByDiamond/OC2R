@@ -1,11 +1,9 @@
 package li.cil.oc2.api.inet.layer;
 
+import java.nio.ByteBuffer;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.InternetDeviceLifecycle;
 import li.cil.oc2.api.inet.session.Session;
-
-import java.nio.ByteBuffer;
-
-import javax.annotation.Nullable;
 
 /** A session layer interface of TCP/IP stack. */
 public interface SessionLayer extends InternetDeviceLifecycle {

@@ -1,9 +1,8 @@
 package li.cil.oc2.common.util;
 
-import li.cil.oc2.common.vm.terminal.Terminal;
-
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import li.cil.oc2.common.vm.terminal.Terminal;
 
 public final class TerminalUtils {
     private static final ByteBuffer TERMINAL_RESET_SEQUENCE =

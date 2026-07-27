@@ -1,8 +1,7 @@
 package li.cil.oc2.common.bus.element;
 
-import li.cil.oc2.api.bus.device.Device;
-
 import java.util.Optional;
+import li.cil.oc2.api.bus.device.Device;
 
 interface GroupEntry {
     Optional<String> getDeviceDataKey();

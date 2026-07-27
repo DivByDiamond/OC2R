@@ -1,10 +1,8 @@
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
-
-import li.cil.oc2.common.bus.adapter.EmptyMethodGroup;
-
 import java.lang.reflect.Type;
+import li.cil.oc2.common.bus.adapter.EmptyMethodGroup;
 
 public final class EmptyRPCMethodGroupSerializer implements JsonSerializer<EmptyMethodGroup> {
     @Override

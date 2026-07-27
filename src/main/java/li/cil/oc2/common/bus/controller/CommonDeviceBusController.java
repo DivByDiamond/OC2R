@@ -2,13 +2,12 @@ package li.cil.oc2.common.bus.controller;
 
 import static java.util.Collections.emptySet;
 
+import java.util.*;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.util.Event;
 import li.cil.oc2.common.util.ParameterizedEvent;
-
-import java.util.*;
 
 public class CommonDeviceBusController implements DeviceBusController {
     public final Event onAfterBusScan = new Event();

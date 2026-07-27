@@ -1,7 +1,6 @@
 package li.cil.oc2.client.gui.screen;
 
 import li.cil.oc2.common.container.ComputerTerminalContainer;
-
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;

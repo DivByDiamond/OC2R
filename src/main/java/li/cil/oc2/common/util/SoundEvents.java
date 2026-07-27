@@ -1,7 +1,6 @@
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;

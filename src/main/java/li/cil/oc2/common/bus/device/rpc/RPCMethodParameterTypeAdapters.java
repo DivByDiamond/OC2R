@@ -1,15 +1,12 @@
 package li.cil.oc2.common.bus.device.rpc;
 
 import com.google.gson.GsonBuilder;
-
+import java.util.ArrayList;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.serialization.gson.DirectionJsonSerializer;
 import li.cil.oc2.common.serialization.gson.ItemStackJsonSerializer;
-
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
 
 public final class RPCMethodParameterTypeAdapters {
     private static final ArrayList<RPCMethodParameterTypeAdapter> TYPE_ADAPTERS = new ArrayList<>();

@@ -1,11 +1,5 @@
 package li.cil.oc2.common.serialization;
 
-import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.util.AsyncUtils;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -16,6 +10,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import li.cil.oc2.common.config.AsyncConfig;
+import li.cil.oc2.common.util.AsyncUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class BlobChannelManager {
     private static final Logger LOGGER = LogManager.getLogger();

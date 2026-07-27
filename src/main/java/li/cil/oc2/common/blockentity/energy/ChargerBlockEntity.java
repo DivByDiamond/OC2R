@@ -2,6 +2,9 @@ package li.cil.oc2.common.blockentity.energy;
 
 import static java.util.Collections.singletonList;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
@@ -14,7 +17,6 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.util.ChunkUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -30,10 +32,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Predicate;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ChargerBlockEntity extends ModBlockEntity

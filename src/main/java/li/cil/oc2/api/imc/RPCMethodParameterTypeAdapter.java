@@ -2,10 +2,8 @@ package li.cil.oc2.api.imc;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-
 import java.lang.reflect.Type;
+import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 
 /**
  * Defines a type adapter implementation that should be used when marshalling parameters of an

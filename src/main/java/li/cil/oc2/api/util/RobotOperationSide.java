@@ -1,9 +1,8 @@
 package li.cil.oc2.api.util;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
-
-import javax.annotation.Nullable;
 
 /** A more restrictive version of {@link Side}, intended for robot operation APIs. */
 public enum RobotOperationSide {

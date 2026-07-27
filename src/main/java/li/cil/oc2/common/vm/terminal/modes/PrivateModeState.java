@@ -1,11 +1,9 @@
 package li.cil.oc2.common.vm.terminal.modes;
 
-import li.cil.ceres.api.Serialized;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
+import li.cil.ceres.api.Serialized;
 
 @Serialized
 public class PrivateModeState {

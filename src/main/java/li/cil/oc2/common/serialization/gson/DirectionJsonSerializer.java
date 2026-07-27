@@ -1,12 +1,9 @@
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
-
-import net.minecraft.core.Direction;
-
 import java.lang.reflect.Type;
-
 import javax.annotation.Nullable;
+import net.minecraft.core.Direction;
 
 public final class DirectionJsonSerializer
         implements JsonDeserializer<Direction>, JsonSerializer<Direction> {

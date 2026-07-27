@@ -1,18 +1,16 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.InternetManager;
-import li.cil.oc2.api.inet.session.DatagramSession;
-import li.cil.oc2.api.inet.session.Session;
-import li.cil.oc2.api.inet.session.StreamSession;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import li.cil.oc2.api.inet.InternetManager;
+import li.cil.oc2.api.inet.session.DatagramSession;
+import li.cil.oc2.api.inet.session.Session;
+import li.cil.oc2.api.inet.session.StreamSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class SocketManager {
     private static final Logger LOGGER = LogManager.getLogger();

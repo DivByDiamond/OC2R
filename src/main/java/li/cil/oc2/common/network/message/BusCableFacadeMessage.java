@@ -3,7 +3,6 @@ package li.cil.oc2.common.network.message;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.network.ClientBlockEntityLookup;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

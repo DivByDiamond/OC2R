@@ -3,11 +3,13 @@ package li.cil.oc2.common.item;
 import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import java.util.Arrays;
+import java.util.List;
+import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.screen.NetworkInterfaceCardScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.NBTTagIds;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
@@ -23,11 +25,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 public final class NetworkInterfaceCardItem extends ModItem {
     private static final String SIDE_CONFIGURATION_TAG_NAME = "sides";

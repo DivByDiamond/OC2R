@@ -1,12 +1,10 @@
 package li.cil.oc2.common.bus.device.provider;
 
-import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
-import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
-
-import net.minecraft.core.Registry;
-
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
+import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
+import net.minecraft.core.Registry;
 
 public final class Providers {
     public static Registry<BlockDeviceProvider> blockDeviceProviderRegistry() {

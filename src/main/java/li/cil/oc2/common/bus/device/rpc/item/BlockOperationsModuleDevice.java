@@ -1,11 +1,12 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
+import java.util.List;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.api.util.RobotOperationSide;
 import li.cil.oc2.common.util.FakePlayerUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -24,10 +25,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
     private final Entity entity;

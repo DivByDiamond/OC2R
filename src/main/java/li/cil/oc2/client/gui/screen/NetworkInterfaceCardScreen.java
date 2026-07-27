@@ -3,12 +3,12 @@ package li.cil.oc2.client.gui.screen;
 import static li.cil.oc2.common.util.TranslationUtils.key;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.NetworkInterfaceCardConfigurationMessage;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,10 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
 import org.joml.Vector3f;
-
-import javax.annotation.Nullable;
 
 public final class NetworkInterfaceCardScreen extends Screen {
     private static final String SIDE_STATE_TEXT =

@@ -2,9 +2,10 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
+import java.util.ArrayList;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.util.Vec3Utils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -15,14 +16,8 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-
-import java.util.ArrayList;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 final class CableRenderUtils {
     private static final int CABLE_VERTEX_COUNT = 9;

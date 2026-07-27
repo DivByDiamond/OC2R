@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;

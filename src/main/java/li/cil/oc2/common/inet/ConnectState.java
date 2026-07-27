@@ -1,11 +1,9 @@
 package li.cil.oc2.common.inet;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.session.Session;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.ByteBuffer;
 
 final class ConnectState extends TcpState {
     private static final Logger LOGGER = LogManager.getLogger();

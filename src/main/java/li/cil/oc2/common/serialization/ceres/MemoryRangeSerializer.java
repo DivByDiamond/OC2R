@@ -1,12 +1,11 @@
 package li.cil.oc2.common.serialization.ceres;
 
+import javax.annotation.Nullable;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
 import li.cil.ceres.api.SerializationVisitor;
 import li.cil.ceres.api.Serializer;
 import li.cil.sedna.api.memory.MemoryRange;
-
-import javax.annotation.Nullable;
 
 public final class MemoryRangeSerializer implements Serializer<MemoryRange> {
     @Override

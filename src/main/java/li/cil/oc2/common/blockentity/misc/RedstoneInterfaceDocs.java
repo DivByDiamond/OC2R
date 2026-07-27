@@ -1,7 +1,6 @@
 package li.cil.oc2.common.blockentity.misc;
 
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
-
 import net.neoforged.fml.ModList;
 
 final class RedstoneInterfaceDocs {

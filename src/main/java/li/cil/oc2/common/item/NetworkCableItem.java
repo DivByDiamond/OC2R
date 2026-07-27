@@ -1,10 +1,11 @@
 package li.cil.oc2.common.item;
 
+import java.util.Objects;
+import java.util.Optional;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.ConnectionResult;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -18,9 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.Objects;
-import java.util.Optional;
 
 public final class NetworkCableItem extends ModItem {
     private static final String LINK_START_TAG_NAME = API.MOD_ID + ":" + "network_cable_link_start";

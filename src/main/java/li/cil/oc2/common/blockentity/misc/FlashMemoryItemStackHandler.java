@@ -2,19 +2,17 @@ package li.cil.oc2.common.blockentity.misc;
 
 import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
 
+import javax.annotation.Nonnull;
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.FirmwareFlasherMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.ItemStackUtils;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-
-import javax.annotation.Nonnull;
 
 class FlashMemoryItemStackHandler extends TypedItemStackHandler {
     private final FlashMemoryFlasherBlockEntity owner;

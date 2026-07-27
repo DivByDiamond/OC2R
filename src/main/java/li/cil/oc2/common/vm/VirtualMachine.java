@@ -1,12 +1,10 @@
 package li.cil.oc2.common.vm;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.controller.BusState;
-
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
 
 public interface VirtualMachine {
     BusState getBusState();

@@ -1,5 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.nio.ByteBuffer;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
@@ -11,12 +13,7 @@ import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.network.chat.Component;
-
-import java.nio.ByteBuffer;
-
-import javax.annotation.Nullable;
 
 public final class RobotVirtualMachine extends AbstractVirtualMachine {
     private final Robot robot;

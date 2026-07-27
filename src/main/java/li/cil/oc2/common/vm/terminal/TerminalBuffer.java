@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.terminal;
 
+import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
 import li.cil.oc2.common.vm.terminal.TerminalColors.DrawingMode;
 import li.cil.oc2.common.vm.terminal.escapes.NEL;
-
-import java.util.Arrays;
 
 public class TerminalBuffer {
     private final Terminal terminal;

@@ -1,8 +1,7 @@
 package li.cil.oc2.api.bus.device.vm.event;
 
-import net.minecraft.network.chat.Component;
-
 import java.util.Optional;
+import net.minecraft.network.chat.Component;
 
 /**
  * May be fired by devices while handling {@link VMInitializingEvent} to indicate that

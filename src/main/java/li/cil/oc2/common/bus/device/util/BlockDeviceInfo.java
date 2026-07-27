@@ -1,9 +1,8 @@
 package li.cil.oc2.common.bus.device.util;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
-
-import javax.annotation.Nullable;
 
 public final class BlockDeviceInfo extends AbstractDeviceInfo<BlockDeviceProvider, Device> {
     public BlockDeviceInfo(

@@ -2,15 +2,12 @@ package li.cil.oc2.common.bus.element;
 
 import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
 
-import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
-
-import net.minecraft.core.Direction;
-
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
+import net.minecraft.core.Direction;
 
 public final class BlockEntry implements GroupEntry {
     private final BlockDeviceInfo deviceInfo;

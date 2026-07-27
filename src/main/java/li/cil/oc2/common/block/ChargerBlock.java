@@ -1,10 +1,9 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-
+import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -16,8 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
-
-import javax.annotation.Nullable;
 
 public final class ChargerBlock extends HalfTransparentBlock implements EntityBlock {
     public ChargerBlock() {

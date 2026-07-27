@@ -1,7 +1,6 @@
 package li.cil.oc2.client.renderer;
 
 import li.cil.oc2.common.util.FakePlayerUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

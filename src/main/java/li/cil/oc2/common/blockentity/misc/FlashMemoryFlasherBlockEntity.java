@@ -1,5 +1,7 @@
 package li.cil.oc2.common.blockentity.misc;
 
+import java.time.Duration;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.Blocks;
@@ -14,7 +16,6 @@ import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.LocationSupplierUtils;
 import li.cil.oc2.common.util.SoundEvents;
 import li.cil.oc2.common.util.ThrottledSoundEmitter;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -27,10 +28,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import java.time.Duration;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity

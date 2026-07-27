@@ -1,13 +1,10 @@
 package li.cil.oc2.common.entity.robot;
 
-import li.cil.oc2.common.entity.Robot;
-
-import net.minecraft.nbt.CompoundTag;
-
 import java.util.ArrayList;
 import java.util.function.IntFunction;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.entity.Robot;
+import net.minecraft.nbt.CompoundTag;
 
 public final class RobotActions {
     private static final String ACTION_TYPE_TAG_NAME = "action_type";

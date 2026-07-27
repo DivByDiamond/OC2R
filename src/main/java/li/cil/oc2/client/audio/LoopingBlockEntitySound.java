@@ -1,7 +1,7 @@
 package li.cil.oc2.client.audio;
 
+import java.time.Duration;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -10,8 +10,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-
-import java.time.Duration;
 
 public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance {
     private static final float FADE_IN_DURATION_IN_TICKS = TickUtils.toTicks(Duration.ofSeconds(2));

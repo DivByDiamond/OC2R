@@ -1,15 +1,12 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
 
 public final class BlockCodecs {
     public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =

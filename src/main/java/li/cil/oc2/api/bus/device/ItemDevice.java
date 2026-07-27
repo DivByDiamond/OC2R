@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device;
 
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 

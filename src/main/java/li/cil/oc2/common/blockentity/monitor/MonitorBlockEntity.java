@@ -3,6 +3,10 @@ package li.cil.oc2.common.blockentity.monitor;
 import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
 import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.UUID;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.block.Blocks;
@@ -20,7 +24,6 @@ import li.cil.oc2.common.network.message.MonitorRequestFramebufferMessage;
 import li.cil.oc2.common.network.message.MonitorStateMessage;
 import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,12 +33,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class MonitorBlockEntity extends ModBlockEntity

@@ -1,12 +1,10 @@
 package li.cil.oc2.api;
 
 import com.google.gson.GsonBuilder;
-
+import java.lang.reflect.Type;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
-
-import java.lang.reflect.Type;
 
 public final class API {
     private API() {}

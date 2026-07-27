@@ -1,8 +1,7 @@
 package li.cil.oc2.api.bus;
 
-import li.cil.oc2.api.bus.device.Device;
-
 import java.util.Collection;
+import li.cil.oc2.api.bus.device.Device;
 
 /**
  * A device bus provides the interface by which {@link Device}s can be made available to a {@link

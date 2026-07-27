@@ -2,7 +2,6 @@ package li.cil.oc2.common.container;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.*;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;

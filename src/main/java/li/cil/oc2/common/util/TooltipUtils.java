@@ -2,6 +2,9 @@ package li.cil.oc2.common.util;
 
 import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.EnergyConsumingBlock;
@@ -11,16 +14,11 @@ import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.ItemTags;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class TooltipUtils {
     private static final MutableComponent DEVICE_NEEDS_REBOOT =

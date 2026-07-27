@@ -2,7 +2,12 @@ package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.device.rpc.*;
@@ -12,13 +17,6 @@ import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
 import li.cil.oc2.common.serialization.gson.*;
 import li.cil.sedna.api.device.Steppable;
 import li.cil.sedna.api.device.serial.SerialDevice;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     private static final int DEFAULT_MAX_MESSAGE_SIZE = 4 * Constants.KILOBYTE;

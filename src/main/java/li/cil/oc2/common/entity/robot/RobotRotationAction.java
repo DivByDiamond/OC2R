@@ -1,17 +1,14 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.time.Duration;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
-
-import java.time.Duration;
-
-import javax.annotation.Nullable;
 
 public final class RobotRotationAction extends AbstractRobotAction {
     public static final float TARGET_EPSILON = 0.0001f;

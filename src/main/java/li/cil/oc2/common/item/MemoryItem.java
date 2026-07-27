@@ -1,11 +1,9 @@
 package li.cil.oc2.common.item;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
-
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
-
-import javax.annotation.Nullable;
 
 public final class MemoryItem extends AbstractStorageItem {
     @Nullable private String descriptionId;

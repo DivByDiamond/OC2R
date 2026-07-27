@@ -1,9 +1,8 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.Session;
-
 import java.util.ArrayDeque;
 import java.util.Queue;
+import li.cil.oc2.api.inet.session.Session;
 
 public final class ReadySessions {
     private final Queue<Session> toRead = new ArrayDeque<>();

@@ -1,17 +1,15 @@
 package li.cil.oc2.common.bus.device.rpc.block;
 
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.object.Callbacks;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractBlockDeviceProvider;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Optional;
 
 public final class BlockStateObjectDeviceProvider extends AbstractBlockDeviceProvider {
     @Override

@@ -1,18 +1,16 @@
 package li.cil.oc2.common.blockentity.projector;
 
+import java.util.Arrays;
 import li.cil.oc2.common.block.ProjectorBlock;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ProjectorStateMessage;
 import li.cil.oc2.jcodec.common.model.Picture;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Arrays;
 
 final class ProjectorState {
     boolean isMounted;

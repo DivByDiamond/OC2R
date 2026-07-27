@@ -1,11 +1,10 @@
 package li.cil.oc2.common.bus.device.provider.item;
 
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.capabilities.Capabilities;
-
-import java.util.Optional;
 
 public class ItemStackCapabilityDeviceProvider
         extends AbstractItemStackCapabilityDeviceProvider<Device> {

@@ -1,19 +1,16 @@
 package li.cil.oc2.common.blockentity.misc;
 
 import com.google.gson.JsonObject;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import li.cil.oc2.api.bus.device.rpc.IEventSink;
 import li.cil.oc2.api.util.Side;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class RedstoneInterfaceEventDispatcher {
     private final HashMap<IEventSink, UUID> subscribers = new HashMap<>();

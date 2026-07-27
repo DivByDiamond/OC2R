@@ -2,10 +2,12 @@ package li.cil.oc2.common.item;
 
 import static li.cil.oc2.common.util.TranslationUtils.key;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.TextFormatUtils;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -20,10 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 public final class NetworkTunnelItem extends ModItem {
     private static final String TUNNEL_ID_TAG_NAME = "tunnel";

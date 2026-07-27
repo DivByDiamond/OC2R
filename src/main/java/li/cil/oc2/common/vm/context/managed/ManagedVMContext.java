@@ -1,12 +1,11 @@
 package li.cil.oc2.common.vm.context.managed;
 
+import java.util.OptionalLong;
+import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.vm.context.*;
 import li.cil.oc2.common.vm.context.VMContextManagerCollection;
 import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
-
-import java.util.OptionalLong;
-import java.util.function.Supplier;
 
 public final class ManagedVMContext implements VMContext {
     private final ManagedMemoryMap memoryMap;

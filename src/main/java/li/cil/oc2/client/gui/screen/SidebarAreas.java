@@ -1,13 +1,11 @@
 package li.cil.oc2.client.gui.screen;
 
+import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
-
 import net.minecraft.client.renderer.Rect2i;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 class SidebarAreas {

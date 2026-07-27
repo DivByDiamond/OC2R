@@ -1,8 +1,7 @@
 package li.cil.oc2.common.bus.device.util;
 
-import li.cil.oc2.api.bus.device.vm.context.VMContext;
-
 import java.util.OptionalInt;
+import li.cil.oc2.api.bus.device.vm.context.VMContext;
 
 public final class OptionalInterrupt {
     private Integer value;

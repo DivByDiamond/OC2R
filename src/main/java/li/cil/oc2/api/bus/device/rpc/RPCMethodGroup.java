@@ -1,10 +1,9 @@
 package li.cil.oc2.api.bus.device.rpc;
 
-import li.cil.oc2.api.bus.DeviceBusController;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import li.cil.oc2.api.bus.DeviceBusController;
 
 /**
  * A group of overloaded {@link RPCMethod}s, i.e. methods with the same name but different

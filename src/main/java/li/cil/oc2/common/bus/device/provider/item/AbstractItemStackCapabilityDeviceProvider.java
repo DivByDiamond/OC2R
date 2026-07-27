@@ -1,15 +1,12 @@
 package li.cil.oc2.common.bus.device.provider.item;
 
+import java.util.Optional;
+import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
-
 import net.neoforged.neoforge.capabilities.ItemCapability;
-
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability>
         extends AbstractItemDeviceProvider {

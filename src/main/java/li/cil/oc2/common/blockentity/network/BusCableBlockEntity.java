@@ -2,6 +2,7 @@ package li.cil.oc2.common.blockentity.network;
 
 import static java.util.Objects.requireNonNull;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableStateProperties;
@@ -13,7 +14,6 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.ServerScheduler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -27,8 +27,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class BusCableBlockEntity extends ModBlockEntity {

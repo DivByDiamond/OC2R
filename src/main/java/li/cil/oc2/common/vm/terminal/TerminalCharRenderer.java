@@ -1,14 +1,11 @@
 package li.cil.oc2.common.vm.terminal;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
-
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.fonts.Glyph;
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)

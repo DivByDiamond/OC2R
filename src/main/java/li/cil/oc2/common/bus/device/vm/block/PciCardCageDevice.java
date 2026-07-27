@@ -1,7 +1,11 @@
 package li.cil.oc2.common.bus.device.vm.block;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.UUID;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
@@ -11,17 +15,9 @@ import li.cil.oc2.common.bus.device.util.OptionalAddress;
 import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.device.PciRootPortDevice;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implements VMDevice {
     private static final String ADDRESS_TAG_NAME = "address";

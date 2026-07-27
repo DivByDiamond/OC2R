@@ -1,9 +1,8 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
-
-import java.util.Arrays;
 
 public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and XTPUSHCOLORS)
     public CH10(final Terminal terminal) {

@@ -1,21 +1,18 @@
 package li.cil.oc2.common.integration;
 
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.Consumer;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
-
 import net.minecraft.Util;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class IMC {

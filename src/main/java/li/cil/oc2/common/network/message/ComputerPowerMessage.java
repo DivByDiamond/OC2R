@@ -1,11 +1,9 @@
 package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
-
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.MessageUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

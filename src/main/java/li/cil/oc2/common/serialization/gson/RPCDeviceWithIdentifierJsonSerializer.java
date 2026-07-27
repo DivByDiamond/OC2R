@@ -4,10 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-
-import li.cil.oc2.common.bus.adapter.RPCDeviceWithIdentifier;
-
 import java.lang.reflect.Type;
+import li.cil.oc2.common.bus.adapter.RPCDeviceWithIdentifier;
 
 public final class RPCDeviceWithIdentifierJsonSerializer
         implements JsonSerializer<RPCDeviceWithIdentifier> {

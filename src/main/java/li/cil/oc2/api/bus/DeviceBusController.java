@@ -1,9 +1,8 @@
 package li.cil.oc2.api.bus;
 
-import li.cil.oc2.api.bus.device.Device;
-
 import java.util.Set;
 import java.util.UUID;
+import li.cil.oc2.api.bus.device.Device;
 
 /**
  * For each device bus there can be exactly one controller. The controller performs the actual scan

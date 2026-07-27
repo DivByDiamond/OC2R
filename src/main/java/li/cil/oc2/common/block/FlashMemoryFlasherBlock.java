@@ -1,10 +1,9 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-
+import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.misc.FlashMemoryFlasherBlockEntity;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -23,8 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-
-import javax.annotation.Nullable;
 
 public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
         implements EntityBlock {

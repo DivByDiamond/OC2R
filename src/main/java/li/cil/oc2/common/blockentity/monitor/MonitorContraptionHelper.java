@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.monitor;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.annotation.Nullable;
 
 public final class MonitorContraptionHelper {

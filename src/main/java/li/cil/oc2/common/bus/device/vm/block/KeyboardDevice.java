@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.vm.block;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
@@ -10,11 +11,8 @@ import li.cil.oc2.common.bus.device.util.OptionalInterrupt;
 import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.sedna.device.virtio.VirtIOKeyboardDevice;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-
-import javax.annotation.Nullable;
 
 public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevice {
     private static final String DEVICE_TAG_NAME = "device";

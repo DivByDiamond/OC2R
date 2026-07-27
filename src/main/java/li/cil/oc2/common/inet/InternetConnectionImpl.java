@@ -1,16 +1,13 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.layer.LinkLocalLayer;
-
-import net.minecraft.nbt.Tag;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+import net.minecraft.nbt.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class InternetConnectionImpl implements InternetConnection {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,10 +1,9 @@
 package li.cil.oc2.api.inet;
 
-import li.cil.oc2.api.inet.layer.NetworkLayer;
-import li.cil.oc2.common.inet.InetUtils;
-
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import li.cil.oc2.api.inet.layer.NetworkLayer;
+import li.cil.oc2.common.inet.InetUtils;
 
 /**
  * Reusable data object, that contains information about transport layer message that makes sense

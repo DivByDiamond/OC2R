@@ -1,9 +1,8 @@
 package li.cil.oc2.api.bus.device.vm.context;
 
+import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.sedna.api.device.MemoryMappedDevice;
-
-import java.util.OptionalLong;
 
 /**
  * Allows adding {@link MemoryMappedDevice}s to the memory map of a virtual machine during a {@link

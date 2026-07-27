@@ -1,5 +1,8 @@
 package li.cil.oc2.common.vm;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Function;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.bus.device.data.FileSystems;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
@@ -13,13 +16,8 @@ import li.cil.sedna.device.serial.UART16550A;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
 import li.cil.sedna.device.virtio.VirtIOConsoleDevice;
 import li.cil.sedna.device.virtio.VirtIOFileSystemDevice;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.function.Function;
 
 public final class BuiltinDevices {
     private static final Logger LOGGER = LogManager.getLogger();

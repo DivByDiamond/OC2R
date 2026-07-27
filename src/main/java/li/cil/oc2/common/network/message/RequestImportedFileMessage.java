@@ -3,13 +3,14 @@ package li.cil.oc2.common.network.message;
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import io.netty.buffer.ByteBuf;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.FileChooserScreen;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import li.cil.oc2.common.network.Network;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -18,13 +19,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public record RequestImportedFileMessage(int id) implements AbstractMessage {
     private static final Logger LOGGER = LogManager.getLogger();

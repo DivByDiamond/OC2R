@@ -1,15 +1,13 @@
 package li.cil.oc2.common.bus.device.provider.util;
 
+import java.util.Optional;
+import java.util.function.Predicate;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredItem;
-
-import java.util.Optional;
-import java.util.function.Predicate;
 
 public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     private final Predicate<Item> predicate;

@@ -1,13 +1,11 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.StreamSession;
-import li.cil.oc2.common.config.Config;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.ByteBuffer;
 import java.util.Random;
+import li.cil.oc2.api.inet.session.StreamSession;
+import li.cil.oc2.common.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StreamSessionImpl extends SessionBase implements StreamSession {
 

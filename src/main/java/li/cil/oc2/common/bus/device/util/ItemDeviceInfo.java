@@ -1,9 +1,8 @@
 package li.cil.oc2.common.bus.device.util;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
-
-import javax.annotation.Nullable;
 
 public final class ItemDeviceInfo extends AbstractDeviceInfo<ItemDeviceProvider, ItemDevice> {
     public final int energyConsumption;

@@ -1,12 +1,10 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.Session;
-
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.inet.session.Session;
 
 public abstract class SessionBase implements Session {
     private static final AtomicLong idGenerator = new AtomicLong();

@@ -4,7 +4,6 @@ import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.entity.Robot;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

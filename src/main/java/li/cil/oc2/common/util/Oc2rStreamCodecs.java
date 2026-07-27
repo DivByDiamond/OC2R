@@ -1,9 +1,8 @@
 package li.cil.oc2.common.util;
 
+import java.nio.ByteBuffer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-
-import java.nio.ByteBuffer;
 
 public class Oc2rStreamCodecs {
     public static final StreamCodec<FriendlyByteBuf, ByteBuffer> BYTE_BUFFER =

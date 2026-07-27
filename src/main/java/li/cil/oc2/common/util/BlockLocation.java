@@ -1,13 +1,12 @@
 package li.cil.oc2.common.util;
 
+import java.lang.ref.WeakReference;
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.lang.ref.WeakReference;
-import java.util.Objects;
-import java.util.Optional;
 
 public record BlockLocation(WeakReference<LevelAccessor> level, BlockPos blockPos) {
     public static BlockLocation of(final Entity entity) {

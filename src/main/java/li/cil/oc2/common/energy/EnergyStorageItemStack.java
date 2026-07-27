@@ -1,7 +1,6 @@
 package li.cil.oc2.common.energy;
 
 import li.cil.oc2.common.util.NBTUtils;
-
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;

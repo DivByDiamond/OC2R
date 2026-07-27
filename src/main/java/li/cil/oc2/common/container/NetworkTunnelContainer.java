@@ -1,9 +1,9 @@
 package li.cil.oc2.common.container;
 
+import java.util.UUID;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.common.item.NetworkTunnelItem;
 import li.cil.oc2.common.tags.ItemTags;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,8 +15,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.UUID;
 
 public final class NetworkTunnelContainer extends AbstractContainer {
     public static void createServer(final ServerPlayer player, final InteractionHand hand) {

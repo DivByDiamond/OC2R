@@ -1,11 +1,11 @@
 package li.cil.oc2.client.gui.screen;
 
+import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
 
-import static java.util.Arrays.asList;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
+import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.util.GuiUtils;
@@ -14,7 +14,6 @@ import li.cil.oc2.client.gui.widget.ToggleImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.util.TooltipRenderer;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -25,9 +24,6 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTerminalContainer>

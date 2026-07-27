@@ -2,10 +2,9 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import java.util.*;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -17,10 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
-
 import org.joml.Matrix4f;
-
-import java.util.*;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class NetworkCableRenderer {

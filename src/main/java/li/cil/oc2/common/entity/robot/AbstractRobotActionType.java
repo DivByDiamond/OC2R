@@ -1,7 +1,6 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
-
 import net.minecraft.nbt.CompoundTag;
 
 public abstract class AbstractRobotActionType {

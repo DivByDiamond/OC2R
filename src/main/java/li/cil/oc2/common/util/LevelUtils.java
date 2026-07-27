@@ -1,5 +1,8 @@
 package li.cil.oc2.common.util;
 
+import java.util.Objects;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -10,11 +13,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.Objects;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 public final class LevelUtils {
     @Nullable

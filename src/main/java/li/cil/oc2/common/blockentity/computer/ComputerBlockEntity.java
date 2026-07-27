@@ -1,5 +1,7 @@
 package li.cil.oc2.common.blockentity.computer;
 
+import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -22,7 +24,6 @@ import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.vm.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
@@ -33,10 +34,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-
-import java.util.*;
-
-import javax.annotation.Nullable;
 
 public final class ComputerBlockEntity extends ModBlockEntity
         implements TerminalUserProvider, TickableBlockEntity, ICaptureInputStateStorage {

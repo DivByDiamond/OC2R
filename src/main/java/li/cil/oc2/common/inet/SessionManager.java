@@ -1,17 +1,14 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.layer.SessionLayer;
-import li.cil.oc2.common.config.Config;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.inet.layer.SessionLayer;
+import li.cil.oc2.common.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class SessionManager {
     private static final Logger LOGGER = LogManager.getLogger();

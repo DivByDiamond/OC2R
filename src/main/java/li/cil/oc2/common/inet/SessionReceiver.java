@@ -1,14 +1,12 @@
 package li.cil.oc2.common.inet;
 
+import java.nio.ByteBuffer;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
-
-import java.nio.ByteBuffer;
-
-import javax.annotation.Nullable;
 
 final class SessionReceiver implements SessionLayer.Receiver {
     SessionBase session = null;

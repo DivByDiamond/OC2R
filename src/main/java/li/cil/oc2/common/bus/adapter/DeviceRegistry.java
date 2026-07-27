@@ -1,13 +1,12 @@
 package li.cil.oc2.common.bus.adapter;
 
+import java.util.*;
+import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.rpc.*;
 import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
-
-import java.util.*;
-import java.util.function.Consumer;
 
 class DeviceRegistry {
     final ArrayList<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();

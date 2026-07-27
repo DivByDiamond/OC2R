@@ -1,5 +1,6 @@
 package li.cil.oc2.common.entity;
 
+import java.util.*;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
@@ -10,7 +11,6 @@ import li.cil.oc2.common.entity.robot.*;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import li.cil.oc2.common.vm.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -30,8 +30,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import java.util.*;
 
 public final class Robot extends Entity
         implements li.cil.oc2.api.capabilities.Robot,

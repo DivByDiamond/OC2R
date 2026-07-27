@@ -1,16 +1,14 @@
 package li.cil.oc2.common.block;
 
+import java.util.Optional;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import java.util.Optional;
 
 final class ComputerBlockRedstone {
     static int getSignal(final BlockGetter blockGetter, final BlockPos pos, final Direction side) {

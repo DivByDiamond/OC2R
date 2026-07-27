@@ -1,7 +1,6 @@
 package li.cil.oc2.common.serialization;
 
 import li.cil.oc2.api.API;
-
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;

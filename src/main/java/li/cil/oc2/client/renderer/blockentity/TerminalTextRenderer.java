@@ -2,20 +2,16 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-
 import org.joml.Matrix4f;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 final class TerminalTextRenderer {
     private final Font font;

@@ -1,13 +1,11 @@
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
-
+import java.lang.reflect.Type;
+import java.util.UUID;
 import li.cil.oc2.common.bus.adapter.Message;
 import li.cil.oc2.common.bus.adapter.MethodInvocation;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
-
-import java.lang.reflect.Type;
-import java.util.UUID;
 
 public final class MessageJsonDeserializer implements JsonDeserializer<Message> {
     @Override

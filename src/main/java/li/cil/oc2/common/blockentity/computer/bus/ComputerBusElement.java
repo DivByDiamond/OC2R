@@ -1,21 +1,18 @@
 package li.cil.oc2.common.blockentity.computer.bus;
 
+import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.element.BlockEntry;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-
-import java.util.*;
-
-import javax.annotation.Nullable;
 
 public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     private static final String DEVICE_ID_TAG_NAME = "device_id";

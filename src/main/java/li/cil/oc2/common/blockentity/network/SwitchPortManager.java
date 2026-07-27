@@ -1,12 +1,9 @@
 package li.cil.oc2.common.blockentity.network;
 
 import com.google.gson.internal.LinkedTreeMap;
-
-import li.cil.oc2.common.Constants;
-
-import net.minecraft.nbt.*;
-
 import java.util.List;
+import li.cil.oc2.common.Constants;
+import net.minecraft.nbt.*;
 
 final class SwitchPortManager {
     final PortSettings[] portSettings = new PortSettings[Constants.BLOCK_FACE_COUNT];

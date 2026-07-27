@@ -1,15 +1,13 @@
 package li.cil.oc2.common.util;
 
-import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.event.ForgeEventHandlers;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import li.cil.oc2.common.config.AsyncConfig;
+import li.cil.oc2.common.event.ForgeEventHandlers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class AsyncExecutorHelper {
     private static final Logger LOGGER = LogManager.getLogger();

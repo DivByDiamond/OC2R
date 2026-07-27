@@ -1,19 +1,16 @@
 package li.cil.oc2.common.network;
 
-import li.cil.oc2.common.network.message.MonitorFramebufferMessage;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.phys.Vec3;
-
 import java.nio.ByteBuffer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.common.network.message.MonitorFramebufferMessage;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 
 final class MonitorProjectorInfo {
     private static final ExecutorService ENCODER_WORKERS =

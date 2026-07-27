@@ -1,5 +1,10 @@
 package li.cil.oc2.common.blockentity.network;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import li.cil.oc2.client.renderer.NetworkCableRenderer;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
@@ -7,7 +12,6 @@ import li.cil.oc2.common.network.message.NetworkConnectorConnectionsMessage;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.ServerScheduler;
 import li.cil.oc2.common.util.TickUtils;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -16,12 +20,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 
 final class NetworkConnectorConnectionManager {
     private static final int RETRY_UNLOADED_CHUNK_INTERVAL =

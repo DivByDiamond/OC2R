@@ -5,7 +5,6 @@ import li.cil.oc2.common.inet.InternetManagerImpl;
 import li.cil.oc2.common.integration.Integrations;
 import li.cil.oc2.common.util.ServerScheduler;
 import li.cil.oc2.common.vxlan.TunnelManager;
-
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 

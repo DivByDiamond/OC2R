@@ -1,10 +1,8 @@
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.JsonArray;
-
-import li.cil.ceres.api.Serialized;
-
 import java.util.UUID;
+import li.cil.ceres.api.Serialized;
 
 @Serialized
 public final class MethodInvocation {

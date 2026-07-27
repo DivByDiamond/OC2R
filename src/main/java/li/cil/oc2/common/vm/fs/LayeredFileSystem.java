@@ -1,7 +1,5 @@
 package li.cil.oc2.common.vm.fs;
 
-import li.cil.sedna.fs.*;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,6 +7,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import li.cil.sedna.fs.*;
 
 public final class LayeredFileSystem implements FileSystem {
     private final ArrayList<FileSystem> fileSystems = new ArrayList<>();

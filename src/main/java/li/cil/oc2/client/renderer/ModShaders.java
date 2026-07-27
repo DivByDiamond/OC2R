@@ -2,9 +2,9 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-
+import java.io.IOException;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
-
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -12,12 +12,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
-
 import org.joml.Matrix4f;
-
-import java.io.IOException;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)

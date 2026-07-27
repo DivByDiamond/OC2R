@@ -1,10 +1,10 @@
 package li.cil.oc2.common.block;
 
 import com.google.common.collect.Maps;
-
+import java.util.Map;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,10 +18,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 public final class BusCableStateProperties {
     public static final BooleanProperty HAS_CABLE = BooleanProperty.create("has_cable");

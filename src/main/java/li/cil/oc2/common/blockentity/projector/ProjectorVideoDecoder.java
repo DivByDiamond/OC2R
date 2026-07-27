@@ -1,15 +1,13 @@
 package li.cil.oc2.common.blockentity.projector;
 
-import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
-import li.cil.oc2.jcodec.common.model.Picture;
-
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
+import li.cil.oc2.jcodec.common.model.Picture;
 
 final class ProjectorVideoDecoder {
     private final H264Decoder decoder = new H264Decoder();

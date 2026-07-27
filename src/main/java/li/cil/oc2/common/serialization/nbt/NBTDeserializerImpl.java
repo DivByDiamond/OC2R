@@ -1,18 +1,15 @@
 package li.cil.oc2.common.serialization.nbt;
 
-import li.cil.ceres.Ceres;
-import li.cil.ceres.api.DeserializationVisitor;
-import li.cil.ceres.api.SerializationException;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
-
-import net.minecraft.nbt.*;
-
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import li.cil.ceres.Ceres;
+import li.cil.ceres.api.DeserializationVisitor;
+import li.cil.ceres.api.SerializationException;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
+import net.minecraft.nbt.*;
+import org.jetbrains.annotations.Nullable;
 
 public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVisitor {
     private static final String IS_NULL_KEY = "<is_null>";

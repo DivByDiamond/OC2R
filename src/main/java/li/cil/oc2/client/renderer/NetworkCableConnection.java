@@ -1,10 +1,9 @@
 package li.cil.oc2.client.renderer;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Objects;
 
 final class NetworkCableConnection {
     private static final Vec3 POS_Y = new Vec3(0, 1, 0);

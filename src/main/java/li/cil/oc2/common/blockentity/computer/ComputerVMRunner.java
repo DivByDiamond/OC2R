@@ -1,11 +1,10 @@
 package li.cil.oc2.common.blockentity.computer;
 
+import java.nio.ByteBuffer;
 import li.cil.oc2.common.network.message.ComputerTerminalOutputMessage;
 import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
-import java.nio.ByteBuffer;
 
 public class ComputerVMRunner extends AbstractTerminalVMRunner {
     private final ComputerBlockEntity blockEntity;

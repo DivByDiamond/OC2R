@@ -1,12 +1,11 @@
 package li.cil.oc2.common.vm.context.managed;
 
-import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
-import li.cil.oc2.common.vm.context.MemoryRangeManager;
-import li.cil.sedna.api.device.MemoryMappedDevice;
-
 import java.util.ArrayList;
 import java.util.OptionalLong;
 import java.util.function.Supplier;
+import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
+import li.cil.oc2.common.vm.context.MemoryRangeManager;
+import li.cil.sedna.api.device.MemoryMappedDevice;
 
 final class ManagedMemoryRangeAllocator implements MemoryRangeAllocator {
     private final MemoryRangeAllocator parent;

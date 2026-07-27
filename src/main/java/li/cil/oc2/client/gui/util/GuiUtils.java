@@ -2,12 +2,12 @@ package li.cil.oc2.client.gui.util;
 
 import static li.cil.oc2.common.util.TranslationUtils.text;
 
+import java.util.*;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.widget.Sprite;
 import li.cil.oc2.common.container.DeviceTypeSlotItemHandler;
 import li.cil.oc2.common.util.TooltipRenderer;
-
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,8 +15,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
-
-import java.util.*;
 
 public final class GuiUtils {
     private static final Map<DeviceType, Component> WARNING_BY_DEVICE_TYPE =

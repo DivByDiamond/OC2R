@@ -1,7 +1,8 @@
 package li.cil.oc2.common.network;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import li.cil.oc2.common.util.LevelUtils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -10,12 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public final class MessageUtils {
     private static final Logger LOGGER = LogManager.getLogger();

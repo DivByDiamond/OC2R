@@ -1,14 +1,5 @@
 package li.cil.oc2.common.serialization;
 
-import li.cil.oc2.api.API;
-import li.cil.oc2.common.config.AsyncConfig;
-
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.storage.LevelResource;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -16,8 +7,13 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
 import javax.annotation.Nullable;
+import li.cil.oc2.api.API;
+import li.cil.oc2.common.config.AsyncConfig;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelResource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class BlobStorage {
     private static final Logger LOGGER = LogManager.getLogger();

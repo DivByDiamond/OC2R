@@ -1,7 +1,6 @@
 package li.cil.oc2.common.capabilities;
 
 import li.cil.oc2.api.API;
-
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -11,7 +10,6 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.items.IItemHandler;
-
 import org.jetbrains.annotations.Nullable;
 
 public final class Capabilities {

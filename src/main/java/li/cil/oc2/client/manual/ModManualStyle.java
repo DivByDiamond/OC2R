@@ -3,7 +3,6 @@ package li.cil.oc2.client.manual;
 import li.cil.manual.api.ManualStyle;
 import li.cil.manual.api.render.FontRenderer;
 import li.cil.oc2.client.renderer.font.MonospaceFontRenderer;
-
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;

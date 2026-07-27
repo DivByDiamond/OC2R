@@ -1,8 +1,7 @@
 package li.cil.oc2.common.bus.element;
 
-import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
-
 import java.util.Set;
+import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 
 public final class BlockQueryResult extends GroupQueryResult<BlockEntry, BlockDeviceQuery> {
     private final BlockDeviceQuery query;

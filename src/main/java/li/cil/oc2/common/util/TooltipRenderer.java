@@ -1,5 +1,6 @@
 package li.cil.oc2.common.util;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -9,8 +10,6 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.ClientHooks;
-
-import java.util.List;
 
 public final class TooltipRenderer {
     public static void drawTooltip(

@@ -5,7 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-
+import java.time.Duration;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
@@ -13,7 +13,6 @@ import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -25,12 +24,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
-
-import java.time.Duration;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)

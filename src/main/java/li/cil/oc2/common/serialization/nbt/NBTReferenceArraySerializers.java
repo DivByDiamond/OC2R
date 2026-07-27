@@ -1,13 +1,11 @@
 package li.cil.oc2.common.serialization.nbt;
 
+import java.lang.reflect.Array;
+import java.util.UUID;
 import li.cil.oc2.common.serialization.ceres.ColorDataSerializer;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
-
 import net.minecraft.nbt.*;
-
-import java.lang.reflect.Array;
-import java.util.UUID;
 
 final class EnumArraySerializer implements NBTArraySerializer {
     @Override

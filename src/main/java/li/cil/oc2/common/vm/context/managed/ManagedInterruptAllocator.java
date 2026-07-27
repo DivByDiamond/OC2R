@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.context.managed;
 
+import java.util.BitSet;
+import java.util.OptionalInt;
 import li.cil.oc2.api.bus.device.vm.context.InterruptAllocator;
 import li.cil.oc2.common.vm.context.InterruptManager;
 import li.cil.oc2.common.vm.context.InterruptValidator;
-
-import java.util.BitSet;
-import java.util.OptionalInt;
 
 final class ManagedInterruptAllocator implements InterruptAllocator, InterruptValidator {
     private final InterruptAllocator parent;
