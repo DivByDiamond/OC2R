@@ -27,12 +27,10 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     // memory ranges explicitly will allow grabbing reserved ones.
 
     @Serialized
-    @SuppressWarnings("FieldMayBeFinal")
-    private final BitSet reservedInterrupts = new BitSet();
+    private BitSet reservedInterrupts = new BitSet();
 
     @Serialized
-    @SuppressWarnings("FieldMayBeFinal")
-    private final List<MemoryRange> reservedMemoryRanges = new MemoryRangeList();
+    private List<MemoryRange> reservedMemoryRanges = new MemoryRangeList();
 
     public GlobalVMContext(final Board board) {
         this.memoryMap = new GlobalMemoryMap(board.getMemoryMap());

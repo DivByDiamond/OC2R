@@ -47,14 +47,15 @@ public final class ComputerBlockEntityPersistence {
         handleUpdateTag(computer, tag, registries);
         var level = computer.getLevel();
         if (level != null && level.isClientSide()) {
+            var data = tag.getCompound(TERMINAL_TAG_NAME);
             computer.virtualMachine.setBusStateClient(
                     li.cil.oc2.common.bus.controller.BusState.values()[
-                            tag.getInt(AbstractVirtualMachine.BUS_STATE_TAG_NAME)]);
+                            data.getInt(AbstractVirtualMachine.BUS_STATE_TAG_NAME)]);
             computer.virtualMachine.setRunStateClient(
-                    VMRunState.values()[tag.getInt(AbstractVirtualMachine.RUN_STATE_TAG_NAME)]);
+                    VMRunState.values()[data.getInt(AbstractVirtualMachine.RUN_STATE_TAG_NAME)]);
             computer.virtualMachine.setBootErrorClient(
                     Component.Serializer.fromJson(
-                            tag.getString(AbstractVirtualMachine.BOOT_ERROR_TAG_NAME), registries));
+                            data.getString(AbstractVirtualMachine.BOOT_ERROR_TAG_NAME), registries));
         }
     }
 
