@@ -27,11 +27,133 @@
   </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="HideUtilityClassConstructor"/>
-    <property name="files" value=".*[/\\]data[/\\].*"/>
   </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="MethodLength"/>
     <property name="files" value=".*[/\\]data[/\\].*"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="NeedBraces"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="AbbreviationAsWordInName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MemberName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ConstantName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ReturnCount"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingSwitchDefault"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="IllegalCatch"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="CyclomaticComplexity"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ParameterName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="FileLength"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="OneTopLevelClass"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="OverloadMethodsDeclarationOrder"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="VariableDeclarationUsageDistance"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="InnerAssignment"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="NestedIfDepth"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="BooleanExpressionComplexity"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="IllegalThrows"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="OuterTypeFilename"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ClassTypeParameterName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MethodTypeParameterName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MethodName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="LocalVariableName"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ArrayTypeStyle"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MethodLength"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="RightCurly"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="Indentation"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="RedundantModifier"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="UnnecessaryParentheses"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MultipleVariableDeclarations"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="AvoidStarImport"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="WhitespaceAround"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="LeftCurly"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="JavadocParagraph"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="NonEmptyAtclauseDescription"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="LineLength"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="JavadocTagContinuationIndentation"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="FallThrough"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="CommentsIndentation"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="AtclauseOrder"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="ParameterNumber"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="files" value=".*[/\\]test[/\\].*"/>
   </module>
 
   <module name="FileTabCharacter">
