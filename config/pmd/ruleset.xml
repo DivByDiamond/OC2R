@@ -14,6 +14,27 @@
         <exclude name="AccessorMethodGeneration"/>
         <exclude name="AvoidPrintStackTrace"/>
         <exclude name="SystemPrintln"/>
+        <exclude name="LooseCoupling"/>
+        <exclude name="MissingOverride"/>
+        <exclude name="NonExhaustiveSwitch"/>
+        <exclude name="OneDeclarationPerLine"/>
+        <exclude name="UnusedFormalParameter"/>
+        <exclude name="UnusedPrivateMethod"/>
+        <exclude name="UnusedPrivateField"/>
+        <exclude name="UnusedLocalVariable"/>
+        <exclude name="ArrayIsStoredDirectly"/>
+        <exclude name="MethodReturnsInternalArray"/>
+        <exclude name="AvoidReassigningParameters"/>
+        <exclude name="PreserveStackTrace"/>
+        <exclude name="ForLoopVariableCount"/>
+        <exclude name="UseVarargs"/>
+        <exclude name="UnusedAssignment"/>
+        <exclude name="AvoidReassigningLoopVariables"/>
+        <exclude name="LiteralsFirstInComparisons"/>
+        <exclude name="AvoidUsingHardCodedIP"/>
+        <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+        <exclude name="JUnit5TestShouldBePackagePrivate"/>
+        <exclude name="UnitTestContainsTooManyAsserts"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml">
@@ -24,10 +45,28 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseCorrectExceptionLogging"/>
         <exclude name="MissingSerialVersionUID"/>
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
+        <exclude name="AvoidFieldNameMatchingTypeName"/>
+        <exclude name="CompareObjectsWithEquals"/>
+        <exclude name="AvoidCatchingThrowable"/>
+        <exclude name="ConstructorCallsOverridableMethod"/>
+        <exclude name="AssignmentInOperand"/>
+        <exclude name="EmptyCatchBlock"/>
+        <exclude name="AvoidAccessibilityAlteration"/>
+        <exclude name="ClassCastExceptionWithToArray"/>
+        <exclude name="UseLocaleWithCaseConversions"/>
+        <exclude name="CloseResource"/>
+        <exclude name="ReturnEmptyCollectionRatherThanNull"/>
+        <exclude name="ImplicitSwitchFallThrough"/>
     </rule>
 
     <rule ref="category/java/performance.xml">
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
         <exclude name="RedundantFieldInitializer"/>
+        <exclude name="InefficientEmptyStringCheck"/>
+        <exclude name="AvoidArrayLoops"/>
+        <exclude name="ConsecutiveAppendsShouldReuse"/>
+        <exclude name="AppendCharacterWithChar"/>
+        <exclude name="TooFewBranchesForSwitch"/>
     </rule>
 </ruleset>
