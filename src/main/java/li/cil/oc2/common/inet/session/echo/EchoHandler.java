@@ -23,7 +23,7 @@ public final class EchoHandler {
             Executors.newSingleThreadExecutor(
                     runnable -> new Thread(runnable, "internet/blocking-session"));
 
-    static boolean deliverPendingResponse(
+    public static boolean deliverPendingResponse(
             final AtomicReference<EchoResponse> echoResponse,
             final SessionLayer.Receiver receiver) {
         final EchoResponse pending = echoResponse.getAndSet(null);
@@ -37,7 +37,7 @@ public final class EchoHandler {
         return false;
     }
 
-    static boolean handleEchoSession(
+    public static boolean handleEchoSession(
             final Session session,
             @Nullable final ByteBuffer data,
             final AtomicReference<EchoResponse> echoResponse) {

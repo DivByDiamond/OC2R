@@ -10,7 +10,7 @@ public class StreamSessionDiscriminator extends SocketSessionDiscriminator<Strea
     }
 
     @Override
-    String protocolName() {
+    protected String protocolName() {
         return "TCP";
     }
 }

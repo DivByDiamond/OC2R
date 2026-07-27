@@ -21,16 +21,16 @@ public final class Rfc1071Checksum {
         return (short) ~result;
     }
 
-    static short rfc1071Checksum(final ByteBuffer buffer, final int size) {
+    public static short rfc1071Checksum(final ByteBuffer buffer, final int size) {
         final int checksum = bufferChecksum(buffer, size);
         return finishChecksum(checksum);
     }
 
-    static short rfc1071Checksum(final ByteBuffer buffer) {
+    public static short rfc1071Checksum(final ByteBuffer buffer) {
         return rfc1071Checksum(buffer, buffer.remaining());
     }
 
-    static short transportRfc1071Checksum(
+    public static short transportRfc1071Checksum(
             final ByteBuffer buffer,
             final int srcIpAddress,
             final int dstIpAddress,

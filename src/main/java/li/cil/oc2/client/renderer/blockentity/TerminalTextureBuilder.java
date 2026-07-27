@@ -5,6 +5,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
+import li.cil.oc2.common.vm.terminal.TerminalCharRenderer;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.fonts.Glyph;
 

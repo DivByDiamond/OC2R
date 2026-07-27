@@ -9,7 +9,7 @@ import li.cil.oc2.common.inet.tcp.TcpState;
 
 public final class RejectState extends TcpState {
     @Override
-    SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         header.rejectConnection(session.mySequence, session.vmSequence + 1);
         header.write(segment);
@@ -18,12 +18,12 @@ public final class RejectState extends TcpState {
     }
 
     @Override
-    SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
         throw new IllegalStateException();
     }
 
     @Override
-    Session.States toSessionState() {
+    public Session.States toSessionState() {
         return Session.States.REJECT;
     }
 }

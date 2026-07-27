@@ -19,11 +19,11 @@ import li.cil.oc2.common.network.info.ProjectorInfo;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorLoadBalancer {
-    static final long CACHE_EXPIRES_AFTER = 2000;
+    public static final long CACHE_EXPIRES_AFTER = 2000;
 
     private static final Map<ProjectorBlockEntity, ProjectorInfo> PROJECTOR_INFO = new HashMap<>();
 
-    static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
+    public static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
 
     @Nullable private static ProjectorInfo lastSender;
 

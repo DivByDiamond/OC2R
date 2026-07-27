@@ -1,6 +1,6 @@
 package li.cil.oc2.common.block.cable;
 
-import static li.cil.oc2.common.block.BusCableStateProperties.*;
+import static li.cil.oc2.common.block.cable.BusCableStateProperties.*;
 
 import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;

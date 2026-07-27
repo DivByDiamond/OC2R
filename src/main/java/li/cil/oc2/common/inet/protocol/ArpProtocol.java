@@ -9,7 +9,7 @@ import li.cil.oc2.common.inet.util.MacAddress;
 public final class ArpProtocol {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    static final short PROTOCOL_ARP = 0x0806;
+    public static final short PROTOCOL_ARP = 0x0806;
 
     private static final short HW_TYPE_ETHERNET = 0x0001;
     static final int ARP_MESSAGE_SIZE = 28;
@@ -19,13 +19,13 @@ public final class ArpProtocol {
     private static final short ARP_REQUEST = 0x0001;
     private static final short ARP_RESPONSE = 0x0002;
 
-    record ArpRequestData(
+    public record ArpRequestData(
             short senderMacPrefix,
             int senderMacAddress,
             int senderIpAddress,
             int targetIpAddress) {}
 
-    static void writeResponse(
+    public static void writeResponse(
             final ByteBuffer frame,
             final MacAddress myMacAddress,
             final int myIpV4Address,
@@ -46,7 +46,7 @@ public final class ArpProtocol {
         LOGGER.trace("ARP message sent");
     }
 
-    static ArpRequestData readRequest(
+    public static ArpRequestData readRequest(
             final ByteBuffer frame, final short srcMacPrefix, final int srcMacAddress) {
         if (frame.remaining() < ARP_MESSAGE_SIZE) {
             return null;

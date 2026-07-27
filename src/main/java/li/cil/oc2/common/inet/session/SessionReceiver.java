@@ -10,19 +10,19 @@ import li.cil.oc2.api.inet.session.StreamSession;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 
 public final class SessionReceiver implements SessionLayer.Receiver {
-    SessionBase session = null;
+    public SessionBase session = null;
     ByteBuffer buffer = null;
     int position = 0;
     int limit = 0;
 
-    void prepare(final ByteBuffer buffer) {
+    public void prepare(final ByteBuffer buffer) {
         session = null;
         this.buffer = buffer;
         position = buffer.position();
         limit = buffer.limit();
     }
 
-    ByteBuffer getBuffer() {
+    public ByteBuffer getBuffer() {
         buffer.position(position);
         return buffer;
     }

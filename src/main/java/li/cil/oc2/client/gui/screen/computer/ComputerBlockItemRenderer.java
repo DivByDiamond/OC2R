@@ -25,7 +25,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 
-class ComputerBlockItemRenderer {
+public class ComputerBlockItemRenderer {
     public static final int BLOCK_RENDER_SIZE = 48;
 
     private final ItemStack computerItemStack = new ItemStack(Items.COMPUTER.get());
@@ -33,7 +33,7 @@ class ComputerBlockItemRenderer {
     private final BakedModel model = itemRenderer.getModel(computerItemStack, null, null, 0);
 
     @Nullable
-    Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
+    public Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
         final Quaternionf quaternion =
                 new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
         quaternion.conjugate();

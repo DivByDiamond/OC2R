@@ -54,8 +54,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         if (extraData.has(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY)) {
             final BusCableModelTypes.BusCableFacade facade = extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
             if (facade != null) {
-                return facade.model.getQuads(
-                        facade.blockState, side, rand, facade.data, RenderType.solid());
+                return facade.model().getQuads(
+                        facade.blockState(), side, rand, facade.data(), RenderType.solid());
             } else {
                 return Collections.emptyList();
             }
@@ -81,7 +81,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         final BusCableModelTypes.BusCableSupportSide supportSide = extraData.get(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY);
         if (supportSide != null) {
             quads.addAll(
-                    supportModelByFace[supportSide.value.get3DDataValue()].getQuads(
+                    supportModelByFace[supportSide.value().get3DDataValue()].getQuads(
                             state, side, rand, extraData, RenderType.solid()));
         }
 

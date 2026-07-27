@@ -10,10 +10,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-class PowerButton extends ToggleImageButton {
+public class PowerButton extends ToggleImageButton {
     private final AbstractMachineTerminalContainer menu;
 
-    PowerButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
+    public PowerButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
         super(
                 x,
                 y,

@@ -29,7 +29,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
             new NetworkConnectorConnectionManager(this);
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final ICapabilityInvalidationListener adjacentInterfaceListener =
+    public final ICapabilityInvalidationListener adjacentInterfaceListener =
             () -> {
                 this.isAdjacentInterfaceDirty = true;
                 return true;

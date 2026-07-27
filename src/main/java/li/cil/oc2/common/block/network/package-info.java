@@ -1,2 +1,3 @@
 @MethodsReturnNonnullByDefault
 package li.cil.oc2.common.block.network;
+import net.minecraft.MethodsReturnNonnullByDefault;

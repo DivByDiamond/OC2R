@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.screen.common;
 
 import static java.util.Arrays.asList;
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
+import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
@@ -20,20 +20,20 @@ final class MachineTerminalEnergyTooltip {
             final GuiGraphics graphics,
             final int mouseX,
             final int mouseY) {
-        if (screen.menu.getEnergyCapacity() <= 0) return;
+        if (screen.getMenu().getEnergyCapacity() <= 0) return;
 
-        if (screen.isMouseOverEnergyArea(mouseX, mouseY)) {
+        if (isMouseOverEnergyArea(screen, mouseX, mouseY)) {
             final List<? extends FormattedText> tooltip =
                     asList(
                             Component.translatable(
                                     Constants.TOOLTIP_ENERGY,
                                     withFormat(
-                                            screen.menu.getEnergy() + "/" + screen.menu.getEnergyCapacity(),
+                                            screen.getMenu().getEnergy() + "/" + screen.getMenu().getEnergyCapacity(),
                                             ChatFormatting.GREEN)),
                             Component.translatable(
                                     Constants.TOOLTIP_ENERGY_CONSUMPTION,
                                     withFormat(
-                                            String.valueOf(screen.menu.getEnergyConsumption()),
+                                            String.valueOf(screen.getMenu().getEnergyConsumption()),
                                             ChatFormatting.GREEN)));
             TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
         }
@@ -42,8 +42,8 @@ final class MachineTerminalEnergyTooltip {
     static boolean isMouseOverEnergyArea(
             final AbstractMachineTerminalScreen<?> screen,
             final int mouseX, final int mouseY) {
-        final int leftPos = screen.leftPos;
-        final int topPos = screen.topPos;
+        final int leftPos = screen.getGuiLeft();
+        final int topPos = screen.getGuiTop();
         final int CONTROLS_TOP = 8;
         final int ENERGY_TOP = CONTROLS_TOP + Sprites.SIDEBAR_3.height + 4;
         return screen.isMouseOver(

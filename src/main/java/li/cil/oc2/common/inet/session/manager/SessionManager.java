@@ -21,15 +21,15 @@ public final class SessionManager {
     private final NavigableMap<Instant, SessionBase> expirationQueue = new TreeMap<>();
     private final Map<SessionDiscriminator<?>, SessionBase> sessions = new HashMap<>();
 
-    SessionManager(final SessionLayer sessionLayer) {
+    public SessionManager(final SessionLayer sessionLayer) {
         this.sessionLayer = sessionLayer;
     }
 
-    Map<SessionDiscriminator<?>, SessionBase> getSessions() {
+    public Map<SessionDiscriminator<?>, SessionBase> getSessions() {
         return sessions;
     }
 
-    void processSessionExpirationQueue() {
+    public void processSessionExpirationQueue() {
         if (expirationQueue.isEmpty()) {
             return;
         }
@@ -52,7 +52,7 @@ public final class SessionManager {
         }
     }
 
-    void updateSession(final SessionBase session) {
+    public void updateSession(final SessionBase session) {
         final Instant oldKey = session.getLastUpdateTime();
         expirationQueue.remove(oldKey);
         session.update();
@@ -61,7 +61,7 @@ public final class SessionManager {
         assert previous == null;
     }
 
-    void closeSession(final SessionBase session) {
+    public void closeSession(final SessionBase session) {
         LOGGER.trace("Close session {}", session.getDiscriminator());
         sessions.remove(session.getDiscriminator());
         expirationQueue.remove(session.getLastUpdateTime());
@@ -70,7 +70,7 @@ public final class SessionManager {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    <S extends SessionBase, D extends SessionDiscriminator<S>> S getOrCreateSession(
+    public <S extends SessionBase, D extends SessionDiscriminator<S>> S getOrCreateSession(
             final D discriminator, final Function<D, S> factory) {
         final S session = (S) sessions.get(discriminator);
         if (session != null) {

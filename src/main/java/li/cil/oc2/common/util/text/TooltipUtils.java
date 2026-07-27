@@ -1,6 +1,6 @@
 package li.cil.oc2.common.util.text;
 
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
+import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;

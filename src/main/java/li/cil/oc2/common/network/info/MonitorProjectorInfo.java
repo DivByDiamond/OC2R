@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.loadbalancer.MonitorLoadBalancer;
 
-final class MonitorProjectorInfo {
+public final class MonitorProjectorInfo {
     private static final ExecutorService ENCODER_WORKERS =
             Executors.newCachedThreadPool(
                     r -> {
@@ -25,12 +25,12 @@ final class MonitorProjectorInfo {
                         return thread;
                     });
 
-    MonitorProjectorInfo next;
+    public MonitorProjectorInfo next;
     MonitorProjectorInfo previous;
     private final BlockPos projectorPos;
     private final Map<ServerPlayer, Long> players = new WeakHashMap<>();
     private int skipCount;
-    @Nullable Supplier<ByteBuffer> nextFrameSupplier;
+    @Nullable public Supplier<ByteBuffer> nextFrameSupplier;
     @Nullable private Future<?> runningEncode;
 
     public MonitorProjectorInfo(final BlockPos projectorPos) {

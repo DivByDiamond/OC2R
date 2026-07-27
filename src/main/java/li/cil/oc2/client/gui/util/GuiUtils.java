@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.util;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.util.*;
 import li.cil.oc2.api.bus.device.DeviceType;

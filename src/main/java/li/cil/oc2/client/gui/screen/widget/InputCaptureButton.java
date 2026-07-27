@@ -10,10 +10,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-class InputCaptureButton extends ToggleImageButton {
+public class InputCaptureButton extends ToggleImageButton {
     private final AbstractMachineTerminalContainer menu;
 
-    InputCaptureButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
+    public InputCaptureButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
         super(
                 x,
                 y,

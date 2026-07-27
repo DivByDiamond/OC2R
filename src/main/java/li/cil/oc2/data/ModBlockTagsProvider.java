@@ -1,6 +1,6 @@
 package li.cil.oc2.data;
 
-import static li.cil.oc2.common.block.Blocks.*;
+import static li.cil.oc2.common.block.common.Blocks.*;
 import static li.cil.oc2.common.tags.BlockTags.*;
 
 import java.util.concurrent.CompletableFuture;

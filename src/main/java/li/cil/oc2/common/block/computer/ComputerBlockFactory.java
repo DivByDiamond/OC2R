@@ -1,6 +1,6 @@
 package li.cil.oc2.common.block.computer;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.item.Items;

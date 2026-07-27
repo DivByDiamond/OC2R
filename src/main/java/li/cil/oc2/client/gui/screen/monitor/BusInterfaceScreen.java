@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.screen.monitor;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.Sprites;

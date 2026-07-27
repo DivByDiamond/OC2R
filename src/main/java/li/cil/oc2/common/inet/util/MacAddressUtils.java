@@ -15,7 +15,7 @@ public final class MacAddressUtils {
                 .append(hexCodeToChar(code & 15));
     }
 
-    static void macAddressToString(final StringBuilder builder, final MacAddress macAddress) {
+    public static void macAddressToString(final StringBuilder builder, final MacAddress macAddress) {
         final short prefix = macAddress.prefix();
         final int address = macAddress.address();
         byteToHex(builder, (byte) (prefix >>> 8));
@@ -27,7 +27,7 @@ public final class MacAddressUtils {
         }
     }
 
-    static String macAddressToString(final MacAddress macAddress) {
+    public static String macAddressToString(final MacAddress macAddress) {
         final StringBuilder builder = new StringBuilder();
         macAddressToString(builder, macAddress);
         return builder.toString();
@@ -65,7 +65,7 @@ public final class MacAddressUtils {
                         + "\"");
     }
 
-    static MacAddress parseMacAddress(final CharSequence string) throws AddressParseException {
+    public static MacAddress parseMacAddress(final CharSequence string) throws AddressParseException {
         if (string.length() != 17) {
             throw new AddressParseException(
                     "MAC address length must be 17 characters: \"" + string + "\"");

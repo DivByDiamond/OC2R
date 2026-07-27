@@ -19,9 +19,9 @@ public final class InternetConnectionImpl implements InternetConnection {
 
     private final ExecutorService executor;
     private final ByteBuffer receiveBuffer = ByteBuffer.allocate(LinkLocalLayer.FRAME_SIZE);
-    final LinkLocalLayer ethernet;
-    final InternetAdapter adapter;
-    boolean isStopped = false;
+    public final LinkLocalLayer ethernet;
+    public final InternetAdapter adapter;
+    public boolean isStopped = false;
 
     public InternetConnectionImpl(
             final ExecutorService executor,

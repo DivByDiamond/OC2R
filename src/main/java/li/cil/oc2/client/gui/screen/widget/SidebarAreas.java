@@ -8,11 +8,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-class SidebarAreas {
+public class SidebarAreas {
     private static final int CONTROLS_TOP = 8;
     private static final int ENERGY_TOP = CONTROLS_TOP + Sprites.SIDEBAR_3.height + 4;
 
-    static List<Rect2i> getExtraAreas(
+    public static List<Rect2i> getExtraAreas(
             final int leftPos, final int topPos, final boolean renderEnergy) {
         final List<Rect2i> list = new ArrayList<>();
         list.add(

@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.screen.common;
 
 import static java.util.Arrays.asList;
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
+import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package li.cil.oc2.common.item;
 
-import static li.cil.oc2.common.util.TranslationUtils.key;
+import static li.cil.oc2.common.util.text.TranslationUtils.key;
 
 import java.util.List;
 import java.util.Optional;

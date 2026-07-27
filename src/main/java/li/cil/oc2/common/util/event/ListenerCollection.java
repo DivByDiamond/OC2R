@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-class ListenerCollection {
+public class ListenerCollection {
     private final Set<Runnable> listeners = Collections.newSetFromMap(new WeakHashMap<>());
 
     public void add(final Runnable listener) {

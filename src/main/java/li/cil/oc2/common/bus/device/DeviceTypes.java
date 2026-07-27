@@ -1,6 +1,6 @@
 package li.cil.oc2.common.bus.device;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;

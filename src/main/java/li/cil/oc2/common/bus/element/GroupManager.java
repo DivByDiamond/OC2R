@@ -1,6 +1,6 @@
 package li.cil.oc2.common.bus.element;
 
-import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
+import static li.cil.oc2.common.util.async.OptionalUtils.instanceOf;
 
 import java.util.*;
 import li.cil.oc2.api.bus.device.Device;

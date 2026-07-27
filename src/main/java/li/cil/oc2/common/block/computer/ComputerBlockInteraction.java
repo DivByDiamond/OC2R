@@ -29,7 +29,7 @@ final class ComputerBlockInteraction {
             final BlockHitResult hitResult,
             @Nullable final ComputerBlockEntity computer) {
         if (computer == null) {
-            return ItemInteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         if (Wrenches.isWrench(stack)) {
@@ -42,7 +42,7 @@ final class ComputerBlockInteraction {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
 
-        return ItemInteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     static InteractionResult useWithoutItem(

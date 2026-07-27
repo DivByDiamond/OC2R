@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 public final class SessionChannelHelper {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    static boolean processQueue(
+    public static boolean processQueue(
             final Queue<Session> queue, final Function<Session, Boolean> action) {
         while (true) {
             final Session session = queue.poll();
@@ -31,7 +31,7 @@ public final class SessionChannelHelper {
         }
     }
 
-    static void closeSession(final Session session) {
+    public static void closeSession(final Session session) {
         try {
             getChannel(session).close();
             if (!session.isClosed()) {
@@ -48,15 +48,15 @@ public final class SessionChannelHelper {
         return channel;
     }
 
-    static SocketChannel getChannel(final StreamSession session) {
+    public static SocketChannel getChannel(final StreamSession session) {
         return (SocketChannel) getExistingUserdata(session);
     }
 
-    static DatagramChannel getChannel(final DatagramSession session) {
+    public static DatagramChannel getChannel(final DatagramSession session) {
         return (DatagramChannel) getExistingUserdata(session);
     }
 
-    static SelectableChannel getChannel(final Session session) {
+    public static SelectableChannel getChannel(final Session session) {
         return (SelectableChannel) getExistingUserdata(session);
     }
 }

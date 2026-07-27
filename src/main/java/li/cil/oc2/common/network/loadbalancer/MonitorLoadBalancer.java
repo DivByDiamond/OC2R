@@ -19,12 +19,12 @@ import li.cil.oc2.common.network.info.MonitorProjectorInfo;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class MonitorLoadBalancer {
-    static final long CACHE_EXPIRES_AFTER = 2000;
+    public static final long CACHE_EXPIRES_AFTER = 2000;
 
     private static final Map<MonitorBlockEntity, MonitorProjectorInfo> PROJECTOR_INFO =
             new HashMap<>();
 
-    static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
+    public static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
 
     @Nullable private static MonitorProjectorInfo lastSender;
 

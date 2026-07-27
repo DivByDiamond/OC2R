@@ -15,7 +15,7 @@ public final class TcpUtils {
 
     private TcpUtils() {}
 
-    static SessionActions prepareTCPSegment(
+    public static SessionActions prepareTCPSegment(
             final TransportMessage message, final StreamSessionImpl stream) {
         final ByteBuffer data = message.getData();
         final StreamSessionDiscriminator discriminator = stream.getDiscriminator();

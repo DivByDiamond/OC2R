@@ -20,20 +20,20 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     private final StreamSessionDiscriminator discriminator;
 
-    final ByteBuffer receiveBuffer = ByteBuffer.allocate(Config.streamBufferSize);
-    int vmWindow = 0;
-    int nextSegmentMark = 0;
+    public final ByteBuffer receiveBuffer = ByteBuffer.allocate(Config.streamBufferSize);
+    public int vmWindow = 0;
+    public int nextSegmentMark = 0;
 
-    final ByteBuffer sendBuffer = ByteBuffer.allocate(Config.streamBufferSize);
+    public final ByteBuffer sendBuffer = ByteBuffer.allocate(Config.streamBufferSize);
 
-    int mySequence = random.nextInt();
-    int vmSequence;
+    public int mySequence = random.nextInt();
+    public int vmSequence;
 
-    final TcpHeader header = new TcpHeader();
+    public final TcpHeader header = new TcpHeader();
 
-    TcpState state = TcpStates.CONNECT;
+    public TcpState state = TcpStates.CONNECT;
 
-    boolean needsAcknowledgment = false;
+    public boolean needsAcknowledgment = false;
 
     public StreamSessionImpl(
             final int ipAddress, final short port, final StreamSessionDiscriminator discriminator) {
@@ -50,7 +50,7 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
         return state.send(this, segment);
     }
 
-    boolean isNeedsAcknowledgment() {
+    public boolean isNeedsAcknowledgment() {
         return needsAcknowledgment;
     }
 
@@ -114,7 +114,7 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
         return "StreamSession(" + discriminator + ")";
     }
 
-    int computeWindow() {
+    public int computeWindow() {
         return sendBuffer.capacity() - sendBuffer.limit();
     }
 }

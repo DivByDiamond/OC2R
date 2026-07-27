@@ -1,7 +1,7 @@
 package li.cil.oc2.common.block.cable;
 
-import static li.cil.oc2.common.block.BusCableStateProperties.*;
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.block.cable.BusCableStateProperties.*;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.screen.monitor.BusInterfaceScreen;

@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.screen.network;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
@@ -175,7 +175,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
                 && mouseY <= top + (10 + 102);
     }
 
-    boolean getConfiguration(@Nullable final Direction side) {
+    public boolean getConfiguration(@Nullable final Direction side) {
         return side != null
                 && NetworkInterfaceCardItem.getSideConfiguration(player.getItemInHand(hand), side);
     }

@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -130,7 +131,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
                 blockEntity instanceof ComputerBlockEntity c ? c : null;
         final ItemInteractionResult result =
                 ComputerBlockInteraction.useItemOn(stack, state, level, pos, player, hand, hitResult, computer);
-        return result != ItemInteractionResult.PASS ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        return result != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override

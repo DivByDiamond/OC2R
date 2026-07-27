@@ -1,2 +1,3 @@
 @MethodsReturnNonnullByDefault
 package li.cil.oc2.common.util.item;
+import net.minecraft.MethodsReturnNonnullByDefault;

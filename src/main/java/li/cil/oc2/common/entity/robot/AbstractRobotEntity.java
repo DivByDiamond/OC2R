@@ -37,12 +37,10 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         super(type, world);
     }
 
-    @Override
     public int getSelectedSlot() {
-        return getEntityData().get(SELECTD_SLOT);
+        return getEntityData().get(SELECTED_SLOT);
     }
 
-    @Override
     public void setSelectedSlot(final int value) {
         getEntityData().set(SELECTED_SLOT, (byte) Mth.clamp(value, 0, INVENTORY_SIZE - 1));
     }

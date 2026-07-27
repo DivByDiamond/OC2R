@@ -55,7 +55,7 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase>
         return Objects.hash(getClass(), srcIpAddress, srcPort, dstIpAddress, dstPort);
     }
 
-    abstract String protocolName();
+    protected abstract String protocolName();
 
     @Override
     public String toString() {

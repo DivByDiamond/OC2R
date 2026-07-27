@@ -10,7 +10,7 @@ import li.cil.oc2.common.inet.tcp.TcpStates;
 
 public final class AcceptState extends TcpState {
     @Override
-    SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         header.acceptConnection(
                 session.mySequence, session.vmSequence + 1, session.computeWindow());
@@ -20,7 +20,7 @@ public final class AcceptState extends TcpState {
     }
 
     @Override
-    SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         if (!header.read(segment)) {
             return SessionActions.IGNORE;
@@ -36,7 +36,7 @@ public final class AcceptState extends TcpState {
     }
 
     @Override
-    Session.States toSessionState() {
+    public Session.States toSessionState() {
         return Session.States.ESTABLISHED;
     }
 }

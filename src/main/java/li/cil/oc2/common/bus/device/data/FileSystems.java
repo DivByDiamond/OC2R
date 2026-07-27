@@ -1,6 +1,6 @@
 package li.cil.oc2.common.bus.device.data;
 
-import static li.cil.oc2.common.util.TextFormatUtils.formatSize;
+import static li.cil.oc2.common.util.text.TextFormatUtils.formatSize;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

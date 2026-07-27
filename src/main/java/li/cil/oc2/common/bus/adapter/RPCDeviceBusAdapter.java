@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.adapter;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.nio.ByteBuffer;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;

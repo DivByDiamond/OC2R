@@ -6,9 +6,9 @@ import li.cil.oc2.common.inet.session.SessionActions;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 
 public abstract class TcpState {
-    abstract SessionActions receive(StreamSessionImpl session, ByteBuffer segment);
+    public abstract SessionActions receive(StreamSessionImpl session, ByteBuffer segment);
 
-    abstract SessionActions send(StreamSessionImpl session, ByteBuffer segment);
+    public abstract SessionActions send(StreamSessionImpl session, ByteBuffer segment);
 
-    abstract Session.States toSessionState();
+    public abstract Session.States toSessionState();
 }

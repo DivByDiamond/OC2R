@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.screen.file;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.io.IOException;
 import java.nio.file.*;

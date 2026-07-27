@@ -41,7 +41,7 @@ final class NetworkConnectorLifecycle {
     }
 
     static void loadServer(final NetworkConnectorBlockEntity entity) {
-        final var level = (ServerLevel) entity.level;
+        final var level = (ServerLevel) entity.getLevel();
         final Direction facing = NetworkConnectorBlock.getFacing(entity.getBlockState());
         final BlockPos sourcePos = entity.getBlockPos().relative(facing.getOpposite());
         level.registerCapabilityListener(sourcePos, entity.adjacentInterfaceListener);
@@ -70,7 +70,7 @@ final class NetworkConnectorLifecycle {
     }
 
     static void resolveLocalInterface(final NetworkConnectorBlockEntity entity) {
-        assert entity.level != null;
+        assert entity.getLevel() != null;
 
         if (!entity.isValid()) {
             entity.adjacentInterface = null;
@@ -80,12 +80,12 @@ final class NetworkConnectorLifecycle {
         final Direction facing = NetworkConnectorBlock.getFacing(entity.getBlockState());
         final BlockPos sourcePos = entity.getBlockPos().relative(facing.getOpposite());
 
-        if (!entity.level.isLoaded(sourcePos)) {
+        if (!entity.getLevel().isLoaded(sourcePos)) {
             entity.adjacentInterface = null;
             return;
         }
 
         entity.adjacentInterface =
-                entity.level.getCapability(Capabilities.NetworkInterface.BLOCK, sourcePos, facing);
+                entity.getLevel().getCapability(Capabilities.NetworkInterface.BLOCK, sourcePos, facing);
     }
 }

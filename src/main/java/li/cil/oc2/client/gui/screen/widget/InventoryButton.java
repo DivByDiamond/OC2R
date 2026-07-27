@@ -10,10 +10,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-class InventoryButton extends ImageButton {
+public class InventoryButton extends ImageButton {
     private final AbstractMachineTerminalContainer menu;
 
-    InventoryButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
+    public InventoryButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
         super(x, y, 12, 12, Sprites.INVENTORY_BUTTON_INACTIVE, Sprites.INVENTORY_BUTTON_ACTIVE);
         this.menu = menu;
         withTooltip(Component.translatable(Constants.MACHINE_OPEN_INVENTORY_CAPTION));

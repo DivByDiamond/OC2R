@@ -30,9 +30,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     private static final String ENERGY_TAG_NAME = "energy";
     private static final String DEVICE_ID_TAG_NAME = "device_id";
 
-    private final ProjectorDevice projectorDevice =
+    public final ProjectorDevice projectorDevice =
             new ProjectorDevice(this, this::handleMountedChanged);
-    private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.projectorEnergyStorage);
+    public final FixedEnergyStorage energy = new FixedEnergyStorage(Config.projectorEnergyStorage);
     private final Picture picture =
             Picture.create(ProjectorDevice.WIDTH, ProjectorDevice.HEIGHT, ColorSpace.YUV420J);
     private final ProjectorVideoEncoder videoEncoder = new ProjectorVideoEncoder();
@@ -40,7 +40,7 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     private final ProjectorState projectorState = new ProjectorState();
     private final ProjectorRenderBounds renderBounds = new ProjectorRenderBounds();
 
-    UUID deviceId = UUID.randomUUID();
+    public UUID deviceId = UUID.randomUUID();
     private long lastKeepAliveSentAt;
 
     public ProjectorBlockEntity(final BlockPos pos, final BlockState state) {

@@ -11,7 +11,7 @@ public final class DatagramSessionDiscriminator extends SocketSessionDiscriminat
     }
 
     @Override
-    String protocolName() {
+    protected String protocolName() {
         return "UDP";
     }
 }

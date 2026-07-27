@@ -33,11 +33,11 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
     }
 
     public void start() {
-        if (computer.level != null && !computer.level.isClientSide()) computer.virtualMachine.start();
+        if (computer.getLevel() != null && !computer.getLevel().isClientSide()) computer.virtualMachine.start();
     }
 
     public void stop() {
-        if (computer.level != null && !computer.level.isClientSide()) computer.virtualMachine.stop();
+        if (computer.getLevel() != null && !computer.getLevel().isClientSide()) computer.virtualMachine.stop();
     }
 
     public void openTerminalScreen(final ServerPlayer player) {
@@ -72,11 +72,11 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
     }
 
     public void handleNeighborChanged() {
-        if (computer.level != null && !computer.level.isClientSide()) computer.virtualMachine.busController.scheduleBusScan();
+        if (computer.getLevel() != null && !computer.getLevel().isClientSide()) computer.virtualMachine.busController.scheduleBusScan();
     }
 
     public void onAfterDeviceScan(final AfterDeviceScanEvent event) {
-        if (event.didDevicesChange()) computer.level.invalidateCapabilities(computer.getBlockPos());
+        if (event.didDevicesChange()) computer.getLevel().invalidateCapabilities(computer.getBlockPos());
     }
 
     @SuppressWarnings("unchecked")

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.session.Session;
 
-public public interface SessionOperator extends Session {
+public interface SessionOperator extends Session {
     @Nullable
     byte[] nextReceive();
 

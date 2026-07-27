@@ -24,6 +24,6 @@ final class BusCableCapabilities {
                     }
                     return null;
                 },
-                li.cil.oc2.common.block.Blocks.BUS_CABLE.get());
+                li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get());
     }
 }

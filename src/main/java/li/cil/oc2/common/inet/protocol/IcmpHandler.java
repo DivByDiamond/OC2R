@@ -6,17 +6,17 @@ import li.cil.oc2.common.inet.util.InetUtils;
 import li.cil.oc2.common.inet.util.checksum.Rfc1071Checksum;
 
 public final class IcmpHandler {
-    static final byte ICMP_TYPE_ECHO_REPLY = 0;
-    static final byte ICMP_TYPE_ECHO_REQUEST = 8;
+    public static final byte ICMP_TYPE_ECHO_REPLY = 0;
+    public static final byte ICMP_TYPE_ECHO_REQUEST = 8;
     static final byte ICMP_TYPE_ECHO_UNREACHABLE = 3;
     static final byte ICMP_CODE_ECHO_UNREACHABLE_PORT = 3;
     static final byte ICMP_CODE_ECHO_UNREACHABLE_PROHIBITED = 13;
-    static final short PORT_ECHO = 7;
-    static final int ICMP_HEADER_SIZE = 8;
+    public static final short PORT_ECHO = 7;
+    public static final int ICMP_HEADER_SIZE = 8;
 
     ICMPReply icmpReply = null;
 
-    void prepareIcmpHeader(final ByteBuffer buffer, final byte type, final byte code) {
+    public void prepareIcmpHeader(final ByteBuffer buffer, final byte type, final byte code) {
         final int position = buffer.position();
         buffer.put(type);
         buffer.put(code);
@@ -27,7 +27,7 @@ public final class IcmpHandler {
         buffer.position(position);
     }
 
-    void reject(final ByteBuffer payload, final int srcIpAddress) {
+    public void reject(final ByteBuffer payload, final int srcIpAddress) {
         final byte[] data = InetUtils.quickICMPBody(payload);
         icmpReply =
                 new ICMPReply(
@@ -38,7 +38,7 @@ public final class IcmpHandler {
                         data);
     }
 
-    boolean consume(final TransportMessage message) {
+    public boolean consume(final TransportMessage message) {
         if (icmpReply == null) return false;
         message.updateIpv4(icmpReply.srcIpAddress(), icmpReply.dstIpAddress());
         final ByteBuffer data = message.getData();

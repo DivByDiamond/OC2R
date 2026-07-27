@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm;
 
 import javax.annotation.Nullable;
+import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;

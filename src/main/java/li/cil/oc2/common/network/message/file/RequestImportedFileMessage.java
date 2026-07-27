@@ -1,6 +1,6 @@
 package li.cil.oc2.common.network.message.file;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import io.netty.buffer.ByteBuf;
 import java.io.IOException;

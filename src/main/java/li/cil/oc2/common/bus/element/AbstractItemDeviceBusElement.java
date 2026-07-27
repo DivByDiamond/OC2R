@@ -1,6 +1,6 @@
 package li.cil.oc2.common.bus.element;
 
-import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
+import static li.cil.oc2.common.util.async.OptionalUtils.instanceOf;
 import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
 
 import java.util.*;

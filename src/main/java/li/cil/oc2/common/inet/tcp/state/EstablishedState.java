@@ -14,7 +14,7 @@ public final class EstablishedState extends TcpState {
     private static final Logger LOGGER = LogManager.getLogger();
 
     @Override
-    SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         final ByteBuffer receiveBuffer = session.receiveBuffer;
         if (session.nextSegmentMark == 0) {
@@ -58,7 +58,7 @@ public final class EstablishedState extends TcpState {
     }
 
     @Override
-    SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
+    public SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         final boolean correct = header.read(segment);
         if (!correct) {
@@ -117,7 +117,7 @@ public final class EstablishedState extends TcpState {
     }
 
     @Override
-    Session.States toSessionState() {
+    public Session.States toSessionState() {
         return Session.States.ESTABLISHED;
     }
 }

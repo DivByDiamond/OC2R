@@ -9,7 +9,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
-class TerminalCharRenderer {
+public class TerminalCharRenderer {
     static void renderForeground(
             final Terminal terminal,
             final Matrix4f matrix,

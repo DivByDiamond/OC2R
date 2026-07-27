@@ -1,7 +1,7 @@
 package li.cil.oc2.common.item;
 
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
-import static li.cil.oc2.common.util.TranslationUtils.text;
+import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
+import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.widget;
 
 import static java.util.Collections.emptyList;
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
+import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
