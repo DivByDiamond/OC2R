@@ -354,7 +354,8 @@ checkstyle {
 }
 
 tasks.withType<Checkstyle>().configureEach {
-    exclude("**/jcodec/**")
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**")
 }
 
 pmd {
@@ -364,8 +365,10 @@ pmd {
     isConsoleOutput = true
 }
 
-tasks.withType<Checkstyle>().configureEach { isEnabled = true }
-tasks.withType<Pmd>().configureEach { isEnabled = true }
+tasks.withType<Pmd>().configureEach {
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**")
+}
 
 tasks.test {
     useJUnitPlatform()

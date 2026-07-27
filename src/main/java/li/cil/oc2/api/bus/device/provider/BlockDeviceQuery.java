@@ -1,12 +1,11 @@
 
 package li.cil.oc2.api.bus.device.provider;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import javax.annotation.Nullable;
 
 /**
  * Device query for a block in the world.
@@ -30,8 +29,8 @@ public interface BlockDeviceQuery {
 
     /**
      * The world-space side of the block this query is performed on, if any.
-     * <p>
-     * May be {@code null} just as when requesting a capability from a {@link BlockEntity}.
+     *
+     * <p>May be {@code null} just as when requesting a capability from a {@link BlockEntity}.
      *
      * @return the side of the block.
      */

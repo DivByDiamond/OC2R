@@ -1,20 +1,18 @@
-
 package li.cil.oc2.api.bus.device.object;
-
-import li.cil.oc2.api.bus.device.ItemDevice;
-import li.cil.oc2.api.bus.device.rpc.RPCDevice;
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
-import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
-import li.cil.oc2.api.bus.device.rpc.RPCEventSource;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.ItemDevice;
+import li.cil.oc2.api.bus.device.rpc.RPCDevice;
+import li.cil.oc2.api.bus.device.rpc.RPCEventSource;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
+import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 
 /**
  * A reflection based implementation of {@link RPCDevice} using the {@link Callback}
@@ -83,6 +81,12 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     }
 
     ///////////////////////////////////////////////////////////////////
+
+    /**
+     * Gets the object as an {@link RPCEventSource} if it implements that interface.
+     *
+     * @return this object as an {@link RPCEventSource}, or {@code null}.
+     */
     public RPCEventSource asEventSource() {
         if (object instanceof RPCEventSource res) {
             return res;
@@ -123,8 +127,12 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
 
     @Override
     public boolean equals(@Nullable final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         final ObjectDevice that = (ObjectDevice) o;
         return object.equals(that.object);
     }
@@ -143,11 +151,11 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
 
     private static String toNiceTypeName(final Class<?> deviceClass) {
         final String name = deviceClass.getSimpleName()
-            .replaceFirst("VMDevice$", "")
-            .replaceFirst("RPCDevice$", "")
-            .replaceFirst("Device$", "");
+                .replaceFirst("VMDevice$", "")
+                .replaceFirst("RPCDevice$", "")
+                .replaceFirst("Device$", "");
         return name
-            .replaceAll("([a-z])([A-Z])", "$1_$2")
-            .toLowerCase(Locale.ROOT);
+                .replaceAll("([a-z])([A-Z])", "$1_$2")
+                .toLowerCase(Locale.ROOT);
     }
 }

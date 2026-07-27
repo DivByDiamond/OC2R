@@ -1,4 +1,3 @@
-
 package li.cil.oc2.client.gui.screen;
 
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -122,5 +121,8 @@ public final class KeyCodeMapping {
         MAPPING.put(GLFW.GLFW_KEY_F22, EvdevKeys.KEY_F22);
         MAPPING.put(GLFW.GLFW_KEY_F23, EvdevKeys.KEY_F23);
         MAPPING.put(GLFW.GLFW_KEY_F24, EvdevKeys.KEY_F24);
+    }
+
+    private KeyCodeMapping() {
     }
 }

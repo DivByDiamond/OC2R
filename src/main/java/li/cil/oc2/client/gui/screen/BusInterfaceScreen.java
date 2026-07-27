@@ -1,9 +1,9 @@
-
 package li.cil.oc2.client.gui.screen;
 
-import li.cil.oc2.client.gui.Sprites;
+import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
@@ -18,8 +18,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
-
-import static li.cil.oc2.common.util.TranslationUtils.text;
 
 public final class BusInterfaceScreen extends Screen {
     private static final int TEXT_LEFT = 9;
@@ -36,19 +34,21 @@ public final class BusInterfaceScreen extends Screen {
 
     private int left, top;
 
-
+    /**
+     * Creates a new bus interface screen.
+     *
+     * @param busCable the bus cable block entity.
+     * @param side     the side of the block.
+     */
     public BusInterfaceScreen(final BusCableBlockEntity busCable, final Direction side) {
         super(Items.BUS_INTERFACE.get().getDescription());
         this.busCable = busCable;
         this.side = side;
     }
 
-
     @Override
     protected void init() {
         super.init();
-
-        //getMinecraft().keyboardHandler.setSendRepeatsToGui(true);
 
         left = (width - Sprites.BUS_INTERFACE_SCREEN.width) / 2;
         top = (height - Sprites.BUS_INTERFACE_SCREEN.height) / 2;
@@ -101,8 +101,6 @@ public final class BusInterfaceScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-
-        //getMinecraft().keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
@@ -144,7 +142,6 @@ public final class BusInterfaceScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
 
     private void setInterfaceName(final String name) {
         Network.sendToServer(BusInterfaceNameMessage.ToServer(busCable, side, name));

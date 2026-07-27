@@ -1,19 +1,13 @@
-
 package li.cil.oc2.client.gui.screen;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.KeyboardInputMessage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
@@ -28,17 +22,19 @@ public final class KeyboardScreen extends Screen {
 
     private static final MutableComponent CLOSE_INFO = Component.translatable("gui.oc2r.keyboard.close_info");
 
-
     private final KeyboardBlockEntity keyboard;
-
 
     public static boolean hideHotbar = false;
 
+    /**
+     * Creates a new keyboard screen for the given keyboard block entity.
+     *
+     * @param keyboard the keyboard block entity.
+     */
     public KeyboardScreen(final KeyboardBlockEntity keyboard) {
         super(Items.KEYBOARD.get().getDescription());
         this.keyboard = keyboard;
     }
-
 
     @Override
     protected void init() {
@@ -53,9 +49,9 @@ public final class KeyboardScreen extends Screen {
         super.tick();
 
         final Vec3 keyboardCenter = Vec3.atCenterOf(keyboard.getBlockPos());
-        if (!keyboard.isValid() ||
-            getMinecraft().player == null ||
-            getMinecraft().player.distanceToSqr(keyboardCenter) > 8 * 8) {
+        if (!keyboard.isValid()
+                || getMinecraft().player == null
+                || getMinecraft().player.distanceToSqr(keyboardCenter) > 8 * 8) {
             onClose();
         }
     }
@@ -83,7 +79,10 @@ public final class KeyboardScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(final GuiGraphics guiGraphics, final int mouseX, final int mouseY, final float partialTick) {
+    public void renderBackground(final GuiGraphics guiGraphics,
+                                  final int mouseX,
+                                  final int mouseY,
+                                  final float partialTick) {
         // Don't
     }
 
@@ -94,12 +93,12 @@ public final class KeyboardScreen extends Screen {
         renderBorderOverlay(graphics);
 
         graphics.drawWordWrap(
-            font,
-            CLOSE_INFO,
-            BORDER_SIZE * 3,
-            height - BORDER_SIZE * 3 - font.lineHeight,
-            width - BORDER_SIZE * 6,
-            0x88FFFFFF
+                font,
+                CLOSE_INFO,
+                BORDER_SIZE * 3,
+                height - BORDER_SIZE * 3 - font.lineHeight,
+                width - BORDER_SIZE * 6,
+                0x88FFFFFF
         );
     }
 
@@ -114,7 +113,6 @@ public final class KeyboardScreen extends Screen {
 
         hideHotbar = false;
     }
-
 
     private void renderBorderOverlay(final GuiGraphics graphics) {
         graphics.fill(BORDER_SIZE, BORDER_SIZE, width - BORDER_SIZE, BORDER_SIZE * 2, BORDER_COLOR);
@@ -134,22 +132,17 @@ public final class KeyboardScreen extends Screen {
     private void swingArm() {
         final Minecraft minecraft = getMinecraft();
         final LocalPlayer player = minecraft.player;
-        if (player == null) {
-            return;
+        if (player != null) {
+            final RandomSource random = player.getRandom();
+            if (random.nextFloat() >= ARM_SWING_RATE) {
+                final InteractionHand handToSwing;
+                if (minecraft.options.getCameraType().isFirstPerson()) {
+                    handToSwing = InteractionHand.MAIN_HAND;
+                } else {
+                    handToSwing = random.nextBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                }
+                player.swing(handToSwing);
+            }
         }
-
-        final RandomSource random = player.getRandom();
-        if (random.nextFloat() < ARM_SWING_RATE) {
-            return;
-        }
-
-        final InteractionHand handToSwing;
-        if (minecraft.options.getCameraType().isFirstPerson()) {
-            handToSwing = InteractionHand.MAIN_HAND;
-        } else {
-            handToSwing = random.nextBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-        }
-
-        player.swing(handToSwing);
     }
 }
