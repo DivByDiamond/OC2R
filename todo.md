@@ -1,6 +1,6 @@
 # TODO
 
-## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅
+## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅ — ~70%
 
 **Правило**: ≤200 строк на файл, ≤4 файлов на папку.
 
@@ -13,101 +13,53 @@
 - [x] bus/ → adapter/, controller/, element/
 - [x] gui/ → screen/, widget/
 - [x] OldTerminal.java удалён
+- [x] DefaultTransportLayer.java (520→170)
+- [x] NetworkSwitchBlockEntity.java (511→226) — извлечены HostEntry, LuaHostEntry, PortSettings, SwitchLog
+- [x] ProjectorBlockEntity.java (479→222)
+- [x] BusCableBlockEntity.java (477→211)
+- [x] AbstractBlockStorageDevice.java (414→204)
+- [x] ComputerRenderer.java (367→207)
+- [x] StreamSessionImpl.java (353→114)
+- [x] CommonDeviceBusController.java (332→140)
+- [x] BlobStorage.java (306→112)
+- [x] MachineTerminalWidget.java (313→198)
+- [x] NetworkInterfaceCardScreen.java (302→180)
+- [x] DefaultSessionLayer.java (277→193 — вместе с фиксом fallthrough)
+- [x] Большая часть групп 4-12 (файлы либо уже ≤200, либо переименованы/перемещены)
 
-### План распила (build + commit после каждого)
+### Осталось разложить по подпапкам (≤4 файлов на папку)
 
-Очерёдность: от самых больших файлов к маленьким, группами по 4 параллельных агента.
+Много папок нарушают правило. Приоритет — самые большие:
 
-#### Группа 1: 4 самых больших файла ✅
-- [x] ComputerBlockEntity.java (685→499) → извлечены 3 inner класса в подпакеты (bus/, vm/, handler/)
-- [x] ProjectorDepthRenderer.java (614→480) → извлечены DepthOnlyRenderTarget, ProjectorCameraEntity, ProjectorDepthRenderInfo
-- [x] BusCableBlock.java (584→454) → извлечены ConnectionType, BusCableShapeBuilder
-- [x] RPCDeviceBusAdapter.java (560→491) → извлечены все 5 внутренних типов
+| Папка | Файлов | Предлагаемая структура |
+|---|---|---|
+| `common/inet/` | 53 | `inet/layer/`, `inet/session/`, `inet/protocol/` |
+| `common/network/message/` | 43 | `message/computer/`, `message/robot/`, `message/monitor/` |
+| `common/util/` | 38 | Разбить по смыслу (world, item, nbt, text) |
+| `common/vm/terminal/escapes/csi/` | 31 | Вряд ли трогать — каждый CSI handler свой файл по дизайну |
+| `common/block/` | 27 | `block/computer/`, `block/cable/`, `block/monitor/` |
+| `client/gui/screen/` | 25 | `screen/computer/`, `screen/robot/`, `screen/monitor/` |
+| `common/blockentity/network/` | 25 | Уже разбито, можно докрутить |
 
-#### Группа 2: 4 файла 472-520 строк
-- [ ] DefaultTransportLayer.java (520) → извлечь ICMPReply, SessionReceiver
-- [ ] NetworkSwitchBlockEntity.java (511) → извлечь HostEntry, LuaHostEntry, PortSettings, SwitchLog
-- [ ] ProjectorBlockEntity.java (479) → извлечь FrameConsumer, VideoEncoder/Decoder логику
-- [ ] BusCableBlockEntity.java (477) → извлечь FacadeType, BusCableBusElement, NeighborListener
+Полный список нарушителей — 49 папок, задача на отдельную сессию.
 
-#### Группа 3: 4 файла 428-473 строк ✅
-- [x] MonitorBlockEntity.java (473→401) → извлечены FrameConsumer, MonitorContraptionHelper, MonitorDecoderWorkers
-- [x] NetworkConnectorBlockEntity.java (472→422) → извлечены ConnectionResult, NullNetworkInterface, NetworkConnectorInterface
-- [x] FileChooserScreen.java (433→265) → извлечены FileChooserCallback, FileList (+FileEntry)
-- [x] AbstractVirtualMachine.java (428→419) → извлечено SerializedState в vm/state/
-
-#### Группа 4: 4 файла 367-420 строк
-- [ ] AbstractBlockStorageDevice.java (414) → split
-- [ ] ComputerRenderer.java (367) → split
-- [ ] StreamSessionImpl.java (353) → split
-- [ ] TerminalRenderer.java (351) → split
-
-#### Группа 5: 4 файла 306-341 строк
-- [ ] NetworkCableRenderer.java (341) → split
-- [ ] CommonDeviceBusController.java (332) → split
-- [ ] InventoryOperationsModuleDevice.java (331) → split
-- [ ] RedstoneInterfaceBlockEntity.java (330) → split
-
-#### Группа 6: 4 файла 286-324 строк
-- [ ] FileImportExportCardItemDevice.java (324) → split
-- [ ] ProjectorLoadBalancer.java (316) → split
-- [ ] MonitorLoadBalancer.java (316) → split
-- [ ] MachineTerminalWidget.java (313) → split
-
-#### Группа 7: 4 файла 274-306 строк
-- [ ] BlobStorage.java (306) → split
-- [ ] BlockOperationsModuleDevice.java (305) → split
-- [ ] NetworkInterfaceCardScreen.java (302) → split
-- [ ] TerminalBuffer.java (294) → split
-
-#### Группа 8: 4 файла 252-286 строк
-- [ ] InetUtils.java (291) → split
-- [ ] AsyncUtils.java (286) → split
-- [ ] DefaultSessionLayer.java (277) → split
-- [ ] ComputerBlock.java (274) → split
-
-#### Группа 9: 4 файла 246-272 строк
-- [ ] AbstractMachineTerminalScreen.java (272) → split
-- [ ] AbstractGroupingDeviceBusElement.java (268) → split
-- [ ] ServerScheduler.java (261) → split
-- [ ] MonitorRenderer.java (256) → split
-
-#### Группа 10: 4 файла 240-256 строк
-- [ ] RobotMovementController.java (256) → split
-- [ ] DiskDriveBlockEntity.java (255) → split
-- [ ] FlashMemoryFlasherBlockEntity.java (252) → split
-- [ ] InternetManagerImpl.java (246) → split
-
-#### Группа 11: 4 файла 205-240 строк
-- [ ] ProjectorRenderer.java (240) → split
-- [ ] InternetGateWayBlockEntity.java (220) → split
-- [ ] MessageUtils.java (217) → split
-- [ ] AbstractMonitorDisplayScreen.java (216) → split
-
-#### Группа 12: остальные (200-210 строк, ~8 файлов)
-- [ ] CH2.java (210) → split
-- [ ] TooltipUtils.java (208) → split
-- [ ] DefaultLinkLocalLayer.java (208) → split
-- [ ] NBTArraySerializers.java (206) → split
-- [ ] Main.java (205) → split
-- [ ] VxlanBlockEntity.java (203) → split
-- [ ] MonitorGUIRenderer.java (201) → split
-- [ ] Остальные ~2 файла
-
-### Вторая волна (довести до ≤200 самые большие)
-- [ ] ComputerBlockEntity.java (499) → extract registerCapabilities, persistence, contraption
-- [ ] ProjectorDepthRenderer.java (480) → extract rendering pipeline stages
-- [ ] BusCableBlock.java (454) → extract interaction logic
-- [ ] RPCDeviceBusAdapter.java (491) → extract mount/resume logic
-- [ ] DefaultTransportLayer.java (472) → extract session management
-- [ ] NetworkSwitchBlockEntity.java (362) → extract packet processing
-- [ ] ProjectorBlockEntity.java (391) → extract video encoding
-- [ ] BusCableBlockEntity.java (394) → extract facade/model logic
-- [ ] MonitorBlockEntity.java (401) → extract video encoding
-- [ ] NetworkConnectorBlockEntity.java (422) → extract connection logic
-- [ ] AbstractVirtualMachine.java (419) → extract load/run lifecycle
-- [ ] Terminal.java (420) → extract terminal logic
-- [ ] AbstractBlockStorageDevice.java (414) → extract geometry/IO
+### Осталось довести до ≤200 (текущие размеры)
+- [ ] Network.java (294)
+- [ ] Robot.java (269)
+- [ ] ComputerBlockEntity.java (259)
+- [ ] Terminal.java (244)
+- [ ] CH1.java (251) — escapse-последовательности, *возможно не трогать*
+- [ ] CH6.java (240) — escapse-последовательности, *возможно не трогать*
+- [ ] MonitorBlockEntity.java (240)
+- [ ] TerminalBuffer.java (238)
+- [ ] BusCableInteractionHandler.java (236)
+- [ ] NetworkSwitchBlockEntity.java (226)
+- [ ] ProjectorBlockEntity.java (222)
+- [ ] NetworkConnectorBlockEntity.java (222)
+- [ ] RobotMovementController.java (ориг 256, проверить текущий)
+- [ ] DiskDriveBlockEntity.java (ориг 255, проверить)
+- [ ] FlashMemoryFlasherBlockEntity.java (ориг 252, проверить)
+- [ ] InternetManagerImpl.java (ориг 246, проверить)
 
 ### Deferred
 - jcodec/ — **не трогать**
@@ -125,33 +77,6 @@
 - `src/main/scripts/lib/rpc/rpc.h` — заголовочный файл
 - `src/main/scripts/lib/rpc/rpc.c` — реализация
 
-### Использование
-```c
-#include "rpc/rpc.h"
-
-int main() {
-    rpc_bus_t bus;
-    rpc_bus_open(&bus, "/dev/hvc0");
-
-    rpc_device_t redstone;
-    if (rpc_bus_find(&bus, "redstone", &redstone)) {
-        rpc_device_invoke(&redstone, "setRedstoneOutput",
-            "\"up\"", 15);
-        int level = rpc_device_invoke_int(&redstone,
-            "getRedstoneInput", "\"front\"");
-    }
-
-    rpc_bus_close(&bus);
-    return 0;
-}
-```
-
-### Сборка под RISC-V
-```bash
-riscv64-linux-gnu-gcc -static -o program.elf program.c rpc.c
-```
-Либо скопировать исходники на VM и скомпилировать через TCC (когда появится).
-
 ### Что дальше
 - [ ] Добавить TCC (Tiny C Compiler) в buildroot-образ, чтобы компилировать C прямо на VM
 - [ ] Добавить примеры: redstone_blink.c, note_block_player.c
@@ -163,33 +88,20 @@ riscv64-linux-gnu-gcc -static -o program.elf program.c rpc.c
 
 **Проблема**: Экран (Terminal/Monitor) фиксированного размера — 80×24 символов (640×384px). Хочется расширять добавлением блоков как в OC1.
 
-**Сложность**: ОЧЕНЬ высокая. Размер Terminal жёстко зашит как `static final` константы во всех буферах: `buffer[WIDTH*HEIGHT*SCROLL_BACK_COUNT]`, `colors[...]`, `styles[...]`, `altBuffer[...]` и т.д. — ~30+ мест в одном только `Terminal.java`. Плюс рендеринг (VBO по строкам), UART-драйвер, сетевые пакеты, GUI-виджеты, блок-модели.
+**Сложность**: ОЧЕНЬ высокая. Размер Terminal жёстко зашит как `static final` константы во всех буферах. Плюс рендеринг (VBO по строкам), UART-драйвер, сетевые пакеты, GUI-виджеты, блок-модели.
 
 ### Необходимые изменения
-
-#### Java (backend)
 - [ ] `Terminal.java`: WIDTH/HEIGHT из констант → поля экземпляра, динамические буферы
 - [ ] `MonitorDevice.java`: WIDTH/HEIGHT из констант → поля
 - [ ] `SimpleFramebufferDevice.java`: размер framebuffer динамический
 - [ ] `ComputerBlockEntity.java`: передавать размер терминала
 - [ ] `MonitorBlockEntity.java`: хранить размер в NBT
 - [ ] `AbstractTerminalVMRunner.java`: размер терминала из BE
-
-#### Сеть (packets)
 - [ ] Синхронизировать размер между сервером и клиентом
-
-#### Рендеринг (клиент)
 - [ ] `ComputerRenderer.java`: размер области рендера
 - [ ] `MonitorRenderer.java`: размер области рендера
 - [ ] `MachineTerminalWidget.java`: размер GUI
-
-#### Блоки (регистрация)
-- [ ] Новые блоки (MonitorSmall, MonitorMedium, MonitorLarge)
-- [ ] Или property `size` на существующем блоке + разные VoxelShape
-- [ ] Крафты для расширения
-
-### Альтернатива — SimpleFramebuffer через Projector
-Проектор (`ProjectorBlockEntity`) уже умеет проецировать 640×480 framebuffer на поверхности. Можно сделать монитор, который рендерит ту же картинку что и проектор, но в GUI/на блоке — по сути "монитор-проектор". Без изменения Terminal.
+- [ ] Новые блоки (MonitorSmall, MonitorMedium, MonitorLarge) или property `size`
 
 ### Приоритет
 Пока отложено. Сначала — рефакторинг и TCC.
@@ -198,51 +110,34 @@ riscv64-linux-gnu-gcc -static -o program.elf program.c rpc.c
 
 ## 3. TCC (Tiny C Compiler) в образ
 
-**Проблема**: Для C API нужно где-то компилировать. Кросс-компиляция на хосте неудобна.
-**Решение**: Добавить TCC (или GCC static) в buildroot-образ, чтобы можно было писать `tcc -o prog prog.c` прямо на VM.
-
 - [ ] Обновить `minux` (sedna-buildroot) чтобы включить TCC
 - [ ] Либо сделать overlay с бинарником TCC
 - [ ] Собрать новый buildroot-образ
 
----
 
-## 4. Internet Card (#54)
 
-**Описание** (из fnuecke/oc2#54): Полноценная сетевая карта с TCP/IP стеком на Java. Есть PR #63 с работающим SSH/UDP/TCP. Автор думал оформить отдельным модом.
+## 5. Lint и статический анализ
 
-- [ ] Решить: портировать как часть OC2R или сделать аддон
-- [ ] Если портировать — оценить объём кода из PR #63
+**Статус**: Checkstyle и PMD уже включены в сборку. Сборка чистая.
 
----
-
-## Lint инструменты (включить после рефакторинга)
-
-**Конфиги уже настроены**, но отключены чтобы не мешать рефакторингу.
-После рефакторинга — включить и пройтись по всем замечаниям.
-
-### Стек
-| Инструмент | Что делает | Включение |
-|---|---|---|
-| **Checkstyle** | Стиль кода | `tasks.withType(Checkstyle).configureEach { enabled = true }` |
-| **PMD** | Мёртвый код, дубли | `tasks.withType(Pmd).configureEach { enabled = true }` |
-| **SpotBugs** | NPE, утечки (Gradle 9 несовместим) | `plugins { id 'com.github.spotbugs' version '6.1.7' }` |
-| **Error Prone** | Баги при компиляции (Google) | Настройка компилятора |
-
-### Конфиги
-- `checkstyle.xml` — Google Style, 200 строк/файл, JavaDoc на public API
-- `config/pmd/ruleset.xml` — bestpractices + errorprone + performance
-- `qodana.yaml` — Qodana (IDEA движок)
+### Что можно улучшить
+- [ ] **PMD: добавить `category/java/multithreading.xml`** — ловит race conditions, небезопасную инициализацию, некорректный `volatile`. Актуально для:
+  - Асинхронного I/O в `BlobChannelManager`
+  - Сетевого стека (`DefaultSessionLayer`, `InetUtils`)
+  - `CompletableFuture` в `DiskDriveDevice`, `FlashMemoryFlasherDevice`
+- [ ] **PMD: `codestyle.xml` и `design.xml`** — добавить **после** завершения рефакторинга, иначе много шума
+- [ ] **SpotBugs** — требует Gradle <9 или новую версию плагина
+- [ ] **Error Prone** — настройка компилятора, Google-стиль
+- [ ] **AvoidDuplicateLiterals** — включить с кастомными порогами вместо полного исключения
+- [ ] **AvoidInstantiatingObjectsInLoops** — включить, супреснить точечно `@SuppressWarnings`
 
 ### Команды
 ```bash
-# Lint
 ./gradlew checkstyleMain
 ./gradlew pmdMain
-
-# Qodana (Docker)
-docker run --rm -e QODANA_TOKEN -v .:/data/project -v ./qodana-report:/data/results jetbrains/qodana-jvm:latest
-
-# SpotBugs (требует Gradle <9 или новую версию плагина)
-./gradlew spotbugsMain
 ```
+
+### Конфиги
+- `checkstyle.xml` — Google Style, 200 строк/файл, JavaDoc на public API
+- `config/pmd/ruleset.xml` — bestpractices + errorprone + performance (+ multithreading когда включим)
+- `qodana.yaml` — Qodana (IDEA движок)

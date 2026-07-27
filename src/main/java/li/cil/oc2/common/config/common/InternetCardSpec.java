@@ -21,6 +21,7 @@ public class InternetCardSpec {
     public final ModConfigSpec.IntValue streamBufferSize;
     public final ModConfigSpec.IntValue tcpRetransmissionTimeoutMs;
 
+    @SuppressWarnings("deprecation")
     InternetCardSpec(ModConfigSpec.Builder builder) {
         internetCardEnabled =
                 builder.comment("Whether to enable to internet card, VXLAN must also be enabled")
@@ -54,7 +55,7 @@ public class InternetCardSpec {
                                         + " leaving it this way",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
                                         + " will occur")
-                        .defineListAllowEmpty(
+                        .defineList(
                                 "deniedHosts",
                                 Arrays.asList(
                                         "127.0.0.0/8",
@@ -70,7 +71,7 @@ public class InternetCardSpec {
                                 "A list of hosts (IPs) that VMs are allowed to access",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
                                         + " will occur")
-                        .defineListAllowEmpty(
+                        .defineList(
                                 "allowedHosts",
                                 List.of(),
                                 obj -> obj instanceof String && !((String) obj).isBlank());

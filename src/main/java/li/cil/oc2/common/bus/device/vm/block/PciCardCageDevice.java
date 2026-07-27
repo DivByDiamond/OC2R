@@ -62,7 +62,7 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
         }
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            BlobStorage.closeAsync(blobHandle).join();
         }
 
         onMountedChanged.accept(false);
@@ -71,7 +71,7 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
     @Override
     public void dispose() {
         if (blobHandle != null) {
-            BlobStorage.delete(blobHandle);
+            BlobStorage.deleteAsync(blobHandle).join();
             blobHandle = null;
         }
 
@@ -118,7 +118,7 @@ public final class PciCardCageDevice extends IdentityProxy<BlockEntity> implemen
 
     private PciRootPortDevice createPciRootPortDevice() throws IOException {
         blobHandle = BlobStorage.validateHandle(blobHandle);
-        final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+        final FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
         final MappedByteBuffer buffer =
                 channel.map(FileChannel.MapMode.READ_WRITE, 0, WINDOW_SIZE * 2);
         return new PciRootPortDevice(WINDOW_SIZE, buffer);

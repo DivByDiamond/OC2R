@@ -118,7 +118,7 @@ public final class BusCableStateProperties {
         LevelUtils.playSound(
                 level,
                 pos,
-                soundsSource.getSoundType(),
+                soundsSource.getSoundType(level, pos, null),
                 value ? SoundType::getPlaceSound : SoundType::getBreakSound);
     }
 

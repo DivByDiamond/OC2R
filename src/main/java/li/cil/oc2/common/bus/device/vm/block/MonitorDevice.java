@@ -74,7 +74,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         }
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            BlobStorage.closeAsync(blobHandle).join();
         }
 
         onMountedChanged.accept(false);
@@ -130,7 +130,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
 
     private SimpleFramebufferDevice createFrameBufferDevice() throws IOException {
         blobHandle = BlobStorage.validateHandle(blobHandle);
-        final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+        final FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
         final MappedByteBuffer buffer =
                 channel.map(
                         FileChannel.MapMode.READ_WRITE,

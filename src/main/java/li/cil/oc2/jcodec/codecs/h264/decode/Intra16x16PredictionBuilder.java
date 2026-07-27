@@ -117,7 +117,7 @@ public final class Intra16x16PredictionBuilder {
 
         for (int i = 0; i < pred.length; i++)
             for (int j = 0; j < pred[i].length; j++)
-                pred[i][j] += s0;
+                pred[i][j] += (byte) s0;
     }
 
     public static int lumaDCPredSAD(final boolean leftAvailable, final boolean topAvailable, final byte[] leftRow, final byte[] topLine, final int x,

@@ -71,6 +71,7 @@ public final class BusInterfaceItem extends ModBlockItem {
     public void registerBlocks(final Map<Block, Item> map, final Item item) {}
 
     @Override
+    @SuppressWarnings("removal")
     public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {}
 
     @Nullable

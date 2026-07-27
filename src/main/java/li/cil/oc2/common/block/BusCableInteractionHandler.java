@@ -223,7 +223,7 @@ final class BusCableInteractionHandler {
                                 entity.playerTouch(player);
                             });
         }
-        LevelUtils.playSound(level, pos, state.getSoundType(), SoundType::getBreakSound);
+        LevelUtils.playSound(level, pos, state.getSoundType(level, pos, null), SoundType::getBreakSound);
     }
 
     @OnlyIn(Dist.CLIENT)

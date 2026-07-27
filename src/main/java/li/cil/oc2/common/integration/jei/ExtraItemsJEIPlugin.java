@@ -19,7 +19,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 
 @JeiPlugin
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "removal"})
 public class ExtraItemsJEIPlugin implements IModPlugin {
     @Override
     public ResourceLocation getPluginUid() {

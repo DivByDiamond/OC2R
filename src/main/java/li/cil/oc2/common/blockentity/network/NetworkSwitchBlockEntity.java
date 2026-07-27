@@ -38,6 +38,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     protected void loadServer() {
         super.loadServer();
         final BlockPos pos = getBlockPos();
@@ -172,10 +173,12 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        Tag hosts = tag.get("hosts");
-        if (hosts != null) hostTable.load((List<Tag>) hosts);
-        Tag ports = tag.get("ports");
-        if (ports != null) portManager.load((List<Tag>) ports);
+        @SuppressWarnings("unchecked")
+        final List<Tag> hosts = (List<Tag>) tag.getList("hosts", Tag.TAG_COMPOUND);
+        hostTable.load(hosts);
+        @SuppressWarnings("unchecked")
+        final List<Tag> ports = (List<Tag>) tag.getList("ports", Tag.TAG_COMPOUND);
+        portManager.load(ports);
     }
 
     @Callback(name = "getHostTable")
@@ -189,7 +192,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     }
 
     @Callback(name = "setPortConfig")
-    public void setPortSettings(List<Map> settings) {
+    public void setPortSettings(List<Map<String, ?>> settings) {
         portManager.setPortSettings(settings);
     }
 

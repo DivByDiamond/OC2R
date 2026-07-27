@@ -77,7 +77,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
             throw new IllegalArgumentException("Message of this type has already been registered.");
         }
         final int id = ++lastAssignedId;
-        //noinspection unchecked
+        @SuppressWarnings("unchecked")
         final Entry entry =
                 new Entry(id, (StreamCodec<? super FriendlyByteBuf, AbstractMessage>) streamCodec);
         ENTRY_BY_TYPE.put(type, entry);

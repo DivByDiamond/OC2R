@@ -8,8 +8,7 @@
 
     <rule ref="category/java/bestpractices.xml">
         <exclude name="GuardLogStatement"/>
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+
         <exclude name="AbstractClassWithoutAbstractMethod"/>
         <exclude name="AccessorMethodGeneration"/>
         <exclude name="AvoidPrintStackTrace"/>

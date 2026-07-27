@@ -129,15 +129,16 @@ public final class DefaultSessionLayer implements SessionLayer {
         if (session instanceof DatagramSession datagramSession) {
             try {
                 switch (session.getState()) {
-                    case NEW:
-                        {
-                            final DatagramChannel channel =
-                                    socketManager.createDatagramChannel(
-                                            datagramSession, readySessions);
-                            datagramSession.setAttachment(channel);
-                            LOGGER.trace("Open datagram socket {}", session.getDestination());
-                        }
-                    case ESTABLISHED:
+                        case NEW:
+                            {
+                                final DatagramChannel channel =
+                                        socketManager.createDatagramChannel(
+                                                datagramSession, readySessions);
+                                datagramSession.setAttachment(channel);
+                                LOGGER.trace("Open datagram socket {}", session.getDestination());
+                                break;
+                            }
+                        case ESTABLISHED:
                         {
                             LOGGER.trace("Send datagram");
                             final DatagramChannel channel =

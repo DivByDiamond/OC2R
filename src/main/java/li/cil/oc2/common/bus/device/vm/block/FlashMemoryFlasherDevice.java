@@ -36,7 +36,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
         }
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            BlobStorage.closeAsync(blobHandle).join();
             blobHandle = null;
         }
 
@@ -69,7 +69,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
         }
 
         if (blobHandle != null) {
-            BlobStorage.close(blobHandle);
+            BlobStorage.closeAsync(blobHandle).join();
             blobHandle = null;
         }
     }
@@ -90,7 +90,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+                        final FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
                         final MappedByteBuffer buffer =
                                 channel.map(FileChannel.MapMode.READ_WRITE, 0, capacity);
                         return ByteBufferBlockDevice.wrap(buffer, false);

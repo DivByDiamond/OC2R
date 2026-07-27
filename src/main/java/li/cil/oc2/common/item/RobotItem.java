@@ -110,11 +110,13 @@ public final class RobotItem extends ModItem {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean canFitInsideContainerItems() {
         return false;
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
         consumer.accept(
                 new IClientItemExtensions() {

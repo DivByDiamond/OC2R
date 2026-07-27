@@ -19,7 +19,7 @@ final class SwitchPortManager {
         return portSettings.clone();
     }
 
-    void setPortSettings(List<Map> settings) {
+    void setPortSettings(List<Map<String, ?>> settings) {
         int max = Math.min(portSettings.length, settings.size());
         for (int i = 0; i < max; i++) {
             portSettings[i].untagged = ((Double) settings.get(i).get("untagged")).shortValue();

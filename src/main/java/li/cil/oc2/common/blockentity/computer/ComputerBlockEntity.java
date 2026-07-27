@@ -123,6 +123,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
         if (event.didDevicesChange()) level.invalidateCapabilities(getBlockPos());
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Device> @Nullable T getFirstDevice(Class<T> cls) {
         for (final Device device : virtualMachine.busController.getDevices())
             if (cls.isAssignableFrom(device.getClass())) return (T) device;

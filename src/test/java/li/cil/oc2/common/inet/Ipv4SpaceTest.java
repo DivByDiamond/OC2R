@@ -6,6 +6,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class Ipv4SpaceTest {
     @Test
     public void someRangesAndSubnetsTest() throws AddressParseException {

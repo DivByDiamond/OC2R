@@ -167,7 +167,9 @@ public final class InetUtils {
     public static <PL, CL> PL createLayerIfNotStub(
             final CL currentLayer, final Function<CL, PL> getNextLayer) {
         if (currentLayer == NullLayer.INSTANCE) {
-            return (PL) NullLayer.INSTANCE;
+            @SuppressWarnings("unchecked")
+            final PL result = (PL) NullLayer.INSTANCE;
+            return result;
         } else {
             return getNextLayer.apply(currentLayer);
         }
