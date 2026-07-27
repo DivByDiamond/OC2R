@@ -1,16 +1,15 @@
 
 package li.cil.oc2.api.bus.device.vm.context;
 
-import li.cil.oc2.api.bus.device.vm.VMDevice;
-
 import java.util.Optional;
 import java.util.OptionalInt;
+import li.cil.oc2.api.bus.device.vm.VMDevice;
 
 /**
  * Allows reserving interrupts on the primary interrupt controller of a virtual machine
  * during a {@link VMDevice#mount(VMContext)} call.
- * <p>
- * Allocated interrupts should be persisted and used in {@link #claimInterrupt(int)}
+ *
+ * <p>Allocated interrupts should be persisted and used in {@link #claimInterrupt(int)}
  * when restoring from a saved state to ensure correct behaviour of the loaded virtual
  * machine.
  */

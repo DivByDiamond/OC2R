@@ -1,20 +1,19 @@
 
 package li.cil.oc2.api.bus.device.rpc;
 
-import li.cil.oc2.api.bus.device.object.ObjectDevice;
-
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.object.ObjectDevice;
 
 /**
  * Represents a single method that can be exposed by a {@link RPCDevice}.
- * <p>
- * The easiest and hence recommended way of generating an implementation of this
+ *
+ * <p>The easiest and hence recommended way of generating an implementation of this
  * interface is to use the {@link ObjectDevice} class.
- * <p>
- * Method parameters are serialized and deserialized using Gson. When using custom
+ *
+ * <p>Method parameters are serialized and deserialized using Gson. When using custom
  * parameter types it may be necessary to register a custom type adapter for them
  * via {@link li.cil.oc2.api.API#IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER}.
  *
@@ -44,8 +43,8 @@ public interface RPCMethod extends RPCMethodGroup {
 
     /**
      * Called to run this method.
-     * <p>
-     * <b>Important:</b> methods are expected to not irrevocably corrupt internal
+     *
+     * <p><b>Important:</b> methods are expected to not irrevocably corrupt internal
      * state, even when they throw an exception. As such, implementations should
      * perform internal error handling to prevent state corruption and only throw
      * exceptions to communicate that an error happened during the invocation.
@@ -57,12 +56,12 @@ public interface RPCMethod extends RPCMethodGroup {
      *                   catching these and passing them on appropriately.
      */
     @Nullable
-    Object invoke(final RPCInvocation invocation) throws Throwable;
+    Object invoke(RPCInvocation invocation) throws Throwable;
 
     /**
      * An optional description of the method.
-     * <p>
-     * May be used inside VMs to generate documentation.
+     *
+     * <p>May be used inside VMs to generate documentation.
      *
      * @return the method description.
      */
@@ -72,8 +71,8 @@ public interface RPCMethod extends RPCMethodGroup {
 
     /**
      * An optional description of the return value of this method.
-     * <p>
-     * May be used inside VMs to generate documentation.
+     *
+     * <p>May be used inside VMs to generate documentation.
      *
      * @return the return value description.
      */

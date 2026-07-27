@@ -9,10 +9,10 @@ import java.util.Optional;
 public interface RPCParameter {
     /**
      * The type of this parameter.
-     * <p>
-     * May be used inside VMs to generate documentation.
-     * <p>
-     * This is used by {@link AbstractRPCMethod}s to convert parameters from a lower
+     *
+     * <p>May be used inside VMs to generate documentation.
+     *
+     * <p>This is used by {@link AbstractRPCMethod}s to convert parameters from a lower
      * level representation before passing it to {@link AbstractRPCMethod#invoke(Object...)}.
      * As such, the types used must be kept simple. As a rule of thumb, only primitives
      * and POJOs should be used.
@@ -23,8 +23,8 @@ public interface RPCParameter {
 
     /**
      * An optional name of the parameter.
-     * <p>
-     * May be used inside VMs to generate documentation.
+     *
+     * <p>May be used inside VMs to generate documentation.
      *
      * @return the name of the parameter.
      */
@@ -34,8 +34,8 @@ public interface RPCParameter {
 
     /**
      * An optional description of the parameter.
-     * <p>
-     * May be used inside VMs to generate documentation.
+     *
+     * <p>May be used inside VMs to generate documentation.
      *
      * @return the description of the parameter.
      */

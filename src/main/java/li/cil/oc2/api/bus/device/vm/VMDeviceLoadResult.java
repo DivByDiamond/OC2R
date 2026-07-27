@@ -1,10 +1,9 @@
 
 package li.cil.oc2.api.bus.device.vm;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import net.minecraft.network.chat.Component;
-
-import javax.annotation.Nullable;
 
 /**
  * {@link VMDevice}s may signal the result of their {@link VMDevice#mount(VMContext)} operations.
@@ -46,8 +45,8 @@ public final class VMDeviceLoadResult {
 
     /**
      * Adds an error message to this load result.
-     * <p>
-     * These messages should be very short to not overflow the area in which they are displayed.
+     *
+     * <p>These messages should be very short to not overflow the area in which they are displayed.
      *
      * @param value the error message.
      * @return this load result, with the message set to the specified value.

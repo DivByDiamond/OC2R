@@ -1,11 +1,10 @@
 
 package li.cil.oc2.api.bus.device.rpc;
 
-import li.cil.oc2.api.bus.DeviceBusController;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import li.cil.oc2.api.bus.DeviceBusController;
 
 /**
  * A group of overloaded {@link RPCMethod}s, i.e. methods with the same name but different signatures.
@@ -13,8 +12,8 @@ import java.util.Set;
 public interface RPCMethodGroup {
     /**
      * The name of the method group/of the grouped {@link RPCMethod}s.
-     * <p>
-     * When invoked through a {@link DeviceBusController}, this is what the method group
+     *
+     * <p>When invoked through a {@link DeviceBusController}, this is what the method group
      * will be referenced by, so the name should be unlikely to be duplicated in another
      * device, to avoid ambiguity when devices are combined.
      *
@@ -24,11 +23,11 @@ public interface RPCMethodGroup {
 
     /**
      * The list of overloads in this method group, if available.
-     * <p>
-     * This is used when the virtual machine queries the method descriptions for some device, usually
+     *
+     * <p>This is used when the virtual machine queries the method descriptions for some device, usually
      * to display it to the user as documentation.
-     * <p>
-     * This may return an empty set, in which case the group will present itself with just its name.
+     *
+     * <p>This may return an empty set, in which case the group will present itself with just its name.
      *
      * @return the set of {@link RPCMethod}s in this method group.
      */
