@@ -96,13 +96,13 @@ public class Terminal {
         CONTROL_SEQUENCE,
     }
 
-    public TerminalBuffer bufferManager;
-    CSIManager csiManager = new CSIManager(this);
-    OSCManager oscManager = new OSCManager(this);
-    DCSManager dcsManager = new DCSManager(this);
-    APCManager apcManager = new APCManager(this);
-    final TerminalIO io = new TerminalIO(this);
-    final TerminalClient client = new TerminalClient(this);
+    public transient TerminalBuffer bufferManager;
+    transient CSIManager csiManager = new CSIManager(this);
+    transient OSCManager oscManager = new OSCManager(this);
+    transient DCSManager dcsManager = new DCSManager(this);
+    transient APCManager apcManager = new APCManager(this);
+    transient TerminalIO io = new TerminalIO(this);
+    transient TerminalClient client = new TerminalClient(this);
 
     public Terminal() {
         bufferManager = new TerminalBuffer(this);
