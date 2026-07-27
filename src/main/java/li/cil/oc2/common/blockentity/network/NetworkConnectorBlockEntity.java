@@ -5,31 +5,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
-import li.cil.oc2.client.renderer.NetworkCableRenderer;
-import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkConnectorBlockEntity extends ModBlockEntity
         implements TickableBlockEntity {
     private static final int BYTES_PER_TICK = 64 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1));
@@ -123,79 +112,26 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 connectionManager.ownedCables);
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlock(
-                Capabilities.NetworkInterface.BLOCK,
-                (level, pos, state, be, side) -> {
-                    if (be instanceof final NetworkConnectorBlockEntity self) {
-                        if (side
-                                == NetworkConnectorBlock.getFacing(self.getBlockState())
-                                        .getOpposite()) return self.networkInterface;
-                    }
-                    return null;
-                },
-                Blocks.NETWORK_CONNECTOR.get());
-    }
-
     @Override
     protected void loadClient() {
         super.loadClient();
-        NetworkCableRenderer.addNetworkConnector(this);
+        NetworkConnectorLifecycle.loadClient(this);
     }
 
     @Override
     protected void loadServer() {
         super.loadServer();
-
-        final var level = (ServerLevel) this.level;
-        final Direction facing = NetworkConnectorBlock.getFacing(getBlockState());
-        final BlockPos sourcePos = getBlockPos().relative(facing.getOpposite());
-        level.registerCapabilityListener(sourcePos, this.adjacentInterfaceListener);
+        NetworkConnectorLifecycle.loadServer(this);
     }
 
     @Override
     protected void unloadServer(final boolean isRemove) {
         super.unloadServer(isRemove);
-
-        if (isRemove) {
-            final List<NetworkConnectorBlockEntity> list =
-                    new ArrayList<>(connectionManager.connectors.values());
-            connectionManager.connectors.clear();
-            for (final NetworkConnectorBlockEntity connector : list) {
-                connectionManager.disconnectFrom(connector.getBlockPos());
-                connector.connectionManager.disconnectFrom(getBlockPos());
-            }
-        } else {
-            final BlockPos pos = getBlockPos();
-            for (final NetworkConnectorBlockEntity connector :
-                    connectionManager.connectors.values()) {
-                connector.connectionManager.connectors.remove(pos);
-                if (connector.connectionManager.connectorPositions.contains(pos)) {
-                    connector.connectionManager.dirtyConnectors.add(pos);
-                }
-            }
-        }
+        NetworkConnectorLifecycle.unloadServer(this, isRemove);
     }
 
     private void resolveLocalInterface() {
-        assert level != null;
-
-        if (!isValid()) {
-            adjacentInterface = null;
-            return;
-        }
-
-        final Direction facing = NetworkConnectorBlock.getFacing(getBlockState());
-        final BlockPos sourcePos = getBlockPos().relative(facing.getOpposite());
-
-        if (!level.isLoaded(sourcePos)) {
-            adjacentInterface = null;
-            return;
-        }
-
-        adjacentInterface =
-                level.getCapability(Capabilities.NetworkInterface.BLOCK, sourcePos, facing);
+        NetworkConnectorLifecycle.resolveLocalInterface(this);
     }
 
     public static ConnectionResult connect(

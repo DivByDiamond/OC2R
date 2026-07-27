@@ -13,8 +13,6 @@ import li.cil.oc2.api.bus.device.vm.event.VMResumedRunningEvent;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.OptionalAddress;
 import li.cil.oc2.common.bus.device.util.OptionalInterrupt;
-import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.sedna.api.device.BlockDevice;
@@ -81,24 +79,7 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
     public void unmount() {
         lifecycle.close();
         device = null;
-
-        if (blobHandle != null) {
-            if (AsyncConfig.SERVER.asyncStorageOperations.get()) {
-                BlobStorage.closeAsync(blobHandle)
-                        .exceptionally(
-                                e -> {
-                                    LOGGER.error(
-                                            "Error closing blob asynchronously: " + blobHandle, e);
-                                    return null;
-                                });
-            } else {
-                try {
-                    BlobStorage.closeAsync(blobHandle).join();
-                } catch (final java.util.concurrent.CompletionException e) {
-                    LOGGER.error("Error in close operation for blob: " + blobHandle, e);
-                }
-            }
-        }
+        BlobStorageCloseHelper.closeBlob(LOGGER, blobHandle);
     }
 
     @Override
@@ -165,24 +146,7 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
     public static void unmount(final CompoundTag tag) {
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
-            final UUID blobHandle = tag.getUUID(BLOB_HANDLE_TAG_NAME);
-            if (AsyncConfig.SERVER.asyncStorageOperations.get()) {
-                BlobStorage.closeAsync(blobHandle)
-                        .exceptionally(
-                                e -> {
-                                    LOGGER.error(
-                                            "Error closing blob asynchronously during unmount: "
-                                                    + blobHandle,
-                                            e);
-                                    return null;
-                                });
-            } else {
-                try {
-                    BlobStorage.closeAsync(blobHandle).join();
-                } catch (final java.util.concurrent.CompletionException e) {
-                    LOGGER.error("Error closing blob asynchronously during unmount: " + blobHandle, e);
-                }
-            }
+            BlobStorageCloseHelper.closeBlob(LOGGER, tag.getUUID(BLOB_HANDLE_TAG_NAME));
         }
     }
 

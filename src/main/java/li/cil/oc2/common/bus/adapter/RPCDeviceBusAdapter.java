@@ -2,10 +2,7 @@ package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
-import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
@@ -162,55 +159,8 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     }
 
     private void processMessage(final byte[] messageData) {
-        if (new String(messageData).isBlank()) return;
-        try (final InputStreamReader stream =
-                new InputStreamReader(new ByteArrayInputStream(messageData))) {
-            final Message message = gson.fromJson(stream, Message.class);
-            switch (message.type()) {
-                case Message.MESSAGE_TYPE_LIST ->
-                        messageWriter.writeDeviceList(deviceRegistry.devicesWithId);
-                case Message.MESSAGE_TYPE_METHODS -> {
-                    if (message.data() != null) {
-                        final UUID deviceId = (UUID) message.data();
-                        final RPCDevice device = deviceRegistry.devicesById.get(deviceId);
-                        if (device != null) {
-                            messageWriter.writeDeviceMethods(device.getMethodGroups());
-                        } else {
-                            messageWriter.writeError("unknown device");
-                        }
-                    } else {
-                        messageWriter.writeError("missing device id");
-                    }
-                }
-                case Message.MESSAGE_TYPE_INVOKE_METHOD -> {
-                    if (message.data() != null) {
-                        methodInvoker.processMethodInvocation(
-                                (MethodInvocation) message.data(), false);
-                    } else {
-                        messageWriter.writeError("missing invocation data");
-                    }
-                }
-                case Message.MESSAGE_TYPE_SUBSCRIBE -> {
-                    if (message.data() != null) {
-                        deviceRegistry.subscribe(
-                                this, (UUID) message.data(), messageWriter::writeError);
-                    } else {
-                        messageWriter.writeError("missing invocation data");
-                    }
-                }
-                case Message.MESSAGE_TYPE_UNSUBSCRIBE -> {
-                    if (message.data() != null) {
-                        deviceRegistry.unsubscribe(
-                                this, (UUID) message.data(), messageWriter::writeError);
-                    } else {
-                        messageWriter.writeError("missing invocation data");
-                    }
-                }
-                default -> messageWriter.writeError(ERROR_UNKNOWN_MESSAGE_TYPE + message.type());
-            }
-        } catch (final Exception e) {
-            messageWriter.writeError(e.getMessage());
-        }
+        RPCMessageProcessor.processMessage(this, messageData,
+                new RPCMessageProcessor.GsonContext(gson, deviceRegistry, messageWriter, methodInvoker));
     }
 
     @Override

@@ -12,10 +12,8 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.bus.device.rpc.IEventSink;
 import li.cil.oc2.api.bus.device.rpc.RPCEventSource;
 import li.cil.oc2.api.util.Side;
-import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.integration.util.BundledRedstone;
 import li.cil.oc2.common.util.block.HorizontalBlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -105,20 +103,14 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     public byte[] getBundledInput(@Parameter(SIDE) @Nullable final Side side) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
-
-        final BundledRedstone bundledRedstone = BundledRedstone.getInstance();
-        if (bundledRedstone.isAvailable()) {
-            return bundledRedstone.getBundledInput(
-                    level, getBlockPos(), side.getDirection().getOpposite());
-        }
-        return new byte[Constants.BLOCK_FACE_COUNT];
+        return BundledRedstoneCallbacks.getBundledInput(level, getBlockPos(), side);
     }
 
     @Callback(name = GET_BUNDLED_OUTPUT)
     public byte[] getBundledOutput(@Parameter(SIDE) @Nullable final Side side) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
-        return state.getBundledOutput(side.getDirection().get3DDataValue());
+        return BundledRedstoneCallbacks.getBundledOutput(side, state);
     }
 
     @Callback(name = SET_BUNDLED_OUTPUT)
@@ -128,18 +120,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
             @Parameter(COLOUR) final int color) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
-
-        final int index = side.getDirection().getOpposite().get3DDataValue();
-        final byte clampedValue = (byte) Mth.clamp(value, 0, 255);
-        final byte clampedColor = (byte) Mth.clamp(color, 0, 15);
-
-        boolean changed = false;
-        if (state.getBundledOutput(index)[clampedColor] != clampedValue) {
-            changed = true;
-            state.getBundledOutput(index)[clampedColor] = clampedValue;
-        }
-
-        if (changed) {
+        if (BundledRedstoneCallbacks.setBundledOutput(side, value, color, state)) {
             final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
             if (direction != null) notifyNeighbor(direction);
             setChanged();
@@ -151,19 +132,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int... values) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
-
-        boolean changed = false;
-        final int index = side.getDirection().getOpposite().get3DDataValue();
-        final byte[] output = state.getBundledOutput(index);
-        for (int i = 0; i < values.length; i++) {
-            final byte clampedValue = (byte) Mth.clamp(values[i], 0, 255);
-            if (clampedValue != output[i]) {
-                output[i] = clampedValue;
-                changed = true;
-            }
-        }
-
-        if (changed) {
+        if (BundledRedstoneCallbacks.setBundledOutputs(side, values, state)) {
             final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
             if (direction != null) notifyNeighbor(direction);
             setChanged();

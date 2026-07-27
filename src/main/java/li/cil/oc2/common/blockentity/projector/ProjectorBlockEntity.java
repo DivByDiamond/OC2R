@@ -3,14 +3,10 @@ package li.cil.oc2.common.blockentity.projector;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -23,11 +19,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     public static final int MAX_RENDER_DISTANCE = 16;
     public static final int MAX_GOOD_RENDER_DISTANCE = 12;
@@ -187,26 +179,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     public void applyNextFrameClient(final ByteBuffer frameData) {
         if (level == null || !level.isClientSide()) return;
         videoDecoder.applyNextFrameClient(picture, frameData);
-    }
-
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        if (Config.projectorsUseEnergy()) {
-            event.registerBlock(
-                    Capabilities.EnergyStorage.BLOCK,
-                    (level, pos, state, be, side) ->
-                            be instanceof ProjectorBlockEntity self ? self.energy : null,
-                    Blocks.PROJECTOR.get());
-        }
-        event.registerBlock(
-                Capabilities.Device.BLOCK,
-                (level, pos, state, be, side) -> {
-                    if (!(be instanceof ProjectorBlockEntity self)) return null;
-                    if (side != self.getBlockState().getValue(ProjectorBlock.FACING).getOpposite())
-                        return null;
-                    return self.projectorDevice;
-                },
-                Blocks.PROJECTOR.get());
     }
 
     private void handleMountedChanged(final boolean value) {

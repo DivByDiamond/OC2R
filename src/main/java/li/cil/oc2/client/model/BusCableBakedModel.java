@@ -28,13 +28,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
 
 public final class BusCableBakedModel implements IDynamicBakedModel {
-    public static final ModelProperty<BusCableSupportSide> BUS_CABLE_SUPPORT_PROPERTY =
-            new ModelProperty<>();
-    public static final ModelProperty<BusCableFacade> BUS_CABLE_FACADE_PROPERTY =
-            new ModelProperty<>();
     private final BakedModel proxy;
     private final BakedModel[] straightModelByAxis;
     private final BakedModel[] supportModelByFace;
@@ -56,8 +51,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             @Nullable RenderType renderType) {
         final RenderType layer = RenderType.solid();
 
-        if (extraData.has(BUS_CABLE_FACADE_PROPERTY)) {
-            final BusCableFacade facade = extraData.get(BUS_CABLE_FACADE_PROPERTY);
+        if (extraData.has(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY)) {
+            final BusCableModelTypes.BusCableFacade facade = extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
             if (facade != null) {
                 return facade.model.getQuads(
                         facade.blockState, side, rand, facade.data, RenderType.solid());
@@ -74,7 +69,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
 
         for (int i = 0; i < Constants.AXES.length; i++) {
             final Direction.Axis axis = Constants.AXES[i];
-            if (isStraightAlongAxis(state, axis)) {
+            if (BusCableModelTypes.isStraightAlongAxis(state, axis)) {
                 return straightModelByAxis[i].getQuads(
                         state, side, rand, extraData, RenderType.solid());
             }
@@ -83,7 +78,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         final List<BakedQuad> quads =
                 new ArrayList<>(proxy.getQuads(state, side, rand, extraData, RenderType.solid()));
 
-        final BusCableSupportSide supportSide = extraData.get(BUS_CABLE_SUPPORT_PROPERTY);
+        final BusCableModelTypes.BusCableSupportSide supportSide = extraData.get(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY);
         if (supportSide != null) {
             quads.addAll(
                     supportModelByFace[supportSide.value.get3DDataValue()].getQuads(
@@ -150,13 +145,13 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             final ModelData data = model.getModelData(level, pos, facadeState, blockEntityData);
 
             return ModelData.builder()
-                    .with(BUS_CABLE_FACADE_PROPERTY, new BusCableFacade(facadeState, model, data))
+                    .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
                     .build();
         }
 
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
-            if (isNeighborInDirectionSolid(level, pos, direction)) {
+            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
                 final EnumProperty<ConnectionType> property =
                         BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
                 if (state.hasProperty(property)
@@ -172,39 +167,10 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
 
         if (supportSide != null) {
             return ModelData.builder()
-                    .with(BUS_CABLE_SUPPORT_PROPERTY, new BusCableSupportSide(supportSide))
+                    .with(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY, new BusCableModelTypes.BusCableSupportSide(supportSide))
                     .build();
         }
 
         return blockEntityData;
     }
-
-    public static boolean isNeighborInDirectionSolid(
-            final BlockAndTintGetter level, final BlockPos pos, final Direction direction) {
-        final BlockPos neighborPos = pos.relative(direction);
-        return level.getBlockState(neighborPos)
-                .isFaceSturdy(level, neighborPos, direction.getOpposite());
-    }
-
-    private static boolean isStraightAlongAxis(final BlockState state, final Direction.Axis axis) {
-        for (final Direction direction : Constants.DIRECTIONS) {
-            final EnumProperty<ConnectionType> property =
-                    BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
-            if (axis.test(direction)) {
-                if (state.getValue(property) != ConnectionType.CABLE) {
-                    return false;
-                }
-            } else {
-                if (state.getValue(property) != ConnectionType.NONE) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public record BusCableSupportSide(Direction value) {}
-
-    public record BusCableFacade(BlockState blockState, BakedModel model, ModelData data) {}
 }

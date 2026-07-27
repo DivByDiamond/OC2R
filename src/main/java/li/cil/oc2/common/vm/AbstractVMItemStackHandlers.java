@@ -99,58 +99,35 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     }
 
     public void saveItems(RestrictedContainer container) {
-        itemHandlers.forEach(
-                (deviceType, handler) -> {
-                    handler.saveItems(container);
-                });
+        VMItemStackHandlerSerialization.saveItems(itemHandlers, container);
     }
 
     public void saveItems(HolderLookup.Provider provider, final CompoundTag tag) {
-        itemHandlers.forEach(
-                (deviceType, handler) -> {
-                    if (!handler.isEmpty()) {
-                        tag.put(deviceType.getName().toString(), handler.saveItems(provider));
-                    }
-                });
+        VMItemStackHandlerSerialization.saveItems(itemHandlers, provider, tag);
     }
 
     public CompoundTag saveItems(HolderLookup.Provider provider) {
-        final CompoundTag tag = new CompoundTag();
-        saveItems(provider, tag);
-        return tag;
+        return VMItemStackHandlerSerialization.saveItems(itemHandlers, provider);
     }
 
     public void loadItems(HolderLookup.Provider provider, RestrictedContainer container) {
-        itemHandlers.forEach(
-                (deviceType, handler) -> {
-                    handler.loadItems(provider, container);
-                });
+        VMItemStackHandlerSerialization.loadItems(itemHandlers, provider, container);
     }
 
     public void loadItems(HolderLookup.Provider provider, final CompoundTag tag) {
-        itemHandlers.forEach(
-                (deviceType, handler) ->
-                        handler.loadItems(
-                                provider, tag.getCompound(deviceType.getName().toString())));
+        VMItemStackHandlerSerialization.loadItems(itemHandlers, provider, tag);
     }
 
     public void saveDevices(HolderLookup.Provider registries, final CompoundTag tag) {
-        itemHandlers.forEach(
-                (deviceType, handler) ->
-                        tag.put(deviceType.getName().toString(), handler.saveDevices(registries)));
+        VMItemStackHandlerSerialization.saveDevices(itemHandlers, registries, tag);
     }
 
     public CompoundTag saveDevices(HolderLookup.Provider registries) {
-        final CompoundTag tag = new CompoundTag();
-        saveDevices(registries, tag);
-        return tag;
+        return VMItemStackHandlerSerialization.saveDevices(itemHandlers, registries);
     }
 
     public void loadDevices(HolderLookup.Provider registries, final CompoundTag tag) {
-        itemHandlers.forEach(
-                (deviceType, handler) ->
-                        handler.loadDevices(
-                                registries, tag.getCompound(deviceType.getName().toString())));
+        VMItemStackHandlerSerialization.loadDevices(itemHandlers, registries, tag);
     }
 
     protected abstract ItemDeviceQuery makeQuery(final ItemStack stack);

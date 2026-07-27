@@ -1,9 +1,9 @@
 package li.cil.oc2.common.blockentity.network;
 
-import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_FACADE_PROPERTY;
-import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_SUPPORT_PROPERTY;
+import static li.cil.oc2.client.model.BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY;
+import static li.cil.oc2.client.model.BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY;
 
-import li.cil.oc2.client.model.BusCableBakedModel;
+import li.cil.oc2.client.model.BusCableModelTypes;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
@@ -48,7 +48,7 @@ final class BusCableModelData {
                     ModelData.builder()
                             .with(
                                     BUS_CABLE_FACADE_PROPERTY,
-                                    new BusCableBakedModel.BusCableFacade(facadeState, model, data))
+                                    new BusCableModelTypes.BusCableFacade(facadeState, model, data))
                             .build();
 
             return currentModelData;
@@ -56,7 +56,7 @@ final class BusCableModelData {
 
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
-            if (BusCableBakedModel.isNeighborInDirectionSolid(level, pos, direction)) {
+            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
                 final EnumProperty<ConnectionType> property =
                         BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
                 if (state.hasProperty(property)
@@ -75,7 +75,7 @@ final class BusCableModelData {
                     ModelData.builder()
                             .with(
                                     BUS_CABLE_SUPPORT_PROPERTY,
-                                    new BusCableBakedModel.BusCableSupportSide(supportSide))
+                                    new BusCableModelTypes.BusCableSupportSide(supportSide))
                             .build();
             return currentModelData;
         }

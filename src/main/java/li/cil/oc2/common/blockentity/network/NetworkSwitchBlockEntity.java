@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.network;
 
 import static java.util.Collections.singletonList;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.*;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
@@ -24,14 +23,15 @@ import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 public final class NetworkSwitchBlockEntity extends ModBlockEntity
         implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
     private final long HOST_TTL = 20 * 60 * 2;
-    private final int TTL_COST = 1;
-    private final SwitchHostTable hostTable = new SwitchHostTable();
-    private final SwitchPortManager portManager = new SwitchPortManager();
+    final int TTL_COST = 1;
+    final SwitchHostTable hostTable = new SwitchHostTable();
+    final SwitchPortManager portManager = new SwitchPortManager();
     private int tickCount = 0;
-    private final NetworkInterface[] adjacentBlockInterfaces =
+    final NetworkInterface[] adjacentBlockInterfaces =
             new NetworkInterface[Constants.BLOCK_FACE_COUNT];
     private BlockCapabilityCache<NetworkInterface, Direction>[] adjacentBlockCaches = null;
     private boolean haveAdjacentBlocksChanged = true;
+    private final SwitchPacketForwarder packetForwarder = new SwitchPacketForwarder(this);
 
     public NetworkSwitchBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.NETWORK_SWITCH.get(), pos, state);
@@ -61,74 +61,12 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void writeEthernetFrame(
             final NetworkInterface source, byte[] frame_bytes, final int timeToLive) {
-        validateAdjacentBlocks();
-        long tickTime = getLevel().getGameTime();
-        long destMac = PacketProcessor.macToLong(frame_bytes, 0);
-        long srcMac = PacketProcessor.macToLong(frame_bytes, 6);
-        short vlan = PacketProcessor.getVLAN(frame_bytes);
-        Optional<Integer> optSide = sideReverseLookup(source);
-        if (!optSide.isPresent()) return;
-        int side = optSide.get();
-        hostTable.put(srcMac, side, tickTime);
-        PortSettings ingressSettings = portManager.portSettings[side];
-        SwitchLog log = new SwitchLog(vlan, side, srcMac, destMac);
-        byte[] frame = frame_bytes;
-        if (vlan == 0) {
-            Pair<Short, byte[]> pair = PacketProcessor.removeVLANTag(frame);
-            frame = pair.getSecond();
-            if (ingressSettings.untagged != 0) {
-                frame = PacketProcessor.addVLANTag(frame, ingressSettings.untagged);
-                vlan = ingressSettings.untagged;
-            }
-        } else {
-            if (!(ingressSettings.trunkAll || ingressSettings.tagged.contains(vlan))) {
-                log.drop("Tag not allowed for ingress");
-                return;
-            }
-        }
-        HostEntry host = hostTable.get(destMac);
-        if (host != null) {
-            if (host.iface == side && !ingressSettings.hairpin) {
-                log.drop("hairpin disabled");
-                return;
-            }
-            writeToSide(frame, host.iface, vlan, log, timeToLive);
-        } else {
-            log.flood();
-            for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
-                if (i != side) writeToSide(frame, i, vlan, log, timeToLive);
-        }
+        packetForwarder.forward(source, frame_bytes, timeToLive);
     }
 
     @Override
     public byte[] readEthernetFrame() {
         return new byte[0];
-    }
-
-    private void writeToSide(byte[] frame, int side, short vlan, SwitchLog log, int timeToLive) {
-        log.egressPort(side);
-        NetworkInterface iface = adjacentBlockInterfaces[side];
-        if (iface != null) {
-            PortSettings egressSettings = portManager.portSettings[side];
-            if (egressSettings.untagged != 0 && vlan == 0) {
-                log.drop("inner tag untagged");
-                return;
-            }
-            byte[] egressFrame;
-            if (egressSettings.untagged == vlan) {
-                Pair<Short, byte[]> pair = PacketProcessor.removeVLANTag(frame);
-                egressFrame = pair.getSecond();
-                log.egressVlan = 0;
-            } else if (!(egressSettings.trunkAll || egressSettings.tagged.contains(vlan))) {
-                log.drop("Tag not allowed for egress");
-                return;
-            } else {
-                egressFrame = frame;
-                log.egressVlan = vlan;
-            }
-            log.emit();
-            iface.writeEthernetFrame(this, egressFrame, timeToLive - TTL_COST);
-        }
     }
 
     @Override
@@ -205,13 +143,13 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
         return sides;
     }
 
-    private Optional<Integer> sideReverseLookup(NetworkInterface iface) {
+    Optional<Integer> sideReverseLookup(NetworkInterface iface) {
         for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
             if (iface.equals(adjacentBlockInterfaces[i])) return Optional.of(i);
         return Optional.empty();
     }
 
-    private void validateAdjacentBlocks() {
+    void validateAdjacentBlocks() {
         if (isRemoved() || !haveAdjacentBlocksChanged) return;
         for (final Direction side : Constants.DIRECTIONS)
             adjacentBlockInterfaces[side.get3DDataValue()] = null;

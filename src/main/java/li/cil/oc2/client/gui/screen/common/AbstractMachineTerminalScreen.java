@@ -1,21 +1,14 @@
 package li.cil.oc2.client.gui.screen.common;
 
-import static java.util.Arrays.asList;
-import static li.cil.oc2.common.util.TextFormatUtils.withFormat;
-
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
-import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
-import li.cil.oc2.common.util.text.TooltipRenderer;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -171,30 +164,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
     @Override
     protected void renderTooltip(final GuiGraphics graphics, final int mouseX, final int mouseY) {
         super.renderTooltip(graphics, mouseX, mouseY);
-
-        if (shouldRenderEnergyBar()) {
-            if (isMouseOver(
-                    mouseX,
-                    mouseY,
-                    -Sprites.SIDEBAR_2.width + 4,
-                    ENERGY_TOP + 4,
-                    Sprites.ENERGY_BAR.width,
-                    Sprites.ENERGY_BAR.height)) {
-                final List<? extends FormattedText> tooltip =
-                        asList(
-                                Component.translatable(
-                                        Constants.TOOLTIP_ENERGY,
-                                        withFormat(
-                                                menu.getEnergy() + "/" + menu.getEnergyCapacity(),
-                                                ChatFormatting.GREEN)),
-                                Component.translatable(
-                                        Constants.TOOLTIP_ENERGY_CONSUMPTION,
-                                        withFormat(
-                                                String.valueOf(menu.getEnergyConsumption()),
-                                                ChatFormatting.GREEN)));
-                TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
-            }
-        }
+        MachineTerminalEnergyTooltip.renderEnergyTooltip(this, graphics, mouseX, mouseY);
     }
 
     @Override

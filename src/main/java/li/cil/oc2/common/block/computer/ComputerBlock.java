@@ -7,8 +7,7 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.integration.Wrenches;
-import li.cil.oc2.common.item.Items;
+
 import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,7 +18,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -128,21 +126,11 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final InteractionHand hand,
             final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof final ComputerBlockEntity computer)) {
-            return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
-        }
-
-        if (Wrenches.isWrench(stack)) {
-            if (!player.isShiftKeyDown()) {
-                if (!level.isClientSide() && player instanceof final ServerPlayer serverPlayer) {
-                    computer.terminalManager.openInventoryScreen(serverPlayer);
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
-            }
-            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
-        }
-
-        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        final ComputerBlockEntity computer =
+                blockEntity instanceof ComputerBlockEntity c ? c : null;
+        final ItemInteractionResult result =
+                ComputerBlockInteraction.useItemOn(stack, state, level, pos, player, hand, hitResult, computer);
+        return result != ItemInteractionResult.PASS ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
@@ -153,36 +141,22 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final Player player,
             final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof final ComputerBlockEntity computer)) {
-            return super.useWithoutItem(state, level, pos, player, hitResult);
-        }
-
-        if (!level.isClientSide()) {
-            if (player.isShiftKeyDown()) {
-                computer.terminalManager.start();
-            } else if (player instanceof final ServerPlayer serverPlayer) {
-                computer.terminalManager.openTerminalScreen(serverPlayer);
-            }
-        }
-
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        final ComputerBlockEntity computer =
+                blockEntity instanceof ComputerBlockEntity c ? c : null;
+        final InteractionResult result =
+                ComputerBlockInteraction.useWithoutItem(state, level, pos, player, hitResult, computer);
+        return result != InteractionResult.PASS ? result : super.useWithoutItem(state, level, pos, player, hitResult);
     }
 
     @Override
     public BlockState playerWillDestroy(
             final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!level.isClientSide() && blockEntity instanceof final ComputerBlockEntity computer) {
-            if (!computer.getItemStackHandlers().isEmpty()) {
-                if (player.isCreative()) {
-                    final ItemStack stack = new ItemStack(Items.COMPUTER.get());
-                    computer.exportToItemStack(stack);
-                    popResource(level, pos, stack);
-                }
-            }
-        }
-
-        return super.playerWillDestroy(level, pos, state, player);
+        final ComputerBlockEntity computer =
+                blockEntity instanceof ComputerBlockEntity c ? c : null;
+        final BlockState resultState =
+                ComputerBlockInteraction.playerWillDestroy(level, pos, state, player, computer);
+        return resultState != state ? resultState : super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

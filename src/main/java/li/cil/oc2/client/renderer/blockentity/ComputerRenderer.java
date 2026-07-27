@@ -6,12 +6,9 @@ import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.time.Duration;
-import java.util.Objects;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.bus.controller.BusState;
-import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,15 +22,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlockEntity> {
-    private static final Logger LOGGER = LogManager.getLogger();
-
     public static final ResourceLocation OVERLAY_POWER_LOCATION =
             ResourceLocation.fromNamespaceAndPath(
                     API.MOD_ID, "block/computer/computer_overlay_power");
@@ -58,8 +51,6 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         this.terminalTextRenderer = new TerminalTextRenderer(context.getFont());
     }
 
-    private static long lastDiagnosticLog = 0;
-
     @Override
     public void render(
             final ComputerBlockEntity computer,
@@ -70,53 +61,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
             final int overlay) {
         final ComputerBlockEntity terminalSource = computer.terminalManager.getPrimaryForContraptionRendering();
 
-        final long now = System.currentTimeMillis();
-        if (now - lastDiagnosticLog > 1000) {
-            lastDiagnosticLog = now;
-            final VMRunState runState = terminalSource.getVirtualMachine().getRunState();
-            final BusState busState = terminalSource.getVirtualMachine().getBusState();
-            final Terminal terminal = terminalSource.terminalManager.getTerminal();
-            int nonSpaceCount = 0;
-            final int visibleStart =
-                    Math.max(0, (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH);
-            final int visibleEnd =
-                    Math.min(
-                            terminal.buffer.length,
-                            visibleStart + Terminal.WIDTH * Terminal.HEIGHT);
-            for (int i = visibleStart; i < visibleEnd; i++) {
-                if (terminal.buffer[i] != ' ') nonSpaceCount++;
-            }
-            final net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            final net.minecraft.client.multiplayer.ClientLevel mainLevel = mc.level;
-            final net.minecraft.world.level.Level computerLevel = computer.getLevel();
-            final Matrix4f poseMatrix = stack.last().pose();
-            LOGGER.info(
-                    "[ComputerRenderer] BER called for computer at {} (virtualClone={},"
-                        + " terminalSourcePos={}). runState={}, busState={}, terminal visible"
-                        + " nonSpace={}, computerLevel={}, mainMcLevel={}, sameLevel={}, pos={},"
-                        + " poseTranslation=({},{},{})",
-                    computer.getBlockPos(),
-                    computer.terminalManager.isContraptionVirtualClone(),
-                    terminalSource.getBlockPos(),
-                    runState,
-                    busState,
-                    nonSpaceCount,
-                    computerLevel != null
-                            ? computerLevel.getClass().getSimpleName()
-                                    + "@"
-                                    + Integer.toHexString(System.identityHashCode(computerLevel))
-                            : "null",
-                    mainLevel != null
-                            ? mainLevel.getClass().getSimpleName()
-                                    + "@"
-                                    + Integer.toHexString(System.identityHashCode(mainLevel))
-                            : "null",
-                    Objects.equals(computerLevel, mainLevel),
-                    computer.getBlockPos(),
-                    poseMatrix.m30(),
-                    poseMatrix.m31(),
-                    poseMatrix.m32());
-        }
+        ComputerRendererDebug.logDiagnostic(computer, terminalSource, stack.last().pose());
 
         final Direction blockFacing = computer.getBlockState().getValue(ComputerBlock.FACING);
 

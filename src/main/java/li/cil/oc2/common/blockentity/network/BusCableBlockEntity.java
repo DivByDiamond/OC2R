@@ -3,10 +3,7 @@ package li.cil.oc2.common.blockentity.network;
 import static java.util.Objects.requireNonNull;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.cable.BusCableStateProperties;
-import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
@@ -23,13 +20,9 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class BusCableBlockEntity extends ModBlockEntity {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
     private static final String INTERFACE_NAMES_TAG_NAME = "interfaceNames";
@@ -146,22 +139,6 @@ public final class BusCableBlockEntity extends ModBlockEntity {
             facadeManager.setFacadeDirectly(ItemStack.EMPTY);
         }
         requestModelDataUpdate();
-    }
-
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
-                Capabilities.DeviceBusElement.BLOCK,
-                (level, pos, state, be, side) -> {
-                    if (be instanceof final BusCableBlockEntity self) {
-                        if (BusCableStateProperties.getConnectionType(be.getBlockState(), side)
-                                != ConnectionType.NONE) {
-                            return self.busElement;
-                        }
-                    }
-                    return null;
-                },
-                li.cil.oc2.common.block.Blocks.BUS_CABLE.get());
     }
 
     @Override

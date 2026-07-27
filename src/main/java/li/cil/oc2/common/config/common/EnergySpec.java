@@ -1,6 +1,5 @@
 package li.cil.oc2.common.config.common;
 
-import li.cil.oc2.common.config.Config;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class EnergySpec {
@@ -175,34 +174,6 @@ public class EnergySpec {
     }
 
     public void loadValues() {
-        // BLOCKS //
-        Config.busCableEnergyPerTick = busCableEnergyPerTick.get();
-        Config.busInterfaceEnergyPerTick = busInterfaceEnergyPerTick.get();
-        Config.computerEnergyPerTick = computerEnergyPerTick.get();
-        Config.computerEnergyStorage = computerEnergyStorage.get();
-        Config.chargerEnergyPerTick = chargerEnergyPerTick.get();
-        Config.chargerEnergyStorage = chargerEnergyStorage.get();
-        Config.projectorEnergyPerTick = projectorEnergyPerTick.get();
-        Config.projectorEnergyStorage = projectorEnergyStorage.get();
-        Config.monitorEnergyPerTick = monitorEnergyPerTick.get();
-        Config.monitorEnergyStorage = monitorEnergyStorage.get();
-        Config.cardCageEnergyPerTick = cardCageEnergyPerTick.get();
-        Config.cardCageEnergyStorage = cardCageEnergyStorage.get();
-        Config.gatewayEnergyPerPacket = gatewayEnergyPerPacket.get();
-        Config.gatewayEnergyStorage = gatewayEnergyStorage.get();
-        // ENTITIES //
-        Config.robotEnergyPerTick = robotEnergyPerTick.get();
-        Config.robotEnergyStorage = robotEnergyStorage.get();
-        // ITEMS //
-        Config.memoryEnergyPerMegabytePerTick = memoryEnergyPerMegabytePerTick.get();
-        Config.hardDriveEnergyPerMegabytePerTick = hardDriveEnergyPerMegabytePerTick.get();
-        Config.cpuEnergyPerMegahertzPerTick = cpuEnergyPerMegahertzPerTick.get();
-        Config.redstoneInterfaceCardEnergyPerTick = redstoneInterfaceCardEnergyPerTick.get();
-        Config.networkInterfaceEnergyPerTick = networkInterfaceEnergyPerTick.get();
-        Config.fileImportExportCardEnergyPerTick = fileImportExportCardEnergyPerTick.get();
-        Config.soundCardEnergyPerTick = soundCardEnergyPerTick.get();
-        Config.blockOperationsModuleEnergyPerTick = blockOperationsModuleEnergyPerTick.get();
-        Config.inventoryOperationsModuleEnergyPerTick =
-                inventoryOperationsModuleEnergyPerTick.get();
+        EnergySpecValues.loadValues(this);
     }
 }

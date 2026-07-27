@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
@@ -104,23 +103,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     @Override
     @Nullable
     public Component getError() {
-        switch (busState) {
-            case SCAN_PENDING:
-            case INCOMPLETE:
-                return Component.translatable(Constants.COMPUTER_BUS_STATE_INCOMPLETE);
-            case TOO_COMPLEX:
-                return Component.translatable(Constants.COMPUTER_BUS_STATE_TOO_COMPLEX);
-            case MULTIPLE_CONTROLLERS:
-                return Component.translatable(Constants.COMPUTER_BUS_STATE_MULTIPLE_CONTROLLERS);
-            case READY:
-        if (runState == VMRunState.STOPPED || runState == VMRunState.LOADING_DEVICES) {
-            return bootError;
-        }
-                break;
-            default:
-                throw new AssertionError(busState);
-        }
-        return null;
+        return VMErrorCalculator.getError(busState, runState, bootError);
     }
 
     @Override
