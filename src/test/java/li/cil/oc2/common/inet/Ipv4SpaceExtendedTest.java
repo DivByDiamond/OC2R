@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class Ipv4SpaceExtendedTest {
     @Test
-    public void emptySpaceAllowsNothing() {
+    public void emptySpaceAllowsNothing() throws AddressParseException {
         final Ipv4Space space = new Ipv4Space(Ipv4Space.Modes.ALLOWLIST);
         assertFalse(space.isAllowed(InetUtils.parseIpv4Address("1.1.1.1")));
         assertFalse(space.isAllowed(InetUtils.parseIpv4Address("127.0.0.1")));
