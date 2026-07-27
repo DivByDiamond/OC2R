@@ -1,7 +1,7 @@
 package li.cil.oc2.common.blockentity.computer.capability;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
@@ -35,7 +35,7 @@ public final class ComputerBlockEntityCapabilities {
                 Capabilities.TerminalUserProvider.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final ComputerBlockEntity self) {
-                        return self;
+                        return self.terminalManager;
                     }
                     return null;
                 },

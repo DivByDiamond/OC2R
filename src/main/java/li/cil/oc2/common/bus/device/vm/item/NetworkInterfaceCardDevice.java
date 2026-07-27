@@ -1,7 +1,7 @@
 package li.cil.oc2.common.bus.device.vm.item;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
@@ -23,7 +23,7 @@ public final class NetworkInterfaceCardDevice extends AbstractNetworkInterfaceDe
                 (level, pos, state, be, side) -> {
                     if (be instanceof final ComputerBlockEntity computer) {
                         NetworkInterfaceCardDevice self =
-                                computer.getFirstDevice(NetworkInterfaceCardDevice.class);
+                                computer.terminalManager.getFirstDevice(NetworkInterfaceCardDevice.class);
                         if (self != null
                                 && NetworkInterfaceCardItem.getSideConfiguration(
                                         self.identity, side)) {

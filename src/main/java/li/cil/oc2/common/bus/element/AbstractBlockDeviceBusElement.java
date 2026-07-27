@@ -11,7 +11,7 @@ import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.util.LevelUtils;
+import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;

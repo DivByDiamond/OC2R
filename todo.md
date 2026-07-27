@@ -1,6 +1,6 @@
 # TODO
 
-## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅ — ~70%
+## 0. Рефакторинг: структура и SOLID/KISS/DRY — ~92%
 
 **Правило**: ≤200 строк на файл, ≤4 файлов на папку.
 
@@ -26,118 +26,128 @@
 - [x] NetworkInterfaceCardScreen.java (302→180)
 - [x] DefaultSessionLayer.java (277→193 — вместе с фиксом fallthrough)
 - [x] Большая часть групп 4-12 (файлы либо уже ≤200, либо переименованы/перемещены)
+- [x] fix: energyInfo.getCount() → getIntCount() (upstream)
+- [x] fix: Terminal fields → transient (upstream)
 
-### Осталось разложить по подпапкам (≤4 файлов на папку)
+### Раскладка по подпапкам (≤4 файлов на папку) — ✅ DONE
 
-Много папок нарушают правило. Приоритет — самые большие:
+- [x] `common/inet/` (53) → layer/, tcp/, tcp/state/, session/, session/manager/, session/echo/, session/datagram/, session/stream/, protocol/, internet/, internet/connection/, util/, util/checksum/
+- [x] `common/network/message/` (43) → computer/, robot/, monitor/, projector/, disk/, network/, file/, misc/
+- [x] `common/network/` root (8) → Network.java в корне, util/, loadbalancer/, info/
+- [x] `common/util/` (38) → scheduler/, nbt/, item/, world/, text/, block/, sound/, async/, event/, tick/, misc/
+- [x] `common/block/` (27) → computer/, cable/, monitor/, projector/, network/, disk/, keyboard/, energy/, misc/, common/, types/
+- [x] `client/gui/screen/` (25) → computer/, robot/, monitor/, network/, keyboard/, common/, widget/, file/, misc/
+- `common/vm/terminal/escapes/csi/` (31) — не трогать, каждый CSI handler свой файл по дизайну
+- `common/blockentity/network/` (25) — уже разбито, можно докрутить позже
 
-| Папка | Файлов | Предлагаемая структура |
-|---|---|---|
-| `common/inet/` | 53 | `inet/layer/`, `inet/session/`, `inet/protocol/` |
-| `common/network/message/` | 43 | `message/computer/`, `message/robot/`, `message/monitor/` |
-| `common/util/` | 38 | Разбить по смыслу (world, item, nbt, text) |
-| `common/vm/terminal/escapes/csi/` | 31 | Вряд ли трогать — каждый CSI handler свой файл по дизайну |
-| `common/block/` | 27 | `block/computer/`, `block/cable/`, `block/monitor/` |
-| `client/gui/screen/` | 25 | `screen/computer/`, `screen/robot/`, `screen/monitor/` |
-| `common/blockentity/network/` | 25 | Уже разбито, можно докрутить |
-
-Полный список нарушителей — 49 папок, задача на отдельную сессию.
+**Примечание**: Package-private классы, перемещённые в подпапки, стали public для cross-package доступа.
 
 ### Осталось довести до ≤200 (текущие размеры)
-- [ ] Network.java (294)
-- [ ] Robot.java (269)
-- [ ] ComputerBlockEntity.java (259)
-- [ ] Terminal.java (244)
-- [ ] CH1.java (251) — escapse-последовательности, *возможно не трогать*
-- [ ] CH6.java (240) — escapse-последовательности, *возможно не трогать*
-- [ ] MonitorBlockEntity.java (240)
-- [ ] TerminalBuffer.java (238)
-- [ ] BusCableInteractionHandler.java (236)
-- [ ] NetworkSwitchBlockEntity.java (226)
-- [ ] ProjectorBlockEntity.java (222)
-- [ ] NetworkConnectorBlockEntity.java (222)
-- [ ] RobotMovementController.java (ориг 256, проверить текущий)
-- [ ] DiskDriveBlockEntity.java (ориг 255, проверить)
-- [ ] FlashMemoryFlasherBlockEntity.java (ориг 252, проверить)
-- [ ] InternetManagerImpl.java (ориг 246, проверить)
+- [ ] Network.java (294) — извлечь часть в NetworkMessages или NetworkRegistry
+- [ ] Robot.java (269) — извлечь RobotMovement или RobotSerialization
+- [ ] ComputerBlockEntity.java (259) — извлечь ComputerPersistence или ComputerCapabilities
+- [ ] Terminal.java (244) — извлечь TerminalState или TerminalInput
+- [ ] CH1.java (251) — escape-последовательности, *возможно не трогать*
+- [ ] CH6.java (240) — escape-последовательности, *возможно не трогать*
+- [ ] MonitorBlockEntity.java (240) — извлечь MonitorVideoCodec или MonitorPersistence
+- [ ] TerminalBuffer.java (238) — извлечь TerminalBufferRenderer или TerminalBufferState
+- [ ] BusCableInteractionHandler.java (236) — извлечь BusCablePlacementHandler
 
 ### Deferred
-- jcodec/ — **не трогать**
+- jcodec/ — **попытаться заменить на Maven dependency org.jcodec:jcodec**
 - api/ — **не трогать**
+
+---
+
+## 6. Terminal DynamicTexture rendering
+
+**Проблема**: Терминал рисует каждый символ каждый кадр → мелкий шрифт, месиво при отходе, прыгающий текст.
+
+**Решение**: Рендерить терминал один раз в DynamicTexture (640×384) и показывать её на блоке.
+
+- [ ] Создать `TerminalTextureRenderer` — рендерит TerminalBuffer в NativeImage/DynamicTexture
+- [ ] Обновить `MonitorRenderer` и `ComputerRenderer` — вместо посимвольного рисования использовать текстуру
+- [ ] Добавить nearest filtering (не linear) чтобы текст не прыгал
+- [ ] LOD: близко — полная текстура, далеко — уменьшенная, а не иконка
+- [ ] Увеличить область на блоке с 12×7 до 14×10 или 16×9 px
+
+---
+
+## 7. Projector rendering improvements
+
+- [ ] Gamma correction после YUV→RGB конвертации
+- [ ] Попробовать YUV444 вместо YUV420 (менее размытые цвета)
+- [ ] Увеличить depth map с 256×256 до 512×512
+
+---
+
+## 8. Screen↔Container auto-регистрация
+
+**Опционально**: вместо ручного `event.register(CONTAINER.get(), Screen::new)` для каждого —
+DSL через ScreenRegistry:
+```java
+ScreenRegistry.register(event, COMPUTER, ComputerContainerScreen::new);
+ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
+```
+
+---
+
+## 9. Lint и статический анализ
+
+- [ ] **PMD: multithreading.xml** — гонки, volatile, UnsafeInit. Актуально для BlobChannelManager, DefaultSessionLayer, InetUtils.
+- [ ] **PMD: codestyle.xml + design.xml** — после рефакторинга
+- [ ] **SpotBugs** — обновить плагин для Gradle 9+
+- [ ] **Error Prone** — Google-анализатор
+- [ ] **AvoidDuplicateLiterals** — кастомные пороги
+- [ ] **AvoidInstantiatingObjectsInLoops** — точечно @SuppressWarnings
+
+---
+
+## 10. Тесты
+
+- [ ] `Ipv4SpaceTest` — расширить: тесты для computeIpSpace, allowed/denied hosts, edge cases
+- [ ] `IntegerSpaceTest` — расширить: тесты для allocate, free, overlap
+- [ ] Новые: `InetUtilsTest` — parseIpv4Address, ipv4AddressToString, checksum
+- [ ] Новые: `TcpHeaderTest` — read/write ByteBuffer, connection initiation, acceptance
+- [ ] Новые: `ArpProtocolTest` — writeResponse, readRequest
+- [ ] Новые: `TerminalBufferTest` — basic write, scroll, cursor movement, colors
+- [ ] Новые: `SessionManagerTest` — session lifecycle, expiration, close
+- [ ] Новые: `NBTUtilsTest` — serialization round-trips
+- [ ] Новые: `BusCableShapeBuilderTest` — shape combinations
+- [ ] Новые: `ChunkUtilsTest` — chunk location, block location
+- [ ] Новые: `NetworkMessageTest` — message serialization round-trips
+
+---
+
+## 11. jcodec → Maven dependency
+
+**Опционально**: заменить встроенный `common/jcodec/` на Maven dependency `org.jcodec:jcodec`.
+
+- [ ] Проверить что org.jcodec:jcodec API совместим с нашим usage
+- [ ] Если совместим — удалить встроенный jcodec/ и добавить dependency в build.gradle.kts
+- [ ] Если не совместим — оставить встроенный (не трогать)
 
 ---
 
 ## 1. C API для Redstone Interface (#89)
 
-**Проблема**: Lua на VM медленный, нет `sleep()`, неудобно для real-time контроллеров (ноут блок плеер и т.д.). Хочется писать на C/Rust под RISC-V.
+**Проблема**: Lua на VM медленный, нет `sleep()`, неудобно для real-time контроллеров. Хочется писать на C/Rust под RISC-V.
 
-**Текущее состояние**: Сделана C-библиотека `librpc` в `src/main/scripts/lib/rpc/`. Реализует RPC-протокол поверх `/dev/hvc0`. Позволяет из C-программы на RISC-V VM находить устройства, вызывать их методы (setRedstoneOutput, getRedstoneInput и т.д.).
+**Текущее состояние**: Сделана C-библиотека `librpc` в `src/main/scripts/lib/rpc/`.
 
-### Файлы
-- `src/main/scripts/lib/rpc/rpc.h` — заголовочный файл
-- `src/main/scripts/lib/rpc/rpc.c` — реализация
-
-### Что дальше
-- [ ] Добавить TCC (Tiny C Compiler) в buildroot-образ, чтобы компилировать C прямо на VM
+- [ ] Добавить TCC в buildroot-образ
 - [ ] Добавить примеры: redstone_blink.c, note_block_player.c
 - [ ] Сделать C++ RAII-обёртку
 
 ---
 
-## 2. Resizable Screen (#12)
+## 2. Resizable Screen (#12) — Deferred
 
-**Проблема**: Экран (Terminal/Monitor) фиксированного размера — 80×24 символов (640×384px). Хочется расширять добавлением блоков как в OC1.
-
-**Сложность**: ОЧЕНЬ высокая. Размер Terminal жёстко зашит как `static final` константы во всех буферах. Плюс рендеринг (VBO по строкам), UART-драйвер, сетевые пакеты, GUI-виджеты, блок-модели.
-
-### Необходимые изменения
-- [ ] `Terminal.java`: WIDTH/HEIGHT из констант → поля экземпляра, динамические буферы
-- [ ] `MonitorDevice.java`: WIDTH/HEIGHT из констант → поля
-- [ ] `SimpleFramebufferDevice.java`: размер framebuffer динамический
-- [ ] `ComputerBlockEntity.java`: передавать размер терминала
-- [ ] `MonitorBlockEntity.java`: хранить размер в NBT
-- [ ] `AbstractTerminalVMRunner.java`: размер терминала из BE
-- [ ] Синхронизировать размер между сервером и клиентом
-- [ ] `ComputerRenderer.java`: размер области рендера
-- [ ] `MonitorRenderer.java`: размер области рендера
-- [ ] `MachineTerminalWidget.java`: размер GUI
-- [ ] Новые блоки (MonitorSmall, MonitorMedium, MonitorLarge) или property `size`
-
-### Приоритет
-Пока отложено. Сначала — рефакторинг и TCC.
+Сначала рефакторинг и TCC.
 
 ---
 
 ## 3. TCC (Tiny C Compiler) в образ
 
-- [ ] Обновить `minux` (sedna-buildroot) чтобы включить TCC
-- [ ] Либо сделать overlay с бинарником TCC
+- [ ] Обновить minux чтобы включить TCC
 - [ ] Собрать новый buildroot-образ
-
-
-
-## 5. Lint и статический анализ
-
-**Статус**: Checkstyle и PMD уже включены в сборку. Сборка чистая.
-
-### Что можно улучшить
-- [ ] **PMD: добавить `category/java/multithreading.xml`** — ловит race conditions, небезопасную инициализацию, некорректный `volatile`. Актуально для:
-  - Асинхронного I/O в `BlobChannelManager`
-  - Сетевого стека (`DefaultSessionLayer`, `InetUtils`)
-  - `CompletableFuture` в `DiskDriveDevice`, `FlashMemoryFlasherDevice`
-- [ ] **PMD: `codestyle.xml` и `design.xml`** — добавить **после** завершения рефакторинга, иначе много шума
-- [ ] **SpotBugs** — требует Gradle <9 или новую версию плагина
-- [ ] **Error Prone** — настройка компилятора, Google-стиль
-- [ ] **AvoidDuplicateLiterals** — включить с кастомными порогами вместо полного исключения
-- [ ] **AvoidInstantiatingObjectsInLoops** — включить, супреснить точечно `@SuppressWarnings`
-
-### Команды
-```bash
-./gradlew checkstyleMain
-./gradlew pmdMain
-```
-
-### Конфиги
-- `checkstyle.xml` — Google Style, 200 строк/файл, JavaDoc на public API
-- `config/pmd/ruleset.xml` — bestpractices + errorprone + performance (+ multithreading когда включим)
-- `qodana.yaml` — Qodana (IDEA движок)

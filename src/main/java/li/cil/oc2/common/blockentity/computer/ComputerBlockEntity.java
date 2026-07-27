@@ -1,9 +1,5 @@
 package li.cil.oc2.common.blockentity.computer;
 
-import java.util.*;
-import javax.annotation.Nullable;
-import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -11,32 +7,23 @@ import li.cil.oc2.common.blockentity.computer.bus.ComputerBusElement;
 import li.cil.oc2.common.blockentity.computer.contraption.ComputerContraptionHandler;
 import li.cil.oc2.common.blockentity.computer.handler.ComputerItemStackHandlers;
 import li.cil.oc2.common.blockentity.computer.persistence.ComputerBlockEntityPersistence;
+import li.cil.oc2.common.blockentity.computer.terminal.ComputerTerminalManager;
 import li.cil.oc2.common.blockentity.computer.vm.ComputerVirtualMachine;
-import li.cil.oc2.common.bus.controller.AfterDeviceScanEvent;
 import li.cil.oc2.common.bus.controller.BlockDeviceBusController;
 import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.container.ComputerInventoryContainer;
-import li.cil.oc2.common.container.ComputerTerminalContainer;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.common.ext.ICaptureInputStateStorage;
-import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.vm.*;
-import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 
 public final class ComputerBlockEntity extends ModBlockEntity
-        implements TerminalUserProvider, TickableBlockEntity, ICaptureInputStateStorage {
+        implements TickableBlockEntity {
     public static final int MEMORY_SLOTS = 4,
             HARD_DRIVE_SLOTS = 4,
             FLASH_MEMORY_SLOTS = 1,
@@ -44,8 +31,6 @@ public final class ComputerBlockEntity extends ModBlockEntity
             CPU_SLOTS = 1;
     boolean hasAddedOwnDevices;
     public boolean isNeighborUpdateScheduled;
-    public volatile LevelChunk chunk;
-    public final Terminal terminal = new Terminal();
     public final ComputerBusElement busElement = new ComputerBusElement(this);
     public final ComputerItemStackHandlers deviceItems =
             new ComputerItemStackHandlers(this, () -> this.getLevel().registryAccess());
@@ -55,17 +40,12 @@ public final class ComputerBlockEntity extends ModBlockEntity
                     this,
                     new BlockDeviceBusController(busElement, Config.computerEnergyPerTick, this),
                     deviceItems::getDeviceAddressBase);
-    final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
-    private boolean captureInputState;
+    public final ComputerTerminalManager terminalManager = new ComputerTerminalManager(this);
 
     public ComputerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.COMPUTER.get(), pos, state);
         setNeedsLevelUnloadEvent();
-        virtualMachine.busController.afterDeviceScanListeners.add(this::onAfterDeviceScan);
-    }
-
-    public Terminal getTerminal() {
-        return terminal;
+        virtualMachine.busController.afterDeviceScanListeners.add(terminalManager::onAfterDeviceScan);
     }
 
     public VirtualMachine getVirtualMachine() {
@@ -77,75 +57,8 @@ public final class ComputerBlockEntity extends ModBlockEntity
     }
 
     @Override
-    public boolean getCaptureInputState() {
-        return captureInputState;
-    }
-
-    @Override
-    public void setCaptureInputState(boolean value) {
-        this.captureInputState = value;
-    }
-
-    public void start() {
-        if (level != null && !level.isClientSide()) virtualMachine.start();
-    }
-
-    public void stop() {
-        if (level != null && !level.isClientSide()) virtualMachine.stop();
-    }
-
-    public void openTerminalScreen(final ServerPlayer player) {
-        ComputerTerminalContainer.createServer(this, energy, virtualMachine.busController, player);
-    }
-
-    public void openInventoryScreen(final ServerPlayer player) {
-        ComputerInventoryContainer.createServer(this, energy, virtualMachine.busController, player);
-    }
-
-    public void addTerminalUser(final Player player) {
-        terminalUsers.add(player);
-    }
-
-    public void removeTerminalUser(final Player player) {
-        terminalUsers.remove(player);
-    }
-
-    @Override
-    public Iterable<Player> getTerminalUsers() {
-        return terminalUsers;
-    }
-
-    public void handleNeighborChanged() {
-        if (level != null && !level.isClientSide()) virtualMachine.busController.scheduleBusScan();
-    }
-
-    public void onAfterDeviceScan(final AfterDeviceScanEvent event) {
-        if (event.didDevicesChange()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Device> @Nullable T getFirstDevice(Class<T> cls) {
-        for (final Device device : virtualMachine.busController.getDevices())
-            if (cls.isAssignableFrom(device.getClass())) return (T) device;
-        return null;
-    }
-
-    public UUID getDeviceId() {
-        return busElement.deviceId;
-    }
-
-    public boolean isContraptionVirtualClone() {
-        return ComputerContraptionHandler.isContraptionVirtualClone(this);
-    }
-
-    @Nullable
-    public ComputerBlockEntity getPrimaryForContraptionRendering() {
-        return ComputerContraptionHandler.getPrimaryForContraptionRendering(this);
-    }
-
-    @Override
     public void clientTick() {
-        terminal.clientTick();
+        terminalManager.terminal.clientTick();
         ComputerContraptionHandler.registerInClientRegistry(this);
     }
 
@@ -172,7 +85,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
             isNeighborUpdateScheduled = false;
             level.updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
         }
-        chunk = level.getChunkAt(getBlockPos());
+        terminalManager.chunk = level.getChunkAt(getBlockPos());
         virtualMachine.tick();
     }
 
@@ -234,7 +147,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
     @Override
     protected void loadClient() {
         super.loadClient();
-        terminal.setDisplayOnly(true);
+        terminalManager.terminal.setDisplayOnly(true);
         ComputerContraptionHandler.registerInClientRegistry(this);
     }
 
@@ -252,9 +165,5 @@ public final class ComputerBlockEntity extends ModBlockEntity
         else virtualMachine.suspend();
         virtualMachine.dispose();
         busElement.scheduleScan();
-    }
-
-    public void sendToClientsTrackingComputer(final CustomPacketPayload message) {
-        if (chunk != null) Network.sendToClientsTrackingChunk(message, chunk);
     }
 }

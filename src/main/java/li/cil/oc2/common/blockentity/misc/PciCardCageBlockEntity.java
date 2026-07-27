@@ -1,8 +1,8 @@
 package li.cil.oc2.common.blockentity.misc;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.PciCardCageBlock;
+import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;

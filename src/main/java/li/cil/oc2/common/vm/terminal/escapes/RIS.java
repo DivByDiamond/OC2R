@@ -24,8 +24,8 @@ public class RIS {
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;
-        terminal.clear();
-        terminal.clearAlt();
+        terminal.bufferManager.clear();
+        terminal.bufferManager.clearAlt();
         Arrays.fill(terminal.buffer, ' ');
         Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.Copy());
         Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());

@@ -28,7 +28,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 case 6 -> {
                     terminal.currentPrivateModeState.DECOM = false;
                     terminal.setRelativeCursorPos(0, 0);
-                    terminal.clear();
+                    terminal.bufferManager.clear();
                 }
                 case 7 -> terminal.currentPrivateModeState.DECAWM = false;
                 case 8 -> terminal.currentPrivateModeState.DECARM = false;

@@ -4,7 +4,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.common.block.ComputerBlock;
+import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.element.BlockEntry;

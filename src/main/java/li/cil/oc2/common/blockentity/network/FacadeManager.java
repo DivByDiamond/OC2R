@@ -1,10 +1,10 @@
 package li.cil.oc2.common.blockentity.network;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.common.block.BusCableStateProperties;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.BusCableFacadeMessage;
-import li.cil.oc2.common.util.ItemStackUtils;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.network.BusCableFacadeMessage;
+import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -76,7 +76,7 @@ final class FacadeManager {
         if (!level.isClientSide()) {
             final BusCableFacadeMessage message =
                     new BusCableFacadeMessage(owner.getBlockPos(), facade);
-            Network.sendToClientsTrackingBlockEntity(message, owner);
+            NetworkMessages.sendToClientsTrackingBlockEntity(message, owner);
         }
 
         owner.requestModelDataUpdate();
@@ -103,7 +103,7 @@ final class FacadeManager {
         if (!level.isClientSide()) {
             final BusCableFacadeMessage message =
                     new BusCableFacadeMessage(owner.getBlockPos(), facade);
-            Network.sendToClientsTrackingBlockEntity(message, owner);
+            NetworkMessages.sendToClientsTrackingBlockEntity(message, owner);
         }
 
         owner.requestModelDataUpdate();

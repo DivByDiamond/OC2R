@@ -6,7 +6,7 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.api.util.RobotOperationSide;
-import li.cil.oc2.common.util.FakePlayerUtils;
+import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;

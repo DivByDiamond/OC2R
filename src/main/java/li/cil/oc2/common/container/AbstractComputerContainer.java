@@ -2,15 +2,15 @@ package li.cil.oc2.common.container;
 
 import java.nio.ByteBuffer;
 import li.cil.oc2.client.ClientSetup;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.ComputerPowerMessage;
-import li.cil.oc2.common.network.message.ComputerTerminalInputMessage;
-import li.cil.oc2.common.network.message.OpenComputerInventoryMessage;
-import li.cil.oc2.common.network.message.OpenComputerTerminalMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.computer.ComputerPowerMessage;
+import li.cil.oc2.common.network.message.computer.ComputerTerminalInputMessage;
+import li.cil.oc2.common.network.message.computer.OpenComputerInventoryMessage;
+import li.cil.oc2.common.network.message.computer.OpenComputerTerminalMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.world.entity.player.Player;
@@ -32,17 +32,17 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         super(type, id, energyInfo);
         this.computer = computer;
 
-        this.computer.addTerminalUser(player);
+        this.computer.terminalManager.addTerminalUser(player);
     }
 
     @Override
     public void switchToInventory() {
-        Network.sendToServer(new OpenComputerInventoryMessage(computer));
+        NetworkMessages.sendToServer(new OpenComputerInventoryMessage(computer));
     }
 
     @Override
     public void switchToTerminal() {
-        Network.sendToServer(new OpenComputerTerminalMessage(computer));
+        NetworkMessages.sendToServer(new OpenComputerTerminalMessage(computer));
     }
 
     @Override
@@ -52,18 +52,18 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        Network.sendToServer(new ComputerPowerMessage(computer, value));
+        NetworkMessages.sendToServer(new ComputerPowerMessage(computer, value));
     }
 
     @Override
     public Terminal getTerminal() {
-        return computer.getTerminal();
+        return computer.terminalManager.getTerminal();
     }
 
     @Override
     public boolean getCaptureInputState() {
         return switch (Config.captureInputMode) {
-            case PER_BLOCK -> computer.getCaptureInputState();
+            case PER_BLOCK -> computer.terminalManager.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
             case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
             default -> throw new AssertionError(Config.captureInputMode);
@@ -73,7 +73,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
     @Override
     public void setCaptureInputState(final boolean state) {
         switch (Config.captureInputMode) {
-            case PER_BLOCK -> computer.setCaptureInputState(state);
+            case PER_BLOCK -> computer.terminalManager.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
             case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
             default -> throw new AssertionError(Config.captureInputMode);
@@ -82,7 +82,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
 
     @Override
     public void sendTerminalInputToServer(final ByteBuffer input) {
-        Network.sendToServer(new ComputerTerminalInputMessage(computer, input));
+        NetworkMessages.sendToServer(new ComputerTerminalInputMessage(computer, input));
     }
 
     @Override
@@ -102,7 +102,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
     public void removed(final Player player) {
         super.removed(player);
 
-        this.computer.removeTerminalUser(player);
+        this.computer.terminalManager.removeTerminalUser(player);
     }
 
     protected static IntPrecisionContainerData createEnergyInfo(

@@ -6,11 +6,11 @@ import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.OpenRobotInventoryMessage;
-import li.cil.oc2.common.network.message.OpenRobotTerminalMessage;
-import li.cil.oc2.common.network.message.RobotPowerMessage;
-import li.cil.oc2.common.network.message.RobotTerminalInputMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.robot.OpenRobotInventoryMessage;
+import li.cil.oc2.common.network.message.robot.OpenRobotTerminalMessage;
+import li.cil.oc2.common.network.message.robot.RobotPowerMessage;
+import li.cil.oc2.common.network.message.robot.RobotTerminalInputMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.world.entity.player.Player;
@@ -34,12 +34,12 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
 
     @Override
     public void switchToInventory() {
-        Network.sendToServer(new OpenRobotInventoryMessage(robot));
+        NetworkMessages.sendToServer(new OpenRobotInventoryMessage(robot));
     }
 
     @Override
     public void switchToTerminal() {
-        Network.sendToServer(new OpenRobotTerminalMessage(robot));
+        NetworkMessages.sendToServer(new OpenRobotTerminalMessage(robot));
     }
 
     public Robot getRobot() {
@@ -53,7 +53,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        Network.sendToServer(new RobotPowerMessage(robot, value));
+        NetworkMessages.sendToServer(new RobotPowerMessage(robot, value));
     }
 
     @Override
@@ -83,7 +83,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
 
     @Override
     public void sendTerminalInputToServer(final ByteBuffer input) {
-        Network.sendToServer(new RobotTerminalInputMessage(robot, input));
+        NetworkMessages.sendToServer(new RobotTerminalInputMessage(robot, input));
     }
 
     @Override

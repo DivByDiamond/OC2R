@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
-import li.cil.oc2.common.util.Event;
+import li.cil.oc2.common.util.event.Event;
 import li.cil.sedna.api.device.BlockDevice;
 
 final class ListenableBlockDevice implements BlockDevice {

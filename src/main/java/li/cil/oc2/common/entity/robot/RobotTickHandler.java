@@ -1,8 +1,8 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.RobotInitializationRequestMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.robot.RobotInitializationRequestMessage;
 
 public final class RobotTickHandler {
     public static void tick(final Robot robot, final boolean firstTick) {
@@ -10,7 +10,7 @@ public final class RobotTickHandler {
 
         if (firstTick) {
             if (isClient) {
-                Network.sendToServer(new RobotInitializationRequestMessage(robot));
+                NetworkMessages.sendToServer(new RobotInitializationRequestMessage(robot));
             } else {
                 robot.getEventHandler().register();
                 RobotActions.initializeData(robot);

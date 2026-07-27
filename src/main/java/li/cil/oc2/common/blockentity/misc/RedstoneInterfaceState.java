@@ -2,7 +2,7 @@ package li.cil.oc2.common.blockentity.misc;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.util.HorizontalBlockUtils;
+import li.cil.oc2.common.util.block.HorizontalBlockUtils;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;

@@ -5,9 +5,9 @@ import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_SUPPORT_PROPE
 
 import li.cil.oc2.client.model.BusCableBakedModel;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.BusCableStateProperties;
-import li.cil.oc2.common.block.ConnectionType;
-import li.cil.oc2.common.util.ItemStackUtils;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import li.cil.oc2.common.block.types.ConnectionType;
+import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

@@ -3,7 +3,7 @@ package li.cil.oc2.common.entity.robot;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.util.LevelUtils;
+import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

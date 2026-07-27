@@ -20,14 +20,14 @@ public class CH5
         } else if (state.dollarSign) { // DECRQM
             int mode = args[0];
             if (state.questionMark) { // DECSET/DECRST
-                terminal.putResponse(
+                terminal.io.putResponse(
                         "\033[?"
                                 + mode
                                 + ";"
                                 + terminal.currentPrivateModeState.getModeForRequest(mode)
                                 + "$y");
             } else { // SM/RM
-                terminal.putResponse(
+                terminal.io.putResponse(
                         "\033["
                                 + mode
                                 + ";"

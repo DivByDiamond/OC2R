@@ -18,7 +18,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
             }
         } else { // ICH
             if (chars >= Terminal.WIDTH) {
-                terminal.clearLine(terminal.y);
+                terminal.bufferManager.clearLine(terminal.y);
             } else {
                 shiftRight(chars);
             }

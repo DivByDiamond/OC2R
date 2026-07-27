@@ -1,9 +1,9 @@
 package li.cil.oc2.common.blockentity.projector;
 
 import java.util.Arrays;
-import li.cil.oc2.common.block.ProjectorBlock;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.ProjectorStateMessage;
+import li.cil.oc2.common.block.projector.ProjectorBlock;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.projector.ProjectorStateMessage;
 import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -59,7 +59,7 @@ final class ProjectorState {
             level.setBlock(
                     pos, state.setValue(ProjectorBlock.LIT, newIsMounted), Block.UPDATE_CLIENTS);
 
-            Network.sendToClientsTrackingBlockEntity(
+            NetworkMessages.sendToClientsTrackingBlockEntity(
                     new ProjectorStateMessage(be, newIsMounted, newHasEnergy), be);
         }
     }

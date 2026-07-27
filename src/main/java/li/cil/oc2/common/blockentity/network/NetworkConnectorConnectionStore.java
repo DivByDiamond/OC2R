@@ -2,8 +2,8 @@ package li.cil.oc2.common.blockentity.network;
 
 import java.util.List;
 import java.util.Set;
-import li.cil.oc2.common.util.NBTTagIds;
-import li.cil.oc2.common.util.NBTUtils;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

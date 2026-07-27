@@ -1,7 +1,7 @@
 package li.cil.oc2.common.item;
 
 import java.util.List;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;

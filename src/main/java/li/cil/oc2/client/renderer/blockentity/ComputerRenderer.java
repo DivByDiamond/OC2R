@@ -8,7 +8,7 @@ import com.mojang.math.Axis;
 import java.time.Duration;
 import java.util.Objects;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.ComputerBlock;
+import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.vm.VMRunState;
@@ -68,14 +68,14 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
             final MultiBufferSource bufferSource,
             final int light,
             final int overlay) {
-        final ComputerBlockEntity terminalSource = computer.getPrimaryForContraptionRendering();
+        final ComputerBlockEntity terminalSource = computer.terminalManager.getPrimaryForContraptionRendering();
 
         final long now = System.currentTimeMillis();
         if (now - lastDiagnosticLog > 1000) {
             lastDiagnosticLog = now;
             final VMRunState runState = terminalSource.getVirtualMachine().getRunState();
             final BusState busState = terminalSource.getVirtualMachine().getBusState();
-            final Terminal terminal = terminalSource.getTerminal();
+            final Terminal terminal = terminalSource.terminalManager.getTerminal();
             int nonSpaceCount = 0;
             final int visibleStart =
                     Math.max(0, (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH);
@@ -96,7 +96,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
                         + " nonSpace={}, computerLevel={}, mainMcLevel={}, sameLevel={}, pos={},"
                         + " poseTranslation=({},{},{})",
                     computer.getBlockPos(),
-                    computer.isContraptionVirtualClone(),
+                    computer.terminalManager.isContraptionVirtualClone(),
                     terminalSource.getBlockPos(),
                     runState,
                     busState,
@@ -128,7 +128,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         final Vec3 blockCenterToCamera = blockCenterRelativeToCamera.scale(-1);
         final double projectedCameraPosition =
                 blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getNormal()));
-        if (!computer.isContraptionVirtualClone() && projectedCameraPosition <= 0) {
+        if (!computer.terminalManager.isContraptionVirtualClone() && projectedCameraPosition <= 0) {
             return;
         }
 
@@ -148,7 +148,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
 
         if (terminalSource.getVirtualMachine().isRunning()) {
             terminalTextRenderer.renderTerminal(
-                    stack, bufferSource, terminalSource.getTerminal(), distanceToCamera);
+                    stack, bufferSource, terminalSource.terminalManager.getTerminal(), distanceToCamera);
         } else {
             terminalTextRenderer.renderStatusText(
                     stack,

@@ -3,13 +3,13 @@ package li.cil.oc2.client.gui.widget;
 import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.screen.AbstractMonitorDisplayScreen;
-import li.cil.oc2.client.gui.screen.KeyCodeMapping;
+import li.cil.oc2.client.gui.screen.common.AbstractMonitorDisplayScreen;
+import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.container.AbstractMonitorContainer;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.MonitorInputMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.monitor.MonitorInputMessage;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -142,7 +142,7 @@ public final class MonitorDisplayWidget {
     private void sendInputMessage(final int keycode, final boolean isDown) {
         if (KeyCodeMapping.MAPPING.containsKey(keycode)) {
             final int evdevCode = KeyCodeMapping.MAPPING.get(keycode);
-            Network.sendToServer(
+            NetworkMessages.sendToServer(
                     new MonitorInputMessage(container.getMonitor(), evdevCode, isDown));
         }
     }

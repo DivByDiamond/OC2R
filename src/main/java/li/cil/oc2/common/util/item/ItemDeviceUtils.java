@@ -1,0 +1,23 @@
+package li.cil.oc2.common.util.item;
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+
+public final class ItemDeviceUtils {
+    private static final String ITEM_DEVICE_DATA_TAG_NAME = "item_device";
+
+    public static CompoundTag getItemDeviceData(final ItemStack stack) {
+        return ItemStackUtils.getModDataTag(stack).getCompound(ITEM_DEVICE_DATA_TAG_NAME);
+    }
+
+    public static void setItemDeviceData(final ItemStack stack, final CompoundTag data) {
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt).put(ITEM_DEVICE_DATA_TAG_NAME, data);
+                });
+    }
+}

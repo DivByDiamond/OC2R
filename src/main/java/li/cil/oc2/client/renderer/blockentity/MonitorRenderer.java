@@ -3,7 +3,7 @@ package li.cil.oc2.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.MonitorBlock;
+import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorContraptionHelper;
 import net.minecraft.client.gui.Font;

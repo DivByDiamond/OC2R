@@ -14,7 +14,7 @@ final class TerminalKeyboardHandler {
 
     public boolean charTyped(final char ch, final int modifier) {
         if (modifier == 0 || modifier == GLFW.GLFW_MOD_SHIFT) {
-            terminal.putInput((byte) ch);
+            terminal.io.putInput((byte) ch);
         }
         return true;
     }
@@ -31,16 +31,16 @@ final class TerminalKeyboardHandler {
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE
                 && terminal.currentPrivateModeState.APPLICATION_ESC_MODE) {
-            terminal.putInput("\033[0[");
+            terminal.io.putInput("\033[0[");
         }
         if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0 && keyCode == GLFW.GLFW_KEY_V) {
             final String value = clipboardSupplier.get();
             boolean bracketed = terminal.currentPrivateModeState.SET_BRACKETED_PASTE;
-            if (bracketed) terminal.putInput("\033[200~");
+            if (bracketed) terminal.io.putInput("\033[200~");
             for (final char ch : value.toCharArray()) {
-                terminal.putInput((byte) ch);
+                terminal.io.putInput((byte) ch);
             }
-            if (bracketed) terminal.putInput("\033[201~");
+            if (bracketed) terminal.io.putInput("\033[201~");
         } else {
             byte[] sequence;
             if (terminal.currentPrivateModeState.DECCKM
@@ -52,7 +52,7 @@ final class TerminalKeyboardHandler {
             else sequence = TerminalInput.getSequence(keyCode, modifiers);
             if (sequence != null) {
                 for (final byte b : sequence) {
-                    terminal.putInput(b);
+                    terminal.io.putInput(b);
                 }
             }
         }

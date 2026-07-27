@@ -29,7 +29,7 @@ final class TerminalMouseHandler {
             if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
                     || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
                 if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
-                    terminal.putInput(
+                    terminal.io.putInput(
                             "\033[<" + button + ";" + position.x + ";" + position.y + "M");
                     return true;
                 } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
@@ -58,10 +58,10 @@ final class TerminalMouseHandler {
                             finalBytes,
                             csiMBytes.length + buttonBytes.length + colBytes.length,
                             rowBytes.length);
-                    terminal.putInput(ByteBuffer.wrap(finalBytes));
+                    terminal.io.putInput(ByteBuffer.wrap(finalBytes));
                     return true;
                 } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
-                    terminal.putInput(
+                    terminal.io.putInput(
                             "\033["
                                     + (button + 32)
                                     + ";"
@@ -70,12 +70,12 @@ final class TerminalMouseHandler {
                                     + position.y
                                     + "M");
                 } else {
-                    terminal.putInput('\033');
-                    terminal.putInput('[');
-                    terminal.putInput('M');
-                    terminal.putInput((byte) (button + 32));
-                    terminal.putInput((byte) (position.x + 32));
-                    terminal.putInput((byte) (position.y + 32));
+                    terminal.io.putInput('\033');
+                    terminal.io.putInput('[');
+                    terminal.io.putInput('M');
+                    terminal.io.putInput((byte) (button + 32));
+                    terminal.io.putInput((byte) (position.x + 32));
+                    terminal.io.putInput((byte) (position.y + 32));
                     return true;
                 }
             } else {
@@ -100,7 +100,7 @@ final class TerminalMouseHandler {
             if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
                     || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
                 if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
-                    terminal.putInput(
+                    terminal.io.putInput(
                             "\033[<" + button + ";" + position.x + ";" + position.y + "m");
                     return true;
                 } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.UTF8_MOUSE)) {
@@ -129,17 +129,17 @@ final class TerminalMouseHandler {
                             finalBytes,
                             csiMBytes.length + buttonBytes.length + colBytes.length,
                             rowBytes.length);
-                    terminal.putInput(ByteBuffer.wrap(finalBytes));
+                    terminal.io.putInput(ByteBuffer.wrap(finalBytes));
                     return true;
                 } else if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.URXVT_MOUSE)) {
-                    terminal.putInput("\033[" + 35 + ";" + position.x + ";" + position.y + "M");
+                    terminal.io.putInput("\033[" + 35 + ";" + position.x + ";" + position.y + "M");
                 } else {
-                    terminal.putInput('\033');
-                    terminal.putInput('[');
-                    terminal.putInput('M');
-                    terminal.putInput((byte) 35);
-                    terminal.putInput((byte) (position.x + 32));
-                    terminal.putInput((byte) (position.y + 32));
+                    terminal.io.putInput('\033');
+                    terminal.io.putInput('[');
+                    terminal.io.putInput('M');
+                    terminal.io.putInput((byte) 35);
+                    terminal.io.putInput((byte) (position.x + 32));
+                    terminal.io.putInput((byte) (position.y + 32));
                     return true;
                 }
             } else {

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.components.DataComponents;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;

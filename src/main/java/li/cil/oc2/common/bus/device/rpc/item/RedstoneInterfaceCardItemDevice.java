@@ -8,10 +8,10 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.api.util.Side;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.util.HorizontalBlockUtils;
+import li.cil.oc2.common.util.block.HorizontalBlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -61,7 +61,7 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
 
                     if (be instanceof final ComputerBlockEntity computer) {
                         RedstoneInterfaceCardItemDevice self =
-                                computer.getFirstDevice(RedstoneInterfaceCardItemDevice.class);
+                                computer.terminalManager.getFirstDevice(RedstoneInterfaceCardItemDevice.class);
                         if (self == null) return null;
 
                         final int index = side.get3DDataValue();

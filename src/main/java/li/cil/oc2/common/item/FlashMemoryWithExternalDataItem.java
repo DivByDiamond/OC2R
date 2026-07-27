@@ -3,7 +3,7 @@ package li.cil.oc2.common.item;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.data.Firmware;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
-import li.cil.oc2.common.util.ItemStackUtils;
+import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;

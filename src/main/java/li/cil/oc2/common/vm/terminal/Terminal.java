@@ -1,9 +1,7 @@
 package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
-import java.nio.ByteBuffer;
 import java.util.*;
-import javax.annotation.Nullable;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
@@ -97,15 +95,17 @@ public class Terminal {
     }
 
     public transient TerminalBuffer bufferManager;
+    public transient TerminalBufferWriter bufferWriter;
     transient CSIManager csiManager = new CSIManager(this);
     transient OSCManager oscManager = new OSCManager(this);
     transient DCSManager dcsManager = new DCSManager(this);
     transient APCManager apcManager = new APCManager(this);
-    transient TerminalIO io = new TerminalIO(this);
+    public transient TerminalIO io = new TerminalIO(this);
     transient TerminalClient client = new TerminalClient(this);
 
     public Terminal() {
         bufferManager = new TerminalBuffer(this);
+        bufferWriter = new TerminalBufferWriter(this);
         RIS.execute(this);
     }
 
@@ -120,54 +120,6 @@ public class Terminal {
     @OnlyIn(Dist.CLIENT)
     public RendererView getRenderer() {
         return client.getRenderer();
-    }
-
-    public void incrementLastLineToDisplay() {
-        bufferManager.incrementLastLineToDisplay();
-    }
-
-    public void incrementLastLineToDisplay(boolean scroll) {
-        bufferManager.incrementLastLineToDisplay(scroll);
-    }
-
-    public void decrementLastLineToDisplay() {
-        bufferManager.decrementLastLineToDisplay();
-    }
-
-    public void clear() {
-        bufferManager.clear();
-    }
-
-    public void clearAlt() {
-        bufferManager.clearAlt();
-    }
-
-    public void clearLine(final int y) {
-        bufferManager.clearLine(y);
-    }
-
-    public void clearLine(final int y, final int fromIndex, final int toIndex) {
-        bufferManager.clearLine(y, fromIndex, toIndex);
-    }
-
-    public void shiftUp(int count) {
-        bufferManager.shiftUp(count);
-    }
-
-    public void shiftLines(final int firstLine, final int lastLine, final int count) {
-        bufferManager.shiftLines(firstLine, lastLine, count);
-    }
-
-    public void shiftDown(int count) {
-        bufferManager.shiftDown(count);
-    }
-
-    public void shiftUpOne() {
-        bufferManager.shiftUpOne();
-    }
-
-    public void shiftDownOne() {
-        bufferManager.shiftDownOne();
     }
 
     public void setCursorPos(final int x, final int y) {
@@ -200,46 +152,5 @@ public class Terminal {
     @OnlyIn(Dist.CLIENT)
     public void clientTick() {
         client.clientTick();
-    }
-
-    public synchronized int readInput() {
-        return io.readInput();
-    }
-
-    @Nullable
-    public synchronized ByteBuffer getInput() {
-        return io.getInput();
-    }
-
-    public synchronized void putInput(final String value) {
-        io.putInput(value);
-    }
-
-    public synchronized void putInput(final ByteBuffer values) {
-        io.putInput(values);
-    }
-
-    public synchronized void putOutput(final ByteBuffer values) {
-        io.putOutput(values);
-    }
-
-    public synchronized void putOutput(final byte value) {
-        io.putOutput(value);
-    }
-
-    public synchronized void putInput(final char value) {
-        io.putInput(value);
-    }
-
-    public synchronized void putInput(final byte value) {
-        io.putInput(value);
-    }
-
-    public void putResponse(final String value) {
-        io.putResponse(value);
-    }
-
-    public void putResponse(final byte value) {
-        io.putResponse(value);
     }
 }

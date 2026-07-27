@@ -1,8 +1,8 @@
 package li.cil.oc2.common.item;
 
-import li.cil.oc2.common.util.ItemStackUtils;
-import li.cil.oc2.common.util.NBTTagIds;
-import li.cil.oc2.common.util.TextFormatUtils;
+import li.cil.oc2.common.util.item.ItemStackUtils;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
+import li.cil.oc2.common.util.text.TextFormatUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;

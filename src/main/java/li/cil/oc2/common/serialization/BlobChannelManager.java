@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.config.AsyncConfig;
-import li.cil.oc2.common.util.AsyncUtils;
+import li.cil.oc2.common.util.async.AsyncUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

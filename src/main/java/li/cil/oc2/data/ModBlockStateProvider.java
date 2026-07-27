@@ -1,9 +1,9 @@
 package li.cil.oc2.data;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.BusCableStateProperties;
-import li.cil.oc2.common.block.ConnectionType;
+import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;

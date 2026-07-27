@@ -10,7 +10,7 @@ import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.vm.item.HardDriveDeviceWithInitialData;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.HardDriveWithExternalDataItem;
-import li.cil.oc2.common.util.LocationSupplierUtils;
+import li.cil.oc2.common.util.item.LocationSupplierUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 

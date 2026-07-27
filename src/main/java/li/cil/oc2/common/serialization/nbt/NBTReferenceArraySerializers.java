@@ -4,7 +4,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.UUID;
 import li.cil.oc2.common.serialization.ceres.ColorDataSerializer;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
 import net.minecraft.nbt.*;
 

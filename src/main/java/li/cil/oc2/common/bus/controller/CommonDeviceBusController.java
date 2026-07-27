@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.common.util.Event;
-import li.cil.oc2.common.util.ParameterizedEvent;
+import li.cil.oc2.common.util.event.Event;
+import li.cil.oc2.common.util.event.ParameterizedEvent;
 
 public class CommonDeviceBusController implements DeviceBusController {
     public final Set<Runnable> afterBusScanListeners = new Event();

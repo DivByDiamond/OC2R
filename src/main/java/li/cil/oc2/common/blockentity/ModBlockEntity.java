@@ -1,6 +1,6 @@
 package li.cil.oc2.common.blockentity;
 
-import li.cil.oc2.common.util.ServerScheduler;
+import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;

@@ -4,8 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.block.ProjectorBlock;
+import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -13,9 +13,9 @@ import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.ProjectorLoadBalancer;
-import li.cil.oc2.common.network.message.ProjectorRequestFramebufferMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
+import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
 import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.BlockPos;
@@ -84,7 +84,7 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         final long now = System.currentTimeMillis();
         if (now - lastKeepAliveSentAt > 1000) {
             lastKeepAliveSentAt = now;
-            Network.sendToServer(new ProjectorRequestFramebufferMessage(this));
+            NetworkMessages.sendToServer(new ProjectorRequestFramebufferMessage(this));
         }
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Queue;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

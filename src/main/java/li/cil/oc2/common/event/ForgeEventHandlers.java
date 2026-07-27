@@ -2,7 +2,7 @@ package li.cil.oc2.common.event;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.util.AsyncExecutorHelper;
+import li.cil.oc2.common.util.async.AsyncExecutorHelper;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

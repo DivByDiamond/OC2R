@@ -4,7 +4,7 @@ import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
 
 import java.util.*;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

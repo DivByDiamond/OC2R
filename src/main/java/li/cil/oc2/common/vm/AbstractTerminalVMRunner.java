@@ -30,10 +30,10 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
     protected void handleBeforeRun() {
         super.handleBeforeRun();
 
-        int value = terminal.readInput();
+        int value = terminal.io.readInput();
         while (value != -1) {
             inputBuffer.enqueue((byte) value);
-            value = terminal.readInput();
+            value = terminal.io.readInput();
         }
     }
 
@@ -81,7 +81,7 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
         // it), the server-side terminal state stays correct so a future
         // re-render / re-open of the GUI still shows the buffered output.
         try {
-            terminal.putOutput(output);
+            terminal.io.putOutput(output);
         } catch (final Exception t) {
             LOGGER.error("Failed to update server-side terminal", t);
         }

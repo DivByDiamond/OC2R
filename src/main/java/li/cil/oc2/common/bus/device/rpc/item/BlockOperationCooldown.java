@@ -1,7 +1,7 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import java.time.Duration;
-import li.cil.oc2.common.util.TickUtils;
+import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;

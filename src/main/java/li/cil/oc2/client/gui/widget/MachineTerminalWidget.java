@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
+import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
@@ -105,7 +105,7 @@ public final class MachineTerminalWidget {
     }
 
     public void tick() {
-        final ByteBuffer input = terminal.getInput();
+        final ByteBuffer input = terminal.io.getInput();
         if (input != null) {
             container.sendTerminalInputToServer(input);
         }
@@ -114,9 +114,9 @@ public final class MachineTerminalWidget {
     public boolean mouseScrolled(double dir) {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) return false;
         if (dir < 0) {
-            terminal.incrementLastLineToDisplay(true);
+            terminal.bufferManager.incrementLastLineToDisplay(true);
         } else {
-            terminal.decrementLastLineToDisplay();
+            terminal.bufferManager.decrementLastLineToDisplay();
         }
         return true;
     }
@@ -125,11 +125,11 @@ public final class MachineTerminalWidget {
         if (isMouseOverTerminal((int) x, (int) y)) {
             if (!isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {
                 isOver = true;
-                terminal.putInput("\033[I");
+                terminal.io.putInput("\033[I");
             }
         } else {
             if (isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {
-                terminal.putInput("\033[O");
+                terminal.io.putInput("\033[O");
             }
         }
     }

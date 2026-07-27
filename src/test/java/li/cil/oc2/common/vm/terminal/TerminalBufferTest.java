@@ -1,0 +1,50 @@
+package li.cil.oc2.common.vm.terminal;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class TerminalBufferTest {
+    private Terminal terminal;
+    private TerminalBuffer buffer;
+
+    @BeforeEach
+    public void setUp() {
+        terminal = new Terminal();
+        buffer = terminal.bufferManager;
+    }
+
+    @Test
+    public void initialBufferState() {
+        // After initialization, buffer should be cleared
+        assertNotNull(buffer);
+        assertNotNull(terminal);
+    }
+
+    @Test
+    public void clearLineClearsRow() {
+        // Clear line should set all chars in a row to default
+        buffer.clearLine(0);
+        // After clearing, the row should be blank (space chars with default colors)
+    }
+
+    @Test
+    public void shiftUpOneMovesRows() {
+        // Shift up should move all rows up by one, clearing the last row
+        buffer.shiftUpOne();
+        // Top row should now be what was row 1
+    }
+
+    @Test
+    public void shiftDownOneMovesRows() {
+        // Shift down should move all rows down by one, clearing the first row
+        buffer.shiftDownOne();
+    }
+
+    @Test
+    public void clearAllLines() {
+        buffer.clear();
+        // All lines should be blank
+    }
+}

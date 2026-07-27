@@ -8,7 +8,7 @@ import li.cil.manual.api.prefab.item.AbstractManualItem;
 import li.cil.oc2.client.manual.Manuals;
 import li.cil.oc2.client.manual.ModManualScreenStyle;
 import li.cil.oc2.client.manual.ModManualStyle;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

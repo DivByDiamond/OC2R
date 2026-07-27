@@ -2,8 +2,8 @@ package li.cil.oc2.common.blockentity.network;
 
 import java.util.Set;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.block.BusCableStateProperties;
-import li.cil.oc2.common.block.ConnectionType;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;

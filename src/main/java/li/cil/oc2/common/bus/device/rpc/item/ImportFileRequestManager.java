@@ -2,8 +2,8 @@ package li.cil.oc2.common.bus.device.rpc.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.ServerCanceledImportFileMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.file.ServerCanceledImportFileMessage;
 import net.minecraft.server.level.ServerPlayer;
 
 final class ImportFileRequestManager {
@@ -35,7 +35,7 @@ final class ImportFileRequestManager {
                     final ServerCanceledImportFileMessage message =
                             new ServerCanceledImportFileMessage(id);
                     for (final ServerPlayer serverPlayer : request.PendingPlayers) {
-                        Network.sendToClient(message, serverPlayer);
+                        NetworkMessages.sendToClient(message, serverPlayer);
                     }
                 }
             }

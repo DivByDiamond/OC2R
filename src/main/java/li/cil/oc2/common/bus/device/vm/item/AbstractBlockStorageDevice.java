@@ -16,7 +16,7 @@ import li.cil.oc2.common.bus.device.util.OptionalInterrupt;
 import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.serialization.NBTSerialization;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
 import net.minecraft.core.HolderLookup;

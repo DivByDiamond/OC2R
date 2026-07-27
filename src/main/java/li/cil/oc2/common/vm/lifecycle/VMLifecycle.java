@@ -9,7 +9,7 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.controller.AfterDeviceScanEvent;
 import li.cil.oc2.common.bus.controller.DevicesChangedEvent;
 import li.cil.oc2.common.bus.device.rpc.item.CPUItemDevice;
-import li.cil.oc2.common.util.TickUtils;
+import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.sedna.api.memory.MemoryAccessException;

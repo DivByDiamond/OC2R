@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Random;
 import joptsimple.util.InetAddressConverter;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.inet.DefaultSessionLayer;
+import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 
 final class NativeLoader {

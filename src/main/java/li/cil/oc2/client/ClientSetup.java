@@ -1,7 +1,7 @@
 package li.cil.oc2.client;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.gui.screen.KeyboardScreen;
+import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.model.BusCableModelLoader;
@@ -15,7 +15,7 @@ import li.cil.oc2.client.renderer.blockentity.ProjectorRenderer;
 import li.cil.oc2.client.renderer.color.BusCableBlockColor;
 import li.cil.oc2.client.renderer.entity.RobotRenderer;
 import li.cil.oc2.client.renderer.entity.model.RobotModel;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.entity.Entities;

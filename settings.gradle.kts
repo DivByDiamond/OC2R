@@ -4,6 +4,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver") version "0.9.0"
+}
+
 val minecraft_version: String get() = gradle.providers.gradleProperty("minecraft_version").get()
 val minecraft_sdk: String get() = gradle.providers.gradleProperty("minecraft_sdk").get()
 

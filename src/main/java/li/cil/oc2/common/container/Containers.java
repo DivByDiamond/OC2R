@@ -1,7 +1,12 @@
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.gui.screen.*;
+import li.cil.oc2.client.gui.screen.computer.ComputerContainerScreen;
+import li.cil.oc2.client.gui.screen.computer.ComputerTerminalScreen;
+import li.cil.oc2.client.gui.screen.monitor.MonitorDisplayScreen;
+import li.cil.oc2.client.gui.screen.network.NetworkTunnelScreen;
+import li.cil.oc2.client.gui.screen.robot.RobotContainerScreen;
+import li.cil.oc2.client.gui.screen.robot.RobotTerminalScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;

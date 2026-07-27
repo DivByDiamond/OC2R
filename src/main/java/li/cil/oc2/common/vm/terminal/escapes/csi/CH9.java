@@ -15,7 +15,7 @@ public class CH9 extends CSISequenceHandler { // Combined Handler 9 (SD, XTHIMOU
             System.out.println("XTHIMOUSE not implemented");
         } else { // SD
             for (int i = 0; i < args[0]; i++) {
-                terminal.shiftDownOne();
+                terminal.bufferManager.shiftDownOne();
             }
         }
     }

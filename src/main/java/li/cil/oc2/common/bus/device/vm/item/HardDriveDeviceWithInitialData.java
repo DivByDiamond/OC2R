@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import li.cil.oc2.common.util.BlockLocation;
+import li.cil.oc2.common.util.world.BlockLocation;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import net.minecraft.world.item.ItemStack;

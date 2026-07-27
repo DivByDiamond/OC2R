@@ -42,4 +42,17 @@
         <!-- Unavoidable: NBTArraySerializers copies between different primitive types, System.arraycopy won't work -->
         <exclude name="AvoidArrayLoops"/>
     </rule>
+
+    <rule ref="category/java/multithreading.xml">
+        <!-- Unavoidable: NeoForge/Minecraft thread model requires shared mutable state -->
+        <exclude name="DoNotUseThreads"/>
+        <!-- Unavoidable: CompletableFuture in DiskDriveDevice, FlashMemoryFlasherDevice -->
+        <exclude name="AvoidUsingVolatile"/>
+        <!-- Unavoidable: singleton pattern in InternetManagerImpl, SocketManager -->
+        <exclude name="NonThreadSafeSingleton"/>
+        <!-- Unavoidable: async I/O in BlobChannelManager requires mutable fields -->
+        <exclude name="UnsynchronizedStaticDateFormatter"/>
+        <!-- Unavoidable: Mixin classes access Minecraft fields -->
+        <exclude name="AvoidSynchronizedAtMethodLevel"/>
+    </rule>
 </ruleset>

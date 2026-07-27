@@ -1,7 +1,7 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.util.FakePlayerUtils;
+import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

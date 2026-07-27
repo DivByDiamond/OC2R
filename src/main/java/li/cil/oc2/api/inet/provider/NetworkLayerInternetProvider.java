@@ -4,10 +4,10 @@ import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
-import li.cil.oc2.common.inet.DefaultLinkLocalLayer;
-import li.cil.oc2.common.inet.DefaultNetworkLayer;
-import li.cil.oc2.common.inet.InetUtils;
-import li.cil.oc2.common.inet.NullLayer;
+import li.cil.oc2.common.inet.layer.DefaultLinkLocalLayer;
+import li.cil.oc2.common.inet.layer.DefaultNetworkLayer;
+import li.cil.oc2.common.inet.util.InetUtils;
+import li.cil.oc2.common.inet.layer.NullLayer;
 
 /**
  * An {@link InternetProvider} partial implementation that expects an {@link NetworkLayer}

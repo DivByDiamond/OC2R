@@ -7,7 +7,7 @@ import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.item.SoundCardItemDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.util.LocationSupplierUtils;
+import li.cil.oc2.common.util.item.LocationSupplierUtils;
 
 public final class SoundCardItemDeviceProvider extends AbstractItemDeviceProvider {
     public SoundCardItemDeviceProvider() {

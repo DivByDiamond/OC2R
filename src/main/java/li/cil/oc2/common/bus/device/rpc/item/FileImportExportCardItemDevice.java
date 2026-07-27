@@ -9,9 +9,9 @@ import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.ExportedFileMessage;
-import li.cil.oc2.common.network.message.RequestImportedFileMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.file.ExportedFileMessage;
+import li.cil.oc2.common.network.message.file.RequestImportedFileMessage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
@@ -86,7 +86,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
                     final ExportedFileMessage message =
                             new ExportedFileMessage(
                                     exportedFile.name, exportedFile.data.toByteArray());
-                    Network.sendToClient(message, serverPlayer);
+                    NetworkMessages.sendToClient(message, serverPlayer);
                 }
             }
         } finally {
@@ -106,7 +106,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
         importingId = ImportFileRequestManager.registerRequest(this);
         for (final ServerPlayer serverPlayer : players) {
             final RequestImportedFileMessage message = new RequestImportedFileMessage(importingId);
-            Network.sendToClient(message, serverPlayer);
+            NetworkMessages.sendToClient(message, serverPlayer);
         }
         return true;
     }

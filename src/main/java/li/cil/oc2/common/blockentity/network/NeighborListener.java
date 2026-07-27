@@ -1,7 +1,7 @@
 package li.cil.oc2.common.blockentity.network;
 
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
-import li.cil.oc2.common.util.ServerScheduler;
+import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;

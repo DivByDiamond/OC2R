@@ -3,7 +3,9 @@ package li.cil.oc2.api.inet.provider;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
-import li.cil.oc2.common.inet.*;
+import li.cil.oc2.common.inet.layer.DefaultLinkLocalLayer;
+import li.cil.oc2.common.inet.layer.NullLayer;
+import li.cil.oc2.common.inet.util.InetUtils;
 
 /**
  * An {@link InternetProvider} partial implementation that expects an {@link LinkLocalLayer}

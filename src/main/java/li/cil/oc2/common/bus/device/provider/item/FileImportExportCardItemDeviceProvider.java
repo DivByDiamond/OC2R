@@ -4,6 +4,7 @@ import java.util.Optional;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
+import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import li.cil.oc2.common.config.Config;
@@ -36,6 +37,9 @@ public final class FileImportExportCardItemDeviceProvider extends AbstractItemDe
     private Optional<TerminalUserProvider> getTerminalUserProvider(final ItemDeviceQuery query) {
         if (query.getContainerBlockEntity().isPresent()) {
             var be = query.getContainerBlockEntity().get();
+            if (be instanceof final ComputerBlockEntity computer) {
+                return Optional.of(computer.terminalManager);
+            }
             if (be instanceof TerminalUserProvider terminal) {
                 return Optional.of(terminal);
             }

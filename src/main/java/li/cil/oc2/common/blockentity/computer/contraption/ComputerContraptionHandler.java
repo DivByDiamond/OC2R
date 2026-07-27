@@ -23,7 +23,7 @@ public final class ComputerContraptionHandler {
         if (!isContraptionVirtualClone(computer)) {
             return computer;
         }
-        final ComputerBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(computer.getDeviceId());
+        final ComputerBlockEntity primary = PRIMARY_BY_DEVICE_ID.get(computer.busElement.deviceId);
         if (primary != null && !primary.isRemoved()) {
             return primary;
         }
@@ -34,12 +34,12 @@ public final class ComputerContraptionHandler {
         var level = computer.getLevel();
         if (level == null || !level.isClientSide()) return;
         if (isContraptionVirtualClone(computer)) return;
-        PRIMARY_BY_DEVICE_ID.put(computer.getDeviceId(), computer);
+        PRIMARY_BY_DEVICE_ID.put(computer.busElement.deviceId, computer);
     }
 
     public static void unregisterFromClientRegistry(final ComputerBlockEntity computer) {
         var level = computer.getLevel();
         if (level == null || !level.isClientSide()) return;
-        PRIMARY_BY_DEVICE_ID.remove(computer.getDeviceId(), computer);
+        PRIMARY_BY_DEVICE_ID.remove(computer.busElement.deviceId, computer);
     }
 }

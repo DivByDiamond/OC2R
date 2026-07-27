@@ -3,7 +3,7 @@ package li.cil.oc2.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import li.cil.oc2.client.renderer.ProjectorDepthRenderer;
-import li.cil.oc2.common.block.ProjectorBlock;
+import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;

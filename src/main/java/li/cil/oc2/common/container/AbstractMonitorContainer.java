@@ -2,12 +2,12 @@ package li.cil.oc2.common.container;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.client.ClientSetup;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.*;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.monitor.MonitorPowerMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -77,7 +77,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        Network.sendToServer(new MonitorPowerMessage(monitor, value));
+        NetworkMessages.sendToServer(new MonitorPowerMessage(monitor, value));
     }
 
     @Override

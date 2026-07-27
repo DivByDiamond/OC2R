@@ -10,9 +10,9 @@ public class DSR extends CSISequenceHandler {
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (args[0] == 5) {
-            terminal.putResponse("\033[0n"); // Report console status
+            terminal.io.putResponse("\033[0n"); // Report console status
         } else if (args[0] == 6) {
-            terminal.putResponse(
+            terminal.io.putResponse(
                     String.format(
                             "\033[?%d;%dR",
                             terminal.y + 1, terminal.x + 1)); // Report cursor position

@@ -3,7 +3,7 @@ package li.cil.oc2.common.serialization;
 import com.google.gson.*;
 import java.util.List;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import net.minecraft.nbt.*;
 
 public final class NBTToJsonConverter {

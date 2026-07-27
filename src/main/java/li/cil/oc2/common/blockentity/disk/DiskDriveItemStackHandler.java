@@ -3,10 +3,10 @@ package li.cil.oc2.common.blockentity.disk;
 import javax.annotation.Nonnull;
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.item.AbstractBlockDeviceItem;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.DiskDriveFloppyMessage;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.disk.DiskDriveFloppyMessage;
 import li.cil.oc2.common.tags.ItemTags;
-import li.cil.oc2.common.util.ItemStackUtils;
+import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -78,7 +78,7 @@ final class DiskDriveItemStackHandler extends TypedItemStackHandler {
                     });
         }
 
-        Network.sendToClientsTrackingBlockEntity(
+        NetworkMessages.sendToClientsTrackingBlockEntity(
                 new DiskDriveFloppyMessage(blockEntity), blockEntity);
 
         blockEntity.setChanged();

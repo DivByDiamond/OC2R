@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.util.Vec3Utils;
+import li.cil.oc2.common.util.block.Vec3Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;

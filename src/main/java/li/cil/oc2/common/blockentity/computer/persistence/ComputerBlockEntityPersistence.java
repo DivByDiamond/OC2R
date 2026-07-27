@@ -20,7 +20,7 @@ public final class ComputerBlockEntityPersistence {
     public static CompoundTag getUpdateTag(
             final ComputerBlockEntity computer, final HolderLookup.Provider registries) {
         final CompoundTag tag = new CompoundTag();
-        tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(computer.terminal));
+        tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(computer.terminalManager.terminal));
         tag.putInt(
                 AbstractVirtualMachine.BUS_STATE_TAG_NAME,
                 computer.virtualMachine.getBusState().ordinal());
@@ -37,7 +37,7 @@ public final class ComputerBlockEntityPersistence {
             final ComputerBlockEntity computer,
             final CompoundTag tag,
             final HolderLookup.Provider registries) {
-        NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), computer.terminal);
+        NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), computer.terminalManager.terminal);
     }
 
     public static void handleUpdateTagClient(
@@ -65,7 +65,7 @@ public final class ComputerBlockEntityPersistence {
             final HolderLookup.Provider registries) {
         if (computer.virtualMachine.getRunState() != VMRunState.STOPPED) {
             tag.put(STATE_TAG_NAME, computer.virtualMachine.serialize());
-            tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(computer.terminal));
+            tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(computer.terminalManager.terminal));
         }
         tag.put(ENERGY_TAG_NAME, computer.energy.serializeNBT(registries));
         tag.put(BUS_ELEMENT_TAG_NAME, computer.busElement.save(registries));
@@ -82,6 +82,6 @@ public final class ComputerBlockEntityPersistence {
         computer.deviceItems.loadItems(registries, tag.getCompound(ITEMS_TAG_NAME));
         computer.deviceItems.loadDevices(registries, tag.getCompound(DEVICES_TAG_NAME));
         computer.virtualMachine.deserialize(tag.getCompound(STATE_TAG_NAME));
-        NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), computer.terminal);
+        NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), computer.terminalManager.terminal);
     }
 }

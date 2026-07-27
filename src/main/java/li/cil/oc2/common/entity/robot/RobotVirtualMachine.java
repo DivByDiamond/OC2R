@@ -6,9 +6,12 @@ import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.*;
-import li.cil.oc2.common.util.TerminalUtils;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.robot.RobotBootErrorMessage;
+import li.cil.oc2.common.network.message.robot.RobotBusStateMessage;
+import li.cil.oc2.common.network.message.robot.RobotRunStateMessage;
+import li.cil.oc2.common.network.message.robot.RobotTerminalOutputMessage;
+import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
@@ -54,7 +57,7 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
         TerminalUtils.resetTerminal(
                 terminal,
                 output ->
-                        Network.sendToClientsTrackingEntity(
+                        NetworkMessages.sendToClientsTrackingEntity(
                                 new RobotTerminalOutputMessage(robot, output), robot));
 
         movementController.clear();
@@ -67,18 +70,18 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     protected void handleBusStateChanged(final BusState value) {
-        Network.sendToClientsTrackingEntity(new RobotBusStateMessage(robot, value), robot);
+        NetworkMessages.sendToClientsTrackingEntity(new RobotBusStateMessage(robot, value), robot);
     }
 
     @Override
     protected void handleRunStateChanged(final VMRunState value) {
-        Network.sendToClientsTrackingEntity(new RobotRunStateMessage(robot, value), robot);
+        NetworkMessages.sendToClientsTrackingEntity(new RobotRunStateMessage(robot, value), robot);
     }
 
     @Override
     protected void handleBootErrorChanged(@Nullable final Component value) {
         final Component effective = value == null ? Component.literal("") : value;
-        Network.sendToClientsTrackingEntity(new RobotBootErrorMessage(robot, effective), robot);
+        NetworkMessages.sendToClientsTrackingEntity(new RobotBootErrorMessage(robot, effective), robot);
     }
 
     private final class RobotVMRunner extends AbstractTerminalVMRunner {
@@ -88,7 +91,7 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
 
         @Override
         protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            Network.sendToClientsTrackingEntity(
+            NetworkMessages.sendToClientsTrackingEntity(
                     new RobotTerminalOutputMessage(RobotVirtualMachine.this.robot, output),
                     RobotVirtualMachine.this.robot);
         }

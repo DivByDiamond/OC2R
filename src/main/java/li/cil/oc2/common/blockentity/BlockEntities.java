@@ -1,7 +1,7 @@
 package li.cil.oc2.common.blockentity;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;

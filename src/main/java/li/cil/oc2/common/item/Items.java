@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.config.Config;
 import net.minecraft.resources.ResourceLocation;

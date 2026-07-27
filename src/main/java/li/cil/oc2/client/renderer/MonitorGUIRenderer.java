@@ -43,7 +43,7 @@ public class MonitorGUIRenderer {
             final RemovalNotification<MonitorBlockEntity, RenderInfo> notification) {
         final MonitorBlockEntity monitor = notification.getKey();
         if (monitor != null) {
-            monitor.setFrameConsumer(null);
+            monitor.video.setFrameConsumer(null);
         }
         final RenderInfo renderInfo = notification.getValue();
         if (renderInfo != null) {
@@ -86,7 +86,7 @@ public class MonitorGUIRenderer {
                                                     false);
                                     texture.upload();
                                     final RenderInfo renderInfo = new RenderInfo(texture);
-                                    monitor.setFrameConsumer(renderInfo);
+                                    monitor.video.setFrameConsumer(renderInfo);
                                     return renderInfo;
                                 })
                         .texture();
@@ -107,7 +107,7 @@ public class MonitorGUIRenderer {
                 boolean renderingToBlock) {
             if (monitorBlock.isValid()) {
                 DynamicTexture texture = getColorBuffer(monitorBlock);
-                monitorBlock.onRendering();
+                monitorBlock.video.onRendering();
 
                 RenderSystem.backupProjectionMatrix();
                 RenderSystem.getModelViewStack().pushMatrix();

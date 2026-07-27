@@ -14,15 +14,15 @@ public class DL extends CSISequenceHandler {
         int lines = Math.max(args[0], 1);
 
         for (int i = 0; i < lines; i++) {
-            terminal.clearLine(terminal.y + i);
+            terminal.bufferManager.clearLine(terminal.y + i);
         }
 
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
         if (useAltBuffer) {
-            terminal.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
+            terminal.bufferManager.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
         } else {
-            terminal.shiftLines(
+            terminal.bufferManager.shiftLines(
                     terminal.y + lines, Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 1, -lines);
         }
     }

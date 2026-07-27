@@ -8,14 +8,14 @@ import li.cil.oc2.common.blockentity.computer.ComputerVMRunner;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.network.message.ComputerBootErrorMessage;
-import li.cil.oc2.common.network.message.ComputerBusStateMessage;
-import li.cil.oc2.common.network.message.ComputerRunStateMessage;
-import li.cil.oc2.common.network.message.ComputerTerminalOutputMessage;
-import li.cil.oc2.common.util.ChunkUtils;
-import li.cil.oc2.common.util.SoundEvents;
-import li.cil.oc2.common.util.TerminalUtils;
-import li.cil.oc2.common.util.TickUtils;
+import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
+import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
+import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
+import li.cil.oc2.common.network.message.computer.ComputerTerminalOutputMessage;
+import li.cil.oc2.common.util.world.ChunkUtils;
+import li.cil.oc2.common.util.sound.SoundEvents;
+import li.cil.oc2.common.util.tick.TerminalUtils;
+import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.BaseAddressProvider;
@@ -86,20 +86,20 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
         super.stopRunnerAndReset();
 
         TerminalUtils.resetTerminal(
-                owner.terminal,
+                owner.terminalManager.terminal,
                 output ->
-                        owner.sendToClientsTrackingComputer(
+                        owner.terminalManager.sendToClientsTrackingComputer(
                                 new ComputerTerminalOutputMessage(owner, output)));
     }
 
     @Override
     public AbstractTerminalVMRunner createRunner() {
-        return new ComputerVMRunner(owner, this, owner.terminal);
+        return new ComputerVMRunner(owner, this, owner.terminalManager.terminal);
     }
 
     @Override
     protected void handleBusStateChanged(final BusState value) {
-        owner.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner, value));
+        owner.terminalManager.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner, value));
 
         final Level level = owner.getLevel();
         if (value == BusState.READY && level != null) {
@@ -109,11 +109,11 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     protected void handleRunStateChanged(final VMRunState value) {
-        owner.sendToClientsTrackingComputer(new ComputerRunStateMessage(owner, value));
+        owner.terminalManager.sendToClientsTrackingComputer(new ComputerRunStateMessage(owner, value));
     }
 
     @Override
     protected void handleBootErrorChanged(@Nullable final Component value) {
-        owner.sendToClientsTrackingComputer(new ComputerBootErrorMessage(owner, value));
+        owner.terminalManager.sendToClientsTrackingComputer(new ComputerBootErrorMessage(owner, value));
     }
 }

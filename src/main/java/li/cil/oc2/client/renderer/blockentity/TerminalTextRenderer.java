@@ -3,21 +3,20 @@ package li.cil.oc2.client.renderer.blockentity;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import org.joml.Matrix4f;
 
 final class TerminalTextRenderer {
     private final Font font;
+    private final TerminalTextureRenderer textureRenderer;
 
     TerminalTextRenderer(final Font font) {
         this.font = font;
+        this.textureRenderer = new TerminalTextureRenderer();
     }
 
     void renderTerminal(
@@ -25,51 +24,27 @@ final class TerminalTextRenderer {
             final MultiBufferSource bufferSource,
             final Terminal terminal,
             final double distanceToCamera) {
-        if (distanceToCamera < 6f) {
-            stack.pushPose();
-            stack.translate(2, 2, -0.9f);
+        // Always use TerminalTextureRenderer for all distances (LOD: same texture,
+        // just smaller via perspective projection).  NEAREST filtering keeps text crisp.
+        stack.pushPose();
+        stack.translate(2, 2, -0.9f);
 
-            final float textScaleX = 12f / terminal.getWidth();
-            final float textScaleY = 7f / terminal.getHeight();
-            final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
+        final float textScaleX = 12f / terminal.getWidth();
+        final float textScaleY = 7f / terminal.getHeight();
+        final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
 
-            final float scaleDeltaX = textScaleX - scale;
-            final float scaleDeltaY = textScaleY - scale;
-            stack.translate(
-                    terminal.getWidth() * scaleDeltaX * 0.5f,
-                    terminal.getHeight() * scaleDeltaY * 0.5f,
-                    0f);
+        final float scaleDeltaX = textScaleX - scale;
+        final float scaleDeltaY = textScaleY - scale;
+        stack.translate(
+                terminal.getWidth() * scaleDeltaX * 0.5f,
+                terminal.getHeight() * scaleDeltaY * 0.5f,
+                0f);
 
-            stack.scale(scale, scale, 1f);
+        stack.scale(scale, scale, 1f);
 
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.enableDepthTest();
+        textureRenderer.render(stack, RenderSystem.getProjectionMatrix(), terminal, true);
 
-            try {
-                ComputerRenderer.rendererViews
-                        .get(terminal, terminal::getRenderer)
-                        .render(stack, RenderSystem.getProjectionMatrix(), true);
-            } catch (final ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-
-            stack.popPose();
-            RenderSystem.disableDepthTest();
-            RenderSystem.disableBlend();
-            RenderSystem.defaultBlendFunc();
-        } else {
-            stack.pushPose();
-            stack.translate(0, 0, -0.9f);
-
-            final Matrix4f matrix = stack.last().pose();
-            OverlayRenderer.renderQuad(
-                    matrix,
-                    OverlayRenderer.TEXTURE_TERMINAL.buffer(
-                            bufferSource, ModRenderType::getUnlitBlock));
-
-            stack.popPose();
-        }
+        stack.popPose();
     }
 
     void renderStatusText(

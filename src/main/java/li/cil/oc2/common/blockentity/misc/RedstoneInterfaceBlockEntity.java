@@ -16,7 +16,7 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.integration.util.BundledRedstone;
-import li.cil.oc2.common.util.HorizontalBlockUtils;
+import li.cil.oc2.common.util.block.HorizontalBlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;

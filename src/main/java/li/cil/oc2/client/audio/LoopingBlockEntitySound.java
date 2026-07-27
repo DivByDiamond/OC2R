@@ -1,7 +1,7 @@
 package li.cil.oc2.client.audio;
 
 import java.time.Duration;
-import li.cil.oc2.common.util.TickUtils;
+import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;

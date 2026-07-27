@@ -7,7 +7,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.item.AbstractBlockDeviceItem;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.util.ItemStackUtils;
+import li.cil.oc2.common.util.item.ItemStackUtils;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;

@@ -1,10 +1,10 @@
 package li.cil.oc2.common.item;
 
 import java.util.List;
-import li.cil.oc2.common.block.BusCableStateProperties;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.util.LevelUtils;
-import li.cil.oc2.common.util.TooltipUtils;
+import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

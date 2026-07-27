@@ -64,7 +64,7 @@ public class CH2 extends CSISequenceHandler {
                 case 45 -> terminal.currentPrivateModeState.XTREVWRAP = true;
                 case 46 -> terminal.currentPrivateModeState.XTLOGGING = true;
                 case 47 -> {
-                    terminal.clearAlt();
+                    terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.ALT_BUFFER = true;
                     markScreenDirty();
@@ -135,7 +135,7 @@ public class CH2 extends CSISequenceHandler {
                 case 1045 -> terminal.currentPrivateModeState.EXT_REV_WRAP = true;
                 case 1046 -> terminal.currentPrivateModeState.ALLOW_ALT_BUFFER = true;
                 case 1047 -> {
-                    terminal.clearAlt();
+                    terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = true;
                     markScreenDirty();
@@ -146,7 +146,7 @@ public class CH2 extends CSISequenceHandler {
                 }
                 case 1049 -> {
                     saveCursorPosition();
-                    terminal.clearAlt();
+                    terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = true;
                     markScreenDirty();

@@ -13,7 +13,7 @@ import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.bus.device.util.ItemDeviceInfo;
-import li.cil.oc2.common.util.ItemDeviceUtils;
+import li.cil.oc2.common.util.item.ItemDeviceUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;

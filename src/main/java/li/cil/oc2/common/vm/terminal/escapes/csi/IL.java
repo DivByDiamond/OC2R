@@ -12,9 +12,9 @@ public class IL extends CSISequenceHandler {
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         int lines = Math.max(args[0], 1);
         if (useAltBuffer) {
-            terminal.shiftLines(terminal.y, terminal.scrollLast - lines, lines);
+            terminal.bufferManager.shiftLines(terminal.y, terminal.scrollLast - lines, lines);
         } else {
-            terminal.shiftLines(
+            terminal.bufferManager.shiftLines(
                     terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT,
                     Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 2,
                     lines);

@@ -9,7 +9,7 @@ import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.item.NetworkTunnelItem;
-import li.cil.oc2.common.util.TickUtils;
+import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

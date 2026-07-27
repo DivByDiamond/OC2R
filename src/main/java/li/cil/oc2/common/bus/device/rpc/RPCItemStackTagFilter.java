@@ -2,7 +2,7 @@ package li.cil.oc2.common.bus.device.rpc;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
