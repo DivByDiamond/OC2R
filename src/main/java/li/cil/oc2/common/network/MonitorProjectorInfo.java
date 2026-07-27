@@ -1,11 +1,11 @@
 package li.cil.oc2.common.network;
 
 import li.cil.oc2.common.network.message.MonitorFramebufferMessage;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -13,13 +13,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 final class MonitorProjectorInfo {
-    private static final ExecutorService ENCODER_WORKERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        thread.setName("Monitor Frame Encoder");
-        return thread;
-    });
+    private static final ExecutorService ENCODER_WORKERS =
+            Executors.newCachedThreadPool(
+                    r -> {
+                        final Thread thread = new Thread(r);
+                        thread.setDaemon(true);
+                        thread.setName("Monitor Frame Encoder");
+                        return thread;
+                    });
 
     MonitorProjectorInfo next, previous;
     private final BlockPos projectorPos;
@@ -55,7 +59,11 @@ final class MonitorProjectorInfo {
     }
 
     public void removeExpiredPlayers() {
-        players.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > MonitorLoadBalancer.CACHE_EXPIRES_AFTER);
+        players.entrySet()
+                .removeIf(
+                        entry ->
+                                System.currentTimeMillis() - entry.getValue()
+                                        > MonitorLoadBalancer.CACHE_EXPIRES_AFTER);
     }
 
     public boolean isNoLongerWatched() {
@@ -67,7 +75,10 @@ final class MonitorProjectorInfo {
             skipCount--;
             return false;
         }
-        final boolean isReady = !players.isEmpty() && nextFrameSupplier != null && (runningEncode == null || runningEncode.isDone());
+        final boolean isReady =
+                !players.isEmpty()
+                        && nextFrameSupplier != null
+                        && (runningEncode == null || runningEncode.isDone());
         if (isReady) {
             sendAsync();
             updateSkipCount();
@@ -80,18 +91,22 @@ final class MonitorProjectorInfo {
         final Supplier<ByteBuffer> frameSupplier = nextFrameSupplier;
         nextFrameSupplier = null;
         assert runningEncode == null || runningEncode.isDone();
-        runningEncode = ENCODER_WORKERS.submit(() -> {
-            final ByteBuffer frame = frameSupplier.get();
-            if (frame == null) {
-                return;
-            }
-            final int budgetCost = frame.limit() * players.size();
-            MonitorLoadBalancer.BUDGET.accumulateAndGet(budgetCost, (budget, cost) -> budget - cost);
-            final MonitorFramebufferMessage message = new MonitorFramebufferMessage(projectorPos, frame);
-            for (final ServerPlayer player : players.keySet()) {
-                Network.sendToClient(message, player);
-            }
-        });
+        runningEncode =
+                ENCODER_WORKERS.submit(
+                        () -> {
+                            final ByteBuffer frame = frameSupplier.get();
+                            if (frame == null) {
+                                return;
+                            }
+                            final int budgetCost = frame.limit() * players.size();
+                            MonitorLoadBalancer.BUDGET.accumulateAndGet(
+                                    budgetCost, (budget, cost) -> budget - cost);
+                            final MonitorFramebufferMessage message =
+                                    new MonitorFramebufferMessage(projectorPos, frame);
+                            for (final ServerPlayer player : players.keySet()) {
+                                Network.sendToClient(message, player);
+                            }
+                        });
     }
 
     private void updateSkipCount() {

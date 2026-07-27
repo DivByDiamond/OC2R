@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.managed;
 
 import li.cil.oc2.api.bus.device.vm.context.*;
@@ -17,16 +16,24 @@ public final class ManagedVMContext implements VMContext {
     private final ManagedMemoryAllocator memoryAllocator;
     private final ManagedEventBus eventBus;
 
-
-    public ManagedVMContext(final VMContext parent, final VMContextManagerCollection managers, final Supplier<OptionalLong> baseAddressSupplier) {
-        this.memoryRangeAllocator = new ManagedMemoryRangeAllocator(parent.getMemoryRangeAllocator(), managers.getMemoryRangeManager(), baseAddressSupplier);
-        this.interruptAllocator = new ManagedInterruptAllocator(parent.getInterruptAllocator(), managers.getInterruptManager());
+    public ManagedVMContext(
+            final VMContext parent,
+            final VMContextManagerCollection managers,
+            final Supplier<OptionalLong> baseAddressSupplier) {
+        this.memoryRangeAllocator =
+                new ManagedMemoryRangeAllocator(
+                        parent.getMemoryRangeAllocator(),
+                        managers.getMemoryRangeManager(),
+                        baseAddressSupplier);
+        this.interruptAllocator =
+                new ManagedInterruptAllocator(
+                        parent.getInterruptAllocator(), managers.getInterruptManager());
         this.memoryMap = new ManagedMemoryMap(parent.getMemoryMap());
-        this.interruptController = new ManagedInterruptController(parent.getInterruptController(), interruptAllocator);
+        this.interruptController =
+                new ManagedInterruptController(parent.getInterruptController(), interruptAllocator);
         this.memoryAllocator = new ManagedMemoryAllocator();
         this.eventBus = new ManagedEventBus(parent.getEventBus(), managers.getEventManager());
     }
-
 
     public void freeze() {
         memoryRangeAllocator.freeze();

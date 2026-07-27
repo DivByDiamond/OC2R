@@ -4,6 +4,7 @@ import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -11,22 +12,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 class AdjacentBlockInterfaces {
     private static final int TUNNEL_INDEX = 0;
 
-    private final NetworkInterface[] interfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT + 1];
+    private final NetworkInterface[] interfaces =
+            new NetworkInterface[Constants.BLOCK_FACE_COUNT + 1];
     private boolean haveChanged = true;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final ICapabilityInvalidationListener listener = () -> {
-        haveChanged = true;
-        return true;
-    };
+    private final ICapabilityInvalidationListener listener =
+            () -> {
+                haveChanged = true;
+                return true;
+            };
 
     private final BlockEntity blockEntity;
 
@@ -80,7 +84,13 @@ class AdjacentBlockInterfaces {
             final BlockPos neighborPos = pos.relative(side);
             final BlockEntity neighbor = LevelUtils.getBlockEntityIfChunkExists(level, neighborPos);
             if (neighbor != null) {
-                final NetworkInterface iface = level.getCapability(Capabilities.NetworkInterface.BLOCK, neighborPos, null, neighbor, side.getOpposite());
+                final NetworkInterface iface =
+                        level.getCapability(
+                                Capabilities.NetworkInterface.BLOCK,
+                                neighborPos,
+                                null,
+                                neighbor,
+                                side.getOpposite());
                 if (iface != null) {
                     interfaces[side.get3DDataValue() + 1] = iface;
                 }

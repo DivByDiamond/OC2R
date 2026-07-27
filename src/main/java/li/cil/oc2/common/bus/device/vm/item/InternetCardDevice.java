@@ -7,10 +7,12 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.inet.InternetAdapter;
 import li.cil.oc2.common.inet.InternetConnection;
 import li.cil.oc2.common.inet.InternetManagerImpl;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,21 +22,22 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-
     private InternetConnection internetConnection = null;
-
 
     public InternetCardDevice(final ItemStack identity) {
         super(identity);
     }
-
 
     private void openInternetAccess() {
         LOGGER.debug("Connect internet card");
         closeInternetAccess();
         final InternetAdapter internetAdapter = new InternetAdapterImpl(getNetworkInterface());
         InternetManagerImpl.getInstance()
-            .ifPresent(internetManager -> internetConnection = internetManager.connect(internetAdapter, internetAdapterState));
+                .ifPresent(
+                        internetManager ->
+                                internetConnection =
+                                        internetManager.connect(
+                                                internetAdapter, internetAdapterState));
     }
 
     private void closeInternetAccess() {
@@ -58,12 +61,14 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
         final CompoundTag tag = super.serializeNBT(provider);
         final InternetConnection internetConnection = this.internetConnection;
         if (internetConnection != null) {
-            internetConnection.saveAdapterState()
-                .ifPresent(adapterState -> {
-                    tag.put(Constants.INTERNET_ADAPTER_TAG_NAME, adapterState);
-                    // TODO: not sure, if this is meaningful
-                    internetAdapterState = adapterState;
-                });
+            internetConnection
+                    .saveAdapterState()
+                    .ifPresent(
+                            adapterState -> {
+                                tag.put(Constants.INTERNET_ADAPTER_TAG_NAME, adapterState);
+                                // TODO: not sure, if this is meaningful
+                                internetAdapterState = adapterState;
+                            });
         }
         return tag;
     }
@@ -86,7 +91,8 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
         super.dispose();
     }
 
-    private record InternetAdapterImpl(NetworkInterface networkInterface) implements InternetAdapter {
+    private record InternetAdapterImpl(NetworkInterface networkInterface)
+            implements InternetAdapter {
 
         @Nullable
         @Override

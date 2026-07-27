@@ -7,8 +7,7 @@ import li.cil.oc2.api.inet.provider.SessionLayerInternetProvider;
 public final class DefaultInternetProvider extends SessionLayerInternetProvider {
     public static final DefaultInternetProvider INSTANCE = new DefaultInternetProvider();
 
-    private DefaultInternetProvider() {
-    }
+    private DefaultInternetProvider() {}
 
     @Override
     protected SessionLayer provideSessionLayer(final LayerParameters layerParameters) {

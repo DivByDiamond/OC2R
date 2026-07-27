@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface InternetConnection {
     Optional<Tag> saveAdapterState();
+
     void stop();
 }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Entities;
@@ -6,6 +5,7 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -13,28 +13,27 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 public final class RobotMovementAction extends AbstractRobotAction {
     public static final double TARGET_EPSILON = 0.0001;
 
-
-    private static final float MOVEMENT_SPEED = 1f / TickUtils.toTicks(Duration.ofSeconds(1)); // blocks per tick
+    private static final float MOVEMENT_SPEED =
+            1f / TickUtils.toTicks(Duration.ofSeconds(1)); // blocks per tick
 
     private static final String DIRECTION_TAG_NAME = "direction";
     private static final String ORIGIN_TAG_NAME = "origin";
     private static final String START_TAG_NAME = "start";
     private static final String TARGET_TAG_NAME = "target";
 
-
     @Nullable private MovementDirection direction;
     @Nullable private BlockPos origin;
     @Nullable private BlockPos start;
     @Nullable private BlockPos target;
     @Nullable private Vec3 targetPos;
-
 
     public RobotMovementAction(final MovementDirection direction) {
         super(RobotActions.MOVEMENT);
@@ -45,9 +44,9 @@ public final class RobotMovementAction extends AbstractRobotAction {
         super(RobotActions.MOVEMENT, tag);
     }
 
-
     public static Vec3 getTargetPositionInBlock(final BlockPos position) {
-        return Vec3.atBottomCenterOf(position).add(0, 0.5f * (1 - Entities.ROBOT.get().getHeight()), 0);
+        return Vec3.atBottomCenterOf(position)
+                .add(0, 0.5f * (1 - Entities.ROBOT.get().getHeight()), 0);
     }
 
     public static void moveTowards(final Robot robot, final Vec3 targetPosition) {
@@ -58,7 +57,6 @@ public final class RobotMovementAction extends AbstractRobotAction {
 
         robot.move(MoverType.SELF, delta);
     }
-
 
     @Override
     public void initialize(final Robot robot) {
@@ -147,8 +145,9 @@ public final class RobotMovementAction extends AbstractRobotAction {
 
         final boolean didCollide = robot.horizontalCollision || robot.verticalCollision;
         final long gameTime = robot.level().getGameTime();
-        if (didCollide && !robot.level().isClientSide()
-            && robot.getLastPistonMovement() < gameTime - 1) {
+        if (didCollide
+                && !robot.level().isClientSide()
+                && robot.getLastPistonMovement() < gameTime - 1) {
             final BlockPos newStart = target;
             target = start;
             start = newStart;
@@ -159,8 +158,10 @@ public final class RobotMovementAction extends AbstractRobotAction {
 
     private void validateTarget(final Robot robot) {
         final BlockPos currentPosition = robot.blockPosition();
-        if (start == null || Objects.equals(currentPosition, start) ||
-            target == null || Objects.equals(currentPosition, target)) {
+        if (start == null
+                || Objects.equals(currentPosition, start)
+                || target == null
+                || Objects.equals(currentPosition, target)) {
             return;
         }
 

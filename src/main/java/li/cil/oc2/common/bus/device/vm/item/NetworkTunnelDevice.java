@@ -1,14 +1,15 @@
-
 package li.cil.oc2.common.bus.device.vm.item;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.item.NetworkTunnelItem;
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -23,13 +24,12 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         super(identity);
     }
 
-
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
         final VMDeviceLoadResult result = super.mount(context);
         if (result.wasSuccessful()) {
-            NetworkTunnelItem.getTunnelId(identity).ifPresent(id ->
-                TunnelManager.registerEndpoint(id, getNetworkInterface()));
+            NetworkTunnelItem.getTunnelId(identity)
+                    .ifPresent(id -> TunnelManager.registerEndpoint(id, getNetworkInterface()));
         }
         return result;
     }
@@ -40,17 +40,17 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         TunnelManager.unregisterEndpoint(getNetworkInterface());
     }
 
-
     @EventBusSubscriber(modid = API.MOD_ID)
     private static final class TunnelManager {
-        private static final int BYTES_PER_TICK = 32 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1)); // bytes / sec -> bytes / tick
+        private static final int BYTES_PER_TICK =
+                32 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1)); // bytes / sec -> bytes / tick
         private static final int MIN_ETHERNET_FRAME_SIZE = 42;
 
         private static final BiMap<UUID, Set<NetworkInterface>> TUNNELS = HashBiMap.create();
 
-        public static void registerEndpoint(final UUID id, final NetworkInterface networkInterface) {
-            TUNNELS.computeIfAbsent(id, unused -> new HashSet<>())
-                .add(networkInterface);
+        public static void registerEndpoint(
+                final UUID id, final NetworkInterface networkInterface) {
+            TUNNELS.computeIfAbsent(id, unused -> new HashSet<>()).add(networkInterface);
         }
 
         public static void unregisterEndpoint(final NetworkInterface networkInterface) {
@@ -86,7 +86,11 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
                 int byteBudget = BYTES_PER_TICK;
                 byte[] frame;
                 while ((frame = source.readEthernetFrame()) != null && byteBudget > 0) {
-                    byteBudget -= Math.max(frame.length, MIN_ETHERNET_FRAME_SIZE); // Avoid bogus packets messing with us.
+                    byteBudget -=
+                            Math.max(
+                                    frame.length,
+                                    MIN_ETHERNET_FRAME_SIZE); // Avoid bogus packets messing with
+                                                              // us.
                     for (final NetworkInterface destination : tunnel) {
                         if (destination != source) {
                             destination.writeEthernetFrame(source, frame, 1);

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.serialization.ceres;
 
 import li.cil.ceres.api.DeserializationVisitor;
@@ -11,7 +10,9 @@ import javax.annotation.Nullable;
 
 public final class MemoryRangeSerializer implements Serializer<MemoryRange> {
     @Override
-    public void serialize(final SerializationVisitor visitor, final Class<MemoryRange> type, final Object value) throws SerializationException {
+    public void serialize(
+            final SerializationVisitor visitor, final Class<MemoryRange> type, final Object value)
+            throws SerializationException {
         final MemoryRange range = (MemoryRange) value;
         visitor.putLong("start", range.start);
         visitor.putLong("end", range.end);
@@ -19,7 +20,11 @@ public final class MemoryRangeSerializer implements Serializer<MemoryRange> {
 
     @Nullable
     @Override
-    public MemoryRange deserialize(final DeserializationVisitor visitor, final Class<MemoryRange> type, @Nullable final Object value) throws SerializationException {
+    public MemoryRange deserialize(
+            final DeserializationVisitor visitor,
+            final Class<MemoryRange> type,
+            @Nullable final Object value)
+            throws SerializationException {
         if (!visitor.exists("start") || !visitor.exists("end")) {
             return (MemoryRange) value;
         }

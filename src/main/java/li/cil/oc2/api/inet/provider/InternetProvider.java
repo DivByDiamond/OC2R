@@ -4,22 +4,22 @@ import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 
 /**
- * Internet access provider for oc2:internet-card item.
- * At initialization phase one implementation of this interface will be loaded via {@link java.util.ServiceLoader}.
- * If no implementation is found, then the default one will be used instead.
- * <p>
- * It is recommended to not implement this interface directly.
- * There are several abstract classes for several levels of TCP/IP stack:
+ * Internet access provider for oc2:internet-card item. At initialization phase one implementation
+ * of this interface will be loaded via {@link java.util.ServiceLoader}. If no implementation is
+ * found, then the default one will be used instead.
+ *
+ * <p>It is recommended to not implement this interface directly. There are several abstract classes
+ * for several levels of TCP/IP stack:
  *
  * <ul>
- *     <li>{@link LinkLocalLayerInternetProvider}</li>
- *     <li>{@link NetworkLayerInternetProvider}</li>
- *     <li>{@link TransportLayerInternetProvider}</li>
- *     <li>{@link SessionLayerInternetProvider}</li>
+ *   <li>{@link LinkLocalLayerInternetProvider}
+ *   <li>{@link NetworkLayerInternetProvider}
+ *   <li>{@link TransportLayerInternetProvider}
+ *   <li>{@link SessionLayerInternetProvider}
  * </ul>
- * <p>
- * Each of these classes implements {@link InternetProvider} and
- * asks you to provide an implementation of corresponding TCP/IP layer.
+ *
+ * <p>Each of these classes implements {@link InternetProvider} and asks you to provide an
+ * implementation of corresponding TCP/IP layer.
  *
  * @see LinkLocalLayerInternetProvider
  * @see NetworkLayerInternetProvider
@@ -29,8 +29,8 @@ import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 public interface InternetProvider {
 
     /**
-     * This method should provide an implementation of {@link LinkLocalLayer} interface.
-     * It will be called once for each loaded internet card.
+     * This method should provide an implementation of {@link LinkLocalLayer} interface. It will be
+     * called once for each loaded internet card.
      *
      * @return an implementation of {@link LinkLocalLayer} interface
      */

@@ -1,10 +1,12 @@
 package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.platform.NativeImage;
+
 import li.cil.oc2.common.blockentity.monitor.FrameConsumer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
+
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -29,7 +31,9 @@ record RenderInfo(DynamicTexture texture) implements FrameConsumer {
         final byte[] v = picture.getPlaneData(2);
 
         int lumaIndex = 0, chromaIndex = 0;
-        for (int halfRow = 0; halfRow < MonitorDevice.HEIGHT / 2; halfRow++, lumaIndex += MonitorDevice.WIDTH * 2) {
+        for (int halfRow = 0;
+                halfRow < MonitorDevice.HEIGHT / 2;
+                halfRow++, lumaIndex += MonitorDevice.WIDTH * 2) {
             final int row = halfRow * 2;
             for (int halfCol = 0; halfCol < MonitorDevice.WIDTH / 2; halfCol++, chromaIndex++) {
                 final int col = halfCol * 2;
@@ -46,7 +50,13 @@ record RenderInfo(DynamicTexture texture) implements FrameConsumer {
         texture.upload();
     }
 
-    private static void setFromYUV420(final NativeImage image, final int col, final int row, final byte y, final byte cb, final byte cr) {
+    private static void setFromYUV420(
+            final NativeImage image,
+            final int col,
+            final int row,
+            final byte y,
+            final byte cb,
+            final byte cr) {
         final byte[] bytes = RGB.get();
         Yuv420jToRgb.YUVJtoRGB(y, cb, cr, bytes, 0);
         final int r = bytes[0] + 128;

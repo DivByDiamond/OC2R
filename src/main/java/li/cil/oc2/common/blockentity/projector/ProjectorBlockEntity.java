@@ -15,8 +15,8 @@ import li.cil.oc2.common.network.ProjectorLoadBalancer;
 import li.cil.oc2.common.network.message.ProjectorRequestFramebufferMessage;
 import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,23 +24,28 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import javax.annotation.Nullable;
+
 import java.nio.ByteBuffer;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     public static final int MAX_RENDER_DISTANCE = 16;
     public static final int MAX_GOOD_RENDER_DISTANCE = 12;
     public static final int MAX_WIDTH = MAX_GOOD_RENDER_DISTANCE + 1;
-    public static final int MAX_HEIGHT = (MAX_GOOD_RENDER_DISTANCE * ProjectorDevice.HEIGHT / ProjectorDevice.WIDTH) + 1;
+    public static final int MAX_HEIGHT =
+            (MAX_GOOD_RENDER_DISTANCE * ProjectorDevice.HEIGHT / ProjectorDevice.WIDTH) + 1;
 
     private static final String ENERGY_TAG_NAME = "energy";
     private static final String DEVICE_ID_TAG_NAME = "device_id";
 
-    private final ProjectorDevice projectorDevice = new ProjectorDevice(this, this::handleMountedChanged);
+    private final ProjectorDevice projectorDevice =
+            new ProjectorDevice(this, this::handleMountedChanged);
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.projectorEnergyStorage);
-    private final Picture picture = Picture.create(ProjectorDevice.WIDTH, ProjectorDevice.HEIGHT, ColorSpace.YUV420J);
+    private final Picture picture =
+            Picture.create(ProjectorDevice.WIDTH, ProjectorDevice.HEIGHT, ColorSpace.YUV420J);
     private final ProjectorVideoEncoder videoEncoder = new ProjectorVideoEncoder();
     private final ProjectorVideoDecoder videoDecoder = new ProjectorVideoDecoder();
     private final ProjectorState projectorState = new ProjectorState();
@@ -54,12 +59,29 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         renderBounds.update(state, pos);
     }
 
-    public boolean isProjecting() { return projectorState.isProjecting(level, getBlockPos(), getBlockState()); }
-    public boolean hasEnergy() { return projectorState.hasEnergy; }
-    public UUID getDeviceId() { return deviceId; }
-    public ProjectorBlockEntity getPrimaryForContraptionRendering() { return ProjectorContraptionHelper.getPrimaryForContraptionRendering(this); }
-    public void setRequiresKeyframe() { videoEncoder.setRequiresKeyframe(); }
-    public void setFrameConsumer(@Nullable final FrameConsumer consumer) { videoDecoder.setFrameConsumer(picture, consumer); }
+    public boolean isProjecting() {
+        return projectorState.isProjecting(level, getBlockPos(), getBlockState());
+    }
+
+    public boolean hasEnergy() {
+        return projectorState.hasEnergy;
+    }
+
+    public UUID getDeviceId() {
+        return deviceId;
+    }
+
+    public ProjectorBlockEntity getPrimaryForContraptionRendering() {
+        return ProjectorContraptionHelper.getPrimaryForContraptionRendering(this);
+    }
+
+    public void setRequiresKeyframe() {
+        videoEncoder.setRequiresKeyframe();
+    }
+
+    public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
+        videoDecoder.setFrameConsumer(picture, consumer);
+    }
 
     public void onRendering() {
         final long now = System.currentTimeMillis();
@@ -70,24 +92,40 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     }
 
     @Override
-    public void clientTick() { ProjectorContraptionHelper.registerInClientRegistry(this); }
+    public void clientTick() {
+        ProjectorContraptionHelper.registerInClientRegistry(this);
+    }
 
     @Override
-    protected void loadClient() { ProjectorContraptionHelper.registerInClientRegistry(this); }
+    protected void loadClient() {
+        ProjectorContraptionHelper.registerInClientRegistry(this);
+    }
 
     @Override
     public void serverTick() {
         if (!projectorState.isMounted) return;
         final boolean isPowered;
         if (Config.projectorsUseEnergy()) {
-            isPowered = energy.extractEnergy(Config.projectorEnergyPerTick, true) >= Config.projectorEnergyPerTick;
+            isPowered =
+                    energy.extractEnergy(Config.projectorEnergyPerTick, true)
+                            >= Config.projectorEnergyPerTick;
             if (isPowered) energy.extractEnergy(Config.projectorEnergyPerTick, false);
         } else {
             isPowered = true;
         }
-        projectorState.update(level, getBlockPos(), getBlockState(), picture, projectorState.isMounted, isPowered, isValid(), this);
-        if (!projectorState.hasEnergy || !videoEncoder.hasChangesOrNeedsIDR(projectorDevice)) return;
-        ProjectorLoadBalancer.offerFrame(this, () -> videoEncoder.encodeFrame(projectorDevice, picture));
+        projectorState.update(
+                level,
+                getBlockPos(),
+                getBlockState(),
+                picture,
+                projectorState.isMounted,
+                isPowered,
+                isValid(),
+                this);
+        if (!projectorState.hasEnergy || !videoEncoder.hasChangesOrNeedsIDR(projectorDevice))
+            return;
+        ProjectorLoadBalancer.offerFrame(
+                this, () -> videoEncoder.encodeFrame(projectorDevice, picture));
     }
 
     @Override
@@ -108,10 +146,16 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     }
 
     @Override
-    public void onChunkUnloaded() { super.onChunkUnloaded(); ProjectorContraptionHelper.unregisterFromClientRegistry(this); }
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        ProjectorContraptionHelper.unregisterFromClientRegistry(this);
+    }
 
     @Override
-    public void setRemoved() { super.setRemoved(); ProjectorContraptionHelper.unregisterFromClientRegistry(this); }
+    public void setRemoved() {
+        super.setRemoved();
+        ProjectorContraptionHelper.unregisterFromClientRegistry(this);
+    }
 
     @Override
     protected void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
@@ -127,7 +171,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
     }
 
-    public AABB getRenderBoundingBox() { return renderBounds.get(); }
+    public AABB getRenderBoundingBox() {
+        return renderBounds.get();
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -149,20 +195,32 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         if (Config.projectorsUseEnergy()) {
-            event.registerBlock(Capabilities.EnergyStorage.BLOCK,
-                (level, pos, state, be, side) -> be instanceof ProjectorBlockEntity self ? self.energy : null,
-                Blocks.PROJECTOR.get());
+            event.registerBlock(
+                    Capabilities.EnergyStorage.BLOCK,
+                    (level, pos, state, be, side) ->
+                            be instanceof ProjectorBlockEntity self ? self.energy : null,
+                    Blocks.PROJECTOR.get());
         }
-        event.registerBlock(Capabilities.Device.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (!(be instanceof ProjectorBlockEntity self)) return null;
-                if (side != self.getBlockState().getValue(ProjectorBlock.FACING).getOpposite()) return null;
-                return self.projectorDevice;
-            },
-            Blocks.PROJECTOR.get());
+        event.registerBlock(
+                Capabilities.Device.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (!(be instanceof ProjectorBlockEntity self)) return null;
+                    if (side != self.getBlockState().getValue(ProjectorBlock.FACING).getOpposite())
+                        return null;
+                    return self.projectorDevice;
+                },
+                Blocks.PROJECTOR.get());
     }
 
     private void handleMountedChanged(final boolean value) {
-        projectorState.update(level, getBlockPos(), getBlockState(), picture, value, projectorState.hasEnergy, isValid(), this);
+        projectorState.update(
+                level,
+                getBlockPos(),
+                getBlockState(),
+                picture,
+                value,
+                projectorState.hasEnergy,
+                isValid(),
+                this);
     }
 }

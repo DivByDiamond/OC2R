@@ -1,6 +1,7 @@
 package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.session.Session;
+
 import java.nio.ByteBuffer;
 
 final class FinishState extends TcpState {

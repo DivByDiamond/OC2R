@@ -1,9 +1,11 @@
-
 package li.cil.oc2.common.item;
+
+import static li.cil.oc2.common.util.TranslationUtils.key;
 
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.TextFormatUtils;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -18,23 +20,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static li.cil.oc2.common.util.TranslationUtils.key;
-
 public final class NetworkTunnelItem extends ModItem {
     private static final String TUNNEL_ID_TAG_NAME = "tunnel";
     private static final String TUNNEL_ID_TEXT = key("tooltip.{mod}.network_tunnel_id");
 
-
     public NetworkTunnelItem() {
         super(createProperties().stacksTo(1));
     }
-
 
     public static Optional<UUID> getTunnelId(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
@@ -46,31 +43,45 @@ public final class NetworkTunnelItem extends ModItem {
     }
 
     public static void setTunnelId(final ItemStack stack, final UUID value) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).putUUID(TUNNEL_ID_TAG_NAME, value);
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt).putUUID(TUNNEL_ID_TAG_NAME, value);
+                });
     }
 
-
     @Override
-    public void appendHoverText(final ItemStack stack, final TooltipContext context, final List<Component> components, final TooltipFlag flag) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final TooltipContext context,
+            final List<Component> components,
+            final TooltipFlag flag) {
         super.appendHoverText(stack, context, components, flag);
-        getTunnelId(stack).ifPresent(id -> {
-            final String idString = StringUtil.truncateStringIfNecessary(id.toString(), 8 + 3, true);
-            final MutableComponent idComponent = TextFormatUtils.withFormat(idString, ChatFormatting.GREEN);
-            components.add(Component.translatable(TUNNEL_ID_TEXT, idComponent).withStyle(ChatFormatting.GRAY));
-        });
+        getTunnelId(stack)
+                .ifPresent(
+                        id -> {
+                            final String idString =
+                                    StringUtil.truncateStringIfNecessary(
+                                            id.toString(), 8 + 3, true);
+                            final MutableComponent idComponent =
+                                    TextFormatUtils.withFormat(idString, ChatFormatting.GREEN);
+                            components.add(
+                                    Component.translatable(TUNNEL_ID_TEXT, idComponent)
+                                            .withStyle(ChatFormatting.GRAY));
+                        });
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(final Level level, final Player player, final InteractionHand hand) {
+    public InteractionResultHolder<ItemStack> use(
+            final Level level, final Player player, final InteractionHand hand) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             openContainerScreen(serverPlayer, hand);
         }
 
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        return InteractionResultHolder.sidedSuccess(
+                player.getItemInHand(hand), level.isClientSide());
     }
-
 
     private void openContainerScreen(final ServerPlayer player, final InteractionHand hand) {
         NetworkTunnelContainer.createServer(player, hand);

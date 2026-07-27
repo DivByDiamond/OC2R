@@ -1,8 +1,8 @@
 package li.cil.oc2.client.renderer.color;
 
-import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
@@ -12,13 +12,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import javax.annotation.Nullable;
+
 @OnlyIn(Dist.CLIENT)
 public final class BusCableBlockColor implements BlockColor {
     @Override
-    public int getColor(final BlockState state,
-                        @Nullable final BlockAndTintGetter level,
-                        @Nullable final BlockPos pos,
-                        final int tintIndex) {
+    public int getColor(
+            final BlockState state,
+            @Nullable final BlockAndTintGetter level,
+            @Nullable final BlockPos pos,
+            final int tintIndex) {
         if (level == null || pos == null) {
             return 0;
         }
@@ -27,7 +30,9 @@ public final class BusCableBlockColor implements BlockColor {
         if (blockEntity instanceof final BusCableBlockEntity busCable) {
             final BlockState facade = ItemStackUtils.getBlockState(busCable.getFacade());
             if (facade != null) {
-                return Minecraft.getInstance().getBlockColors().getColor(facade, level, pos, tintIndex);
+                return Minecraft.getInstance()
+                        .getBlockColors()
+                        .getColor(facade, level, pos, tintIndex);
             }
         }
 

@@ -11,22 +11,29 @@ import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.Terminal;
+
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
+
+import javax.annotation.Nullable;
 
 public final class RobotVirtualMachine extends AbstractVirtualMachine {
     private final Robot robot;
     private final Terminal terminal;
     private final RobotMovementController movementController;
 
-    public RobotVirtualMachine(final Robot robot, final CommonDeviceBusController busController, final Terminal terminal, final RobotMovementController movementController) {
+    public RobotVirtualMachine(
+            final Robot robot,
+            final CommonDeviceBusController busController,
+            final Terminal terminal,
+            final RobotMovementController movementController) {
         super(busController);
         this.robot = robot;
         this.terminal = terminal;
         this.movementController = movementController;
-        state.vmAdapter.setBaseAddressProvider(robot.getRobotInventory().getDeviceItems()::getDeviceAddressBase);
+        state.vmAdapter.setBaseAddressProvider(
+                robot.getRobotInventory().getDeviceItems()::getDeviceAddressBase);
     }
 
     @Override
@@ -47,8 +54,11 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
     protected void stopRunnerAndReset() {
         super.stopRunnerAndReset();
 
-        TerminalUtils.resetTerminal(terminal, output -> Network.sendToClientsTrackingEntity(
-            new RobotTerminalOutputMessage(robot, output), robot));
+        TerminalUtils.resetTerminal(
+                terminal,
+                output ->
+                        Network.sendToClientsTrackingEntity(
+                                new RobotTerminalOutputMessage(robot, output), robot));
 
         movementController.clear();
     }
@@ -83,7 +93,9 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
 
         @Override
         protected void sendTerminalUpdateToClient(final ByteBuffer output) {
-            Network.sendToClientsTrackingEntity(new RobotTerminalOutputMessage(RobotVirtualMachine.this.robot, output), RobotVirtualMachine.this.robot);
+            Network.sendToClientsTrackingEntity(
+                    new RobotTerminalOutputMessage(RobotVirtualMachine.this.robot, output),
+                    RobotVirtualMachine.this.robot);
         }
     }
 }

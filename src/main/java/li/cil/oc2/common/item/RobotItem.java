@@ -1,5 +1,6 @@
-
 package li.cil.oc2.common.item;
+
+import static li.cil.oc2.common.Constants.*;
 
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.capabilities.Capabilities;
@@ -12,6 +13,7 @@ import li.cil.oc2.common.entity.robot.RobotActions;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -32,17 +34,16 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static li.cil.oc2.common.Constants.*;
-import static li.cil.oc2.common.util.NBTUtils.makeInventoryTag;
-import static li.cil.oc2.common.util.RegistryUtils.key;
-
 public final class RobotItem extends ModItem {
     @Override
-    public void appendHoverText(final ItemStack stack, final TooltipContext context, final List<Component> components, final TooltipFlag flag) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final TooltipContext context,
+            final List<Component> components,
+            final TooltipFlag flag) {
         super.appendHoverText(stack, context, components, flag);
         TooltipUtils.addEnergyConsumption(Config.robotEnergyPerTick, components);
         TooltipUtils.addEntityEnergyInformation(stack, components);
@@ -53,12 +54,12 @@ public final class RobotItem extends ModItem {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         if (Config.robotsUseEnergy()) {
             event.registerItem(
-                Capabilities.EnergyStorage.ITEM,
-                (stack, ctx) -> {
-                    return new EnergyStorageItemStack(stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME);
-                },
-                Items.ROBOT.get()
-            );
+                    Capabilities.EnergyStorage.ITEM,
+                    (stack, ctx) -> {
+                        return new EnergyStorageItemStack(
+                                stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME);
+                    },
+                    Items.ROBOT.get());
         }
     }
 
@@ -79,8 +80,12 @@ public final class RobotItem extends ModItem {
             return InteractionResult.FAIL;
         }
 
-        robot.moveTo(position.x, position.y - robot.getBbHeight() * 0.5f, position.z,
-            Direction.fromYRot(context.getRotation()).getOpposite().toYRot(), 0);
+        robot.moveTo(
+                position.x,
+                position.y - robot.getBbHeight() * 0.5f,
+                position.z,
+                Direction.fromYRot(context.getRotation()).getOpposite().toYRot(),
+                0);
         if (!level.noCollision(robot)) {
             return super.useOn(context);
         }
@@ -91,7 +96,8 @@ public final class RobotItem extends ModItem {
 
             level.addFreshEntity(robot);
             Vec3i posi = new Vec3i((int) position.x, (int) position.y, (int) position.z);
-            LevelUtils.playSound(level, new BlockPos(posi), SoundType.METAL, SoundType::getPlaceSound);
+            LevelUtils.playSound(
+                    level, new BlockPos(posi), SoundType.METAL, SoundType::getPlaceSound);
 
             if (context.getPlayer() == null || !context.getPlayer().isCreative()) {
                 context.getItemInHand().shrink(1);
@@ -110,26 +116,36 @@ public final class RobotItem extends ModItem {
         return false;
     }
 
-
     @Override
     public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return new RobotWithoutLevelRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
-            }
-        });
+        consumer.accept(
+                new IClientItemExtensions() {
+                    @Override
+                    public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                        return new RobotWithoutLevelRenderer(
+                                Minecraft.getInstance().getBlockEntityRenderDispatcher(),
+                                Minecraft.getInstance().getEntityModels());
+                    }
+                });
     }
 
     public static ItemStack getRobotWithFlash() {
         final ItemStack robot = new ItemStack(Items.ROBOT.get());
         var container = new RestrictedContainer();
 
-        container.items().put(ItemTags.DEVICES_FLASH_MEMORY, NonNullList.withSize(1, new ItemStack(Items.FLASH_MEMORY_CUSTOM.get())));
+        container
+                .items()
+                .put(
+                        ItemTags.DEVICES_FLASH_MEMORY,
+                        NonNullList.withSize(1, new ItemStack(Items.FLASH_MEMORY_CUSTOM.get())));
         container.items().put(ItemTags.DEVICES_CPU, NonNullList.withSize(1, ItemStack.EMPTY));
         container.items().put(ItemTags.DEVICES_MEMORY, NonNullList.withSize(4, ItemStack.EMPTY));
-        container.items().put(ItemTags.DEVICES_ROBOT_MODULE, NonNullList.withSize(4, ItemStack.EMPTY));
-        container.items().put(ItemTags.DEVICES_HARD_DRIVE, NonNullList.withSize(2, ItemStack.EMPTY));
+        container
+                .items()
+                .put(ItemTags.DEVICES_ROBOT_MODULE, NonNullList.withSize(4, ItemStack.EMPTY));
+        container
+                .items()
+                .put(ItemTags.DEVICES_HARD_DRIVE, NonNullList.withSize(2, ItemStack.EMPTY));
 
         robot.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
 

@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
+
 import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 import li.cil.oc2.api.bus.device.rpc.RPCParameter;
 
@@ -9,13 +9,17 @@ import java.lang.reflect.Type;
 
 public final class RPCMethodJsonSerializer implements JsonSerializer<RPCMethod> {
     @Override
-    public JsonElement serialize(final RPCMethod method, final Type typeOfMethod, final JsonSerializationContext context) {
+    public JsonElement serialize(
+            final RPCMethod method,
+            final Type typeOfMethod,
+            final JsonSerializationContext context) {
         final JsonObject methodJson = new JsonObject();
         methodJson.addProperty("name", method.getName());
         methodJson.addProperty("returnType", method.getReturnType().getSimpleName());
 
         method.getDescription().ifPresent(s -> methodJson.addProperty("description", s));
-        method.getReturnValueDescription().ifPresent(s -> methodJson.addProperty("returnValueDescription", s));
+        method.getReturnValueDescription()
+                .ifPresent(s -> methodJson.addProperty("returnValueDescription", s));
 
         final JsonArray parametersJson = new JsonArray();
         methodJson.add("parameters", parametersJson);

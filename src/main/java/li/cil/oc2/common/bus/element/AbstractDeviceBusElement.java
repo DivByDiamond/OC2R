@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.bus.element;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractDeviceBusElement implements DeviceBusElement {
     protected final Object2IntArrayMap<Device> devices = new Object2IntArrayMap<>();
     protected final HashSet<DeviceBusController> controllers = new HashSet<>();
-
 
     public void addDevice(final Device device) {
         devices.put(device, 0);
@@ -63,8 +62,8 @@ public abstract class AbstractDeviceBusElement implements DeviceBusElement {
     public Collection<Device> getDevices() {
         if (!controllers.isEmpty()) {
             return controllers.stream()
-                .flatMap(controller -> controller.getDevices().stream())
-                .collect(Collectors.toUnmodifiableSet());
+                    .flatMap(controller -> controller.getDevices().stream())
+                    .collect(Collectors.toUnmodifiableSet());
         } else {
             return getLocalDevices();
         }
@@ -76,7 +75,6 @@ public abstract class AbstractDeviceBusElement implements DeviceBusElement {
             controller.scheduleBusScan();
         }
     }
-
 
     protected void scanDevices() {
         for (final DeviceBusController controller : controllers) {

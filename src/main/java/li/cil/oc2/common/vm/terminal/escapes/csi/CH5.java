@@ -1,9 +1,10 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 
-public class CH5 extends CSISequenceHandler { // Combined Handler 5 (XTSMPOINTER, DECSTR, DECSCL, and DECRARA)
+public class CH5
+        extends CSISequenceHandler { // Combined Handler 5 (XTSMPOINTER, DECSTR, DECSCL, and
+                                     // DECRARA)
     public CH5(final Terminal terminal) {
         super(terminal);
     }
@@ -19,12 +20,21 @@ public class CH5 extends CSISequenceHandler { // Combined Handler 5 (XTSMPOINTER
         } else if (state.dollarSign) { // DECRQM
             int mode = args[0];
             if (state.questionMark) { // DECSET/DECRST
-                terminal.putResponse("\033[?" + mode + ";" + terminal.currentPrivateModeState.getModeForRequest(mode) + "$y");
+                terminal.putResponse(
+                        "\033[?"
+                                + mode
+                                + ";"
+                                + terminal.currentPrivateModeState.getModeForRequest(mode)
+                                + "$y");
+            } else { // SM/RM
+                terminal.putResponse(
+                        "\033["
+                                + mode
+                                + ";"
+                                + terminal.currentModeState.getModeForRequest(mode)
+                                + "$y");
             }
-            else { // SM/RM
-                terminal.putResponse("\033[" + mode + ";" + terminal.currentModeState.getModeForRequest(mode) + "$y");
-            }
-        } else  { // XTPUSHSGR
+        } else { // XTPUSHSGR
             System.out.println("XTPUSHSGR not implemented");
         }
     }

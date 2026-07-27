@@ -1,22 +1,24 @@
-
 package li.cil.oc2.common.blockentity.monitor;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 public final class MonitorContraptionHelper {
-    static final ConcurrentHashMap<UUID, MonitorBlockEntity> PRIMARY_BY_DEVICE_ID = new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<UUID, MonitorBlockEntity> PRIMARY_BY_DEVICE_ID =
+            new ConcurrentHashMap<>();
     static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 
     public static boolean isContraptionVirtualClone(final MonitorBlockEntity monitor) {
         final var pos = monitor.getBlockPos();
         return Math.abs(pos.getX()) > VIRTUAL_POSITION_THRESHOLD
-            || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
+                || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
     }
 
     @Nullable
-    public static MonitorBlockEntity getPrimaryForContraptionRendering(final MonitorBlockEntity monitor) {
+    public static MonitorBlockEntity getPrimaryForContraptionRendering(
+            final MonitorBlockEntity monitor) {
         if (!isContraptionVirtualClone(monitor)) {
             return monitor;
         }

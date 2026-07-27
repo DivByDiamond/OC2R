@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -20,7 +20,10 @@ public final class LocationSupplierUtils {
     }
 
     public static Supplier<Optional<BlockLocation>> of(final BlockDeviceQuery query) {
-        final Optional<BlockLocation> location = Optional.of(new BlockLocation(new WeakReference<>(query.getLevel()), query.getQueryPosition()));
+        final Optional<BlockLocation> location =
+                Optional.of(
+                        new BlockLocation(
+                                new WeakReference<>(query.getLevel()), query.getQueryPosition()));
         return () -> location;
     }
 

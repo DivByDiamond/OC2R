@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 record ScheduledRunnable(int tick, Runnable runnable) implements Comparable<ScheduledRunnable> {

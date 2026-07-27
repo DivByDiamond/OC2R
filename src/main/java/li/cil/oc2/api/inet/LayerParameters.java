@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface LayerParameters {
     Optional<Tag> getSavedState();
+
     InternetManager getInternetManager();
 }

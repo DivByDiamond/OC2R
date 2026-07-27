@@ -4,6 +4,7 @@ import li.cil.oc2.common.block.ProjectorBlock;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ProjectorStateMessage;
 import li.cil.oc2.jcodec.common.model.Picture;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -34,9 +35,15 @@ final class ProjectorState {
         hasEnergy = energy;
     }
 
-    void update(final Level level, final BlockPos pos, final BlockState state,
-                final Picture picture, final boolean newIsMounted, final boolean newHasEnergy,
-                final boolean isValid, final ProjectorBlockEntity be) {
+    void update(
+            final Level level,
+            final BlockPos pos,
+            final BlockState state,
+            final Picture picture,
+            final boolean newIsMounted,
+            final boolean newHasEnergy,
+            final boolean isValid,
+            final ProjectorBlockEntity be) {
         if ((newIsMounted == isMounted && newHasEnergy == hasEnergy) || !isValid) {
             return;
         }
@@ -51,9 +58,11 @@ final class ProjectorState {
             isMounted = newIsMounted;
             hasEnergy = newHasEnergy;
 
-            level.setBlock(pos, state.setValue(ProjectorBlock.LIT, newIsMounted), Block.UPDATE_CLIENTS);
+            level.setBlock(
+                    pos, state.setValue(ProjectorBlock.LIT, newIsMounted), Block.UPDATE_CLIENTS);
 
-            Network.sendToClientsTrackingBlockEntity(new ProjectorStateMessage(be, newIsMounted, newHasEnergy), be);
+            Network.sendToClientsTrackingBlockEntity(
+                    new ProjectorStateMessage(be, newIsMounted, newHasEnergy), be);
         }
     }
 }

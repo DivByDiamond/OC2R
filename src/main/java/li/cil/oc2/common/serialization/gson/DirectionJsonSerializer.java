@@ -1,16 +1,20 @@
-
 package li.cil.oc2.common.serialization.gson;
 
 import com.google.gson.*;
+
 import net.minecraft.core.Direction;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 
-public final class DirectionJsonSerializer implements JsonDeserializer<Direction>, JsonSerializer<Direction> {
+import javax.annotation.Nullable;
+
+public final class DirectionJsonSerializer
+        implements JsonDeserializer<Direction>, JsonSerializer<Direction> {
     @Nullable
     @Override
-    public Direction deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+    public Direction deserialize(
+            final JsonElement json, final Type typeOfT, final JsonDeserializationContext context)
+            throws JsonParseException {
         if (!json.isJsonPrimitive()) {
             return null;
         }
@@ -32,7 +36,8 @@ public final class DirectionJsonSerializer implements JsonDeserializer<Direction
     }
 
     @Override
-    public JsonElement serialize(final Direction src, final Type typeOfSrc, final JsonSerializationContext context) {
+    public JsonElement serialize(
+            final Direction src, final Type typeOfSrc, final JsonSerializationContext context) {
         return new JsonPrimitive(src.toString());
     }
 }

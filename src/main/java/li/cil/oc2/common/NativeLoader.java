@@ -1,8 +1,10 @@
 package li.cil.oc2.common;
 
 import joptsimple.util.InetAddressConverter;
+
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.DefaultSessionLayer;
+
 import org.apache.logging.log4j.LogManager;
 
 import java.io.FileNotFoundException;
@@ -29,13 +31,14 @@ final class NativeLoader {
     public static void loadLibrary() {
         Platform platform = getPlatformName();
         String arch = getArchString();
-        String libName = switch (platform) {
-            case MACOS -> "liboc2rnet-" + arch + ".dylib";
-            case WINDOWS -> "oc2rnet-" + arch + ".dll";
-            case LINUX -> "liboc2rnet-linux-" + arch + ".so";
-            case ANDROID -> "liboc2rnet-android-" + arch + ".so";
-            case UNSUPPORTED -> "NONE";
-        };
+        String libName =
+                switch (platform) {
+                    case MACOS -> "liboc2rnet-" + arch + ".dylib";
+                    case WINDOWS -> "oc2rnet-" + arch + ".dll";
+                    case LINUX -> "liboc2rnet-linux-" + arch + ".so";
+                    case ANDROID -> "liboc2rnet-android-" + arch + ".so";
+                    case UNSUPPORTED -> "NONE";
+                };
 
         String resourcePath = "/natives/" + platform + "/" + libName;
         try {
@@ -45,27 +48,40 @@ final class NativeLoader {
             InetAddress address = new InetAddressConverter().convert("127.0.0.1");
             Random garbageGenerator = new Random();
             byte[] dataToSend = new byte[64];
-            for (int i = 0; i < 64; i++)
-            {
+            for (int i = 0; i < 64; i++) {
                 dataToSend[i] = (byte) garbageGenerator.nextInt(0, 255);
             }
-            byte[] data = DefaultSessionLayer.sendICMP(address.getAddress(), dataToSend, 64, Config.defaultEchoRequestTimeoutMs);
+            byte[] data =
+                    DefaultSessionLayer.sendICMP(
+                            address.getAddress(),
+                            dataToSend,
+                            64,
+                            Config.defaultEchoRequestTimeoutMs);
             if (data != null) {
                 for (int i = 0; i < 64; i++) {
                     if (data[i] != dataToSend[i]) {
-                        LogManager.getLogger().error("ICMP data does not match, falling back to JVM UDP implementation");
+                        LogManager.getLogger()
+                                .error(
+                                        "ICMP data does not match, falling back to JVM UDP"
+                                            + " implementation");
                         Main.LoadedLibrary = false;
                     }
                 }
-            }
-            else {
+            } else {
                 Main.LoadedLibrary = false;
-                LogManager.getLogger().error("Loaded native library successfully but ICMP still failed, falling back to JVM UDP implementation");
+                LogManager.getLogger()
+                        .error(
+                                "Loaded native library successfully but ICMP still failed, falling"
+                                    + " back to JVM UDP implementation");
             }
-        } catch(FileNotFoundException fileNotFoundException) {
+        } catch (FileNotFoundException fileNotFoundException) {
             if (officiallySupported) {
                 Main.LoadedLibrary = false;
-                LogManager.getLogger().warn("Failed to load native library, jar file is corrupted or build failed, attempted to load from path: {}", resourcePath);
+                LogManager.getLogger()
+                        .warn(
+                                "Failed to load native library, jar file is corrupted or build"
+                                    + " failed, attempted to load from path: {}",
+                                resourcePath);
             } else {
                 Main.LoadedLibrary = false;
                 LogManager.getLogger().warn("Unsupported architecture: {}", arch);
@@ -96,7 +112,8 @@ final class NativeLoader {
         } else if (os.contains("nux") || os.contains("nix")) {
             return Platform.LINUX;
         } else {
-            if (System.getProperty("java.vm.vendor").equalsIgnoreCase("the android project")) return Platform.ANDROID;
+            if (System.getProperty("java.vm.vendor").equalsIgnoreCase("the android project"))
+                return Platform.ANDROID;
             officiallySupported = false;
             return Platform.UNSUPPORTED;
         }

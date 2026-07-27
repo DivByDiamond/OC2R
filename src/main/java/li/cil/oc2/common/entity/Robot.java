@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.entity;
 
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
@@ -11,6 +10,7 @@ import li.cil.oc2.common.entity.robot.*;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import li.cil.oc2.common.vm.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -33,10 +33,16 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.*;
 
-public final class Robot extends Entity implements li.cil.oc2.api.capabilities.Robot, TerminalUserProvider, ICaptureInputStateStorage {
-    public static final EntityDataAccessor<BlockPos> TARGET_POSITION = SynchedEntityData.defineId(Robot.class, EntityDataSerializers.BLOCK_POS);
-    public static final EntityDataAccessor<Direction> TARGET_DIRECTION = SynchedEntityData.defineId(Robot.class, EntityDataSerializers.DIRECTION);
-    public static final EntityDataAccessor<Byte> SELECTED_SLOT = SynchedEntityData.defineId(Robot.class, EntityDataSerializers.BYTE);
+public final class Robot extends Entity
+        implements li.cil.oc2.api.capabilities.Robot,
+                TerminalUserProvider,
+                ICaptureInputStateStorage {
+    public static final EntityDataAccessor<BlockPos> TARGET_POSITION =
+            SynchedEntityData.defineId(Robot.class, EntityDataSerializers.BLOCK_POS);
+    public static final EntityDataAccessor<Direction> TARGET_DIRECTION =
+            SynchedEntityData.defineId(Robot.class, EntityDataSerializers.DIRECTION);
+    public static final EntityDataAccessor<Byte> SELECTED_SLOT =
+            SynchedEntityData.defineId(Robot.class, EntityDataSerializers.BYTE);
 
     public static final int INVENTORY_SIZE = 12;
 
@@ -65,80 +71,141 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
 
         robotInventory = new RobotInventory(this);
         movementController = new RobotMovementController(this);
-        final CommonDeviceBusController busController = new CommonDeviceBusController(robotInventory.getBusElement(), Config.robotEnergyPerTick);
+        final CommonDeviceBusController busController =
+                new CommonDeviceBusController(
+                        robotInventory.getBusElement(), Config.robotEnergyPerTick);
         virtualMachine = new RobotVirtualMachine(this, busController, terminal, movementController);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
-        animationState = new RobotAnimationState(virtualMachine, () -> movementController.hasQueuedActions());
+        animationState =
+                new RobotAnimationState(
+                        virtualMachine, () -> movementController.hasQueuedActions());
         eventHandler = new RobotEventHandler(this, virtualMachine);
         blockCollider = new RobotBlockCollider(this);
         robotInventory.setOnDeviceChanged(() -> virtualMachine.busController.scheduleBusScan());
     }
 
     @OnlyIn(Dist.CLIENT)
-    public RobotAnimationState getAnimationState() { return animationState; }
+    public RobotAnimationState getAnimationState() {
+        return animationState;
+    }
 
-    public Terminal getTerminal() { return terminal; }
+    public Terminal getTerminal() {
+        return terminal;
+    }
 
-    public AbstractVirtualMachine getVirtualMachine() { return virtualMachine; }
+    public AbstractVirtualMachine getVirtualMachine() {
+        return virtualMachine;
+    }
 
-    public FixedEnergyStorage getEnergyStorage() { return energy; }
+    public FixedEnergyStorage getEnergyStorage() {
+        return energy;
+    }
 
-    public RobotMovementController getMovementController() { return movementController; }
+    public RobotMovementController getMovementController() {
+        return movementController;
+    }
 
-    public RobotInventory getRobotInventory() { return robotInventory; }
+    public RobotInventory getRobotInventory() {
+        return robotInventory;
+    }
 
-    public VMItemStackHandlers getItemStackHandlers() { return robotInventory.getItemStackHandlers(); }
-
-    @Override
-    public ItemStackHandler getInventory() { return robotInventory.getInventory(); }
-
-    @Override
-    public int getSelectedSlot() { return getEntityData().get(SELECTED_SLOT); }
-
-    @Override
-    public void setSelectedSlot(final int value) { getEntityData().set(SELECTED_SLOT, (byte) Mth.clamp(value, 0, INVENTORY_SIZE - 1)); }
-
-    @Override
-    public boolean getCaptureInputState() { return captureInputState; }
-
-    @Override
-    public void setCaptureInputState(final boolean value) { this.captureInputState = value; }
-
-    public RobotEventHandler getEventHandler() { return eventHandler; }
-
-    public RobotBlockCollider getBlockCollider() { return blockCollider; }
-
-    public long getLastPistonMovement() { return lastPistonMovement; }
-
-    public void start() { if (!level().isClientSide()) virtualMachine.start(); }
-
-    public void stop() { if (!level().isClientSide()) virtualMachine.stop(); }
-
-    public void openTerminalScreen(final ServerPlayer player) { RobotTerminalContainer.createServer(this, energy, virtualMachine.busController, player); }
-
-    public void openInventoryScreen(final ServerPlayer player) { RobotInventoryContainer.createServer(this, energy, virtualMachine.busController, player); }
-
-    public void addTerminalUser(final Player player) { terminalUsers.add(player); }
-
-    public void removeTerminalUser(final Player player) { terminalUsers.remove(player); }
+    public VMItemStackHandlers getItemStackHandlers() {
+        return robotInventory.getItemStackHandlers();
+    }
 
     @Override
-    public Iterable<Player> getTerminalUsers() { return terminalUsers; }
-
-    public void exportToItemStack(final ItemStack stack) { RobotSerializer.exportToItemStack(this, stack); }
-
-    public void importFromItemStack(final ItemStack stack) { RobotSerializer.importFromItemStack(this, stack); }
-
-    public void dropSelf() { RobotInteractionHandler.dropSelf(this); }
+    public ItemStackHandler getInventory() {
+        return robotInventory.getInventory();
+    }
 
     @Override
-    public void tick() { super.tick(); RobotTickHandler.tick(this, firstTick); }
+    public int getSelectedSlot() {
+        return getEntityData().get(SELECTED_SLOT);
+    }
 
     @Override
-    public boolean skipAttackInteraction(final Entity entity) { return RobotInteractionHandler.skipAttackInteraction(this, entity); }
+    public void setSelectedSlot(final int value) {
+        getEntityData().set(SELECTED_SLOT, (byte) Mth.clamp(value, 0, INVENTORY_SIZE - 1));
+    }
 
     @Override
-    public InteractionResult interact(final Player player, final InteractionHand hand) { return RobotInteractionHandler.interact(this, player, hand); }
+    public boolean getCaptureInputState() {
+        return captureInputState;
+    }
+
+    @Override
+    public void setCaptureInputState(final boolean value) {
+        this.captureInputState = value;
+    }
+
+    public RobotEventHandler getEventHandler() {
+        return eventHandler;
+    }
+
+    public RobotBlockCollider getBlockCollider() {
+        return blockCollider;
+    }
+
+    public long getLastPistonMovement() {
+        return lastPistonMovement;
+    }
+
+    public void start() {
+        if (!level().isClientSide()) virtualMachine.start();
+    }
+
+    public void stop() {
+        if (!level().isClientSide()) virtualMachine.stop();
+    }
+
+    public void openTerminalScreen(final ServerPlayer player) {
+        RobotTerminalContainer.createServer(this, energy, virtualMachine.busController, player);
+    }
+
+    public void openInventoryScreen(final ServerPlayer player) {
+        RobotInventoryContainer.createServer(this, energy, virtualMachine.busController, player);
+    }
+
+    public void addTerminalUser(final Player player) {
+        terminalUsers.add(player);
+    }
+
+    public void removeTerminalUser(final Player player) {
+        terminalUsers.remove(player);
+    }
+
+    @Override
+    public Iterable<Player> getTerminalUsers() {
+        return terminalUsers;
+    }
+
+    public void exportToItemStack(final ItemStack stack) {
+        RobotSerializer.exportToItemStack(this, stack);
+    }
+
+    public void importFromItemStack(final ItemStack stack) {
+        RobotSerializer.importFromItemStack(this, stack);
+    }
+
+    public void dropSelf() {
+        RobotInteractionHandler.dropSelf(this);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        RobotTickHandler.tick(this, firstTick);
+    }
+
+    @Override
+    public boolean skipAttackInteraction(final Entity entity) {
+        return RobotInteractionHandler.skipAttackInteraction(this, entity);
+    }
+
+    @Override
+    public InteractionResult interact(final Player player, final InteractionHand hand) {
+        return RobotInteractionHandler.interact(this, player, hand);
+    }
 
     @Override
     public void remove(final RemovalReason reason) {
@@ -150,19 +217,27 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     }
 
     @Override
-    public boolean isPickable() { return true; }
+    public boolean isPickable() {
+        return true;
+    }
 
     @Override
-    public boolean canCollideWith(final Entity entity) { return entity != this; }
+    public boolean canCollideWith(final Entity entity) {
+        return entity != this;
+    }
 
     @Override
     public void push(final Entity entity) {}
 
     @Override
-    public boolean canBeCollidedWith() { return true; }
+    public boolean canBeCollidedWith() {
+        return true;
+    }
 
     @Override
-    public boolean canSpawnSprintParticle() { return false; }
+    public boolean canSpawnSprintParticle() {
+        return false;
+    }
 
     @Override
     protected void defineSynchedData(final SynchedEntityData.Builder builder) {
@@ -172,13 +247,19 @@ public final class Robot extends Entity implements li.cil.oc2.api.capabilities.R
     }
 
     @Override
-    protected void addAdditionalSaveData(final CompoundTag tag) { RobotSerializer.save(this, tag); }
+    protected void addAdditionalSaveData(final CompoundTag tag) {
+        RobotSerializer.save(this, tag);
+    }
 
     @Override
-    protected void readAdditionalSaveData(final CompoundTag tag) { RobotSerializer.load(this, tag); }
+    protected void readAdditionalSaveData(final CompoundTag tag) {
+        RobotSerializer.load(this, tag);
+    }
 
     @Override
-    protected Entity.MovementEmission getMovementEmission() { return Entity.MovementEmission.NONE; }
+    protected Entity.MovementEmission getMovementEmission() {
+        return Entity.MovementEmission.NONE;
+    }
 
     @Override
     protected void checkInsideBlocks() {}

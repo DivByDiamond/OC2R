@@ -1,27 +1,29 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackHandler {
     private final Supplier<HolderLookup.Provider> providerSupplier;
 
-    public AbstractDeviceItemStackHandler(Supplier<HolderLookup.Provider> providerSupplier, final int size) {
+    public AbstractDeviceItemStackHandler(
+            Supplier<HolderLookup.Provider> providerSupplier, final int size) {
         this(providerSupplier, NonNullList.withSize(size, ItemStack.EMPTY));
     }
 
-    public AbstractDeviceItemStackHandler(Supplier<HolderLookup.Provider> providerSupplier, final NonNullList<ItemStack> stacks) {
+    public AbstractDeviceItemStackHandler(
+            Supplier<HolderLookup.Provider> providerSupplier, final NonNullList<ItemStack> stacks) {
         super(stacks);
         this.providerSupplier = providerSupplier;
     }
-
 
     public abstract AbstractItemDeviceBusElement getBusElement();
 
@@ -83,11 +85,11 @@ public abstract class AbstractDeviceItemStackHandler extends FixedSizeItemStackH
         return 1;
     }
 
-
     @Override
     protected void onContentsChanged(final int slot) {
         super.onContentsChanged(slot);
 
-        getBusElement().handleSlotContentsChanged(providerSupplier.get(), slot, getStackInSlot(slot));
+        getBusElement()
+                .handleSlotContentsChanged(providerSupplier.get(), slot, getStackInSlot(slot));
     }
 }

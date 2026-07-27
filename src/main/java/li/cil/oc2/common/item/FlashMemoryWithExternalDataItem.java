@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.api.bus.device.data.Firmware;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;
@@ -18,16 +18,13 @@ import javax.annotation.Nullable;
 public final class FlashMemoryWithExternalDataItem extends ModItem {
     public static final String FIRMWARE_TAG_NAME = "firmware";
 
-
     private final ResourceLocation defaultData;
     @Nullable private String descriptionId;
-
 
     public FlashMemoryWithExternalDataItem(final ResourceLocation defaultData) {
         super(createProperties().stacksTo(1));
         this.defaultData = defaultData;
     }
-
 
     @Nullable
     public Firmware getFirmware(final ItemStack stack) {
@@ -35,7 +32,8 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
             return null;
         }
 
-        final String registryName = ItemStackUtils.getModDataTag(stack).getString(FIRMWARE_TAG_NAME);
+        final String registryName =
+                ItemStackUtils.getModDataTag(stack).getString(FIRMWARE_TAG_NAME);
 
         ResourceLocation location = defaultData;
         if (!StringUtil.isNullOrEmpty(registryName)) {
@@ -55,9 +53,13 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
 
         final ResourceLocation key = FirmwareRegistry.getKey(firmware);
 
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).putString(FIRMWARE_TAG_NAME, key.toString());
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt)
+                            .putString(FIRMWARE_TAG_NAME, key.toString());
+                });
 
         return stack;
     }
@@ -72,15 +74,14 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
         final Firmware firmware = getFirmware(stack);
         if (firmware != null) {
             return Component.literal("")
-                .append(super.getName(stack))
-                .append(" (")
-                .append(firmware.getDisplayName())
-                .append(")");
+                    .append(super.getName(stack))
+                    .append(" (")
+                    .append(firmware.getDisplayName())
+                    .append(")");
         } else {
             return super.getName(stack);
         }
     }
-
 
     @Override
     protected String getOrCreateDescriptionId() {

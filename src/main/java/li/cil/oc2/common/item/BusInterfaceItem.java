@@ -1,12 +1,12 @@
-
 package li.cil.oc2.common.item;
 
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
+
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,26 +28,31 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {
         super(Blocks.BUS_CABLE.get());
     }
 
-
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(final ItemStack stack, final TooltipContext context, final List<Component> tooltip, final TooltipFlag flag) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final TooltipContext context,
+            final List<Component> tooltip,
+            final TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         TooltipUtils.addEnergyConsumption(Config.busInterfaceEnergyPerTick, tooltip);
     }
 
     @Override
     public InteractionResult useOn(final UseOnContext context) {
-        final Vec3 localHitPos = context.getClickLocation().subtract(Vec3.atCenterOf(context.getClickedPos()));
+        final Vec3 localHitPos =
+                context.getClickLocation().subtract(Vec3.atCenterOf(context.getClickedPos()));
         final Direction side = Direction.getNearest(localHitPos.x, localHitPos.y, localHitPos.z);
         final InteractionResult result = tryAddToBlock(context, side);
         return result.consumesAction() ? result : super.useOn(context);
@@ -55,7 +60,8 @@ public final class BusInterfaceItem extends ModBlockItem {
 
     @Override
     public InteractionResult place(final BlockPlaceContext context) {
-        final InteractionResult result = tryAddToBlock(context, context.getClickedFace().getOpposite());
+        final InteractionResult result =
+                tryAddToBlock(context, context.getClickedFace().getOpposite());
         return result.consumesAction() ? result : super.place(context);
     }
 
@@ -65,13 +71,10 @@ public final class BusInterfaceItem extends ModBlockItem {
     }
 
     @Override
-    public void registerBlocks(final Map<Block, Item> map, final Item item) {
-    }
+    public void registerBlocks(final Map<Block, Item> map, final Item item) {}
 
     @Override
-    public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {
-    }
-
+    public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {}
 
     @Nullable
     @Override
@@ -82,14 +85,14 @@ public final class BusInterfaceItem extends ModBlockItem {
         }
 
         final EnumProperty<ConnectionType> connectionTypeProperty =
-            BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(context.getClickedFace().getOpposite());
-        return state
-            .setValue(BusCableStateProperties.HAS_CABLE, false)
-            .setValue(connectionTypeProperty, ConnectionType.INTERFACE);
+                BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(
+                        context.getClickedFace().getOpposite());
+        return state.setValue(BusCableStateProperties.HAS_CABLE, false)
+                .setValue(connectionTypeProperty, ConnectionType.INTERFACE);
     }
 
-
-    private static InteractionResult tryAddToBlock(final UseOnContext context, final Direction side) {
+    private static InteractionResult tryAddToBlock(
+            final UseOnContext context, final Direction side) {
         final Level level = context.getLevel();
         final BlockPos pos = context.getClickedPos();
         final BlockState state = level.getBlockState(pos);
@@ -105,7 +108,8 @@ public final class BusInterfaceItem extends ModBlockItem {
             CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, pos, stack);
         }
 
-        LevelUtils.playSound(level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
+        LevelUtils.playSound(
+                level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
 
         if (player == null || !player.getAbilities().instabuild) {
             stack.shrink(1);

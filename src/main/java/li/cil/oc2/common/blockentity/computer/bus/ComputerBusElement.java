@@ -6,14 +6,16 @@ import li.cil.oc2.common.block.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.bus.element.BlockEntry;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.util.*;
+
+import javax.annotation.Nullable;
 
 public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     private static final String DEVICE_ID_TAG_NAME = "device_id";
@@ -41,21 +43,25 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
         final Level level = owner.getLevel();
         assert level != null;
 
-        collectDevices(level, getPosition(), null).ifPresent(result -> {
-            for (final BlockEntry info : result.getEntries()) {
-                devices.add(info.getDevice());
-                super.addDevice(info.getDevice());
-            }
-        });
+        collectDevices(level, getPosition(), null)
+                .ifPresent(
+                        result -> {
+                            for (final BlockEntry info : result.getEntries()) {
+                                devices.add(info.getDevice());
+                                super.addDevice(info.getDevice());
+                            }
+                        });
     }
 
     @Override
     public Optional<Collection<DeviceBusElement>> getNeighbors() {
-        return super.getNeighbors().map(neighbors -> {
-            final ArrayList<DeviceBusElement> list = new ArrayList<>(neighbors);
-            list.add(owner.deviceItems.busElement);
-            return list;
-        });
+        return super.getNeighbors()
+                .map(
+                        neighbors -> {
+                            final ArrayList<DeviceBusElement> list = new ArrayList<>(neighbors);
+                            list.add(owner.deviceItems.busElement);
+                            return list;
+                        });
     }
 
     @Override

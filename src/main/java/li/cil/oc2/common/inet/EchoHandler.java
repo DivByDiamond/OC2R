@@ -5,6 +5,7 @@ import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -19,10 +20,13 @@ import java.util.concurrent.atomic.AtomicReference;
 final class EchoHandler {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final Executor executor = Executors
-        .newSingleThreadExecutor(runnable -> new Thread(runnable, "internet/blocking-session"));
+    private static final Executor executor =
+            Executors.newSingleThreadExecutor(
+                    runnable -> new Thread(runnable, "internet/blocking-session"));
 
-    static boolean deliverPendingResponse(final AtomicReference<EchoResponse> echoResponse, final SessionLayer.Receiver receiver) {
+    static boolean deliverPendingResponse(
+            final AtomicReference<EchoResponse> echoResponse,
+            final SessionLayer.Receiver receiver) {
         final EchoResponse pending = echoResponse.getAndSet(null);
         if (pending != null) {
             final ByteBuffer data = receiver.receive(pending.session);
@@ -34,8 +38,10 @@ final class EchoHandler {
         return false;
     }
 
-    static boolean handleEchoSession(final Session session, @Nullable final ByteBuffer data,
-                                      final AtomicReference<EchoResponse> echoResponse) {
+    static boolean handleEchoSession(
+            final Session session,
+            @Nullable final ByteBuffer data,
+            final AtomicReference<EchoResponse> echoResponse) {
         if (!(session instanceof final EchoSession echoSession)) {
             return false;
         }
@@ -47,22 +53,32 @@ final class EchoHandler {
         data.get(payload);
         int size = data.remaining();
         if (Main.LoadedLibrary) {
-            byte[] responseData = DefaultSessionLayer.sendICMP(address.getAddress(), payload, size, Config.defaultEchoRequestTimeoutMs);
+            byte[] responseData =
+                    DefaultSessionLayer.sendICMP(
+                            address.getAddress(),
+                            payload,
+                            size,
+                            Config.defaultEchoRequestTimeoutMs);
             if (responseData != null) {
-                final EchoResponse response = new EchoResponse(ByteBuffer.wrap(responseData), echoSession);
+                final EchoResponse response =
+                        new EchoResponse(ByteBuffer.wrap(responseData), echoSession);
                 echoResponse.set(response);
             }
         } else {
-            executor.execute(() -> {
-                try {
-                    final EchoResponse response = new EchoResponse(data, echoSession);
-                    if (address.isReachable(null, echoSession.getTtl(), Config.defaultEchoRequestTimeoutMs)) {
-                        echoResponse.set(response);
-                    }
-                } catch (IOException e) {
-                    LOGGER.error("Failed to get echo response", e);
-                }
-            });
+            executor.execute(
+                    () -> {
+                        try {
+                            final EchoResponse response = new EchoResponse(data, echoSession);
+                            if (address.isReachable(
+                                    null,
+                                    echoSession.getTtl(),
+                                    Config.defaultEchoRequestTimeoutMs)) {
+                                echoResponse.set(response);
+                            }
+                        } catch (IOException e) {
+                            LOGGER.error("Failed to get echo response", e);
+                        }
+                    });
         }
         return true;
     }

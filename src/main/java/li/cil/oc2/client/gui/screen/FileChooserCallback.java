@@ -11,9 +11,6 @@ public interface FileChooserCallback {
      */
     void onFileSelected(Path path);
 
-    /**
-     * Called when the file chooser is canceled.
-     */
-    default void onCanceled() {
-    }
+    /** Called when the file chooser is canceled. */
+    default void onCanceled() {}
 }

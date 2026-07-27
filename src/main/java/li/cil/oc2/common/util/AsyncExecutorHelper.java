@@ -2,6 +2,7 @@ package li.cil.oc2.common.util;
 
 import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.event.ForgeEventHandlers;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,9 +49,13 @@ public final class AsyncExecutorHelper {
         try {
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                 if (debug) {
-                    LOGGER.warn("Async executor did not shut down within timeout, forcing immediate shutdown");
+                    LOGGER.warn(
+                            "Async executor did not shut down within timeout, forcing immediate"
+                                + " shutdown");
                 } else {
-                    LOGGER.warn("Async executor did not shut down within timeout, forcing immediate shutdown");
+                    LOGGER.warn(
+                            "Async executor did not shut down within timeout, forcing immediate"
+                                + " shutdown");
                 }
 
                 final var runningTasks = executor.shutdownNow();
@@ -64,7 +69,10 @@ public final class AsyncExecutorHelper {
                 }
             }
         } catch (final InterruptedException e) {
-            LOGGER.warn("Interrupted while waiting for async executor to shut down, forcing immediate shutdown", e);
+            LOGGER.warn(
+                    "Interrupted while waiting for async executor to shut down, forcing immediate"
+                        + " shutdown",
+                    e);
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
@@ -72,11 +80,10 @@ public final class AsyncExecutorHelper {
 
     private static ExecutorService createExecutor() {
         return new ForkJoinPool(
-            Math.max(1, Runtime.getRuntime().availableProcessors() / 2),
-            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-            (t, e) -> LOGGER.error("Uncaught exception in async executor thread", e),
-            true
-        ) {
+                Math.max(1, Runtime.getRuntime().availableProcessors() / 2),
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                (t, e) -> LOGGER.error("Uncaught exception in async executor thread", e),
+                true) {
             @Override
             public List<Runnable> shutdownNow() {
                 List<Runnable> tasks = super.shutdownNow();

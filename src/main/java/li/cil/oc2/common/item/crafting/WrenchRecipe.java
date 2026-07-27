@@ -1,8 +1,9 @@
-
 package li.cil.oc2.common.item.crafting;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.integration.Wrenches;
+
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.NonNullList;
@@ -18,11 +19,16 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.neoforged.neoforge.common.conditions.ICondition;
+
 import org.jetbrains.annotations.Nullable;
 
 public final class WrenchRecipe extends ShapelessRecipe {
     public WrenchRecipe(final ShapelessRecipe recipe) {
-        super(recipe.getGroup(), CraftingBookCategory.MISC, recipe.getResultItem(RegistryAccess.EMPTY), recipe.getIngredients());
+        super(
+                recipe.getGroup(),
+                CraftingBookCategory.MISC,
+                recipe.getResultItem(RegistryAccess.EMPTY),
+                recipe.getIngredients());
     }
 
     @Override
@@ -51,17 +57,9 @@ public final class WrenchRecipe extends ShapelessRecipe {
     public static final class Serializer implements RecipeSerializer<WrenchRecipe> {
         public static final Serializer INSTANCE = new Serializer();
         public static final MapCodec<WrenchRecipe> CODEC =
-            RecipeSerializer.SHAPELESS_RECIPE.codec()
-            .xmap(
-                WrenchRecipe::new,
-                x -> x
-            );
+                RecipeSerializer.SHAPELESS_RECIPE.codec().xmap(WrenchRecipe::new, x -> x);
         public static final StreamCodec<RegistryFriendlyByteBuf, WrenchRecipe> STREAM_CODEC =
-            RecipeSerializer.SHAPELESS_RECIPE.streamCodec()
-            .map(
-                WrenchRecipe::new,
-                x -> x
-            );
+                RecipeSerializer.SHAPELESS_RECIPE.streamCodec().map(WrenchRecipe::new, x -> x);
 
         @Override
         public MapCodec<WrenchRecipe> codec() {
@@ -87,12 +85,18 @@ public final class WrenchRecipe extends ShapelessRecipe {
         }
 
         @Override
-        public void accept(final ResourceLocation resourceLocation, final Recipe<?> recipe, @Nullable final AdvancementHolder advancementHolder, final ICondition... iConditions) {
+        public void accept(
+                final ResourceLocation resourceLocation,
+                final Recipe<?> recipe,
+                @Nullable final AdvancementHolder advancementHolder,
+                final ICondition... iConditions) {
             if (!(recipe instanceof ShapelessRecipe shapeless)) {
-                throw new IllegalStateException("WrenchRecipeOutputAdapter can only be used on shapeless recipes");
+                throw new IllegalStateException(
+                        "WrenchRecipeOutputAdapter can only be used on shapeless recipes");
             }
 
-            inner.accept(resourceLocation, new WrenchRecipe(shapeless), advancementHolder, iConditions);
+            inner.accept(
+                    resourceLocation, new WrenchRecipe(shapeless), advancementHolder, iConditions);
         }
     }
 }

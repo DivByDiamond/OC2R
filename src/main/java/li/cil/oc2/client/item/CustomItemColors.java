@@ -1,15 +1,15 @@
-
 package li.cil.oc2.client.item;
 
+import static net.minecraft.core.component.DataComponents.DYED_COLOR;
+
 import li.cil.oc2.common.item.Items;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
-
-import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
 @SuppressWarnings("unused")
 public final class CustomItemColors {
@@ -31,20 +31,19 @@ public final class CustomItemColors {
     public static final int BROWN = 0xFF745C42;
     public static final int YELLOW = 0xFFFFFC49;
 
-
     private static final int NO_TINT = 0xFFFFFFFF;
-
 
     @SuppressWarnings("deprecation")
     public static void initialize() {
         final ItemColors itemColors = Minecraft.getInstance().getItemColors();
-        itemColors.register((stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
-            Items.HARD_DRIVE_SMALL.get(),
-            Items.HARD_DRIVE_MEDIUM.get(),
-            Items.HARD_DRIVE_LARGE.get(),
-            Items.HARD_DRIVE_EXTRA_LARGE.get(),
-            Items.FLOPPY.get(),
-            Items.FLOPPY_MODERN.get());
+        itemColors.register(
+                (stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
+                Items.HARD_DRIVE_SMALL.get(),
+                Items.HARD_DRIVE_MEDIUM.get(),
+                Items.HARD_DRIVE_LARGE.get(),
+                Items.HARD_DRIVE_EXTRA_LARGE.get(),
+                Items.FLOPPY.get(),
+                Items.FLOPPY_MODERN.get());
     }
 
     public static int getColorByDye(final DyeColor dye) {
@@ -78,10 +77,9 @@ public final class CustomItemColors {
 
     public static ItemStack withColor(final ItemStack stack, final int color) {
         stack.applyComponents(
-            DataComponentPatch.builder()
-            .set(DYED_COLOR, new DyedItemColor(color, true))
-            .build()
-        );
+                DataComponentPatch.builder()
+                        .set(DYED_COLOR, new DyedItemColor(color, true))
+                        .build());
         return stack;
     }
 }

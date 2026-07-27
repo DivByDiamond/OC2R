@@ -1,5 +1,6 @@
-
 package li.cil.oc2.client.gui.screen;
+
+import static li.cil.oc2.common.util.TranslationUtils.text;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,8 +14,6 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static li.cil.oc2.common.util.TranslationUtils.text;
-
 public final class FileChooserScreen extends Screen {
 
     private static final int MARGIN = 30;
@@ -25,7 +24,8 @@ public final class FileChooserScreen extends Screen {
 
     private static final Component OPEN_TITLE_TEXT = text("gui.{mod}.file_chooser.title.load");
     private static final Component SAVE_TITLE_TEXT = text("gui.{mod}.file_chooser.title.save");
-    private static final Component FILE_NAME_TEXT = text("gui.{mod}.file_chooser.text_field.filename");
+    private static final Component FILE_NAME_TEXT =
+            text("gui.{mod}.file_chooser.text_field.filename");
     static final Component LOAD_TEXT = text("gui.{mod}.file_chooser.confirm_button.load");
     static final Component SAVE_TEXT = text("gui.{mod}.file_chooser.confirm_button.save");
     static final Component OVERWRITE_TEXT = text("gui.{mod}.file_chooser.confirm_button.overwrite");
@@ -42,7 +42,8 @@ public final class FileChooserScreen extends Screen {
     Button okButton;
     private FileChooserController controller;
 
-    public static void openFileChooserForSave(final String name, final FileChooserCallback callback) {
+    public static void openFileChooserForSave(
+            final String name, final FileChooserCallback callback) {
         final Screen currentScreen = Minecraft.getInstance().screen;
         if (currentScreen instanceof FileChooserScreen) {
             currentScreen.onClose();
@@ -84,7 +85,11 @@ public final class FileChooserScreen extends Screen {
     }
 
     @Override
-    public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
+    public void render(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
         super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
@@ -98,36 +103,51 @@ public final class FileChooserScreen extends Screen {
         super.init();
 
         final int widgetsWidth = width - MARGIN * 2;
-        final int listHeight = height - MARGIN - WIDGET_SPACING - TEXT_FIELD_HEIGHT - WIDGET_SPACING - BUTTON_HEIGHT - MARGIN;
+        final int listHeight =
+                height
+                        - MARGIN
+                        - WIDGET_SPACING
+                        - TEXT_FIELD_HEIGHT
+                        - WIDGET_SPACING
+                        - BUTTON_HEIGHT
+                        - MARGIN;
         fileList = new FileList(this, width, MARGIN, listHeight, LIST_ENTRY_HEIGHT);
         addRenderableWidget(fileList);
 
         final int fileNameTop = MARGIN + listHeight + WIDGET_SPACING;
-        fileNameTextField = new EditBox(font, MARGIN, fileNameTop, widgetsWidth, TEXT_FIELD_HEIGHT, FILE_NAME_TEXT);
-        fileNameTextField.setResponder(s -> {
-            fileList.setSelected(null);
-            controller.updateButtons();
-        });
+        fileNameTextField =
+                new EditBox(
+                        font, MARGIN, fileNameTop, widgetsWidth, TEXT_FIELD_HEIGHT, FILE_NAME_TEXT);
+        fileNameTextField.setResponder(
+                s -> {
+                    fileList.setSelected(null);
+                    controller.updateButtons();
+                });
         fileNameTextField.setMaxLength(1024);
         addRenderableWidget(fileNameTextField);
 
         final int buttonTop = fileNameTop + TEXT_FIELD_HEIGHT + WIDGET_SPACING;
         final int buttonCount = 2;
         final int buttonWidth = widgetsWidth / buttonCount - WIDGET_SPACING;
-        okButton = addRenderableWidget(
-            Button.builder(Component.empty(), this::handleOkPressed)
-                .bounds(MARGIN, buttonTop, buttonWidth, BUTTON_HEIGHT)
-                .createNarration(Supplier::get)
-                .build()
-        );
+        okButton =
+                addRenderableWidget(
+                        Button.builder(Component.empty(), this::handleOkPressed)
+                                .bounds(MARGIN, buttonTop, buttonWidth, BUTTON_HEIGHT)
+                                .createNarration(Supplier::get)
+                                .build());
         addRenderableWidget(
-            Button.builder(CANCEL_TEXT, this::handleCancelPressed)
-                .bounds(MARGIN + buttonWidth + WIDGET_SPACING, buttonTop, buttonWidth, BUTTON_HEIGHT)
-                .createNarration(Supplier::get)
-                .build()
-        );
+                Button.builder(CANCEL_TEXT, this::handleCancelPressed)
+                        .bounds(
+                                MARGIN + buttonWidth + WIDGET_SPACING,
+                                buttonTop,
+                                buttonWidth,
+                                BUTTON_HEIGHT)
+                        .createNarration(Supplier::get)
+                        .build());
 
-        controller = new FileChooserController(this, fileList, fileNameTextField, okButton, callback, isLoad);
+        controller =
+                new FileChooserController(
+                        this, fileList, fileNameTextField, okButton, callback, isLoad);
 
         fileList.refreshFiles(directory);
 
@@ -136,13 +156,17 @@ public final class FileChooserScreen extends Screen {
 
     @Override
     public void onFilesDrop(final List<Path> files) {
-        files.stream().filter(file -> {
-            try {
-                return Files.exists(file) && !Files.isHidden(file);
-            } catch (final IOException | SecurityException ignored) {
-                return false;
-            }
-        }).findFirst().ifPresent(fileList::selectPath);
+        files.stream()
+                .filter(
+                        file -> {
+                            try {
+                                return Files.exists(file) && !Files.isHidden(file);
+                            } catch (final IOException | SecurityException ignored) {
+                                return false;
+                            }
+                        })
+                .findFirst()
+                .ifPresent(fileList::selectPath);
     }
 
     void updateButtons() {

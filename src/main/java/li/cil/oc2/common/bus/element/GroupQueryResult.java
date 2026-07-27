@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.bus.element;
 
-import javax.annotation.Nullable;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 abstract class GroupQueryResult<TEntry, TQuery> {
     @Nullable

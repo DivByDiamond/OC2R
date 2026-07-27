@@ -6,12 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation may be used to propagate the name of parameters and to
- * provide VM visible documentation of this parameter for methods annotated
- * with the {@link Callback} annotation.
+ * This annotation may be used to propagate the name of parameters and to provide VM visible
+ * documentation of this parameter for methods annotated with the {@link Callback} annotation.
  *
- * <p>Java strips parameter names in non-debug builds, so the actual method
- * parameter names cannot be retrieved directly.
+ * <p>Java strips parameter names in non-debug builds, so the actual method parameter names cannot
+ * be retrieved directly.
  *
  * <p>If this is not present, parameters will appear unnamed to the VM.
  */

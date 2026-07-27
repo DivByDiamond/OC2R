@@ -1,15 +1,13 @@
 package li.cil.oc2.common.vm.terminal.escapes;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class HTS {
     public static void execute(Terminal terminal) {
         if (terminal.x >= 0 && terminal.x < Terminal.WIDTH) {
-            if(terminal.currentPrivateModeState.isAltBufferEnabled())
+            if (terminal.currentPrivateModeState.isAltBufferEnabled())
                 terminal.altTabs[terminal.x] = true;
-            else
-                terminal.tabs[terminal.x] = true;
+            else terminal.tabs[terminal.x] = true;
         }
     }
 }

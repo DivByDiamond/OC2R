@@ -1,14 +1,16 @@
-
 package li.cil.oc2.data;
+
+import static java.util.Collections.singletonList;
 
 import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.components.DataComponents;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
+import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -24,21 +26,20 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singletonList;
-
 public final class ModLootTableProvider extends LootTableProvider {
-    public ModLootTableProvider(PackOutput output, Set<ResourceKey<LootTable>> requiredTables, List<SubProviderEntry> subProviders, CompletableFuture<HolderLookup.Provider> registries) {
+    public ModLootTableProvider(
+            PackOutput output,
+            Set<ResourceKey<LootTable>> requiredTables,
+            List<SubProviderEntry> subProviders,
+            CompletableFuture<HolderLookup.Provider> registries) {
         super(output, requiredTables, subProviders, registries);
     }
 
     @Override
     public List<SubProviderEntry> getTables() {
         return singletonList(
-            new LootTableProvider.SubProviderEntry(
-                ModBlockLootTables::new,
-                LootContextParamSets.BLOCK
-            )
-        );
+                new LootTableProvider.SubProviderEntry(
+                        ModBlockLootTables::new, LootContextParamSets.BLOCK));
     }
 
     public static final class ModBlockLootTables extends BlockLootSubProvider {
@@ -66,24 +67,31 @@ public final class ModLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return Blocks.BLOCKS.getEntries()
-                .stream()
-                .filter(blockRegObj -> blockRegObj.get() != Blocks.BUS_CABLE.get())
-                .map(DeferredHolder::get)
-                .collect(Collectors.toList());
+            return Blocks.BLOCKS.getEntries().stream()
+                    .filter(blockRegObj -> blockRegObj.get() != Blocks.BUS_CABLE.get())
+                    .map(DeferredHolder::get)
+                    .collect(Collectors.toList());
         }
 
         private LootTable.Builder droppingWithInventory(final Block block) {
             return LootTable.lootTable()
-                .withPool(applyExplosionCondition(block, LootPool.lootPool()
-                    .setRolls(ConstantValue.exactly(1))
-                    .add(LootItem.lootTableItem(block)
-                        .apply(
-                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                                .include(DataComponents.RESTRICTED_CONTAINER.get())
-                        )
-                    )
-                ));
+                    .withPool(
+                            applyExplosionCondition(
+                                    block,
+                                    LootPool.lootPool()
+                                            .setRolls(ConstantValue.exactly(1))
+                                            .add(
+                                                    LootItem.lootTableItem(block)
+                                                            .apply(
+                                                                    CopyComponentsFunction
+                                                                            .copyComponents(
+                                                                                    CopyComponentsFunction
+                                                                                            .Source
+                                                                                            .BLOCK_ENTITY)
+                                                                            .include(
+                                                                                    DataComponents
+                                                                                            .RESTRICTED_CONTAINER
+                                                                                            .get())))));
         }
 
         private static String concat(final String... paths) {

@@ -1,13 +1,14 @@
 package li.cil.oc2.client.renderer;
 
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.TextureUtil;
-import net.minecraft.client.Minecraft;
-
 import static org.lwjgl.opengl.GL11.GL_NONE;
 import static org.lwjgl.opengl.GL11.glDrawBuffer;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
+
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.TextureUtil;
+
+import net.minecraft.client.Minecraft;
 
 final class DepthOnlyRenderTarget extends TextureTarget {
     public DepthOnlyRenderTarget(final int width, final int height) {

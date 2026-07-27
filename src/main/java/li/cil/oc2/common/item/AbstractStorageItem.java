@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.TextFormatUtils;
+
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -13,9 +13,7 @@ import net.minecraft.world.item.component.CustomData;
 public abstract class AbstractStorageItem extends ModItem {
     private static final String CAPACITY_TAG_NAME = "capacity";
 
-
     private final int defaultCapacity;
-
 
     protected AbstractStorageItem(final Properties properties, final int defaultCapacity) {
         super(properties);
@@ -25,7 +23,6 @@ public abstract class AbstractStorageItem extends ModItem {
     protected AbstractStorageItem(final int capacity) {
         this(createProperties(), capacity);
     }
-
 
     public int getCapacity(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
@@ -37,9 +34,12 @@ public abstract class AbstractStorageItem extends ModItem {
     }
 
     public ItemStack withCapacity(final ItemStack stack, final int capacity) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).putInt(CAPACITY_TAG_NAME, capacity);
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt).putInt(CAPACITY_TAG_NAME, capacity);
+                });
         return stack;
     }
 
@@ -51,9 +51,9 @@ public abstract class AbstractStorageItem extends ModItem {
     public Component getName(final ItemStack stack) {
         final int capacity = getCapacity(stack);
         return Component.literal("")
-            .append(super.getName(stack))
-            .append(" (")
-            .append(TextFormatUtils.formatSize(capacity))
-            .append(")");
+                .append(super.getName(stack))
+                .append(" (")
+                .append(TextFormatUtils.formatSize(capacity))
+                .append(")");
     }
 }

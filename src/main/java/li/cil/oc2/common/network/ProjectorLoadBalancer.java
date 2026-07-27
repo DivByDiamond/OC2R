@@ -1,22 +1,23 @@
 package li.cil.oc2.common.network;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import net.minecraft.core.BlockPos;
+import li.cil.oc2.common.config.Config;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ProjectorLoadBalancer {
@@ -28,13 +29,15 @@ public final class ProjectorLoadBalancer {
 
     @Nullable private static ProjectorInfo lastSender;
 
-    public static void updateWatcher(final ProjectorBlockEntity projector, final ServerPlayer player) {
+    public static void updateWatcher(
+            final ProjectorBlockEntity projector, final ServerPlayer player) {
         PROJECTOR_INFO
-            .computeIfAbsent(projector, ProjectorLoadBalancer::addProjectorInfo)
-            .handleWatchedBy(player);
+                .computeIfAbsent(projector, ProjectorLoadBalancer::addProjectorInfo)
+                .handleWatchedBy(player);
     }
 
-    public static void offerFrame(final ProjectorBlockEntity projector, final Supplier<ByteBuffer> messageSupplier) {
+    public static void offerFrame(
+            final ProjectorBlockEntity projector, final Supplier<ByteBuffer> messageSupplier) {
         final ProjectorInfo info = PROJECTOR_INFO.get(projector);
         if (info != null) {
             info.nextFrameSupplier = messageSupplier;
@@ -60,7 +63,9 @@ public final class ProjectorLoadBalancer {
     }
 
     private static int replenishBudget(final int budget) {
-        return Math.min(getMaxBudget(), budget + Math.max(1, Config.projectorAverageMaxBytesPerSecond / 20));
+        return Math.min(
+                getMaxBudget(),
+                budget + Math.max(1, Config.projectorAverageMaxBytesPerSecond / 20));
     }
 
     private static void updateCache() {

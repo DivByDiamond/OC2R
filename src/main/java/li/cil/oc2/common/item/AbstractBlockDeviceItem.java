@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.common.bus.device.data.BlockDeviceDataRegistry;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.ResourceLocationException;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -17,11 +17,10 @@ import javax.annotation.Nullable;
 public abstract class AbstractBlockDeviceItem extends ModItem {
     public static final String DATA_TAG_NAME = "data";
 
-
     private final ResourceLocation defaultData;
 
-
-    protected AbstractBlockDeviceItem(final Properties properties, final ResourceLocation defaultData) {
+    protected AbstractBlockDeviceItem(
+            final Properties properties, final ResourceLocation defaultData) {
         super(properties.stacksTo(1));
         this.defaultData = defaultData;
     }
@@ -29,7 +28,6 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
     protected AbstractBlockDeviceItem(final ResourceLocation defaultData) {
         this(createProperties(), defaultData);
     }
-
 
     @Nullable
     public BlockDeviceData getData(final ItemStack stack) {
@@ -60,9 +58,13 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
             return ItemStack.EMPTY;
         }
 
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).putString(DATA_TAG_NAME, key.toString());
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt)
+                            .putString(DATA_TAG_NAME, key.toString());
+                });
 
         return stack;
     }
@@ -77,15 +79,14 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
         final BlockDeviceData data = getData(stack);
         if (data != null) {
             return Component.literal("")
-                .append(super.getName(stack))
-                .append(" (")
-                .append(data.getDisplayName())
-                .append(")");
+                    .append(super.getName(stack))
+                    .append(" (")
+                    .append(data.getDisplayName())
+                    .append(")");
         } else {
             return super.getName(stack);
         }
     }
-
 
     @SuppressWarnings("unused")
     protected ResourceLocation getDefaultData() {

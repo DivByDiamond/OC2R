@@ -1,11 +1,12 @@
-
 package li.cil.oc2.common.bus.device.data;
 
 import li.cil.oc2.api.bus.device.data.Firmware;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.buildroot.Buildroot;
 import li.cil.sedna.memory.MemoryMaps;
+
 import net.minecraft.network.chat.Component;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,11 +22,15 @@ public final class MinuxFirmware implements Firmware {
             final InputStream firmware = Buildroot.getFirmware();
             final InputStream linuxImage = Buildroot.getLinuxImage();
             if (firmware == null) {
-                LOGGER.error("Minux firmware resource (generated/fw_jump.bin) is missing from sedna-buildroot.jar — VM will not boot.");
+                LOGGER.error(
+                        "Minux firmware resource (generated/fw_jump.bin) is missing from"
+                            + " sedna-buildroot.jar — VM will not boot.");
                 return false;
             }
             if (linuxImage == null) {
-                LOGGER.error("Minux Linux image resource (generated/Image) is missing from sedna-buildroot.jar — VM will not boot.");
+                LOGGER.error(
+                        "Minux Linux image resource (generated/Image) is missing from"
+                            + " sedna-buildroot.jar — VM will not boot.");
                 return false;
             }
             MemoryMaps.store(memory, startAddress, firmware);

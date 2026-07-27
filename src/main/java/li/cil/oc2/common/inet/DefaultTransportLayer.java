@@ -6,10 +6,13 @@ import li.cil.oc2.api.inet.layer.TransportLayer;
 import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.StreamSession;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
@@ -34,7 +37,8 @@ public final class DefaultTransportLayer implements TransportLayer {
         while (true) {
             if (sendHandler.rejectedStream != null) {
                 LOGGER.trace("Rejecting stream {}", sendHandler.rejectedStream.getDiscriminator());
-                final SessionActions success = TcpUtils.prepareTCPSegment(message, sendHandler.rejectedStream);
+                final SessionActions success =
+                        TcpUtils.prepareTCPSegment(message, sendHandler.rejectedStream);
                 assert success == SessionActions.FORWARD;
                 sessionManager.closeSession(sendHandler.rejectedStream);
                 sendHandler.rejectedStream = null;
@@ -79,7 +83,8 @@ public final class DefaultTransportLayer implements TransportLayer {
         }
     }
 
-    private byte handleEchoSession(final EchoSessionImpl echoSession, final TransportMessage message) {
+    private byte handleEchoSession(
+            final EchoSessionImpl echoSession, final TransportMessage message) {
         switch (echoSession.getState()) {
             case FINISH:
                 sessionManager.closeSession(echoSession);
@@ -91,31 +96,39 @@ public final class DefaultTransportLayer implements TransportLayer {
                 buffer.putShort(position + 4, discriminator.getIdentity());
                 buffer.putShort(position + 6, (short) echoSession.getSequenceNumber());
                 icmpHandler.prepareIcmpHeader(buffer, IcmpHandler.ICMP_TYPE_ECHO_REPLY, (byte) 0);
-                message.updateIpv4(discriminator.getDstIpAddress(), discriminator.getSrcIpAddress());
+                message.updateIpv4(
+                        discriminator.getDstIpAddress(), discriminator.getSrcIpAddress());
                 return PROTOCOL_ICMP;
             default:
                 throw new IllegalStateException();
         }
     }
 
-    private byte handleDatagramSession(final DatagramSessionImpl datagramSession, final TransportMessage message) {
+    private byte handleDatagramSession(
+            final DatagramSessionImpl datagramSession, final TransportMessage message) {
         switch (datagramSession.getState()) {
             case FINISH:
                 sessionManager.closeSession(datagramSession);
                 return PROTOCOL_NONE;
             case ESTABLISHED:
-                final DatagramSessionDiscriminator discriminator = datagramSession.getDiscriminator();
+                final DatagramSessionDiscriminator discriminator =
+                        datagramSession.getDiscriminator();
                 final ByteBuffer buffer = receiver.getBuffer();
                 final int position = buffer.position();
                 buffer.putShort(position, discriminator.getDstPort());
                 buffer.putShort(position + 2, discriminator.getSrcPort());
                 buffer.putShort(position + 4, (short) buffer.remaining());
                 buffer.putShort(position + 6, (short) 0);
-                final short checksum = Rfc1071Checksum.transportRfc1071Checksum(
-                    buffer, discriminator.getDstIpAddress(), discriminator.getSrcIpAddress(), PROTOCOL_UDP);
+                final short checksum =
+                        Rfc1071Checksum.transportRfc1071Checksum(
+                                buffer,
+                                discriminator.getDstIpAddress(),
+                                discriminator.getSrcIpAddress(),
+                                PROTOCOL_UDP);
                 buffer.putShort(position + 6, checksum);
                 buffer.position(position);
-                message.updateIpv4(discriminator.getDstIpAddress(), discriminator.getSrcIpAddress());
+                message.updateIpv4(
+                        discriminator.getDstIpAddress(), discriminator.getSrcIpAddress());
                 return PROTOCOL_UDP;
             default:
                 throw new IllegalStateException();
@@ -124,11 +137,14 @@ public final class DefaultTransportLayer implements TransportLayer {
 
     @Override
     public Optional<Tag> onSave() {
-        return sessionLayer.onSave().map(sessionLayerState -> {
-            final CompoundTag transportLayerState = new CompoundTag();
-            transportLayerState.put(SessionLayer.LAYER_NAME, sessionLayerState);
-            return transportLayerState;
-        });
+        return sessionLayer
+                .onSave()
+                .map(
+                        sessionLayerState -> {
+                            final CompoundTag transportLayerState = new CompoundTag();
+                            transportLayerState.put(SessionLayer.LAYER_NAME, sessionLayerState);
+                            return transportLayerState;
+                        });
     }
 
     @Override
@@ -148,7 +164,8 @@ public final class DefaultTransportLayer implements TransportLayer {
         final int dstIpAddress = message.getDstIpv4Address();
         final ByteBuffer data = message.getData();
         switch (protocol) {
-            case PROTOCOL_ICMP -> sendHandler.sendIcmpMessage(data, srcIpAddress, dstIpAddress, message);
+            case PROTOCOL_ICMP ->
+                    sendHandler.sendIcmpMessage(data, srcIpAddress, dstIpAddress, message);
             case PROTOCOL_UDP -> sendHandler.sendUdpMessage(data, srcIpAddress, dstIpAddress);
             case PROTOCOL_TCP -> sendHandler.sendTcpMessage(data, srcIpAddress, dstIpAddress);
         }

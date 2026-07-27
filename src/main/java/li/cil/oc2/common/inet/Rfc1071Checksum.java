@@ -31,16 +31,20 @@ final class Rfc1071Checksum {
     }
 
     static short transportRfc1071Checksum(
-        final ByteBuffer buffer,
-        final int srcIpAddress,
-        final int dstIpAddress,
-        final byte protocol
-    ) {
+            final ByteBuffer buffer,
+            final int srcIpAddress,
+            final int dstIpAddress,
+            final byte protocol) {
         final int size = buffer.remaining();
         final int checksumPart = bufferChecksum(buffer, size);
-        final int checksum = checksumPart + Byte.toUnsignedInt(protocol) + size +
-            (srcIpAddress >>> 16) + (srcIpAddress & 0xFFFF) +
-            (dstIpAddress >>> 16) + (dstIpAddress & 0xFFFF);
+        final int checksum =
+                checksumPart
+                        + Byte.toUnsignedInt(protocol)
+                        + size
+                        + (srcIpAddress >>> 16)
+                        + (srcIpAddress & 0xFFFF)
+                        + (dstIpAddress >>> 16)
+                        + (dstIpAddress & 0xFFFF);
         return finishChecksum(checksum);
     }
 }

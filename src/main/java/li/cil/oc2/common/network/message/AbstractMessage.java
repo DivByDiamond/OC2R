@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.network.message;
 
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

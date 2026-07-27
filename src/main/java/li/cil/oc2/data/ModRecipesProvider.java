@@ -11,7 +11,8 @@ import net.minecraft.world.level.ItemLike;
 import java.util.concurrent.CompletableFuture;
 
 public final class ModRecipesProvider extends RecipeProvider {
-    public ModRecipesProvider(final PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+    public ModRecipesProvider(
+            final PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries);
     }
 

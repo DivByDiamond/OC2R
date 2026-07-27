@@ -1,11 +1,8 @@
-
 package li.cil.oc2.api.bus.device.rpc;
 
 import javax.annotation.Nullable;
 
-/**
- * Convenience base class for {@link RPCMethod} implementations.
- */
+/** Convenience base class for {@link RPCMethod} implementations. */
 public abstract class AbstractRPCMethod implements RPCMethod {
     protected final String name;
     protected final boolean synchronize;
@@ -14,18 +11,24 @@ public abstract class AbstractRPCMethod implements RPCMethod {
 
     ///////////////////////////////////////////////////////////////////
 
-    protected AbstractRPCMethod(final String name, final boolean synchronize, final Class<?> returnType, final RPCParameter... parameters) {
+    protected AbstractRPCMethod(
+            final String name,
+            final boolean synchronize,
+            final Class<?> returnType,
+            final RPCParameter... parameters) {
         this.name = name;
         this.synchronize = synchronize;
         this.returnType = returnType;
         this.parameters = parameters;
     }
 
-    protected AbstractRPCMethod(final String name, final Class<?> returnType, final RPCParameter... parameters) {
+    protected AbstractRPCMethod(
+            final String name, final Class<?> returnType, final RPCParameter... parameters) {
         this(name, false, returnType, parameters);
     }
 
-    protected AbstractRPCMethod(final String name, final boolean synchronize, final RPCParameter... parameters) {
+    protected AbstractRPCMethod(
+            final String name, final boolean synchronize, final RPCParameter... parameters) {
         this(name, synchronize, void.class, parameters);
     }
 
@@ -57,7 +60,10 @@ public abstract class AbstractRPCMethod implements RPCMethod {
 
     @Nullable
     public Object invoke(final RPCInvocation invocation) throws Throwable {
-        return invoke(invocation.tryDeserializeParameters(getParameters()).orElseThrow(IllegalArgumentException::new));
+        return invoke(
+                invocation
+                        .tryDeserializeParameters(getParameters())
+                        .orElseThrow(IllegalArgumentException::new));
     }
 
     ///////////////////////////////////////////////////////////////////

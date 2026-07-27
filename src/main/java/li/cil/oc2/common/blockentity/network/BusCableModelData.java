@@ -1,10 +1,14 @@
 package li.cil.oc2.common.blockentity.network;
 
+import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_FACADE_PROPERTY;
+import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_SUPPORT_PROPERTY;
+
 import li.cil.oc2.client.model.BusCableBakedModel;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,9 +17,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.client.model.data.ModelData;
-
-import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_FACADE_PROPERTY;
-import static li.cil.oc2.client.model.BusCableBakedModel.BUS_CABLE_SUPPORT_PROPERTY;
 
 final class BusCableModelData {
     private final BusCableBlockEntity owner;
@@ -30,7 +31,8 @@ final class BusCableModelData {
         if (level == null) return ModelData.EMPTY;
         final BlockState state = owner.getBlockState();
         final BlockPos pos = owner.getBlockPos();
-        if (state.hasProperty(BusCableStateProperties.HAS_FACADE) && state.getValue(BusCableStateProperties.HAS_FACADE)) {
+        if (state.hasProperty(BusCableStateProperties.HAS_FACADE)
+                && state.getValue(BusCableStateProperties.HAS_FACADE)) {
             BlockState facadeState;
             final ItemStack facadeItem = owner.facadeManager.getFacade();
 
@@ -43,9 +45,12 @@ final class BusCableModelData {
             final var model = shapes.getBlockModel(facadeState);
             final ModelData data = model.getModelData(level, pos, facadeState, currentModelData);
 
-            currentModelData = ModelData.builder()
-                .with(BUS_CABLE_FACADE_PROPERTY, new BusCableBakedModel.BusCableFacade(facadeState, model, data))
-                .build();
+            currentModelData =
+                    ModelData.builder()
+                            .with(
+                                    BUS_CABLE_FACADE_PROPERTY,
+                                    new BusCableBakedModel.BusCableFacade(facadeState, model, data))
+                            .build();
 
             return currentModelData;
         }
@@ -53,8 +58,10 @@ final class BusCableModelData {
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
             if (BusCableBakedModel.isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<ConnectionType> property = BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
-                if (state.hasProperty(property) && state.getValue(property) == ConnectionType.INTERFACE) {
+                final EnumProperty<ConnectionType> property =
+                        BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
+                if (state.hasProperty(property)
+                        && state.getValue(property) == ConnectionType.INTERFACE) {
                     return currentModelData;
                 }
 
@@ -65,9 +72,12 @@ final class BusCableModelData {
         }
 
         if (supportSide != null) {
-            currentModelData = ModelData.builder()
-                .with(BUS_CABLE_SUPPORT_PROPERTY, new BusCableBakedModel.BusCableSupportSide(supportSide))
-                .build();
+            currentModelData =
+                    ModelData.builder()
+                            .with(
+                                    BUS_CABLE_SUPPORT_PROPERTY,
+                                    new BusCableBakedModel.BusCableSupportSide(supportSide))
+                            .build();
             return currentModelData;
         }
 

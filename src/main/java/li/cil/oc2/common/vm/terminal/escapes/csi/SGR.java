@@ -15,19 +15,31 @@ public class SGR extends CSISequenceHandler {
                 int v2 = args[++i];
                 if (v1 == 38) {
                     if (v2 == 5) {
-                        terminal.currentForegroundColorMode = TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
+                        terminal.currentForegroundColorMode =
+                                TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.R = args[++i];
                     } else if (v2 == 2) {
                         terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
-                        terminal.foregroundColor = new TerminalColors.ColorData(args[++i], args[++i], args[++i], TerminalColors.ColorMode.TRUE_COLOR);
+                        terminal.foregroundColor =
+                                new TerminalColors.ColorData(
+                                        args[++i],
+                                        args[++i],
+                                        args[++i],
+                                        TerminalColors.ColorMode.TRUE_COLOR);
                     }
                 } else {
                     if (v2 == 5) {
-                        terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
+                        terminal.currentBackgroundColorMode =
+                                TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.G = args[++i];
                     } else if (v2 == 2) {
                         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
-                        terminal.backgroundColor = new TerminalColors.ColorData(args[++i], args[++i], args[++i], TerminalColors.ColorMode.TRUE_COLOR);
+                        terminal.backgroundColor =
+                                new TerminalColors.ColorData(
+                                        args[++i],
+                                        args[++i],
+                                        args[++i],
+                                        TerminalColors.ColorMode.TRUE_COLOR);
                     }
                 }
                 return;
@@ -50,31 +62,29 @@ public class SGR extends CSISequenceHandler {
                 terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
             }
             case 1 -> // Bold or increased intensity
-                terminal.style |= Terminal.STYLE_BOLD_MASK;
+                    terminal.style |= Terminal.STYLE_BOLD_MASK;
             case 2 -> // Faint or decreased intensity
-                terminal.style |= Terminal.STYLE_DIM_MASK;
-            case 3 ->
-                terminal.style |= Terminal.STYLE_ITALIC_MASK;
+                    terminal.style |= Terminal.STYLE_DIM_MASK;
+            case 3 -> terminal.style |= Terminal.STYLE_ITALIC_MASK;
             case 4 -> // Underscore
-                terminal.style |= Terminal.STYLE_UNDERLINE_MASK;
+                    terminal.style |= Terminal.STYLE_UNDERLINE_MASK;
             case 5 -> // Blink
-                terminal.style |= Terminal.STYLE_BLINK_MASK;
+                    terminal.style |= Terminal.STYLE_BLINK_MASK;
             case 7 -> // Negative (reverse) image
-                terminal.style |= Terminal.STYLE_INVERT_MASK;
+                    terminal.style |= Terminal.STYLE_INVERT_MASK;
             case 8 -> // Conceal aka Hide
-                terminal.style |= Terminal.STYLE_HIDDEN_MASK;
+                    terminal.style |= Terminal.STYLE_HIDDEN_MASK;
             case 22 -> // Normal color or intensity
-                terminal.style &= ~(Terminal.STYLE_BOLD_MASK | Terminal.STYLE_DIM_MASK);
-            case 23 ->
-                terminal.style &= ~Terminal.STYLE_ITALIC_MASK;
+                    terminal.style &= ~(Terminal.STYLE_BOLD_MASK | Terminal.STYLE_DIM_MASK);
+            case 23 -> terminal.style &= ~Terminal.STYLE_ITALIC_MASK;
             case 24 -> // Underline off
-                terminal.style &= ~Terminal.STYLE_UNDERLINE_MASK;
+                    terminal.style &= ~Terminal.STYLE_UNDERLINE_MASK;
             case 25 -> // Blink off
-                terminal.style &= ~Terminal.STYLE_BLINK_MASK;
+                    terminal.style &= ~Terminal.STYLE_BLINK_MASK;
             case 27 -> // Reverse/invert off
-                terminal.style &= ~Terminal.STYLE_INVERT_MASK;
+                    terminal.style &= ~Terminal.STYLE_INVERT_MASK;
             case 28 -> // Reveal conceal off
-                terminal.style &= ~Terminal.STYLE_HIDDEN_MASK;
+                    terminal.style &= ~Terminal.STYLE_HIDDEN_MASK;
             case 30, 31, 32, 33, 34, 35, 36, 37 -> { // Set foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
                 terminal.sixteenColor.R = arg - 30;

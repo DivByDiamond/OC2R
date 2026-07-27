@@ -1,7 +1,9 @@
-
 package li.cil.oc2.common.bus.device.vm.item;
 
+import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
+
 import com.google.common.eventbus.Subscribe;
+
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
@@ -18,6 +20,7 @@ import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.device.flash.FlashMemoryDevice;
 import li.cil.sedna.memory.MemoryMaps;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,24 +28,20 @@ import net.minecraft.world.item.ItemStack;
 
 import java.nio.ByteBuffer;
 
-import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
-
-public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack> implements VMDevice, ItemDevice, FirmwareLoader {
+public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
+        implements VMDevice, ItemDevice, FirmwareLoader {
     private final int size;
     private MemoryMap memoryMap;
     private ByteBuffer data;
     private FlashMemoryDevice device;
 
-
     // Online persisted data.
     private final OptionalAddress address = new OptionalAddress();
-
 
     public ByteBufferFlashStorageDevice(final ItemStack identity, final int size) {
         super(identity);
         this.size = size;
     }
-
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -99,21 +98,20 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         this.data = bufferData;
     }
 
-
     private boolean allocateDevice(final VMContext context) {
-        if (!context.getMemoryAllocator().claimMemory(12*Constants.MEGABYTE)) {
+        if (!context.getMemoryAllocator().claimMemory(12 * Constants.MEGABYTE)) {
             return false;
         }
 
         if (data == null) {
             try {
-                data = ByteBuffer.allocate(12*Constants.MEGABYTE);
+                data = ByteBuffer.allocate(12 * Constants.MEGABYTE);
                 data.clear();
                 CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompound(DATA_TAG_NAME);
                 if (tag.hasUUID("blob")) {
                     BlobStorage.getOrOpen(tag.getUUID("blob")).read(data, 0);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.out.println("Error message: " + e.getMessage());
             }
         }
@@ -130,7 +128,8 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         try {
             MemoryMaps.store(memoryMap, startAddress, data);
         } catch (final MemoryAccessException e) {
-            throw new VMInitializationException(Component.translatable(Constants.COMPUTER_ERROR_INSUFFICIENT_MEMORY));
+            throw new VMInitializationException(
+                    Component.translatable(Constants.COMPUTER_ERROR_INSUFFICIENT_MEMORY));
         }
     }
 }

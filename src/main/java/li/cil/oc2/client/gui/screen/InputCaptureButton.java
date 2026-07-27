@@ -1,10 +1,10 @@
-
 package li.cil.oc2.client.gui.screen;
 
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ToggleImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
+
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -15,17 +15,22 @@ class InputCaptureButton extends ToggleImageButton {
     private final AbstractMachineTerminalContainer menu;
 
     InputCaptureButton(final int x, final int y, final AbstractMachineTerminalContainer menu) {
-        super(x, y, 12, 12, Sprites.INPUT_BUTTON_BASE, Sprites.INPUT_BUTTON_PRESSED, Sprites.INPUT_BUTTON_ACTIVE);
+        super(
+                x,
+                y,
+                12,
+                12,
+                Sprites.INPUT_BUTTON_BASE,
+                Sprites.INPUT_BUTTON_PRESSED,
+                Sprites.INPUT_BUTTON_ACTIVE);
         this.menu = menu;
         withTooltip(
-            Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_CAPTION),
-            Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_DESCRIPTION)
-        );
+                Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_CAPTION),
+                Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_DESCRIPTION));
     }
 
     @Override
-    protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {
-    }
+    protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {}
 
     @Override
     public void onPress() {

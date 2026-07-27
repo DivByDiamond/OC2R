@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.integration;
 
 import li.cil.oc2.common.tags.ItemTags;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;

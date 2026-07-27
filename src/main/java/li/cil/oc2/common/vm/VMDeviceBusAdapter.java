@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm;
 
 import li.cil.oc2.api.bus.device.Device;
@@ -17,14 +16,11 @@ public final class VMDeviceBusAdapter {
     private final ArrayList<VMDevice> unmountedDevices = new ArrayList<>();
     private BaseAddressProvider baseAddressProvider = unused -> OptionalLong.empty();
 
-
     private final GlobalVMContext globalContext;
-
 
     public VMDeviceBusAdapter(final GlobalVMContext context) {
         this.globalContext = context;
     }
-
 
     public void setBaseAddressProvider(final BaseAddressProvider provider) {
         baseAddressProvider = provider;
@@ -32,18 +28,22 @@ public final class VMDeviceBusAdapter {
 
     public VMDeviceLoadResult mountDevices() {
         for (final VMDevice device : unmountedDevices) {
-            final ManagedVMContext context = new ManagedVMContext(globalContext, globalContext,
-                () -> baseAddressProvider.getBaseAddress(device));
+            final ManagedVMContext context =
+                    new ManagedVMContext(
+                            globalContext,
+                            globalContext,
+                            () -> baseAddressProvider.getBaseAddress(device));
 
             final VMDeviceLoadResult result = device.mount(context);
             context.freeze();
 
             if (!result.wasSuccessful()) {
                 context.invalidate();
-                mountedDevices.forEach((mountedDevice, mountedContext) -> {
-                    mountedDevice.unmount();
-                    mountedContext.invalidate();
-                });
+                mountedDevices.forEach(
+                        (mountedDevice, mountedContext) -> {
+                            mountedDevice.unmount();
+                            mountedContext.invalidate();
+                        });
                 mountedDevices.clear();
                 return result;
             }
@@ -59,10 +59,11 @@ public final class VMDeviceBusAdapter {
     }
 
     public void unmountDevices() {
-        mountedDevices.forEach((device, context) -> {
-            device.unmount();
-            context.invalidate();
-        });
+        mountedDevices.forEach(
+                (device, context) -> {
+                    device.unmount();
+                    context.invalidate();
+                });
 
         unmountedDevices.addAll(mountedDevices.keySet());
         mountedDevices.clear();

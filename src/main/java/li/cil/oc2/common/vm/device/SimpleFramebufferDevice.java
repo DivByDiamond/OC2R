@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.device;
 
 import li.cil.oc2.jcodec.common.model.Picture;
@@ -14,12 +13,10 @@ import java.util.BitSet;
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public static final int STRIDE = 2;
 
-
     private final int width, height;
     private final ByteBuffer buffer;
     private int length;
     private final BitSet dirtyLines;
-
 
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
@@ -34,7 +31,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         this.dirtyLines = new BitSet(height / 2);
         this.dirtyLines.set(0, height / 2);
     }
-
 
     public void close() {
         synchronized (buffer) {
@@ -68,7 +64,8 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         return true;
     }
 
-    public static void convertR5G6B5ToYUV420J(ByteBuffer rgbBuffer, int width, int height, Picture yuvPicture) {
+    public static void convertR5G6B5ToYUV420J(
+            ByteBuffer rgbBuffer, int width, int height, Picture yuvPicture) {
 
         // Retrieve the YUV planes from the Picture object
         byte[][] yuvData = yuvPicture.getData();
@@ -131,7 +128,8 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     @Override
-    public void store(final int offset, final long value, final int sizeLog2) throws MemoryAccessException {
+    public void store(final int offset, final long value, final int sizeLog2)
+            throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
             switch (sizeLog2) {
                 case 0 -> buffer.put(offset, (byte) value);
@@ -143,7 +141,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
             setDirty(offset);
         }
     }
-
 
     private void setDirty(final int offset) {
         final int pixelY = offset / (width * STRIDE);

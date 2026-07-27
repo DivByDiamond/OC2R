@@ -7,8 +7,8 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 /**
- * Reusable data object, that contains information about transport layer message that makes sense both for
- * transport and network layer.
+ * Reusable data object, that contains information about transport layer message that makes sense
+ * both for transport and network layer.
  */
 public final class TransportMessage {
 
@@ -38,13 +38,13 @@ public final class TransportMessage {
     /**
      * Updates network layer parameters for current transport message.
      *
-     * @param networkProtocolNumber chosen network protocol number (use {@link NetworkLayer#PROTOCOL_IPv4} or
-     *                              {@link NetworkLayer#PROTOCOL_IPv6} values)
-     * @param srcIpAddressMost      part of a source IP address
-     * @param srcIpAddressLeast     part of a source IP address
-     * @param dstIpAddressMost      part of a destination IP address
-     * @param dstIpAddressLeast     part of a destination IP address
-     * @param ttl                   time to live value (for tracert functionality)
+     * @param networkProtocolNumber chosen network protocol number (use {@link
+     *     NetworkLayer#PROTOCOL_IPv4} or {@link NetworkLayer#PROTOCOL_IPv6} values)
+     * @param srcIpAddressMost part of a source IP address
+     * @param srcIpAddressLeast part of a source IP address
+     * @param dstIpAddressMost part of a destination IP address
+     * @param dstIpAddressLeast part of a destination IP address
+     * @param ttl time to live value (for tracert functionality)
      */
     public void update(
             final short networkProtocolNumber,
@@ -52,8 +52,7 @@ public final class TransportMessage {
             final long srcIpAddressLeast,
             final long dstIpAddressMost,
             final long dstIpAddressLeast,
-            final byte ttl
-    ) {
+            final byte ttl) {
         this.networkProtocolNumber = networkProtocolNumber;
         this.srcIpAddressMost = srcIpAddressMost;
         this.srcIpAddressLeast = srcIpAddressLeast;
@@ -63,31 +62,25 @@ public final class TransportMessage {
     }
 
     /**
-     * Updates network layer parameters for current transport message assuming IPv4 network protocol.
+     * Updates network layer parameters for current transport message assuming IPv4 network
+     * protocol.
      *
      * @param srcIpAddress source IP address
      * @param dstIpAddress destination IP address
-     * @param ttl          time to live value (for tracert functionality)
+     * @param ttl time to live value (for tracert functionality)
      */
-    public void updateIpv4(
-            final int srcIpAddress,
-            final int dstIpAddress,
-            final byte ttl
-    ) {
+    public void updateIpv4(final int srcIpAddress, final int dstIpAddress, final byte ttl) {
         update(NetworkLayer.PROTOCOL_IPv4, 0, srcIpAddress, 0, dstIpAddress, ttl);
     }
 
     /**
-     * Updates network layer parameters for current transport message and sets the default TTL value assuming IPv4
-     * network protocol.
+     * Updates network layer parameters for current transport message and sets the default TTL value
+     * assuming IPv4 network protocol.
      *
      * @param srcIpAddress source IP address
      * @param dstIpAddress destination IP address
      */
-    public void updateIpv4(
-            final int srcIpAddress,
-            final int dstIpAddress
-    ) {
+    public void updateIpv4(final int srcIpAddress, final int dstIpAddress) {
         updateIpv4(srcIpAddress, dstIpAddress, DEFAULT_TTL);
     }
 
@@ -126,7 +119,8 @@ public final class TransportMessage {
     public InetAddress getSrcAddress() {
         return switch (networkProtocolNumber) {
             case NetworkLayer.PROTOCOL_IPv4 -> InetUtils.toJavaInetAddress(getSrcIpv4Address());
-            case NetworkLayer.PROTOCOL_IPv6 -> InetUtils.toJavaInetAddress(srcIpAddressMost, srcIpAddressLeast);
+            case NetworkLayer.PROTOCOL_IPv6 ->
+                    InetUtils.toJavaInetAddress(srcIpAddressMost, srcIpAddressLeast);
             default -> throw new IllegalStateException();
         };
     }
@@ -139,7 +133,8 @@ public final class TransportMessage {
     public InetAddress getDstAddress() {
         return switch (networkProtocolNumber) {
             case NetworkLayer.PROTOCOL_IPv4 -> InetUtils.toJavaInetAddress(getDstIpv4Address());
-            case NetworkLayer.PROTOCOL_IPv6 -> InetUtils.toJavaInetAddress(dstIpAddressMost, dstIpAddressLeast);
+            case NetworkLayer.PROTOCOL_IPv6 ->
+                    InetUtils.toJavaInetAddress(dstIpAddressMost, dstIpAddressLeast);
             default -> throw new IllegalStateException();
         };
     }

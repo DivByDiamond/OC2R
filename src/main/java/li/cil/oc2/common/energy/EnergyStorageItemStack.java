@@ -1,23 +1,19 @@
-
 package li.cil.oc2.common.energy;
 
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.NBTUtils;
-import net.minecraft.core.Direction;
+
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class EnergyStorageItemStack implements IEnergyStorage {
     private final ItemStack stack;
     private final int capacity;
     private final String[] tagPath;
 
-    public EnergyStorageItemStack(final ItemStack stack, final int capacity, final String... tagPath) {
+    public EnergyStorageItemStack(
+            final ItemStack stack, final int capacity, final String... tagPath) {
         this.stack = stack;
         this.capacity = capacity;
         this.tagPath = tagPath;
@@ -29,10 +25,13 @@ public final class EnergyStorageItemStack implements IEnergyStorage {
         final int receiveLimit = capacity - stored;
         final int receive = Math.min(maxReceive, receiveLimit);
         if (!simulate) {
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, (tag) -> {
-                NBTUtils.getOrCreateChildTag(tag, tagPath)
-                    .putInt(FixedEnergyStorage.STORED_TAG_NAME, stored + receive);
-            });
+            CustomData.update(
+                    DataComponents.CUSTOM_DATA,
+                    stack,
+                    (tag) -> {
+                        NBTUtils.getOrCreateChildTag(tag, tagPath)
+                                .putInt(FixedEnergyStorage.STORED_TAG_NAME, stored + receive);
+                    });
         }
         return receive;
     }

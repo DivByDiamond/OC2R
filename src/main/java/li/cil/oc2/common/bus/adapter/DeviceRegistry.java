@@ -1,11 +1,11 @@
-
 package li.cil.oc2.common.bus.adapter;
 
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.api.bus.device.rpc.*;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
+import li.cil.oc2.api.bus.device.rpc.*;
 import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -46,31 +46,37 @@ class DeviceRegistry {
             if (device instanceof final RPCDevice rpcDevice) {
                 final Set<UUID> identifiers = controller.getDeviceIdentifiers(device);
                 for (final UUID identifier : identifiers) {
-                    devicesByIdentifier.computeIfAbsent(identifier, unused -> new ArrayList<>()).add(rpcDevice);
+                    devicesByIdentifier
+                            .computeIfAbsent(identifier, unused -> new ArrayList<>())
+                            .add(rpcDevice);
                 }
             }
         }
 
         final HashMap<RPCDeviceList, ArrayList<UUID>> identifiersByDevice = new HashMap<>();
-        devicesByIdentifier.forEach((identifier, devices) -> {
-            final RPCDeviceList device = new RPCDeviceList(devices);
-            if (device.getMethodGroups().isEmpty()) return;
-            identifiersByDevice.computeIfAbsent(device, unused -> new ArrayList<>()).add(identifier);
-        });
+        devicesByIdentifier.forEach(
+                (identifier, devices) -> {
+                    final RPCDeviceList device = new RPCDeviceList(devices);
+                    if (device.getMethodGroups().isEmpty()) return;
+                    identifiersByDevice
+                            .computeIfAbsent(device, unused -> new ArrayList<>())
+                            .add(identifier);
+                });
 
         devicesWithId.clear();
         devicesById.clear();
 
         final Set<RPCDeviceList> devices = new HashSet<>();
-        identifiersByDevice.forEach((device, identifiers) -> {
-            final UUID id = selectIdentifierDeterministically(identifiers);
-            devicesWithId.add(new RPCDeviceWithIdentifier(id, device));
-            devicesById.put(id, device);
-            devices.add(device);
-            if (!mountedDevices.contains(device)) {
-                unmountedDevices.add(device);
-            }
-        });
+        identifiersByDevice.forEach(
+                (device, identifiers) -> {
+                    final UUID id = selectIdentifierDeterministically(identifiers);
+                    devicesWithId.add(new RPCDeviceWithIdentifier(id, device));
+                    devicesById.put(id, device);
+                    devices.add(device);
+                    if (!mountedDevices.contains(device)) {
+                        unmountedDevices.add(device);
+                    }
+                });
 
         final HashSet<RPCDeviceList> removedMountedDevices = new HashSet<>(mountedDevices);
         removedMountedDevices.removeAll(devices);
@@ -80,7 +86,8 @@ class DeviceRegistry {
         unmountedDevices.retainAll(devices);
     }
 
-    void subscribe(final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
+    void subscribe(
+            final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
         if (devices != null) {
             for (final RPCDevice device : devices.getDevices()) {
@@ -104,7 +111,8 @@ class DeviceRegistry {
         }
     }
 
-    void unsubscribe(final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
+    void unsubscribe(
+            final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
         if (devices != null) {
             for (final RPCDevice device : devices.getDevices()) {

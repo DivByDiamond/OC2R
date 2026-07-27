@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.provider;
 
 import li.cil.oc2.common.vm.device.PciRootPortDevice;
@@ -7,7 +6,8 @@ import li.cil.sedna.devicetree.DeviceTreeRegistry;
 
 public final class DeviceTreeProviders {
     public static void initialize() {
-        DeviceTreeRegistry.putProvider(SimpleFramebufferDevice.class, new SimpleFramebufferDeviceProvider());
+        DeviceTreeRegistry.putProvider(
+                SimpleFramebufferDevice.class, new SimpleFramebufferDeviceProvider());
         DeviceTreeRegistry.putProvider(PciRootPortDevice.class, new PciRootPortDeviceProvider());
     }
 }

@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.bus.device.rpc;
 
 import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -9,15 +9,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 public final class RPCItemStackTagFilter {
     public ResourceLocation item;
     public String[] tags;
 
     private String[][] paths; // Cache of resolved paths specified in tags.
-
 
     @Nullable
     public CompoundTag apply(final ItemStack stack, final CompoundTag tag) {
@@ -41,7 +41,6 @@ public final class RPCItemStackTagFilter {
 
         return filtered;
     }
-
 
     @Nullable
     private CompoundTag filterPath(final String[] path, final CompoundTag source) {

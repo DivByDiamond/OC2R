@@ -8,17 +8,20 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.ExportedFileMessage;
 import li.cil.oc2.common.network.message.RequestImportedFileMessage;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings("unused")
-public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice implements DocumentedDevice {
+public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
+        implements DocumentedDevice {
     public static final int MAX_TRANSFERRED_FILE_SIZE = Constants.MEGABYTE - 1;
 
     private static final String BEGIN_EXPORT_FILE = "beginExportFile";
@@ -37,7 +40,8 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
     private int importingId;
     ImportedFile importedFile;
 
-    public FileImportExportCardItemDevice(final ItemStack identity, final TerminalUserProvider userProvider) {
+    public FileImportExportCardItemDevice(
+            final ItemStack identity, final TerminalUserProvider userProvider) {
         super(identity, "file_import_export");
         this.userProvider = userProvider;
     }
@@ -57,8 +61,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
 
     @Callback(name = BEGIN_EXPORT_FILE, synchronize = false)
     public void beginExportFile(@Parameter(NAME) final String name) {
-        if (state != ImportExportState.IDLE)
-            throw new IllegalStateException("invalid state");
+        if (state != ImportExportState.IDLE) throw new IllegalStateException("invalid state");
         if (StringUtil.isNullOrEmpty(name))
             throw new IllegalArgumentException("name must not be empty");
         state = ImportExportState.EXPORTING;
@@ -67,10 +70,8 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
 
     @Callback(name = WRITE_EXPORT_FILE, synchronize = false)
     public void writeExportFile(@Parameter(DATA) @Nullable final byte[] data) throws IOException {
-        if (state != ImportExportState.EXPORTING)
-            throw new IllegalStateException("invalid state");
-        if (data == null)
-            throw new IllegalArgumentException("data is required");
+        if (state != ImportExportState.EXPORTING) throw new IllegalStateException("invalid state");
+        if (data == null) throw new IllegalArgumentException("data is required");
         exportedFile.data.write(data);
         if (exportedFile.data.size() > MAX_TRANSFERRED_FILE_SIZE) {
             reset();
@@ -80,12 +81,13 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
 
     @Callback(name = FINISH_EXPORT_FILE)
     public void finishExportFile() {
-        if (state != ImportExportState.EXPORTING)
-            throw new IllegalStateException("invalid state");
+        if (state != ImportExportState.EXPORTING) throw new IllegalStateException("invalid state");
         try {
             for (final Player player : userProvider.getTerminalUsers()) {
                 if (player instanceof final ServerPlayer serverPlayer) {
-                    final ExportedFileMessage message = new ExportedFileMessage(exportedFile.name, exportedFile.data.toByteArray());
+                    final ExportedFileMessage message =
+                            new ExportedFileMessage(
+                                    exportedFile.name, exportedFile.data.toByteArray());
                     Network.sendToClient(message, serverPlayer);
                 }
             }
@@ -96,15 +98,12 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
 
     @Callback(name = REQUEST_IMPORT_FILE)
     public boolean requestImportFile() {
-        if (state != ImportExportState.IDLE)
-            throw new IllegalStateException("invalid state");
+        if (state != ImportExportState.IDLE) throw new IllegalStateException("invalid state");
         final ArrayList<ServerPlayer> players = new ArrayList<>();
         for (final Player player : userProvider.getTerminalUsers()) {
-            if (player instanceof final ServerPlayer serverPlayer)
-                players.add(serverPlayer);
+            if (player instanceof final ServerPlayer serverPlayer) players.add(serverPlayer);
         }
-        if (players.isEmpty())
-            return false;
+        if (players.isEmpty()) return false;
         state = ImportExportState.IMPORT_REQUESTED;
         importingId = ImportFileRequestManager.registerRequest(this);
         for (final ServerPlayer serverPlayer : players) {
@@ -123,8 +122,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
         }
         if (state != ImportExportState.IMPORT_REQUESTED)
             throw new IllegalStateException("invalid state");
-        if (importedFile == null)
-            return null;
+        if (importedFile == null) return null;
         state = ImportExportState.IMPORTING;
         return new ImportedFileInfo(importedFile.name, importedFile.size);
     }
@@ -136,10 +134,8 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice 
             reset();
             throw new IllegalStateException("import was canceled");
         }
-        if (state != ImportExportState.IMPORTING)
-            throw new IllegalStateException("invalid state");
-        if (importedFile == null)
-            return new byte[0];
+        if (state != ImportExportState.IMPORTING) throw new IllegalStateException("invalid state");
+        if (importedFile == null) return new byte[0];
         final byte[] buffer = new byte[512];
         final int count = importedFile.data.read(buffer);
         if (count <= 0) {

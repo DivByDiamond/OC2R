@@ -8,6 +8,5 @@ import li.cil.oc2.api.inet.layer.TransportLayer;
 public final class NullLayer implements LinkLocalLayer, NetworkLayer, TransportLayer, SessionLayer {
     public static final NullLayer INSTANCE = new NullLayer();
 
-    private NullLayer() {
-    }
+    private NullLayer() {}
 }

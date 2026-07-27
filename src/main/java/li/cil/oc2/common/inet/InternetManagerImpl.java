@@ -1,22 +1,25 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.InternetManager;
+import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.provider.InternetProvider;
 import li.cil.oc2.common.config.Config;
+
 import net.minecraft.nbt.Tag;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 public final class InternetManagerImpl implements InternetManager {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -31,7 +34,8 @@ public final class InternetManagerImpl implements InternetManager {
     private final Ipv4Space ipSpace;
 
     private InternetManagerImpl() {
-        final ServiceLoader<InternetProvider> serviceLoader = ServiceLoader.load(InternetProvider.class);
+        final ServiceLoader<InternetProvider> serviceLoader =
+                ServiceLoader.load(InternetProvider.class);
         final Iterator<InternetProvider> iterator = serviceLoader.iterator();
         if (iterator.hasNext()) {
             internetProvider = iterator.next();
@@ -63,10 +67,15 @@ public final class InternetManagerImpl implements InternetManager {
         return task;
     }
 
-    public InternetConnection connect(final InternetAdapter internetAdapter, @Nullable final Tag savedState) {
-        final LayerParameters layerParameters = new LayerParametersImpl(Optional.ofNullable(savedState), this);
+    public InternetConnection connect(
+            final InternetAdapter internetAdapter, @Nullable final Tag savedState) {
+        final LayerParameters layerParameters =
+                new LayerParametersImpl(Optional.ofNullable(savedState), this);
         final InternetConnectionImpl internetConnection =
-            new InternetConnectionImpl(executor, internetAdapter, internetProvider.provideInternet(layerParameters));
+                new InternetConnectionImpl(
+                        executor,
+                        internetAdapter,
+                        internetProvider.provideInternet(layerParameters));
         connections.add(internetConnection);
         LOGGER.debug("A new internet access provided");
         return internetConnection;
@@ -89,50 +98,57 @@ public final class InternetManagerImpl implements InternetManager {
     }
 
     private void runTasks() {
-        tasks.removeIf(task -> {
-            if (task.isClosed()) {
-                return true;
-            } else {
-                final Runnable action = task.getAction();
-                try {
-                    action.run();
-                    return false;
-                } catch (final Exception exception) {
-                    LOGGER.error("Uncaught exception while running internet thread task; this task removed from schedule", exception);
-                    return true;
-                }
-            }
-        });
+        tasks.removeIf(
+                task -> {
+                    if (task.isClosed()) {
+                        return true;
+                    } else {
+                        final Runnable action = task.getAction();
+                        try {
+                            action.run();
+                            return false;
+                        } catch (final Exception exception) {
+                            LOGGER.error(
+                                    "Uncaught exception while running internet thread task; this"
+                                        + " task removed from schedule",
+                                    exception);
+                            return true;
+                        }
+                    }
+                });
     }
 
     private void runOnInternetThread(
-        final List<InternetConnectionImpl> connectionsToStop,
-        final List<InternetConnectionImpl> connectionsToProcess
-    ) {
+            final List<InternetConnectionImpl> connectionsToStop,
+            final List<InternetConnectionImpl> connectionsToProcess) {
         runTasks();
-        connectionsToStop.forEach(connection -> {
-            LOGGER.debug("Revoked internet access");
-            connection.ethernet.onStop();
-        });
+        connectionsToStop.forEach(
+                connection -> {
+                    LOGGER.debug("Revoked internet access");
+                    connection.ethernet.onStop();
+                });
         connectionsToProcess.forEach(InternetConnectionImpl::process);
     }
 
     @SubscribeEvent
     public void onTick(final ServerTickEvent.Pre event) {
-        final List<InternetConnectionImpl> connectionsToStop = connections.stream()
-            .filter(connection -> connection.isStopped)
-            .collect(Collectors.toList());
-        final List<InternetConnectionImpl> connectionsToProcess = connections.stream()
-            .filter(connection -> !connection.isStopped)
-            .collect(Collectors.toList());
-        connections.removeIf(connection -> {
-            if (connection.isStopped) {
-                return true;
-            } else {
-                processInternetAdapter(connection);
-                return false;
-            }
-        });
+        final List<InternetConnectionImpl> connectionsToStop =
+                connections.stream()
+                        .filter(connection -> connection.isStopped)
+                        .collect(Collectors.toList());
+        final List<InternetConnectionImpl> connectionsToProcess =
+                connections.stream()
+                        .filter(connection -> !connection.isStopped)
+                        .collect(Collectors.toList());
+        connections.removeIf(
+                connection -> {
+                    if (connection.isStopped) {
+                        return true;
+                    } else {
+                        processInternetAdapter(connection);
+                        return false;
+                    }
+                });
         executor.execute(() -> runOnInternetThread(connectionsToStop, connectionsToProcess));
     }
 

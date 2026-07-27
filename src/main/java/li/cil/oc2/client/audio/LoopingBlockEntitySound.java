@@ -1,7 +1,7 @@
-
 package li.cil.oc2.client.audio;
 
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -17,10 +17,8 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
     private static final float FADE_IN_DURATION_IN_TICKS = TickUtils.toTicks(Duration.ofSeconds(2));
     private static final float FADE_IN_PER_TICK = 1f / FADE_IN_DURATION_IN_TICKS;
 
-
     private final BlockEntity blockEntity;
     private boolean isCanceled;
-
 
     public LoopingBlockEntitySound(final BlockEntity blockEntity, final SoundEvent sound) {
         super(sound, SoundSource.BLOCKS, RandomSource.create());
@@ -35,7 +33,6 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
         looping = true;
     }
 
-
     public void cancel() {
         isCanceled = true;
     }
@@ -44,7 +41,9 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
     public void tick() {
         volume = Mth.clamp(volume + FADE_IN_PER_TICK, 0, 1);
         final ChunkPos chunkPos = new ChunkPos(blockEntity.getBlockPos());
-        if (blockEntity.isRemoved() || blockEntity.getLevel() == null || !blockEntity.getLevel().hasChunk(chunkPos.x, chunkPos.z)) {
+        if (blockEntity.isRemoved()
+                || blockEntity.getLevel() == null
+                || !blockEntity.getLevel().hasChunk(chunkPos.x, chunkPos.z)) {
             stop();
         }
     }

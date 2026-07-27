@@ -2,10 +2,12 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.MonitorBlock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorContraptionHelper;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -16,6 +18,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+
 import org.joml.Matrix4f;
 
 @SuppressWarnings("unused")
@@ -28,18 +31,28 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
     }
 
     @Override
-    public void render(final MonitorBlockEntity monitor, final float partialTicks, final PoseStack stack, final MultiBufferSource bufferSource, final int light, final int overlay) {
-        final MonitorBlockEntity framebufferSource = MonitorContraptionHelper.getPrimaryForContraptionRendering(monitor);
+    public void render(
+            final MonitorBlockEntity monitor,
+            final float partialTicks,
+            final PoseStack stack,
+            final MultiBufferSource bufferSource,
+            final int light,
+            final int overlay) {
+        final MonitorBlockEntity framebufferSource =
+                MonitorContraptionHelper.getPrimaryForContraptionRendering(monitor);
 
         final Direction blockFacing = monitor.getBlockState().getValue(MonitorBlock.FACING);
 
         final Matrix4f poseMatrix = stack.last().pose();
-        final Vec3 blockWorldPosRelativeToCamera = new Vec3(poseMatrix.m30(), poseMatrix.m31(), poseMatrix.m32());
+        final Vec3 blockWorldPosRelativeToCamera =
+                new Vec3(poseMatrix.m30(), poseMatrix.m31(), poseMatrix.m32());
         final Vec3 blockCenterRelativeToCamera = blockWorldPosRelativeToCamera.add(0.5, 0.5, 0.5);
 
         final Vec3 blockCenterToCamera = blockCenterRelativeToCamera.scale(-1);
-        final double projectedCameraPosition = blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getNormal()));
-        if (!MonitorContraptionHelper.isContraptionVirtualClone(monitor) && projectedCameraPosition <= 0) {
+        final double projectedCameraPosition =
+                blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getNormal()));
+        if (!MonitorContraptionHelper.isContraptionVirtualClone(monitor)
+                && projectedCameraPosition <= 0) {
             return;
         }
 
@@ -57,10 +70,14 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         final float pixelScale = 1 / 16f;
         stack.scale(pixelScale, pixelScale, pixelScale);
 
-        if (framebufferSource.getPowerState() && framebufferSource.isMounted() && framebufferSource.hasPower()) {
-            MonitorTextRenderer.renderTerminal(framebufferSource, stack, bufferSource, distanceToCamera, font);
+        if (framebufferSource.getPowerState()
+                && framebufferSource.isMounted()
+                && framebufferSource.hasPower()) {
+            MonitorTextRenderer.renderTerminal(
+                    framebufferSource, stack, bufferSource, distanceToCamera, font);
         } else if (framebufferSource.getPowerState()) {
-            MonitorTextRenderer.renderStatusText(bufferSource, framebufferSource, stack, distanceToCamera, font);
+            MonitorTextRenderer.renderStatusText(
+                    bufferSource, framebufferSource, stack, distanceToCamera, font);
         }
 
         stack.translate(0, 0, -0.1f);

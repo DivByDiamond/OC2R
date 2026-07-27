@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.provider;
 
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
@@ -19,27 +18,32 @@ public final class SimpleFramebufferDeviceProvider implements DeviceTreeProvider
     }
 
     @Override
-    public Optional<DeviceTree> createNode(final DeviceTree root, final MemoryMap memoryMap, final Device device, final String deviceName) {
-        final Optional<MappedMemoryRange> range = memoryMap.getMemoryRange((MemoryMappedDevice) device);
-        return range.map(r -> {
-            final DeviceTree chosen = root.find("/chosen");
-            chosen.addProp(DevicePropertyNames.RANGES)
-                  .addProp("#address-cells", 2)
-                  .addProp("#size-cells", 2);
+    public Optional<DeviceTree> createNode(
+            final DeviceTree root,
+            final MemoryMap memoryMap,
+            final Device device,
+            final String deviceName) {
+        final Optional<MappedMemoryRange> range =
+                memoryMap.getMemoryRange((MemoryMappedDevice) device);
+        return range.map(
+                r -> {
+                    final DeviceTree chosen = root.find("/chosen");
+                    chosen.addProp(DevicePropertyNames.RANGES)
+                            .addProp("#address-cells", 2)
+                            .addProp("#size-cells", 2);
 
-            return chosen.getChild(deviceName, r.address());
-        });
+                    return chosen.getChild(deviceName, r.address());
+                });
     }
 
     @Override
     public void visit(final DeviceTree node, final MemoryMap memoryMap, final Device device) {
         final SimpleFramebufferDevice fb = (SimpleFramebufferDevice) device;
-        node
-            .addProp(DevicePropertyNames.COMPATIBLE, "simple-framebuffer")
-            .addProp("width", fb.getWidth())
-            .addProp("height", fb.getHeight())
-            .addProp("stride", fb.getWidth() * SimpleFramebufferDevice.STRIDE)
-            .addProp("format", "r5g6b5")
-            .addProp(DevicePropertyNames.STATUS, "okay");
+        node.addProp(DevicePropertyNames.COMPATIBLE, "simple-framebuffer")
+                .addProp("width", fb.getWidth())
+                .addProp("height", fb.getHeight())
+                .addProp("stride", fb.getWidth() * SimpleFramebufferDevice.STRIDE)
+                .addProp("format", "r5g6b5")
+                .addProp(DevicePropertyNames.STATUS, "okay");
     }
 }

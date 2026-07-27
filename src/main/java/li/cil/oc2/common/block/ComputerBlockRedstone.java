@@ -3,6 +3,7 @@ package li.cil.oc2.common.block;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -17,10 +18,14 @@ final class ComputerBlockRedstone {
         if (blockEntity != null) {
             var level = blockEntity.getLevel();
             if (level != null) {
-                var cap = level.getCapability(Capabilities.RedstoneEmitter.BLOCK, blockEntity.getBlockPos(), null, blockEntity, side.getOpposite());
-                return Optional.ofNullable(cap)
-                    .map(RedstoneEmitter::getRedstoneOutput)
-                    .orElse(0);
+                var cap =
+                        level.getCapability(
+                                Capabilities.RedstoneEmitter.BLOCK,
+                                blockEntity.getBlockPos(),
+                                null,
+                                blockEntity,
+                                side.getOpposite());
+                return Optional.ofNullable(cap).map(RedstoneEmitter::getRedstoneOutput).orElse(0);
             }
         }
         return -1;

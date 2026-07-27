@@ -53,21 +53,32 @@ public final class TerminalColors {
         0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee
     };
 
-    public static final ColorData DEFAULT_BACKGROUND_COLOR = new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.DEFAULT_BACKGROUND);
-    public static final ColorData DEFAULT_BRIGHT_COLORS = new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.SIXTEEN_COLOR_BRIGHT);
-    public static final ColorData DEFAULT_COLORS = new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.SIXTEEN_COLOR);
+    public static final ColorData DEFAULT_BACKGROUND_COLOR =
+            new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.DEFAULT_BACKGROUND);
+    public static final ColorData DEFAULT_BRIGHT_COLORS =
+            new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.SIXTEEN_COLOR_BRIGHT);
+    public static final ColorData DEFAULT_COLORS =
+            new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.SIXTEEN_COLOR);
     public static final byte DEFAULT_STYLE = 0;
-    public static final ColorData DEFAULT_256_COLORS = new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.TWO_FIFTY_SIX_COLOR);
-    public static final ColorData DEFAULT_TRUE_COLOR_FOREGROUND = new ColorData(238, 238, 238, ColorMode.TRUE_COLOR);
-    public static final ColorData DEFAULT_TRUE_COLOR_BACKGROUND = new ColorData(0, 0, 0, ColorMode.TRUE_COLOR);
+    public static final ColorData DEFAULT_256_COLORS =
+            new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.TWO_FIFTY_SIX_COLOR);
+    public static final ColorData DEFAULT_TRUE_COLOR_FOREGROUND =
+            new ColorData(238, 238, 238, ColorMode.TRUE_COLOR);
+    public static final ColorData DEFAULT_TRUE_COLOR_BACKGROUND =
+            new ColorData(0, 0, 0, ColorMode.TRUE_COLOR);
     public static final int TAB_WIDTH = 4;
 
     public enum ColorMode {
-        @SerializedName("0") SIXTEEN_COLOR,
-        @SerializedName("1") TWO_FIFTY_SIX_COLOR,
-        @SerializedName("2") TRUE_COLOR,
-        @SerializedName("3") SIXTEEN_COLOR_BRIGHT,
-        @SerializedName("4") DEFAULT_BACKGROUND,
+        @SerializedName("0")
+        SIXTEEN_COLOR,
+        @SerializedName("1")
+        TWO_FIFTY_SIX_COLOR,
+        @SerializedName("2")
+        TRUE_COLOR,
+        @SerializedName("3")
+        SIXTEEN_COLOR_BRIGHT,
+        @SerializedName("4")
+        DEFAULT_BACKGROUND,
     }
 
     public static final class CursorMode {

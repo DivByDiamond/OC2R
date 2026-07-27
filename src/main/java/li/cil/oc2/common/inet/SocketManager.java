@@ -1,9 +1,10 @@
 package li.cil.oc2.common.inet;
 
-import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.InternetManager;
+import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,20 +34,22 @@ public final class SocketManager {
 
     private void selectionTaskFunction() {
         try {
-            selector.selectNow(selectionKey -> {
-                final ChannelAttachment attachment = (ChannelAttachment) selectionKey.attachment();
-                final Session session = attachment.session;
-                final ReadySessions readySessions = attachment.readySessions;
-                if (selectionKey.isReadable()) {
-                    readySessions.getToRead().add(session);
-                }
-                if (selectionKey.isWritable()) {
-                    readySessions.getToWrite().add(session);
-                }
-                if (selectionKey.isConnectable()) {
-                    readySessions.getToConnect().add(session);
-                }
-            });
+            selector.selectNow(
+                    selectionKey -> {
+                        final ChannelAttachment attachment =
+                                (ChannelAttachment) selectionKey.attachment();
+                        final Session session = attachment.session;
+                        final ReadySessions readySessions = attachment.readySessions;
+                        if (selectionKey.isReadable()) {
+                            readySessions.getToRead().add(session);
+                        }
+                        if (selectionKey.isWritable()) {
+                            readySessions.getToWrite().add(session);
+                        }
+                        if (selectionKey.isConnectable()) {
+                            readySessions.getToConnect().add(session);
+                        }
+                    });
         } catch (final IOException exception) {
             LOGGER.error("Exception while selecting", exception);
         }
@@ -62,11 +65,10 @@ public final class SocketManager {
         LOGGER.info("Started socket manager");
     }
 
-    private record ChannelAttachment(Session session, ReadySessions readySessions) {
-    }
+    private record ChannelAttachment(Session session, ReadySessions readySessions) {}
 
-    public DatagramChannel createDatagramChannel(final DatagramSession session,
-                                              final ReadySessions readySessions) throws IOException {
+    public DatagramChannel createDatagramChannel(
+            final DatagramSession session, final ReadySessions readySessions) throws IOException {
         final DatagramChannel datagramChannel = DatagramChannel.open();
         datagramChannel.configureBlocking(false);
         final ChannelAttachment attachment = new ChannelAttachment(session, readySessions);
@@ -75,8 +77,8 @@ public final class SocketManager {
         return datagramChannel;
     }
 
-    public SocketChannel createStreamChannel(final StreamSession session,
-                                            final ReadySessions readySessions) throws IOException {
+    public SocketChannel createStreamChannel(
+            final StreamSession session, final ReadySessions readySessions) throws IOException {
         final SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
         final ChannelAttachment attachment = new ChannelAttachment(session, readySessions);

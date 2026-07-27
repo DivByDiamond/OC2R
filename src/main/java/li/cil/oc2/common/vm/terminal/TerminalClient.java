@@ -38,7 +38,12 @@ class TerminalClient {
         if (terminal.hasPendingBell) {
             terminal.hasPendingBell = false;
             final Minecraft client = Minecraft.getInstance();
-            client.execute(() -> client.getSoundManager().play(SimpleSoundInstance.forUI(NoteBlockInstrument.PLING.getSoundEvent(), 1)));
+            client.execute(
+                    () ->
+                            client.getSoundManager()
+                                    .play(
+                                            SimpleSoundInstance.forUI(
+                                                    NoteBlockInstrument.PLING.getSoundEvent(), 1)));
         }
     }
 }

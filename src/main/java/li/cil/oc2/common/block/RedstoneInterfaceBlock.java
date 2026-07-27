@@ -1,14 +1,15 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.world.level.Level;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.misc.RedstoneInterfaceBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -20,13 +21,10 @@ import net.minecraft.world.level.material.MapColor;
 
 import javax.annotation.Nullable;
 
-public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
+        implements EntityBlock {
     public RedstoneInterfaceBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -35,10 +33,10 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
         return BlockCodecs.REDSTONE_INTERFACE.get();
     }
 
-
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @SuppressWarnings("deprecation")
@@ -49,7 +47,11 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
 
     @SuppressWarnings("deprecation")
     @Override
-    public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction side) {
+    public int getSignal(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final Direction side) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof final RedstoneInterfaceBlockEntity redstoneInterface) {
             // Redstone requests info for faces with external perspective. We treat
@@ -62,14 +64,25 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
 
     @SuppressWarnings("deprecation")
     @Override
-    public int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction side) {
+    public int getDirectSignal(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final Direction side) {
         return getSignal(state, level, pos, side);
     }
 
     @Override
     @SuppressWarnings({"deprecation", "DataFlowIssue"})
-    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-        RedstoneInterfaceBlockEntity ribe = (RedstoneInterfaceBlockEntity) worldIn.getBlockEntity(pos);
+    public void neighborChanged(
+            BlockState state,
+            Level worldIn,
+            BlockPos pos,
+            Block blockIn,
+            BlockPos fromPos,
+            boolean isMoving) {
+        RedstoneInterfaceBlockEntity ribe =
+                (RedstoneInterfaceBlockEntity) worldIn.getBlockEntity(pos);
         ribe.neighborChanged(fromPos);
     }
 
@@ -81,9 +94,9 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock imp
         return BlockEntities.REDSTONE_INTERFACE.get().create(pos, state);
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

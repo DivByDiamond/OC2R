@@ -1,6 +1,7 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -28,7 +29,8 @@ class BlockOperationCooldown {
         return tag;
     }
 
-    void deserializeNBT(final HolderLookup.Provider provider, final CompoundTag tag, final Level level) {
+    void deserializeNBT(
+            final HolderLookup.Provider provider, final CompoundTag tag, final Level level) {
         lastOperation = Mth.clamp(tag.getLong(LAST_OPERATION_TAG_NAME), 0, level.getGameTime());
     }
 }

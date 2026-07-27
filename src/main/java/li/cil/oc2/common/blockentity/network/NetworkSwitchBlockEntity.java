@@ -1,17 +1,20 @@
 package li.cil.oc2.common.blockentity.network;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
-import java.util.*;
+import static java.util.Collections.singletonList;
+
 import com.google.gson.internal.LinkedTreeMap;
 import com.mojang.datafixers.util.Pair;
+
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -20,15 +23,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 
-import static java.util.Collections.singletonList;
+import java.util.*;
 
-public final class NetworkSwitchBlockEntity extends ModBlockEntity implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
+public final class NetworkSwitchBlockEntity extends ModBlockEntity
+        implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
     private final long HOST_TTL = 20 * 60 * 2;
     private final int TTL_COST = 1;
     private final SwitchHostTable hostTable = new SwitchHostTable();
     private final SwitchPortManager portManager = new SwitchPortManager();
     private int tickCount = 0;
-    private final NetworkInterface[] adjacentBlockInterfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT];
+    private final NetworkInterface[] adjacentBlockInterfaces =
+            new NetworkInterface[Constants.BLOCK_FACE_COUNT];
     private BlockCapabilityCache<NetworkInterface, Direction>[] adjacentBlockCaches = null;
     private boolean haveAdjacentBlocksChanged = true;
 
@@ -40,20 +45,24 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
     protected void loadServer() {
         super.loadServer();
         final BlockPos pos = getBlockPos();
-        var adj = new ArrayList<BlockCapabilityCache<NetworkInterface, Direction>>(Constants.BLOCK_FACE_COUNT);
+        var adj =
+                new ArrayList<BlockCapabilityCache<NetworkInterface, Direction>>(
+                        Constants.BLOCK_FACE_COUNT);
         for (var side : Constants.DIRECTIONS)
-            adj.set(side.get3DDataValue(), BlockCapabilityCache.create(
-                Capabilities.NetworkInterface.BLOCK,
-                (ServerLevel) level,
-                pos.relative(side),
-                side.getOpposite(),
-                () -> !this.isRemoved(),
-                this::handleNeighborChanged
-            ));
+            adj.set(
+                    side.get3DDataValue(),
+                    BlockCapabilityCache.create(
+                            Capabilities.NetworkInterface.BLOCK,
+                            (ServerLevel) level,
+                            pos.relative(side),
+                            side.getOpposite(),
+                            () -> !this.isRemoved(),
+                            this::handleNeighborChanged));
         adjacentBlockCaches = (BlockCapabilityCache<NetworkInterface, Direction>[]) adj.toArray();
     }
 
-    public void writeEthernetFrame(final NetworkInterface source, byte[] frame, final int timeToLive) {
+    public void writeEthernetFrame(
+            final NetworkInterface source, byte[] frame, final int timeToLive) {
         validateAdjacentBlocks();
         long tickTime = getLevel().getGameTime();
         long destMac = PacketProcessor.macToLong(frame, 0);
@@ -93,7 +102,9 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
     }
 
     @Override
-    public byte[] readEthernetFrame() { return null; }
+    public byte[] readEthernetFrame() {
+        return null;
+    }
 
     private void writeToSide(byte[] frame, int side, short vlan, SwitchLog log, int timeToLive) {
         log.egressPort(side);
@@ -135,12 +146,16 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
     @Override
     public void getDeviceDocumentation(final DeviceVisitor visitor) {
         visitor.visitCallback("getHostTable")
-            .description("Returns the MAC address table of the switch")
-            .returnValueDescription("The MAC table. For each host the mac address, the age (in ticks) and the face is returned");
+                .description("Returns the MAC address table of the switch")
+                .returnValueDescription(
+                        "The MAC table. For each host the mac address, the age (in ticks) and the"
+                            + " face is returned");
     }
 
     @Override
-    public Collection<String> getDeviceTypeNames() { return singletonList("switch"); }
+    public Collection<String> getDeviceTypeNames() {
+        return singletonList("switch");
+    }
 
     @Override
     public void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
@@ -163,13 +178,19 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
     }
 
     @Callback(name = "getHostTable")
-    public List<LuaHostEntry> getHostTable() { return hostTable.getHostTable(getLevel().getGameTime()); }
+    public List<LuaHostEntry> getHostTable() {
+        return hostTable.getHostTable(getLevel().getGameTime());
+    }
 
     @Callback(name = "getPortConfig", synchronize = false)
-    public PortSettings[] getPortSettings() { return portManager.getPortSettings(); }
+    public PortSettings[] getPortSettings() {
+        return portManager.getPortSettings();
+    }
 
     @Callback(name = "setPortConfig")
-    public void setPortSettings(List<LinkedTreeMap> settings) { portManager.setPortSettings(settings); }
+    public void setPortSettings(List<LinkedTreeMap> settings) {
+        portManager.setPortSettings(settings);
+    }
 
     @Callback(name = "getLinkState")
     public boolean[] getLinkState() {
@@ -196,5 +217,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity implements Na
             adjacentBlockInterfaces[i] = adjacentBlockCaches[i].getCapability();
     }
 
-    private void handleNeighborChanged() { haveAdjacentBlocksChanged = true; }
+    private void handleNeighborChanged() {
+        haveAdjacentBlocksChanged = true;
+    }
 }

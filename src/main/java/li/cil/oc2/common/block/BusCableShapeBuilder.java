@@ -1,6 +1,7 @@
 package li.cil.oc2.common.block;
 
 import li.cil.oc2.common.Constants;
+
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
@@ -53,22 +54,28 @@ final class BusCableShapeBuilder {
         final int ySize = 6;
         final int zSize = 5;
 
-        final Direction yDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
-        final Direction xDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.WEST : zDirection.getClockWise();
+        final Direction yDirection =
+                zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
+        final Direction xDirection =
+                zDirection.getAxis() == Direction.Axis.Y
+                        ? Direction.WEST
+                        : zDirection.getClockWise();
 
-        final Vec3i min = new Vec3i(8, 8, 8)
-            .relative(xDirection, -xSize / 2)
-            .relative(yDirection, -ySize / 2)
-            .relative(zDirection, 8 - zSize);
-        final Vec3i max = new Vec3i(8, 8, 8)
-            .relative(xDirection, xSize / 2)
-            .relative(yDirection, ySize / 2)
-            .relative(zDirection, 8);
+        final Vec3i min =
+                new Vec3i(8, 8, 8)
+                        .relative(xDirection, -xSize / 2)
+                        .relative(yDirection, -ySize / 2)
+                        .relative(zDirection, 8 - zSize);
+        final Vec3i max =
+                new Vec3i(8, 8, 8)
+                        .relative(xDirection, xSize / 2)
+                        .relative(yDirection, ySize / 2)
+                        .relative(zDirection, 8);
 
-        final AABB bounds = new AABB(
-            Vec3.atLowerCornerOf(min).scale(1 / 16.0),
-            Vec3.atLowerCornerOf(max).scale(1 / 16.0)
-        );
+        final AABB bounds =
+                new AABB(
+                        Vec3.atLowerCornerOf(min).scale(1 / 16.0),
+                        Vec3.atLowerCornerOf(max).scale(1 / 16.0));
 
         return Shapes.create(bounds);
     }
@@ -78,22 +85,28 @@ final class BusCableShapeBuilder {
         final int ySize = 8;
         final int zSize = 1;
 
-        final Direction yDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
-        final Direction xDirection = zDirection.getAxis() == Direction.Axis.Y ? Direction.WEST : zDirection.getClockWise();
+        final Direction yDirection =
+                zDirection.getAxis() == Direction.Axis.Y ? Direction.NORTH : Direction.UP;
+        final Direction xDirection =
+                zDirection.getAxis() == Direction.Axis.Y
+                        ? Direction.WEST
+                        : zDirection.getClockWise();
 
-        final Vec3i min = new Vec3i(8, 8, 8)
-            .relative(xDirection, -xSize / 2)
-            .relative(yDirection, -ySize / 2)
-            .relative(zDirection, 8 - zSize);
-        final Vec3i max = new Vec3i(8, 8, 8)
-            .relative(xDirection, xSize / 2)
-            .relative(yDirection, ySize / 2)
-            .relative(zDirection, 8);
+        final Vec3i min =
+                new Vec3i(8, 8, 8)
+                        .relative(xDirection, -xSize / 2)
+                        .relative(yDirection, -ySize / 2)
+                        .relative(zDirection, 8 - zSize);
+        final Vec3i max =
+                new Vec3i(8, 8, 8)
+                        .relative(xDirection, xSize / 2)
+                        .relative(yDirection, ySize / 2)
+                        .relative(zDirection, 8);
 
-        final AABB bounds = new AABB(
-            Vec3.atLowerCornerOf(min).scale(1 / 16.0),
-            Vec3.atLowerCornerOf(max).scale(1 / 16.0)
-        );
+        final AABB bounds =
+                new AABB(
+                        Vec3.atLowerCornerOf(min).scale(1 / 16.0),
+                        Vec3.atLowerCornerOf(max).scale(1 / 16.0));
 
         return Shapes.or(getCableShape(zDirection), Shapes.create(bounds));
     }
@@ -104,7 +117,9 @@ final class BusCableShapeBuilder {
         for (int sideIndex = 0; sideIndex < Constants.BLOCK_FACE_COUNT; sideIndex++) {
             final int cableBit = 1 << sideIndex;
             final int interfaceBit = cableBit << 6;
-            switch (state.getValue(BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(Constants.DIRECTIONS[sideIndex]))) {
+            switch (state.getValue(
+                    BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(
+                            Constants.DIRECTIONS[sideIndex]))) {
                 case CABLE -> index |= cableBit;
                 case INTERFACE -> index |= interfaceBit;
             }

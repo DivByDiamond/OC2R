@@ -1,49 +1,56 @@
 package li.cil.oc2.common.blockentity.monitor;
 
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
+import static li.cil.oc2.common.vm.device.SimpleFramebufferDevice.STRIDE;
+
 import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
 import li.cil.oc2.jcodec.common.model.Picture;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
-import static li.cil.oc2.common.vm.device.SimpleFramebufferDevice.STRIDE;
+import javax.annotation.Nullable;
 
 final class MonitorVideoDecoder {
     private final H264Decoder decoder = new H264Decoder();
     private final ByteBuffer decoderBuffer = ByteBuffer.allocateDirect(WIDTH * HEIGHT * STRIDE);
     @Nullable private CompletableFuture<?> runningDecode;
 
-    void applyNextFrameClient(final ByteBuffer frameData, final Picture picture, @Nullable final FrameConsumer frameConsumer) {
+    void applyNextFrameClient(
+            final ByteBuffer frameData,
+            final Picture picture,
+            @Nullable final FrameConsumer frameConsumer) {
         final CompletableFuture<?> lastDecode = runningDecode;
-        runningDecode = CompletableFuture.runAsync(() -> {
-            try {
-                try {
-                    if (lastDecode != null) lastDecode.join();
-                } catch (final CompletionException ignored) {
-                }
+        runningDecode =
+                CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                try {
+                                    if (lastDecode != null) lastDecode.join();
+                                } catch (final CompletionException ignored) {
+                                }
 
-                final Inflater inflater = new Inflater();
-                inflater.setInput(frameData);
+                                final Inflater inflater = new Inflater();
+                                inflater.setInput(frameData);
 
-                decoderBuffer.clear();
-                inflater.inflate(decoderBuffer);
-                decoderBuffer.flip();
+                                decoderBuffer.clear();
+                                inflater.inflate(decoderBuffer);
+                                decoderBuffer.flip();
 
-                decoder.decodeFrame(decoderBuffer, picture.getData());
+                                decoder.decodeFrame(decoderBuffer, picture.getData());
 
-                synchronized (picture) {
-                    if (frameConsumer != null) {
-                        frameConsumer.processFrame(picture);
-                    }
-                }
-            } catch (final DataFormatException ignored) {
-            }
-        }, MonitorDecoderWorkers.INSTANCE);
+                                synchronized (picture) {
+                                    if (frameConsumer != null) {
+                                        frameConsumer.processFrame(picture);
+                                    }
+                                }
+                            } catch (final DataFormatException ignored) {
+                            }
+                        },
+                        MonitorDecoderWorkers.INSTANCE);
     }
 }

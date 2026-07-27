@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.common.vm.VirtualMachine;
+
 import net.minecraft.world.inventory.MenuType;
 
 public abstract class AbstractMachineContainer extends AbstractContainer {
@@ -11,18 +11,16 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
     public static final int ENERGY_CAPACITY_INDEX = 1;
     public static final int ENERGY_CONSUMPTION_INDEX = 2;
 
-
     private final IntPrecisionContainerData energyInfo;
 
-
-    protected AbstractMachineContainer(final MenuType<?> type, final int id, final IntPrecisionContainerData energyInfo) {
+    protected AbstractMachineContainer(
+            final MenuType<?> type, final int id, final IntPrecisionContainerData energyInfo) {
         super(type, id);
         this.energyInfo = energyInfo;
 
         checkContainerDataCount(energyInfo, ENERGY_INFO_SIZE);
         addDataSlots(energyInfo);
     }
-
 
     public abstract void switchToInventory();
 
@@ -41,7 +39,6 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
     public int getEnergyConsumption() {
         return energyInfo.getInt(ENERGY_CONSUMPTION_INDEX);
     }
-
 
     protected static IntPrecisionContainerData createClientEnergyInfo() {
         return new IntPrecisionContainerData.Client(ENERGY_INFO_SIZE);

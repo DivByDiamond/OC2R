@@ -2,15 +2,16 @@ package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.common.config.Config;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 final class SessionManager {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -32,7 +33,8 @@ final class SessionManager {
         if (expirationQueue.isEmpty()) {
             return;
         }
-        final Instant expireTime = Instant.now().minus(Config.defaultSessionLifetimeMs, ChronoUnit.MILLIS);
+        final Instant expireTime =
+                Instant.now().minus(Config.defaultSessionLifetimeMs, ChronoUnit.MILLIS);
         final Iterator<Instant> iterator = expirationQueue.navigableKeySet().iterator();
         while (iterator.hasNext()) {
             final Instant time = iterator.next();
@@ -69,9 +71,7 @@ final class SessionManager {
     @SuppressWarnings("unchecked")
     @Nullable
     <S extends SessionBase, D extends SessionDiscriminator<S>> S getOrCreateSession(
-            final D discriminator,
-            final Function<D, S> factory
-    ) {
+            final D discriminator, final Function<D, S> factory) {
         final S session = (S) sessions.get(discriminator);
         if (session != null) {
             return session;
@@ -97,7 +97,8 @@ final class SessionManager {
         if (expirationQueue.isEmpty()) {
             return null;
         }
-        final Instant retransmissionTime = Instant.now().minus(Config.tcpRetransmissionTimeoutMs, ChronoUnit.MILLIS);
+        final Instant retransmissionTime =
+                Instant.now().minus(Config.tcpRetransmissionTimeoutMs, ChronoUnit.MILLIS);
         for (final Instant time : expirationQueue.navigableKeySet()) {
             if (time.compareTo(retransmissionTime) < 0) {
                 final SessionBase session = expirationQueue.get(time);

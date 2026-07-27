@@ -1,10 +1,12 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
+
 import net.minecraft.nbt.CompoundTag;
 
-import javax.annotation.Nullable;
 import java.util.Queue;
+
+import javax.annotation.Nullable;
 
 public class RobotMovementController {
     private final Robot robot;

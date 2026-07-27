@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.energy;
 
 import net.minecraft.core.HolderLookup;

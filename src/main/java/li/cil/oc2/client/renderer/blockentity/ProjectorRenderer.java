@@ -2,15 +2,18 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import li.cil.oc2.client.renderer.ProjectorDepthRenderer;
 import li.cil.oc2.common.block.ProjectorBlock;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
+
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;
@@ -18,13 +21,12 @@ import org.joml.Vector4f;
 public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlockEntity> {
     private static final float PROJECTOR_FORWARD_SHIFT = 7 / 16f;
 
-    public ProjectorRenderer(final BlockEntityRendererProvider.Context ignored) {
-    }
+    public ProjectorRenderer(final BlockEntityRendererProvider.Context ignored) {}
 
     @Override
     public boolean shouldRender(final ProjectorBlockEntity projector, final Vec3 position) {
-        return !ProjectorDepthRenderer.isIsRenderingProjectorDepth() &&
-            BlockEntityRenderer.super.shouldRender(projector, position);
+        return !ProjectorDepthRenderer.isIsRenderingProjectorDepth()
+                && BlockEntityRenderer.super.shouldRender(projector, position);
     }
 
     @Override
@@ -33,8 +35,15 @@ public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlo
     }
 
     @Override
-    public void render(final ProjectorBlockEntity projector, final float partialTicks, final PoseStack stack, final MultiBufferSource bufferSource, final int light, final int overlay) {
-        final ProjectorBlockEntity framebufferSource = projector.getPrimaryForContraptionRendering();
+    public void render(
+            final ProjectorBlockEntity projector,
+            final float partialTicks,
+            final PoseStack stack,
+            final MultiBufferSource bufferSource,
+            final int light,
+            final int overlay) {
+        final ProjectorBlockEntity framebufferSource =
+                projector.getPrimaryForContraptionRendering();
 
         if (!framebufferSource.isProjecting()) {
             return;
@@ -52,20 +61,22 @@ public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlo
         }
 
         final net.minecraft.client.Camera camera =
-            net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();
+                net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();
 
         final org.joml.Vector4f blockCenterCam = new org.joml.Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
         blockCenterCam.mul(preAlignMatrix);
-        final Vec3 blockCenterWorld = camera.getPosition().add(
-            blockCenterCam.x(), blockCenterCam.y(), blockCenterCam.z());
+        final Vec3 blockCenterWorld =
+                camera.getPosition()
+                        .add(blockCenterCam.x(), blockCenterCam.y(), blockCenterCam.z());
 
         final org.joml.Matrix4f postAlignMatrix = stack.last().pose();
         final org.joml.Vector4f lightDirCam = new org.joml.Vector4f(0, 0, 1, 0);
         lightDirCam.mul(postAlignMatrix);
-        final Vec3 lightDirWorld = new Vec3(lightDirCam.x(), lightDirCam.y(), lightDirCam.z())
-            .normalize();
+        final Vec3 lightDirWorld =
+                new Vec3(lightDirCam.x(), lightDirCam.y(), lightDirCam.z()).normalize();
 
-        final Vec3 projectorPos = blockCenterWorld.add(lightDirWorld.scale(PROJECTOR_FORWARD_SHIFT));
+        final Vec3 projectorPos =
+                blockCenterWorld.add(lightDirWorld.scale(PROJECTOR_FORWARD_SHIFT));
 
         final float yRot = (float) Math.toDegrees(Math.atan2(-lightDirWorld.x, lightDirWorld.z));
 

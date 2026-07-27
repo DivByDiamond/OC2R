@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.mixin.ServerChunkCacheMixin;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
@@ -19,27 +19,29 @@ import java.util.WeakHashMap;
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class ChunkUtils {
     /**
-     * All chunks marked for lazy saving. The lazy unsaved state will be applied when
-     * chunks unload and when chunks get explicitly saved, via the {@link ServerChunkCacheMixin}.
+     * All chunks marked for lazy saving. The lazy unsaved state will be applied when chunks unload
+     * and when chunks get explicitly saved, via the {@link ServerChunkCacheMixin}.
      */
-    private static final Set<ChunkAccess> UNSAVED_CHUNKS = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private static final Set<ChunkAccess> UNSAVED_CHUNKS =
+            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     /**
      * This will mark a chunk unsaved lazily, right before an attempt to save it would be made due
      * to of these events:
+     *
      * <ul>
-     * <li>Chunk unloaded.</li>
-     * <li>Game paused (singleplayer).</li>
-     * <li>Save command.</li>
-     * <li>Server stopped.</li>
+     *   <li>Chunk unloaded.
+     *   <li>Game paused (singleplayer).
+     *   <li>Save command.
+     *   <li>Server stopped.
      * </ul>
-     * <p>
-     * This is intended for things that change every tick, which would lead to saving to NBT every
-     * single tick, when setting {@link net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)}
-     * directly.
-     * <p>
-     * Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked as
-     * unsaved just before this flag is checked, for the events listed above. I.e. for all cases
+     *
+     * <p>This is intended for things that change every tick, which would lead to saving to NBT
+     * every single tick, when setting {@link
+     * net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)} directly.
+     *
+     * <p>Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked
+     * as unsaved just before this flag is checked, for the events listed above. I.e. for all cases
      * where an "explicit" save is performed.
      *
      * @param chunkAccess the chunk to set the flag for.
@@ -51,22 +53,23 @@ public final class ChunkUtils {
     /**
      * This will mark a chunk unsaved lazily, right before an attempt to save it would be made due
      * to of these events:
+     *
      * <ul>
-     * <li>Chunk unloaded.</li>
-     * <li>Game paused (singleplayer).</li>
-     * <li>Save command.</li>
-     * <li>Server stopped.</li>
+     *   <li>Chunk unloaded.
+     *   <li>Game paused (singleplayer).
+     *   <li>Save command.
+     *   <li>Server stopped.
      * </ul>
-     * <p>
-     * This is intended for things that change every tick, which would lead to saving to NBT every
-     * single tick, when setting {@link net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)}
-     * directly.
-     * <p>
-     * Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked as
-     * unsaved just before this flag is checked, for the events listed above. I.e. for all cases
+     *
+     * <p>This is intended for things that change every tick, which would lead to saving to NBT
+     * every single tick, when setting {@link
+     * net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)} directly.
+     *
+     * <p>Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked
+     * as unsaved just before this flag is checked, for the events listed above. I.e. for all cases
      * where an "explicit" save is performed.
      *
-     * @param level    the level containing the chunk.
+     * @param level the level containing the chunk.
      * @param blockPos the block position contained in the chunk.
      */
     public static void setLazyUnsaved(final LevelAccessor level, final BlockPos blockPos) {
@@ -80,22 +83,23 @@ public final class ChunkUtils {
     /**
      * This will mark a chunk unsaved lazily, right before an attempt to save it would be made due
      * to of these events:
+     *
      * <ul>
-     * <li>Chunk unloaded.</li>
-     * <li>Game paused (singleplayer).</li>
-     * <li>Save command.</li>
-     * <li>Server stopped.</li>
+     *   <li>Chunk unloaded.
+     *   <li>Game paused (singleplayer).
+     *   <li>Save command.
+     *   <li>Server stopped.
      * </ul>
-     * <p>
-     * This is intended for things that change every tick, which would lead to saving to NBT every
-     * single tick, when setting {@link net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)}
-     * directly.
-     * <p>
-     * Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked as
-     * unsaved just before this flag is checked, for the events listed above. I.e. for all cases
+     *
+     * <p>This is intended for things that change every tick, which would lead to saving to NBT
+     * every single tick, when setting {@link
+     * net.minecraft.world.level.chunk.ChunkAccess#setUnsaved(boolean)} directly.
+     *
+     * <p>Instead, this sets a flag on the chunk, which, if true, will cause the chunk to be marked
+     * as unsaved just before this flag is checked, for the events listed above. I.e. for all cases
      * where an "explicit" save is performed.
      *
-     * @param level    the level containing the chunk.
+     * @param level the level containing the chunk.
      * @param chunkPos the position of the chunk.
      */
     public static void setLazyUnsaved(final LevelAccessor level, final ChunkPos chunkPos) {
@@ -107,8 +111,8 @@ public final class ChunkUtils {
     }
 
     /**
-     * Marks the specified as unsaved, if it was marked as lazy unsaved before
-     * and clears the lazy unsaved flags.
+     * Marks the specified as unsaved, if it was marked as lazy unsaved before and clears the lazy
+     * unsaved flags.
      */
     public static void applyChunkLazyUnsaved() {
         for (final ChunkAccess chunk : UNSAVED_CHUNKS) {

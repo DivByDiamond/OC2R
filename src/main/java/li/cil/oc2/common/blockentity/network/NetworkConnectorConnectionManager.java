@@ -7,6 +7,7 @@ import li.cil.oc2.common.network.message.NetworkConnectorConnectionsMessage;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.ServerScheduler;
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -23,7 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 final class NetworkConnectorConnectionManager {
-    private static final int RETRY_UNLOADED_CHUNK_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(5));
+    private static final int RETRY_UNLOADED_CHUNK_INTERVAL =
+            TickUtils.toTicks(Duration.ofSeconds(5));
     private static final int MAX_CONNECTION_COUNT = 2;
     private static final int MAX_CONNECTION_DISTANCE = 16;
 
@@ -38,7 +40,9 @@ final class NetworkConnectorConnectionManager {
         this.owner = owner;
     }
 
-    static ConnectionResult connect(final NetworkConnectorBlockEntity connectorA, final NetworkConnectorBlockEntity connectorB) {
+    static ConnectionResult connect(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB) {
         if (connectorA == connectorB || !connectorA.isValid() || !connectorB.isValid()) {
             return ConnectionResult.FAILURE;
         }
@@ -52,7 +56,8 @@ final class NetworkConnectorConnectionManager {
             return ConnectionResult.FAILURE;
         }
 
-        if (!connectorA.connectionManager.canConnectMore() || !connectorB.connectionManager.canConnectMore()) {
+        if (!connectorA.connectionManager.canConnectMore()
+                || !connectorB.connectionManager.canConnectMore()) {
             return ConnectionResult.FAILURE_FULL;
         }
 
@@ -78,7 +83,8 @@ final class NetworkConnectorConnectionManager {
         }
 
         final ConnectionResult result;
-        if (connectorA.connectionManager.ownedCables.contains(posB) || connectorB.connectionManager.ownedCables.contains(posA)) {
+        if (connectorA.connectionManager.ownedCables.contains(posB)
+                || connectorB.connectionManager.ownedCables.contains(posA)) {
             connectorA.connectionManager.ownedCables.add(posB);
             connectorB.connectionManager.ownedCables.remove(posA);
             result = ConnectionResult.ALREADY_CONNECTED;
@@ -101,7 +107,8 @@ final class NetworkConnectorConnectionManager {
             final Level level = owner.getLevel();
             if (level != null) {
                 final Vec3 middle = Vec3.atCenterOf(owner.getBlockPos().offset(pos)).scale(0.5f);
-                ItemStackUtils.spawnAsEntity(level, middle, new ItemStack(Items.NETWORK_CABLE.get()));
+                ItemStackUtils.spawnAsEntity(
+                        level, middle, new ItemStack(Items.NETWORK_CABLE.get()));
             }
         }
 
@@ -143,7 +150,10 @@ final class NetworkConnectorConnectionManager {
 
         final ChunkPos destinationChunk = new ChunkPos(connectedPosition);
         if (!level.hasChunk(destinationChunk.x, destinationChunk.z)) {
-            ServerScheduler.schedule(level, () -> dirtyConnectors.add(connectedPosition), RETRY_UNLOADED_CHUNK_INTERVAL);
+            ServerScheduler.schedule(
+                    level,
+                    () -> dirtyConnectors.add(connectedPosition),
+                    RETRY_UNLOADED_CHUNK_INTERVAL);
             return;
         }
 
@@ -159,7 +169,8 @@ final class NetworkConnectorConnectionManager {
             return;
         }
 
-        if (NetworkConnectorConnectionValidator.isObstructed(level, owner.getBlockPos(), connectedPosition)) {
+        if (NetworkConnectorConnectionValidator.isObstructed(
+                level, owner.getBlockPos(), connectedPosition)) {
             disconnectFrom(connectedPosition);
             networkConnector.connectionManager.disconnectFrom(owner.getBlockPos());
             return;
@@ -171,9 +182,9 @@ final class NetworkConnectorConnectionManager {
     private void onConnectedPositionsChanged() {
         final Level level = owner.getLevel();
         if (level != null && !level.isClientSide()) {
-            final NetworkConnectorConnectionsMessage message = new NetworkConnectorConnectionsMessage(owner);
+            final NetworkConnectorConnectionsMessage message =
+                    new NetworkConnectorConnectionsMessage(owner);
             Network.sendToClientsTrackingBlockEntity(message, owner);
         }
     }
-
 }

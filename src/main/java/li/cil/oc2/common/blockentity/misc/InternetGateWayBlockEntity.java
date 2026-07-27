@@ -10,6 +10,7 @@ import li.cil.oc2.common.inet.InternetAdapter;
 import li.cil.oc2.common.inet.InternetConnection;
 import li.cil.oc2.common.inet.InternetManagerImpl;
 import li.cil.oc2.common.util.ChunkUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -21,13 +22,15 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class InternetGateWayBlockEntity extends ModBlockEntity implements NetworkInterface, InternetAdapter {
+public class InternetGateWayBlockEntity extends ModBlockEntity
+        implements NetworkInterface, InternetAdapter {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final int QUEUE_MAX = 64;
@@ -61,8 +64,11 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (internetConnection != null) {
-            internetConnection.saveAdapterState()
-                .ifPresent(adapterState -> tag.put(Constants.INTERNET_ADAPTER_TAG_NAME, adapterState));
+            internetConnection
+                    .saveAdapterState()
+                    .ifPresent(
+                            adapterState ->
+                                    tag.put(Constants.INTERNET_ADAPTER_TAG_NAME, adapterState));
         }
         tag.put(Constants.ENERGY_TAG_NAME, energy.serializeNBT(registries));
         LOGGER.trace("State saved");
@@ -77,7 +83,10 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+    public void onDataPacket(
+            Connection net,
+            ClientboundBlockEntityDataPacket pkt,
+            HolderLookup.Provider lookupProvider) {
         CompoundTag compoundtag = pkt.getTag();
         if (compoundtag != null) {
             handleUpdateTag(compoundtag, lookupProvider);
@@ -88,8 +97,10 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         animation.inboundCount = tag.getInt("inbound_count");
         animation.outboundCount = tag.getInt("outbound_count");
-        animation.handledInboundCount = Math.max(animation.handledInboundCount, animation.inboundCount - 128);
-        animation.handledOutboundCount = Math.max(animation.handledOutboundCount, animation.outboundCount - 128);
+        animation.handledInboundCount =
+                Math.max(animation.handledInboundCount, animation.inboundCount - 128);
+        animation.handledOutboundCount =
+                Math.max(animation.handledOutboundCount, animation.outboundCount - 128);
     }
 
     @Override
@@ -100,7 +111,9 @@ public class InternetGateWayBlockEntity extends ModBlockEntity implements Networ
     @Override
     protected void loadServer() {
         InternetManagerImpl.getInstance()
-            .ifPresent(internetManager -> internetConnection = internetManager.connect(this, internetState));
+                .ifPresent(
+                        internetManager ->
+                                internetConnection = internetManager.connect(this, internetState));
         if (internetConnection != null) {
             LOGGER.trace("Connected to the internet");
         } else {

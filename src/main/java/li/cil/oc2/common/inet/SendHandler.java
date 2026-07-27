@@ -3,6 +3,7 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.TransportMessage;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.Session;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,13 +21,20 @@ final class SendHandler {
     StreamSessionImpl streamToAck = null;
     StreamSessionImpl rejectedStream = null;
 
-    SendHandler(final SessionLayer sessionLayer, final SessionManager sessionManager, final IcmpHandler icmpHandler) {
+    SendHandler(
+            final SessionLayer sessionLayer,
+            final SessionManager sessionManager,
+            final IcmpHandler icmpHandler) {
         this.sessionLayer = sessionLayer;
         this.sessionManager = sessionManager;
         this.icmpHandler = icmpHandler;
     }
 
-    void sendIcmpMessage(final ByteBuffer data, final int srcIpAddress, final int dstIpAddress, final TransportMessage message) {
+    void sendIcmpMessage(
+            final ByteBuffer data,
+            final int srcIpAddress,
+            final int dstIpAddress,
+            final TransportMessage message) {
         if (data.remaining() < IcmpHandler.ICMP_HEADER_SIZE) return;
         final byte type = data.get();
         final byte code = data.get();
@@ -34,9 +42,12 @@ final class SendHandler {
         if (type != IcmpHandler.ICMP_TYPE_ECHO_REQUEST || code != 0) return;
         final short identity = data.getShort();
         final short sequence = data.getShort();
-        final EchoSessionDiscriminator discriminator = new EchoSessionDiscriminator(srcIpAddress, dstIpAddress, identity);
-        final EchoSessionImpl session = sessionManager.getOrCreateSession(discriminator,
-            it -> new EchoSessionImpl(dstIpAddress, IcmpHandler.PORT_ECHO, it));
+        final EchoSessionDiscriminator discriminator =
+                new EchoSessionDiscriminator(srcIpAddress, dstIpAddress, identity);
+        final EchoSessionImpl session =
+                sessionManager.getOrCreateSession(
+                        discriminator,
+                        it -> new EchoSessionImpl(dstIpAddress, IcmpHandler.PORT_ECHO, it));
         if (session == null) {
             icmpHandler.reject(data, srcIpAddress);
         } else {
@@ -55,9 +66,11 @@ final class SendHandler {
         data.getShort();
         if (data.remaining() + UDP_HEADER_SIZE < datagramLength) return;
         data.limit(data.position() + datagramLength - UDP_HEADER_SIZE);
-        final DatagramSessionDiscriminator discriminator = new DatagramSessionDiscriminator(srcIpAddress, srcPort, dstIpAddress, dstPort);
-        final DatagramSessionImpl session = sessionManager.getOrCreateSession(discriminator,
-            it -> new DatagramSessionImpl(dstIpAddress, dstPort, it));
+        final DatagramSessionDiscriminator discriminator =
+                new DatagramSessionDiscriminator(srcIpAddress, srcPort, dstIpAddress, dstPort);
+        final DatagramSessionImpl session =
+                sessionManager.getOrCreateSession(
+                        discriminator, it -> new DatagramSessionImpl(dstIpAddress, dstPort, it));
         if (session == null) {
             icmpHandler.reject(data, srcIpAddress);
         } else {
@@ -70,9 +83,11 @@ final class SendHandler {
         if (data.remaining() < MIN_TCP_HEADER_SIZE) return;
         final short srcPort = data.getShort();
         final short dstPort = data.getShort();
-        final StreamSessionDiscriminator discriminator = new StreamSessionDiscriminator(srcIpAddress, srcPort, dstIpAddress, dstPort);
-        final StreamSessionImpl session = sessionManager.getOrCreateSession(discriminator,
-            it -> new StreamSessionImpl(dstIpAddress, dstPort, it));
+        final StreamSessionDiscriminator discriminator =
+                new StreamSessionDiscriminator(srcIpAddress, srcPort, dstIpAddress, dstPort);
+        final StreamSessionImpl session =
+                sessionManager.getOrCreateSession(
+                        discriminator, it -> new StreamSessionImpl(dstIpAddress, dstPort, it));
         if (session == null) {
             icmpHandler.reject(data, srcIpAddress);
         } else {
@@ -81,10 +96,12 @@ final class SendHandler {
                 case FORWARD -> {
                     switch (session.getState()) {
                         case NEW, FINISH -> sessionLayer.sendSession(session, null);
-                        case ESTABLISHED -> sessionLayer.sendSession(session, session.getSendBuffer());
+                        case ESTABLISHED ->
+                                sessionLayer.sendSession(session, session.getSendBuffer());
                     }
                     final Session.States state = session.getState();
-                    if (state == Session.States.REJECT || state == Session.States.FINISH) rejectedStream = session;
+                    if (state == Session.States.REJECT || state == Session.States.FINISH)
+                        rejectedStream = session;
                     if (session.isNeedsAcknowledgment()) streamToAck = session;
                 }
                 case DROP -> sessionManager.closeSession(session);
@@ -92,7 +109,8 @@ final class SendHandler {
         }
     }
 
-    private void sessionSendFinish(final DatagramSessionBase session, final ByteBuffer payload, final int srcIpAddress) {
+    private void sessionSendFinish(
+            final DatagramSessionBase session, final ByteBuffer payload, final int srcIpAddress) {
         switch (session.getState()) {
             case NEW -> session.setState(Session.States.ESTABLISHED);
             case REJECT -> icmpHandler.reject(payload, srcIpAddress);

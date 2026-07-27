@@ -1,8 +1,10 @@
 package li.cil.oc2.common.blockentity.misc;
 
 import com.google.gson.JsonObject;
+
 import li.cil.oc2.api.bus.device.rpc.IEventSink;
 import li.cil.oc2.api.util.Side;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ChunkPos;
@@ -24,12 +26,17 @@ public final class RedstoneInterfaceEventDispatcher {
         subscribers.remove(sink);
     }
 
-    public void neighborChanged(final Level level, final BlockPos pos, final BlockState blockState, final BlockPos fromPos) {
+    public void neighborChanged(
+            final Level level,
+            final BlockPos pos,
+            final BlockState blockState,
+            final BlockPos fromPos) {
         final Direction direction = Side.relativeDirection(pos, fromPos);
         assert direction != null;
 
         final ChunkPos chunkPos = new ChunkPos(fromPos);
-        final int sl = level.hasChunk(chunkPos.x, chunkPos.z) ? level.getSignal(fromPos, direction) : 0;
+        final int sl =
+                level.hasChunk(chunkPos.x, chunkPos.z) ? level.getSignal(fromPos, direction) : 0;
 
         final JsonObject msg = new JsonObject();
         msg.addProperty("event", "redstone");

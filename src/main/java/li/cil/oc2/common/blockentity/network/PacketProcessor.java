@@ -57,7 +57,8 @@ final class PacketProcessor {
         }
     }
 
-    static void copyBytes(byte[] input, byte[] output, int inputOffset, int outputOffset, int length) {
+    static void copyBytes(
+            byte[] input, byte[] output, int inputOffset, int outputOffset, int length) {
         if (length >= 0) System.arraycopy(input, inputOffset, output, outputOffset, length);
     }
 }

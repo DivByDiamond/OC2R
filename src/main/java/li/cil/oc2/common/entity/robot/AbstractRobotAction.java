@@ -1,16 +1,14 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
+
 import net.minecraft.nbt.CompoundTag;
 
 public abstract class AbstractRobotAction {
     private static final String ID_TAG_NAME = "id";
 
-
     private final AbstractRobotActionType type;
     private int id;
-
 
     public AbstractRobotAction(final AbstractRobotActionType type) {
         this.type = type;
@@ -20,7 +18,6 @@ public abstract class AbstractRobotAction {
         this(type);
         deserialize(tag);
     }
-
 
     public AbstractRobotActionType getType() {
         return type;
@@ -34,8 +31,7 @@ public abstract class AbstractRobotAction {
         id = value;
     }
 
-    public void initialize(final Robot robot) {
-    }
+    public void initialize(final Robot robot) {}
 
     public abstract RobotActionResult perform(Robot robot);
 

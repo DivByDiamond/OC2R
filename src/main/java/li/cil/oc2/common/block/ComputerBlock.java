@@ -1,13 +1,15 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.common.config.Config;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.TooltipUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -38,17 +40,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
 
     public ComputerBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -59,7 +58,11 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(final ItemStack stack, final Item.TooltipContext context, final List<Component> tooltip, final TooltipFlag advanced) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final Item.TooltipContext context,
+            final List<Component> tooltip,
+            final TooltipFlag advanced) {
         super.appendHoverText(stack, context, tooltip, advanced);
         TooltipUtils.addEnergyConsumption(Config.computerEnergyPerTick, tooltip);
         TooltipUtils.addInventoryInformation(stack, tooltip);
@@ -72,26 +75,44 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    public int getSignal(final BlockState state, final BlockGetter blockGetter, final BlockPos pos, final Direction side) {
+    public int getSignal(
+            final BlockState state,
+            final BlockGetter blockGetter,
+            final BlockPos pos,
+            final Direction side) {
         final int signal = ComputerBlockRedstone.getSignal(blockGetter, pos, side);
         return signal >= 0 ? signal : super.getSignal(state, blockGetter, pos, side);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction side) {
+    public int getDirectSignal(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final Direction side) {
         return getSignal(state, level, pos, side);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block changedBlock, final BlockPos changedBlockPos, final boolean isMoving) {
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            final BlockPos changedBlockPos,
+            final boolean isMoving) {
         ComputerBlockRedstone.neighborChanged(level, pos);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+    public VoxelShape getShape(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final CollisionContext context) {
         return switch (state.getValue(FACING)) {
             case NORTH -> ComputerBlockShapes.NEG_Z_SHAPE;
             case SOUTH -> ComputerBlockShapes.POS_Z_SHAPE;
@@ -101,7 +122,14 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(final ItemStack stack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+    protected ItemInteractionResult useItemOn(
+            final ItemStack stack,
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final InteractionHand hand,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final ComputerBlockEntity computer)) {
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -121,7 +149,12 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final ComputerBlockEntity computer)) {
             return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -139,7 +172,8 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+    public BlockState playerWillDestroy(
+            final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!level.isClientSide() && blockEntity instanceof final ComputerBlockEntity computer) {
             if (!computer.getItemStackHandlers().isEmpty()) {
@@ -156,7 +190,8 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Nullable
@@ -167,12 +202,14 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
         return TickableBlockEntity.createTicker(level, type, BlockEntities.COMPUTER.get());
     }
 
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

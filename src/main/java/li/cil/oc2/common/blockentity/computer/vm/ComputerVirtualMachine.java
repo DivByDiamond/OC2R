@@ -18,18 +18,23 @@ import li.cil.oc2.common.vm.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.BaseAddressProvider;
 import li.cil.oc2.common.vm.VMRunState;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
+
+import javax.annotation.Nullable;
 
 public class ComputerVirtualMachine extends AbstractVirtualMachine {
     private static final int MAX_RUNNING_SOUND_DELAY = TickUtils.toTicks(Duration.ofSeconds(2));
 
     private final ComputerBlockEntity owner;
 
-    public ComputerVirtualMachine(final ComputerBlockEntity owner, final CommonDeviceBusController busController, final BaseAddressProvider baseAddressProvider) {
+    public ComputerVirtualMachine(
+            final ComputerBlockEntity owner,
+            final CommonDeviceBusController busController,
+            final BaseAddressProvider baseAddressProvider) {
         super(busController);
         this.owner = owner;
         state.vmAdapter.setBaseAddressProvider(baseAddressProvider);
@@ -42,7 +47,10 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
         if (value == VMRunState.RUNNING) {
             final Level level = owner.getLevel();
             if (!LoopingSoundManager.isPlaying(owner) && level != null) {
-                LoopingSoundManager.play(owner, SoundEvents.COMPUTER_RUNNING.get(), level.getRandom().nextInt(MAX_RUNNING_SOUND_DELAY));
+                LoopingSoundManager.play(
+                        owner,
+                        SoundEvents.COMPUTER_RUNNING.get(),
+                        level.getRandom().nextInt(MAX_RUNNING_SOUND_DELAY));
             }
         } else {
             LoopingSoundManager.stop(owner);
@@ -80,7 +88,11 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     protected void stopRunnerAndReset() {
         super.stopRunnerAndReset();
 
-        TerminalUtils.resetTerminal(owner.terminal, output -> owner.sendToClientsTrackingComputer(new ComputerTerminalOutputMessage(owner, output)));
+        TerminalUtils.resetTerminal(
+                owner.terminal,
+                output ->
+                        owner.sendToClientsTrackingComputer(
+                                new ComputerTerminalOutputMessage(owner, output)));
     }
 
     @Override

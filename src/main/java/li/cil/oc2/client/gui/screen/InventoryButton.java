@@ -1,10 +1,10 @@
-
 package li.cil.oc2.client.gui.screen;
 
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
+
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -21,8 +21,7 @@ class InventoryButton extends ImageButton {
     }
 
     @Override
-    protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {
-    }
+    protected void updateWidgetNarration(final NarrationElementOutput narrationElementOutput) {}
 
     @Override
     public void onPress() {

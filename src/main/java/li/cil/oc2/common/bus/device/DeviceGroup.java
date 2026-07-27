@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
+
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.*;
@@ -13,8 +14,7 @@ public class DeviceGroup extends IdentityProxy<BlockEntity> implements Device {
         super(identity);
     }
 
-    public void addDevice(Device device)
-    {
+    public void addDevice(Device device) {
         devices.add(device);
     }
 

@@ -1,19 +1,17 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.client.gui.screen.KeyboardScreen;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.util.VoxelShapeUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -31,16 +29,21 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+
 import org.jetbrains.annotations.Nullable;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final VoxelShape NEG_Z_SHAPE = Shapes.or(Block.box(0, 0, 0, 16, 8, 16), // main body
-        Block.box(0, 8, 8, 16, 12, 16) // top
-    );
-    private static final VoxelShape NEG_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
-    private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
-    private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
-
+    private static final VoxelShape NEG_Z_SHAPE =
+            Shapes.or(
+                    Block.box(0, 0, 0, 16, 8, 16), // main body
+                    Block.box(0, 8, 8, 16, 12, 16) // top
+                    );
+    private static final VoxelShape NEG_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
+    private static final VoxelShape POS_Z_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
+    private static final VoxelShape POS_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
     public KeyboardBlock() {
         super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
@@ -52,15 +55,19 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         return BlockCodecs.KEYBOARD.get();
     }
 
-
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+    public VoxelShape getShape(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final CollisionContext context) {
         return switch (state.getValue(FACING)) {
             case NORTH -> NEG_Z_SHAPE;
             case SOUTH -> POS_Z_SHAPE;
@@ -70,7 +77,12 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
-    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final KeyboardBlockEntity keyboard)) {
             return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -91,13 +103,12 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         return BlockEntities.KEYBOARD.get().create(pos, state);
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }
-
 
     @OnlyIn(Dist.CLIENT)
     private static void openKeyboardScreen(final KeyboardBlockEntity keyboard) {

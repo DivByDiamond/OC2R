@@ -1,19 +1,19 @@
 package li.cil.oc2.common.integration.util;
 
 import li.cil.oc2.common.integration.projectred.BundledCableHandler;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-
 public class BundledRedstone {
     private static BundledRedstone INSTANCE = null;
 
     private BundledCableHandler handler = null;
 
-    private BundledRedstone() { }
+    private BundledRedstone() {}
 
     public static synchronized BundledRedstone getInstance() {
         if (INSTANCE == null) {

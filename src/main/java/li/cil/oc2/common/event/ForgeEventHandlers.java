@@ -1,13 +1,14 @@
 package li.cil.oc2.common.event;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.util.AsyncExecutorHelper;
+
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

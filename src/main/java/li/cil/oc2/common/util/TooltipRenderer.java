@@ -13,15 +13,30 @@ import net.neoforged.neoforge.client.ClientHooks;
 import java.util.List;
 
 public final class TooltipRenderer {
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y) {
+    public static void drawTooltip(
+            final GuiGraphics graphics,
+            final List<? extends FormattedText> tooltip,
+            final int x,
+            final int y) {
         drawTooltip(graphics, tooltip, x, y, 200, ItemStack.EMPTY);
     }
 
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y, final int widthHint) {
+    public static void drawTooltip(
+            final GuiGraphics graphics,
+            final List<? extends FormattedText> tooltip,
+            final int x,
+            final int y,
+            final int widthHint) {
         drawTooltip(graphics, tooltip, x, y, widthHint, ItemStack.EMPTY);
     }
 
-    public static void drawTooltip(final GuiGraphics graphics, final List<? extends FormattedText> tooltip, final int x, final int y, final int widthHint, final ItemStack itemStack) {
+    public static void drawTooltip(
+            final GuiGraphics graphics,
+            final List<? extends FormattedText> tooltip,
+            final int x,
+            final int y,
+            final int widthHint,
+            final ItemStack itemStack) {
         final Minecraft minecraft = Minecraft.getInstance();
         final Screen screen = minecraft.screen;
         if (screen == null) {
@@ -32,13 +47,20 @@ public final class TooltipRenderer {
         final int targetWidth = Math.min(availableWidth, widthHint);
         final Font font = ClientHooks.getTooltipFont(itemStack, minecraft.font);
 
-        final boolean needsWrapping = tooltip.stream().anyMatch(line -> font.width(line) > targetWidth);
+        final boolean needsWrapping =
+                tooltip.stream().anyMatch(line -> font.width(line) > targetWidth);
         if (!needsWrapping) {
             graphics.renderComponentTooltip(font, tooltip, x, y, itemStack);
         } else {
             final StringSplitter splitter = font.getSplitter();
-            final List<? extends FormattedText> wrappedTooltip = tooltip.stream().flatMap(line ->
-                splitter.splitLines(line, targetWidth, Style.EMPTY).stream()).toList();
+            final List<? extends FormattedText> wrappedTooltip =
+                    tooltip.stream()
+                            .flatMap(
+                                    line ->
+                                            splitter
+                                                    .splitLines(line, targetWidth, Style.EMPTY)
+                                                    .stream())
+                            .toList();
             graphics.renderComponentTooltip(font, wrappedTooltip, x, y, itemStack);
         }
     }

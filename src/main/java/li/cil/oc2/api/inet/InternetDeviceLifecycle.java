@@ -8,5 +8,6 @@ public interface InternetDeviceLifecycle {
     default Optional<Tag> onSave() {
         return Optional.empty();
     }
+
     default void onStop() {}
 }

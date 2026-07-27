@@ -1,5 +1,6 @@
-
 package li.cil.oc2.common.util;
+
+import static li.cil.oc2.common.Constants.MOD_TAG_NAME;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,10 +14,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static li.cil.oc2.common.Constants.MOD_TAG_NAME;
+import javax.annotation.Nullable;
 
 public final class ItemStackUtils {
     public static CompoundTag getModDataTag(final ItemStack stack) {
@@ -43,11 +43,13 @@ public final class ItemStackUtils {
         return block.defaultBlockState();
     }
 
-    public static Optional<ItemEntity> spawnAsEntity(final Level level, final BlockPos pos, final ItemStack stack) {
+    public static Optional<ItemEntity> spawnAsEntity(
+            final Level level, final BlockPos pos, final ItemStack stack) {
         return spawnAsEntity(level, Vec3.atCenterOf(pos), stack);
     }
 
-    public static Optional<ItemEntity> spawnAsEntity(final Level level, final Vec3 pos, final ItemStack stack) {
+    public static Optional<ItemEntity> spawnAsEntity(
+            final Level level, final Vec3 pos, final ItemStack stack) {
         if (level.isClientSide() || stack.isEmpty()) {
             return Optional.empty();
         }
@@ -68,11 +70,19 @@ public final class ItemStackUtils {
         return Optional.of(entity);
     }
 
-    public static Optional<ItemEntity> spawnAsEntity(final Level level, final BlockPos pos, final ItemStack stack, @Nullable final Direction direction) {
+    public static Optional<ItemEntity> spawnAsEntity(
+            final Level level,
+            final BlockPos pos,
+            final ItemStack stack,
+            @Nullable final Direction direction) {
         return spawnAsEntity(level, Vec3.atCenterOf(pos), stack, direction);
     }
 
-    public static Optional<ItemEntity> spawnAsEntity(final Level level, final Vec3 pos, final ItemStack stack, @Nullable final Direction direction) {
+    public static Optional<ItemEntity> spawnAsEntity(
+            final Level level,
+            final Vec3 pos,
+            final ItemStack stack,
+            @Nullable final Direction direction) {
         if (direction == null) {
             return spawnAsEntity(level, pos, stack);
         }
@@ -96,10 +106,9 @@ public final class ItemStackUtils {
         final ItemEntity entity = new ItemEntity(level, px, py, pz, stack);
 
         entity.setDeltaMovement(
-            0.0125 * (rng.nextDouble() - 0.5) + ox * 0.03,
-            0.0125 * (rng.nextDouble() - 0.5) + oy * 0.08 + (ox + oz) * 0.03,
-            0.0125 * (rng.nextDouble() - 0.5) + oz * 0.03
-        );
+                0.0125 * (rng.nextDouble() - 0.5) + ox * 0.03,
+                0.0125 * (rng.nextDouble() - 0.5) + oy * 0.08 + (ox + oz) * 0.03,
+                0.0125 * (rng.nextDouble() - 0.5) + oz * 0.03);
 
         entity.setDefaultPickUpDelay();
         level.addFreshEntity(entity);

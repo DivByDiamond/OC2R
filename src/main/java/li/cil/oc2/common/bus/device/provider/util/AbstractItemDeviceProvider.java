@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.bus.device.provider.util;
 
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 
 public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     private final Predicate<Item> predicate;
-
 
     private AbstractItemDeviceProvider(final Predicate<Item> predicate) {
         this.predicate = predicate;
@@ -31,7 +30,6 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
         this.predicate = i -> true;
     }
 
-
     @Override
     public final Optional<ItemDevice> getDevice(final ItemDeviceQuery query) {
         return matches(query) ? getItemDevice(query) : Optional.empty();
@@ -41,7 +39,6 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     public final int getEnergyConsumption(final ItemDeviceQuery query) {
         return matches(query) ? getItemDeviceEnergyConsumption(query) : 0;
     }
-
 
     protected boolean matches(final ItemDeviceQuery query) {
         final ItemStack stack = query.getItemStack();

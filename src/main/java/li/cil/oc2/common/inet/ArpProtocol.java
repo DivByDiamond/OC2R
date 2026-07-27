@@ -1,6 +1,7 @@
 package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.layer.NetworkLayer;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,17 +14,26 @@ final class ArpProtocol {
 
     private static final short HW_TYPE_ETHERNET = 0x0001;
     static final int ARP_MESSAGE_SIZE = 28;
-    private static final int ARP_ADDRESS_TYPE = (HW_TYPE_ETHERNET << 16) | NetworkLayer.PROTOCOL_IPv4;
+    private static final int ARP_ADDRESS_TYPE =
+            (HW_TYPE_ETHERNET << 16) | NetworkLayer.PROTOCOL_IPv4;
     private static final short ARP_ADDRESSES_SIZES = (6 << 8) | 4;
     private static final short ARP_REQUEST = 0x0001;
     private static final short ARP_RESPONSE = 0x0002;
 
-    record ArpRequestData(short senderMacPrefix, int senderMacAddress, int senderIpAddress, int targetIpAddress) {}
+    record ArpRequestData(
+            short senderMacPrefix,
+            int senderMacAddress,
+            int senderIpAddress,
+            int targetIpAddress) {}
 
-    static void writeResponse(final ByteBuffer frame,
-                              final MacAddress myMacAddress, final int myIpV4Address,
-                              final short cardMacPrefix, final int cardMacAddress, final int cardIpAddress,
-                              final int frameHeaderSize) {
+    static void writeResponse(
+            final ByteBuffer frame,
+            final MacAddress myMacAddress,
+            final int myIpV4Address,
+            final short cardMacPrefix,
+            final int cardMacAddress,
+            final int cardIpAddress,
+            final int frameHeaderSize) {
         frame.putInt(ARP_ADDRESS_TYPE);
         frame.putShort(ARP_ADDRESSES_SIZES);
         frame.putShort(ARP_RESPONSE);
@@ -37,8 +47,8 @@ final class ArpProtocol {
         LOGGER.trace("ARP message sent");
     }
 
-    static ArpRequestData readRequest(final ByteBuffer frame,
-                                       final short srcMacPrefix, final int srcMacAddress) {
+    static ArpRequestData readRequest(
+            final ByteBuffer frame, final short srcMacPrefix, final int srcMacAddress) {
         if (frame.remaining() < ARP_MESSAGE_SIZE) {
             return null;
         }
@@ -67,6 +77,7 @@ final class ArpProtocol {
         frame.getShort();
         frame.getInt();
         final int targetIpAddress = frame.getInt();
-        return new ArpRequestData(senderMacPrefix, senderMacAddress, senderIpAddress, targetIpAddress);
+        return new ArpRequestData(
+                senderMacPrefix, senderMacAddress, senderIpAddress, targetIpAddress);
     }
 }

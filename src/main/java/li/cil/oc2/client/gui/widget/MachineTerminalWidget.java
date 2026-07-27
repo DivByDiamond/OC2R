@@ -1,21 +1,25 @@
 package li.cil.oc2.client.gui.widget;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import li.cil.oc2.common.vm.terminal.Terminal;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import org.joml.Matrix4f;
+
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.vm.terminal.RendererView;
+import li.cil.oc2.common.vm.terminal.Terminal;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
+import org.joml.Matrix4f;
+
 import java.nio.ByteBuffer;
+
+import javax.annotation.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public final class MachineTerminalWidget {
@@ -60,13 +64,17 @@ public final class MachineTerminalWidget {
         if (container.getVirtualMachine().isRunning()) {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);
-            terminalStack.scale(TERMINAL_WIDTH / (float) terminal.getWidth(), TERMINAL_HEIGHT / (float) terminal.getHeight(), 1f);
+            terminalStack.scale(
+                    TERMINAL_WIDTH / (float) terminal.getWidth(),
+                    TERMINAL_HEIGHT / (float) terminal.getHeight(),
+                    1f);
 
             if (rendererView == null) {
                 rendererView = terminal.getRenderer();
             }
 
-            final Matrix4f projectionMatrix = (new Matrix4f()).setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
+            final Matrix4f projectionMatrix =
+                    (new Matrix4f()).setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
             rendererView.render(terminalStack, projectionMatrix, false);
         } else {
             final Font font = getClient().font;
@@ -75,19 +83,28 @@ public final class MachineTerminalWidget {
                 final int textOffsetX = (TERMINAL_WIDTH - textWidth) / 2;
                 final int textOffsetY = (TERMINAL_HEIGHT - font.lineHeight) / 2;
                 drawShadow(
-                    font,
-                    graphics,
-                    error,
-                    leftPos + TERMINAL_X + textOffsetX,
-                    topPos + TERMINAL_Y + textOffsetY
-                );
+                        font,
+                        graphics,
+                        error,
+                        leftPos + TERMINAL_X + textOffsetX,
+                        topPos + TERMINAL_Y + textOffsetY);
             }
         }
     }
 
     private void drawShadow(Font font, GuiGraphics graphics, Component text, float x, float y) {
         var batch = graphics.bufferSource();
-        font.drawInBatch(text, x, y, 15610658, true, graphics.pose().last().pose(), batch, Font.DisplayMode.NORMAL, 0, 15728880);
+        font.drawInBatch(
+                text,
+                x,
+                y,
+                15610658,
+                true,
+                graphics.pose().last().pose(),
+                batch,
+                Font.DisplayMode.NORMAL,
+                0,
+                15728880);
         batch.endBatch();
     }
 
@@ -109,24 +126,38 @@ public final class MachineTerminalWidget {
     }
 
     public void mouseMoved(double x, double y) {
-        if (isMouseOverTerminal((int)x, (int)y)) {
+        if (isMouseOverTerminal((int) x, (int) y)) {
             if (!isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {
                 isOver = true;
                 terminal.putInput("\033[I");
             }
         } else {
-            if(isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {
+            if (isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {
                 terminal.putInput("\033[O");
             }
         }
     }
 
     public boolean mouseClicked(double x, double y, int button) {
-        return mouseHandler.mouseClicked(x, y, button, isMouseOverTerminal((int)x, (int)y), shouldCaptureInput(), leftPos, topPos);
+        return mouseHandler.mouseClicked(
+                x,
+                y,
+                button,
+                isMouseOverTerminal((int) x, (int) y),
+                shouldCaptureInput(),
+                leftPos,
+                topPos);
     }
 
     public boolean mouseReleased(double x, double y, int button) {
-        return mouseHandler.mouseReleased(x, y, button, isMouseOverTerminal((int)x, (int)y), shouldCaptureInput(), leftPos, topPos);
+        return mouseHandler.mouseReleased(
+                x,
+                y,
+                button,
+                isMouseOverTerminal((int) x, (int) y),
+                shouldCaptureInput(),
+                leftPos,
+                topPos);
     }
 
     public boolean charTyped(final char ch, final int modifier) {
@@ -135,7 +166,12 @@ public final class MachineTerminalWidget {
 
     @SuppressWarnings("unused")
     public boolean keyPressed(final int keyCode, final int scanCode, final int modifiers) {
-        return keyboardHandler.keyPressed(keyCode, scanCode, modifiers, shouldCaptureInput(), () -> getClient().keyboardHandler.getClipboard());
+        return keyboardHandler.keyPressed(
+                keyCode,
+                scanCode,
+                modifiers,
+                shouldCaptureInput(),
+                () -> getClient().keyboardHandler.getClipboard());
     }
 
     public void init() {
@@ -155,13 +191,13 @@ public final class MachineTerminalWidget {
     }
 
     private boolean shouldCaptureInput() {
-        return isMouseOverTerminal && container.getCaptureInputState() &&
-            container.getVirtualMachine().isRunning();
+        return isMouseOverTerminal
+                && container.getCaptureInputState()
+                && container.getVirtualMachine().isRunning();
     }
 
     private boolean isMouseOverTerminal(final int mouseX, final int mouseY) {
-        return parent.isMouseOver(mouseX, mouseY,
-            TERMINAL_X, TERMINAL_Y,
-            TERMINAL_WIDTH, TERMINAL_HEIGHT);
+        return parent.isMouseOver(
+                mouseX, mouseY, TERMINAL_X, TERMINAL_Y, TERMINAL_WIDTH, TERMINAL_HEIGHT);
     }
 }

@@ -4,4 +4,4 @@ import li.cil.oc2.api.bus.device.Device;
 
 import java.util.Collection;
 
-public record DevicesChangedEvent(Collection<Device> devices) { }
+public record DevicesChangedEvent(Collection<Device> devices) {}

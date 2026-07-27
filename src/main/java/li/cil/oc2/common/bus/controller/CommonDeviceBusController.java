@@ -1,5 +1,7 @@
 package li.cil.oc2.common.bus.controller;
 
+import static java.util.Collections.emptySet;
+
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -7,14 +9,16 @@ import li.cil.oc2.common.util.Event;
 import li.cil.oc2.common.util.ParameterizedEvent;
 
 import java.util.*;
-import static java.util.Collections.emptySet;
 
 public class CommonDeviceBusController implements DeviceBusController {
     public final Event onAfterBusScan = new Event();
     public final Event onBeforeDeviceScan = new Event();
-    public final ParameterizedEvent<AfterDeviceScanEvent> onAfterDeviceScan = new ParameterizedEvent<>();
-    public final ParameterizedEvent<DevicesChangedEvent> onDevicesAdded = new ParameterizedEvent<>();
-    public final ParameterizedEvent<DevicesChangedEvent> onDevicesRemoved = new ParameterizedEvent<>();
+    public final ParameterizedEvent<AfterDeviceScanEvent> onAfterDeviceScan =
+            new ParameterizedEvent<>();
+    public final ParameterizedEvent<DevicesChangedEvent> onDevicesAdded =
+            new ParameterizedEvent<>();
+    public final ParameterizedEvent<DevicesChangedEvent> onDevicesRemoved =
+            new ParameterizedEvent<>();
 
     private final BusElementManager manager;
     private final HashSet<Device> devices = new HashSet<>();
@@ -24,8 +28,7 @@ public class CommonDeviceBusController implements DeviceBusController {
         this.manager = new BusElementManager(this, root, baseEnergyConsumption);
     }
 
-    public void setDeviceContainersChanged() {
-    }
+    public void setDeviceContainersChanged() {}
 
     public void dispose() {
         manager.dispose();
@@ -53,8 +56,12 @@ public class CommonDeviceBusController implements DeviceBusController {
         for (final DeviceBusElement element : manager.getElements()) {
             for (final Device device : element.getLocalDevices()) {
                 newDevices.add(device);
-                element.getDeviceIdentifier(device).ifPresent(identifier -> newDeviceIds
-                    .computeIfAbsent(device, unused -> new HashSet<>()).add(identifier));
+                element.getDeviceIdentifier(device)
+                        .ifPresent(
+                                identifier ->
+                                        newDeviceIds
+                                                .computeIfAbsent(device, unused -> new HashSet<>())
+                                                .add(identifier));
             }
         }
 
@@ -74,8 +81,13 @@ public class CommonDeviceBusController implements DeviceBusController {
 
             didDeviceIdsChange = true;
         } else {
-            didDeviceIdsChange = deviceIds.entrySet().stream().anyMatch(entry ->
-                !Objects.equals(entry.getValue(), newDeviceIds.get(entry.getKey())));
+            didDeviceIdsChange =
+                    deviceIds.entrySet().stream()
+                            .anyMatch(
+                                    entry ->
+                                            !Objects.equals(
+                                                    entry.getValue(),
+                                                    newDeviceIds.get(entry.getKey())));
         }
 
         if (didDeviceIdsChange) {

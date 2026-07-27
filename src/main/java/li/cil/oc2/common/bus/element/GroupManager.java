@@ -1,17 +1,15 @@
-
 package li.cil.oc2.common.bus.element;
+
+import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 
-import javax.annotation.Nullable;
 import java.util.*;
-
-import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
 
 class GroupManager<TEntry extends GroupEntry, TQuery> {
     private static final String GROUPS_TAG_NAME = "groups";
@@ -57,12 +55,13 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
 
             for (final TEntry entry : element.groups.get(i)) {
                 final CompoundTag devicesTag = element.groupData[i];
-                entry.getDeviceDataKey().map(devicesTag::get)
-                    .or(() ->
-                        entry.getLegacyDeviceDataKey().map(devicesTag::get)
-                    )
-                    .flatMap(instanceOf(CompoundTag.class))
-                    .ifPresent(deviceTag -> entry.getDevice().deserializeNBT(registries, deviceTag));
+                entry.getDeviceDataKey()
+                        .map(devicesTag::get)
+                        .or(() -> entry.getLegacyDeviceDataKey().map(devicesTag::get))
+                        .flatMap(instanceOf(CompoundTag.class))
+                        .ifPresent(
+                                deviceTag ->
+                                        entry.getDevice().deserializeNBT(registries, deviceTag));
             }
         }
     }
@@ -97,7 +96,10 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
         element.scanDevices();
     }
 
-    void setEntriesForGroup(final HolderLookup.Provider registries, final int index, final GroupQueryResult<TEntry, TQuery> queryResult) {
+    void setEntriesForGroup(
+            final HolderLookup.Provider registries,
+            final int index,
+            final GroupQueryResult<TEntry, TQuery> queryResult) {
         final Set<TEntry> newEntries = queryResult.getEntries();
         final HashSet<TEntry> entries = element.groups.get(index);
         if (Objects.equals(newEntries, entries)) {
@@ -144,18 +146,26 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
 
         final HashSet<String> invalidDataKeys = new HashSet<>(devicesTag.getAllKeys());
         for (final TEntry entry : addedEntries) {
-            entry.getDeviceDataKey().ifPresent(key -> {
-                invalidDataKeys.remove(key);
-                if (devicesTag.contains(key, NBTTagIds.TAG_COMPOUND)) {
-                    entry.getDevice().deserializeNBT(registries, devicesTag.getCompound(key));
-                } else {
-                    devicesTag.remove(key);
-                    entry.getLegacyDeviceDataKey()
-                        .map(devicesTag::get)
-                        .flatMap(instanceOf(CompoundTag.class))
-                        .ifPresent(deviceTag -> entry.getDevice().deserializeNBT(registries, deviceTag));
-                }
-            });
+            entry.getDeviceDataKey()
+                    .ifPresent(
+                            key -> {
+                                invalidDataKeys.remove(key);
+                                if (devicesTag.contains(key, NBTTagIds.TAG_COMPOUND)) {
+                                    entry.getDevice()
+                                            .deserializeNBT(
+                                                    registries, devicesTag.getCompound(key));
+                                } else {
+                                    devicesTag.remove(key);
+                                    entry.getLegacyDeviceDataKey()
+                                            .map(devicesTag::get)
+                                            .flatMap(instanceOf(CompoundTag.class))
+                                            .ifPresent(
+                                                    deviceTag ->
+                                                            entry.getDevice()
+                                                                    .deserializeNBT(
+                                                                            registries, deviceTag));
+                                }
+                            });
         }
 
         final TQuery query = queryResult.getQuery();
@@ -181,9 +191,11 @@ class GroupManager<TEntry extends GroupEntry, TQuery> {
     private void saveGroup(final HolderLookup.Provider registries, final int index) {
         final CompoundTag devicesTag = new CompoundTag();
         for (final TEntry entry : element.groups.get(index)) {
-            entry.getDeviceDataKey().ifPresent(key -> {
-                devicesTag.put(key, entry.getDevice().serializeNBT(registries));
-            });
+            entry.getDeviceDataKey()
+                    .ifPresent(
+                            key -> {
+                                devicesTag.put(key, entry.getDevice().serializeNBT(registries));
+                            });
         }
         element.groupData[index] = devicesTag;
     }

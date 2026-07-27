@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.global;
 
 import li.cil.ceres.api.Serialized;
@@ -21,7 +20,6 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     private final GlobalMemoryAllocator memoryAllocator;
     private final GlobalEventBus eventBus;
 
-
     // We track currently claimed interrupts and memory ranges so that after loading we
     // avoid potentially new devices (due external code changes, etc.) to grab interrupts
     // or memory ranges previously used by other devices. Only claiming interrupts and
@@ -35,16 +33,16 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     @SuppressWarnings("FieldMayBeFinal")
     private final MemoryRangeList reservedMemoryRanges = new MemoryRangeList();
 
-
     public GlobalVMContext(final Board board) {
         this.memoryMap = new GlobalMemoryMap(board.getMemoryMap());
         this.memoryRangeAllocator = new GlobalMemoryRangeAllocator(board, reservedMemoryRanges);
-        this.interruptAllocator = new GlobalInterruptAllocator(board.getInterruptCount(), reservedInterrupts);
-        this.interruptController = new GlobalInterruptController(board.getInterruptController(), interruptAllocator);
+        this.interruptAllocator =
+                new GlobalInterruptAllocator(board.getInterruptCount(), reservedInterrupts);
+        this.interruptController =
+                new GlobalInterruptController(board.getInterruptController(), interruptAllocator);
         this.memoryAllocator = new GlobalMemoryAllocator();
         this.eventBus = new GlobalEventBus();
     }
-
 
     public void updateReservations() {
         reservedInterrupts.clear();

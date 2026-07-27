@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.global;
 
 import li.cil.sedna.api.device.MemoryMappedDevice;
@@ -7,17 +6,16 @@ import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.api.memory.MemoryRange;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 final class GlobalMemoryMap implements MemoryMap {
     private final MemoryMap memoryMap;
 
-
     GlobalMemoryMap(final MemoryMap memoryMap) {
         this.memoryMap = memoryMap;
     }
-
 
     @Override
     public boolean addDevice(final long address, final MemoryMappedDevice device) {
@@ -56,7 +54,8 @@ final class GlobalMemoryMap implements MemoryMap {
     }
 
     @Override
-    public void store(final long address, final long value, final int sizeLog2) throws MemoryAccessException {
+    public void store(final long address, final long value, final int sizeLog2)
+            throws MemoryAccessException {
         memoryMap.store(address, value, sizeLog2);
     }
 }

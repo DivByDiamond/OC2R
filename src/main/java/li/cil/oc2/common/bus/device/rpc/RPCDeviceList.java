@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.bus.device.rpc;
 
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
@@ -20,18 +20,18 @@ public record RPCDeviceList(ArrayList<RPCDevice> devices) implements RPCDevice {
     @Override
     public List<String> getTypeNames() {
         return devices.stream()
-            .map(RPCDevice::getTypeNames)
-            .flatMap(Collection::stream)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(RPCDevice::getTypeNames)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<RPCMethodGroup> getMethodGroups() {
         return devices.stream()
-            .map(RPCDevice::getMethodGroups)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+                .map(RPCDevice::getMethodGroups)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @Override

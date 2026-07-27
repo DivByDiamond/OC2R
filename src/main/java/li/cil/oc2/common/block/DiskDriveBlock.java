@@ -1,9 +1,10 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -27,11 +28,7 @@ import javax.annotation.Nullable;
 
 public final class DiskDriveBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public DiskDriveBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -40,14 +37,15 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
         return BlockCodecs.DISK_DRIVE.get();
     }
 
-
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+    public BlockState playerWillDestroy(
+            final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!level.isClientSide() && blockEntity instanceof final DiskDriveBlockEntity diskDrive) {
             if (!diskDrive.getDiskItemStack().isEmpty()) {
@@ -60,7 +58,14 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(final ItemStack stack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+    protected ItemInteractionResult useItemOn(
+            final ItemStack stack,
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final InteractionHand hand,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof DiskDriveBlockEntity diskDrive)) {
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -79,7 +84,12 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final DiskDriveBlockEntity diskDrive)) {
             return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -105,9 +115,9 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
         return BlockEntities.DISK_DRIVE.get().create(pos, state);
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

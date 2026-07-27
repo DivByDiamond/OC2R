@@ -1,9 +1,10 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.misc.FlashMemoryFlasherBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -25,13 +26,10 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
-public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
+        implements EntityBlock {
     public FlashMemoryFlasherBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -40,14 +38,21 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
         return BlockCodecs.FLASH_MEMORY_FLASHER.get();
     }
 
-
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(final ItemStack stack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+    protected ItemInteractionResult useItemOn(
+            final ItemStack stack,
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final InteractionHand hand,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof FlashMemoryFlasherBlockEntity diskDrive)) {
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -66,7 +71,12 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
     }
 
     @Override
-    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final FlashMemoryFlasherBlockEntity diskDrive)) {
             return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -85,9 +95,11 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
     }
 
     @Override
-    public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+    public BlockState playerWillDestroy(
+            final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!level.isClientSide() && blockEntity instanceof final FlashMemoryFlasherBlockEntity flashFlasher) {
+        if (!level.isClientSide()
+                && blockEntity instanceof final FlashMemoryFlasherBlockEntity flashFlasher) {
             if (!flashFlasher.getDiskItemStack().isEmpty()) {
                 final ItemStack stack = flashFlasher.getDiskItemStack();
                 popResource(level, pos, stack);
@@ -105,9 +117,9 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock im
         return BlockEntities.FLASH_MEMORY_FLASHER.get().create(pos, state);
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

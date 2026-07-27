@@ -2,12 +2,13 @@ package li.cil.oc2.common.serialization;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.AsyncConfig;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -16,18 +17,18 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import javax.annotation.Nullable;
+
 public final class BlobStorage {
     private static final Logger LOGGER = LogManager.getLogger();
-
 
     private static final LevelResource BLOBS_FOLDER_NAME = new LevelResource(API.MOD_ID + "-blobs");
     static volatile Path dataDirectory;
 
-
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(BlobStorage::close, "OC2 BlobStorage Shutdown"));
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(BlobStorage::close, "OC2 BlobStorage Shutdown"));
     }
-
 
     public static void setServer(final MinecraftServer server) {
         final Path newDataDir = server.getWorldPath(BLOBS_FOLDER_NAME);
@@ -58,19 +59,19 @@ public final class BlobStorage {
         }
     }
 
-
     public static UUID allocateHandle() {
         return UUID.randomUUID();
     }
 
     public static UUID validateHandle(@Nullable final UUID handle) {
-        if (handle == null || (handle.getMostSignificantBits() == 0 && handle.getLeastSignificantBits() == 0)) {
+        if (handle == null
+                || (handle.getMostSignificantBits() == 0
+                        && handle.getLeastSignificantBits() == 0)) {
             return allocateHandle();
         } else {
             return handle;
         }
     }
-
 
     public static CompletableFuture<FileChannel> getOrOpenAsync(final UUID handle) {
         return BlobChannelManager.openAsync(handle);
@@ -88,7 +89,6 @@ public final class BlobStorage {
         }
     }
 
-
     public static CompletableFuture<Void> closeAsync(final UUID handle) {
         return BlobChannelManager.closeAsync(handle);
     }
@@ -101,7 +101,6 @@ public final class BlobStorage {
             LOGGER.error("Error in close operation for blob: " + handle, e);
         }
     }
-
 
     public static CompletableFuture<Void> deleteAsync(final UUID handle) {
         return BlobChannelManager.deleteAsync(handle);

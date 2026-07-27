@@ -22,20 +22,33 @@ public class ECH extends CSISequenceHandler {
         }
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             int fromIndex = terminal.x + terminal.y * Terminal.WIDTH;
-            int toIndex = fromIndex + Math.max(Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
+            int toIndex =
+                    fromIndex
+                            + Math.max(
+                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
             Arrays.fill(terminal.altBuffer, fromIndex, toIndex, ' ');
-            Arrays.fill(terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
+            Arrays.fill(
+                    terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
             Arrays.fill(terminal.altColorsBackground, fromIndex, toIndex, c.Copy());
             Arrays.fill(terminal.altStyles, fromIndex, toIndex, TerminalColors.DEFAULT_STYLE);
         } else {
-            int fromIndex = terminal.x + (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)) * Terminal.WIDTH;
-            int toIndex = fromIndex + Math.max(Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
+            int fromIndex =
+                    terminal.x
+                            + (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                                    * Terminal.WIDTH;
+            int toIndex =
+                    fromIndex
+                            + Math.max(
+                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
             Arrays.fill(terminal.buffer, fromIndex, toIndex, ' ');
             Arrays.fill(terminal.colors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
             Arrays.fill(terminal.colorsBackground, fromIndex, toIndex, c.Copy());
             Arrays.fill(terminal.styles, fromIndex, toIndex, TerminalColors.DEFAULT_STYLE);
         }
 
-        terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(1 << terminal.y, (left, right) -> left | right));
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(1 << terminal.y, (left, right) -> left | right));
     }
 }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.global;
 
 import li.cil.oc2.api.bus.device.vm.context.InterruptAllocator;
@@ -8,12 +7,12 @@ import li.cil.oc2.common.vm.context.InterruptValidator;
 import java.util.BitSet;
 import java.util.OptionalInt;
 
-final class GlobalInterruptAllocator implements InterruptAllocator, InterruptValidator, InterruptManager {
+final class GlobalInterruptAllocator
+        implements InterruptAllocator, InterruptValidator, InterruptManager {
     private final BitSet claimedInterrupts = new BitSet();
     private final BitSet reservedInterrupts;
     private final int interruptCount;
     private int managedMask;
-
 
     public GlobalInterruptAllocator(final int interruptCount, final BitSet reservedInterrupts) {
         this.reservedInterrupts = reservedInterrupts;
@@ -22,7 +21,6 @@ final class GlobalInterruptAllocator implements InterruptAllocator, InterruptVal
         // Interrupt zero appears to be evil, so block it.
         this.claimedInterrupts.set(0);
     }
-
 
     public BitSet getClaimedInterrupts() {
         return claimedInterrupts;

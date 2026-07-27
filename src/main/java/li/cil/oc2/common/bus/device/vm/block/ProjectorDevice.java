@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.bus.device.vm.block;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
@@ -12,15 +12,17 @@ import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements VMDevice {
     private static final String ADDRESS_TAG_NAME = "address";
@@ -29,21 +31,17 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
     public static final int WIDTH = 640;
     public static final int HEIGHT = 480;
 
-
     private final BooleanConsumer onMountedChanged;
 
     @Nullable private SimpleFramebufferDevice device;
 
-
     private final OptionalAddress address = new OptionalAddress();
     @Nullable private UUID blobHandle;
-
 
     public ProjectorDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
         super(identity);
         this.onMountedChanged = onMountedChanged;
     }
-
 
     public boolean hasChanges() {
         final SimpleFramebufferDevice framebufferDevice = device;
@@ -120,7 +118,6 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         }
     }
 
-
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {
             return false;
@@ -138,7 +135,11 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
     private SimpleFramebufferDevice createFrameBufferDevice() throws IOException {
         blobHandle = BlobStorage.validateHandle(blobHandle);
         final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
-        final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, WIDTH * HEIGHT * SimpleFramebufferDevice.STRIDE);
+        final MappedByteBuffer buffer =
+                channel.map(
+                        FileChannel.MapMode.READ_WRITE,
+                        0,
+                        WIDTH * HEIGHT * SimpleFramebufferDevice.STRIDE);
         return new SimpleFramebufferDevice(WIDTH, HEIGHT, buffer);
     }
 }

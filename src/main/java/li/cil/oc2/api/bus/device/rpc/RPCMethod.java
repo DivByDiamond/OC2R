@@ -1,21 +1,22 @@
-
 package li.cil.oc2.api.bus.device.rpc;
+
+import li.cil.oc2.api.bus.device.object.ObjectDevice;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.annotation.Nullable;
-import li.cil.oc2.api.bus.device.object.ObjectDevice;
 
 /**
  * Represents a single method that can be exposed by a {@link RPCDevice}.
  *
- * <p>The easiest and hence recommended way of generating an implementation of this
- * interface is to use the {@link ObjectDevice} class.
+ * <p>The easiest and hence recommended way of generating an implementation of this interface is to
+ * use the {@link ObjectDevice} class.
  *
- * <p>Method parameters are serialized and deserialized using Gson. When using custom
- * parameter types it may be necessary to register a custom type adapter for them
- * via {@link li.cil.oc2.api.API#IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER}.
+ * <p>Method parameters are serialized and deserialized using Gson. When using custom parameter
+ * types it may be necessary to register a custom type adapter for them via {@link
+ * li.cil.oc2.api.API#IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER}.
  *
  * @see ObjectDevice
  */
@@ -44,16 +45,16 @@ public interface RPCMethod extends RPCMethodGroup {
     /**
      * Called to run this method.
      *
-     * <p><b>Important:</b> methods are expected to not irrevocably corrupt internal
-     * state, even when they throw an exception. As such, implementations should
-     * perform internal error handling to prevent state corruption and only throw
-     * exceptions to communicate that an error happened during the invocation.
+     * <p><b>Important:</b> methods are expected to not irrevocably corrupt internal state, even
+     * when they throw an exception. As such, implementations should perform internal error handling
+     * to prevent state corruption and only throw exceptions to communicate that an error happened
+     * during the invocation.
      *
      * @param invocation the invocation information.
      * @return the return value, or {@code null} if none.
-     * @throws Throwable if the parameters did not match or something inside the
-     *                   method caused an exception. The caller is responsible for
-     *                   catching these and passing them on appropriately.
+     * @throws Throwable if the parameters did not match or something inside the method caused an
+     *     exception. The caller is responsible for catching these and passing them on
+     *     appropriately.
      */
     @Nullable
     Object invoke(RPCInvocation invocation) throws Throwable;

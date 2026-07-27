@@ -2,6 +2,7 @@ package li.cil.oc2.common.vxlan;
 
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.config.Config;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,9 @@ public class TunnelManager {
     private final InetAddress bindHost;
     private final short bindPort;
 
-    public TunnelManager(InetAddress bindHost, short bindPort, InetAddress remoteHost, short remotePort) throws SocketException {
+    public TunnelManager(
+            InetAddress bindHost, short bindPort, InetAddress remoteHost, short remotePort)
+            throws SocketException {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.bindHost = bindHost;
@@ -34,23 +37,25 @@ public class TunnelManager {
         LOGGER.info("Initializing outernet tunnel manager");
 
         try {
-            INSTANCE = new TunnelManager(
-                InetAddress.getByName(Config.bindHost), (short) Config.bindPort,
-                InetAddress.getByName(Config.remoteHost), (short) Config.remotePort
-            );
+            INSTANCE =
+                    new TunnelManager(
+                            InetAddress.getByName(Config.bindHost), (short) Config.bindPort,
+                            InetAddress.getByName(Config.remoteHost), (short) Config.remotePort);
         } catch (SocketException | UnknownHostException e) {
             LOGGER.error("Failed to bind to configured address: " + e.getMessage());
             LOGGER.error(e);
         }
 
         if (Config.enable) {
-            Thread bgThread = new Thread(() -> {
-                try {
-                    INSTANCE.listen();
-                } catch (IOException e) {
-                    LOGGER.error(e);
-                }
-            });
+            Thread bgThread =
+                    new Thread(
+                            () -> {
+                                try {
+                                    INSTANCE.listen();
+                                } catch (IOException e) {
+                                    LOGGER.error(e);
+                                }
+                            });
             bgThread.setName("VXLAN Background Thread");
             bgThread.start();
         }
@@ -64,7 +69,11 @@ public class TunnelManager {
         } else {
             return;
         }
-        LOGGER.printf(Level.INFO, "Bind successful: connected=%s bound=%s\n", socket.isConnected(), socket.isBound());
+        LOGGER.printf(
+                Level.INFO,
+                "Bind successful: connected=%s bound=%s\n",
+                socket.isConnected(),
+                socket.isBound());
 
         byte[] buffer = new byte[65535];
         // TODO shut this thread down more cleanly on server shutdown?
@@ -78,9 +87,10 @@ public class TunnelManager {
             }
 
             byte flags = packet.getData()[0];
-            int vni = (packet.getData()[6] & 0xFF )
-                | ( ( packet.getData()[5] & 0xFF ) << 8 )
-                | ( ( packet.getData()[4] & 0xFF ) << 16 );
+            int vni =
+                    (packet.getData()[6] & 0xFF)
+                            | ((packet.getData()[5] & 0xFF) << 8)
+                            | ((packet.getData()[4] & 0xFF) << 16);
 
             if ((flags & 0x08) != 0x08) {
                 continue;
@@ -118,7 +128,8 @@ public class TunnelManager {
             buffer[5] = (byte) ((vti >> 8) & 0xff);
             buffer[6] = (byte) (vti & 0xff);
 
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.remoteHost, this.remotePort);
+            DatagramPacket packet =
+                    new DatagramPacket(buffer, buffer.length, this.remoteHost, this.remotePort);
 
             try {
                 socket.send(packet);
@@ -155,7 +166,10 @@ public class TunnelManager {
         }
 
         @Override
-        public void writeEthernetFrame(final @NotNull NetworkInterface source, final byte @NotNull [] frame, final int timeToLive) {
+        public void writeEthernetFrame(
+                final @NotNull NetworkInterface source,
+                final byte @NotNull [] frame,
+                final int timeToLive) {
             TunnelManager.this.sendToOuternet(vti, frame);
         }
     }

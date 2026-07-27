@@ -7,7 +7,8 @@ public final class EchoSessionImpl extends DatagramSessionBase implements EchoSe
     private byte ttl;
     private short sequenceNumber;
 
-    public EchoSessionImpl(final int ipAddress, final short port, final EchoSessionDiscriminator discriminator) {
+    public EchoSessionImpl(
+            final int ipAddress, final short port, final EchoSessionDiscriminator discriminator) {
         super(ipAddress, port);
         this.discriminator = discriminator;
     }

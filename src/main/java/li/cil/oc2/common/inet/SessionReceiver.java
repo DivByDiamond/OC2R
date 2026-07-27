@@ -6,8 +6,9 @@ import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
+
+import javax.annotation.Nullable;
 
 final class SessionReceiver implements SessionLayer.Receiver {
     SessionBase session = null;

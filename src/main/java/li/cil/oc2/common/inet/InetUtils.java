@@ -2,6 +2,7 @@ package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
@@ -23,12 +24,13 @@ public final class InetUtils {
     }
 
     public static InetAddress toJavaInetAddress(final int ipAddress) {
-        final byte[] bytes = new byte[]{
-            (byte) (ipAddress >>> 24),
-            (byte) (ipAddress >>> 16),
-            (byte) (ipAddress >>> 8),
-            (byte) (ipAddress)
-        };
+        final byte[] bytes =
+                new byte[] {
+                    (byte) (ipAddress >>> 24),
+                    (byte) (ipAddress >>> 16),
+                    (byte) (ipAddress >>> 8),
+                    (byte) (ipAddress)
+                };
         return getInetAddressByBytes(bytes);
     }
 
@@ -38,7 +40,8 @@ public final class InetUtils {
         }
     }
 
-    public static InetAddress toJavaInetAddress(final long ipAddressMost, final long ipAddressLeast) {
+    public static InetAddress toJavaInetAddress(
+            final long ipAddressMost, final long ipAddressLeast) {
         final byte[] bytes = new byte[16];
         fillLong(bytes, 0, ipAddressMost);
         fillLong(bytes, 8, ipAddressLeast);
@@ -61,7 +64,8 @@ public final class InetUtils {
         return stringBuilder.toString();
     }
 
-    public static void socketAddressToString(final StringBuilder builder, final int ipAddress, final short port) {
+    public static void socketAddressToString(
+            final StringBuilder builder, final int ipAddress, final short port) {
         ipv4AddressToString(builder, ipAddress);
         builder.append(':');
         builder.append(Short.toUnsignedInt(port));
@@ -86,8 +90,10 @@ public final class InetUtils {
 
     public static int javaInetAddressToIpAddress(final Inet4Address address) {
         final byte[] bytes = address.getAddress();
-        return (Byte.toUnsignedInt(bytes[0]) << 24) | (Byte.toUnsignedInt(bytes[1]) << 16)
-            | (Byte.toUnsignedInt(bytes[2]) << 8) | Byte.toUnsignedInt(bytes[3]);
+        return (Byte.toUnsignedInt(bytes[0]) << 24)
+                | (Byte.toUnsignedInt(bytes[1]) << 16)
+                | (Byte.toUnsignedInt(bytes[2]) << 8)
+                | Byte.toUnsignedInt(bytes[3]);
     }
 
     public static int indexOf(final CharSequence string, final char character, final int start) {
@@ -134,13 +140,15 @@ public final class InetUtils {
             try {
                 ipSpace.put(rangeString);
             } catch (final Exception e) {
-                throw new IllegalArgumentException("Failed to parse IPv4 address range #" + i + ": " + e.getMessage());
+                throw new IllegalArgumentException(
+                        "Failed to parse IPv4 address range #" + i + ": " + e.getMessage());
             }
             ++i;
         }
     }
 
-    public static Ipv4Space computeIpSpace(final List<String> deniedHosts, final List<String> allowedHosts) {
+    public static Ipv4Space computeIpSpace(
+            final List<String> deniedHosts, final List<String> allowedHosts) {
         final boolean deniedHostsIsEmpty = deniedHosts.isEmpty();
         final boolean allowedHostsIsEmpty = allowedHosts.isEmpty();
         if (deniedHostsIsEmpty && allowedHostsIsEmpty) {
@@ -158,7 +166,8 @@ public final class InetUtils {
         }
     }
 
-    public static <PL, CL> PL createLayerIfNotStub(final CL currentLayer, final Function<CL, PL> getNextLayer) {
+    public static <PL, CL> PL createLayerIfNotStub(
+            final CL currentLayer, final Function<CL, PL> getNextLayer) {
         if (currentLayer == NullLayer.INSTANCE) {
             return (PL) NullLayer.INSTANCE;
         } else {
@@ -166,11 +175,16 @@ public final class InetUtils {
         }
     }
 
-    public static LayerParameters nextLayerParameters(final LayerParameters layerParameters, final String layerName) {
-        final Optional<Tag> nextLayerState = layerParameters.getSavedState()
-            .flatMap(currentLayerState -> (currentLayerState instanceof CompoundTag tag) ?
-                Optional.ofNullable(tag.get(layerName)) :
-                Optional.empty());
+    public static LayerParameters nextLayerParameters(
+            final LayerParameters layerParameters, final String layerName) {
+        final Optional<Tag> nextLayerState =
+                layerParameters
+                        .getSavedState()
+                        .flatMap(
+                                currentLayerState ->
+                                        (currentLayerState instanceof CompoundTag tag)
+                                                ? Optional.ofNullable(tag.get(layerName))
+                                                : Optional.empty());
         return new LayerParametersImpl(nextLayerState, layerParameters.getInternetManager());
     }
 }

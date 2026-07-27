@@ -7,7 +7,8 @@ final class EchoSessionDiscriminator implements SessionDiscriminator<EchoSession
     private final int dstIpAddress;
     private final short identity;
 
-    public EchoSessionDiscriminator(final int srcIpAddress, final int dstIpAddress, final short identity) {
+    public EchoSessionDiscriminator(
+            final int srcIpAddress, final int dstIpAddress, final short identity) {
         this.srcIpAddress = srcIpAddress;
         this.dstIpAddress = dstIpAddress;
         this.identity = identity;
@@ -30,7 +31,9 @@ final class EchoSessionDiscriminator implements SessionDiscriminator<EchoSession
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EchoSessionDiscriminator that = (EchoSessionDiscriminator) o;
-        return srcIpAddress == that.srcIpAddress && dstIpAddress == that.dstIpAddress && identity == that.identity;
+        return srcIpAddress == that.srcIpAddress
+                && dstIpAddress == that.dstIpAddress
+                && identity == that.identity;
     }
 
     @Override

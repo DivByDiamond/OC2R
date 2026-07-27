@@ -1,9 +1,11 @@
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.network.VxlanBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -23,11 +25,7 @@ import javax.annotation.Nullable;
 
 public final class VxlanBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public VxlanBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -36,15 +34,21 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
         return BlockCodecs.VXLAN.get();
     }
 
-
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block changedBlock, final BlockPos changedBlockPos, final boolean isMoving) {
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            final BlockPos changedBlockPos,
+            final boolean isMoving) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof final VxlanBlockEntity vxlanEntity) {
             vxlanEntity.handleNeighborChanged();
@@ -61,13 +65,14 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
         return TickableBlockEntity.createServerTicker(level, type, BlockEntities.VXLAN_HUB.get());
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

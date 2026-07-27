@@ -38,12 +38,13 @@ public class CH2 extends CSISequenceHandler {
                 }
                 case 10 -> terminal.currentPrivateModeState.TOOLBAR = true;
                 case 12 -> {
-                    terminal.cursorMode = switch (terminal.cursorMode) {
-                        case 2 -> 1;
-                        case 4 -> 3;
-                        case 6 -> 5;
-                        default -> terminal.cursorMode;
-                    };
+                    terminal.cursorMode =
+                            switch (terminal.cursorMode) {
+                                case 2 -> 1;
+                                case 4 -> 3;
+                                case 6 -> 5;
+                                default -> terminal.cursorMode;
+                            };
                     terminal.currentPrivateModeState.START_BLINKING_CURSOR = true;
                 }
                 case 13 -> terminal.currentPrivateModeState.START_BLINKING_CURSOR2 = true;
@@ -179,13 +180,18 @@ public class CH2 extends CSISequenceHandler {
             }
         }
     }
+
     private void markScreenDirty() {
         int dirtyLinesMask = 0;
         for (int j = 0; j <= 23; j++) {
             dirtyLinesMask |= 1 << j;
         }
         final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(
+                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 
     private void saveCursorPosition() {

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.api.bus.device.object.Callback;
@@ -6,6 +5,7 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.BlockLocation;
 import li.cil.oc2.common.util.TickUtils;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -13,28 +13,28 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings("unused")
 public final class SoundCardItemDevice extends AbstractItemRPCDevice {
-    private final int COOLDOWN_IN_TICKS = TickUtils.toTicks(Duration.ofSeconds(Config.soundCardCoolDownSeconds));
+    private final int COOLDOWN_IN_TICKS =
+            TickUtils.toTicks(Duration.ofSeconds(Config.soundCardCoolDownSeconds));
     private static final int MAX_FIND_RESULTS = 25;
-
 
     private final Supplier<Optional<BlockLocation>> location;
     private long gameTimeCooldownExpiresAt;
 
-
-    public SoundCardItemDevice(final ItemStack identity, final Supplier<Optional<BlockLocation>> location) {
+    public SoundCardItemDevice(
+            final ItemStack identity, final Supplier<Optional<BlockLocation>> location) {
         super(identity, "sound");
         this.location = location;
     }
-
 
     @Callback
     public void playSound(@Nullable @Parameter("name") final String name) {
@@ -42,33 +42,58 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     }
 
     @Callback
-    public void playSound(@Nullable @Parameter("name") final String name, @Parameter("volume") final float volume) {
+    public void playSound(
+            @Nullable @Parameter("name") final String name,
+            @Parameter("volume") final float volume) {
         playSound(name, volume, 1);
     }
 
     @Callback
-    public void playSound(@Nullable @Parameter("name") final String name, @Parameter("volume") final float volume, @Parameter("pitch") final float pitch) {
+    public void playSound(
+            @Nullable @Parameter("name") final String name,
+            @Parameter("volume") final float volume,
+            @Parameter("pitch") final float pitch) {
         if (name == null) throw new IllegalArgumentException();
-        if (volume < 0 || volume > 1.0f) throw new IllegalArgumentException("volume must be between >= 0 and <= 1");
-        if (pitch < 0.5f || pitch > 2.0f) throw new IllegalArgumentException("pitch must be between >= 0.5 and <= 2");
+        if (volume < 0 || volume > 1.0f)
+            throw new IllegalArgumentException("volume must be between >= 0 and <= 1");
+        if (pitch < 0.5f || pitch > 2.0f)
+            throw new IllegalArgumentException("pitch must be between >= 0.5 and <= 2");
         if (volume == 0) return;
 
-        location.get().ifPresent(location -> location.tryGetLevel().ifPresent(level -> {
-            if (!(level instanceof final ServerLevel serverLevel)) {
-                return;
-            }
+        location.get()
+                .ifPresent(
+                        location ->
+                                location.tryGetLevel()
+                                        .ifPresent(
+                                                level -> {
+                                                    if (!(level
+                                                            instanceof
+                                                            final ServerLevel serverLevel)) {
+                                                        return;
+                                                    }
 
-            final long gameTime = serverLevel.getGameTime();
-            if (gameTime < gameTimeCooldownExpiresAt) {
-                return;
-            }
+                                                    final long gameTime = serverLevel.getGameTime();
+                                                    if (gameTime < gameTimeCooldownExpiresAt) {
+                                                        return;
+                                                    }
 
-            gameTimeCooldownExpiresAt = gameTime + COOLDOWN_IN_TICKS;
+                                                    gameTimeCooldownExpiresAt =
+                                                            gameTime + COOLDOWN_IN_TICKS;
 
-            final SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(name));
-            if (soundEvent == null) throw new IllegalArgumentException("Sound not found.");
-            level.playSound(null, location.blockPos(), soundEvent, SoundSource.BLOCKS, volume, pitch);
-        }));
+                                                    final SoundEvent soundEvent =
+                                                            BuiltInRegistries.SOUND_EVENT.get(
+                                                                    ResourceLocation.parse(name));
+                                                    if (soundEvent == null)
+                                                        throw new IllegalArgumentException(
+                                                                "Sound not found.");
+                                                    level.playSound(
+                                                            null,
+                                                            location.blockPos(),
+                                                            soundEvent,
+                                                            SoundSource.BLOCKS,
+                                                            volume,
+                                                            pitch);
+                                                }));
     }
 
     @Callback

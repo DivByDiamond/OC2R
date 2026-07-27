@@ -44,18 +44,30 @@ final class MacAddressUtils {
         }
     }
 
-    private static byte parseMacAddressByte(final CharSequence string, final int start) throws AddressParseException {
-        return (byte) ((hexCodeToInt(string.charAt(start)) << 4) | hexCodeToInt(string.charAt(start + 1)));
+    private static byte parseMacAddressByte(final CharSequence string, final int start)
+            throws AddressParseException {
+        return (byte)
+                ((hexCodeToInt(string.charAt(start)) << 4)
+                        | hexCodeToInt(string.charAt(start + 1)));
     }
 
-    private static AddressParseException illegalDelimiter(final CharSequence string, final int index) {
+    private static AddressParseException illegalDelimiter(
+            final CharSequence string, final int index) {
         final char illegal = string.charAt(index);
-        return new AddressParseException("Illegal character '" + illegal + "' at index " + index + " in MAC address \"" + string + "\"");
+        return new AddressParseException(
+                "Illegal character '"
+                        + illegal
+                        + "' at index "
+                        + index
+                        + " in MAC address \""
+                        + string
+                        + "\"");
     }
 
     static MacAddress parseMacAddress(final CharSequence string) throws AddressParseException {
         if (string.length() != 17) {
-            throw new AddressParseException("MAC address length must be 17 characters: \"" + string + "\"");
+            throw new AddressParseException(
+                    "MAC address length must be 17 characters: \"" + string + "\"");
         }
         final byte first = parseMacAddressByte(string, 0);
         if (string.charAt(2) != ':') {

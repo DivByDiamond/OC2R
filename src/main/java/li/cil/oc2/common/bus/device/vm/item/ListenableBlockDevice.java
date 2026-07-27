@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.vm.item;
 
 import li.cil.oc2.common.util.Event;
@@ -29,14 +28,16 @@ final class ListenableBlockDevice implements BlockDevice {
 
     @Override
     public InputStream getInputStream(final long offset) {
-        final ListenableInputStream stream = new ListenableInputStream(inner.getInputStream(offset));
+        final ListenableInputStream stream =
+                new ListenableInputStream(inner.getInputStream(offset));
         stream.onAccess.add(onAccess);
         return stream;
     }
 
     @Override
     public OutputStream getOutputStream(final long offset) {
-        final ListenableOutputStream stream = new ListenableOutputStream(inner.getOutputStream(offset));
+        final ListenableOutputStream stream =
+                new ListenableOutputStream(inner.getOutputStream(offset));
         stream.onAccess.add(onAccess);
         return stream;
     }

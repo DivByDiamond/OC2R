@@ -6,9 +6,10 @@ import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.vxlan.TunnelManager;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -18,12 +19,14 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-import javax.annotation.Nullable;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import javax.annotation.Nullable;
+
 @EventBusSubscriber(modid = API.MOD_ID)
-public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInterface, TickableBlockEntity {
+public final class VxlanBlockEntity extends ModBlockEntity
+        implements NetworkInterface, TickableBlockEntity {
     private static final int TTL_COST = 1;
     private int vti = 1000;
     private int frameCount;
@@ -48,7 +51,8 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
     }
 
     @Override
-    public void writeEthernetFrame(final NetworkInterface source, final byte[] frame, final int timeToLive) {
+    public void writeEthernetFrame(
+            final NetworkInterface source, final byte[] frame, final int timeToLive) {
         if (level == null) {
             return;
         }
@@ -63,11 +67,15 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
             frameCount++;
         }
 
-        adjacentInterfaces.getAll().forEach(adjacentInterface -> {
-            if (adjacentInterface != source) {
-                adjacentInterface.writeEthernetFrame(this, frame, timeToLive - TTL_COST);
-            }
-        });
+        adjacentInterfaces
+                .getAll()
+                .forEach(
+                        adjacentInterface -> {
+                            if (adjacentInterface != source) {
+                                adjacentInterface.writeEthernetFrame(
+                                        this, frame, timeToLive - TTL_COST);
+                            }
+                        });
     }
 
     @Override
@@ -114,7 +122,8 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
 
     @Override
     public void loadServer() {
-        adjacentInterfaces.setTunnelInterface(TunnelManager.instance().registerVti(vti, packetQueue));
+        adjacentInterfaces.setTunnelInterface(
+                TunnelManager.instance().registerVti(vti, packetQueue));
         final ServerLevel level = (ServerLevel) this.level;
         adjacentInterfaces.registerListeners(level, getBlockPos());
     }
@@ -122,14 +131,13 @@ public final class VxlanBlockEntity extends ModBlockEntity implements NetworkInt
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.NetworkInterface.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final VxlanBlockEntity self) {
-                    return self;
-                }
-                return null;
-            },
-            Blocks.VXLAN_HUB.get()
-        );
+                Capabilities.NetworkInterface.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final VxlanBlockEntity self) {
+                        return self;
+                    }
+                    return null;
+                },
+                Blocks.VXLAN_HUB.get());
     }
 }

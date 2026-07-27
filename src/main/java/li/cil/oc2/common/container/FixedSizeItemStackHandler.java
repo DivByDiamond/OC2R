@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -11,7 +11,6 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 public class FixedSizeItemStackHandler extends ItemStackHandler {
     private static final String SIZE_TAG_NAME = "Size";
 
-
     public FixedSizeItemStackHandler(final int size) {
         super(size);
     }
@@ -19,7 +18,6 @@ public class FixedSizeItemStackHandler extends ItemStackHandler {
     public FixedSizeItemStackHandler(final NonNullList<ItemStack> stacks) {
         super(stacks);
     }
-
 
     public boolean isEmpty() {
         for (int slot = 0; slot < getSlots(); slot++) {

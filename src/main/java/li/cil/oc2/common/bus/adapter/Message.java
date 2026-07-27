@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.adapter;
 
 import javax.annotation.Nullable;

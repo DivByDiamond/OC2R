@@ -4,24 +4,27 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import li.cil.oc2.client.gui.Textures;
+import li.cil.oc2.client.gui.widget.Texture;
+import li.cil.oc2.client.renderer.ModRenderType;
+import li.cil.oc2.common.item.Items;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import li.cil.oc2.client.gui.Textures;
-import li.cil.oc2.client.gui.widget.Texture;
-import li.cil.oc2.client.renderer.ModRenderType;
-import li.cil.oc2.common.item.Items;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +37,8 @@ class ComputerBlockItemRenderer {
 
     @Nullable
     Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
-        final Quaternionf quaternion = new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
+        final Quaternionf quaternion =
+                new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
         quaternion.conjugate();
 
         final float relMouseX = -mouseX / (float) BLOCK_RENDER_SIZE;
@@ -50,15 +54,22 @@ class ComputerBlockItemRenderer {
 
         final AABB aabb = new AABB(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
         return aabb.clip(new Vec3(source), new Vec3(target))
-            .map(hit -> Direction.getNearest(hit.x, -hit.y(), hit.z()))
-            .filter(side -> side != Direction.SOUTH)
-            .orElse(null);
+                .map(hit -> Direction.getNearest(hit.x, -hit.y(), hit.z()))
+                .filter(side -> side != Direction.SOUTH)
+                .orElse(null);
     }
 
-    public void render(final int x, final int y, final Vector3f rotation, @Nullable final Direction focusedSide, final NetworkInterfaceCardScreen screen) {
+    public void render(
+            final int x,
+            final int y,
+            final Vector3f rotation,
+            @Nullable final Direction focusedSide,
+            final NetworkInterfaceCardScreen screen) {
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        RenderSystem.blendFunc(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
         final Vector3f renderRotation = new Vector3f(rotation.x, rotation.y, rotation.z);
@@ -67,11 +78,13 @@ class ComputerBlockItemRenderer {
         final Matrix4fStack stack = RenderSystem.getModelViewStack();
         stack.pushMatrix();
         stack.translate(x, y, 0);
-        stack.rotate(new Quaternionf().rotateXYZ(renderRotation.x, renderRotation.y, renderRotation.z));
+        stack.rotate(
+                new Quaternionf().rotateXYZ(renderRotation.x, renderRotation.y, renderRotation.z));
         stack.scale(BLOCK_RENDER_SIZE, -BLOCK_RENDER_SIZE, BLOCK_RENDER_SIZE);
         RenderSystem.applyModelViewMatrix();
 
-        final MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        final MultiBufferSource.BufferSource bufferSource =
+                Minecraft.getInstance().renderBuffers().bufferSource();
         renderBlock(bufferSource);
         renderOverlays(stack, bufferSource, focusedSide, screen);
         bufferSource.endBatch();
@@ -81,10 +94,22 @@ class ComputerBlockItemRenderer {
     }
 
     private void renderBlock(final MultiBufferSource.BufferSource bufferSource) {
-        itemRenderer.render(computerItemStack, ItemDisplayContext.NONE, false, new PoseStack(), bufferSource, 0xF000F0, OverlayTexture.NO_OVERLAY, model);
+        itemRenderer.render(
+                computerItemStack,
+                ItemDisplayContext.NONE,
+                false,
+                new PoseStack(),
+                bufferSource,
+                0xF000F0,
+                OverlayTexture.NO_OVERLAY,
+                model);
     }
 
-    private void renderOverlays(final Matrix4fStack poseStack, final MultiBufferSource.BufferSource bufferSource, @Nullable final Direction focusedSide, final NetworkInterfaceCardScreen screen) {
+    private void renderOverlays(
+            final Matrix4fStack poseStack,
+            final MultiBufferSource.BufferSource bufferSource,
+            @Nullable final Direction focusedSide,
+            final NetworkInterfaceCardScreen screen) {
         for (final Direction side : Direction.values()) {
             if (side == Direction.SOUTH) {
                 continue;
@@ -93,18 +118,21 @@ class ComputerBlockItemRenderer {
             poseStack.pushMatrix();
             poseStack.identity();
 
-            poseStack.translate(-side.getStepX() * 0.51f, side.getStepY() * 0.51f, -side.getStepZ() * 0.51f);
+            poseStack.translate(
+                    -side.getStepX() * 0.51f, side.getStepY() * 0.51f, -side.getStepZ() * 0.51f);
 
-            Vector3f sideRotation = switch (side) {
-                case DOWN -> new Vector3f(-90, 0, 0);
-                case UP -> new Vector3f(90, 0, 0);
-                case NORTH -> new Vector3f(0, 180, 0);
-                case WEST -> new Vector3f(0, -90, 0);
-                case EAST -> new Vector3f(0, 90, 0);
-                default -> throw new IllegalStateException("Unexpected value: " + side);
-            };
+            Vector3f sideRotation =
+                    switch (side) {
+                        case DOWN -> new Vector3f(-90, 0, 0);
+                        case UP -> new Vector3f(90, 0, 0);
+                        case NORTH -> new Vector3f(0, 180, 0);
+                        case WEST -> new Vector3f(0, -90, 0);
+                        case EAST -> new Vector3f(0, 90, 0);
+                        default -> throw new IllegalStateException("Unexpected value: " + side);
+                    };
             sideRotation.mul((float) Math.PI / 180.0f);
-            poseStack.rotate(new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z));
+            poseStack.rotate(
+                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z));
 
             poseStack.translate(-0.5f, -0.5f, 0f);
 
@@ -122,8 +150,12 @@ class ComputerBlockItemRenderer {
         }
     }
 
-    private void renderOverlay(final Matrix4fStack poseStack, final MultiBufferSource.BufferSource bufferSource, final Texture texture) {
-        final VertexConsumer buffer = bufferSource.getBuffer(ModRenderType.getOverlay(texture.location));
+    private void renderOverlay(
+            final Matrix4fStack poseStack,
+            final MultiBufferSource.BufferSource bufferSource,
+            final Texture texture) {
+        final VertexConsumer buffer =
+                bufferSource.getBuffer(ModRenderType.getOverlay(texture.location));
 
         buffer.addVertex(poseStack, 0, 0, 0).setUv(0, 0);
         buffer.addVertex(poseStack, 0, 1, 0).setUv(0, 1);

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class CUD extends CSISequenceHandler {
     public CUD(final Terminal terminal) {

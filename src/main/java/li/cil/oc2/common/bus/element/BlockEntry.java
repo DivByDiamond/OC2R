@@ -1,14 +1,16 @@
 package li.cil.oc2.common.bus.element;
 
+import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
+
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
+
 import net.minecraft.core.Direction;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
+import javax.annotation.Nullable;
 
 public final class BlockEntry implements GroupEntry {
     private final BlockDeviceInfo deviceInfo;
@@ -52,7 +54,9 @@ public final class BlockEntry implements GroupEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final BlockEntry that = (BlockEntry) o;
-        return Objects.equals(dataKey, that.dataKey) && device.equals(that.device) && side == that.side;
+        return Objects.equals(dataKey, that.dataKey)
+                && device.equals(that.device)
+                && side == that.side;
     }
 
     @Override

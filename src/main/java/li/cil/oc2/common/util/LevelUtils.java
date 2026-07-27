@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import net.minecraft.core.BlockPos;
@@ -12,13 +11,15 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 public final class LevelUtils {
     @Nullable
-    public static BlockEntity getBlockEntityIfChunkExists(final LevelAccessor level, final BlockPos pos) {
+    public static BlockEntity getBlockEntityIfChunkExists(
+            final LevelAccessor level, final BlockPos pos) {
         final ChunkPos chunkPos = new ChunkPos(pos);
         if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
             return null;
@@ -36,7 +37,8 @@ public final class LevelUtils {
 
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity != null) {
-            final ResourceLocation registryName = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
+            final ResourceLocation registryName =
+                    BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
             if (registryName != null) {
                 return registryName.toString();
             }
@@ -53,15 +55,35 @@ public final class LevelUtils {
         return Objects.requireNonNullElse(blockEntity, block).getClass().getSimpleName();
     }
 
-    public static void playSound(final LevelAccessor level, final BlockPos pos, final SoundType soundType, final Function<SoundType, SoundEvent> soundEvent) {
+    public static void playSound(
+            final LevelAccessor level,
+            final BlockPos pos,
+            final SoundType soundType,
+            final Function<SoundType, SoundEvent> soundEvent) {
         playSound(level, pos, soundType, soundEvent.apply(soundType));
     }
 
-    public static void playSound(final LevelAccessor level, final BlockPos pos, final SoundType soundType, final SoundEvent soundEvent) {
-        playSound(level, pos, soundEvent, SoundSource.BLOCKS, (soundType.getVolume() + 1f) / 2f, soundType.getPitch() * 0.8f);
+    public static void playSound(
+            final LevelAccessor level,
+            final BlockPos pos,
+            final SoundType soundType,
+            final SoundEvent soundEvent) {
+        playSound(
+                level,
+                pos,
+                soundEvent,
+                SoundSource.BLOCKS,
+                (soundType.getVolume() + 1f) / 2f,
+                soundType.getPitch() * 0.8f);
     }
 
-    public static void playSound(final LevelAccessor level, final BlockPos pos, final SoundEvent soundEvent, final SoundSource soundCategory, final float volume, final float pitch) {
+    public static void playSound(
+            final LevelAccessor level,
+            final BlockPos pos,
+            final SoundEvent soundEvent,
+            final SoundSource soundCategory,
+            final float volume,
+            final float pitch) {
         level.playSound(null, pos, soundEvent, soundCategory, volume, pitch);
     }
 }

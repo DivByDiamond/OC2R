@@ -11,8 +11,10 @@ import li.cil.oc2.common.util.TickUtils;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.sedna.api.memory.MemoryAccessException;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,17 +70,22 @@ public final class VMLifecycle {
             return;
         }
 
-        if (vm.busController.getDevices().stream().noneMatch(device -> device instanceof FirmwareLoader)) {
+        if (vm.busController.getDevices().stream()
+                .noneMatch(device -> device instanceof FirmwareLoader)) {
             vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_FIRMWARE));
             return;
         }
 
-        if (vm.busController.getDevices().stream().noneMatch(device -> device instanceof CPUItemDevice)) {
+        if (vm.busController.getDevices().stream()
+                .noneMatch(device -> device instanceof CPUItemDevice)) {
             vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
             return;
         } else {
-            Optional<Device> cpu = vm.busController.getDevices().stream().filter(device -> device instanceof CPUItemDevice).findFirst();
-            if(cpu.isEmpty()) {
+            Optional<Device> cpu =
+                    vm.busController.getDevices().stream()
+                            .filter(device -> device instanceof CPUItemDevice)
+                            .findFirst();
+            if (cpu.isEmpty()) {
                 vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
                 return;
             }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.device;
 
 import li.cil.sedna.api.device.MemoryMappedDevice;
@@ -8,14 +7,10 @@ import li.cil.sedna.utils.DirectByteBufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
 public final class PciRootPortDevice implements MemoryMappedDevice {
-
-
 
     private final ByteBuffer buffer;
     private int length;
-
 
     public PciRootPortDevice(final int bus_count, final int window_size, final ByteBuffer buffer) {
 
@@ -32,10 +27,7 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
         this.buffer.putInt(12, 0x00000101);
         this.buffer.putInt(0x10, 0x00000000);
         this.buffer.putInt(0x2C, 0x12345678);
-
-
     }
-
 
     public void close() {
         synchronized (buffer) {
@@ -73,7 +65,8 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
     }
 
     @Override
-    public void store(final int offset, final long value, final int sizeLog2) throws MemoryAccessException {
+    public void store(final int offset, final long value, final int sizeLog2)
+            throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
             System.out.printf("PCI config write: %x %x %x%n", offset, value, sizeLog2);
             switch (sizeLog2) {
@@ -85,6 +78,4 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
             }
         }
     }
-
-
 }

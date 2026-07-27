@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.device.rpc.*;
@@ -12,6 +12,7 @@ import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
 import li.cil.oc2.common.serialization.gson.*;
 import li.cil.sedna.api.device.Steppable;
 import li.cil.sedna.api.device.serial.SerialDevice;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
@@ -47,23 +48,42 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     public RPCDeviceBusAdapter(final SerialDevice serialDevice, final int maxMessageSize) {
         this.serialDevice = serialDevice;
         this.transmitBuffer = ByteBuffer.allocate(maxMessageSize);
-        this.gson = RPCMethodParameterTypeAdapters.beginBuildGson()
-            .registerTypeAdapter(byte[].class, new UnsignedByteArrayJsonSerializer())
-            .registerTypeAdapter(MethodInvocation.class, new MethodInvocationJsonDeserializer())
-            .registerTypeAdapter(Message.class, new MessageJsonDeserializer())
-            .registerTypeAdapter(RPCDeviceWithIdentifier.class, new RPCDeviceWithIdentifierJsonSerializer())
-            .registerTypeHierarchyAdapter(RPCMethod.class, new RPCMethodJsonSerializer())
-            .registerTypeAdapter(EmptyMethodGroup.class, new EmptyRPCMethodGroupSerializer())
-            .registerTypeAdapter(Side.class, new SideJsonDeserializer())
-            .create();
+        this.gson =
+                RPCMethodParameterTypeAdapters.beginBuildGson()
+                        .registerTypeAdapter(byte[].class, new UnsignedByteArrayJsonSerializer())
+                        .registerTypeAdapter(
+                                MethodInvocation.class, new MethodInvocationJsonDeserializer())
+                        .registerTypeAdapter(Message.class, new MessageJsonDeserializer())
+                        .registerTypeAdapter(
+                                RPCDeviceWithIdentifier.class,
+                                new RPCDeviceWithIdentifierJsonSerializer())
+                        .registerTypeHierarchyAdapter(
+                                RPCMethod.class, new RPCMethodJsonSerializer())
+                        .registerTypeAdapter(
+                                EmptyMethodGroup.class, new EmptyRPCMethodGroupSerializer())
+                        .registerTypeAdapter(Side.class, new SideJsonDeserializer())
+                        .create();
         this.deviceRegistry = new DeviceRegistry();
         this.messageWriter = new MessageWriter(gson, () -> crmode, buf -> receiveBuffer = buf);
-        this.methodInvoker = new MethodInvoker(gson, messageWriter, id -> deviceRegistry.devicesById.get(id), mi -> synchronizedInvocation = mi);
+        this.methodInvoker =
+                new MethodInvoker(
+                        gson,
+                        messageWriter,
+                        id -> deviceRegistry.devicesById.get(id),
+                        mi -> synchronizedInvocation = mi);
     }
 
-    public void mountDevices() { deviceRegistry.mountDevices(); }
-    public void unmountDevices() { deviceRegistry.unmountDevices(); }
-    public void disposeDevices() { deviceRegistry.disposeDevices(this); }
+    public void mountDevices() {
+        deviceRegistry.mountDevices();
+    }
+
+    public void unmountDevices() {
+        deviceRegistry.unmountDevices();
+    }
+
+    public void disposeDevices() {
+        deviceRegistry.disposeDevices(this);
+    }
 
     public void reset() {
         transmitBuffer.clear();
@@ -106,7 +126,9 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
 
     private void readFromDevice() {
         int value;
-        while (receiveBuffer == null && synchronizedInvocation == null && (value = serialDevice.read()) >= 0) {
+        while (receiveBuffer == null
+                && synchronizedInvocation == null
+                && (value = serialDevice.read()) >= 0) {
             if (value == 0 || value == 13) {
                 crmode = value == 13;
                 if (transmitBuffer.limit() > 0) {
@@ -142,11 +164,13 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
 
     private void processMessage(final byte[] messageData) {
         if (new String(messageData).trim().isEmpty()) return;
-        final InputStreamReader stream = new InputStreamReader(new ByteArrayInputStream(messageData));
+        final InputStreamReader stream =
+                new InputStreamReader(new ByteArrayInputStream(messageData));
         try {
             final Message message = gson.fromJson(stream, Message.class);
             switch (message.type()) {
-                case Message.MESSAGE_TYPE_LIST -> messageWriter.writeDeviceList(deviceRegistry.devicesWithId);
+                case Message.MESSAGE_TYPE_LIST ->
+                        messageWriter.writeDeviceList(deviceRegistry.devicesWithId);
                 case Message.MESSAGE_TYPE_METHODS -> {
                     if (message.data() != null) {
                         final UUID deviceId = (UUID) message.data();
@@ -162,21 +186,24 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
                 }
                 case Message.MESSAGE_TYPE_INVOKE_METHOD -> {
                     if (message.data() != null) {
-                        methodInvoker.processMethodInvocation((MethodInvocation) message.data(), false);
+                        methodInvoker.processMethodInvocation(
+                                (MethodInvocation) message.data(), false);
                     } else {
                         messageWriter.writeError("missing invocation data");
                     }
                 }
                 case Message.MESSAGE_TYPE_SUBSCRIBE -> {
                     if (message.data() != null) {
-                        deviceRegistry.subscribe(this, (UUID) message.data(), messageWriter::writeError);
+                        deviceRegistry.subscribe(
+                                this, (UUID) message.data(), messageWriter::writeError);
                     } else {
                         messageWriter.writeError("missing invocation data");
                     }
                 }
                 case Message.MESSAGE_TYPE_UNSUBSCRIBE -> {
                     if (message.data() != null) {
-                        deviceRegistry.unsubscribe(this, (UUID) message.data(), messageWriter::writeError);
+                        deviceRegistry.unsubscribe(
+                                this, (UUID) message.data(), messageWriter::writeError);
                     } else {
                         messageWriter.writeError("missing invocation data");
                     }

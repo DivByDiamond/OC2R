@@ -1,14 +1,16 @@
-
 package li.cil.oc2.client.gui.terminal;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
 public final class TerminalInput {
-    private static final Int2ObjectArrayMap<Int2ObjectArrayMap<byte[]>> KEYCODE_SEQUENCES = new Int2ObjectArrayMap<>();
-    private static final Int2ObjectArrayMap<Int2ObjectArrayMap<byte[]>> DECCKM_KEYCODE_SEQUENCES = new Int2ObjectArrayMap<>();
+    private static final Int2ObjectArrayMap<Int2ObjectArrayMap<byte[]>> KEYCODE_SEQUENCES =
+            new Int2ObjectArrayMap<>();
+    private static final Int2ObjectArrayMap<Int2ObjectArrayMap<byte[]>> DECCKM_KEYCODE_SEQUENCES =
+            new Int2ObjectArrayMap<>();
 
     static {
         addSequence(GLFW.GLFW_KEY_ENTER, '\r');
@@ -42,42 +44,45 @@ public final class TerminalInput {
         addSequence(GLFW.GLFW_KEY_LEFT, "\033[D");
 
         for (int i = 'A'; i <= 'Z'; i++) {
+            addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_A + (i - 'A'), (byte) (1 + i - 'A'));
             addSequence(
-                GLFW.GLFW_MOD_CONTROL,
-                GLFW.GLFW_KEY_A + (i - 'A'),
-                (byte) (1 + i - 'A')
-            );
-            addSequence(
-                GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
-                GLFW.GLFW_KEY_A + (i - 'A'),
-                (byte) (1 + i - 'A')
-            );
+                    GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
+                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    (byte) (1 + i - 'A'));
 
             addSequence(
-                GLFW.GLFW_MOD_ALT,
-                GLFW.GLFW_KEY_A + (i - 'A'),
-                (byte) '\033', (byte) ('a' + i - 'A')
-            );
+                    GLFW.GLFW_MOD_ALT,
+                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    (byte) '\033',
+                    (byte) ('a' + i - 'A'));
             addSequence(
-                GLFW.GLFW_MOD_ALT | GLFW.GLFW_MOD_SHIFT,
-                GLFW.GLFW_KEY_A + (i - 'A'),
-                (byte) '\033', (byte) (i + 128)
-            );
+                    GLFW.GLFW_MOD_ALT | GLFW.GLFW_MOD_SHIFT,
+                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    (byte) '\033',
+                    (byte) (i + 128));
         }
 
         addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_LEFT_BRACKET, (byte) '\033');
-        addSequence(GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT, GLFW.GLFW_KEY_LEFT_BRACKET, (byte) '\033');
+        addSequence(
+                GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
+                GLFW.GLFW_KEY_LEFT_BRACKET,
+                (byte) '\033');
         addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_BACKSLASH, (byte) '\034');
-        addSequence(GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT, GLFW.GLFW_KEY_BACKSLASH, (byte) '\034');
+        addSequence(
+                GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
+                GLFW.GLFW_KEY_BACKSLASH,
+                (byte) '\034');
         addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_RIGHT_BRACKET, (byte) '\035');
-        addSequence(GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT, GLFW.GLFW_KEY_RIGHT_BRACKET, (byte) '\035');
+        addSequence(
+                GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
+                GLFW.GLFW_KEY_RIGHT_BRACKET,
+                (byte) '\035');
 
         addDECCKMSequence(GLFW.GLFW_KEY_UP, "\033OA");
         addDECCKMSequence(GLFW.GLFW_KEY_DOWN, "\033OB");
         addDECCKMSequence(GLFW.GLFW_KEY_RIGHT, "\033OC");
         addDECCKMSequence(GLFW.GLFW_KEY_LEFT, "\033OD");
     }
-
 
     @Nullable
     public static byte[] getSequence(final int keyCode) {
@@ -93,7 +98,6 @@ public final class TerminalInput {
         return map.get(keyCode);
     }
 
-
     @Nullable
     public static byte[] getDECCKMSequence(final int keyCode) {
         return getDECCKMSequence(keyCode, 0);
@@ -107,7 +111,6 @@ public final class TerminalInput {
         }
         return map.get(keyCode);
     }
-
 
     private static void addSequence(final int keyCode, final char ch) {
         addSequence(keyCode, (byte) ch);
@@ -130,12 +133,12 @@ public final class TerminalInput {
         addSequence(modifiers, keyCode, bytes);
     }
 
-    private static void addSequence(final int modifiers, final int keyCode, final byte... sequence) {
+    private static void addSequence(
+            final int modifiers, final int keyCode, final byte... sequence) {
         KEYCODE_SEQUENCES
-            .computeIfAbsent(modifiers, i -> new Int2ObjectArrayMap<>())
-            .put(keyCode, sequence);
+                .computeIfAbsent(modifiers, i -> new Int2ObjectArrayMap<>())
+                .put(keyCode, sequence);
     }
-
 
     private static void addDECCKMSequence(final int keyCode, final char ch) {
         addDECCKMSequence(keyCode, (byte) ch);
@@ -149,7 +152,8 @@ public final class TerminalInput {
         addDECCKMSequence(0, keyCode, sequence);
     }
 
-    private static void addDECCKMSequence(final int modifiers, final int keyCode, final String sequence) {
+    private static void addDECCKMSequence(
+            final int modifiers, final int keyCode, final String sequence) {
         final byte[] bytes = new byte[sequence.length()];
         final char[] chars = sequence.toCharArray();
         for (int i = 0; i < chars.length; i++) {
@@ -158,9 +162,10 @@ public final class TerminalInput {
         addDECCKMSequence(modifiers, keyCode, bytes);
     }
 
-    private static void addDECCKMSequence(final int modifiers, final int keyCode, final byte... sequence) {
+    private static void addDECCKMSequence(
+            final int modifiers, final int keyCode, final byte... sequence) {
         DECCKM_KEYCODE_SEQUENCES
-            .computeIfAbsent(modifiers, i -> new Int2ObjectArrayMap<>())
-            .put(keyCode, sequence);
+                .computeIfAbsent(modifiers, i -> new Int2ObjectArrayMap<>())
+                .put(keyCode, sequence);
     }
 }

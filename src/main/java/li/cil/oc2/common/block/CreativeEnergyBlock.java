@@ -1,9 +1,10 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -19,12 +20,12 @@ import javax.annotation.Nullable;
 
 public final class CreativeEnergyBlock extends Block implements EntityBlock {
     public CreativeEnergyBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(-1, 3600000)
-            .noLootTable());
+        super(
+                Properties.of()
+                        .mapColor(MapColor.METAL)
+                        .sound(SoundType.METAL)
+                        .strength(-1, 3600000)
+                        .noLootTable());
     }
 
     @Override
@@ -42,7 +43,9 @@ public final class CreativeEnergyBlock extends Block implements EntityBlock {
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
-        return TickableBlockEntity.createServerTicker(level, type, BlockEntities.CREATIVE_ENERGY.get());
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
+        return TickableBlockEntity.createServerTicker(
+                level, type, BlockEntities.CREATIVE_ENERGY.get());
     }
 }

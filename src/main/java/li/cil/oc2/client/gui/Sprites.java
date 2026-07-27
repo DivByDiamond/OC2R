@@ -1,9 +1,8 @@
-
 package li.cil.oc2.client.gui;
 
-import li.cil.oc2.client.gui.widget.Sprite;
-
 import static li.cil.oc2.client.gui.Textures.*;
+
+import li.cil.oc2.client.gui.widget.Sprite;
 
 public final class Sprites {
     public static final Sprite COMPUTER_CONTAINER = new Sprite(COMPUTER_CONTAINER_TEXTURE);
@@ -11,7 +10,8 @@ public final class Sprites {
     public static final Sprite TERMINAL_SCREEN = new Sprite(TERMINAL_SCREEN_TEXTURE);
     public static final Sprite MONITOR_SCREEN = new Sprite(MONITOR_SCREEN_TEXTURE);
     public static final Sprite BUS_INTERFACE_SCREEN = new Sprite(BUS_INTERFACE_SCREEN_TEXTURE);
-    public static final Sprite NETWORK_INTERFACE_CARD_SCREEN = new Sprite(NETWORK_INTERFACE_CARD_SCREEN_TEXTURE);
+    public static final Sprite NETWORK_INTERFACE_CARD_SCREEN =
+            new Sprite(NETWORK_INTERFACE_CARD_SCREEN_TEXTURE);
     public static final Sprite NETWORK_TUNNEL_SCREEN = new Sprite(NETWORK_TUNNEL_SCREEN_TEXTURE);
 
     public static final Sprite MONITOR_FOCUSED = new Sprite(MONITOR_FOCUSED_TEXTURE);
@@ -30,17 +30,23 @@ public final class Sprites {
 
     public static final Sprite INPUT_BUTTON_ACTIVE = new Sprite(INPUT_BUTTON_TEXTURE, 12, 12, 1, 1);
     public static final Sprite INPUT_BUTTON_BASE = new Sprite(INPUT_BUTTON_TEXTURE, 12, 12, 15, 1);
-    public static final Sprite INPUT_BUTTON_PRESSED = new Sprite(INPUT_BUTTON_TEXTURE, 12, 12, 29, 1);
+    public static final Sprite INPUT_BUTTON_PRESSED =
+            new Sprite(INPUT_BUTTON_TEXTURE, 12, 12, 29, 1);
 
     public static final Sprite POWER_BUTTON_ACTIVE = new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 1, 1);
     public static final Sprite POWER_BUTTON_BASE = new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 15, 1);
-    public static final Sprite POWER_BUTTON_PRESSED = new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 29, 1);
+    public static final Sprite POWER_BUTTON_PRESSED =
+            new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 29, 1);
 
-    public static final Sprite INVENTORY_BUTTON_INACTIVE = new Sprite(INVENTORY_BUTTON_TEXTURE, 12, 12, 1, 1);
-    public static final Sprite INVENTORY_BUTTON_ACTIVE = new Sprite(INVENTORY_BUTTON_TEXTURE, 12, 12, 15, 1);
+    public static final Sprite INVENTORY_BUTTON_INACTIVE =
+            new Sprite(INVENTORY_BUTTON_TEXTURE, 12, 12, 1, 1);
+    public static final Sprite INVENTORY_BUTTON_ACTIVE =
+            new Sprite(INVENTORY_BUTTON_TEXTURE, 12, 12, 15, 1);
 
-    public static final Sprite NETWORK_TUNNEL_LINK_BUTTON_INACTIVE = new Sprite(NETWORK_TUNNEL_LINK_BUTTON_TEXTURE, 80, 20, 0, 0);
-    public static final Sprite NETWORK_TUNNEL_LINK_BUTTON_ACTIVE = new Sprite(NETWORK_TUNNEL_LINK_BUTTON_TEXTURE, 80, 20, 0, 20);
+    public static final Sprite NETWORK_TUNNEL_LINK_BUTTON_INACTIVE =
+            new Sprite(NETWORK_TUNNEL_LINK_BUTTON_TEXTURE, 80, 20, 0, 0);
+    public static final Sprite NETWORK_TUNNEL_LINK_BUTTON_ACTIVE =
+            new Sprite(NETWORK_TUNNEL_LINK_BUTTON_TEXTURE, 80, 20, 0, 20);
 
     public static final Sprite CONFIRM_PRESSED = new Sprite(CONFIRM_BUTTON_TEXTURE, 12, 12, 14, 1);
     public static final Sprite CONFIRM_BASE = new Sprite(CONFIRM_BUTTON_TEXTURE, 12, 12, 1, 1);

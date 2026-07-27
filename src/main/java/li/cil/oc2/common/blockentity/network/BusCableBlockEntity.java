@@ -1,17 +1,19 @@
-
 package li.cil.oc2.common.blockentity.network;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.ModBlockEntity;
+
+import static java.util.Objects.requireNonNull;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.block.ConnectionType;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.ServerScheduler;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -28,8 +30,6 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 import javax.annotation.Nullable;
 
-import static java.util.Objects.requireNonNull;
-
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class BusCableBlockEntity extends ModBlockEntity {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
@@ -40,23 +40,46 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
+
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
-    private final ICapabilityInvalidationListener[] neighborListeners = new NeighborListener[Constants.BLOCK_FACE_COUNT];
+    private final ICapabilityInvalidationListener[] neighborListeners =
+            new NeighborListener[Constants.BLOCK_FACE_COUNT];
 
     public BusCableBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.BUS_CABLE.get(), pos, state);
         requestModelDataUpdate();
     }
 
-    public String getInterfaceName(final Direction side) { return interfaceNameManager.getInterfaceName(side); }
-    public void setInterfaceName(final Direction side, final String name) { interfaceNameManager.setInterfaceName(side, name); }
-    public ItemStack getFacade() { return facadeManager.getFacade(); }
-    public FacadeType getFacadeType(final ItemStack stack) { return facadeManager.getFacadeType(stack); }
-    public FacadeType getFacadeType(@Nullable final BlockState state) { return facadeManager.getFacadeType(state); }
-    public void setFacade(final ItemStack stack) { facadeManager.setFacade(stack); }
-    public void removeFacade() { facadeManager.removeFacade(); }
+    public String getInterfaceName(final Direction side) {
+        return interfaceNameManager.getInterfaceName(side);
+    }
 
-    public void handleConfigurationChanged(@Nullable final Direction side, final boolean neighborConnectivityChanged) {
+    public void setInterfaceName(final Direction side, final String name) {
+        interfaceNameManager.setInterfaceName(side, name);
+    }
+
+    public ItemStack getFacade() {
+        return facadeManager.getFacade();
+    }
+
+    public FacadeType getFacadeType(final ItemStack stack) {
+        return facadeManager.getFacadeType(stack);
+    }
+
+    public FacadeType getFacadeType(@Nullable final BlockState state) {
+        return facadeManager.getFacadeType(state);
+    }
+
+    public void setFacade(final ItemStack stack) {
+        facadeManager.setFacade(stack);
+    }
+
+    public void removeFacade() {
+        facadeManager.removeFacade();
+    }
+
+    public void handleConfigurationChanged(
+            @Nullable final Direction side, final boolean neighborConnectivityChanged) {
         if (side != null) {
             setInterfaceName(side, "");
             if (level != null) level.invalidateCapabilities(getBlockPos());
@@ -65,7 +88,9 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     }
 
     @Override
-    public ModelData getModelData() { return modelData.getModelData(); }
+    public ModelData getModelData() {
+        return modelData.getModelData();
+    }
 
     @Override
     public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
@@ -74,17 +99,23 @@ public final class BusCableBlockEntity extends ModBlockEntity {
         if (facadeManager.getFacade() == ItemStack.EMPTY) {
             tag.put(FACADE_TAG_NAME, new CompoundTag());
         } else {
-            tag.put(FACADE_TAG_NAME, ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, facadeManager.getFacade()).getOrThrow());
+            tag.put(
+                    FACADE_TAG_NAME,
+                    ItemStack.CODEC
+                            .encodeStart(NbtOps.INSTANCE, facadeManager.getFacade())
+                            .getOrThrow());
         }
         return tag;
     }
 
     @Override
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
-        interfaceNameManager.deserialize(tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
+        interfaceNameManager.deserialize(
+                tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         final var facadeNbt = tag.getCompound(FACADE_TAG_NAME);
         if (!facadeNbt.isEmpty()) {
-            facadeManager.setFacadeDirectly(ItemStack.CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
+            facadeManager.setFacadeDirectly(
+                    ItemStack.CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
         } else {
             facadeManager.setFacadeDirectly(ItemStack.EMPTY);
         }
@@ -95,17 +126,23 @@ public final class BusCableBlockEntity extends ModBlockEntity {
         super.saveAdditional(tag, registries);
         tag.put(BUS_ELEMENT_TAG_NAME, busElement.save(registries));
         tag.put(INTERFACE_NAMES_TAG_NAME, interfaceNameManager.serialize());
-        tag.put(FACADE_TAG_NAME, ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, facadeManager.getFacade()).getOrThrow());
+        tag.put(
+                FACADE_TAG_NAME,
+                ItemStack.OPTIONAL_CODEC
+                        .encodeStart(NbtOps.INSTANCE, facadeManager.getFacade())
+                        .getOrThrow());
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
-        interfaceNameManager.deserialize(tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
+        interfaceNameManager.deserialize(
+                tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         final var facadeNbt = tag.getCompound(FACADE_TAG_NAME);
         try {
-            facadeManager.setFacadeDirectly(ItemStack.OPTIONAL_CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
+            facadeManager.setFacadeDirectly(
+                    ItemStack.OPTIONAL_CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
         } catch (final IllegalStateException e) {
             facadeManager.setFacadeDirectly(ItemStack.EMPTY);
         }
@@ -115,17 +152,17 @@ public final class BusCableBlockEntity extends ModBlockEntity {
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.DeviceBusElement.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final BusCableBlockEntity self) {
-                    if (BusCableStateProperties.getConnectionType(be.getBlockState(), side) != ConnectionType.NONE) {
-                        return self.busElement;
+                Capabilities.DeviceBusElement.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final BusCableBlockEntity self) {
+                        if (BusCableStateProperties.getConnectionType(be.getBlockState(), side)
+                                != ConnectionType.NONE) {
+                            return self.busElement;
+                        }
                     }
-                }
-                return null;
-            },
-            li.cil.oc2.common.block.Blocks.BUS_CABLE.get()
-        );
+                    return null;
+                },
+                li.cil.oc2.common.block.Blocks.BUS_CABLE.get());
     }
 
     @Override
@@ -150,18 +187,27 @@ public final class BusCableBlockEntity extends ModBlockEntity {
 
     private void scheduleLateLoad() {
         assert level != null;
-        ServerScheduler.schedule(level, () -> {
-            if (!isValid()) return;
-            final var world = requireNonNull(getLevel());
-            final var pos = getBlockPos();
-            for (final var direction : Constants.DIRECTIONS) {
-                busElement.updateDevicesForNeighbor(direction);
-                final var neighborPos = pos.relative(direction);
-                final var blockEntity = LevelUtils.getBlockEntityIfChunkExists(world, neighborPos);
-                if (blockEntity == null) continue;
-                final var capability = world.getCapability(Capabilities.DeviceBusElement.BLOCK, neighborPos, null, blockEntity, direction.getOpposite());
-                if (capability != null) capability.scheduleScan();
-            }
-        });
+        ServerScheduler.schedule(
+                level,
+                () -> {
+                    if (!isValid()) return;
+                    final var world = requireNonNull(getLevel());
+                    final var pos = getBlockPos();
+                    for (final var direction : Constants.DIRECTIONS) {
+                        busElement.updateDevicesForNeighbor(direction);
+                        final var neighborPos = pos.relative(direction);
+                        final var blockEntity =
+                                LevelUtils.getBlockEntityIfChunkExists(world, neighborPos);
+                        if (blockEntity == null) continue;
+                        final var capability =
+                                world.getCapability(
+                                        Capabilities.DeviceBusElement.BLOCK,
+                                        neighborPos,
+                                        null,
+                                        blockEntity,
+                                        direction.getOpposite());
+                        if (capability != null) capability.scheduleScan();
+                    }
+                });
     }
 }

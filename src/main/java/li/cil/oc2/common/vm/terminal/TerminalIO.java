@@ -2,12 +2,11 @@ package li.cil.oc2.common.vm.terminal;
 
 import li.cil.oc2.common.vm.terminal.Terminal.State;
 import li.cil.oc2.common.vm.terminal.escapes.*;
-import li.cil.oc2.common.vm.terminal.modes.ModeState;
-import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import javax.annotation.Nullable;
 
 class TerminalIO {
     private final Terminal terminal;
@@ -30,13 +29,18 @@ class TerminalIO {
         if (terminal.input.isEmpty()) {
             return null;
         } else {
-            if (!terminal.currentPrivateModeState.isAltBufferEnabled()) terminal.lastRowToDisplay = terminal.lastRowToDisplayMax;
+            if (!terminal.currentPrivateModeState.isAltBufferEnabled())
+                terminal.lastRowToDisplay = terminal.lastRowToDisplayMax;
             int dirtyLinesMask = 0;
             for (int i = 0; i <= 23; i++) {
                 dirtyLinesMask |= 1 << i;
             }
             final int finalDirtyLinesMask = dirtyLinesMask;
-            terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+            terminal.renderers.forEach(
+                    model ->
+                            model.getDirtyMask()
+                                    .accumulateAndGet(
+                                            finalDirtyLinesMask, (left, right) -> left | right));
             final ByteBuffer buffer = ByteBuffer.allocate(terminal.input.size());
             while (!terminal.input.isEmpty()) {
                 buffer.put(terminal.input.dequeueByte());
@@ -89,10 +93,17 @@ class TerminalIO {
                                 if (terminal.x < Terminal.WIDTH) {
                                     do {
                                         terminal.x++;
-                                    } while (terminal.x < Terminal.WIDTH && (terminal.currentPrivateModeState.isAltBufferEnabled() ? !terminal.altTabs[terminal.x] : !terminal.tabs[terminal.x]));
+                                    } while (terminal.x < Terminal.WIDTH
+                                            && (terminal.currentPrivateModeState
+                                                            .isAltBufferEnabled()
+                                                    ? !terminal.altTabs[terminal.x]
+                                                    : !terminal.tabs[terminal.x]));
                                 }
                             }
-                            case (byte) '\b' -> terminal.setCursorPos(Math.min(terminal.x, Terminal.WIDTH - 1) - 1, terminal.y);
+                            case (byte) '\b' ->
+                                    terminal.setCursorPos(
+                                            Math.min(terminal.x, Terminal.WIDTH - 1) - 1,
+                                            terminal.y);
 
                             default -> {
                                 terminal.bufferManager.putChar(decoder.getCodepoint());
@@ -141,7 +152,9 @@ class TerminalIO {
                         switch (ch) {
                             case 'A' -> {}
                             case 'B' -> terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
-                            case '0' -> terminal.drawingModeG0 = TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
+                            case '0' ->
+                                    terminal.drawingModeG0 =
+                                            TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
                             case '1' -> {}
                             case '2' -> {}
                         }
@@ -154,7 +167,15 @@ class TerminalIO {
                                 if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
                                     Arrays.fill(terminal.altBuffer, 'E');
                                 } else {
-                                    Arrays.fill(terminal.buffer, (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH, ((Terminal.WIDTH - 1) + (Terminal.HEIGHT - 1) * Terminal.WIDTH) + 1, 'E');
+                                    Arrays.fill(
+                                            terminal.buffer,
+                                            (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
+                                                    * Terminal.WIDTH,
+                                            ((Terminal.WIDTH - 1)
+                                                            + (Terminal.HEIGHT - 1)
+                                                                    * Terminal.WIDTH)
+                                                    + 1,
+                                            'E');
                                 }
                                 terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
                             }

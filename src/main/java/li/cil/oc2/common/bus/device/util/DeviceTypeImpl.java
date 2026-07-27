@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.bus.device.util;
 
 import li.cil.oc2.api.bus.device.DeviceType;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -12,7 +12,8 @@ public final class DeviceTypeImpl implements DeviceType {
     private final ResourceLocation icon;
     private final Component name;
 
-    public DeviceTypeImpl(final TagKey<Item> tag, final ResourceLocation icon, final Component name) {
+    public DeviceTypeImpl(
+            final TagKey<Item> tag, final ResourceLocation icon, final Component name) {
         this.tag = tag;
         this.icon = icon;
         this.name = name;

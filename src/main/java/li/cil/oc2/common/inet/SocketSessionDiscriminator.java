@@ -2,7 +2,8 @@ package li.cil.oc2.common.inet;
 
 import java.util.Objects;
 
-public abstract class SocketSessionDiscriminator<S extends SessionBase> implements SessionDiscriminator<S> {
+public abstract class SocketSessionDiscriminator<S extends SessionBase>
+        implements SessionDiscriminator<S> {
     private final int srcIpAddress;
     private final short srcPort;
     private final int dstIpAddress;
@@ -12,8 +13,7 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase> implemen
             final int srcIpAddress,
             final short srcPort,
             final int dstIpAddress,
-            final short dstPort
-    ) {
+            final short dstPort) {
         this.srcIpAddress = srcIpAddress;
         this.srcPort = srcPort;
         this.dstIpAddress = dstIpAddress;
@@ -42,9 +42,9 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase> implemen
         if (o == null || getClass() != o.getClass()) return false;
         SocketSessionDiscriminator<?> that = (SocketSessionDiscriminator<?>) o;
         return srcIpAddress == that.srcIpAddress
-               && srcPort == that.srcPort
-               && dstIpAddress == that.dstIpAddress
-               && dstPort == that.dstPort;
+                && srcPort == that.srcPort
+                && dstIpAddress == that.dstIpAddress
+                && dstPort == that.dstPort;
     }
 
     @Override

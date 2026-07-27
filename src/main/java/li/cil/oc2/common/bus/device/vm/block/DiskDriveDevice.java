@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.vm.block;
 
 import li.cil.oc2.common.bus.device.vm.item.AbstractBlockStorageDevice;
@@ -6,6 +5,7 @@ import li.cil.oc2.common.item.FloppyItem;
 import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,14 +15,14 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.CompletableFuture;
 
-public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer> extends AbstractBlockStorageDevice<BlockDevice, T> {
-    private static final ByteBufferBlockDevice EMPTY_BLOCK_DEVICE = ByteBufferBlockDevice.create(0, false);
-
+public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer>
+        extends AbstractBlockStorageDevice<BlockDevice, T> {
+    private static final ByteBufferBlockDevice EMPTY_BLOCK_DEVICE =
+            ByteBufferBlockDevice.create(0, false);
 
     public DiskDriveDevice(final T container) {
         super(container, false);
     }
-
 
     public void updateBlockDevice(final CompoundTag tag) {
         joinOpenJob();
@@ -44,13 +44,17 @@ public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer> e
 
         importFromItemStack(tag);
 
-        setOpenJob(createBlockDevice().thenAcceptAsync(blockDevice -> {
-            try {
-                device.setBlock(blockDevice);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, WORKERS));
+        setOpenJob(
+                createBlockDevice()
+                        .thenAcceptAsync(
+                                blockDevice -> {
+                                    try {
+                                        device.setBlock(blockDevice);
+                                    } catch (final IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                },
+                                WORKERS));
     }
 
     public void removeBlockDevice() {
@@ -72,7 +76,6 @@ public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer> e
         }
     }
 
-
     @Override
     protected CompletableFuture<BlockDevice> createBlockDevice() {
         final ItemStack stack = identity.getDiskItemStack();
@@ -86,15 +89,18 @@ public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer> e
         }
 
         blobHandle = BlobStorage.validateHandle(blobHandle);
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
-                final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, capacity);
-                return ByteBufferBlockDevice.wrap(buffer, false);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, WORKERS);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        final FileChannel channel = BlobStorage.getOrOpen(blobHandle);
+                        final MappedByteBuffer buffer =
+                                channel.map(FileChannel.MapMode.READ_WRITE, 0, capacity);
+                        return ByteBufferBlockDevice.wrap(buffer, false);
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                WORKERS);
     }
 
     @Override

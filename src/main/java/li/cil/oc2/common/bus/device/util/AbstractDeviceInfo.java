@@ -1,21 +1,19 @@
-
 package li.cil.oc2.common.bus.device.util;
 
 import li.cil.oc2.api.bus.device.Device;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 public abstract class AbstractDeviceInfo<TProvider, TDevice extends Device> {
     @Nullable public final TProvider provider;
     public final TDevice device;
 
-
     protected AbstractDeviceInfo(@Nullable final TProvider provider, final TDevice device) {
         this.provider = provider;
         this.device = device;
     }
-
 
     public int getEnergyConsumption() {
         return 0;

@@ -3,8 +3,10 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,10 +19,8 @@ public final class DefaultNetworkLayer implements NetworkLayer {
 
     private static final Random random = new Random();
 
-
     private static final int IPv4_HEADER_SIZE = 20;
     private static final int IPv4_VERSION = 4; // obviously...
-
 
     private final TransportLayer transportLayer;
 
@@ -29,18 +29,22 @@ public final class DefaultNetworkLayer implements NetworkLayer {
 
     private final InternetManagerImpl internetManager;
 
-    public DefaultNetworkLayer(final LayerParameters layerParameters, final TransportLayer transportLayer) {
+    public DefaultNetworkLayer(
+            final LayerParameters layerParameters, final TransportLayer transportLayer) {
         this.internetManager = (InternetManagerImpl) layerParameters.getInternetManager();
         this.transportLayer = transportLayer;
     }
 
     @Override
     public Optional<Tag> onSave() {
-        return transportLayer.onSave().map(transportLayerState -> {
-            final CompoundTag networkLayerState = new CompoundTag();
-            networkLayerState.put(TransportLayer.LAYER_NAME, transportLayerState);
-            return networkLayerState;
-        });
+        return transportLayer
+                .onSave()
+                .map(
+                        transportLayerState -> {
+                            final CompoundTag networkLayerState = new CompoundTag();
+                            networkLayerState.put(TransportLayer.LAYER_NAME, transportLayerState);
+                            return networkLayerState;
+                        });
     }
 
     @Override

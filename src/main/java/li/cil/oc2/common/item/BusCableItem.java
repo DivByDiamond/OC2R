@@ -1,10 +1,10 @@
-
 package li.cil.oc2.common.item;
 
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.block.BusCableStateProperties;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
 import li.cil.oc2.common.util.TooltipUtils;
+
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public final class BusCableItem extends ModBlockItem {
@@ -30,10 +29,13 @@ public final class BusCableItem extends ModBlockItem {
         super(block);
     }
 
-
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(final ItemStack stack, final TooltipContext context, final List<Component> tooltip, final TooltipFlag flag) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final TooltipContext context,
+            final List<Component> tooltip,
+            final TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         TooltipUtils.addEnergyConsumption(Config.busCableEnergyPerTick, tooltip);
     }
@@ -49,7 +51,6 @@ public final class BusCableItem extends ModBlockItem {
         final InteractionResult result = tryAddToBlock(context);
         return result.consumesAction() ? result : super.place(context);
     }
-
 
     private static InteractionResult tryAddToBlock(final UseOnContext context) {
         final Level level = context.getLevel();
@@ -67,7 +68,8 @@ public final class BusCableItem extends ModBlockItem {
             CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, pos, stack);
         }
 
-        LevelUtils.playSound(level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
+        LevelUtils.playSound(
+                level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
 
         if (player == null || !player.getAbilities().instabuild) {
             stack.shrink(1);

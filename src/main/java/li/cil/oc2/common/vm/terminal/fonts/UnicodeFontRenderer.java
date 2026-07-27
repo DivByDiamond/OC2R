@@ -17,7 +17,9 @@ public class UnicodeFontRenderer {
         this.font = font;
         this.isItalic = isItalic;
 
-        String initialSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=_.,:;<>?;':\"\\|`~[]{}1234567890△▽ ";
+        String initialSet =
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=_.,:;<>?;':\"\\|`~[]{}1234567890△▽"
+                    + " ";
         int[] characters = initialSet.codePoints().toArray();
         for (final int character : characters) {
             getGlyph(character);
@@ -35,7 +37,11 @@ public class UnicodeFontRenderer {
 
     private Glyph rasterizeGlyph(int character) {
         GlyphVector gv = font.createGlyphVector(frc, Character.toChars(character));
-        BufferedImage img = new BufferedImage((isItalic) ? 44 : 20, 32, BufferedImage.TYPE_INT_ARGB); // size can be dynamic
+        BufferedImage img =
+                new BufferedImage(
+                        (isItalic) ? 44 : 20,
+                        32,
+                        BufferedImage.TYPE_INT_ARGB); // size can be dynamic
         Graphics2D g = img.createGraphics();
 
         g.setFont(font);
@@ -47,7 +53,8 @@ public class UnicodeFontRenderer {
         g.drawGlyphVector(gv, 0, ascent - 1);
         g.dispose();
 
-        Glyph glyph = new Glyph(img, (isItalic) ? 44 : 20, 32, (int) gv.getGlyphMetrics(0).getAdvance());
+        Glyph glyph =
+                new Glyph(img, (isItalic) ? 44 : 20, 32, (int) gv.getGlyphMetrics(0).getAdvance());
 
         FontHandling.FontAtlas.addGlyph(glyph);
         return glyph;

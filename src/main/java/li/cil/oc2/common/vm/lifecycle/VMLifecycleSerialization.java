@@ -5,6 +5,7 @@ import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.util.NBTUtils;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.VMRunState;
+
 import net.minecraft.nbt.CompoundTag;
 
 final class VMLifecycleSerialization {
@@ -28,7 +29,9 @@ final class VMLifecycleSerialization {
             NBTSerialization.deserialize(tag.getCompound(VMLifecycle.RUNNER_TAG_NAME), vm.runner);
             vm.runState = VMRunState.LOADING_DEVICES;
         } else {
-            vm.runState = NBTUtils.getEnum(tag, AbstractVirtualMachine.RUN_STATE_TAG_NAME, VMRunState.class);
+            vm.runState =
+                    NBTUtils.getEnum(
+                            tag, AbstractVirtualMachine.RUN_STATE_TAG_NAME, VMRunState.class);
             if (vm.runState == null) {
                 vm.runState = VMRunState.STOPPED;
             } else if (vm.runState == VMRunState.RUNNING) {

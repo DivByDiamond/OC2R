@@ -1,10 +1,10 @@
-
 package li.cil.oc2.api.bus.device.provider;
 
-import java.util.Optional;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+
+import java.util.Optional;
 
 /**
  * Device query for an item stack.

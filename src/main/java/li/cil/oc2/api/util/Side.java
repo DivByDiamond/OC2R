@@ -1,18 +1,16 @@
-
 package li.cil.oc2.api.util;
 
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import javax.annotation.Nullable;
 
 /**
  * This enum indicates a side of a block device.
- * <p>
- * It is intended to be used by {@link li.cil.oc2.api.bus.device.rpc.RPCDevice} APIs,
- * providing both convenience for the caller by providing a range of aliases, and also
- * stability, in case Mojang decide to rename the enum fields of the {@link Direction}
- * enum at some time in the future.
+ *
+ * <p>It is intended to be used by {@link li.cil.oc2.api.bus.device.rpc.RPCDevice} APIs, providing
+ * both convenience for the caller by providing a range of aliases, and also stability, in case
+ * Mojang decide to rename the enum fields of the {@link Direction} enum at some time in the future.
  */
 public enum Side {
     DOWN(Direction.DOWN),
@@ -81,24 +79,19 @@ public enum Side {
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > Math.abs(dz)) {
             if (dx > 0) {
                 return Direction.EAST;
-            }
-            else {
+            } else {
                 return Direction.WEST;
             }
-        }
-        else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz)) {
+        } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz)) {
             if (dy > 0) {
                 return Direction.UP;
-            }
-            else {
+            } else {
                 return Direction.DOWN;
             }
-        }
-        else {
+        } else {
             if (dz > 0) {
                 return Direction.SOUTH;
-            }
-            else {
+            } else {
                 return Direction.NORTH;
             }
         }

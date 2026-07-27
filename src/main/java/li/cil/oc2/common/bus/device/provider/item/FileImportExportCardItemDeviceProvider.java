@@ -1,13 +1,13 @@
-
 package li.cil.oc2.common.bus.device.provider.item;
 
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
+
 import net.minecraft.world.entity.Entity;
 
 import java.util.Optional;
@@ -17,7 +17,6 @@ public final class FileImportExportCardItemDeviceProvider extends AbstractItemDe
         super(Items.FILE_IMPORT_EXPORT_CARD);
     }
 
-
     @Override
     protected boolean matches(final ItemDeviceQuery query) {
         return super.matches(query) && getTerminalUserProvider(query).isPresent();
@@ -25,15 +24,16 @@ public final class FileImportExportCardItemDeviceProvider extends AbstractItemDe
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
-        return getTerminalUserProvider(query).map(provider ->
-            new FileImportExportCardItemDevice(query.getItemStack(), provider));
+        return getTerminalUserProvider(query)
+                .map(
+                        provider ->
+                                new FileImportExportCardItemDevice(query.getItemStack(), provider));
     }
 
     @Override
     protected int getItemDeviceEnergyConsumption(final ItemDeviceQuery query) {
         return Config.fileImportExportCardEnergyPerTick;
     }
-
 
     private Optional<TerminalUserProvider> getTerminalUserProvider(final ItemDeviceQuery query) {
         if (query.getContainerBlockEntity().isPresent()) {

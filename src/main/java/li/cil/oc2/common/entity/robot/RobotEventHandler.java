@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.vm.AbstractVirtualMachine;
+
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;

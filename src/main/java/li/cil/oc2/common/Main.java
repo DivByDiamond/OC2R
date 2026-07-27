@@ -9,8 +9,8 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.bus.device.data.BlockDeviceDataRegistry;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
-import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.components.DataComponents;
+import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
 import li.cil.oc2.common.container.Containers;
@@ -25,6 +25,7 @@ import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
 import li.cil.sedna.Sedna;
+
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;

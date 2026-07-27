@@ -1,8 +1,9 @@
-
 package li.cil.oc2.common.serialization;
 
 import com.google.gson.*;
+
 import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.nbt.*;
 
 import javax.annotation.Nullable;

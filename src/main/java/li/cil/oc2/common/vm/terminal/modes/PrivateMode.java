@@ -2,14 +2,14 @@ package li.cil.oc2.common.vm.terminal.modes;
 
 @SuppressWarnings("unused")
 public final class PrivateMode {
-    public static final int DECCKM = 1;  // Cursor key
-    public static final int DECANM = 2;  // ANSI/VT52
+    public static final int DECCKM = 1; // Cursor key
+    public static final int DECANM = 2; // ANSI/VT52
     public static final int DECCOLM = 3; // Column
     public static final int DECSCLM = 4; // Scrolling
     public static final int DECSCNM = 5; // Screen
-    public static final int DECOM = 6;   // Origin
-    public static final int DECAWM = 7;  // Auto wrap
-    public static final int DECARM = 8;  // Auto-repeating
+    public static final int DECOM = 6; // Origin
+    public static final int DECAWM = 7; // Auto wrap
+    public static final int DECARM = 8; // Auto-repeating
     public static final int X10MM = 9; // X10 Mouse Cursor
     public static final int TOOLBAR = 10; // Toolbar
     public static final int START_BLINKING_CURSOR = 12; // SBC
@@ -47,7 +47,9 @@ public final class PrivateMode {
     public static final int FAST_SCROLL = 1014; // Fast scroll
     public static final int URXVT_MOUSE = 1015;
     public static final int SGR_MOUSE_PIXEL = 1016;
-    public static final int META_KEY = 1034; // Interpret "meta" key (Zero Affect in our implementation as this would typically mess with the 8th bit of input in a 7bit setup, but we always send 8)
+    public static final int META_KEY =
+            1034; // Interpret "meta" key (Zero Affect in our implementation as this would typically
+                  // mess with the 8th bit of input in a 7bit setup, but we always send 8)
     public static final int SPECIAL_MODIFIERS = 1035; // Enable special alt and numlock modifiers
     public static final int META_SENDS_ESCAPE = 1036; // Meta sends ESC when pressed
     public static final int DEL_EDIT_KEYPAD_DEL = 1037; // Send DEL from editing-keypad DEL key
@@ -62,7 +64,8 @@ public final class PrivateMode {
     public static final int SWITCH_ALT_BUFFER = 1047; // Switch to alt buffer
     public static final int SAVE_CURSOR = 1048; // Save cursor as in DECSC
     public static final int SAVE_CLEAR_AND_SWITCH = 1049; // Combines 1047 and 1048
-    public static final int SET_TERMINFO_FUNC_KEY_MODE = 1050; // Set terminfo/termcap function-key mode
+    public static final int SET_TERMINFO_FUNC_KEY_MODE =
+            1050; // Set terminfo/termcap function-key mode
     public static final int SET_SUN_KEY_MODE = 1051; // Set Sun key mode
     public static final int SET_HP_K0EY_MODE = 1052; // Set HP function-key mode
     public static final int SET_SCO_KEY_MODE = 1053; // Set SCO key mode

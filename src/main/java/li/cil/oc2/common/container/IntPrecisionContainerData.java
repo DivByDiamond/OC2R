@@ -1,18 +1,15 @@
-
 package li.cil.oc2.common.container;
 
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 
-/**
- * Utility class for synchronizing full-precision ints using {@link ContainerData}.
- */
+/** Utility class for synchronizing full-precision ints using {@link ContainerData}. */
 public abstract class IntPrecisionContainerData implements ContainerData {
     public abstract int getInt(final int index);
 
     public abstract int getIntCount();
 
-    public static abstract class Server extends IntPrecisionContainerData {
+    public abstract static class Server extends IntPrecisionContainerData {
         @Override
         public int get(final int index) {
             final int intValue = getInt(index / 2);

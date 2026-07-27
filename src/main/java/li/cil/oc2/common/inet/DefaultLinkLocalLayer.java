@@ -3,8 +3,10 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +18,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Random random = new Random();
 
-
     private static final short MAC_PREFIX = 0x5ed1;
 
     private static final int IP_VER4 = 4;
@@ -24,7 +25,6 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private static final String MAC_ADDRESS_TAG = "MACAddress";
     private static final String IPv4_ADDRESS_TAG = "IPv4Address";
-
 
     private final NetworkLayer networkLayer;
 
@@ -37,28 +37,39 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private boolean needArpResponse = false;
 
-
-    public DefaultLinkLocalLayer(final LayerParameters layerParameters, final NetworkLayer networkLayer) {
-        layerParameters.getSavedState().ifPresent(tag -> {
-            if (tag instanceof CompoundTag layerState) {
-                final String ipAddressString = layerState.getString(IPv4_ADDRESS_TAG);
-                if (!ipAddressString.isEmpty()) {
-                    try {
-                        myIpV4Address = InetUtils.parseIpv4Address(ipAddressString);
-                    } catch (final AddressParseException exception) {
-                        LOGGER.error("Failed to parse internet adapter IPv4 address", exception);
-                    }
-                }
-                final String macAddressString = layerState.getString(MAC_ADDRESS_TAG);
-                if (!macAddressString.isEmpty()) {
-                    try {
-                        myMacAddress = MacAddressUtils.parseMacAddress(macAddressString);
-                    } catch (final AddressParseException exception) {
-                        LOGGER.error("Failed to parse internet adapter MAC address from NBT", exception);
-                    }
-                }
-            }
-        });
+    public DefaultLinkLocalLayer(
+            final LayerParameters layerParameters, final NetworkLayer networkLayer) {
+        layerParameters
+                .getSavedState()
+                .ifPresent(
+                        tag -> {
+                            if (tag instanceof CompoundTag layerState) {
+                                final String ipAddressString =
+                                        layerState.getString(IPv4_ADDRESS_TAG);
+                                if (!ipAddressString.isEmpty()) {
+                                    try {
+                                        myIpV4Address = InetUtils.parseIpv4Address(ipAddressString);
+                                    } catch (final AddressParseException exception) {
+                                        LOGGER.error(
+                                                "Failed to parse internet adapter IPv4 address",
+                                                exception);
+                                    }
+                                }
+                                final String macAddressString =
+                                        layerState.getString(MAC_ADDRESS_TAG);
+                                if (!macAddressString.isEmpty()) {
+                                    try {
+                                        myMacAddress =
+                                                MacAddressUtils.parseMacAddress(macAddressString);
+                                    } catch (final AddressParseException exception) {
+                                        LOGGER.error(
+                                                "Failed to parse internet adapter MAC address from"
+                                                    + " NBT",
+                                                exception);
+                                    }
+                                }
+                            }
+                        });
         this.networkLayer = networkLayer;
     }
 
@@ -78,8 +89,11 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             layerState.putString(IPv4_ADDRESS_TAG, ipAddressString);
         }
         layerState.putString(MAC_ADDRESS_TAG, MacAddressUtils.macAddressToString(myMacAddress));
-        networkLayer.onSave()
-            .ifPresent(networkLayerState -> layerState.put(NetworkLayer.LAYER_NAME, networkLayerState));
+        networkLayer
+                .onSave()
+                .ifPresent(
+                        networkLayerState ->
+                                layerState.put(NetworkLayer.LAYER_NAME, networkLayerState));
         return Optional.of(layerState);
     }
 
@@ -93,8 +107,14 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
         if (needArpResponse) {
             needArpResponse = false;
             prepareEthernetHeader(frame, ArpProtocol.PROTOCOL_ARP);
-            ArpProtocol.writeResponse(frame, myMacAddress, myIpV4Address,
-                cardMacPrefix, cardMacAddress, cardIpAddress, FRAME_HEADER_SIZE);
+            ArpProtocol.writeResponse(
+                    frame,
+                    myMacAddress,
+                    myIpV4Address,
+                    cardMacPrefix,
+                    cardMacAddress,
+                    cardIpAddress,
+                    FRAME_HEADER_SIZE);
         } else {
             frame.position(frame.position() + FRAME_HEADER_SIZE);
             short protocol = networkLayer.receivePacket(frame);

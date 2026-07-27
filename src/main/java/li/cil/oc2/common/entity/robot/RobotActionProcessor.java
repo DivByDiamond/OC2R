@@ -2,12 +2,14 @@ package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 
-import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.Queue;
+
+import javax.annotation.Nullable;
 
 final class RobotActionProcessor {
     private static final int MAX_QUEUED_ACTIONS = 16;
@@ -60,8 +62,7 @@ final class RobotActionProcessor {
                 action = queue.poll();
                 if (action != null) {
                     action.initialize(robot);
-                }
-                else {
+                } else {
                     return;
                 }
             }
@@ -115,7 +116,8 @@ final class RobotActionProcessor {
 
         final ListTag resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(resultsTag.size(), MAX_QUEUED_RESULTS); i++) {
-            final RobotActionProcessorResult result = new RobotActionProcessorResult(resultsTag.getCompound(i));
+            final RobotActionProcessorResult result =
+                    new RobotActionProcessorResult(resultsTag.getCompound(i));
             if (result.actionId != 0) {
                 results.add(result);
             }

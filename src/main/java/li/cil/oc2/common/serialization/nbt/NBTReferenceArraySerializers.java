@@ -3,6 +3,7 @@ package li.cil.oc2.common.serialization.nbt;
 import li.cil.oc2.common.serialization.ceres.ColorDataSerializer;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
+
 import net.minecraft.nbt.*;
 
 import java.lang.reflect.Array;
@@ -53,7 +54,8 @@ final class StringArraySerializer implements NBTArraySerializer {
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         String[] data = (String[]) into;
         if (tag instanceof final ListTag serializedData) {
-            if (serializedData.isEmpty() || serializedData.getElementType() == NBTTagIds.TAG_STRING) {
+            if (serializedData.isEmpty()
+                    || serializedData.getElementType() == NBTTagIds.TAG_STRING) {
                 if (data == null || data.length != serializedData.size()) {
                     data = new String[serializedData.size()];
                 }
@@ -81,7 +83,8 @@ final class UUIDArraySerializer implements NBTArraySerializer {
     public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
         UUID[] data = (UUID[]) into;
         if (tag instanceof final ListTag serializedData) {
-            if (serializedData.isEmpty() || serializedData.getElementType() == NBTTagIds.TAG_STRING) {
+            if (serializedData.isEmpty()
+                    || serializedData.getElementType() == NBTTagIds.TAG_STRING) {
                 if (data == null || data.length != serializedData.size()) {
                     data = new UUID[serializedData.size()];
                 }

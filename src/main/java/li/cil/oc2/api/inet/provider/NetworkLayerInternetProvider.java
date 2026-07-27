@@ -10,8 +10,9 @@ import li.cil.oc2.common.inet.InetUtils;
 import li.cil.oc2.common.inet.NullLayer;
 
 /**
- * An {@link InternetProvider} partial implementation that expects an {@link NetworkLayer} implementation from
- * protected method {@link NetworkLayerInternetProvider#provideNetworkLayer(LayerParameters)}.
+ * An {@link InternetProvider} partial implementation that expects an {@link NetworkLayer}
+ * implementation from protected method {@link
+ * NetworkLayerInternetProvider#provideNetworkLayer(LayerParameters)}.
  *
  * @see InternetProvider
  * @see NetworkLayer
@@ -23,16 +24,18 @@ public abstract class NetworkLayerInternetProvider extends LinkLocalLayerInterne
     }
 
     protected static NetworkLayer defaultNetworkLayer(final LayerParameters layerParameters) {
-        final LayerParameters transportParameters = InetUtils.nextLayerParameters(layerParameters, TransportLayer.LAYER_NAME);
-        final TransportLayer transportLayer = TransportLayerInternetProvider.defaultTransportLayer(transportParameters);
+        final LayerParameters transportParameters =
+                InetUtils.nextLayerParameters(layerParameters, TransportLayer.LAYER_NAME);
+        final TransportLayer transportLayer =
+                TransportLayerInternetProvider.defaultTransportLayer(transportParameters);
         return new DefaultNetworkLayer(layerParameters, transportLayer);
     }
 
     /**
-     * This method is called from {@link NetworkLayerInternetProvider#provideLinkLocalLayer(LayerParameters)} in order to get a
-     * {@link NetworkLayer} implementation.
-     * Retrieved {@link NetworkLayer} implementation will be wrapped with internal {@link LinkLocalLayer}
-     * implementation.
+     * This method is called from {@link
+     * NetworkLayerInternetProvider#provideLinkLocalLayer(LayerParameters)} in order to get a {@link
+     * NetworkLayer} implementation. Retrieved {@link NetworkLayer} implementation will be wrapped
+     * with internal {@link LinkLocalLayer} implementation.
      *
      * @return an implementation of network TCP/IP layer for internet cards
      */
@@ -40,8 +43,10 @@ public abstract class NetworkLayerInternetProvider extends LinkLocalLayerInterne
 
     @Override
     protected final LinkLocalLayer provideLinkLocalLayer(final LayerParameters layerParameters) {
-        final LayerParameters networkParameters = InetUtils.nextLayerParameters(layerParameters, NetworkLayer.LAYER_NAME);
+        final LayerParameters networkParameters =
+                InetUtils.nextLayerParameters(layerParameters, NetworkLayer.LAYER_NAME);
         final NetworkLayer networkLayer = provideNetworkLayer(networkParameters);
-        return InetUtils.createLayerIfNotStub(networkLayer, layer -> new DefaultLinkLocalLayer(layerParameters, networkLayer));
+        return InetUtils.createLayerIfNotStub(
+                networkLayer, layer -> new DefaultLinkLocalLayer(layerParameters, networkLayer));
     }
 }

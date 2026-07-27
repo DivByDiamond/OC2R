@@ -1,10 +1,10 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.LevelUtils;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -14,7 +14,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SoundType;
 
 public final class RobotInteractionHandler {
-    public static InteractionResult interact(final Robot robot, final Player player, final InteractionHand hand) {
+    public static InteractionResult interact(
+            final Robot robot, final Player player, final InteractionHand hand) {
         final ItemStack stack = player.getItemInHand(hand);
         if (!robot.level().isClientSide()) {
             if (Wrenches.isWrench(stack)) {
@@ -49,6 +50,7 @@ public final class RobotInteractionHandler {
         robot.exportToItemStack(stack);
         robot.spawnAtLocation(stack);
         robot.discard();
-        LevelUtils.playSound(robot.level(), robot.blockPosition(), SoundType.METAL, SoundType::getBreakSound);
+        LevelUtils.playSound(
+                robot.level(), robot.blockPosition(), SoundType.METAL, SoundType::getBreakSound);
     }
 }

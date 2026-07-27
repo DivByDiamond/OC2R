@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.config;
 
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.config.client.GUISpec;
+
 import net.minecraft.world.item.Tiers;
 
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @SuppressWarnings("FieldMayBeFinal")
 public final class Config {
-    //TODO: Implement configuration of CPU MHzs
+    // TODO: Implement configuration of CPU MHzs
     public static long maxAllocatedMemory = 512 * Constants.MEGABYTE;
     public static int diskSizeFactor = 2 * Constants.MEGABYTE;
 
@@ -63,7 +63,13 @@ public final class Config {
     public static int defaultSessionsNumberLimit = 100;
     public static int defaultEchoRequestTimeoutMs = 1000;
     public static List<String> deniedHosts =
-        Arrays.asList("127.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16", "224.0.0.0/4");
+            Arrays.asList(
+                    "127.0.0.0/8",
+                    "10.0.0.0/8",
+                    "100.64.0.0/10",
+                    "172.16.0.0/12",
+                    "192.168.0.0/16",
+                    "224.0.0.0/4");
     public static List<String> allowedHosts = List.of();
     public static String defaultNameServer = "1.1.1.1";
     public static boolean useSynchronisedNAT = false;
@@ -92,6 +98,7 @@ public final class Config {
     public static boolean monitorsUseEnergy() {
         return computerEnergyPerTick > 0 && computerEnergyStorage > 0;
     }
+
     public static boolean gatewayUseEnergy() {
         return gatewayEnergyPerPacket > 0 && gatewayEnergyStorage > 0;
     }

@@ -9,13 +9,12 @@ import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.DiskDriveContainer;
 import li.cil.oc2.common.bus.device.vm.block.DiskDriveDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.network.message.DiskDriveFloppyMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.LocationSupplierUtils;
 import li.cil.oc2.common.util.SoundEvents;
 import li.cil.oc2.common.util.ThrottledSoundEmitter;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -29,8 +28,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDriveContainer {
@@ -44,12 +44,18 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
         super(BlockEntities.DISK_DRIVE.get(), pos, state);
         this.itemHandler = new DiskDriveItemStackHandler(this);
 
-        this.accessSoundEmitter = new ThrottledSoundEmitter(LocationSupplierUtils.of(this),
-            SoundEvents.FLOPPY_ACCESS.get()).withMinInterval(Duration.ofSeconds(1));
-        this.insertSoundEmitter = new ThrottledSoundEmitter(LocationSupplierUtils.of(this),
-            SoundEvents.FLOPPY_INSERT.get()).withMinInterval(Duration.ofMillis(100));
-        this.ejectSoundEmitter = new ThrottledSoundEmitter(LocationSupplierUtils.of(this),
-            SoundEvents.FLOPPY_EJECT.get()).withMinInterval(Duration.ofMillis(100));
+        this.accessSoundEmitter =
+                new ThrottledSoundEmitter(
+                                LocationSupplierUtils.of(this), SoundEvents.FLOPPY_ACCESS.get())
+                        .withMinInterval(Duration.ofSeconds(1));
+        this.insertSoundEmitter =
+                new ThrottledSoundEmitter(
+                                LocationSupplierUtils.of(this), SoundEvents.FLOPPY_INSERT.get())
+                        .withMinInterval(Duration.ofMillis(100));
+        this.ejectSoundEmitter =
+                new ThrottledSoundEmitter(
+                                LocationSupplierUtils.of(this), SoundEvents.FLOPPY_EJECT.get())
+                        .withMinInterval(Duration.ofMillis(100));
     }
 
     public boolean canInsert(final ItemStack stack) {
@@ -80,12 +86,14 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
         if (!stack.isEmpty()) {
             final Direction facing = getBlockState().getValue(DiskDriveBlock.FACING);
             ejectSoundEmitter.play();
-            ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing).ifPresent(entity -> {
-                if (player != null) {
-                    entity.setNoPickUpDelay();
-                    entity.setThrower(player);
-                }
-            });
+            ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing)
+                    .ifPresent(
+                            entity -> {
+                                if (player != null) {
+                                    entity.setNoPickUpDelay();
+                                    entity.setThrower(player);
+                                }
+                            });
         }
     }
 
@@ -101,27 +109,28 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.ItemHandler.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final DiskDriveBlockEntity self) {
-                    return self.itemHandler;
-                }
-                return null;
-            },
-            Blocks.DISK_DRIVE.get()
-        );
-        event.registerBlock(
-            Capabilities.Device.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final DiskDriveBlockEntity self) {
-                    if (side == self.getBlockState().getValue(DiskDriveBlock.FACING).getOpposite()) {
-                        return self.device;
+                Capabilities.ItemHandler.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final DiskDriveBlockEntity self) {
+                        return self.itemHandler;
                     }
-                }
-                return null;
-            },
-            Blocks.DISK_DRIVE.get()
-        );
+                    return null;
+                },
+                Blocks.DISK_DRIVE.get());
+        event.registerBlock(
+                Capabilities.Device.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final DiskDriveBlockEntity self) {
+                        if (side
+                                == self.getBlockState()
+                                        .getValue(DiskDriveBlock.FACING)
+                                        .getOpposite()) {
+                            return self.device;
+                        }
+                    }
+                    return null;
+                },
+                Blocks.DISK_DRIVE.get());
     }
 
     @Override

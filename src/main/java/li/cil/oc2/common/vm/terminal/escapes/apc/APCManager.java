@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.apc;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class APCManager {
     private final Terminal terminal;

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import net.minecraft.ChatFormatting;
@@ -23,7 +22,8 @@ public final class TextFormatUtils {
         return withFormat(Component.literal(value), formatting);
     }
 
-    public static MutableComponent withFormat(final MutableComponent text, final ChatFormatting formatting) {
+    public static MutableComponent withFormat(
+            final MutableComponent text, final ChatFormatting formatting) {
         return text.withStyle(s -> s.withColor(TextColor.fromLegacyFormat(formatting)));
     }
 

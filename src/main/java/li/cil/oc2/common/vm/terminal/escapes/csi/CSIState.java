@@ -10,7 +10,15 @@ public class CSIState {
     public boolean space;
     public boolean exclamation;
 
-    public CSIState(boolean questionMark, boolean greaterThan, boolean dollarSign, boolean hash, boolean quote, boolean singleQuote, boolean space, boolean exclamation) {
+    public CSIState(
+            boolean questionMark,
+            boolean greaterThan,
+            boolean dollarSign,
+            boolean hash,
+            boolean quote,
+            boolean singleQuote,
+            boolean space,
+            boolean exclamation) {
         this.questionMark = questionMark;
         this.greaterThan = greaterThan;
         this.dollarSign = dollarSign;

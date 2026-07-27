@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.FakePlayerUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,21 +21,30 @@ import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.EventHooks;
 
 class BlockHarvestHelper {
-    static boolean tryHarvestBlock(final ServerLevel level, final BlockPos blockPos, final Entity entity, final ItemStack identity) {
+    static boolean tryHarvestBlock(
+            final ServerLevel level,
+            final BlockPos blockPos,
+            final Entity entity,
+            final ItemStack identity) {
         final BlockState blockState = level.getBlockState(blockPos);
         if (blockState.isAir()) {
             return false;
         }
 
         final ServerPlayer player = FakePlayerUtils.getFakePlayer(level, entity);
-        final var breakEvent = CommonHooks.fireBlockBreak(level, GameType.DEFAULT_MODE, player, blockPos, blockState);
+        final var breakEvent =
+                CommonHooks.fireBlockBreak(
+                        level, GameType.DEFAULT_MODE, player, blockPos, blockState);
         if (breakEvent.isCanceled()) {
             return false;
         }
 
         final BlockEntity blockEntity = level.getBlockEntity(blockPos);
         final Block block = blockState.getBlock();
-        final boolean isCommandBlock = block instanceof CommandBlock || block instanceof StructureBlock || block instanceof JigsawBlock;
+        final boolean isCommandBlock =
+                block instanceof CommandBlock
+                        || block instanceof StructureBlock
+                        || block instanceof JigsawBlock;
         if (isCommandBlock && !player.canUseGameMasterBlocks()) {
             return false;
         }
@@ -64,7 +74,8 @@ class BlockHarvestHelper {
         damage += 1;
         identity.setDamageValue(damage);
 
-        if (!blockState.onDestroyedByPlayer(level, blockPos, player, true, level.getFluidState(blockPos))) {
+        if (!blockState.onDestroyedByPlayer(
+                level, blockPos, player, true, level.getFluidState(blockPos))) {
             return false;
         }
 

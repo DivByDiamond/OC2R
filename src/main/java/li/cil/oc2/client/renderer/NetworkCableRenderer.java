@@ -2,33 +2,36 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
-import net.neoforged.api.distmarker.Dist;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.*;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+
 import org.joml.Matrix4f;
 
 import java.util.*;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class NetworkCableRenderer {
-    private static final Set<NetworkConnectorBlockEntity> connectors = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final Set<NetworkConnectorBlockEntity> connectors =
+            Collections.newSetFromMap(new WeakHashMap<>());
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
     private static final ArrayList<NetworkCableConnection> connections = new ArrayList<>();
-    private static final WeakHashMap<NetworkConnectorBlockEntity, ArrayList<NetworkCableConnection>> connectionsByConnector = new WeakHashMap<>();
-
+    private static final WeakHashMap<NetworkConnectorBlockEntity, ArrayList<NetworkCableConnection>>
+            connectionsByConnector = new WeakHashMap<>();
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
         connectors.add(connector);
@@ -38,7 +41,6 @@ public final class NetworkCableRenderer {
     public static void invalidateConnections() {
         isDirty = true;
     }
-
 
     @SubscribeEvent
     public static void handleChunkUnloadEvent(final ChunkEvent.Unload event) {
@@ -144,10 +146,13 @@ public final class NetworkCableRenderer {
         for (final NetworkConnectorBlockEntity connector : connectors) {
             final BlockPos position = connector.getBlockPos();
             for (final BlockPos connectedPosition : connector.getConnectedPositions()) {
-                final NetworkCableConnection connection = new NetworkCableConnection(position, connectedPosition);
+                final NetworkCableConnection connection =
+                        new NetworkCableConnection(position, connectedPosition);
                 if (seen.add(connection)) {
                     connections.add(connection);
-                    connectionsByConnector.computeIfAbsent(connector, unused -> new ArrayList<>()).add(connection);
+                    connectionsByConnector
+                            .computeIfAbsent(connector, unused -> new ArrayList<>())
+                            .add(connection);
                 }
             }
         }

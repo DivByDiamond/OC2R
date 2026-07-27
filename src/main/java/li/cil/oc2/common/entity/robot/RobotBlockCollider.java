@@ -1,10 +1,11 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -16,7 +17,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.util.Mth;
 
 import java.util.List;
 
@@ -41,21 +41,23 @@ public final class RobotBlockCollider {
             final int z = iterator.nextZ();
             mutablePosition.set(x, y, z);
             final BlockState blockState = serverLevel.getBlockState(mutablePosition);
-            if (blockState.isAir() ||
-                blockState.is(Blocks.MOVING_PISTON) ||
-                blockState.is(Blocks.PISTON_HEAD)) {
+            if (blockState.isAir()
+                    || blockState.is(Blocks.MOVING_PISTON)
+                    || blockState.is(Blocks.PISTON_HEAD)) {
                 continue;
             }
 
-            final VoxelShape blockShape = blockState.getCollisionShape(serverLevel, mutablePosition);
+            final VoxelShape blockShape =
+                    blockState.getCollisionShape(serverLevel, mutablePosition);
             if (Shapes.joinIsNotEmpty(shape, blockShape.move(x, y, z), BooleanOp.AND)) {
                 final BlockEntity blockEntity = serverLevel.getBlockEntity(mutablePosition);
-                final LootParams.Builder builder = new LootParams.Builder(serverLevel)
-                    .withParameter(LootContextParams.THIS_ENTITY, robot)
-                    .withParameter(LootContextParams.ORIGIN, robot.position())
-                    .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                    .withParameter(LootContextParams.BLOCK_STATE, blockState)
-                    .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
+                final LootParams.Builder builder =
+                        new LootParams.Builder(serverLevel)
+                                .withParameter(LootContextParams.THIS_ENTITY, robot)
+                                .withParameter(LootContextParams.ORIGIN, robot.position())
+                                .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
+                                .withParameter(LootContextParams.BLOCK_STATE, blockState)
+                                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
                 final List<ItemStack> drops = blockState.getDrops(builder);
                 serverLevel.setBlockAndUpdate(mutablePosition, Blocks.AIR.defaultBlockState());
                 for (final ItemStack drop : drops) {
@@ -68,8 +70,11 @@ public final class RobotBlockCollider {
     private Cursor3D getBlockPosIterator() {
         final AABB bounds = robot.getBoundingBox();
         return new Cursor3D(
-            Mth.floor(bounds.minX), Mth.floor(bounds.minY), Mth.floor(bounds.minZ),
-            Mth.floor(bounds.maxX), Mth.floor(bounds.maxY), Mth.floor(bounds.maxZ)
-        );
+                Mth.floor(bounds.minX),
+                Mth.floor(bounds.minY),
+                Mth.floor(bounds.minZ),
+                Mth.floor(bounds.maxX),
+                Mth.floor(bounds.maxY),
+                Mth.floor(bounds.maxZ));
     }
 }

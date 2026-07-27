@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.util.NBTUtils;
+
 import net.minecraft.nbt.CompoundTag;
 
 final class RobotActionProcessorResult {

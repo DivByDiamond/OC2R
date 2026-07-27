@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +20,8 @@ public final class ClientBlockEntityLookup {
     private static java.util.Set<BlockPos> loggedMissingBe = new java.util.HashSet<>();
 
     @SuppressWarnings("unchecked")
-    public static <T extends BlockEntity> void withClientBlockEntityAt(final BlockPos pos, final Class<T> type, final Consumer<T> callback) {
+    public static <T extends BlockEntity> void withClientBlockEntityAt(
+            final BlockPos pos, final Class<T> type, final Consumer<T> callback) {
         final Minecraft mc = Minecraft.getInstance();
         final ClientLevel level = mc.level;
         if (level == null) {
@@ -56,14 +58,22 @@ public final class ClientBlockEntityLookup {
                 loggedMissingBe.clear();
             }
             if (loggedMissingBe.add(pos)) {
-                LOGGER.warn("[ClientBlockEntityLookup] withClientBlockEntityAt: BlockEntity of type {} not found at pos {} in main level or any of {} sub-level(s). Main level class: {}. This is likely a Sable/VS2 ship world the ship's ClientLevel is not reachable via reflection from Minecraft or the main ClientLevel.",
-                    type.getSimpleName(), pos, allLevels.size() - 1,
-                    level.getClass().getName());
+                LOGGER.warn(
+                        "[ClientBlockEntityLookup] withClientBlockEntityAt: BlockEntity of type {}"
+                            + " not found at pos {} in main level or any of {} sub-level(s). Main"
+                            + " level class: {}. This is likely a Sable/VS2 ship world the ship's"
+                            + " ClientLevel is not reachable via reflection from Minecraft or the"
+                            + " main ClientLevel.",
+                        type.getSimpleName(),
+                        pos,
+                        allLevels.size() - 1,
+                        level.getClass().getName());
             }
         }
     }
 
-    private static java.util.List<ClientLevel> findAllClientLevels(final Minecraft mc, final ClientLevel mainLevel) {
+    private static java.util.List<ClientLevel> findAllClientLevels(
+            final Minecraft mc, final ClientLevel mainLevel) {
         final java.util.List<ClientLevel> result = new java.util.ArrayList<>();
         result.add(mainLevel);
 
@@ -73,7 +83,8 @@ public final class ClientBlockEntityLookup {
         return result;
     }
 
-    private static void scanForClientLevels(final Object root, final java.util.List<ClientLevel> result) {
+    private static void scanForClientLevels(
+            final Object root, final java.util.List<ClientLevel> result) {
         if (root == null) {
             return;
         }

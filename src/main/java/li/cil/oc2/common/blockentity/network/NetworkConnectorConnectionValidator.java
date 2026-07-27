@@ -14,22 +14,23 @@ final class NetworkConnectorConnectionValidator {
         final Vec3 vb = Vec3.atCenterOf(b);
         final Vec3 ab = vb.subtract(va).normalize().scale(0.5);
 
-        final BlockHitResult hitAB = level.clip(new ClipContext(
-            va.add(ab),
-            vb.subtract(ab),
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            (CollisionContext) null
-        ));
-        final BlockHitResult hitBA = level.clip(new ClipContext(
-            vb.subtract(ab),
-            va.add(ab),
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            (CollisionContext) null
-        ));
+        final BlockHitResult hitAB =
+                level.clip(
+                        new ClipContext(
+                                va.add(ab),
+                                vb.subtract(ab),
+                                ClipContext.Block.COLLIDER,
+                                ClipContext.Fluid.NONE,
+                                (CollisionContext) null));
+        final BlockHitResult hitBA =
+                level.clip(
+                        new ClipContext(
+                                vb.subtract(ab),
+                                va.add(ab),
+                                ClipContext.Block.COLLIDER,
+                                ClipContext.Fluid.NONE,
+                                (CollisionContext) null));
 
-        return hitAB.getType() != HitResult.Type.MISS ||
-            hitBA.getType() != HitResult.Type.MISS;
+        return hitAB.getType() != HitResult.Type.MISS || hitBA.getType() != HitResult.Type.MISS;
     }
 }

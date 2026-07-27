@@ -1,18 +1,17 @@
 package li.cil.oc2.common.serialization.nbt;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
-import li.cil.oc2.common.util.NBTTagIds;
+import li.cil.oc2.common.vm.terminal.TerminalColors;
+
 import net.minecraft.nbt.*;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 import java.util.UUID;
 
 public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVisitor {
@@ -78,7 +77,8 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Nullable
     @Override
-    public Object getObject(final String name, final Class<?> type, @Nullable final Object into) throws SerializationException {
+    public Object getObject(final String name, final Class<?> type, @Nullable final Object into)
+            throws SerializationException {
         if (isNull(name)) {
             return null;
         }
@@ -99,7 +99,8 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
             return tag.getCompound(name).getUUID(name);
         } else {
             final CompoundTag valueTag = tag.getCompound(name);
-            return Ceres.getSerializer(type).deserialize(new NBTDeserializerImpl(valueTag), (Class) type, into);
+            return Ceres.getSerializer(type)
+                    .deserialize(new NBTDeserializerImpl(valueTag), (Class) type, into);
         }
     }
 
@@ -125,13 +126,17 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Nullable
-    public static Object getGenericArray(final Tag tag, final Class<?> componentType, final @Nullable Object into) {
+    public static Object getGenericArray(
+            final Tag tag, final Class<?> componentType, final @Nullable Object into) {
         final ArrayComponentDeserializer componentDeserializer;
         if (componentType.isArray()) {
             componentDeserializer = NBTDeserializerImpl::getArray;
         } else {
             final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
-            componentDeserializer = (n, t, i) -> serializer.deserialize(new NBTDeserializerImpl((CompoundTag) n), (Class) t, i);
+            componentDeserializer =
+                    (n, t, i) ->
+                            serializer.deserialize(
+                                    new NBTDeserializerImpl((CompoundTag) n), (Class) t, i);
         }
 
         Object[] data = (Object[]) into;

@@ -8,6 +8,5 @@ final class TcpStates {
     static final TcpState FINISH = new FinishState();
     static final TcpState EXPIRED = new ExpiredState();
 
-    private TcpStates() {
-    }
+    private TcpStates() {}
 }

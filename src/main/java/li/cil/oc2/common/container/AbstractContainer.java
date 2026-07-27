@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.container;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -62,7 +61,8 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
                     continue;
                 }
 
-                final int maxSizeInSlot = Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(stack));
+                final int maxSizeInSlot =
+                        Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(stack));
                 final int spaceInSlot = maxSizeInSlot - intoStack.getCount();
                 if (spaceInSlot <= 0) {
                     continue;
@@ -100,7 +100,8 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
                 continue;
             }
 
-            final int maxSizeInSlot = Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(fromStack));
+            final int maxSizeInSlot =
+                    Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(fromStack));
             final int itemsMoved = Math.min(maxSizeInSlot, fromStack.getCount());
             into.set(from.remove(itemsMoved));
         }
@@ -108,12 +109,21 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
         return from.getItem().getCount() < stack.getCount() ? from.getItem() : ItemStack.EMPTY;
     }
 
-    protected int createPlayerInventoryAndHotbarSlots(final Inventory inventory, final int startX, final int startY) {
-        final int nextIndex = createHotbarSlots(inventory, 0, startX, startY + PLAYER_INVENTORY_ROWS * SLOT_SIZE + PLAYER_INVENTORY_HOTBAR_SPACING);
+    protected int createPlayerInventoryAndHotbarSlots(
+            final Inventory inventory, final int startX, final int startY) {
+        final int nextIndex =
+                createHotbarSlots(
+                        inventory,
+                        0,
+                        startX,
+                        startY
+                                + PLAYER_INVENTORY_ROWS * SLOT_SIZE
+                                + PLAYER_INVENTORY_HOTBAR_SPACING);
         return createPlayerInventorySlots(inventory, nextIndex, startX, startY);
     }
 
-    protected int createPlayerInventorySlots(final Inventory inventory, final int startIndex, final int startX, final int startY) {
+    protected int createPlayerInventorySlots(
+            final Inventory inventory, final int startIndex, final int startX, final int startY) {
         for (int row = 0; row < PLAYER_INVENTORY_ROWS; ++row) {
             for (int column = 0; column < PLAYER_INVENTORY_COLUMNS; ++column) {
                 final int index = startIndex + row * PLAYER_INVENTORY_COLUMNS + column;
@@ -134,7 +144,8 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
         return startIndex + PLAYER_INVENTORY_ROWS * PLAYER_INVENTORY_COLUMNS;
     }
 
-    protected int createHotbarSlots(final Inventory inventory, final int startIndex, final int startX, final int startY) {
+    protected int createHotbarSlots(
+            final Inventory inventory, final int startIndex, final int startX, final int startY) {
         for (int i = 0; i < HOTBAR_SIZE; ++i) {
             final int index = startIndex + i;
             final int x = startX + i * SLOT_SIZE;

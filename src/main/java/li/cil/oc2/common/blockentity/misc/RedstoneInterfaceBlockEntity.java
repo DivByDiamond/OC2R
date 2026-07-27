@@ -1,5 +1,7 @@
 package li.cil.oc2.common.blockentity.misc;
 
+import static java.util.Collections.singletonList;
+
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
@@ -12,6 +14,7 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.integration.util.BundledRedstone;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -21,14 +24,14 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.fml.ModList;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
+import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
-public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implements NamedDevice, DocumentedDevice, RPCEventSource {
+public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
+        implements NamedDevice, DocumentedDevice, RPCEventSource {
     private static final String GET_REDSTONE_INPUT = "getRedstoneInput";
     private static final String GET_REDSTONE_OUTPUT = "getRedstoneOutput";
     private static final String SET_REDSTONE_OUTPUT = "setRedstoneOutput";
@@ -42,7 +45,8 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implement
     private static final String COLOUR = "colour";
 
     private final RedstoneInterfaceState state = new RedstoneInterfaceState();
-    private final RedstoneInterfaceEventDispatcher eventDispatcher = new RedstoneInterfaceEventDispatcher();
+    private final RedstoneInterfaceEventDispatcher eventDispatcher =
+            new RedstoneInterfaceEventDispatcher();
 
     public RedstoneInterfaceBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.REDSTONE_INTERFACE.get(), pos, state);
@@ -86,7 +90,8 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implement
     }
 
     @Callback(name = SET_REDSTONE_OUTPUT)
-    public void setRedstoneOutput(@Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int value) {
+    public void setRedstoneOutput(
+            @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int value) {
         if (side == null) throw new IllegalArgumentException();
         final int index = side.getDirection().get3DDataValue();
         final byte clampedValue = (byte) Mth.clamp(value, 0, 15);
@@ -106,7 +111,8 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implement
 
         final BundledRedstone bundledRedstone = BundledRedstone.getInstance();
         if (bundledRedstone.isAvailable()) {
-            return bundledRedstone.getBundledInput(level, getBlockPos(), side.getDirection().getOpposite());
+            return bundledRedstone.getBundledInput(
+                    level, getBlockPos(), side.getDirection().getOpposite());
         }
         return new byte[Constants.BLOCK_FACE_COUNT];
     }
@@ -119,7 +125,10 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implement
     }
 
     @Callback(name = SET_BUNDLED_OUTPUT)
-    public void setBundledOutput(@Parameter(SIDE) @Nullable final Side side, @Parameter(VALUE) final int value, @Parameter(COLOUR) final int color) {
+    public void setBundledOutput(
+            @Parameter(SIDE) @Nullable final Side side,
+            @Parameter(VALUE) final int value,
+            @Parameter(COLOUR) final int color) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
 
@@ -141,7 +150,8 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity implement
     }
 
     @Callback(name = SET_BUNDLED_OUTPUTS)
-    public void setBundledOutputs(@Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int[] values) {
+    public void setBundledOutputs(
+            @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int[] values) {
         if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
         if (side == null) throw new IllegalArgumentException();
 

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 
 import java.util.Arrays;
@@ -106,12 +105,20 @@ public class CSIManager {
             terminal.state = Terminal.State.NORMAL;
 
             CSISequenceHandler handler = sequences.get(ch);
-            CSIState state = new CSIState(questionMark, greaterThan, dollarSign, hash, quote, singleQuote, space, exclamation);
+            CSIState state =
+                    new CSIState(
+                            questionMark,
+                            greaterThan,
+                            dollarSign,
+                            hash,
+                            quote,
+                            singleQuote,
+                            space,
+                            exclamation);
 
             if (handler != null) {
                 handler.execute(args, argCount, state);
-            }
-            else {
+            } else {
                 System.out.println("Control sequence: " + ch);
             }
         }

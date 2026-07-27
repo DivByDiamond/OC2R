@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.common.entity.Robot;
+
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import net.minecraft.core.BlockPos;
@@ -16,7 +15,8 @@ public record BlockLocation(WeakReference<LevelAccessor> level, BlockPos blockPo
     }
 
     public static BlockLocation of(final BlockEntity blockEntity) {
-        return new BlockLocation(new WeakReference<>(blockEntity.getLevel()), blockEntity.getBlockPos());
+        return new BlockLocation(
+                new WeakReference<>(blockEntity.getLevel()), blockEntity.getBlockPos());
     }
 
     public static Optional<BlockLocation> ofOptional(final Entity entity) {

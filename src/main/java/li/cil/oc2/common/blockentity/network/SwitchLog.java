@@ -26,23 +26,12 @@ final class SwitchLog {
         String outMac = PacketProcessor.macLongToString(destMac);
         if (egressSide == null) {
             System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
-                inMac,
-                ingressSide,
-                ingressVlan,
-                outMac,
-                reason
-            );
+                    "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
+                    inMac, ingressSide, ingressVlan, outMac, reason);
         } else {
             System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s) drop (%s)\n",
-                inMac,
-                ingressSide,
-                ingressVlan,
-                outMac,
-                egressSide,
-                reason
-            );
+                    "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s) drop (%s)\n",
+                    inMac, ingressSide, ingressVlan, outMac, egressSide, reason);
         }
     }
 
@@ -51,14 +40,8 @@ final class SwitchLog {
         String inMac = PacketProcessor.macLongToString(srcMac);
         String outMac = PacketProcessor.macLongToString(destMac);
         System.out.printf(
-            "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
-            inMac,
-            ingressSide,
-            ingressVlan,
-            outMac,
-            egressSide,
-            egressVlan
-        );
+                "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
+                inMac, ingressSide, ingressVlan, outMac, egressSide, egressVlan);
     }
 
     void flood() {
@@ -66,11 +49,7 @@ final class SwitchLog {
         String inMac = PacketProcessor.macLongToString(srcMac);
         String outMac = PacketProcessor.macLongToString(destMac);
         System.out.printf(
-            "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
-            inMac,
-            ingressSide,
-            ingressVlan,
-            outMac
-        );
+                "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
+                inMac, ingressSide, ingressVlan, outMac);
     }
 }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.managed;
 
 import li.cil.oc2.api.bus.device.vm.context.InterruptAllocator;
@@ -16,14 +15,13 @@ final class ManagedInterruptAllocator implements InterruptAllocator, InterruptVa
     private boolean isFrozen;
     private int managedMask;
 
-
-    public ManagedInterruptAllocator(final InterruptAllocator parent, final InterruptManager interruptManager) {
+    public ManagedInterruptAllocator(
+            final InterruptAllocator parent, final InterruptManager interruptManager) {
         this.parent = parent;
         this.interruptManager = interruptManager;
         this.interruptCount = interruptManager.getInterruptCount();
         this.managedInterrupts = new BitSet(interruptCount);
     }
-
 
     public void freeze() {
         isFrozen = true;
@@ -71,10 +69,11 @@ final class ManagedInterruptAllocator implements InterruptAllocator, InterruptVa
         }
 
         final OptionalInt result = parent.claimInterrupt();
-        result.ifPresent(interrupt -> {
-            managedInterrupts.set(interrupt);
-            managedMask |= (1 << interrupt);
-        });
+        result.ifPresent(
+                interrupt -> {
+                    managedInterrupts.set(interrupt);
+                    managedMask |= (1 << interrupt);
+                });
         return result;
     }
 }

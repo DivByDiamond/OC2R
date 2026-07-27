@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
+
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.TerminalColors.ColorMode;
@@ -11,14 +12,14 @@ import li.cil.oc2.common.vm.terminal.escapes.dcs.DCSManager;
 import li.cil.oc2.common.vm.terminal.escapes.osc.OSCManager;
 import li.cil.oc2.common.vm.terminal.modes.ModeState;
 import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
+
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static li.cil.oc2.common.vm.terminal.TerminalColors.Color;
+import javax.annotation.Nullable;
 
 @Serialized
 public class Terminal {
@@ -37,7 +38,11 @@ public class Terminal {
 
     public ColorMode currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;
     public ColorMode currentBackgroundColorMode = ColorMode.SIXTEEN_COLOR;
-    public ColorData sixteenColor, sixteenColorBright, twoFiftySixColor, backgroundColor, foregroundColor;
+    public ColorData sixteenColor,
+            sixteenColorBright,
+            twoFiftySixColor,
+            backgroundColor,
+            foregroundColor;
     public byte style;
 
     public final int SCROLL_BACK_COUNT = 20;
@@ -59,18 +64,27 @@ public class Terminal {
     public final byte[] altStyles = new byte[WIDTH * HEIGHT];
     public final boolean[] altTabs = new boolean[WIDTH];
 
-    public final transient Set<RendererModel> renderers = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    public final transient Set<RendererModel> renderers =
+            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     public transient boolean displayOnly, hasPendingBell;
     public boolean continuationByte;
     public int unicode, bytesRead, bytesToRead;
     public boolean useG0 = true;
     public int drawingModeG0, drawingModeG1, cursorMode;
     public ModeState currentModeState = new ModeState();
-    public PrivateModeState currentPrivateModeState = new PrivateModeState(), savePrivateModeState = new PrivateModeState();
+    public PrivateModeState currentPrivateModeState = new PrivateModeState(),
+            savePrivateModeState = new PrivateModeState();
 
     public enum State {
-        NORMAL, ESCAPE, SHIFT_IN_CHARACTER_SET, SHIFT_OUT_CHARACTER_SET,
-        HASH, DCS, OSC, APC, CONTROL_SEQUENCE,
+        NORMAL,
+        ESCAPE,
+        SHIFT_IN_CHARACTER_SET,
+        SHIFT_OUT_CHARACTER_SET,
+        HASH,
+        DCS,
+        OSC,
+        APC,
+        CONTROL_SEQUENCE,
     }
 
     public final TerminalBuffer bufferManager;
@@ -86,32 +100,76 @@ public class Terminal {
         RIS.execute(this);
     }
 
-    public int getWidth() { return WIDTH * CHAR_WIDTH; }
-    public int getHeight() { return HEIGHT * CHAR_HEIGHT; }
+    public int getWidth() {
+        return WIDTH * CHAR_WIDTH;
+    }
+
+    public int getHeight() {
+        return HEIGHT * CHAR_HEIGHT;
+    }
 
     @OnlyIn(Dist.CLIENT)
-    public RendererView getRenderer() { return client.getRenderer(); }
+    public RendererView getRenderer() {
+        return client.getRenderer();
+    }
 
-    public void incrementLastLineToDisplay() { bufferManager.incrementLastLineToDisplay(); }
-    public void incrementLastLineToDisplay(boolean scroll) { bufferManager.incrementLastLineToDisplay(scroll); }
-    public void decrementLastLineToDisplay() { bufferManager.decrementLastLineToDisplay(); }
-    public void clear() { bufferManager.clear(); }
-    public void clearAlt() { bufferManager.clearAlt(); }
-    public void clearLine(final int y) { bufferManager.clearLine(y); }
-    public void clearLine(final int y, final int fromIndex, final int toIndex) { bufferManager.clearLine(y, fromIndex, toIndex); }
-    public void shiftUp(int count) { bufferManager.shiftUp(count); }
-    public void shiftLines(final int firstLine, final int lastLine, final int count) { bufferManager.shiftLines(firstLine, lastLine, count); }
-    public void shiftDown(int count) { bufferManager.shiftDown(count); }
-    public void shiftUpOne() { bufferManager.shiftUpOne(); }
-    public void shiftDownOne() { bufferManager.shiftDownOne(); }
+    public void incrementLastLineToDisplay() {
+        bufferManager.incrementLastLineToDisplay();
+    }
+
+    public void incrementLastLineToDisplay(boolean scroll) {
+        bufferManager.incrementLastLineToDisplay(scroll);
+    }
+
+    public void decrementLastLineToDisplay() {
+        bufferManager.decrementLastLineToDisplay();
+    }
+
+    public void clear() {
+        bufferManager.clear();
+    }
+
+    public void clearAlt() {
+        bufferManager.clearAlt();
+    }
+
+    public void clearLine(final int y) {
+        bufferManager.clearLine(y);
+    }
+
+    public void clearLine(final int y, final int fromIndex, final int toIndex) {
+        bufferManager.clearLine(y, fromIndex, toIndex);
+    }
+
+    public void shiftUp(int count) {
+        bufferManager.shiftUp(count);
+    }
+
+    public void shiftLines(final int firstLine, final int lastLine, final int count) {
+        bufferManager.shiftLines(firstLine, lastLine, count);
+    }
+
+    public void shiftDown(int count) {
+        bufferManager.shiftDown(count);
+    }
+
+    public void shiftUpOne() {
+        bufferManager.shiftUpOne();
+    }
+
+    public void shiftDownOne() {
+        bufferManager.shiftDownOne();
+    }
 
     public void setCursorPos(final int x, final int y) {
         this.x = Math.max(0, Math.min(WIDTH - 1, x));
         this.y = Math.max(0, Math.min(HEIGHT - 1, y));
     }
+
     public void setClampedCursorPos(final int x, final int y) {
         setCursorPos(x, Math.max(scrollFirst, Math.min(scrollLast, y)));
     }
+
     public void setRelativeCursorPos(final int x, final int y) {
         if (currentPrivateModeState.DECOM) {
             setCursorPos(x, Math.min(scrollFirst + y, scrollLast));
@@ -121,25 +179,58 @@ public class Terminal {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setDisplayOnly(final boolean value) { client.setDisplayOnly(value); }
+    public void setDisplayOnly(final boolean value) {
+        client.setDisplayOnly(value);
+    }
 
     @OnlyIn(Dist.CLIENT)
-    public void releaseRenderer(final RendererView renderer) { client.releaseRenderer(renderer); }
+    public void releaseRenderer(final RendererView renderer) {
+        client.releaseRenderer(renderer);
+    }
 
     @OnlyIn(Dist.CLIENT)
-    public void clientTick() { client.clientTick(); }
+    public void clientTick() {
+        client.clientTick();
+    }
 
-    public synchronized int readInput() { return io.readInput(); }
+    public synchronized int readInput() {
+        return io.readInput();
+    }
 
     @Nullable
-    public synchronized ByteBuffer getInput() { return io.getInput(); }
+    public synchronized ByteBuffer getInput() {
+        return io.getInput();
+    }
 
-    public synchronized void putInput(final String value) { io.putInput(value); }
-    public synchronized void putInput(final ByteBuffer values) { io.putInput(values); }
-    public synchronized void putOutput(final ByteBuffer values) { io.putOutput(values); }
-    public synchronized void putOutput(final byte value) { io.putOutput(value); }
-    public synchronized void putInput(final char value) { io.putInput(value); }
-    public synchronized void putInput(final byte value) { io.putInput(value); }
-    public void putResponse(final String value) { io.putResponse(value); }
-    public void putResponse(final byte value) { io.putResponse(value); }
+    public synchronized void putInput(final String value) {
+        io.putInput(value);
+    }
+
+    public synchronized void putInput(final ByteBuffer values) {
+        io.putInput(values);
+    }
+
+    public synchronized void putOutput(final ByteBuffer values) {
+        io.putOutput(values);
+    }
+
+    public synchronized void putOutput(final byte value) {
+        io.putOutput(value);
+    }
+
+    public synchronized void putInput(final char value) {
+        io.putInput(value);
+    }
+
+    public synchronized void putInput(final byte value) {
+        io.putInput(value);
+    }
+
+    public void putResponse(final String value) {
+        io.putResponse(value);
+    }
+
+    public void putResponse(final byte value) {
+        io.putResponse(value);
+    }
 }

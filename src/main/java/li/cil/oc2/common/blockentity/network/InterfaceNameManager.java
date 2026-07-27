@@ -3,6 +3,7 @@ package li.cil.oc2.common.blockentity.network;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusInterfaceNameMessage;
+
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -37,7 +38,9 @@ final class InterfaceNameManager {
         owner.setChanged();
 
         if (!level.isClientSide()) {
-            final BusInterfaceNameMessage message = BusInterfaceNameMessage.ToClient(owner, side, interfaceNames[side.get3DDataValue()]);
+            final BusInterfaceNameMessage message =
+                    BusInterfaceNameMessage.ToClient(
+                            owner, side, interfaceNames[side.get3DDataValue()]);
             Network.sendToClientsTrackingBlockEntity(message, owner);
             owner.busElement.updateDevicesForNeighbor(side);
         }

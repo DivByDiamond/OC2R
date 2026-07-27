@@ -4,6 +4,7 @@ import li.cil.oc2.common.block.BusCableStateProperties;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.BusCableFacadeMessage;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -34,10 +35,10 @@ final class FacadeManager {
         }
 
         final var level = owner.getLevel();
-        if (level == null ||
-            state.getRenderShape() != RenderShape.MODEL ||
-            !state.isSolidRender(level, owner.getBlockPos()) ||
-            state.getBlock() instanceof EntityBlock) {
+        if (level == null
+                || state.getRenderShape() != RenderShape.MODEL
+                || !state.isSolidRender(level, owner.getBlockPos())
+                || state.getBlock() instanceof EntityBlock) {
             return FacadeType.INVALID_BLOCK;
         }
 
@@ -61,13 +62,19 @@ final class FacadeManager {
 
         facade = stack.copy();
         facade.setCount(1);
-        BusCableStateProperties.setHasFacade(level, owner.getBlockPos(), owner.getBlockState(), facadeState, true);
+        BusCableStateProperties.setHasFacade(
+                level, owner.getBlockPos(), owner.getBlockState(), facadeState, true);
 
         owner.setChanged();
-        level.sendBlockUpdated(owner.getBlockPos(), owner.getBlockState(), owner.getBlockState(), Block.UPDATE_ALL);
+        level.sendBlockUpdated(
+                owner.getBlockPos(),
+                owner.getBlockState(),
+                owner.getBlockState(),
+                Block.UPDATE_ALL);
 
         if (!level.isClientSide()) {
-            final BusCableFacadeMessage message = new BusCableFacadeMessage(owner.getBlockPos(), facade);
+            final BusCableFacadeMessage message =
+                    new BusCableFacadeMessage(owner.getBlockPos(), facade);
             Network.sendToClientsTrackingBlockEntity(message, owner);
         }
 
@@ -82,13 +89,19 @@ final class FacadeManager {
 
         final BlockState facadeState = ItemStackUtils.getBlockState(facade);
         facade = ItemStack.EMPTY;
-        BusCableStateProperties.setHasFacade(level, owner.getBlockPos(), owner.getBlockState(), facadeState, false);
+        BusCableStateProperties.setHasFacade(
+                level, owner.getBlockPos(), owner.getBlockState(), facadeState, false);
 
         owner.setChanged();
-        level.sendBlockUpdated(owner.getBlockPos(), owner.getBlockState(), owner.getBlockState(), Block.UPDATE_ALL);
+        level.sendBlockUpdated(
+                owner.getBlockPos(),
+                owner.getBlockState(),
+                owner.getBlockState(),
+                Block.UPDATE_ALL);
 
         if (!level.isClientSide()) {
-            final BusCableFacadeMessage message = new BusCableFacadeMessage(owner.getBlockPos(), facade);
+            final BusCableFacadeMessage message =
+                    new BusCableFacadeMessage(owner.getBlockPos(), facade);
             Network.sendToClientsTrackingBlockEntity(message, owner);
         }
 

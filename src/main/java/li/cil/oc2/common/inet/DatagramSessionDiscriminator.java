@@ -5,8 +5,7 @@ final class DatagramSessionDiscriminator extends SocketSessionDiscriminator<Data
             final int srcIpAddress,
             final short srcPort,
             final int dstIpAddress,
-            final short dstPort
-    ) {
+            final short dstPort) {
         super(srcIpAddress, srcPort, dstIpAddress, dstPort);
     }
 

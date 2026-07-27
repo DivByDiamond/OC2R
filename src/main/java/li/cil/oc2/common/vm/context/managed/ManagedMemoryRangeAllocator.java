@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.managed;
 
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
@@ -16,15 +15,14 @@ final class ManagedMemoryRangeAllocator implements MemoryRangeAllocator {
     private final ArrayList<MemoryMappedDevice> managedDevices = new ArrayList<>();
     private boolean isFrozen;
 
-
-    public ManagedMemoryRangeAllocator(final MemoryRangeAllocator parent,
-                                       final MemoryRangeManager memoryRangeManager,
-                                       final Supplier<OptionalLong> baseAddressSupplier) {
+    public ManagedMemoryRangeAllocator(
+            final MemoryRangeAllocator parent,
+            final MemoryRangeManager memoryRangeManager,
+            final Supplier<OptionalLong> baseAddressSupplier) {
         this.parent = parent;
         this.memoryRangeManager = memoryRangeManager;
         this.baseAddressSupplier = baseAddressSupplier;
     }
-
 
     public void freeze() {
         isFrozen = true;
@@ -59,7 +57,8 @@ final class ManagedMemoryRangeAllocator implements MemoryRangeAllocator {
 
         final OptionalLong baseAddress = baseAddressSupplier.get();
         if (baseAddress.isPresent()) {
-            final OptionalLong address = memoryRangeManager.findMemoryRange(device, baseAddress.getAsLong());
+            final OptionalLong address =
+                    memoryRangeManager.findMemoryRange(device, baseAddress.getAsLong());
             if (address.isPresent() && parent.claimMemoryRange(address.getAsLong(), device)) {
                 managedDevices.add(device);
                 return address;

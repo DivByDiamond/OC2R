@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.client.ClientSetup;
@@ -11,8 +10,9 @@ import li.cil.oc2.common.network.message.ComputerPowerMessage;
 import li.cil.oc2.common.network.message.ComputerTerminalInputMessage;
 import li.cil.oc2.common.network.message.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.OpenComputerTerminalMessage;
-import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.VirtualMachine;
+import li.cil.oc2.common.vm.terminal.Terminal;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
@@ -25,14 +25,17 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
     private final ComputerBlockEntity computer;
     private static boolean captureInputState = Config.captureInputDefaultState;
 
-
-    protected AbstractComputerContainer(final MenuType<?> type, final int id, final Player player, final ComputerBlockEntity computer, final IntPrecisionContainerData energyInfo) {
+    protected AbstractComputerContainer(
+            final MenuType<?> type,
+            final int id,
+            final Player player,
+            final ComputerBlockEntity computer,
+            final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
         this.computer = computer;
 
         this.computer.addTerminalUser(player);
     }
-
 
     @Override
     public void switchToInventory() {
@@ -88,7 +91,11 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
             return false;
         }
         final Level level = computer.getLevel();
-        return level != null && stillValid(ContainerLevelAccess.create(level, computer.getBlockPos()), player, Blocks.COMPUTER.get());
+        return level != null
+                && stillValid(
+                        ContainerLevelAccess.create(level, computer.getBlockPos()),
+                        player,
+                        Blocks.COMPUTER.get());
     }
 
     @Override
@@ -98,15 +105,17 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         this.computer.removeTerminalUser(player);
     }
 
-
-    protected static IntPrecisionContainerData createEnergyInfo(final IEnergyStorage energy, final CommonDeviceBusController busController) {
+    protected static IntPrecisionContainerData createEnergyInfo(
+            final IEnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {
                 return switch (index) {
                     case AbstractMachineContainer.ENERGY_STORED_INDEX -> energy.getEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX -> energy.getMaxEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX -> busController.getEnergyConsumption();
+                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX ->
+                            energy.getMaxEnergyStored();
+                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX ->
+                            busController.getEnergyConsumption();
                     default -> 0;
                 };
             }

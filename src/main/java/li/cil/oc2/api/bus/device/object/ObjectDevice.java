@@ -4,20 +4,21 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCEventSource;
 import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.Nullable;
+
 /**
- * A reflection based implementation of {@link RPCDevice} using the {@link Callback}
- * annotation to discover {@link RPCMethod}s in a target object via
- * {@link Callbacks#collectMethods(Object)}.
+ * A reflection based implementation of {@link RPCDevice} using the {@link Callback} annotation to
+ * discover {@link RPCMethod}s in a target object via {@link Callbacks#collectMethods(Object)}.
  */
 public final class ObjectDevice implements RPCDevice, ItemDevice {
     private final Object object;
@@ -28,10 +29,10 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     ///////////////////////////////////////////////////////////////////
 
     /**
-     * Creates a new object device with methods in the specified object and the
-     * specified list of type names.
+     * Creates a new object device with methods in the specified object and the specified list of
+     * type names.
      *
-     * @param object    the object containing methods provided by this device.
+     * @param object the object containing methods provided by this device.
      * @param typeNames the type names of the device.
      */
     public ObjectDevice(final Object object, final List<String> typeNames) {
@@ -49,10 +50,10 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     }
 
     /**
-     * Creates a new object device with methods in the specified object and the
-     * specified list of type names.
+     * Creates a new object device with methods in the specified object and the specified list of
+     * type names.
      *
-     * @param object    the object containing methods provided by this device.
+     * @param object the object containing methods provided by this device.
      * @param typeNames the type names of the device.
      */
     public ObjectDevice(final Object object, final String... typeNames) {
@@ -60,11 +61,11 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     }
 
     /**
-     * Creates a new object device with methods in the specified object and the specified
-     * type name. For convenience, the type name may be {@code null}, in which case using
-     * this constructor is equivalent to using {@link #ObjectDevice(Object)}.
+     * Creates a new object device with methods in the specified object and the specified type name.
+     * For convenience, the type name may be {@code null}, in which case using this constructor is
+     * equivalent to using {@link #ObjectDevice(Object)}.
      *
-     * @param object   the object containing methods provided by this device.
+     * @param object the object containing methods provided by this device.
      * @param typeName the type name of the device.
      */
     public ObjectDevice(final Object object, @Nullable final String typeName) {
@@ -150,12 +151,12 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     ///////////////////////////////////////////////////////////////////
 
     private static String toNiceTypeName(final Class<?> deviceClass) {
-        final String name = deviceClass.getSimpleName()
-                .replaceFirst("VMDevice$", "")
-                .replaceFirst("RPCDevice$", "")
-                .replaceFirst("Device$", "");
-        return name
-                .replaceAll("([a-z])([A-Z])", "$1_$2")
-                .toLowerCase(Locale.ROOT);
+        final String name =
+                deviceClass
+                        .getSimpleName()
+                        .replaceFirst("VMDevice$", "")
+                        .replaceFirst("RPCDevice$", "")
+                        .replaceFirst("Device$", "");
+        return name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
     }
 }

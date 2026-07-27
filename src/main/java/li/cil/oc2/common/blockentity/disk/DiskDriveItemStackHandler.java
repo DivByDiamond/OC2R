@@ -1,12 +1,12 @@
 package li.cil.oc2.common.blockentity.disk;
 
-import li.cil.oc2.common.bus.device.vm.block.DiskDriveDevice;
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.item.AbstractBlockDeviceItem;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.DiskDriveFloppyMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -69,13 +69,19 @@ final class DiskDriveItemStackHandler extends TypedItemStackHandler {
         if (stack.isEmpty()) {
             blockEntity.device.removeBlockDevice();
         } else {
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-                final CompoundTag tag = ItemStackUtils.getOrCreateModDataTag(nbt).getCompound(AbstractBlockDeviceItem.DATA_TAG_NAME);
-                blockEntity.device.updateBlockDevice(tag);
-            });
+            CustomData.update(
+                    DataComponents.CUSTOM_DATA,
+                    stack,
+                    (nbt) -> {
+                        final CompoundTag tag =
+                                ItemStackUtils.getOrCreateModDataTag(nbt)
+                                        .getCompound(AbstractBlockDeviceItem.DATA_TAG_NAME);
+                        blockEntity.device.updateBlockDevice(tag);
+                    });
         }
 
-        Network.sendToClientsTrackingBlockEntity(new DiskDriveFloppyMessage(blockEntity), blockEntity);
+        Network.sendToClientsTrackingBlockEntity(
+                new DiskDriveFloppyMessage(blockEntity), blockEntity);
 
         blockEntity.setChanged();
     }
@@ -92,8 +98,12 @@ final class DiskDriveItemStackHandler extends TypedItemStackHandler {
 
         final CompoundTag tag = new CompoundTag();
         blockEntity.device.exportToItemStack(tag);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).put(AbstractBlockDeviceItem.DATA_TAG_NAME, tag);
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt)
+                            .put(AbstractBlockDeviceItem.DATA_TAG_NAME, tag);
+                });
     }
 }

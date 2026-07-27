@@ -5,7 +5,10 @@ import li.cil.oc2.api.inet.session.DatagramSession;
 public final class DatagramSessionImpl extends DatagramSessionBase implements DatagramSession {
     private final DatagramSessionDiscriminator discriminator;
 
-    public DatagramSessionImpl(final int ipAddress, final short port, final DatagramSessionDiscriminator discriminator) {
+    public DatagramSessionImpl(
+            final int ipAddress,
+            final short port,
+            final DatagramSessionDiscriminator discriminator) {
         super(ipAddress, port);
         this.discriminator = discriminator;
     }

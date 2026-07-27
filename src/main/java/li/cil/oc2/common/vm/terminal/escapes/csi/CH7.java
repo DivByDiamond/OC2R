@@ -3,7 +3,9 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
 
-public class CH7 extends CSISequenceHandler { // Combined Handler 7 (XTVERSION, DECLL, DECSCUSR, DECSCA, and XTPOPSGR)
+public class CH7
+        extends CSISequenceHandler { // Combined Handler 7 (XTVERSION, DECLL, DECSCUSR, DECSCA, and
+                                     // XTPOPSGR)
     public CH7(final Terminal terminal) {
         super(terminal);
     }

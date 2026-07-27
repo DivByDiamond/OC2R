@@ -1,16 +1,15 @@
-
 package li.cil.oc2.common.blockentity.network;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.blockentity.TickableBlockEntity;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
-import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.LevelUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -31,15 +30,13 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
     private int frameCount;
     private long lastGameTime;
 
-
-    private final NetworkInterface[] adjacentBlockInterfaces = new NetworkInterface[Constants.BLOCK_FACE_COUNT];
+    private final NetworkInterface[] adjacentBlockInterfaces =
+            new NetworkInterface[Constants.BLOCK_FACE_COUNT];
     private boolean haveAdjacentBlocksChanged = true;
-
 
     public NetworkHubBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.NETWORK_HUB.get(), pos, state);
     }
-
 
     @Override
     public byte[] readEthernetFrame() {
@@ -47,7 +44,8 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
     }
 
     @Override
-    public void writeEthernetFrame(final NetworkInterface source, final byte[] frame, final int timeToLive) {
+    public void writeEthernetFrame(
+            final NetworkInterface source, final byte[] frame, final int timeToLive) {
         if (level == null) {
             return;
         }
@@ -65,33 +63,32 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
             frameCount++;
         }
 
-        getAdjacentInterfaces().forEach(adjacentInterface -> {
-            if (adjacentInterface != source) {
-                adjacentInterface.writeEthernetFrame(this, frame, timeToLive - TTL_COST);
-            }
-        });
+        getAdjacentInterfaces()
+                .forEach(
+                        adjacentInterface -> {
+                            if (adjacentInterface != source) {
+                                adjacentInterface.writeEthernetFrame(
+                                        this, frame, timeToLive - TTL_COST);
+                            }
+                        });
     }
-
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.NetworkInterface.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final NetworkHubBlockEntity self) {
-                    return self;
-                }
-                return null;
-            },
-            Blocks.NETWORK_HUB.get()
-        );
+                Capabilities.NetworkInterface.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final NetworkHubBlockEntity self) {
+                        return self;
+                    }
+                    return null;
+                },
+                Blocks.NETWORK_HUB.get());
     }
-
 
     private Stream<NetworkInterface> getAdjacentInterfaces() {
         validateAdjacentBlocks();
-        return Arrays.stream(adjacentBlockInterfaces)
-            .filter(Objects::nonNull);
+        return Arrays.stream(adjacentBlockInterfaces).filter(Objects::nonNull);
     }
 
     private void validateAdjacentBlocks() {
@@ -112,9 +109,16 @@ public final class NetworkHubBlockEntity extends ModBlockEntity implements Netwo
         final BlockPos pos = getBlockPos();
         for (final Direction side : Constants.DIRECTIONS) {
             final var neighborPos = pos.relative(side);
-            final BlockEntity neighborBlockEntity = LevelUtils.getBlockEntityIfChunkExists(level, neighborPos);
+            final BlockEntity neighborBlockEntity =
+                    LevelUtils.getBlockEntityIfChunkExists(level, neighborPos);
             if (neighborBlockEntity != null) {
-                final NetworkInterface adjacentInterface = level.getCapability(Capabilities.NetworkInterface.BLOCK, neighborPos, null, neighborBlockEntity, side.getOpposite());
+                final NetworkInterface adjacentInterface =
+                        level.getCapability(
+                                Capabilities.NetworkInterface.BLOCK,
+                                neighborPos,
+                                null,
+                                neighborBlockEntity,
+                                side.getOpposite());
                 if (adjacentInterface != null) {
                     adjacentBlockInterfaces[side.get3DDataValue()] = adjacentInterface;
                 }

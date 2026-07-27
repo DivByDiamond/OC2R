@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.bus.device.vm.item;
 
 import com.google.common.eventbus.Subscribe;
+
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -16,17 +16,21 @@ import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TIdentity> extends IdentityProxy<TIdentity> implements VMDevice, ItemDevice {
+import javax.annotation.Nullable;
+
+public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TIdentity>
+        extends IdentityProxy<TIdentity> implements VMDevice, ItemDevice {
     protected static final Logger LOGGER = LogManager.getLogger();
 
     protected static final ExecutorService WORKERS = DeviceLifecycle.WORKERS;
@@ -85,10 +89,13 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
         if (blobHandle != null) {
             if (AsyncConfig.SERVER.asyncStorageOperations.get()) {
-                BlobStorage.closeAsync(blobHandle).exceptionally(e -> {
-                    LOGGER.error("Error closing blob asynchronously: " + blobHandle, e);
-                    return null;
-                });
+                BlobStorage.closeAsync(blobHandle)
+                        .exceptionally(
+                                e -> {
+                                    LOGGER.error(
+                                            "Error closing blob asynchronously: " + blobHandle, e);
+                                    return null;
+                                });
             } else {
                 BlobStorage.close(blobHandle);
             }
@@ -161,10 +168,15 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             final UUID blobHandle = tag.getUUID(BLOB_HANDLE_TAG_NAME);
             if (AsyncConfig.SERVER.asyncStorageOperations.get()) {
-                BlobStorage.closeAsync(blobHandle).exceptionally(e -> {
-                    LOGGER.error("Error closing blob asynchronously during unmount: " + blobHandle, e);
-                    return null;
-                });
+                BlobStorage.closeAsync(blobHandle)
+                        .exceptionally(
+                                e -> {
+                                    LOGGER.error(
+                                            "Error closing blob asynchronously during unmount: "
+                                                    + blobHandle,
+                                            e);
+                                    return null;
+                                });
             } else {
                 BlobStorage.close(blobHandle);
             }
@@ -186,6 +198,5 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
     protected abstract CompletableFuture<TBlock> createBlockDevice();
 
-    protected void handleDataAccess() {
-    }
+    protected void handleDataAccess() {}
 }

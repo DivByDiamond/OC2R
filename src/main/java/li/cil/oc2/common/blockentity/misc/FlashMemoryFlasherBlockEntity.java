@@ -14,6 +14,7 @@ import li.cil.oc2.common.util.ItemStackUtils;
 import li.cil.oc2.common.util.LocationSupplierUtils;
 import li.cil.oc2.common.util.SoundEvents;
 import li.cil.oc2.common.util.ThrottledSoundEmitter;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -27,23 +28,30 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 
+import javax.annotation.Nullable;
+
 @EventBusSubscriber(modid = API.MOD_ID)
-public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implements FlashMemoryFlasherContainer {
+public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
+        implements FlashMemoryFlasherContainer {
     private final FlashMemoryItemStackHandler itemHandler = new FlashMemoryItemStackHandler(this);
-    final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device = new FlashMemoryFlasherDevice<>(this);
+    final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device =
+            new FlashMemoryFlasherDevice<>(this);
     private final ThrottledSoundEmitter insertSoundEmitter;
     private final ThrottledSoundEmitter ejectSoundEmitter;
 
     public FlashMemoryFlasherBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.FLASH_MEMORY_FLASHER.get(), pos, state);
 
-        this.insertSoundEmitter = new ThrottledSoundEmitter(LocationSupplierUtils.of(this),
-            SoundEvents.FLOPPY_INSERT.get()).withMinInterval(Duration.ofMillis(100));
-        this.ejectSoundEmitter = new ThrottledSoundEmitter(LocationSupplierUtils.of(this),
-            SoundEvents.FLOPPY_EJECT.get()).withMinInterval(Duration.ofMillis(100));
+        this.insertSoundEmitter =
+                new ThrottledSoundEmitter(
+                                LocationSupplierUtils.of(this), SoundEvents.FLOPPY_INSERT.get())
+                        .withMinInterval(Duration.ofMillis(100));
+        this.ejectSoundEmitter =
+                new ThrottledSoundEmitter(
+                                LocationSupplierUtils.of(this), SoundEvents.FLOPPY_EJECT.get())
+                        .withMinInterval(Duration.ofMillis(100));
     }
 
     public boolean canInsert(final ItemStack stack) {
@@ -74,12 +82,14 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implemen
         if (!stack.isEmpty()) {
             final Direction facing = getBlockState().getValue(FlashMemoryFlasherBlock.FACING);
             ejectSoundEmitter.play();
-            ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing).ifPresent(entity -> {
-                if (player != null) {
-                    entity.setNoPickUpDelay();
-                    entity.setThrower(player);
-                }
-            });
+            ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing)
+                    .ifPresent(
+                            entity -> {
+                                if (player != null) {
+                                    entity.setNoPickUpDelay();
+                                    entity.setThrower(player);
+                                }
+                            });
         }
     }
 
@@ -95,27 +105,28 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implemen
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.ItemHandler.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final FlashMemoryFlasherBlockEntity self) {
-                    return self.itemHandler;
-                }
-                return null;
-            },
-            Blocks.FLASH_MEMORY_FLASHER.get()
-        );
-        event.registerBlock(
-            Capabilities.Device.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final FlashMemoryFlasherBlockEntity self) {
-                    if (side == self.getBlockState().getValue(FlashMemoryFlasherBlock.FACING).getOpposite()) {
-                        return self.device;
+                Capabilities.ItemHandler.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final FlashMemoryFlasherBlockEntity self) {
+                        return self.itemHandler;
                     }
-                }
-                return null;
-            },
-            Blocks.FLASH_MEMORY_FLASHER.get()
-        );
+                    return null;
+                },
+                Blocks.FLASH_MEMORY_FLASHER.get());
+        event.registerBlock(
+                Capabilities.Device.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final FlashMemoryFlasherBlockEntity self) {
+                        if (side
+                                == self.getBlockState()
+                                        .getValue(FlashMemoryFlasherBlock.FACING)
+                                        .getOpposite()) {
+                            return self.device;
+                        }
+                    }
+                    return null;
+                },
+                Blocks.FLASH_MEMORY_FLASHER.get());
     }
 
     @Override
@@ -151,6 +162,5 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity implemen
     }
 
     @Override
-    public void handleDataAccess() {
-    }
+    public void handleDataAccess() {}
 }

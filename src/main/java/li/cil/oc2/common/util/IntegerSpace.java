@@ -5,9 +5,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-/**
- * A set of integers that is more effective with ranges of integers.
- */
+/** A set of integers that is more effective with ranges of integers. */
 public class IntegerSpace {
     private final NavigableMap<Integer, Integer> ranges = new TreeMap<>();
 
@@ -20,23 +18,26 @@ public class IntegerSpace {
             return put(end, begin);
         }
 
-        ranges.subMap(begin, false, end, false).entrySet()
+        ranges.subMap(begin, false, end, false)
+                .entrySet()
                 .removeIf(range -> range.getKey() > begin && range.getValue() < end);
 
         final Map.Entry<Integer, Integer> floorBegin = ranges.floorEntry(begin);
         final Map.Entry<Integer, Integer> higherEnd = ranges.ceilingEntry(end);
 
-        if (floorBegin != null
-            && floorBegin.getKey() <= begin && floorBegin.getValue() >= end) {
+        if (floorBegin != null && floorBegin.getKey() <= begin && floorBegin.getValue() >= end) {
             // Already exists in the space
             // [---------]
             // [---------]
             //   [---]
             // [---------]
             return false;
-        } else if (floorBegin != null && higherEnd != null
-                   && floorBegin.getKey() <= begin && floorBegin.getValue() + 1 >= begin
-                   && higherEnd.getKey() - 1 <= end && higherEnd.getValue() >= end) {
+        } else if (floorBegin != null
+                && higherEnd != null
+                && floorBegin.getKey() <= begin
+                && floorBegin.getValue() + 1 >= begin
+                && higherEnd.getKey() - 1 <= end
+                && higherEnd.getValue() >= end) {
             // Remove whitespace between 2 ranges
             // [---------]      [----------]
             //           [------]
@@ -46,7 +47,8 @@ public class IntegerSpace {
             ranges.entrySet().remove(higherEnd);
             ranges.put(floorBegin.getKey(), higherEnd.getValue());
         } else if (higherEnd != null
-                   && higherEnd.getKey() - 1 <= end && higherEnd.getValue() >= end) {
+                && higherEnd.getKey() - 1 <= end
+                && higherEnd.getValue() >= end) {
             // Change higher range start position
             // [---------]       [---------]
             //              [----]
@@ -54,7 +56,8 @@ public class IntegerSpace {
             ranges.entrySet().remove(higherEnd);
             ranges.put(begin, higherEnd.getValue());
         } else if (floorBegin != null
-                   && floorBegin.getKey() <= begin && floorBegin.getValue() + 1 >= begin) {
+                && floorBegin.getKey() <= begin
+                && floorBegin.getValue() + 1 >= begin) {
             // New range after some other range
             // [---------]
             //           [--]
@@ -71,7 +74,9 @@ public class IntegerSpace {
 
     public final boolean contains(final int element) {
         final Map.Entry<Integer, Integer> floorRange = ranges.floorEntry(element);
-        return floorRange != null && element >= floorRange.getKey() && element <= floorRange.getValue();
+        return floorRange != null
+                && element >= floorRange.getKey()
+                && element <= floorRange.getValue();
     }
 
     public final boolean isEmpty() {
@@ -92,7 +97,8 @@ public class IntegerSpace {
         builder.append(element);
     }
 
-    private void appendRangeToString(final StringBuilder builder, final Map.Entry<Integer, Integer> range) {
+    private void appendRangeToString(
+            final StringBuilder builder, final Map.Entry<Integer, Integer> range) {
         final int begin = range.getKey();
         final int end = range.getValue();
         elementToString(builder, begin);

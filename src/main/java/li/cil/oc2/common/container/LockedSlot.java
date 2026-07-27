@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.container;
 
 import net.minecraft.world.Container;
@@ -10,7 +9,6 @@ public final class LockedSlot extends Slot {
     public LockedSlot(final Container container, final int slot, final int x, final int y) {
         super(container, slot, x, y);
     }
-
 
     @Override
     public boolean mayPlace(final ItemStack p_40231_) {

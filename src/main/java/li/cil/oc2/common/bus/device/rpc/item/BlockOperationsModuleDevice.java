@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.api.bus.device.object.Callback;
@@ -6,6 +5,7 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.api.util.RobotOperationSide;
 import li.cil.oc2.common.util.FakePlayerUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,15 +25,17 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-import javax.annotation.Nullable;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
     private final Entity entity;
     private final Robot robot;
     private final BlockOperationCooldown cooldown = new BlockOperationCooldown();
 
-    public BlockOperationsModuleDevice(final ItemStack identity, final Entity entity, final Robot robot) {
+    public BlockOperationsModuleDevice(
+            final ItemStack identity, final Entity entity, final Robot robot) {
         super(identity, "block_operations");
         this.entity = entity;
         this.robot = robot;
@@ -72,7 +74,8 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         final List<ItemEntity> oldItems = InventoryHelper.getItemsInRange(entity);
 
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
-        if (!BlockHarvestHelper.tryHarvestBlock(serverLevel, entity.blockPosition().relative(direction), entity, identity)) {
+        if (!BlockHarvestHelper.tryHarvestBlock(
+                serverLevel, entity.blockPosition().relative(direction), entity, identity)) {
             return false;
         }
 
@@ -116,15 +119,18 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
         final BlockPos blockPos = entity.blockPosition().relative(direction);
         final Direction oppositeDirection = direction.getOpposite();
-        final BlockHitResult hit = new BlockHitResult(
-            Vec3.atCenterOf(blockPos).add(Vec3.atCenterOf(oppositeDirection.getNormal()).scale(0.5)),
-            oppositeDirection,
-            blockPos,
-            false);
+        final BlockHitResult hit =
+                new BlockHitResult(
+                        Vec3.atCenterOf(blockPos)
+                                .add(Vec3.atCenterOf(oppositeDirection.getNormal()).scale(0.5)),
+                        oppositeDirection,
+                        blockPos,
+                        false);
 
         final ItemStack itemStack = extracted.copy();
         final ServerPlayer player = FakePlayerUtils.getFakePlayer(serverLevel, entity);
-        final BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, itemStack, hit);
+        final BlockPlaceContext context =
+                new BlockPlaceContext(player, InteractionHand.MAIN_HAND, itemStack, hit);
 
         final InteractionResult result = blockItem.place(context);
         if (!result.consumesAction()) {

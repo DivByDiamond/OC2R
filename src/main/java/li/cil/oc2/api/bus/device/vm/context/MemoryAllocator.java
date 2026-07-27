@@ -1,9 +1,6 @@
-
 package li.cil.oc2.api.bus.device.vm.context;
 
-/**
- * A memory allocator used to ensure sandbox limits when loading devices.
- */
+/** A memory allocator used to ensure sandbox limits when loading devices. */
 public interface MemoryAllocator {
     /**
      * Tries to reserve the specified amount of memory, in bytes.

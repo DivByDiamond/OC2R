@@ -1,18 +1,20 @@
-
 package li.cil.oc2.common.blockentity.energy;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.ModBlockEntity;
-import li.cil.oc2.common.blockentity.TickableBlockEntity;
+
+import static java.util.Collections.singletonList;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
-import li.cil.oc2.common.block.Blocks;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.Blocks;
+import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.util.ChunkUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -33,25 +35,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static java.util.Collections.singletonList;
-
 @EventBusSubscriber(modid = API.MOD_ID)
-public final class ChargerBlockEntity extends ModBlockEntity implements NamedDevice, TickableBlockEntity {
+public final class ChargerBlockEntity extends ModBlockEntity
+        implements NamedDevice, TickableBlockEntity {
     private static final Predicate<Entity> ENTITY_PREDICATE =
-        EntitySelector.NO_SPECTATORS
-            .and(EntitySelector.ENTITY_STILL_ALIVE);
-
+            EntitySelector.NO_SPECTATORS.and(EntitySelector.ENTITY_STILL_ALIVE);
 
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.chargerEnergyStorage);
     private boolean isCharging;
     private final AABB renderBoundingBox;
 
-
     public ChargerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CHARGER.get(), pos, state);
         renderBoundingBox = new AABB(pos.above());
     }
-
 
     @Override
     public void clientTick() {
@@ -101,21 +98,18 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         return singletonList("charger");
     }
 
-
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.EnergyStorage.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final ChargerBlockEntity self) {
-                    return self.energy;
-                }
-                return null;
-            },
-            Blocks.CHARGER.get()
-        );
+                Capabilities.EnergyStorage.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final ChargerBlockEntity self) {
+                        return self.energy;
+                    }
+                    return null;
+                },
+                Blocks.CHARGER.get());
     }
-
 
     private void chargeBlock() {
         assert level != null;
@@ -127,9 +121,17 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
         final var above = getBlockPos().above();
         final BlockEntity blockEntity = level.getBlockEntity(above);
         if (blockEntity != null) {
-            final var energy = level.getCapability(Capabilities.EnergyStorage.BLOCK, above, null, blockEntity, Direction.DOWN);
+            final var energy =
+                    level.getCapability(
+                            Capabilities.EnergyStorage.BLOCK,
+                            above,
+                            null,
+                            blockEntity,
+                            Direction.DOWN);
             if (energy != null) charge(energy);
-            final var items = level.getCapability(Capabilities.ItemHandler.BLOCK, above, null, blockEntity, null);
+            final var items =
+                    level.getCapability(
+                            Capabilities.ItemHandler.BLOCK, above, null, blockEntity, null);
             if (items != null) chargeItems(items);
         }
     }
@@ -141,9 +143,11 @@ public final class ChargerBlockEntity extends ModBlockEntity implements NamedDev
             return;
         }
 
-        final List<Entity> entities = level.getEntities((Entity) null, new AABB(getBlockPos().above()), ENTITY_PREDICATE);
+        final List<Entity> entities =
+                level.getEntities((Entity) null, new AABB(getBlockPos().above()), ENTITY_PREDICATE);
         for (final Entity entity : entities) {
-            final var energy = entity.getCapability(Capabilities.EnergyStorage.ENTITY, Direction.DOWN);
+            final var energy =
+                    entity.getCapability(Capabilities.EnergyStorage.ENTITY, Direction.DOWN);
             if (energy != null) charge(energy);
             final var items = entity.getCapability(Capabilities.ItemHandler.ENTITY, null);
             if (items != null) chargeItems(items);

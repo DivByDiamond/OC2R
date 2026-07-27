@@ -1,33 +1,32 @@
-
 package li.cil.oc2.common.bus.device.provider.item;
 
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import li.cil.oc2.common.bus.device.vm.item.HardDriveDeviceWithInitialData;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.HardDriveWithExternalDataItem;
 import li.cil.oc2.common.util.LocationSupplierUtils;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractItemDeviceProvider {
     public HardDriveWithExternalDataItemDeviceProvider() {
         super(HardDriveWithExternalDataItem.class);
     }
 
-
     @Override
     public void unmount(@Nullable final ItemDeviceQuery query, final CompoundTag tag) {
         super.unmount(query, tag);
         HardDriveDeviceWithInitialData.unmount(tag);
     }
-
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
@@ -38,7 +37,9 @@ public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractI
             return Optional.empty();
         }
 
-        return Optional.of(new HardDriveDeviceWithInitialData(stack, data.getBlockDevice(), false, LocationSupplierUtils.of(query)));
+        return Optional.of(
+                new HardDriveDeviceWithInitialData(
+                        stack, data.getBlockDevice(), false, LocationSupplierUtils.of(query)));
     }
 
     @Override
@@ -51,6 +52,12 @@ public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractI
         }
 
         final long capacity = Math.max(data.getBlockDevice().getCapacity(), 0);
-        return Math.max(1, (int) Math.round(capacity * Config.hardDriveEnergyPerMegabytePerTick / Constants.MEGABYTE));
+        return Math.max(
+                1,
+                (int)
+                        Math.round(
+                                capacity
+                                        * Config.hardDriveEnergyPerMegabytePerTick
+                                        / Constants.MEGABYTE));
     }
 }

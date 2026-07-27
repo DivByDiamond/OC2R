@@ -1,16 +1,16 @@
-
 package li.cil.oc2.common.bus.device.provider.util;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
+
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.Optional;
 
-public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> extends AbstractBlockDeviceProvider {
+public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity>
+        extends AbstractBlockDeviceProvider {
     private final BlockEntityType<T> blockEntityType;
-
 
     protected AbstractBlockEntityDeviceProvider(final BlockEntityType<T> blockEntityType) {
         this.blockEntityType = blockEntityType;
@@ -19,7 +19,6 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> e
     protected AbstractBlockEntityDeviceProvider() {
         this.blockEntityType = null;
     }
-
 
     @SuppressWarnings("unchecked")
     @Override
@@ -40,6 +39,6 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity> e
         }
     }
 
-
-    protected abstract Optional<Device> getBlockDevice(final BlockDeviceQuery query, final T blockEntity);
+    protected abstract Optional<Device> getBlockDevice(
+            final BlockDeviceQuery query, final T blockEntity);
 }

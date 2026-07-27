@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.blockentity.network;
 
 public enum ConnectionResult {

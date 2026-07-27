@@ -1,9 +1,9 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.common.item.NetworkTunnelItem;
 import li.cil.oc2.common.tags.ItemTags;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,30 +20,32 @@ import java.util.UUID;
 
 public final class NetworkTunnelContainer extends AbstractContainer {
     public static void createServer(final ServerPlayer player, final InteractionHand hand) {
-        player.openMenu(new MenuProvider() {
-            @Override
-            public Component getDisplayName() {
-                return player.getItemInHand(hand).getItem().getDescription();
-            }
+        player.openMenu(
+                new MenuProvider() {
+                    @Override
+                    public Component getDisplayName() {
+                        return player.getItemInHand(hand).getItem().getDescription();
+                    }
 
-            @Override
-            public AbstractContainerMenu createMenu(final int id, final Inventory inventory, final Player player) {
-                return new NetworkTunnelContainer(id, player, hand);
-            }
-        }, b -> b.writeEnum(hand));
+                    @Override
+                    public AbstractContainerMenu createMenu(
+                            final int id, final Inventory inventory, final Player player) {
+                        return new NetworkTunnelContainer(id, player, hand);
+                    }
+                },
+                b -> b.writeEnum(hand));
     }
 
-    public static NetworkTunnelContainer createClient(final int id, final Inventory inventory, final FriendlyByteBuf data) {
+    public static NetworkTunnelContainer createClient(
+            final int id, final Inventory inventory, final FriendlyByteBuf data) {
         final InteractionHand hand = data.readEnum(InteractionHand.class);
         final Player player = inventory.player;
         return new NetworkTunnelContainer(id, player, hand);
     }
 
-
     private final Player player;
     private final InteractionHand hand;
     private final Container linkSlot = new SimpleContainer(1);
-
 
     private NetworkTunnelContainer(final int id, final Player player, final InteractionHand hand) {
         super(Containers.NETWORK_TUNNEL.get(), id);
@@ -56,7 +58,6 @@ public final class NetworkTunnelContainer extends AbstractContainer {
         addSlot(new DeviceTypeSlot(linkSlot, DeviceTypes.NETWORK_TUNNEL, 0, 80, 51));
     }
 
-
     public boolean hasLinkSlotItem() {
         return !linkSlot.getItem(0).isEmpty();
     }
@@ -65,10 +66,10 @@ public final class NetworkTunnelContainer extends AbstractContainer {
         final ItemStack tunnelA = player.getItemInHand(hand);
         final ItemStack tunnelB = linkSlot.getItem(0);
 
-        if (tunnelA.isEmpty() ||
-            tunnelB.isEmpty() ||
-            !tunnelA.is(ItemTags.DEVICES_NETWORK_TUNNEL) ||
-            !tunnelB.is(ItemTags.DEVICES_NETWORK_TUNNEL)) {
+        if (tunnelA.isEmpty()
+                || tunnelB.isEmpty()
+                || !tunnelA.is(ItemTags.DEVICES_NETWORK_TUNNEL)
+                || !tunnelB.is(ItemTags.DEVICES_NETWORK_TUNNEL)) {
             return;
         }
 
@@ -91,12 +92,10 @@ public final class NetworkTunnelContainer extends AbstractContainer {
         return player.getItemInHand(hand).is(ItemTags.DEVICES_NETWORK_TUNNEL);
     }
 
-
     @Override
     protected boolean isSlotLocked(final Inventory inventory, final int slot) {
         return inventory.getItem(slot) == player.getItemInHand(hand);
     }
-
 
     private int getHandSlot() {
         final Inventory inventory = player.getInventory();

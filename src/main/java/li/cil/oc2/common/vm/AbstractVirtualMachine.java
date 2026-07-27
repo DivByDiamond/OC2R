@@ -8,6 +8,7 @@ import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.lifecycle.VMLifecycle;
 import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -69,27 +70,41 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public BusState getBusState() { return busState; }
+    public BusState getBusState() {
+        return busState;
+    }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void setBusStateClient(final BusState value) { busState = value; }
+    public void setBusStateClient(final BusState value) {
+        busState = value;
+    }
 
     @Override
-    public VMRunState getRunState() { return runState; }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public void setRunStateClient(final VMRunState value) { runState = value; }
-
-    @Override @Nullable
-    public Component getBootError() { return bootError; }
+    public VMRunState getRunState() {
+        return runState;
+    }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void setBootErrorClient(@Nullable final Component value) { bootError = value; }
+    public void setRunStateClient(final VMRunState value) {
+        runState = value;
+    }
 
-    @Override @Nullable
+    @Override
+    @Nullable
+    public Component getBootError() {
+        return bootError;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void setBootErrorClient(@Nullable final Component value) {
+        bootError = value;
+    }
+
+    @Override
+    @Nullable
     public Component getError() {
         switch (busState) {
             case SCAN_PENDING:
@@ -120,7 +135,9 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public void stop() { lifecycle.stopRunnerAndReset(); }
+    public void stop() {
+        lifecycle.stopRunnerAndReset();
+    }
 
     public void tick() {
         busController.scan();
@@ -138,19 +155,27 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         }
     }
 
-    public CompoundTag serialize() { return lifecycle.serialize(); }
+    public CompoundTag serialize() {
+        return lifecycle.serialize();
+    }
 
-    public void deserialize(final CompoundTag tag) { lifecycle.deserialize(tag); }
+    public void deserialize(final CompoundTag tag) {
+        lifecycle.deserialize(tag);
+    }
 
     public abstract AbstractTerminalVMRunner createRunner();
 
     public abstract boolean consumeEnergy(int amount, boolean simulate);
 
     protected void handleBusStateChanged(final BusState value) {}
+
     protected void handleRunStateChanged(final VMRunState value) {}
+
     protected void handleBootErrorChanged(@Nullable final Component value) {}
 
-    public void error(@Nullable final Component message) { error(message, true); }
+    public void error(@Nullable final Component message) {
+        error(message, true);
+    }
 
     public void error(@Nullable Component message, final boolean reset) {
         if (reset) stopRunnerAndReset();
@@ -158,7 +183,9 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         setBootError(message);
     }
 
-    protected void stopRunnerAndReset() { lifecycle.stopRunnerAndReset(); }
+    protected void stopRunnerAndReset() {
+        lifecycle.stopRunnerAndReset();
+    }
 
     private void setBusState(final BusState value) {
         if (value == busState) return;

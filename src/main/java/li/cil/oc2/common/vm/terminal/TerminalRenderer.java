@@ -2,11 +2,14 @@ package li.cil.oc2.common.vm.terminal;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
+
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -26,15 +29,20 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
     @Override
-    public void render(final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
+    public void render(
+            final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
         validateLineCache();
         renderBuffer(stack, projectionMatrix, renderingToBlock);
 
-        boolean steady = switch (terminal.cursorMode) {
-            case TerminalColors.CursorMode.STEADY_BLOCK, TerminalColors.CursorMode.STEADY_UNDERLINE, TerminalColors.CursorMode.STEADY_BAR_LINE -> true;
-            default -> false;
-        };
+        boolean steady =
+                switch (terminal.cursorMode) {
+                    case TerminalColors.CursorMode.STEADY_BLOCK,
+                                    TerminalColors.CursorMode.STEADY_UNDERLINE,
+                                    TerminalColors.CursorMode.STEADY_BAR_LINE ->
+                            true;
+                    default -> false;
+                };
 
         if (steady || (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500) {
             TerminalCursorRenderer.renderCursor(terminal, stack);
@@ -68,7 +76,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
         return -1;
     }
 
-    public void renderBuffer(final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
+    public void renderBuffer(
+            final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
         final ShaderInstance shader = GameRenderer.getPositionTexColorShader();
         if (shader == null) return;
 
@@ -94,7 +103,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
                         line.drawWithShader(blockModelViewMatrix, blockProjectionMatrix, shader);
                         VertexBuffer.unbind();
                     } catch (final Exception e) {
-                        RENDERER_LOGGER.error("Failed to draw terminal line {}", findLineIndex(lines, line), e);
+                        RENDERER_LOGGER.error(
+                                "Failed to draw terminal line {}", findLineIndex(lines, line), e);
                     }
                 }
             }
@@ -111,7 +121,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
                         line.drawWithShader(modelViewMatrix, projectionMatrix, shader);
                         VertexBuffer.unbind();
                     } catch (final Exception e) {
-                        RENDERER_LOGGER.error("Failed to draw terminal line {}", findLineIndex(lines, line), e);
+                        RENDERER_LOGGER.error(
+                                "Failed to draw terminal line {}", findLineIndex(lines, line), e);
                     }
                 }
             }
@@ -129,7 +140,9 @@ public class TerminalRenderer implements RendererModel, RendererView {
         for (int row = 0; row < lines.length; row++) {
             if ((mask & (1 << row)) == 0) continue;
 
-            BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            BufferBuilder builder =
+                    Tesselator.getInstance()
+                            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             final Matrix4f matrix = new Matrix4f().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
             TerminalBackgroundRenderer.renderBackground(terminal, matrix, builder, row);

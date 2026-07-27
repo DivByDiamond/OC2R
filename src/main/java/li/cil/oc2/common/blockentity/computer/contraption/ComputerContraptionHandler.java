@@ -2,22 +2,25 @@ package li.cil.oc2.common.blockentity.computer.contraption;
 
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 public final class ComputerContraptionHandler {
-    private static final ConcurrentHashMap<UUID, ComputerBlockEntity> PRIMARY_BY_DEVICE_ID = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<UUID, ComputerBlockEntity> PRIMARY_BY_DEVICE_ID =
+            new ConcurrentHashMap<>();
     private static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 
     public static boolean isContraptionVirtualClone(final ComputerBlockEntity computer) {
         final var pos = computer.getBlockPos();
         return Math.abs(pos.getX()) > VIRTUAL_POSITION_THRESHOLD
-            || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
+                || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
     }
 
     @Nullable
-    public static ComputerBlockEntity getPrimaryForContraptionRendering(final ComputerBlockEntity computer) {
+    public static ComputerBlockEntity getPrimaryForContraptionRendering(
+            final ComputerBlockEntity computer) {
         if (!isContraptionVirtualClone(computer)) {
             return computer;
         }

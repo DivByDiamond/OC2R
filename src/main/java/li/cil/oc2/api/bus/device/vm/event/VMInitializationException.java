@@ -1,4 +1,3 @@
-
 package li.cil.oc2.api.bus.device.vm.event;
 
 import net.minecraft.network.chat.Component;
@@ -6,7 +5,8 @@ import net.minecraft.network.chat.Component;
 import java.util.Optional;
 
 /**
- * May be fired by devices while handling {@link VMInitializingEvent} to indicate that initialization failed.
+ * May be fired by devices while handling {@link VMInitializingEvent} to indicate that
+ * initialization failed.
  */
 public final class VMInitializationException extends RuntimeException {
     private final Component message;
@@ -22,9 +22,7 @@ public final class VMInitializationException extends RuntimeException {
         this.message = message;
     }
 
-    /**
-     * Creates a new initialization exception without a message.
-     */
+    /** Creates a new initialization exception without a message. */
     public VMInitializationException() {
         this.message = null;
     }
@@ -33,6 +31,7 @@ public final class VMInitializationException extends RuntimeException {
 
     /**
      * The error message indicating why initialization failed.
+     *
      * <p>This should be a human-readable message, as it may be displayed to the user.
      *
      * @return the error message.

@@ -2,9 +2,9 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import li.cil.oc2.common.util.Vec3Utils;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -16,9 +16,13 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import java.util.ArrayList;
 import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 final class CableRenderUtils {
     private static final int CABLE_VERTEX_COUNT = 9;
@@ -36,11 +40,17 @@ final class CableRenderUtils {
 
     private CableRenderUtils() {}
 
-    static void renderCables(final BlockAndTintGetter level, final PoseStack stack, final Vec3 eye, final ArrayList<NetworkCableConnection> connections, final Predicate<AABB> filter) {
+    static void renderCables(
+            final BlockAndTintGetter level,
+            final PoseStack stack,
+            final Vec3 eye,
+            final ArrayList<NetworkCableConnection> connections,
+            final Predicate<AABB> filter) {
         final Matrix4f viewMatrix = stack.last().pose();
 
         final RenderType renderType = ModRenderType.getNetworkCable();
-        final MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        final MultiBufferSource.BufferSource bufferSource =
+                Minecraft.getInstance().renderBuffers().bufferSource();
 
         final float r = CABLE_COLOR.x();
         final float g = CABLE_COLOR.y();
@@ -50,7 +60,8 @@ final class CableRenderUtils {
             final Vec3 p0 = connection.from;
             final Vec3 p1 = connection.to;
 
-            if (!p0.closerThan(eye, MAX_RENDER_DISTANCE) && !p1.closerThan(eye, MAX_RENDER_DISTANCE)) {
+            if (!p0.closerThan(eye, MAX_RENDER_DISTANCE)
+                    && !p1.closerThan(eye, MAX_RENDER_DISTANCE)) {
                 continue;
             }
 
@@ -58,11 +69,12 @@ final class CableRenderUtils {
                 continue;
             }
 
-            final Vec3 p2 = animateCableSwing(
-                lerp(p0, p1, 0.5f).subtract(0, computeCableHang(p0, p1), 0),
-                connection.right,
-                computeCableSwingAmount(p0, p1),
-                connection.hashCode());
+            final Vec3 p2 =
+                    animateCableSwing(
+                            lerp(p0, p1, 0.5f).subtract(0, computeCableHang(p0, p1), 0),
+                            connection.right,
+                            computeCableSwingAmount(p0, p1),
+                            connection.hashCode());
 
             final VertexConsumer consumer = bufferSource.getBuffer(renderType);
 
@@ -88,17 +100,17 @@ final class CableRenderUtils {
                 final NetworkCablePoint pb = cablePoints.get(i + 1);
 
                 consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
-                    .setColor(r, g, b, 1f)
-                    .setUv2(pa.packedLight(), 0);
+                        .setColor(r, g, b, 1f)
+                        .setUv2(pa.packedLight(), 0);
                 consumer.addVertex(viewMatrix, pa.v1().x(), pa.v1().y(), pa.v1().z())
-                    .setColor(r, g, b, 1f)
-                    .setUv2(pa.packedLight(), 0);
+                        .setColor(r, g, b, 1f)
+                        .setUv2(pa.packedLight(), 0);
                 consumer.addVertex(viewMatrix, pb.v1().x(), pb.v1().y(), pb.v1().z())
-                    .setColor(r, g, b, 1f)
-                    .setUv2(pa.packedLight(), 0);
+                        .setColor(r, g, b, 1f)
+                        .setUv2(pa.packedLight(), 0);
                 consumer.addVertex(viewMatrix, pb.v0().x(), pb.v0().y(), pb.v0().z())
-                    .setColor(r, g, b, 1f)
-                    .setUv2(pa.packedLight(), 0);
+                        .setColor(r, g, b, 1f)
+                        .setUv2(pa.packedLight(), 0);
             }
 
             bufferSource.endBatch(renderType);
@@ -126,21 +138,25 @@ final class CableRenderUtils {
     }
 
     private static float computeCableSwingAmount(final Vec3 p0, final Vec3 p1) {
-        return Mth.clamp((float) p0.distanceTo(p1) / CABLE_LENGTH_FOR_MAX_SWING, 0.1f, 1f) * CABLE_MAX_SWING_AMOUNT;
+        return Mth.clamp((float) p0.distanceTo(p1) / CABLE_LENGTH_FOR_MAX_SWING, 0.1f, 1f)
+                * CABLE_MAX_SWING_AMOUNT;
     }
 
-    private static Vec3 animateCableSwing(final Vec3 c, @Nullable final Vec3 right, final float swingAmount, final int seed) {
-        final float relTime = ((System.currentTimeMillis() + seed) % CABLE_SWING_INTERVAL) / (float) CABLE_SWING_INTERVAL;
+    private static Vec3 animateCableSwing(
+            final Vec3 c, @Nullable final Vec3 right, final float swingAmount, final int seed) {
+        final float relTime =
+                ((System.currentTimeMillis() + seed) % CABLE_SWING_INTERVAL)
+                        / (float) CABLE_SWING_INTERVAL;
         final float relRadialTime = relTime * 2 * (float) Math.PI;
 
         if (right == null) {
-            return c.add(swingAmount * Mth.sin(relRadialTime),
-                0,
-                swingAmount * Mth.cos(relRadialTime));
+            return c.add(
+                    swingAmount * Mth.sin(relRadialTime), 0, swingAmount * Mth.cos(relRadialTime));
         } else {
-            return c.add(swingAmount * Mth.cos(relRadialTime) * right.x,
-                0.5f * swingAmount * Mth.sin(relRadialTime * 2 - (float) Math.PI) - swingAmount,
-                swingAmount * Mth.cos(relRadialTime) * right.z);
+            return c.add(
+                    swingAmount * Mth.cos(relRadialTime) * right.x,
+                    0.5f * swingAmount * Mth.sin(relRadialTime * 2 - (float) Math.PI) - swingAmount,
+                    swingAmount * Mth.cos(relRadialTime) * right.z);
         }
     }
 }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.vm.item;
 
 import li.cil.oc2.api.bus.device.ItemDevice;
@@ -12,9 +11,11 @@ import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.sedna.api.device.PhysicalMemory;
 import li.cil.sedna.device.memory.ByteBufferMemory;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,20 +30,16 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
     private static final String ADDRESS_TAG_NAME = "address";
 
-
     private final int size;
     private PhysicalMemory device;
 
-
     private final OptionalAddress address = new OptionalAddress();
     private UUID blobHandle;
-
 
     public MemoryDevice(final ItemStack identity, final int capacity) {
         super(identity);
         size = capacity;
     }
-
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
@@ -100,7 +97,6 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
             address.set(tag.getLong(ADDRESS_TAG_NAME));
         }
     }
-
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {

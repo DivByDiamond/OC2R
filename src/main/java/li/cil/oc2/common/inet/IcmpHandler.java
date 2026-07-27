@@ -1,6 +1,7 @@
 package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.TransportMessage;
+
 import java.nio.ByteBuffer;
 
 final class IcmpHandler {
@@ -27,13 +28,13 @@ final class IcmpHandler {
 
     void reject(final ByteBuffer payload, final int srcIpAddress) {
         final byte[] data = InetUtils.quickICMPBody(payload);
-        icmpReply = new ICMPReply(
-                ICMP_TYPE_ECHO_UNREACHABLE,
-                ICMP_CODE_ECHO_UNREACHABLE_PROHIBITED,
-                0,
-                srcIpAddress,
-                data
-        );
+        icmpReply =
+                new ICMPReply(
+                        ICMP_TYPE_ECHO_UNREACHABLE,
+                        ICMP_CODE_ECHO_UNREACHABLE_PROHIBITED,
+                        0,
+                        srcIpAddress,
+                        data);
     }
 
     boolean consume(final TransportMessage message) {

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.managed;
 
 import li.cil.sedna.api.device.MemoryMappedDevice;
@@ -7,18 +6,17 @@ import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.api.memory.MemoryRange;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 final class ManagedMemoryMap implements MemoryMap {
     private final MemoryMap memoryMap;
     private boolean isValid = true;
 
-
     ManagedMemoryMap(final MemoryMap memoryMap) {
         this.memoryMap = memoryMap;
     }
-
 
     public void invalidate() {
         isValid = false;
@@ -69,7 +67,8 @@ final class ManagedMemoryMap implements MemoryMap {
     }
 
     @Override
-    public void store(final long address, final long value, final int sizeLog2) throws MemoryAccessException {
+    public void store(final long address, final long value, final int sizeLog2)
+            throws MemoryAccessException {
         if (!isValid) {
             throw new IllegalStateException();
         }

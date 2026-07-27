@@ -1,15 +1,17 @@
-
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import li.cil.oc2.api.bus.device.rpc.RPCMethod;
 import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
-import javax.annotation.Nullable;
+
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 class MessageWriter {
     private static final byte[] MESSAGE_DELIMITER = "\0".getBytes();
@@ -19,7 +21,10 @@ class MessageWriter {
     private final BooleanSupplier crmode;
     private final Consumer<ByteBuffer> receiveBufferSink;
 
-    MessageWriter(final Gson gson, final BooleanSupplier crmode, final Consumer<ByteBuffer> receiveBufferSink) {
+    MessageWriter(
+            final Gson gson,
+            final BooleanSupplier crmode,
+            final Consumer<ByteBuffer> receiveBufferSink) {
         this.gson = gson;
         this.crmode = crmode;
         this.receiveBufferSink = receiveBufferSink;
@@ -42,7 +47,7 @@ class MessageWriter {
     }
 
     void postEvent(final UUID deviceId, final JsonElement msg) {
-        writeMessage(Message.MESSAGE_TYPE_EVENT, new Object[]{deviceId, msg});
+        writeMessage(Message.MESSAGE_TYPE_EVENT, new Object[] {deviceId, msg});
     }
 
     private List<Object> flattenMethodGroups(final List<? extends RPCMethodGroup> methodGroups) {

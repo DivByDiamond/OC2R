@@ -1,11 +1,13 @@
 package li.cil.oc2.common.blockentity.misc;
 
-import li.cil.oc2.common.Constants;
+import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
+
 import li.cil.oc2.common.container.TypedItemStackHandler;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.FirmwareFlasherMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.ItemStackUtils;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -13,8 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
 import javax.annotation.Nonnull;
-
-import static li.cil.oc2.common.item.AbstractBlockDeviceItem.DATA_TAG_NAME;
 
 class FlashMemoryItemStackHandler extends TypedItemStackHandler {
     private final FlashMemoryFlasherBlockEntity owner;
@@ -70,10 +70,15 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
         if (stack.isEmpty()) {
             owner.device.removeBlockDevice();
         } else {
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-                final CompoundTag tag = ItemStackUtils.getOrCreateModDataTag(nbt).getCompound(DATA_TAG_NAME);
-                owner.device.updateBlockDevice(tag);
-            });
+            CustomData.update(
+                    DataComponents.CUSTOM_DATA,
+                    stack,
+                    (nbt) -> {
+                        final CompoundTag tag =
+                                ItemStackUtils.getOrCreateModDataTag(nbt)
+                                        .getCompound(DATA_TAG_NAME);
+                        owner.device.updateBlockDevice(tag);
+                    });
         }
 
         Network.sendToClientsTrackingBlockEntity(new FirmwareFlasherMessage(owner), owner);
@@ -93,8 +98,11 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
 
         final CompoundTag tag = new CompoundTag();
         owner.device.exportToItemStack(tag);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, (nbt) -> {
-            ItemStackUtils.getOrCreateModDataTag(nbt).put(DATA_TAG_NAME, tag);
-        });
+        CustomData.update(
+                DataComponents.CUSTOM_DATA,
+                stack,
+                (nbt) -> {
+                    ItemStackUtils.getOrCreateModDataTag(nbt).put(DATA_TAG_NAME, tag);
+                });
     }
 }

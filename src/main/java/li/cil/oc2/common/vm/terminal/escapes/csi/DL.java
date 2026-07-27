@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 
 public class DL extends CSISequenceHandler {
     public DL(final Terminal terminal) {
@@ -22,7 +21,8 @@ public class DL extends CSISequenceHandler {
         if (useAltBuffer) {
             terminal.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
         } else {
-            terminal.shiftLines(terminal.y + lines, Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 1, -lines);
+            terminal.shiftLines(
+                    terminal.y + lines, Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 1, -lines);
         }
     }
 }

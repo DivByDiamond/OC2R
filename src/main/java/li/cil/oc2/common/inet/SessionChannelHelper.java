@@ -3,6 +3,7 @@ package li.cil.oc2.common.inet;
 import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +17,8 @@ import java.util.function.Function;
 final class SessionChannelHelper {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    static boolean processQueue(final Queue<Session> queue, final Function<Session, Boolean> action) {
+    static boolean processQueue(
+            final Queue<Session> queue, final Function<Session, Boolean> action) {
         while (true) {
             final Session session = queue.poll();
             if (session == null) {

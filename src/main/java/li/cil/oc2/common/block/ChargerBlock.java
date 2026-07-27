@@ -1,9 +1,10 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -20,12 +21,11 @@ import javax.annotation.Nullable;
 
 public final class ChargerBlock extends HalfTransparentBlock implements EntityBlock {
     public ChargerBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .strength(1.5f, 6.0f));
-        registerDefaultState(getStateDefinition().any().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        registerDefaultState(
+                getStateDefinition()
+                        .any()
+                        .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
     }
 
     @Override
@@ -33,22 +33,27 @@ public final class ChargerBlock extends HalfTransparentBlock implements EntityBl
         return BlockCodecs.CHARGER.get();
     }
 
-
     @SuppressWarnings("deprecation")
     @Override
     public BlockState rotate(final BlockState state, final Rotation rot) {
-        return state.setValue(HorizontalDirectionalBlock.FACING, rot.rotate(state.getValue(HorizontalDirectionalBlock.FACING)));
+        return state.setValue(
+                HorizontalDirectionalBlock.FACING,
+                rot.rotate(state.getValue(HorizontalDirectionalBlock.FACING)));
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
-        return state.rotate(mirrorIn.getRotation(state.getValue(HorizontalDirectionalBlock.FACING)));
+        return state.rotate(
+                mirrorIn.getRotation(state.getValue(HorizontalDirectionalBlock.FACING)));
     }
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(
+                        HorizontalDirectionalBlock.FACING,
+                        context.getHorizontalDirection().getOpposite());
     }
 
     // EntityBlock
@@ -61,13 +66,14 @@ public final class ChargerBlock extends HalfTransparentBlock implements EntityBl
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
         return TickableBlockEntity.createTicker(level, type, BlockEntities.CHARGER.get());
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(HorizontalDirectionalBlock.FACING);
     }

@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.provider;
 
 import li.cil.oc2.common.vm.device.PciRootPortDevice;
@@ -20,28 +19,41 @@ public final class PciRootPortDeviceProvider implements DeviceTreeProvider {
     }
 
     @Override
-    public Optional<DeviceTree> createNode(final DeviceTree root, final MemoryMap memoryMap, final Device device, final String deviceName) {
-        final Optional<MappedMemoryRange> range = memoryMap.getMemoryRange((MemoryMappedDevice) device);
-        return range.map(r -> {
-            final DeviceTree pci = root.find("/pci");
-            return pci.getChild(deviceName, r.address());
-        });
+    public Optional<DeviceTree> createNode(
+            final DeviceTree root,
+            final MemoryMap memoryMap,
+            final Device device,
+            final String deviceName) {
+        final Optional<MappedMemoryRange> range =
+                memoryMap.getMemoryRange((MemoryMappedDevice) device);
+        return range.map(
+                r -> {
+                    final DeviceTree pci = root.find("/pci");
+                    return pci.getChild(deviceName, r.address());
+                });
     }
 
     @Override
     public void visit(final DeviceTree node, final MemoryMap memoryMap, final Device device) {
         final PciRootPortDevice pr = (PciRootPortDevice) device;
-        final Optional<MappedMemoryRange> range = memoryMap.getMemoryRange((MemoryMappedDevice) device);
-        node
-            .addProp(DevicePropertyNames.COMPATIBLE, "pci-host-cam-generic")
-            .addProp(DevicePropertyNames.DEVICE_TYPE, DeviceNames.PCI)
-            .addProp(DevicePropertyNames.NUM_ADDRESS_CELLS,3)
-            .addProp(DevicePropertyNames.NUM_SIZE_CELLS, 2)
-            .addProp("bus-range", 0, 1)
-            //.addProp("linux,pci-probe-only", 1)
-            .addProp(DevicePropertyNames.RANGES,
-                //          type       pci.hi      pci.lo      cpu.hi       cpu.lo     len.hi      len.lo
-                0x02000000, 0x00000000, 0x40000000, 0x00000000, 0x40000000, 0x00000000, 0x20000000); //
+        final Optional<MappedMemoryRange> range =
+                memoryMap.getMemoryRange((MemoryMappedDevice) device);
+        node.addProp(DevicePropertyNames.COMPATIBLE, "pci-host-cam-generic")
+                .addProp(DevicePropertyNames.DEVICE_TYPE, DeviceNames.PCI)
+                .addProp(DevicePropertyNames.NUM_ADDRESS_CELLS, 3)
+                .addProp(DevicePropertyNames.NUM_SIZE_CELLS, 2)
+                .addProp("bus-range", 0, 1)
+                // .addProp("linux,pci-probe-only", 1)
+                .addProp(
+                        DevicePropertyNames.RANGES,
+                        //          type       pci.hi      pci.lo      cpu.hi       cpu.lo
+                        // len.hi      len.lo
+                        0x02000000,
+                        0x00000000,
+                        0x40000000,
+                        0x00000000,
+                        0x40000000,
+                        0x00000000,
+                        0x20000000); //
     }
 }
-

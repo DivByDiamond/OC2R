@@ -1,15 +1,16 @@
-
 package li.cil.oc2.client.gui.screen;
 
-import li.cil.oc2.client.gui.Sprites;
+import static li.cil.oc2.common.util.TranslationUtils.key;
+import static li.cil.oc2.common.util.TranslationUtils.text;
 
-import net.minecraft.client.gui.GuiGraphics;
-import org.joml.Vector3f;
+import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.NetworkInterfaceCardConfigurationMessage;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
@@ -21,15 +22,17 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import org.joml.Vector3f;
+
 import javax.annotation.Nullable;
 
-import static li.cil.oc2.common.util.TranslationUtils.key;
-import static li.cil.oc2.common.util.TranslationUtils.text;
-
 public final class NetworkInterfaceCardScreen extends Screen {
-    private static final String SIDE_STATE_TEXT = key("gui.{mod}.network_interface_card.side_state");
-    private static final Component CONNECTIVITY_ENABLED_TEXT = text("gui.{mod}.network_interface_card.connectivity.enabled");
-    private static final Component CONNECTIVITY_DISABLED_TEXT = text("gui.{mod}.network_interface_card.connectivity.disabled");
+    private static final String SIDE_STATE_TEXT =
+            key("gui.{mod}.network_interface_card.side_state");
+    private static final Component CONNECTIVITY_ENABLED_TEXT =
+            text("gui.{mod}.network_interface_card.connectivity.enabled");
+    private static final Component CONNECTIVITY_DISABLED_TEXT =
+            text("gui.{mod}.network_interface_card.connectivity.disabled");
     private static final Component INFO_TEXT = text("gui.{mod}.network_interface_card.info");
 
     public static final int UI_WIDTH = Sprites.NETWORK_INTERFACE_CARD_SCREEN.width;
@@ -41,11 +44,11 @@ public final class NetworkInterfaceCardScreen extends Screen {
     public static final int INFO_TEXT_WIDTH = UI_WIDTH - 16;
     public static final int MAX_BLOCK_PITCH = 30;
 
-
     private final Player player;
     private final InteractionHand hand;
 
-    private final ComputerBlockItemRenderer computerBlockItemRenderer = new ComputerBlockItemRenderer();
+    private final ComputerBlockItemRenderer computerBlockItemRenderer =
+            new ComputerBlockItemRenderer();
 
     private Vector3f blockRotation = new Vector3f(0, 0, 0);
     private int left, top;
@@ -53,13 +56,11 @@ public final class NetworkInterfaceCardScreen extends Screen {
     private boolean isDraggingBlock, hasDraggedBlock;
     private double dragStartX, dragStartY;
 
-
     public NetworkInterfaceCardScreen(final Player player, final InteractionHand hand) {
         super(Items.NETWORK_INTERFACE_CARD.get().getDescription());
         this.player = player;
         this.hand = hand;
     }
-
 
     @Override
     protected void init() {
@@ -98,10 +99,13 @@ public final class NetworkInterfaceCardScreen extends Screen {
         if (isDraggingBlock && button == 0) {
             isDraggingBlock = false;
             if (!hasDraggedBlock && focusedSide != null) {
-                final NetworkInterfaceCardConfigurationMessage message = new NetworkInterfaceCardConfigurationMessage(hand, focusedSide, !getConfiguration(focusedSide));
+                final NetworkInterfaceCardConfigurationMessage message =
+                        new NetworkInterfaceCardConfigurationMessage(
+                                hand, focusedSide, !getConfiguration(focusedSide));
                 Network.sendToServer(message);
-                Minecraft.getInstance().getSoundManager()
-                    .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1));
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1));
             }
         }
 
@@ -109,7 +113,12 @@ public final class NetworkInterfaceCardScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(final double mouseX, final double mouseY, final int activeButton, final double deltaX, final double deltaY) {
+    public boolean mouseDragged(
+            final double mouseX,
+            final double mouseY,
+            final int activeButton,
+            final double deltaX,
+            final double deltaY) {
         if (isDraggingBlock && activeButton == 0) {
             if (!hasDraggedBlock) {
                 final double dx = mouseX - dragStartX;
@@ -118,11 +127,14 @@ public final class NetworkInterfaceCardScreen extends Screen {
                 hasDraggedBlock = delta > 3;
             }
             if (hasDraggedBlock) {
-                blockRotation = new Vector3f(
-                    Mth.clamp(blockRotation.x() - (float) deltaY * 0.2f, -MAX_BLOCK_PITCH, MAX_BLOCK_PITCH),
-                    Mth.wrapDegrees(blockRotation.y() + (float) deltaX * 0.2f),
-                    blockRotation.z()
-                );
+                blockRotation =
+                        new Vector3f(
+                                Mth.clamp(
+                                        blockRotation.x() - (float) deltaY * 0.2f,
+                                        -MAX_BLOCK_PITCH,
+                                        MAX_BLOCK_PITCH),
+                                Mth.wrapDegrees(blockRotation.y() + (float) deltaX * 0.2f),
+                                blockRotation.z());
             }
         }
 
@@ -130,7 +142,11 @@ public final class NetworkInterfaceCardScreen extends Screen {
     }
 
     @Override
-    public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
+    public void render(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
         renderBackground(graphics, mouseX, mouseY, partialTicks);
         Sprites.NETWORK_INTERFACE_CARD_SCREEN.draw(graphics, left, top);
 
@@ -138,16 +154,28 @@ public final class NetworkInterfaceCardScreen extends Screen {
 
         final int blockX = left + BLOCK_LEFT;
         final int blockY = top + BLOCK_TOP;
-        focusedSide = computerBlockItemRenderer.getFocusedSide(blockX - mouseX, blockY - mouseY, blockRotation);
+        focusedSide =
+                computerBlockItemRenderer.getFocusedSide(
+                        blockX - mouseX, blockY - mouseY, blockRotation);
         computerBlockItemRenderer.render(blockX, blockY, blockRotation, focusedSide, this);
 
         if (focusedSide != null) {
-            final Component enabledComponent = getConfiguration(focusedSide) ? CONNECTIVITY_ENABLED_TEXT : CONNECTIVITY_DISABLED_TEXT;
-            final MutableComponent tooltip = Component.translatable(SIDE_STATE_TEXT, enabledComponent);
-            //renderTooltip(stack, tooltip, mouseX, mouseY);
+            final Component enabledComponent =
+                    getConfiguration(focusedSide)
+                            ? CONNECTIVITY_ENABLED_TEXT
+                            : CONNECTIVITY_DISABLED_TEXT;
+            final MutableComponent tooltip =
+                    Component.translatable(SIDE_STATE_TEXT, enabledComponent);
+            // renderTooltip(stack, tooltip, mouseX, mouseY);
         }
 
-        graphics.drawWordWrap(font, INFO_TEXT, left + INFO_TEXT_LEFT, top + INFO_TEXT_TOP, INFO_TEXT_WIDTH, 0xAAAAAA);
+        graphics.drawWordWrap(
+                font,
+                INFO_TEXT,
+                left + INFO_TEXT_LEFT,
+                top + INFO_TEXT_TOP,
+                INFO_TEXT_WIDTH,
+                0xAAAAAA);
     }
 
     @Override
@@ -155,14 +183,15 @@ public final class NetworkInterfaceCardScreen extends Screen {
         return false;
     }
 
-
     private boolean isMouseInBlockArea(final double mouseX, final double mouseY) {
-        return mouseX >= left + 37 && mouseX <= left + (37 + 102) &&
-            mouseY >= top + 10 && mouseY <= top + (10 + 102);
+        return mouseX >= left + 37
+                && mouseX <= left + (37 + 102)
+                && mouseY >= top + 10
+                && mouseY <= top + (10 + 102);
     }
 
     boolean getConfiguration(@Nullable final Direction side) {
-        return side != null && NetworkInterfaceCardItem.getSideConfiguration(player.getItemInHand(hand), side);
+        return side != null
+                && NetworkInterfaceCardItem.getSideConfiguration(player.getItemInHand(hand), side);
     }
-
 }

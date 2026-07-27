@@ -1,7 +1,9 @@
 package li.cil.oc2.common.blockentity.network;
 
 import com.google.gson.internal.LinkedTreeMap;
+
 import li.cil.oc2.common.Constants;
+
 import net.minecraft.nbt.*;
 
 import java.util.List;

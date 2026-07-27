@@ -4,6 +4,7 @@ import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.KeyboardInputMessage;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
+
 import org.lwjgl.glfw.GLFW;
 
 public final class KeyboardScreen extends Screen {
@@ -20,7 +22,8 @@ public final class KeyboardScreen extends Screen {
     private static final float ARM_SWING_RATE = 0.8f;
     private static final int BORDER_COLOR = 0xFFFFFFFF;
 
-    private static final MutableComponent CLOSE_INFO = Component.translatable("gui.oc2r.keyboard.close_info");
+    private static final MutableComponent CLOSE_INFO =
+            Component.translatable("gui.oc2r.keyboard.close_info");
 
     private final KeyboardBlockEntity keyboard;
 
@@ -79,15 +82,20 @@ public final class KeyboardScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(final GuiGraphics guiGraphics,
-                                  final int mouseX,
-                                  final int mouseY,
-                                  final float partialTick) {
+    public void renderBackground(
+            final GuiGraphics guiGraphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTick) {
         // Don't
     }
 
     @Override
-    public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float partialTicks) {
+    public void render(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
         super.render(graphics, mouseX, mouseY, partialTicks);
 
         renderBorderOverlay(graphics);
@@ -98,8 +106,7 @@ public final class KeyboardScreen extends Screen {
                 BORDER_SIZE * 3,
                 height - BORDER_SIZE * 3 - font.lineHeight,
                 width - BORDER_SIZE * 6,
-                0x88FFFFFF
-        );
+                0x88FFFFFF);
     }
 
     @Override
@@ -116,9 +123,20 @@ public final class KeyboardScreen extends Screen {
 
     private void renderBorderOverlay(final GuiGraphics graphics) {
         graphics.fill(BORDER_SIZE, BORDER_SIZE, width - BORDER_SIZE, BORDER_SIZE * 2, BORDER_COLOR);
-        graphics.fill(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE * 2, height - BORDER_SIZE, BORDER_COLOR);
-        graphics.fill(BORDER_SIZE, height - BORDER_SIZE * 2, width - BORDER_SIZE, height - BORDER_SIZE, BORDER_COLOR);
-        graphics.fill(width - BORDER_SIZE * 2, BORDER_SIZE, width - BORDER_SIZE, height - BORDER_SIZE, BORDER_COLOR);
+        graphics.fill(
+                BORDER_SIZE, BORDER_SIZE, BORDER_SIZE * 2, height - BORDER_SIZE, BORDER_COLOR);
+        graphics.fill(
+                BORDER_SIZE,
+                height - BORDER_SIZE * 2,
+                width - BORDER_SIZE,
+                height - BORDER_SIZE,
+                BORDER_COLOR);
+        graphics.fill(
+                width - BORDER_SIZE * 2,
+                BORDER_SIZE,
+                width - BORDER_SIZE,
+                height - BORDER_SIZE,
+                BORDER_COLOR);
     }
 
     private void sendInputMessage(final int keycode, final boolean isDown) {
@@ -139,7 +157,10 @@ public final class KeyboardScreen extends Screen {
                 if (minecraft.options.getCameraType().isFirstPerson()) {
                     handToSwing = InteractionHand.MAIN_HAND;
                 } else {
-                    handToSwing = random.nextBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                    handToSwing =
+                            random.nextBoolean()
+                                    ? InteractionHand.MAIN_HAND
+                                    : InteractionHand.OFF_HAND;
                 }
                 player.swing(handToSwing);
             }

@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.fonts;
 
 import com.mojang.blaze3d.platform.NativeImage;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -14,18 +15,18 @@ import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class FontAtlas {
-    private final static int PADDING = 2; // Padding between glyphs
+    private static final int PADDING = 2; // Padding between glyphs
 
     private final ResourceLocation resources;
     private int atlasWidth;
     private int atlasHeight;
-    public NativeImage atlasImage;  // The current texture
+    public NativeImage atlasImage; // The current texture
     private final DynamicTexture dynamicTexture;
     private boolean textureIsDirty = true;
     private final List<Glyph> glyphs;
 
-    private int currentX = 0;  // X coordinate to place next glyph
-    private int currentY = 0;  // Y coordinate to place next glyph
+    private int currentX = 0; // X coordinate to place next glyph
+    private int currentY = 0; // Y coordinate to place next glyph
 
     public FontAtlas(int initialWidth, int initialHeight, String fontAtlasName) {
         this.atlasWidth = initialWidth;
@@ -66,7 +67,7 @@ public class FontAtlas {
 
         // Check if there's enough space in the current atlas
         if (currentY + glyph.image.getHeight() > atlasHeight) {
-            resizeAtlas();  // Resize the atlas if there isn't enough space
+            resizeAtlas(); // Resize the atlas if there isn't enough space
         }
 
         // Copy the glyph into the atlas at the correct position
@@ -106,7 +107,7 @@ public class FontAtlas {
         }
 
         for (Glyph glyph : glyphs) {
-            glyph.setUV(glyph.uStart/2f, glyph.vStart/2f, glyph.uEnd/2f, glyph.vEnd/2f);
+            glyph.setUV(glyph.uStart / 2f, glyph.vStart / 2f, glyph.uEnd / 2f, glyph.vEnd / 2f);
         }
 
         this.atlasWidth = newWidth;

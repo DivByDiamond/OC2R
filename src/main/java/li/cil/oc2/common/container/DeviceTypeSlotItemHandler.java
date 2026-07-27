@@ -1,8 +1,9 @@
-
 package li.cil.oc2.common.container;
 
 import com.mojang.datafixers.util.Pair;
+
 import li.cil.oc2.api.bus.device.DeviceType;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -13,7 +14,12 @@ import javax.annotation.Nullable;
 public final class DeviceTypeSlotItemHandler extends SlotItemHandler {
     private final DeviceType deviceType;
 
-    public DeviceTypeSlotItemHandler(final IItemHandler itemHandler, final DeviceType deviceType, final int index, final int xPosition, final int yPosition) {
+    public DeviceTypeSlotItemHandler(
+            final IItemHandler itemHandler,
+            final DeviceType deviceType,
+            final int index,
+            final int xPosition,
+            final int yPosition) {
         super(itemHandler, index, xPosition, yPosition);
         this.deviceType = deviceType;
     }

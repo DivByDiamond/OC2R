@@ -9,10 +9,15 @@ import java.util.List;
 
 class InventoryHelper {
     static List<ItemEntity> getItemsInRange(final Entity entity) {
-        return entity.level().getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(2));
+        return entity.level()
+                .getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(2));
     }
 
-    static ItemStack insertStartingAt(final IItemHandler handler, ItemStack stack, final int startSlot, final boolean simulate) {
+    static ItemStack insertStartingAt(
+            final IItemHandler handler,
+            ItemStack stack,
+            final int startSlot,
+            final boolean simulate) {
         for (int i = 0; i < handler.getSlots(); i++) {
             final int slot = (startSlot + i) % handler.getSlots();
             stack = handler.insertItem(slot, stack, simulate);

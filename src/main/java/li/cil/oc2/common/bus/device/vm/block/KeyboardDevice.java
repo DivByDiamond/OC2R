@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.vm.block;
 
 import li.cil.oc2.api.bus.device.vm.VMDevice;
@@ -11,6 +10,7 @@ import li.cil.oc2.common.bus.device.util.OptionalInterrupt;
 import li.cil.oc2.common.serialization.NBTSerialization;
 import li.cil.oc2.common.util.NBTTagIds;
 import li.cil.sedna.device.virtio.VirtIOKeyboardDevice;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
@@ -21,19 +21,15 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String INTERRUPT_TAG_NAME = "interrupt";
 
-
     @Nullable private VirtIOKeyboardDevice device;
-
 
     private final OptionalAddress address = new OptionalAddress();
     private final OptionalInterrupt interrupt = new OptionalInterrupt();
     private CompoundTag deviceTag;
 
-
     public KeyboardDevice(final T identity) {
         super(identity);
     }
-
 
     public void sendKeyEvent(final int keycode, final boolean isDown) {
         if (device != null) {
@@ -111,7 +107,6 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
             interrupt.set(tag.getInt(INTERRUPT_TAG_NAME));
         }
     }
-
 
     private boolean allocateDevice(final VMContext context) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {

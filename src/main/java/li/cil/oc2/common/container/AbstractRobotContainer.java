@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.client.ClientSetup;
@@ -11,8 +10,9 @@ import li.cil.oc2.common.network.message.OpenRobotInventoryMessage;
 import li.cil.oc2.common.network.message.OpenRobotTerminalMessage;
 import li.cil.oc2.common.network.message.RobotPowerMessage;
 import li.cil.oc2.common.network.message.RobotTerminalInputMessage;
-import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.VirtualMachine;
+import li.cil.oc2.common.vm.terminal.Terminal;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 
@@ -22,14 +22,17 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
     private final Robot robot;
     private static boolean captureInputState = Config.captureInputDefaultState;
 
-
-    public AbstractRobotContainer(final MenuType<?> type, final int id, final Player player, final Robot robot, final IntPrecisionContainerData energyInfo) {
+    public AbstractRobotContainer(
+            final MenuType<?> type,
+            final int id,
+            final Player player,
+            final Robot robot,
+            final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
         this.robot = robot;
 
         this.robot.addTerminalUser(player);
     }
-
 
     @Override
     public void switchToInventory() {
@@ -95,15 +98,17 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
         this.robot.removeTerminalUser(player);
     }
 
-
-    protected static IntPrecisionContainerData createEnergyInfo(final FixedEnergyStorage energy, final CommonDeviceBusController busController) {
+    protected static IntPrecisionContainerData createEnergyInfo(
+            final FixedEnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {
                 return switch (index) {
                     case AbstractMachineContainer.ENERGY_STORED_INDEX -> energy.getEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX -> energy.getMaxEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX -> busController.getEnergyConsumption();
+                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX ->
+                            energy.getMaxEnergyStored();
+                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX ->
+                            busController.getEnergyConsumption();
                     default -> 0;
                 };
             }

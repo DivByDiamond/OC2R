@@ -2,6 +2,7 @@ package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.session.StreamSession;
 import li.cil.oc2.common.config.Config;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,12 +32,8 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     boolean needsAcknowledgment = false;
 
-
     public StreamSessionImpl(
-        final int ipAddress,
-        final short port,
-        final StreamSessionDiscriminator discriminator
-    ) {
+            final int ipAddress, final short port, final StreamSessionDiscriminator discriminator) {
         super(ipAddress, port);
         this.discriminator = discriminator;
         sendBuffer.limit(0);

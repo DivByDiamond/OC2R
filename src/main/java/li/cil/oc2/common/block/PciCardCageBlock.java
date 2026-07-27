@@ -1,11 +1,12 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.common.config.Config;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.VoxelShapeUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -29,37 +30,43 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public final class PciCardCageBlock extends HorizontalDirectionalBlock implements EntityBlock, EnergyConsumingBlock {
+public final class PciCardCageBlock extends HorizontalDirectionalBlock
+        implements EntityBlock, EnergyConsumingBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
-    // We bake the visual indents on the front and sides into the collision shape, to prevent stuff being
+    // We bake the visual indents on the front and sides into the collision shape, to prevent stuff
+    // being
     // placeable on those sides, such as network connectors, torches, etc.
-    private static final VoxelShape NEG_Z_SHAPE = Shapes.join(Shapes.block(), Shapes.or(
-        Shapes.box(0 / 16f, 2 / 16f, 2 / 16f, 1 / 16f, 6 / 16f, 14 / 16f),
-        Shapes.box(15 / 16f, 2 / 16f, 2 / 16f, 16 / 16f, 6 / 16f, 14 / 16f),
-        Shapes.box(4 / 16f, 4 / 16f, 0 / 16f, 12 / 16f, 12 / 16f, 2 / 16f)
-    ), (a, b) -> a && !b);
-    private static final VoxelShape NEG_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
-    private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
-    private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
+    private static final VoxelShape NEG_Z_SHAPE =
+            Shapes.join(
+                    Shapes.block(),
+                    Shapes.or(
+                            Shapes.box(0 / 16f, 2 / 16f, 2 / 16f, 1 / 16f, 6 / 16f, 14 / 16f),
+                            Shapes.box(15 / 16f, 2 / 16f, 2 / 16f, 16 / 16f, 6 / 16f, 14 / 16f),
+                            Shapes.box(4 / 16f, 4 / 16f, 0 / 16f, 12 / 16f, 12 / 16f, 2 / 16f)),
+                    (a, b) -> a && !b);
+    private static final VoxelShape NEG_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
+    private static final VoxelShape POS_Z_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
+    private static final VoxelShape POS_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
     public PciCardCageBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
-            .strength(1.5f, 6.0f));
-        registerDefaultState(getStateDefinition().any()
-            .setValue(FACING, Direction.NORTH)
-            .setValue(LIT, false));
+        super(
+                Properties.of()
+                        .mapColor(MapColor.METAL)
+                        .sound(SoundType.METAL)
+                        .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
+                        .strength(1.5f, 6.0f));
+        registerDefaultState(
+                getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Override
     protected MapCodec<PciCardCageBlock> codec() {
         return BlockCodecs.PCI_CARD_CAGE.get();
     }
-
 
     @Override
     public int getEnergyConsumption() {
@@ -77,13 +84,19 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock implement
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
-        return TickableBlockEntity.createServerTicker(level, type, BlockEntities.PCI_CARD_CAGE.get());
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
+        return TickableBlockEntity.createServerTicker(
+                level, type, BlockEntities.PCI_CARD_CAGE.get());
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos blockPos, final CollisionContext context) {
+    public VoxelShape getShape(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos blockPos,
+            final CollisionContext context) {
         return switch (state.getValue(FACING)) {
             case NORTH -> NEG_Z_SHAPE;
             case SOUTH -> POS_Z_SHAPE;
@@ -94,11 +107,12 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock implement
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LIT);
     }
 }

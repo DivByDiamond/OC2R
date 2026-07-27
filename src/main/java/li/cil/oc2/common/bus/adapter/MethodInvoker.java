@@ -1,12 +1,13 @@
-
 package li.cil.oc2.common.bus.adapter;
 
 import com.google.gson.Gson;
-import li.cil.oc2.api.bus.device.rpc.RPCMethod;
-import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
+
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.api.bus.device.rpc.RPCInvocation;
+import li.cil.oc2.api.bus.device.rpc.RPCMethod;
+import li.cil.oc2.api.bus.device.rpc.RPCMethodGroup;
 import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,14 +20,19 @@ class MethodInvoker {
     private final Function<UUID, RPCDeviceList> deviceLookup;
     private final Consumer<MethodInvocation> syncSetter;
 
-    MethodInvoker(final Gson gson, final MessageWriter messageWriter, final Function<UUID, RPCDeviceList> deviceLookup, final Consumer<MethodInvocation> syncSetter) {
+    MethodInvoker(
+            final Gson gson,
+            final MessageWriter messageWriter,
+            final Function<UUID, RPCDeviceList> deviceLookup,
+            final Consumer<MethodInvocation> syncSetter) {
         this.gson = gson;
         this.messageWriter = messageWriter;
         this.deviceLookup = deviceLookup;
         this.syncSetter = syncSetter;
     }
 
-    void processMethodInvocation(final MethodInvocation methodInvocation, final boolean isMainThread) {
+    void processMethodInvocation(
+            final MethodInvocation methodInvocation, final boolean isMainThread) {
         final RPCDevice device = deviceLookup.apply(methodInvocation.deviceId);
         if (device == null) {
             messageWriter.writeError(RPCDeviceBusAdapter.ERROR_UNKNOWN_DEVICE);
@@ -48,7 +54,11 @@ class MethodInvoker {
         messageWriter.writeError(error);
     }
 
-    private void invokeMethod(final MethodInvocation methodInvocation, final boolean isMainThread, final RPCMethod method, final RPCInvocation invocation) {
+    private void invokeMethod(
+            final MethodInvocation methodInvocation,
+            final boolean isMainThread,
+            final RPCMethod method,
+            final RPCInvocation invocation) {
         if (method.isSynchronized() && !isMainThread) {
             syncSetter.accept(methodInvocation);
             return;
@@ -57,7 +67,8 @@ class MethodInvoker {
             final Object result = method.invoke(invocation);
             messageWriter.writeResult(result);
         } catch (final Throwable e) {
-            messageWriter.writeError(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            messageWriter.writeError(
+                    e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         }
     }
 }

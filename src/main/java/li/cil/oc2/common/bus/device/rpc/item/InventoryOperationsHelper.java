@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.common.capabilities.Capabilities;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -26,7 +27,8 @@ final class InventoryOperationsHelper {
     }
 
     Stream<IItemHandler> getItemStackHandlersInDirection(final Direction direction) {
-        return getItemStackHandlersAt(entity.blockPosition().relative(direction), direction.getOpposite());
+        return getItemStackHandlersAt(
+                entity.blockPosition().relative(direction), direction.getOpposite());
     }
 
     int takeFromWorld(final int count) {
@@ -42,7 +44,8 @@ final class InventoryOperationsHelper {
                 stackToInsert.setCount(remaining);
             }
 
-            final ItemStack overflow = insertStartingAt(inventory, stackToInsert, selectedSlot, false);
+            final ItemStack overflow =
+                    insertStartingAt(inventory, stackToInsert, selectedSlot, false);
             final int taken = stackToInsert.getCount() - overflow.getCount();
 
             remaining -= taken;
@@ -112,8 +115,11 @@ final class InventoryOperationsHelper {
         return taken;
     }
 
-
-    private ItemStack insertStartingAt(final IItemHandler handler, ItemStack stack, final int startSlot, final boolean simulate) {
+    private ItemStack insertStartingAt(
+            final IItemHandler handler,
+            ItemStack stack,
+            final int startSlot,
+            final boolean simulate) {
         for (int i = 0; i < handler.getSlots(); i++) {
             final int slot = (startSlot + i) % handler.getSlots();
             stack = handler.insertItem(slot, stack, simulate);
@@ -125,26 +131,32 @@ final class InventoryOperationsHelper {
         return stack;
     }
 
-    private Stream<IItemHandler> getItemStackHandlersAt(final BlockPos blockPos, final Direction side) {
-        return Stream.concat(getEntityItemHandlersAt(blockPos, side), getBlockItemHandlersAt(blockPos, side));
+    private Stream<IItemHandler> getItemStackHandlersAt(
+            final BlockPos blockPos, final Direction side) {
+        return Stream.concat(
+                getEntityItemHandlersAt(blockPos, side), getBlockItemHandlersAt(blockPos, side));
     }
 
-    private Stream<IItemHandler> getEntityItemHandlersAt(final BlockPos blockPos, final Direction side) {
+    private Stream<IItemHandler> getEntityItemHandlersAt(
+            final BlockPos blockPos, final Direction side) {
         var position = Vec3.atCenterOf(blockPos);
         final AABB bounds = AABB.unitCubeFromLowerCorner(position.subtract(0.5, 0.5, 0.5));
         return entity.level().getEntities(entity, bounds).stream()
-            .map(e -> e.getCapability(Capabilities.ItemHandler.ENTITY))
-            .filter(Objects::nonNull);
+                .map(e -> e.getCapability(Capabilities.ItemHandler.ENTITY))
+                .filter(Objects::nonNull);
     }
 
-    private Stream<IItemHandler> getBlockItemHandlersAt(final BlockPos blockPos, final Direction side) {
+    private Stream<IItemHandler> getBlockItemHandlersAt(
+            final BlockPos blockPos, final Direction side) {
         var level = entity.level();
 
-        final IItemHandler capability = level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, side);
+        final IItemHandler capability =
+                level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, side);
         return Stream.ofNullable(capability);
     }
 
     private List<ItemEntity> getItemsInRange() {
-        return entity.level().getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(1));
+        return entity.level()
+                .getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(1));
     }
 }

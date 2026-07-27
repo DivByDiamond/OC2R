@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.oc2.common.vm.terminal.modes.ImplementedPrivateModes;
 
 public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST)
@@ -12,8 +11,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) {
             handleDECRST(args, argCount);
-        }
-        else if (argCount == 2) {
+        } else if (argCount == 2) {
             handleRM(args, argCount);
         }
     }
@@ -58,7 +56,12 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                         dirtyLinesMask |= 1 << j;
                     }
                     final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    terminal.renderers.forEach(
+                            model ->
+                                    model.getDirtyMask()
+                                            .accumulateAndGet(
+                                                    finalDirtyLinesMask,
+                                                    (left, right) -> left | right));
                 }
                 case 66 -> terminal.currentPrivateModeState.DECNKM = false;
                 case 67 -> terminal.currentPrivateModeState.DECBKM = false;
@@ -97,7 +100,12 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                         dirtyLinesMask |= 1 << j;
                     }
                     final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    terminal.renderers.forEach(
+                            model ->
+                                    model.getDirtyMask()
+                                            .accumulateAndGet(
+                                                    finalDirtyLinesMask,
+                                                    (left, right) -> left | right));
                 }
                 case 1048 -> {
                     terminal.currentPrivateModeState.SAVE_CURSOR = false;
@@ -123,7 +131,12 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                         dirtyLinesMask |= 1 << j;
                     }
                     final int finalDirtyLinesMask = dirtyLinesMask;
-                    terminal.renderers.forEach(model -> model.getDirtyMask().accumulateAndGet(finalDirtyLinesMask, (left, right) -> left | right));
+                    terminal.renderers.forEach(
+                            model ->
+                                    model.getDirtyMask()
+                                            .accumulateAndGet(
+                                                    finalDirtyLinesMask,
+                                                    (left, right) -> left | right));
                 }
                 case 1050 -> terminal.currentPrivateModeState.SET_TERMINFO_FUNC_KEY_MODE = false;
                 case 1051 -> terminal.currentPrivateModeState.SET_SUN_KEY_MODE = false;

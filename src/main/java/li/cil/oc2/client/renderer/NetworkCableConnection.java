@@ -25,8 +25,10 @@ final class NetworkCableConnection {
         from = Vec3.atCenterOf(this.fromPos);
         to = Vec3.atCenterOf(this.toPos);
         forward = to.subtract(from).normalize();
-        right = this.fromPos.getX() == this.toPos.getX() && this.fromPos.getZ() == this.toPos.getZ()
-            ? null : forward.cross(POS_Y);
+        right =
+                this.fromPos.getX() == this.toPos.getX() && this.fromPos.getZ() == this.toPos.getZ()
+                        ? null
+                        : forward.cross(POS_Y);
         bounds = new AABB(from, to).inflate(0, 0.5f, 0);
     }
 

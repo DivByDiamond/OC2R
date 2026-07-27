@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.blockentity;
 
 import li.cil.oc2.common.util.ServerScheduler;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -12,11 +12,10 @@ public abstract class ModBlockEntity extends BlockEntity {
     private boolean needsWorldUnloadEvent;
     private boolean isUnloaded;
 
-
-    protected ModBlockEntity(final BlockEntityType<?> blockEntityType, final BlockPos pos, final BlockState state) {
+    protected ModBlockEntity(
+            final BlockEntityType<?> blockEntityType, final BlockPos pos, final BlockState state) {
         super(blockEntityType, pos, state);
     }
-
 
     @Override
     public void onLoad() {
@@ -60,7 +59,6 @@ public abstract class ModBlockEntity extends BlockEntity {
         return !isRemoved() && !isUnloaded;
     }
 
-
     protected void onUnload(final boolean isRemove) {
         if (level != null && !level.isClientSide()) {
             unloadServer(isRemove);
@@ -72,13 +70,9 @@ public abstract class ModBlockEntity extends BlockEntity {
         needsWorldUnloadEvent = true;
     }
 
-    protected void loadClient() {
-    }
+    protected void loadClient() {}
 
-    protected void loadServer() {
-    }
+    protected void loadServer() {}
 
-    protected void unloadServer(final boolean isRemove) {
-    }
-
+    protected void unloadServer(final boolean isRemove) {}
 }

@@ -2,6 +2,7 @@ package li.cil.oc2.common.blockentity.misc;
 
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
+
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,13 +27,15 @@ public final class RedstoneInterfaceState {
 
     public void loadAdditional(final CompoundTag tag) {
         final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME);
-        System.arraycopy(serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
+        System.arraycopy(
+                serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
 
         final CompoundTag bundledTag = tag.getCompound(BUNDLED_TAG_NAME);
         for (final Direction dir : Direction.values()) {
             final byte[] serializedBundled = bundledTag.getByteArray(dir.getName());
             final byte[] dest = bundledOutput[dir.get3DDataValue()];
-            System.arraycopy(serializedBundled, 0, dest, 0, Math.min(serializedBundled.length, dest.length));
+            System.arraycopy(
+                    serializedBundled, 0, dest, 0, Math.min(serializedBundled.length, dest.length));
         }
     }
 

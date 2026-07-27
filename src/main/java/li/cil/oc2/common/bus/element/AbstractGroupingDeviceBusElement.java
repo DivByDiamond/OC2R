@@ -1,14 +1,16 @@
-
 package li.cil.oc2.common.bus.element;
 
 import li.cil.oc2.api.bus.device.Device;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry, TQuery> extends AbstractDeviceBusElement {
+import javax.annotation.Nullable;
+
+public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry, TQuery>
+        extends AbstractDeviceBusElement {
     protected final GroupManager<TEntry, TQuery> groupManager;
 
     protected final int groupCount;
@@ -44,20 +46,22 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry
         return groupManager.getDeviceIdentifier(device);
     }
 
-    protected final void setEntriesForGroupUnloaded(final HolderLookup.Provider registries, final int index) {
+    protected final void setEntriesForGroupUnloaded(
+            final HolderLookup.Provider registries, final int index) {
         groupManager.setEntriesForGroupUnloaded(registries, index);
     }
 
-    protected final void setEntriesForGroup(final HolderLookup.Provider registries, final int index, final GroupQueryResult<TEntry, TQuery> queryResult) {
+    protected final void setEntriesForGroup(
+            final HolderLookup.Provider registries,
+            final int index,
+            final GroupQueryResult<TEntry, TQuery> queryResult) {
         groupManager.setEntriesForGroup(registries, index, queryResult);
     }
 
-    protected void onEntryAdded(final TEntry entry) {
-    }
+    protected void onEntryAdded(final TEntry entry) {}
 
-    protected void onEntryRemoved(final TEntry entry) {
-    }
+    protected void onEntryRemoved(final TEntry entry) {}
 
-    protected void onEntryRemoved(final String dataKey, final CompoundTag data, @Nullable final TQuery query) {
-    }
+    protected void onEntryRemoved(
+            final String dataKey, final CompoundTag data, @Nullable final TQuery query) {}
 }

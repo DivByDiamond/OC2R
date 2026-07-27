@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.api.bus.DeviceBusElement;
@@ -6,14 +5,14 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-import li.cil.oc2.common.bus.element.AbstractDeviceBusElement;
 import li.cil.oc2.common.bus.device.util.Devices;
+import li.cil.oc2.common.bus.element.AbstractDeviceBusElement;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.container.FixedSizeItemStackHandler;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.vm.AbstractVMItemStackHandlers;
-import li.cil.oc2.common.vm.BaseAddressProvider;
 import li.cil.oc2.common.vm.VMItemStackHandlers;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -46,11 +45,25 @@ public class RobotInventory {
         this.onDeviceChanged = onDeviceChanged;
     }
 
-    public AbstractVMItemStackHandlers getDeviceItems() { return deviceItems; }
-    public VMItemStackHandlers getItemStackHandlers() { return deviceItems; }
-    public DeviceBusElement getBusElement() { return busElement; }
-    public ItemStackHandler getInventory() { return inventory; }
-    public Object getCombinedItemHandlers() { return deviceItems.combinedItemHandlers; }
+    public AbstractVMItemStackHandlers getDeviceItems() {
+        return deviceItems;
+    }
+
+    public VMItemStackHandlers getItemStackHandlers() {
+        return deviceItems;
+    }
+
+    public DeviceBusElement getBusElement() {
+        return busElement;
+    }
+
+    public ItemStackHandler getInventory() {
+        return inventory;
+    }
+
+    public Object getCombinedItemHandlers() {
+        return deviceItems.combinedItemHandlers;
+    }
 
     public void saveItems(final HolderLookup.Provider provider, final CompoundTag tag) {
         deviceItems.saveItems(provider, tag);
@@ -80,19 +93,21 @@ public class RobotInventory {
         deviceItems.saveItems(container);
     }
 
-    public void loadItems(final HolderLookup.Provider provider, final RestrictedContainer container) {
+    public void loadItems(
+            final HolderLookup.Provider provider, final RestrictedContainer container) {
         deviceItems.loadItems(provider, container);
     }
 
-
     private final class RobotItemStackHandlers extends AbstractVMItemStackHandlers {
-        public RobotItemStackHandlers(final java.util.function.Supplier<HolderLookup.Provider> providerSupplier) {
-            super(providerSupplier,
-                new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS),
-                new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS),
-                new GroupDefinition(DeviceTypes.ROBOT_MODULE, MODULE_SLOTS),
-                new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS));
+        public RobotItemStackHandlers(
+                final java.util.function.Supplier<HolderLookup.Provider> providerSupplier) {
+            super(
+                    providerSupplier,
+                    new GroupDefinition(DeviceTypes.MEMORY, MEMORY_SLOTS),
+                    new GroupDefinition(DeviceTypes.HARD_DRIVE, HARD_DRIVE_SLOTS),
+                    new GroupDefinition(DeviceTypes.FLASH_MEMORY, FLASH_MEMORY_SLOTS),
+                    new GroupDefinition(DeviceTypes.ROBOT_MODULE, MODULE_SLOTS),
+                    new GroupDefinition(DeviceTypes.CPU, CPU_SLOTS));
         }
 
         @Override

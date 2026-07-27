@@ -1,10 +1,8 @@
-
 package li.cil.oc2.client.gui.screen;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -20,8 +18,13 @@ class FileChooserController {
     private final boolean isLoad;
     private boolean isComplete;
 
-    FileChooserController(final FileChooserScreen screen, final FileList fileList, final EditBox fileNameTextField,
-                          final Button okButton, final FileChooserCallback callback, final boolean isLoad) {
+    FileChooserController(
+            final FileChooserScreen screen,
+            final FileList fileList,
+            final EditBox fileNameTextField,
+            final Button okButton,
+            final FileChooserCallback callback,
+            final boolean isLoad) {
         this.screen = screen;
         this.fileList = fileList;
         this.fileNameTextField = fileNameTextField;
@@ -40,21 +43,23 @@ class FileChooserController {
             return;
         }
 
-        getPath().ifPresent(path -> {
-            if (Files.isDirectory(path)) {
-                fileList.refreshFiles(path);
-                return;
-            }
-            if (Files.isRegularFile(path)) {
-                isComplete = true;
-                callback.onFileSelected(path);
-                screen.onClose();
-            } else if (!isLoad) {
-                isComplete = true;
-                callback.onFileSelected(path);
-                screen.onClose();
-            }
-        });
+        getPath()
+                .ifPresent(
+                        path -> {
+                            if (Files.isDirectory(path)) {
+                                fileList.refreshFiles(path);
+                                return;
+                            }
+                            if (Files.isRegularFile(path)) {
+                                isComplete = true;
+                                callback.onFileSelected(path);
+                                screen.onClose();
+                            } else if (!isLoad) {
+                                isComplete = true;
+                                callback.onFileSelected(path);
+                                screen.onClose();
+                            }
+                        });
     }
 
     void cancel() {
@@ -73,17 +78,19 @@ class FileChooserController {
             return;
         }
 
-        getPath().ifPresent(path -> {
-            if (isLoad) {
-                okButton.active = Files.exists(path);
-            } else {
-                okButton.active = true;
-                if (Files.isRegularFile(path)) {
-                    okButton.setMessage(FileChooserScreen.OVERWRITE_TEXT);
-                    okButton.setFGColor(0xFF0000);
-                }
-            }
-        });
+        getPath()
+                .ifPresent(
+                        path -> {
+                            if (isLoad) {
+                                okButton.active = Files.exists(path);
+                            } else {
+                                okButton.active = true;
+                                if (Files.isRegularFile(path)) {
+                                    okButton.setMessage(FileChooserScreen.OVERWRITE_TEXT);
+                                    okButton.setFGColor(0xFF0000);
+                                }
+                            }
+                        });
     }
 
     private boolean isParentPath() {

@@ -42,7 +42,11 @@ public class ImplementedPrivateModes {
         modeStatus.put(96, false); // DECNCSM;
         modeStatus.put(1000, true); // X11MM;
         modeStatus.put(1001, false); // HILITE_MOUSE;
-        modeStatus.put(1002, true); // CELL_MOTION_MOUSE; -- PARTIAL SUPPORT: Treated as X11MM currently, no motion events are sent. This actually seems to match Window Terminal's level of implementation.
+        modeStatus.put(
+                1002,
+                true); // CELL_MOTION_MOUSE; -- PARTIAL SUPPORT: Treated as X11MM currently, no
+                       // motion events are sent. This actually seems to match Window Terminal's
+                       // level of implementation.
         modeStatus.put(1003, false); // ALL_MOTION_MOUSE_TRACKING;
         modeStatus.put(1004, true); // FOCUS_IN_FOCUS_OUT;
         modeStatus.put(1005, true); // UTF8_MOUSE;
@@ -86,7 +90,8 @@ public class ImplementedPrivateModes {
 
     public void modeUsed(int mode, boolean state) {
         if (!modeStatus.get(mode)) {
-            System.out.println("Unimplemented Mode: " + mode + " was " + (state ? "set." : "reset."));
+            System.out.println(
+                    "Unimplemented Mode: " + mode + " was " + (state ? "set." : "reset."));
         }
     }
 }

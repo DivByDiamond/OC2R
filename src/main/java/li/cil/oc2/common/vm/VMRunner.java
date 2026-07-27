@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm;
 
 import li.cil.ceres.api.Serialized;
@@ -10,16 +9,19 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.sedna.riscv.R5Board;
+
 import net.minecraft.network.chat.Component;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
 
 public class VMRunner implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -27,20 +29,20 @@ public class VMRunner implements Runnable {
     private static final int TICKS_PER_SECOND = 20;
     private static final int TIMESLICE_IN_MS = 500 / TICKS_PER_SECOND;
 
-    private static final ExecutorService VM_RUNNERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        thread.setName("VirtualMachine Runner");
-        return thread;
-    });
-
+    private static final ExecutorService VM_RUNNERS =
+            Executors.newCachedThreadPool(
+                    r -> {
+                        final Thread thread = new Thread(r);
+                        thread.setDaemon(true);
+                        thread.setName("VirtualMachine Runner");
+                        return thread;
+                    });
 
     private final R5Board board;
     private final GlobalVMContext context;
     private final RPCDeviceBusAdapter rpcAdapter;
     private final AtomicInteger timeQuotaInMillis = new AtomicInteger();
     private Future<?> lastSchedule;
-
 
     private boolean firedResumedRunningEvent;
     @Serialized private boolean firedInitializationEvent;
@@ -49,13 +51,11 @@ public class VMRunner implements Runnable {
     @Serialized private long cycleLimit;
     @Serialized private long cycles;
 
-
     public VMRunner(final AbstractVirtualMachine virtualMachine) {
         this.board = virtualMachine.state.board;
         context = virtualMachine.state.context;
         rpcAdapter = virtualMachine.state.rpcAdapter;
     }
-
 
     @Nullable
     public Component getRuntimeError() {
@@ -67,8 +67,10 @@ public class VMRunner implements Runnable {
 
         cycleLimit += getCyclesPerTick();
 
-        final int timeQuota = timeQuotaInMillis.updateAndGet(x -> Math.min(x + TIMESLICE_IN_MS, TIMESLICE_IN_MS));
-        final boolean needsScheduling = lastSchedule == null || lastSchedule.isDone() || lastSchedule.isCancelled();
+        final int timeQuota =
+                timeQuotaInMillis.updateAndGet(x -> Math.min(x + TIMESLICE_IN_MS, TIMESLICE_IN_MS));
+        final boolean needsScheduling =
+                lastSchedule == null || lastSchedule.isDone() || lastSchedule.isCancelled();
         if (cycleLimit > 0 && timeQuota > 0 && needsScheduling) {
             lastSchedule = VM_RUNNERS.submit(this);
         }
@@ -134,7 +136,6 @@ public class VMRunner implements Runnable {
         }
     }
 
-
     protected void handleBeforeRun() {
         if (!firedInitializationEvent) {
             firedInitializationEvent = true;
@@ -142,7 +143,9 @@ public class VMRunner implements Runnable {
                 context.postEvent(new VMInitializingEvent(board.getDefaultProgramStart()));
             } catch (final VMInitializationException e) {
                 board.setRunning(false);
-                runtimeError = e.getErrorMessage().orElse(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN));
+                runtimeError =
+                        e.getErrorMessage()
+                                .orElse(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN));
                 return;
             } catch (final Throwable t) {
                 // Firmware loaders that fail with something other than
@@ -153,7 +156,8 @@ public class VMRunner implements Runnable {
                 // in the GUI instead of a frozen "running" state.
                 LOGGER.error("Failed to initialize VM", t);
                 board.setRunning(false);
-                runtimeError = Component.literal(t.getClass().getSimpleName() + ": " + t.getMessage());
+                runtimeError =
+                        Component.literal(t.getClass().getSimpleName() + ": " + t.getMessage());
                 return;
             }
         }
@@ -172,9 +176,7 @@ public class VMRunner implements Runnable {
         rpcAdapter.step(cyclesPerStep);
     }
 
-    protected void handleAfterRun() {
-    }
-
+    protected void handleAfterRun() {}
 
     private int getCyclesPerTick() {
         return board.getCpu().getFrequency() / TICKS_PER_SECOND;

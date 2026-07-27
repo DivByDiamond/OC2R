@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.vm.VirtualMachine;
+
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
@@ -28,7 +28,8 @@ public final class RobotAnimationState {
     private final VirtualMachine virtualMachine;
     private final Supplier<Boolean> hasQueuedActions;
 
-    public RobotAnimationState(final VirtualMachine virtualMachine, final Supplier<Boolean> hasQueuedActions) {
+    public RobotAnimationState(
+            final VirtualMachine virtualMachine, final Supplier<Boolean> hasQueuedActions) {
         this.virtualMachine = virtualMachine;
         this.hasQueuedActions = hasQueuedActions;
         topRenderHover = -(hashCode() & 0xFFFF);
@@ -39,17 +40,27 @@ public final class RobotAnimationState {
             topRenderHover = topRenderHover + deltaTime * HOVER_ANIMATION_SPEED;
             final float topOffsetY = Mth.sin(topRenderHover) / 32f;
 
-            topRenderOffsetY = lerpClamped(topRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
-            baseRenderOffsetY = lerpClamped(baseRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
+            topRenderOffsetY =
+                    lerpClamped(topRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
+            baseRenderOffsetY =
+                    lerpClamped(baseRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
 
-            topRenderRotationY = lerpClamped(topRenderRotationY, topRenderTargetRotationY, deltaTime * topRenderRotationSpeed);
+            topRenderRotationY =
+                    lerpClamped(
+                            topRenderRotationY,
+                            topRenderTargetRotationY,
+                            deltaTime * topRenderRotationSpeed);
             if (topRenderRotationY == topRenderTargetRotationY) {
-                topRenderTargetRotationY = remapFrom01To(random.nextFloat(), -MAX_ROTATION, MAX_ROTATION);
-                topRenderRotationSpeed = remapFrom01To(random.nextFloat(), MIN_ROTATION_SPEED, MAX_ROTATION_SPEED);
+                topRenderTargetRotationY =
+                        remapFrom01To(random.nextFloat(), -MAX_ROTATION, MAX_ROTATION);
+                topRenderRotationSpeed =
+                        remapFrom01To(random.nextFloat(), MIN_ROTATION_SPEED, MAX_ROTATION_SPEED);
             }
         } else {
-            topRenderOffsetY = lerpClamped(topRenderOffsetY, TOP_IDLE_Y, deltaTime * TRANSLATION_SPEED * 2);
-            baseRenderOffsetY = lerpClamped(baseRenderOffsetY, BASE_IDLE_Y, deltaTime * TRANSLATION_SPEED);
+            topRenderOffsetY =
+                    lerpClamped(topRenderOffsetY, TOP_IDLE_Y, deltaTime * TRANSLATION_SPEED * 2);
+            baseRenderOffsetY =
+                    lerpClamped(baseRenderOffsetY, BASE_IDLE_Y, deltaTime * TRANSLATION_SPEED);
 
             topRenderRotationY = lerpClamped(topRenderRotationY, 0, deltaTime * ROTATION_SPEED);
         }

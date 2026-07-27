@@ -1,5 +1,7 @@
-
 package li.cil.oc2.common.bus.element;
+
+import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
+import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.ItemDevice;
@@ -10,24 +12,23 @@ import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.Devices;
 import li.cil.oc2.common.bus.device.util.ItemDeviceInfo;
 import li.cil.oc2.common.util.ItemDeviceUtils;
-import li.cil.oc2.common.util.NBTTagIds;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
-import static li.cil.oc2.common.util.OptionalUtils.instanceOf;
-import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
+import javax.annotation.Nullable;
 
-public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDeviceBusElement<AbstractItemDeviceBusElement.ItemEntry, ItemDeviceQuery> {
+public abstract class AbstractItemDeviceBusElement
+        extends AbstractGroupingDeviceBusElement<
+                AbstractItemDeviceBusElement.ItemEntry, ItemDeviceQuery> {
     public AbstractItemDeviceBusElement(final int groupCount) {
         super(groupCount);
     }
-
 
     public boolean groupContains(final int groupIndex, final Device device) {
         for (final ItemEntry entry : groups.get(groupIndex)) {
@@ -39,7 +40,8 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         return false;
     }
 
-    public void handleSlotContentsChanged(final HolderLookup.Provider registries, final int slot, final ItemStack stack) {
+    public void handleSlotContentsChanged(
+            final HolderLookup.Provider registries, final int slot, final ItemStack stack) {
         final ItemQueryResult queryResult = collectDevices(stack);
 
         setEntriesForGroup(registries, slot, queryResult);
@@ -52,20 +54,21 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
 
         final CompoundTag exportedTag = new CompoundTag();
         for (final ItemEntry entry : groups.get(slot)) {
-            entry.getDeviceDataKey().ifPresent(key -> {
-                final CompoundTag deviceTag = new CompoundTag();
-                entry.getDevice().exportToItemStack(deviceTag);
-                if (!deviceTag.isEmpty()) {
-                    exportedTag.put(key, deviceTag);
-                }
-            });
+            entry.getDeviceDataKey()
+                    .ifPresent(
+                            key -> {
+                                final CompoundTag deviceTag = new CompoundTag();
+                                entry.getDevice().exportToItemStack(deviceTag);
+                                if (!deviceTag.isEmpty()) {
+                                    exportedTag.put(key, deviceTag);
+                                }
+                            });
         }
 
         if (!exportedTag.isEmpty()) {
             ItemDeviceUtils.setItemDeviceData(stack, exportedTag);
         }
     }
-
 
     protected abstract ItemDeviceQuery makeQuery(final ItemStack stack);
 
@@ -85,18 +88,26 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
     }
 
     @SuppressWarnings("ConstantValue")
-    protected void collectSyntheticDevices(final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
+    protected void collectSyntheticDevices(
+            final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
         if (entries.isEmpty()) {
             return;
         }
 
         if (query.getItemStack().getDisplayName() != null) {
-            entries.add(new ItemEntry(new ItemDeviceInfo(null, new TypeNameRPCDevice(query.getItemStack().getDisplayName().toString()), 0)));
+            entries.add(
+                    new ItemEntry(
+                            new ItemDeviceInfo(
+                                    null,
+                                    new TypeNameRPCDevice(
+                                            query.getItemStack().getDisplayName().toString()),
+                                    0)));
         }
     }
 
     @Override
-    protected void onEntryRemoved(final String dataKey, final CompoundTag tag, @Nullable final ItemDeviceQuery query) {
+    protected void onEntryRemoved(
+            final String dataKey, final CompoundTag tag, @Nullable final ItemDeviceQuery query) {
         super.onEntryRemoved(dataKey, tag, query);
         final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
         final ItemDeviceProvider provider = registry.get(ResourceLocation.parse(dataKey));
@@ -105,29 +116,33 @@ public abstract class AbstractItemDeviceBusElement extends AbstractGroupingDevic
         }
     }
 
-
-    private void importDeviceDataFromItemStack(final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
+    private void importDeviceDataFromItemStack(
+            final ItemDeviceQuery query, final HashSet<ItemEntry> entries) {
         final CompoundTag exportedTag = ItemDeviceUtils.getItemDeviceData(query.getItemStack());
         if (!exportedTag.isEmpty()) {
             for (final ItemEntry entry : entries) {
-                entry.getDeviceDataKey().map(exportedTag::get)
-                    .or(() ->
-                        // Older versions of the mod used a different id that often collided between devices during save
-                        // Try loading from that if we can't load normally
-                        entry.getLegacyDeviceDataKey().map(exportedTag::get)
-                    )
-                    .flatMap(instanceOf(CompoundTag.class))
-                    .ifPresent(deviceTag -> entry.deviceInfo.device.importFromItemStack(deviceTag));
+                entry.getDeviceDataKey()
+                        .map(exportedTag::get)
+                        .or(
+                                () ->
+                                        // Older versions of the mod used a different id that often
+                                        // collided between devices during save
+                                        // Try loading from that if we can't load normally
+                                        entry.getLegacyDeviceDataKey().map(exportedTag::get))
+                        .flatMap(instanceOf(CompoundTag.class))
+                        .ifPresent(
+                                deviceTag ->
+                                        entry.deviceInfo.device.importFromItemStack(deviceTag));
             }
         }
     }
-
 
     protected final class ItemQueryResult extends GroupQueryResult<ItemEntry, ItemDeviceQuery> {
         @Nullable private final ItemDeviceQuery query;
         private final Set<ItemEntry> entries;
 
-        public ItemQueryResult(@Nullable final ItemDeviceQuery query, final Set<ItemEntry> entries) {
+        public ItemQueryResult(
+                @Nullable final ItemDeviceQuery query, final Set<ItemEntry> entries) {
             this.query = query;
             this.entries = entries;
         }

@@ -1,8 +1,8 @@
-
 package li.cil.oc2.client.manual;
 
 import li.cil.manual.api.ManualScreenStyle;
 import li.cil.oc2.api.API;
+
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -19,12 +19,14 @@ public final class ModManualScreenStyle implements ManualScreenStyle {
 
     @Override
     public ResourceLocation getScrollButtonTexture() {
-        return ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "textures/gui/manual/scroll_button.png");
+        return ResourceLocation.fromNamespaceAndPath(
+                API.MOD_ID, "textures/gui/manual/scroll_button.png");
     }
 
     @Override
     public ResourceLocation getTabButtonTexture() {
-        return ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "textures/gui/manual/tab_button.png");
+        return ResourceLocation.fromNamespaceAndPath(
+                API.MOD_ID, "textures/gui/manual/tab_button.png");
     }
 
     @Override

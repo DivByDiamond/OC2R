@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.api.API;
@@ -6,17 +5,19 @@ import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public abstract class RegistryUtils {
@@ -29,7 +30,8 @@ public abstract class RegistryUtils {
     private static final List<DeferredRegister<?>> ENTRIES = new ArrayList<>();
     private static Phase phase = Phase.PRE_INIT;
 
-    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(final ResourceKey<Registry<T>> key) {
+    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(
+            final ResourceKey<Registry<T>> key) {
         if (phase != Phase.INIT) throw new IllegalStateException();
 
         final DeferredRegister<T> entry = DeferredRegister.create(key, API.MOD_ID);
@@ -37,7 +39,8 @@ public abstract class RegistryUtils {
         return entry;
     }
 
-    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(final Registry<T> registry) {
+    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(
+            final Registry<T> registry) {
         if (phase != Phase.INIT) throw new IllegalStateException();
 
         final DeferredRegister<T> entry = DeferredRegister.create(registry, API.MOD_ID);
@@ -66,12 +69,13 @@ public abstract class RegistryUtils {
     }
 
     public static <T> Optional<String> optionalKey(@Nullable final T registryEntry) {
-        if(registryEntry == null) {
+        if (registryEntry == null) {
             return Optional.empty();
         }
         ResourceLocation providerKey = null;
         if (registryEntry instanceof final BlockDeviceProvider blockDeviceProvider) {
-            providerKey = ProviderRegistry.BLOCK_DEVICE_PROVIDER_REGISTRY.getKey(blockDeviceProvider);
+            providerKey =
+                    ProviderRegistry.BLOCK_DEVICE_PROVIDER_REGISTRY.getKey(blockDeviceProvider);
         } else if (registryEntry instanceof final ItemDeviceProvider itemDeviceProvider) {
             providerKey = ProviderRegistry.ITEM_DEVICE_PROVIDER_REGISTRY.getKey(itemDeviceProvider);
         }
@@ -83,6 +87,5 @@ public abstract class RegistryUtils {
         return Optional.of(providerKey.toString());
     }
 
-    private RegistryUtils() {
-    }
+    private RegistryUtils() {}
 }

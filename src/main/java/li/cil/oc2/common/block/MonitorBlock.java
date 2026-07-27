@@ -1,22 +1,20 @@
-
 package li.cil.oc2.common.block;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.common.config.Config;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.integration.Wrenches;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.MonitorPowerMessageForwarded;
 import li.cil.oc2.common.util.VoxelShapeUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -43,35 +41,39 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-public final class MonitorBlock extends HorizontalDirectionalBlock implements EnergyConsumingBlock, EntityBlock {
+import javax.annotation.Nullable;
+
+public final class MonitorBlock extends HorizontalDirectionalBlock
+        implements EnergyConsumingBlock, EntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     // We bake the "screen" indent on the front into the collision shape, to prevent stuff being
     // placeable on that side, such as network connectors, torches, etc.
-    private static final VoxelShape NEG_Z_SHAPE = Shapes.or(
-        Block.box(0, 0, 1, 16, 16, 16), // main body
-        Block.box(0, 15, 0, 16, 16, 1), // across top
-        Block.box(0, 0, 0, 16, 4, 1), // across bottom
-        Block.box(0, 0, 0, 2, 16, 1), // up left
-        Block.box(14, 0, 0, 16, 16, 1) // up right
-    );
-    private static final VoxelShape NEG_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
-    private static final VoxelShape POS_Z_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
-    private static final VoxelShape POS_X_SHAPE = VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
-
+    private static final VoxelShape NEG_Z_SHAPE =
+            Shapes.or(
+                    Block.box(0, 0, 1, 16, 16, 16), // main body
+                    Block.box(0, 15, 0, 16, 16, 1), // across top
+                    Block.box(0, 0, 0, 16, 4, 1), // across bottom
+                    Block.box(0, 0, 0, 2, 16, 1), // up left
+                    Block.box(14, 0, 0, 16, 16, 1) // up right
+                    );
+    private static final VoxelShape NEG_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
+    private static final VoxelShape POS_Z_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(NEG_X_SHAPE);
+    private static final VoxelShape POS_X_SHAPE =
+            VoxelShapeUtils.rotateHorizontalClockwise(POS_Z_SHAPE);
 
     public MonitorBlock() {
-        super(Properties
-            .of()
-            .mapColor(MapColor.METAL)
-            .sound(SoundType.METAL)
-            .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
-            .strength(1.5f, 6.0f));
-        registerDefaultState(getStateDefinition().any()
-            .setValue(FACING, Direction.NORTH)
-            .setValue(LIT, false));
+        super(
+                Properties.of()
+                        .mapColor(MapColor.METAL)
+                        .sound(SoundType.METAL)
+                        .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
+                        .strength(1.5f, 6.0f));
+        registerDefaultState(
+                getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Override
@@ -79,16 +81,23 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         return BlockCodecs.MONITOR.get();
     }
 
-
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(final ItemStack stack, final Item.TooltipContext context, final List<Component> tooltip, final TooltipFlag advanced) {
+    public void appendHoverText(
+            final ItemStack stack,
+            final Item.TooltipContext context,
+            final List<Component> tooltip,
+            final TooltipFlag advanced) {
         super.appendHoverText(stack, context, tooltip, advanced);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+    public VoxelShape getShape(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final CollisionContext context) {
         return switch (state.getValue(FACING)) {
             case NORTH -> NEG_Z_SHAPE;
             case SOUTH -> POS_Z_SHAPE;
@@ -98,7 +107,12 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
     }
 
     @Override
-    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof final MonitorBlockEntity monitor)) {
             return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -107,7 +121,8 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
         if (!level.isClientSide()) {
             if (player.isShiftKeyDown()) {
                 monitor.start();
-                Network.sendToClientsTrackingBlockEntity(new MonitorPowerMessageForwarded(monitor, true), monitor);
+                Network.sendToClientsTrackingBlockEntity(
+                        new MonitorPowerMessageForwarded(monitor, true), monitor);
             } else if (player instanceof final ServerPlayer serverPlayer) {
                 monitor.openTerminalScreen(serverPlayer);
             }
@@ -117,7 +132,8 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        return super.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return super.defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     // EntityBlock
@@ -130,13 +146,14 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
         return TickableBlockEntity.createTicker(level, type, BlockEntities.MONITOR.get());
     }
 
-
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING, LIT);
     }
@@ -145,5 +162,4 @@ public final class MonitorBlock extends HorizontalDirectionalBlock implements En
     public int getEnergyConsumption() {
         return Config.monitorEnergyPerTick;
     }
-
 }

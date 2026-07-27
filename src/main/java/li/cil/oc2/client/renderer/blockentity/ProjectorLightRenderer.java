@@ -2,8 +2,11 @@ package li.cil.oc2.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import li.cil.oc2.client.renderer.ModRenderType;
+
 import net.minecraft.client.renderer.MultiBufferSource;
+
 import org.joml.Matrix4f;
 
 final class ProjectorLightRenderer {
@@ -52,7 +55,8 @@ final class ProjectorLightRenderer {
         renderLed(matrix, consumer);
     }
 
-    static void renderMissingEnergyIndicator(final PoseStack stack, final MultiBufferSource bufferSource) {
+    static void renderMissingEnergyIndicator(
+            final PoseStack stack, final MultiBufferSource bufferSource) {
         stack.translate(-0.5, 0, 0.5);
         final VertexConsumer consumer = bufferSource.getBuffer(ModRenderType.getProjectorLight());
         final Matrix4f matrix = stack.last().pose();
@@ -61,7 +65,8 @@ final class ProjectorLightRenderer {
         renderLed(matrix, consumer);
     }
 
-    private static void renderLens(final Matrix4f matrix, final VertexConsumer consumer, final int color) {
+    private static void renderLens(
+            final Matrix4f matrix, final VertexConsumer consumer, final int color) {
         final float lensDepth = -1 / 16f;
         consumer.addVertex(matrix, LENS_RIGHT, LENS_BOTTOM, lensDepth).setColor(color);
         consumer.addVertex(matrix, LENS_LEFT, LENS_BOTTOM, lensDepth).setColor(color);

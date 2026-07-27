@@ -1,6 +1,7 @@
 package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.session.Session;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +15,10 @@ final class EstablishedState extends TcpState {
         final TcpHeader header = session.header;
         final ByteBuffer receiveBuffer = session.receiveBuffer;
         if (session.nextSegmentMark == 0) {
-            session.nextSegmentMark = Math.min(Math.min(session.vmWindow, receiveBuffer.position()), segment.remaining() - TcpHeader.MIN_HEADER_SIZE_NO_PORTS);
+            session.nextSegmentMark =
+                    Math.min(
+                            Math.min(session.vmWindow, receiveBuffer.position()),
+                            segment.remaining() - TcpHeader.MIN_HEADER_SIZE_NO_PORTS);
             LOGGER.trace("Next segment mark: {}", session.nextSegmentMark);
         }
         header.urg = false;
@@ -63,7 +67,10 @@ final class EstablishedState extends TcpState {
             return SessionActions.IGNORE;
         }
         if (header.sequenceNumber != session.vmSequence) {
-            LOGGER.trace("VM sent invalid sequence number (expected {}, got {})", session.vmSequence, header.sequenceNumber);
+            LOGGER.trace(
+                    "VM sent invalid sequence number (expected {}, got {})",
+                    session.vmSequence,
+                    header.sequenceNumber);
             return SessionActions.IGNORE;
         }
         final int length = segment.remaining();
@@ -73,7 +80,10 @@ final class EstablishedState extends TcpState {
         }
         if (header.ack) {
             if (header.acknowledgmentNumber != (session.mySequence + session.nextSegmentMark)) {
-                LOGGER.trace("VM acked wrong number (expected {}, got {})", session.mySequence, header.acknowledgmentNumber);
+                LOGGER.trace(
+                        "VM acked wrong number (expected {}, got {})",
+                        session.mySequence,
+                        header.acknowledgmentNumber);
                 return SessionActions.IGNORE;
             }
             if (header.acknowledgmentNumber == (session.mySequence + session.nextSegmentMark)) {

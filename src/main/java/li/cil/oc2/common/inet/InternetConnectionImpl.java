@@ -1,7 +1,9 @@
 package li.cil.oc2.common.inet;
 
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+
 import net.minecraft.nbt.Tag;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,7 +24,10 @@ final class InternetConnectionImpl implements InternetConnection {
     final InternetAdapter adapter;
     boolean isStopped = false;
 
-    public InternetConnectionImpl(final ExecutorService executor, final InternetAdapter adapter, final LinkLocalLayer ethernet) {
+    public InternetConnectionImpl(
+            final ExecutorService executor,
+            final InternetAdapter adapter,
+            final LinkLocalLayer ethernet) {
         this.executor = executor;
         this.adapter = adapter;
         this.ethernet = ethernet;

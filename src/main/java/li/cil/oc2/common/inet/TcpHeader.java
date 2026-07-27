@@ -9,7 +9,6 @@ public class TcpHeader {
     private static final byte OPTION_NOOP = 1;
     private static final byte OPTION_MAX_SEGMENT_SIZE = 2;
 
-
     public int sequenceNumber, acknowledgmentNumber;
     public boolean urg, ack, psh, rst, syn, fin; // flags
     public int window;
@@ -17,7 +16,6 @@ public class TcpHeader {
 
     // Options
     public int maxSegmentSize;
-
 
     public boolean read(final ByteBuffer data) {
         if (data.remaining() < MIN_HEADER_SIZE_NO_PORTS) {
@@ -80,12 +78,12 @@ public class TcpHeader {
         final int headerLength = 4 + MIN_HEADER_SIZE_NO_PORTS + (maxSegmentSize == -1 ? 0 : 4);
         data.put((byte) (headerLength << 2));
         final int flags =
-                (bool2int(urg) << 5) |
-                (bool2int(ack) << 4) |
-                (bool2int(psh) << 3) |
-                (bool2int(rst) << 2) |
-                (bool2int(syn) << 1) |
-                (bool2int(fin));
+                (bool2int(urg) << 5)
+                        | (bool2int(ack) << 4)
+                        | (bool2int(psh) << 3)
+                        | (bool2int(rst) << 2)
+                        | (bool2int(syn) << 1)
+                        | (bool2int(fin));
         data.put((byte) flags);
         data.putShort((short) window);
         data.putShort((short) 0); // checksum
@@ -137,18 +135,29 @@ public class TcpHeader {
 
     @Override
     public String toString() {
-        return "TcpHeader{" +
-               "sequenceNumber=" + sequenceNumber +
-               ", acknowledgmentNumber=" + acknowledgmentNumber +
-               ", urg=" + urg +
-               ", ack=" + ack +
-               ", psh=" + psh +
-               ", rst=" + rst +
-               ", syn=" + syn +
-               ", fin=" + fin +
-               ", window=" + window +
-               ", urgentPointer=" + urgentPointer +
-               ", maxSegmentSize=" + maxSegmentSize +
-               '}';
+        return "TcpHeader{"
+                + "sequenceNumber="
+                + sequenceNumber
+                + ", acknowledgmentNumber="
+                + acknowledgmentNumber
+                + ", urg="
+                + urg
+                + ", ack="
+                + ack
+                + ", psh="
+                + psh
+                + ", rst="
+                + rst
+                + ", syn="
+                + syn
+                + ", fin="
+                + fin
+                + ", window="
+                + window
+                + ", urgentPointer="
+                + urgentPointer
+                + ", maxSegmentSize="
+                + maxSegmentSize
+                + '}';
     }
 }

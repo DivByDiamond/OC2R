@@ -19,6 +19,7 @@ import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.entity.Entities;
+
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -29,15 +30,17 @@ import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = API.MOD_ID, value = {Dist.CLIENT})
+@EventBusSubscriber(
+        modid = API.MOD_ID,
+        value = {Dist.CLIENT})
 public final class ClientSetup {
     @Nullable private static Boolean captureInputState = null;
 
-    private ClientSetup() {
-    }
+    private ClientSetup() {}
 
     /**
      * Handles the client setup event.
@@ -53,12 +56,14 @@ public final class ClientSetup {
         BlockEntityRenderers.register(BlockEntities.DISK_DRIVE.get(), DiskDriveRenderer::new);
         BlockEntityRenderers.register(BlockEntities.CHARGER.get(), ChargerRenderer::new);
         BlockEntityRenderers.register(BlockEntities.PROJECTOR.get(), ProjectorRenderer::new);
-        BlockEntityRenderers.register(BlockEntities.INTERNET_GATEWAY.get(), InternetGateWayRenderer::new);
+        BlockEntityRenderers.register(
+                BlockEntities.INTERNET_GATEWAY.get(), InternetGateWayRenderer::new);
 
-        event.enqueueWork(() -> {
-            CustomItemModelProperties.initialize();
-            CustomItemColors.initialize();
-        });
+        event.enqueueWork(
+                () -> {
+                    CustomItemModelProperties.initialize();
+                    CustomItemColors.initialize();
+                });
     }
 
     /**
@@ -102,7 +107,8 @@ public final class ClientSetup {
      * @param event the register renderers event.
      */
     @SubscribeEvent
-    public static void handleEntityRendererRegisterEvent(final EntityRenderersEvent.RegisterRenderers event) {
+    public static void handleEntityRendererRegisterEvent(
+            final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(Entities.ROBOT.get(), RobotRenderer::new);
     }
 
@@ -112,7 +118,8 @@ public final class ClientSetup {
      * @param event the register layer definitions event.
      */
     @SubscribeEvent
-    public static void handleRegisterLayerDefinitionsEvent(final EntityRenderersEvent.RegisterLayerDefinitions event) {
+    public static void handleRegisterLayerDefinitionsEvent(
+            final EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(RobotModel.ROBOT_MODEL_LAYER, RobotModel::createRobotLayer);
     }
 

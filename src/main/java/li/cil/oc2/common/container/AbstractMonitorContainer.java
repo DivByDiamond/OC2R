@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.client.ClientSetup;
@@ -9,6 +8,7 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.network.message.*;
 import li.cil.oc2.common.vm.VirtualMachine;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
@@ -21,27 +21,40 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
     private final MonitorBlockEntity monitor;
     private static boolean captureInputState = Config.captureInputDefaultState;
 
-
-    protected AbstractMonitorContainer(final MenuType<?> type, final int id, final Player player, final MonitorBlockEntity monitor, final IntPrecisionContainerData energyInfo) {
+    protected AbstractMonitorContainer(
+            final MenuType<?> type,
+            final int id,
+            final Player player,
+            final MonitorBlockEntity monitor,
+            final IntPrecisionContainerData energyInfo) {
         super(type, id, energyInfo);
         this.monitor = monitor;
     }
-
 
     @Override
     public void switchToInventory() {}
 
     @Override
     @Nullable
-    public VirtualMachine getVirtualMachine() { return null; }
+    public VirtualMachine getVirtualMachine() {
+        return null;
+    }
 
-    public MonitorBlockEntity getMonitor() { return monitor; }
+    public MonitorBlockEntity getMonitor() {
+        return monitor;
+    }
 
-    public boolean hasPower() { return monitor.hasPower(); }
+    public boolean hasPower() {
+        return monitor.hasPower();
+    }
 
-    public boolean getPowerState() { return monitor.getPowerState(); }
+    public boolean getPowerState() {
+        return monitor.getPowerState();
+    }
 
-    public boolean isMounted() { return monitor.isMounted(); }
+    public boolean isMounted() {
+        return monitor.isMounted();
+    }
 
     public boolean getCaptureInputState() {
         return switch (Config.captureInputMode) {
@@ -59,7 +72,9 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
         }
     }
 
-    public void toggleCaptureInputState() { setCaptureInputState(!getCaptureInputState()); }
+    public void toggleCaptureInputState() {
+        setCaptureInputState(!getCaptureInputState());
+    }
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
@@ -72,18 +87,24 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
             return false;
         }
         final Level level = monitor.getLevel();
-        return level != null && stillValid(ContainerLevelAccess.create(level, monitor.getBlockPos()), player, Blocks.MONITOR.get());
+        return level != null
+                && stillValid(
+                        ContainerLevelAccess.create(level, monitor.getBlockPos()),
+                        player,
+                        Blocks.MONITOR.get());
     }
 
-
-    protected static IntPrecisionContainerData createEnergyInfo(final IEnergyStorage energy, final CommonDeviceBusController busController) {
+    protected static IntPrecisionContainerData createEnergyInfo(
+            final IEnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {
                 return switch (index) {
                     case AbstractMachineContainer.ENERGY_STORED_INDEX -> energy.getEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX -> energy.getMaxEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX -> busController.getEnergyConsumption();
+                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX ->
+                            energy.getMaxEnergyStored();
+                    case AbstractMachineContainer.ENERGY_CONSUMPTION_INDEX ->
+                            busController.getEnergyConsumption();
                     default -> 0;
                 };
             }
@@ -101,7 +122,8 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
             public int getInt(final int index) {
                 return switch (index) {
                     case AbstractMachineContainer.ENERGY_STORED_INDEX -> energy.getEnergyStored();
-                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX -> energy.getMaxEnergyStored();
+                    case AbstractMachineContainer.ENERGY_CAPACITY_INDEX ->
+                            energy.getMaxEnergyStored();
                     default -> 0;
                 };
             }

@@ -12,18 +12,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 final class DeviceLifecycle {
-    static final ExecutorService WORKERS = Executors.newCachedThreadPool(r -> {
-        final Thread thread = new Thread(r, "Block Device Initializer");
-        thread.setDaemon(false);
-        return thread;
-    });
+    static final ExecutorService WORKERS =
+            Executors.newCachedThreadPool(
+                    r -> {
+                        final Thread thread = new Thread(r, "Block Device Initializer");
+                        thread.setDaemon(false);
+                        return thread;
+                    });
 
     VirtIOBlockDevice device;
     private CompletableFuture<Void> openJob;
 
-    boolean allocate(final VMContext context, final boolean readonly,
-                    final CompletableFuture<? extends BlockDevice> blockFuture,
-                    final Runnable onDataAccess) {
+    boolean allocate(
+            final VMContext context,
+            final boolean readonly,
+            final CompletableFuture<? extends BlockDevice> blockFuture,
+            final Runnable onDataAccess) {
         if (!context.getMemoryAllocator().claimMemory(Constants.PAGE_SIZE)) {
             return false;
         }
@@ -68,16 +72,21 @@ final class DeviceLifecycle {
         openJob = job;
     }
 
-    private void initBlock(final CompletableFuture<? extends BlockDevice> future, final Runnable onDataAccess) {
+    private void initBlock(
+            final CompletableFuture<? extends BlockDevice> future, final Runnable onDataAccess) {
         joinOpenJob();
-        openJob = future.thenAcceptAsync(blockDevice -> {
-            try {
-                final ListenableBlockDevice listenableData = new ListenableBlockDevice(blockDevice);
-                listenableData.onAccess.add(onDataAccess);
-                device.setBlock(listenableData);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        }, WORKERS);
+        openJob =
+                future.thenAcceptAsync(
+                        blockDevice -> {
+                            try {
+                                final ListenableBlockDevice listenableData =
+                                        new ListenableBlockDevice(blockDevice);
+                                listenableData.onAccess.add(onDataAccess);
+                                device.setBlock(listenableData);
+                            } catch (final IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        WORKERS);
     }
 }

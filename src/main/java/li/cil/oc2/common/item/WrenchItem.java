@@ -1,7 +1,7 @@
-
 package li.cil.oc2.common.item;
 
 import li.cil.oc2.common.tags.BlockTags;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,13 @@ public final class WrenchItem extends ModItem {
         final Direction face = context.getClickedFace();
         if (face == Direction.UP || face == Direction.DOWN) {
             final BlockState blockState = level.getBlockState(pos);
-            final BlockState rotatedState = blockState.rotate(level, pos, face == Direction.UP ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90);
+            final BlockState rotatedState =
+                    blockState.rotate(
+                            level,
+                            pos,
+                            face == Direction.UP
+                                    ? Rotation.CLOCKWISE_90
+                                    : Rotation.COUNTERCLOCKWISE_90);
             if (!Objects.equals(blockState, rotatedState)) {
                 level.setBlockAndUpdate(pos, rotatedState);
                 return InteractionResult.sidedSuccess(level.isClientSide());
@@ -67,7 +73,11 @@ public final class WrenchItem extends ModItem {
     }
 
     @Override
-    public boolean doesSneakBypassUse(final ItemStack stack, final LevelReader level, final BlockPos pos, final Player player) {
+    public boolean doesSneakBypassUse(
+            final ItemStack stack,
+            final LevelReader level,
+            final BlockPos pos,
+            final Player player) {
         return true;
     }
 }

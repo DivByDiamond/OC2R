@@ -5,10 +5,11 @@ import li.cil.oc2.jcodec.codecs.h264.H264Encoder;
 import li.cil.oc2.jcodec.codecs.h264.encode.CQPRateControl;
 import li.cil.oc2.jcodec.common.model.Picture;
 
-import javax.annotation.Nullable;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.zip.Deflater;
+
+import javax.annotation.Nullable;
 
 final class ProjectorVideoEncoder {
     private final H264Encoder encoder = new H264Encoder(new CQPRateControl(12));

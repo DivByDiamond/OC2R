@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import net.minecraft.core.BlockPos;
@@ -6,23 +5,25 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 public final class NBTUtils {
-    public static <T extends Enum<T>> void putEnum(final CompoundTag compound, final String key, @Nullable final Enum<T> value) {
+    public static <T extends Enum<T>> void putEnum(
+            final CompoundTag compound, final String key, @Nullable final Enum<T> value) {
         if (value != null) {
             compound.putInt(key, value.ordinal());
         }
     }
 
     @Nullable
-    public static <T extends Enum<T>> T getEnum(final CompoundTag compound, final String key, final Class<T> enumType) {
+    public static <T extends Enum<T>> T getEnum(
+            final CompoundTag compound, final String key, final Class<T> enumType) {
         if (!compound.contains(key, NBTTagIds.TAG_INT)) {
             return null;
         }
@@ -78,17 +79,14 @@ public final class NBTUtils {
         return childTag;
     }
 
-    public static CompoundTag makeInventoryTag(HolderLookup.Provider provider, final ItemStack... items) {
+    public static CompoundTag makeInventoryTag(
+            HolderLookup.Provider provider, final ItemStack... items) {
         return new ItemStackHandler(NonNullList.of(ItemStack.EMPTY, items)).serializeNBT(provider);
     }
 
     /// Tries to read an older format read/writeBlockPos used to use
-    public static Optional<BlockPos> readBlockPosLegacy(CompoundTag tag)
-    {
-        if (!tag.contains("X", 99) ||
-            !tag.contains("Y", 99) ||
-            !tag.contains("Z", 99)
-        ) {
+    public static Optional<BlockPos> readBlockPosLegacy(CompoundTag tag) {
+        if (!tag.contains("X", 99) || !tag.contains("Y", 99) || !tag.contains("Z", 99)) {
             return Optional.empty();
         }
         return Optional.of(new BlockPos(tag.getInt("X"), tag.getInt("Y"), tag.getInt("Z")));

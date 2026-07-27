@@ -1,10 +1,11 @@
-
 package li.cil.oc2.common.network.message;
 
 import io.netty.buffer.ByteBuf;
+
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.ClientBlockEntityLookup;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,28 +16,33 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.nio.ByteBuffer;
 
 public record ComputerTerminalOutputMessage(BlockPos pos, byte[] data) implements AbstractMessage {
-    public static final StreamCodec<ByteBuf, ComputerTerminalOutputMessage> STREAM_CODEC = StreamCodec.composite(
-        BlockPos.STREAM_CODEC,
-        ComputerTerminalOutputMessage::pos,
-        ByteBufCodecs.BYTE_ARRAY,
-        ComputerTerminalOutputMessage::data,
-        ComputerTerminalOutputMessage::new
-    );
+    public static final StreamCodec<ByteBuf, ComputerTerminalOutputMessage> STREAM_CODEC =
+            StreamCodec.composite(
+                    BlockPos.STREAM_CODEC,
+                    ComputerTerminalOutputMessage::pos,
+                    ByteBufCodecs.BYTE_ARRAY,
+                    ComputerTerminalOutputMessage::data,
+                    ComputerTerminalOutputMessage::new);
 
-    public static final CustomPacketPayload.Type<ComputerTerminalOutputMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "computer_terminal_output_message"));
+    public static final CustomPacketPayload.Type<ComputerTerminalOutputMessage> TYPE =
+            new CustomPacketPayload.Type<>(
+                    ResourceLocation.fromNamespaceAndPath(
+                            API.MOD_ID, "computer_terminal_output_message"));
 
     @Override
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-
-    public ComputerTerminalOutputMessage(final ComputerBlockEntity computer, final ByteBuffer data) {
+    public ComputerTerminalOutputMessage(
+            final ComputerBlockEntity computer, final ByteBuffer data) {
         this(computer.getBlockPos(), data.array());
     }
 
     public void handleMessage(IPayloadContext context) {
-        ClientBlockEntityLookup.withClientBlockEntityAt(pos, ComputerBlockEntity.class,
-            computer -> computer.getTerminal().putOutput(ByteBuffer.wrap(data)));
+        ClientBlockEntityLookup.withClientBlockEntityAt(
+                pos,
+                ComputerBlockEntity.class,
+                computer -> computer.getTerminal().putOutput(ByteBuffer.wrap(data)));
     }
 }

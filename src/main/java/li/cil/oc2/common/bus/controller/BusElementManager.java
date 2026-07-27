@@ -10,7 +10,8 @@ import java.util.*;
 final class BusElementManager {
     private static final int MAX_BUS_ELEMENT_COUNT = 128;
     private static final int INCOMPLETE_RETRY_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(10));
-    private static final int BAD_CONFIGURATION_RETRY_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(5));
+    private static final int BAD_CONFIGURATION_RETRY_INTERVAL =
+            TickUtils.toTicks(Duration.ofSeconds(5));
 
     private final CommonDeviceBusController controller;
     private final DeviceBusElement root;
@@ -21,7 +22,10 @@ final class BusElementManager {
     private int scanDelay;
     private int energyConsumption;
 
-    BusElementManager(final CommonDeviceBusController controller, final DeviceBusElement root, final int baseEnergyConsumption) {
+    BusElementManager(
+            final CommonDeviceBusController controller,
+            final DeviceBusElement root,
+            final int baseEnergyConsumption) {
         this.controller = controller;
         this.root = root;
         this.baseEnergyConsumption = baseEnergyConsumption;
@@ -50,7 +54,8 @@ final class BusElementManager {
     }
 
     void scheduleBusScan(final DeviceBusController.ScanReason reason) {
-        if (reason == DeviceBusController.ScanReason.BUS_ERROR && state.ordinal() < BusState.READY.ordinal()) {
+        if (reason == DeviceBusController.ScanReason.BUS_ERROR
+                && state.ordinal() < BusState.READY.ordinal()) {
             return;
         }
         scanDelay = 0;
@@ -64,17 +69,20 @@ final class BusElementManager {
         if (scanDelay-- > 0) {
             return;
         }
-        collectBusElements().ifPresent(optionals -> {
-            final HashSet<DeviceBusElement> addedElements = updateElements(optionals.keySet());
-            if (checkOtherBusControllers()) {
-                return;
-            }
-            addedElements.remove(root);
-            controller.scanDevices();
-            updateEnergyConsumption();
-            state = BusState.READY;
-            controller.onAfterBusScan();
-        });
+        collectBusElements()
+                .ifPresent(
+                        optionals -> {
+                            final HashSet<DeviceBusElement> addedElements =
+                                    updateElements(optionals.keySet());
+                            if (checkOtherBusControllers()) {
+                                return;
+                            }
+                            addedElements.remove(root);
+                            controller.scanDevices();
+                            updateEnergyConsumption();
+                            state = BusState.READY;
+                            controller.onAfterBusScan();
+                        });
     }
 
     private void clearElements() {

@@ -1,18 +1,19 @@
 package li.cil.oc2.common.blockentity.monitor;
 
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
+import static li.cil.oc2.common.vm.device.SimpleFramebufferDevice.STRIDE;
+
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.jcodec.codecs.h264.H264Encoder;
 import li.cil.oc2.jcodec.codecs.h264.encode.CQPRateControl;
 import li.cil.oc2.jcodec.common.model.Picture;
 
-import javax.annotation.Nullable;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.zip.Deflater;
 
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
-import static li.cil.oc2.common.vm.device.SimpleFramebufferDevice.STRIDE;
+import javax.annotation.Nullable;
 
 final class MonitorVideoEncoder {
     private final H264Encoder encoder = new H264Encoder(new CQPRateControl(12));

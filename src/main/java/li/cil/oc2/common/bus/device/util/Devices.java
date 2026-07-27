@@ -1,5 +1,6 @@
-
 package li.cil.oc2.common.bus.device.util;
+
+import static java.util.Objects.requireNonNull;
 
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.ItemDevice;
@@ -9,6 +10,7 @@ import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.provider.Providers;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -19,22 +21,23 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Objects.requireNonNull;
+import javax.annotation.Nullable;
 
 public final class Devices {
-    public static BlockDeviceQuery makeQuery(final BlockEntity blockEntity, @Nullable final Direction side) {
+    public static BlockDeviceQuery makeQuery(
+            final BlockEntity blockEntity, @Nullable final Direction side) {
         final Level level = requireNonNull(blockEntity.getLevel());
         final BlockPos pos = blockEntity.getBlockPos();
         return new BlockQuery(level, pos, side);
     }
 
-    public static BlockDeviceQuery makeQuery(final LevelAccessor level, final BlockPos pos, @Nullable final Direction side) {
+    public static BlockDeviceQuery makeQuery(
+            final LevelAccessor level, final BlockPos pos, @Nullable final Direction side) {
         return new BlockQuery(level, pos, side);
     }
 
@@ -61,14 +64,11 @@ public final class Devices {
         for (final BlockDeviceProvider provider : registry) {
             final Optional<Device> device = provider.getDevice(query);
             if (device.isPresent()) {
-                if(device.get() instanceof DeviceGroup group)
-                {
-                    for(Device dev : group.getDevices())
-                    {
+                if (device.get() instanceof DeviceGroup group) {
+                    for (Device dev : group.getDevices()) {
                         devices.add(new BlockDeviceInfo(provider, dev));
                     }
-                }
-                else {
+                } else {
                     devices.add(new BlockDeviceInfo(provider, device.get()));
                 }
             }
@@ -86,7 +86,11 @@ public final class Devices {
         final ArrayList<ItemDeviceInfo> devices = new ArrayList<>();
         for (final ItemDeviceProvider provider : registry) {
             final Optional<ItemDevice> device = provider.getDevice(query);
-            device.ifPresent(d -> devices.add(new ItemDeviceInfo(provider, d, provider.getEnergyConsumption(query))));
+            device.ifPresent(
+                    d ->
+                            devices.add(
+                                    new ItemDeviceInfo(
+                                            provider, d, provider.getEnergyConsumption(query))));
         }
         return devices;
     }
@@ -108,8 +112,8 @@ public final class Devices {
         }
     }
 
-
-    private record BlockQuery(LevelAccessor level, BlockPos pos, @Nullable Direction side) implements BlockDeviceQuery {
+    private record BlockQuery(LevelAccessor level, BlockPos pos, @Nullable Direction side)
+            implements BlockDeviceQuery {
         @Override
         public LevelAccessor getLevel() {
             return level;
@@ -128,10 +132,8 @@ public final class Devices {
     }
 
     private record ItemQuery(
-        @Nullable BlockEntity blockEntity,
-        @Nullable Entity entity,
-        ItemStack stack
-    ) implements ItemDeviceQuery {
+            @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack stack)
+            implements ItemDeviceQuery {
         public ItemQuery(final ItemStack stack) {
             this(null, null, stack);
         }

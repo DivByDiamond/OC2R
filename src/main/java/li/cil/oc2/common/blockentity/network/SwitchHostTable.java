@@ -25,11 +25,14 @@ final class SwitchHostTable {
     }
 
     List<LuaHostEntry> getHostTable(long now) {
-        return hostTable
-            .entrySet()
-            .stream()
-            .map(e -> new LuaHostEntry(PacketProcessor.macLongToString(e.getKey()), now - e.getValue().timestamp, e.getValue().iface))
-            .collect(Collectors.toList());
+        return hostTable.entrySet().stream()
+                .map(
+                        e ->
+                                new LuaHostEntry(
+                                        PacketProcessor.macLongToString(e.getKey()),
+                                        now - e.getValue().timestamp,
+                                        e.getValue().iface))
+                .collect(Collectors.toList());
     }
 
     void save(ListTag hosts) {
@@ -46,12 +49,8 @@ final class SwitchHostTable {
         for (Tag host_ : hosts) {
             CompoundTag host = (CompoundTag) host_;
             hostTable.put(
-                host.getLong("mac"),
-                new HostEntry(
-                    host.getInt("side"),
-                    host.getLong("timestamp")
-                )
-            );
+                    host.getLong("mac"),
+                    new HostEntry(host.getInt("side"), host.getLong("timestamp")));
         }
     }
 }

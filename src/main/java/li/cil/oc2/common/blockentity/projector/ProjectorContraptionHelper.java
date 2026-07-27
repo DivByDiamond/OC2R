@@ -1,22 +1,24 @@
-
 package li.cil.oc2.common.blockentity.projector;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 final class ProjectorContraptionHelper {
-    static final ConcurrentHashMap<UUID, ProjectorBlockEntity> PRIMARY_BY_DEVICE_ID = new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<UUID, ProjectorBlockEntity> PRIMARY_BY_DEVICE_ID =
+            new ConcurrentHashMap<>();
     static final long VIRTUAL_POSITION_THRESHOLD = 1_000_000L;
 
     static boolean isContraptionVirtualClone(final ProjectorBlockEntity projector) {
         final var pos = projector.getBlockPos();
         return Math.abs(pos.getX()) > VIRTUAL_POSITION_THRESHOLD
-            || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
+                || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
     }
 
     @Nullable
-    static ProjectorBlockEntity getPrimaryForContraptionRendering(final ProjectorBlockEntity projector) {
+    static ProjectorBlockEntity getPrimaryForContraptionRendering(
+            final ProjectorBlockEntity projector) {
         if (!isContraptionVirtualClone(projector)) {
             return projector;
         }

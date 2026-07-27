@@ -1,8 +1,8 @@
-
 package li.cil.oc2.common.serialization.ceres;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
 import li.cil.ceres.api.SerializationVisitor;
@@ -12,14 +12,20 @@ import javax.annotation.Nullable;
 
 public final class JsonArraySerializer implements Serializer<JsonArray> {
     @Override
-    public void serialize(final SerializationVisitor visitor, final Class<JsonArray> type, final Object value) throws SerializationException {
+    public void serialize(
+            final SerializationVisitor visitor, final Class<JsonArray> type, final Object value)
+            throws SerializationException {
         final JsonArray jsonArray = (JsonArray) value;
         visitor.putObject("value", String.class, jsonArray.toString());
     }
 
     @Nullable
     @Override
-    public JsonArray deserialize(final DeserializationVisitor visitor, final Class<JsonArray> type, @Nullable final Object value) throws SerializationException {
+    public JsonArray deserialize(
+            final DeserializationVisitor visitor,
+            final Class<JsonArray> type,
+            @Nullable final Object value)
+            throws SerializationException {
         JsonArray array = (JsonArray) value;
         if (!visitor.exists("value")) {
             return array;

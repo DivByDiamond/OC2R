@@ -1,14 +1,16 @@
 package li.cil.oc2.common.serialization.nbt;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.SerializationException;
 import li.cil.ceres.api.SerializationVisitor;
+
 import net.minecraft.nbt.*;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.UUID;
 
 public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor {
@@ -56,7 +58,8 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public void putObject(final String name, final Class<?> type, @Nullable final Object value) throws SerializationException {
+    public void putObject(final String name, final Class<?> type, @Nullable final Object value)
+            throws SerializationException {
         if (putIsNull(name, value)) {
             return;
         }
@@ -73,7 +76,8 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
             tag.put(name, uuidTag);
         } else {
             final CompoundTag valueTag = new CompoundTag();
-            Ceres.getSerializer(type).serialize(new NBTSerializerImpl(valueTag), (Class) type, value);
+            Ceres.getSerializer(type)
+                    .serialize(new NBTSerializerImpl(valueTag), (Class) type, value);
             if (!valueTag.isEmpty()) {
                 tag.put(name, valueTag);
             }
@@ -89,7 +93,8 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
     private Tag putArray(final String name, final Class<?> type, final Object value) {
         final Class<?> componentType = type.getComponentType();
 
-        final NBTArraySerializer arraySerializer = NBTDeserializerImpl.ARRAY_SERIALIZERS.get(componentType);
+        final NBTArraySerializer arraySerializer =
+                NBTDeserializerImpl.ARRAY_SERIALIZERS.get(componentType);
         if (arraySerializer != null) {
             return arraySerializer.serialize(value);
         } else {
@@ -97,12 +102,14 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
             if (componentType.isArray()) {
                 componentSerializer = (t, v) -> putArray(name, t, v);
             } else {
-                final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
-                componentSerializer = (t, v) -> {
-                    final CompoundTag innerTag = new CompoundTag();
-                    serializer.serialize(new NBTSerializerImpl(innerTag), (Class) t, v);
-                    return innerTag;
-                };
+                final li.cil.ceres.api.Serializer<?> serializer =
+                        Ceres.getSerializer(componentType);
+                componentSerializer =
+                        (t, v) -> {
+                            final CompoundTag innerTag = new CompoundTag();
+                            serializer.serialize(new NBTSerializerImpl(innerTag), (Class) t, v);
+                            return innerTag;
+                        };
             }
 
             final ListTag listTag = new ListTag();
@@ -115,7 +122,11 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
                     nullIndices.add(i);
                 } else {
                     if (datum.getClass() != componentType) {
-                        throw new SerializationException(String.format("Polymorphism detected in generic array [%s]. This is not supported.", name));
+                        throw new SerializationException(
+                                String.format(
+                                        "Polymorphism detected in generic array [%s]. This is not"
+                                            + " supported.",
+                                        name));
                     }
                     listTag.add(componentSerializer.serialize(componentType, datum));
                 }

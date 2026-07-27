@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.api.API;
@@ -12,6 +11,7 @@ import li.cil.oc2.common.block.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.HorizontalBlockUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,11 +25,11 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
-public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice implements DocumentedDevice {
+public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
+        implements DocumentedDevice {
     private static final String OUTPUT_TAG_NAME = "output";
 
     private static final String GET_REDSTONE_INPUT = "getRedstoneInput";
@@ -38,13 +38,12 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     private static final String SIDE = "side";
     private static final String VALUE = "value";
 
-
     private final BlockEntity blockEntity;
     private final RedstoneEmitter[] capabilities;
     private final byte[] output = new byte[Constants.BLOCK_FACE_COUNT];
 
-
-    public RedstoneInterfaceCardItemDevice(final ItemStack identity, final BlockEntity blockEntity) {
+    public RedstoneInterfaceCardItemDevice(
+            final ItemStack identity, final BlockEntity blockEntity) {
         super(identity, "redstone");
         this.blockEntity = blockEntity;
 
@@ -55,25 +54,24 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         }
     }
 
-
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.RedstoneEmitter.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (side == null) return null;
+                Capabilities.RedstoneEmitter.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (side == null) return null;
 
-                if (be instanceof final ComputerBlockEntity computer) {
-                    RedstoneInterfaceCardItemDevice self = computer.getFirstDevice(RedstoneInterfaceCardItemDevice.class);
-                    if (self == null) return null;
+                    if (be instanceof final ComputerBlockEntity computer) {
+                        RedstoneInterfaceCardItemDevice self =
+                                computer.getFirstDevice(RedstoneInterfaceCardItemDevice.class);
+                        if (self == null) return null;
 
-                    final int index = side.get3DDataValue();
-                    return self.capabilities[index];
-                }
-                return null;
-            },
-            Blocks.COMPUTER.get()
-        );
+                        final int index = side.get3DDataValue();
+                        return self.capabilities[index];
+                    }
+                    return null;
+                },
+                Blocks.COMPUTER.get());
     }
 
     @Override
@@ -86,7 +84,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
         final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME);
-        System.arraycopy(serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
+        System.arraycopy(
+                serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
     }
 
     @Callback(name = GET_REDSTONE_INPUT)
@@ -99,7 +98,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         }
 
         final BlockPos pos = blockEntity.getBlockPos();
-        final Direction direction = HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
+        final Direction direction =
+                HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
         assert direction != null;
 
         final BlockPos neighborPos = pos.relative(direction);
@@ -120,7 +120,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     }
 
     @Callback(name = SET_REDSTONE_OUTPUT)
-    public void setRedstoneOutput(@Parameter(SIDE) @Nullable final Side side, @Parameter(VALUE) final int value) {
+    public void setRedstoneOutput(
+            @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUE) final int value) {
         if (side == null) throw new IllegalArgumentException();
         final int index = side.getDirection().get3DDataValue();
 
@@ -131,7 +132,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
 
         output[index] = clampedValue;
 
-        final Direction direction = HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
+        final Direction direction =
+                HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
         if (direction != null) {
             notifyNeighbor(direction);
         }
@@ -140,29 +142,32 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     @Override
     public void getDeviceDocumentation(final DocumentedDevice.DeviceVisitor visitor) {
         visitor.visitCallback(GET_REDSTONE_INPUT)
-            .description("Get the current redstone level received on the specified side. " +
-                "Note that if the current output level on the specified side is not " +
-                "zero, this will affect the measured level.\n" +
-                "Sides may be specified by name or zero-based index. Please note that " +
-                "the side depends on the orientation of the device's container.")
-            .returnValueDescription("the current received level on the specified side.")
-            .parameterDescription(SIDE, "the side to read the input level from.");
+                .description(
+                        "Get the current redstone level received on the specified side. Note that"
+                            + " if the current output level on the specified side is not zero, this"
+                            + " will affect the measured level.\n"
+                            + "Sides may be specified by name or zero-based index. Please note that"
+                            + " the side depends on the orientation of the device's container.")
+                .returnValueDescription("the current received level on the specified side.")
+                .parameterDescription(SIDE, "the side to read the input level from.");
 
         visitor.visitCallback(GET_REDSTONE_OUTPUT)
-            .description("Get the current redstone level transmitted on the specified side. " +
-                "This will return the value last set via setRedstoneOutput().\n" +
-                "Sides may be specified by name or zero-based index. Please note that " +
-                "the side depends on the orientation of the device's container.")
-            .returnValueDescription("the current transmitted level on the specified side.")
-            .parameterDescription(SIDE, "the side to read the output level from.");
+                .description(
+                        "Get the current redstone level transmitted on the specified side. This"
+                            + " will return the value last set via setRedstoneOutput().\n"
+                            + "Sides may be specified by name or zero-based index. Please note that"
+                            + " the side depends on the orientation of the device's container.")
+                .returnValueDescription("the current transmitted level on the specified side.")
+                .parameterDescription(SIDE, "the side to read the output level from.");
         visitor.visitCallback(SET_REDSTONE_OUTPUT)
-            .description("Set the new redstone level transmitted on the specified side.\n" +
-                "Sides may be specified by name or zero-based index. Please note that " +
-                "the side depends on the orientation of the device's container.")
-            .parameterDescription(SIDE, "the side to write the output level to.")
-            .parameterDescription(VALUE, "the output level to set, will be clamped to [0, 15].");
+                .description(
+                        "Set the new redstone level transmitted on the specified side.\n"
+                            + "Sides may be specified by name or zero-based index. Please note that"
+                            + " the side depends on the orientation of the device's container.")
+                .parameterDescription(SIDE, "the side to write the output level to.")
+                .parameterDescription(
+                        VALUE, "the output level to set, will be clamped to [0, 15].");
     }
-
 
     private void notifyNeighbor(final Direction direction) {
         final Level level = blockEntity.getLevel();
@@ -171,6 +176,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         }
 
         level.updateNeighborsAt(blockEntity.getBlockPos(), blockEntity.getBlockState().getBlock());
-        level.updateNeighborsAt(blockEntity.getBlockPos().relative(direction), blockEntity.getBlockState().getBlock());
+        level.updateNeighborsAt(
+                blockEntity.getBlockPos().relative(direction),
+                blockEntity.getBlockState().getBlock());
     }
 }

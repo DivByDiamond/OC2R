@@ -1,8 +1,12 @@
 package li.cil.oc2.common.block;
 
+import static li.cil.oc2.common.block.BusCableStateProperties.*;
+
 import com.mojang.serialization.MapCodec;
+
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.item.Items;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -30,12 +34,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static li.cil.oc2.common.block.BusCableStateProperties.*;
+import javax.annotation.Nullable;
 
 public final class BusCableBlock extends BaseEntityBlock {
     private final VoxelShape[] shapes;
@@ -67,10 +70,12 @@ public final class BusCableBlock extends BaseEntityBlock {
         BlockState state = defaultBlockState();
         final Level level = context.getLevel();
         final BlockPos position = context.getClickedPos();
-        for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry : FACING_TO_CONNECTION_MAP.entrySet()) {
+        for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry :
+                FACING_TO_CONNECTION_MAP.entrySet()) {
             final Direction facing = entry.getKey();
             final BlockPos facingPos = position.relative(facing);
-            if (context.getItemInHand().getItem() == Items.BUS_CABLE.get() && canHaveCableTo(level.getBlockState(facingPos), facing.getOpposite())) {
+            if (context.getItemInHand().getItem() == Items.BUS_CABLE.get()
+                    && canHaveCableTo(level.getBlockState(facingPos), facing.getOpposite())) {
                 state = state.setValue(entry.getValue(), ConnectionType.CABLE);
             }
         }
@@ -78,7 +83,13 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, final Direction facing, final BlockState facingState, final LevelAccessor level, final BlockPos currentPos, final BlockPos facingPos) {
+    public BlockState updateShape(
+            BlockState state,
+            final Direction facing,
+            final BlockState facingState,
+            final LevelAccessor level,
+            final BlockPos currentPos,
+            final BlockPos facingPos) {
         final EnumProperty<ConnectionType> property = FACING_TO_CONNECTION_MAP.get(facing);
         if (state.getValue(property) == ConnectionType.INTERFACE) {
             return state;
@@ -96,7 +107,11 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
-    public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+    public VoxelShape getShape(
+            final BlockState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final CollisionContext context) {
         if (state.getValue(HAS_FACADE)) {
             return Shapes.block();
         }
@@ -104,14 +119,31 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(final ItemStack heldItem, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
-        final ItemInteractionResult result = BusCableInteractionHandler.handleUseItemOn(heldItem, state, level, pos, player, hand, hitResult);
-        return result != null ? result : super.useItemOn(heldItem, state, level, pos, player, hand, hitResult);
+    protected ItemInteractionResult useItemOn(
+            final ItemStack heldItem,
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final InteractionHand hand,
+            final BlockHitResult hitResult) {
+        final ItemInteractionResult result =
+                BusCableInteractionHandler.handleUseItemOn(
+                        heldItem, state, level, pos, player, hand, hitResult);
+        return result != null
+                ? result
+                : super.useItemOn(heldItem, state, level, pos, player, hand, hitResult);
     }
 
     @Override
-    public ItemStack getCloneItemStack(final BlockState state, final HitResult hit, final LevelReader level, final BlockPos pos, final Player player) {
-        final ItemStack result = BusCableInteractionHandler.getPickBlock(state, hit, level, pos, player);
+    public ItemStack getCloneItemStack(
+            final BlockState state,
+            final HitResult hit,
+            final LevelReader level,
+            final BlockPos pos,
+            final Player player) {
+        final ItemStack result =
+                BusCableInteractionHandler.getPickBlock(state, hit, level, pos, player);
         return result != null ? result : super.getCloneItemStack(state, hit, level, pos, player);
     }
 
@@ -127,7 +159,8 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(
+            final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         FACING_TO_CONNECTION_MAP.values().forEach(builder::add);
         builder.add(HAS_CABLE, HAS_FACADE);

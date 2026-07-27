@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.state;
 
 import li.cil.ceres.api.Serialized;

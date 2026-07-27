@@ -2,27 +2,25 @@ package li.cil.oc2.common.inet;
 
 import li.cil.oc2.common.util.IntegerSpace;
 
-import javax.annotation.Nullable;
-import javax.annotation.RegEx;
 import java.io.IOException;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+import javax.annotation.RegEx;
+
 public final class Ipv4Space extends IntegerSpace {
 
     private static final String IPADDRESS_PATTERN =
-        "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    public static final Pattern ipAddressPattern =
-        line(group("ip", IPADDRESS_PATTERN));
+            "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    public static final Pattern ipAddressPattern = line(group("ip", IPADDRESS_PATTERN));
     private static final Pattern ipRangePattern =
-        line(group("start", IPADDRESS_PATTERN) + "-" + group("end", IPADDRESS_PATTERN));
+            line(group("start", IPADDRESS_PATTERN) + "-" + group("end", IPADDRESS_PATTERN));
     private static final Pattern subnetPattern =
-        line(group("ip", IPADDRESS_PATTERN) + "\\/" + group("prefix", "[1-9]\\d?"));
-    private static final Pattern interfaceNamePattern =
-        line("@" + group("name", "[a-zA-Z].*"));
-    private static final Pattern interfaceIdPattern =
-        line("@" + group("id", "\\d*"));
+            line(group("ip", IPADDRESS_PATTERN) + "\\/" + group("prefix", "[1-9]\\d?"));
+    private static final Pattern interfaceNamePattern = line("@" + group("name", "[a-zA-Z].*"));
+    private static final Pattern interfaceIdPattern = line("@" + group("id", "\\d*"));
     private final boolean isAllowListMode;
 
     public Ipv4Space(final Modes mode) {
@@ -57,7 +55,8 @@ public final class Ipv4Space extends IntegerSpace {
         for (final InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
             final InetAddress inetAddress = address.getAddress();
             if (inetAddress instanceof Inet4Address) {
-                final int ipAddress = InetUtils.javaInetAddressToIpAddress((Inet4Address) inetAddress);
+                final int ipAddress =
+                        InetUtils.javaInetAddressToIpAddress((Inet4Address) inetAddress);
                 result = putSubnet(ipAddress, address.getNetworkPrefixLength()) || result;
             }
         }
@@ -73,7 +72,8 @@ public final class Ipv4Space extends IntegerSpace {
 
         final Matcher ipRangeMatch = ipRangePattern.matcher(string);
         if (ipRangeMatch.matches()) {
-            final int rangeStart = InetUtils.surelyParseValidIpv4Address(ipRangeMatch.group("start"));
+            final int rangeStart =
+                    InetUtils.surelyParseValidIpv4Address(ipRangeMatch.group("start"));
             final int rangeEnd = InetUtils.surelyParseValidIpv4Address(ipRangeMatch.group("end"));
             return put(rangeStart, rangeEnd);
         }
@@ -113,7 +113,8 @@ public final class Ipv4Space extends IntegerSpace {
             boolean result = false;
             for (final InetAddress address : addresses) {
                 if (address instanceof Inet4Address) {
-                    final int ipAddress = InetUtils.javaInetAddressToIpAddress((Inet4Address) address);
+                    final int ipAddress =
+                            InetUtils.javaInetAddressToIpAddress((Inet4Address) address);
                     result = put(ipAddress) || result;
                 }
             }

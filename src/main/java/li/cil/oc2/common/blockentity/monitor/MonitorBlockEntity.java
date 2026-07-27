@@ -1,5 +1,8 @@
 package li.cil.oc2.common.blockentity.monitor;
 
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
+import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
+
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.block.Blocks;
@@ -17,27 +20,26 @@ import li.cil.oc2.common.network.message.MonitorRequestFramebufferMessage;
 import li.cil.oc2.common.network.message.MonitorStateMessage;
 import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
-public final class MonitorBlockEntity extends ModBlockEntity implements TickableBlockEntity, ICaptureInputStateStorage {
+public final class MonitorBlockEntity extends ModBlockEntity
+        implements TickableBlockEntity, ICaptureInputStateStorage {
     final Picture picture = Picture.create(WIDTH, HEIGHT, ColorSpace.YUV420J);
     @Nullable FrameConsumer frameConsumer;
     final MonitorVideoEncoder encoder = new MonitorVideoEncoder();
@@ -51,8 +53,13 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
         setNeedsLevelUnloadEvent();
     }
 
-    public void start() { stateManager.isPowered = true; }
-    public void stop() { stateManager.isPowered = false; }
+    public void start() {
+        stateManager.isPowered = true;
+    }
+
+    public void stop() {
+        stateManager.isPowered = false;
+    }
 
     public void handleInput(final int keycode, final boolean isDown) {
         stateManager.keyboardDevice.sendKeyEvent(keycode, isDown);
@@ -71,13 +78,19 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
     }
 
     private void updateMonitorState(final boolean newIsMounted, final boolean newHasEnergy) {
-        if ((newIsMounted == stateManager.isMounted && newHasEnergy == stateManager.hasEnergy) || !isValid()) return;
+        if ((newIsMounted == stateManager.isMounted && newHasEnergy == stateManager.hasEnergy)
+                || !isValid()) return;
         if (level != null && !level.isClientSide() && level.isLoaded(getBlockPos())) {
-            if (stateManager.isMounted && !newIsMounted) Arrays.fill(picture.getPlaneData(0), (byte) -128);
+            if (stateManager.isMounted && !newIsMounted)
+                Arrays.fill(picture.getPlaneData(0), (byte) -128);
             stateManager.isMounted = newIsMounted;
             stateManager.hasEnergy = newHasEnergy;
-            level.setBlock(getBlockPos(), getBlockState().setValue(MonitorBlock.LIT, newIsMounted), Block.UPDATE_CLIENTS);
-            Network.sendToClientsTrackingBlockEntity(new MonitorStateMessage(this, newIsMounted, newHasEnergy), this);
+            level.setBlock(
+                    getBlockPos(),
+                    getBlockState().setValue(MonitorBlock.LIT, newIsMounted),
+                    Block.UPDATE_CLIENTS);
+            Network.sendToClientsTrackingBlockEntity(
+                    new MonitorStateMessage(this, newIsMounted, newHasEnergy), this);
         }
     }
 
@@ -87,13 +100,30 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
         stateManager.hasEnergy = hasEnergy;
     }
 
-    public boolean hasPower() { return stateManager.hasEnergy; }
-    public boolean getPowerState() { return stateManager.isPowered; }
-    public boolean isMounted() { return stateManager.isMounted; }
-    public MonitorGUIRenderer getMonitor() { return stateManager.monitor; }
-    public UUID getDeviceId() { return stateManager.deviceId; }
+    public boolean hasPower() {
+        return stateManager.hasEnergy;
+    }
 
-    public void setRequiresKeyframe() { encoder.setRequiresKeyframe(); }
+    public boolean getPowerState() {
+        return stateManager.isPowered;
+    }
+
+    public boolean isMounted() {
+        return stateManager.isMounted;
+    }
+
+    public MonitorGUIRenderer getMonitor() {
+        return stateManager.monitor;
+    }
+
+    public UUID getDeviceId() {
+        return stateManager.deviceId;
+    }
+
+    public void setRequiresKeyframe() {
+        encoder.setRequiresKeyframe();
+    }
+
     public void applyNextFrameClient(final ByteBuffer frameData) {
         decoder.applyNextFrameClient(frameData, picture, frameConsumer);
     }
@@ -111,22 +141,32 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
     }
 
     @Override
-    public void clientTick() { MonitorContraptionHelper.registerInClientRegistry(this); }
+    public void clientTick() {
+        MonitorContraptionHelper.registerInClientRegistry(this);
+    }
 
     @Override
-    protected void loadClient() { MonitorContraptionHelper.registerInClientRegistry(this); }
+    protected void loadClient() {
+        MonitorContraptionHelper.registerInClientRegistry(this);
+    }
 
     @Override
     public void serverTick() {
         if (level == null || !isValid()) return;
         final boolean hasPowered;
         if (Config.monitorsUseEnergy()) {
-            hasPowered = stateManager.energy.extractEnergy(Config.monitorEnergyPerTick, true) >= Config.monitorEnergyPerTick;
+            hasPowered =
+                    stateManager.energy.extractEnergy(Config.monitorEnergyPerTick, true)
+                            >= Config.monitorEnergyPerTick;
             if (hasPowered) stateManager.energy.extractEnergy(Config.monitorEnergyPerTick, false);
         } else hasPowered = true;
         updateMonitorState(stateManager.isMounted, hasPowered);
-        if (!stateManager.hasEnergy || !stateManager.isPowered || (!stateManager.monitorDevice.hasChanges() && !encoder.isKeyframeRequired())) return;
-        MonitorLoadBalancer.offerFrame(this, () -> encoder.encodeFrame(picture, stateManager.monitorDevice));
+        if (!stateManager.hasEnergy
+                || !stateManager.isPowered
+                || (!stateManager.monitorDevice.hasChanges() && !encoder.isKeyframeRequired()))
+            return;
+        MonitorLoadBalancer.offerFrame(
+                this, () -> encoder.encodeFrame(picture, stateManager.monitorDevice));
     }
 
     @Override
@@ -166,34 +206,38 @@ public final class MonitorBlockEntity extends ModBlockEntity implements Tickable
     }
 
     @Override
-    public boolean getCaptureInputState() { return stateManager.captureInputState; }
+    public boolean getCaptureInputState() {
+        return stateManager.captureInputState;
+    }
 
     @Override
-    public void setCaptureInputState(final boolean value) { stateManager.captureInputState = value; }
+    public void setCaptureInputState(final boolean value) {
+        stateManager.captureInputState = value;
+    }
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(
-            Capabilities.Device.BLOCK,
-            (level, pos, state, be, side) -> {
-                if (be instanceof final MonitorBlockEntity self) {
-                    if (side != self.getBlockState().getValue(MonitorBlock.FACING)) return self.stateManager.deviceGroup;
-                }
-                return null;
-            },
-            Blocks.MONITOR.get()
-        );
-        if (Config.monitorsUseEnergy()) {
-            event.registerBlock(
-                Capabilities.EnergyStorage.BLOCK,
+                Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final MonitorBlockEntity self) {
-                        if (side != self.getBlockState().getValue(MonitorBlock.FACING)) return self.stateManager.energy;
+                        if (side != self.getBlockState().getValue(MonitorBlock.FACING))
+                            return self.stateManager.deviceGroup;
                     }
                     return null;
                 },
-                Blocks.MONITOR.get()
-            );
+                Blocks.MONITOR.get());
+        if (Config.monitorsUseEnergy()) {
+            event.registerBlock(
+                    Capabilities.EnergyStorage.BLOCK,
+                    (level, pos, state, be, side) -> {
+                        if (be instanceof final MonitorBlockEntity self) {
+                            if (side != self.getBlockState().getValue(MonitorBlock.FACING))
+                                return self.stateManager.energy;
+                        }
+                        return null;
+                    },
+                    Blocks.MONITOR.get());
         }
     }
 }

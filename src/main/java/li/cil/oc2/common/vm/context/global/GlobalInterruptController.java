@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.vm.context.global;
 
 import li.cil.oc2.common.vm.context.InterruptValidator;
@@ -9,13 +8,12 @@ final class GlobalInterruptController implements InterruptController {
     private final InterruptValidator validator;
     private int raisedInterruptMask;
 
-
-    public GlobalInterruptController(final InterruptController parent, final InterruptValidator validator) {
+    public GlobalInterruptController(
+            final InterruptController parent, final InterruptValidator validator) {
         this.parent = parent;
         this.validator = validator;
         raisedInterruptMask = validator.getMaskedInterrupts(parent.getRaisedInterrupts());
     }
-
 
     public void invalidate() {
         parent.lowerInterrupts(raisedInterruptMask);
@@ -33,7 +31,8 @@ final class GlobalInterruptController implements InterruptController {
             parent.raiseInterrupts(mask);
             raisedInterruptMask |= mask;
         } else {
-            throw new IllegalArgumentException("Trying to raise interrupt not allocated by this context.");
+            throw new IllegalArgumentException(
+                    "Trying to raise interrupt not allocated by this context.");
         }
     }
 
@@ -43,7 +42,8 @@ final class GlobalInterruptController implements InterruptController {
             parent.lowerInterrupts(mask);
             raisedInterruptMask &= ~mask;
         } else {
-            throw new IllegalArgumentException("Trying to lower interrupt not allocated by this context.");
+            throw new IllegalArgumentException(
+                    "Trying to lower interrupt not allocated by this context.");
         }
     }
 

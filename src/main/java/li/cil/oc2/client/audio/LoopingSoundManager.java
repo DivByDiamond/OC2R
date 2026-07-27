@@ -1,4 +1,3 @@
-
 package li.cil.oc2.client.audio;
 
 import net.minecraft.client.Minecraft;
@@ -8,10 +7,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.WeakHashMap;
 
 public final class LoopingSoundManager {
-    private static final WeakHashMap<BlockEntity, LoopingBlockEntitySound> BLOCK_ENTITY_SOUNDS = new WeakHashMap<>();
+    private static final WeakHashMap<BlockEntity, LoopingBlockEntitySound> BLOCK_ENTITY_SOUNDS =
+            new WeakHashMap<>();
 
-
-    public static void play(final BlockEntity blockEntity, final SoundEvent sound, final int delay) {
+    public static void play(
+            final BlockEntity blockEntity, final SoundEvent sound, final int delay) {
         stop(blockEntity);
 
         final LoopingBlockEntitySound instance = new LoopingBlockEntitySound(blockEntity, sound);

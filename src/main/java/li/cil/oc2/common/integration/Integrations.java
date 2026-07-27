@@ -1,7 +1,9 @@
 package li.cil.oc2.common.integration;
 
 import li.cil.oc2.common.integration.projectred.BundledCableHandler;
+
 import net.neoforged.fml.ModList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,16 +34,25 @@ public class Integrations {
         sableLoaded = modList.isLoaded(SABLE);
 
         if (createLoaded) {
-            LOGGER.info("Create detected — OC2R will treat contraption-hosted computers defensively (no chunk-tracking assumptions).");
+            LOGGER.info(
+                    "Create detected — OC2R will treat contraption-hosted computers defensively (no"
+                        + " chunk-tracking assumptions).");
         }
         if (createAeronauticsLoaded) {
-            LOGGER.info("Create: Aeronautics detected — OC2R computer blocks on ships will boot with their own devices only when the surrounding level is not a ServerLevel.");
+            LOGGER.info(
+                    "Create: Aeronautics detected — OC2R computer blocks on ships will boot with"
+                        + " their own devices only when the surrounding level is not a"
+                        + " ServerLevel.");
         }
         if (valkyrienSkiesLoaded) {
-            LOGGER.info("Valkyrien Skies detected — non-ServerLevel ship worlds will be tolerated by the OC2R bus scan and terminal output paths.");
+            LOGGER.info(
+                    "Valkyrien Skies detected — non-ServerLevel ship worlds will be tolerated by"
+                        + " the OC2R bus scan and terminal output paths.");
         }
         if (sableLoaded) {
-            LOGGER.info("Sable detected — OC2R will not assume its peripheral blocks expose standard capabilities.");
+            LOGGER.info(
+                    "Sable detected — OC2R will not assume its peripheral blocks expose standard"
+                        + " capabilities.");
         }
 
         if (modList.isLoaded("projectred_transmission")) {

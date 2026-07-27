@@ -1,22 +1,21 @@
-
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
+
 import net.minecraft.nbt.CompoundTag;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
 
 public final class RobotActions {
     private static final String ACTION_TYPE_TAG_NAME = "action_type";
 
     private static final ArrayList<AbstractRobotActionType> ACTIONS = new ArrayList<>();
 
-
     public static final AbstractRobotActionType MOVEMENT = register(RobotMovementActionType::new);
     public static final AbstractRobotActionType ROTATION = register(RobotRotationActionType::new);
-
 
     public static void initializeData(final Robot robot) {
         for (final AbstractRobotActionType type : ACTIONS) {
@@ -53,8 +52,8 @@ public final class RobotActions {
         return actionType.deserialize(tag);
     }
 
-
-    private static AbstractRobotActionType register(final IntFunction<? extends AbstractRobotActionType> factory) {
+    private static AbstractRobotActionType register(
+            final IntFunction<? extends AbstractRobotActionType> factory) {
         final AbstractRobotActionType type = factory.apply(ACTIONS.size() + 1);
         ACTIONS.add(type);
         return type;

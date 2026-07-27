@@ -1,4 +1,3 @@
-
 package li.cil.oc2.common.util;
 
 import li.cil.oc2.common.Constants;

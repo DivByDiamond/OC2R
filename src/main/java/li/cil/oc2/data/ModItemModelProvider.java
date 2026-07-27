@@ -1,9 +1,9 @@
-
 package li.cil.oc2.data;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.Items;
+
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -13,7 +13,8 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 public final class ModItemModelProvider extends ItemModelProvider {
-    public ModItemModelProvider(final PackOutput output, final ExistingFileHelper existingFileHelper) {
+    public ModItemModelProvider(
+            final PackOutput output, final ExistingFileHelper existingFileHelper) {
         super(output, API.MOD_ID, existingFileHelper);
     }
 
@@ -38,19 +39,17 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.SILICON_WAFER);
         simple(Items.RAW_SILICON_WAFER);
         simple(Items.HARD_DRIVE_SMALL, "item/hard_drive_base")
-            .texture("layer1", "item/hard_drive_tint");
+                .texture("layer1", "item/hard_drive_tint");
         simple(Items.HARD_DRIVE_MEDIUM, "item/hard_drive_base")
-            .texture("layer1", "item/hard_drive_tint");
+                .texture("layer1", "item/hard_drive_tint");
         simple(Items.HARD_DRIVE_LARGE, "item/hard_drive_base")
-            .texture("layer1", "item/hard_drive_tint");
+                .texture("layer1", "item/hard_drive_tint");
         simple(Items.HARD_DRIVE_EXTRA_LARGE, "item/hard_drive_base")
-            .texture("layer1", "item/hard_drive_tint");
+                .texture("layer1", "item/hard_drive_tint");
         simple(Items.FLASH_MEMORY);
         simple(Items.FLASH_MEMORY_CUSTOM, "item/flash_memory");
-        simple(Items.FLOPPY, "item/floppy_base")
-            .texture("layer1", "item/floppy_tint");
-        simple(Items.FLOPPY_MODERN, "item/floppy_base")
-            .texture("layer1", "item/floppy_tint");
+        simple(Items.FLOPPY, "item/floppy_base").texture("layer1", "item/floppy_tint");
+        simple(Items.FLOPPY_MODERN, "item/floppy_base").texture("layer1", "item/floppy_tint");
 
         simple(Items.REDSTONE_INTERFACE_CARD);
         simple(Items.NETWORK_INTERFACE_CARD);
@@ -73,10 +72,12 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(item, "item/" + item.getId().getPath());
     }
 
-    private <T extends Item> ItemModelBuilder simple(final DeferredItem<T> item, final String texturePath) {
-        return singleTexture(item.getId().getPath(),
-            ResourceLocation.parse("item/generated"),
-            "layer0",
-            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, texturePath));
+    private <T extends Item> ItemModelBuilder simple(
+            final DeferredItem<T> item, final String texturePath) {
+        return singleTexture(
+                item.getId().getPath(),
+                ResourceLocation.parse("item/generated"),
+                "layer0",
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, texturePath));
     }
 }

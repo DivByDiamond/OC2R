@@ -5,8 +5,7 @@ public class StreamSessionDiscriminator extends SocketSessionDiscriminator<Strea
             final int srcIpAddress,
             final short srcPort,
             final int dstIpAddress,
-            final short dstPort
-    ) {
+            final short dstPort) {
         super(srcIpAddress, srcPort, dstIpAddress, dstPort);
     }
 
