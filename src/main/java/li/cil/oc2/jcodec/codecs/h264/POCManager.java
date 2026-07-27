@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: BSD 2-Clause "Simplified" License */
 
 package li.cil.oc2.jcodec.codecs.h264;
 

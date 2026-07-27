@@ -5,30 +5,54 @@
 
 <module name="Checker">
   <property name="charset" value="UTF-8"/>
-  <property name="severity" value="error"/>
+  <property name="severity" value="warning"/>
   <property name="fileExtensions" value="java"/>
 
-  <module name="FileLength">
-    <property name="max" value="200"/>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value="module\-info\.java$"/>
+  </module>
+
+  <module name="SuppressWarningsFilter"/>
+
+  <module name="SuppressionFilter">
+    <property name="file" value="checkstyle-suppressions.xml"/>
+    <property name="optional" value="true"/>
   </module>
 
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
   </module>
 
-  <module name="RegexpSingleline">
-    <property name="format" value="\s+$"/>
-    <property name="message" value="Line has trailing whitespace."/>
+  <module name="FileLength">
+    <property name="max" value="200"/>
+  </module>
+
+  <module name="LineLength">
+    <property name="fileExtensions" value="java"/>
+    <property name="max" value="120"/>
+    <property name="ignorePattern"
+              value="^package.*|^import.*|http://|https://|ftp://"/>
   </module>
 
   <module name="TreeWalker">
+
+    <!-- СТРУКТУРА -->
+    <module name="OuterTypeFilename"/>
+    <module name="OneTopLevelClass"/>
+    <module name="NoLineWrap">
+      <property name="tokens" value="PACKAGE_DEF, IMPORT, STATIC_IMPORT"/>
+    </module>
+
+    <!-- ИМЕНОВАНИЕ -->
     <module name="PackageName">
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
     </module>
     <module name="TypeName"/>
-    <module name="MethodName"/>
-    <module name="ParameterName">
+    <module name="MethodName">
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+    <module name="ParameterName">
+      <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
     </module>
     <module name="LocalVariableName">
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
@@ -36,62 +60,157 @@
     <module name="MemberName">
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
     </module>
-    <module name="StaticVariableName"/>
     <module name="ConstantName"/>
     <module name="CatchParameterName">
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
     </module>
+    <module name="LambdaParameterName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+    <module name="ClassTypeParameterName">
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+    </module>
+    <module name="MethodTypeParameterName">
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+    </module>
+    <module name="AbbreviationAsWordInName">
+      <property name="ignoreFinal" value="false"/>
+      <property name="allowedAbbreviationLength" value="2"/>
+    </module>
 
-    <module name="LineLength">
-      <property name="max" value="120"/>
-      <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-    </module>
-    <module name="MethodLength">
-      <property name="max" value="60"/>
-    </module>
-    <module name="ParameterNumber">
-      <property name="max" value="7"/>
-    </module>
-
+    <!-- ИМПОРТЫ -->
     <module name="AvoidStarImport"/>
-    <module name="UnusedImports"/>
     <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
     <module name="IllegalImport"/>
+    <module name="CustomImportOrder">
+      <property name="sortImportsInGroupAlphabetically" value="true"/>
+      <property name="separateLineBetweenGroups" value="true"/>
+      <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>
+    </module>
 
-    <module name="NeedBraces"/>
+    <!-- СКОБКИ -->
+    <module name="NeedBraces">
+      <property name="tokens"
+                value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
+    </module>
     <module name="LeftCurly"/>
-    <module name="RightCurly"/>
+    <module name="RightCurly">
+      <property name="id" value="RightCurlySame"/>
+      <property name="tokens"
+                value="LITERAL_TRY, LITERAL_CATCH, LITERAL_IF, LITERAL_ELSE, LITERAL_DO"/>
+    </module>
+    <module name="RightCurly">
+      <property name="id" value="RightCurlyAlone"/>
+      <property name="option" value="alone"/>
+      <property name="tokens"
+                value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE,
+                       STATIC_INIT, INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF"/>
+    </module>
 
+    <!-- ПРОБЕЛЫ -->
+    <module name="WhitespaceAfter">
+      <property name="tokens" value="COMMA, SEMI, TYPECAST, ELLIPSIS"/>
+    </module>
     <module name="WhitespaceAround">
       <property name="allowEmptyConstructors" value="true"/>
       <property name="allowEmptyLambdas" value="true"/>
       <property name="allowEmptyMethods" value="true"/>
       <property name="allowEmptyTypes" value="true"/>
       <property name="allowEmptyLoops" value="true"/>
+      <property name="ignoreEnhancedForColon" value="false"/>
     </module>
-    <module name="WhitespaceAfter"/>
-    <module name="NoWhitespaceBefore"/>
+    <module name="NoWhitespaceBefore">
+      <property name="tokens"
+                value="COMMA, SEMI, POST_INC, POST_DEC, DOT, METHOD_REF, ELLIPSIS"/>
+      <property name="allowLineBreaks" value="true"/>
+    </module>
     <module name="GenericWhitespace"/>
     <module name="MethodParamPad"/>
     <module name="ParenPad"/>
     <module name="EmptyLineSeparator">
+      <property name="tokens"
+                value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF, INTERFACE_DEF,
+                       ENUM_DEF, STATIC_INIT, INSTANCE_INIT, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
       <property name="allowNoEmptyLineBetweenFields" value="true"/>
+      <property name="allowMultipleEmptyLines" value="false"/>
     </module>
 
-    <module name="OneTopLevelClass"/>
-    <module name="OuterTypeFilename"/>
+    <!-- ПЕРЕНОС СТРОК -->
+    <module name="SeparatorWrap">
+      <property name="id" value="SeparatorWrapDot"/>
+      <property name="tokens" value="DOT"/>
+      <property name="option" value="nl"/>
+    </module>
+    <module name="SeparatorWrap">
+      <property name="id" value="SeparatorWrapComma"/>
+      <property name="tokens" value="COMMA"/>
+      <property name="option" value="EOL"/>
+    </module>
+    <module name="OperatorWrap">
+      <property name="option" value="NL"/>
+      <property name="tokens"
+                value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE,
+                       LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL,
+                       PLUS, QUESTION, SL, SR, STAR, METHOD_REF, TYPE_EXTENSION_AND"/>
+    </module>
+
+    <!-- ОТСТУПЫ -->
+    <module name="Indentation">
+      <property name="basicOffset" value="4"/>
+      <property name="braceAdjustment" value="0"/>
+      <property name="caseIndent" value="4"/>
+      <property name="throwsIndent" value="8"/>
+      <property name="lineWrappingIndentation" value="8"/>
+      <property name="arrayInitIndent" value="4"/>
+    </module>
+
+    <!-- МОДИФИКАТОРЫ -->
     <module name="ModifierOrder"/>
     <module name="RedundantModifier"/>
 
+    <!-- АННОТАЦИИ -->
+    <module name="AnnotationLocation">
+      <property name="tokens"
+                value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, PACKAGE_DEF"/>
+      <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
+    </module>
+    <module name="AnnotationLocation">
+      <property name="tokens" value="METHOD_DEF, CTOR_DEF"/>
+    </module>
+
+    <!-- ПОРЯДОК ОБЪЯВЛЕНИЙ -->
+    <module name="OverloadMethodsDeclarationOrder"/>
+    <module name="VariableDeclarationUsageDistance"/>
+
+    <!-- КАЧЕСТВО КОДА -->
+    <module name="OneStatementPerLine"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="MissingSwitchDefault"/>
+    <module name="DefaultComesLast"/>
+    <module name="FallThrough"/>
+    <module name="UpperEll"/>
+    <module name="NoFinalizer"/>
     <module name="EqualsHashCode"/>
     <module name="SimplifyBooleanExpression"/>
     <module name="SimplifyBooleanReturn"/>
     <module name="StringLiteralEquality"/>
-    <module name="NestedIfDepth">
-      <property name="max" value="3"/>
+    <module name="InnerAssignment"/>
+    <module name="EqualsAvoidNull"/>
+    <module name="CovariantEquals"/>
+    <module name="MutableException"/>
+    <module name="UnnecessaryParentheses"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="IllegalThrows"/>
+    <module name="IllegalCatch"/>
+
+    <!-- СЛОЖНОСТЬ -->
+    <module name="MethodLength">
+      <property name="max" value="60"/>
     </module>
-    <module name="NestedTryDepth">
-      <property name="max" value="2"/>
+    <module name="ParameterNumber">
+      <property name="max" value="7"/>
     </module>
     <module name="CyclomaticComplexity">
       <property name="max" value="15"/>
@@ -99,27 +218,63 @@
     <module name="BooleanExpressionComplexity">
       <property name="max" value="5"/>
     </module>
-
-    <module name="EmptyCatchBlock">
-      <property name="exceptionVariableName" value="expected|ignore"/>
+    <module name="NestedIfDepth">
+      <property name="max" value="3"/>
     </module>
-    <module name="FallThrough"/>
-    <module name="MissingSwitchDefault"/>
-    <module name="DefaultComesLast"/>
-    <module name="MultipleVariableDeclarations"/>
-    <module name="OneStatementPerLine"/>
-    <module name="UnnecessaryParentheses"/>
-    <module name="HideUtilityClassConstructor"/>
+    <module name="NestedTryDepth">
+      <property name="max" value="2"/>
+    </module>
+    <module name="ReturnCount">
+      <property name="max" value="4"/>
+    </module>
+    <module name="ThrowsCount">
+      <property name="max" value="3"/>
+    </module>
 
+    <!-- ПЛОХИЕ ПРАКТИКИ -->
+    <module name="EmptyCatchBlock">
+      <property name="exceptionVariableName" value="expected|ignore|ignored"/>
+    </module>
+
+    <!-- КОММЕНТАРИИ -->
+    <module name="CommentsIndentation">
+      <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>
+    </module>
+
+    <!-- JAVADOC -->
+    <module name="InvalidJavadocPosition"/>
+    <module name="JavadocTagContinuationIndentation"/>
+    <module name="JavadocParagraph">
+      <property name="allowNewlineParagraph" value="false"/>
+    </module>
+    <module name="NonEmptyAtclauseDescription"/>
+    <module name="AtclauseOrder">
+      <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
+    </module>
+    <module name="JavadocMethod">
+      <property name="accessModifiers" value="public"/>
+      <property name="allowMissingParamTags" value="true"/>
+      <property name="allowMissingReturnTag" value="true"/>
+      <property name="allowedAnnotations" value="Override, Test"/>
+    </module>
     <module name="MissingJavadocMethod">
       <property name="scope" value="public"/>
       <property name="allowMissingPropertyJavadoc" value="true"/>
+      <property name="allowedAnnotations" value="Override, Test"/>
     </module>
-    <module name="JavadocMethod">
-      <property name="scope" value="public"/>
+
+    <!-- ПОДАВЛЕНИЕ -->
+    <module name="SuppressWarningsHolder"/>
+    <module name="SuppressionCommentFilter">
+      <property name="offCommentFormat" value="CHECKSTYLE.OFF\: ([\w\|]+)"/>
+      <property name="onCommentFormat" value="CHECKSTYLE.ON\: ([\w\|]+)"/>
+      <property name="checkFormat" value="$1"/>
     </module>
-    <module name="JavadocVariable">
-      <property name="scope" value="public"/>
+    <module name="SuppressWithNearbyCommentFilter">
+      <property name="commentFormat" value="CHECKSTYLE.SUPPRESS\: ([\w\|]+)"/>
+      <property name="checkFormat" value="$1"/>
+      <property name="influenceFormat" value="1"/>
     </module>
+
   </module>
 </module>

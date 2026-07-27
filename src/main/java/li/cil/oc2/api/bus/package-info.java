@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 
 /**
  * The device bus is the glue that connects devices and VMs.
