@@ -89,6 +89,31 @@ final class NativeLoader {
         } catch (IOException e) {
             Main.LoadedLibrary = false;
             LogManager.getLogger().warn("Failed to load native library: {}", resourcePath, e);
+        } catch (UnsatisfiedLinkError linkError) {
+            // System.load() succeeded, but the native library does not export
+            // the JNI symbol(s) that the Java side declares as `native`. This
+            // typically happens when the bundled prebuilt binaries are out of
+            // sync with the current Java package layout (e.g. a class was
+            // moved and the corresponding JNIEXPORT symbol name changed).
+            // Falling back to the JVM UDP implementation is the intended
+            // behaviour here; rethrowing would crash mod construction.
+            Main.LoadedLibrary = false;
+            LogManager.getLogger()
+                    .warn(
+                            "Native library was loaded but does not expose the expected JNI"
+                                    + " symbols ({}); falling back to JVM UDP implementation."
+                                    + " This usually means the bundled natives are out of sync"
+                                    + " with the current Java class layout.",
+                            linkError.getMessage());
+        } catch (NoClassDefFoundError classError) {
+            // Defensive: any class-resolution issue triggered by the probe
+            // call should not take down the whole mod.
+            Main.LoadedLibrary = false;
+            LogManager.getLogger()
+                    .warn(
+                            "Native library probe failed due to a missing class ({}); falling"
+                                    + " back to JVM UDP implementation.",
+                            classError.getMessage());
         }
     }
 
