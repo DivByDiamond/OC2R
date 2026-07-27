@@ -32,9 +32,9 @@ public final class BuiltinDevices {
 
     public final MinecraftRealTimeCounter rtcMinecraft = new MinecraftRealTimeCounter();
 
-    @Serialized public final VirtIOConsoleDevice rpcSerialDevice;
-    @Serialized public final UART16550A uart;
-    @Serialized public final VirtIOFileSystemDevice vfs;
+    @Serialized public VirtIOConsoleDevice rpcSerialDevice;
+    @Serialized public UART16550A uart;
+    @Serialized public VirtIOFileSystemDevice vfs;
     @Serialized public VirtIOBlockDevice bfs;
     @Serialized public VirtIOBlockDevice rfs;
 

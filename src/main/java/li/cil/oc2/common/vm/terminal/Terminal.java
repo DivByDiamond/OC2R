@@ -43,13 +43,13 @@ public class Terminal {
             foregroundColor;
     public byte style;
 
-    public final int SCROLL_BACK_COUNT = 20;
-    public final ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
-    public final int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public final ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public final ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public final byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public final boolean[] tabs = new boolean[WIDTH];
+    public int SCROLL_BACK_COUNT = 20;
+    public ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
+    public int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public boolean[] tabs = new boolean[WIDTH];
     public State state = State.NORMAL;
     public int scrollFirst = 0;
     public int scrollLast = HEIGHT - 1;
@@ -62,11 +62,11 @@ public class Terminal {
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 
-    public final int[] altBuffer = new int[WIDTH * HEIGHT];
-    public final ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
-    public final ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
-    public final byte[] altStyles = new byte[WIDTH * HEIGHT];
-    public final boolean[] altTabs = new boolean[WIDTH];
+    public int[] altBuffer = new int[WIDTH * HEIGHT];
+    public ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
+    public ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
+    public byte[] altStyles = new byte[WIDTH * HEIGHT];
+    public boolean[] altTabs = new boolean[WIDTH];
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
@@ -96,7 +96,7 @@ public class Terminal {
         CONTROL_SEQUENCE,
     }
 
-    public final TerminalBuffer bufferManager;
+    public TerminalBuffer bufferManager;
     CSIManager csiManager = new CSIManager(this);
     OSCManager oscManager = new OSCManager(this);
     DCSManager dcsManager = new DCSManager(this);
