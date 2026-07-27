@@ -1,5 +1,7 @@
 package li.cil.oc2.common.inet;
 
+import li.cil.oc2.common.inet.util.InetUtils;
+import li.cil.oc2.common.inet.util.Ipv4Space;
 import li.cil.oc2.common.inet.util.checksum.AddressParseException;
 import org.junit.jupiter.api.Test;
 

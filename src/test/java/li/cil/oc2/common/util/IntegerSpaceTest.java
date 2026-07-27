@@ -1,5 +1,6 @@
 package li.cil.oc2.common.util;
 
+import li.cil.oc2.common.util.misc.IntegerSpace;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

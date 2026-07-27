@@ -9,19 +9,21 @@ public class ArpProtocolTest {
     @Test
     public void arpRequestContainsCorrectFields() {
         // Verify that ARP protocol constants are correct
-        assertEquals(0x0806, ArpProtocol.PROTOCOL_ARP);
+        assertEquals((short) 0x0806, ArpProtocol.PROTOCOL_ARP);
     }
 
     @Test
     public void macAddressInArpResponse() {
-        final MacAddress mac = new MacAddress(new byte[]{0x00, 0x11, 0x22, 0x33, 0x44, 0x55});
+        final MacAddress mac = new MacAddress((short) 0x0011, 0x22334455);
         assertNotNull(mac);
-        assertArrayEquals(new byte[]{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}, mac.address());
+        assertEquals((short) 0x0011, mac.prefix());
+        assertEquals(0x22334455, mac.address());
     }
 
     @Test
     public void macAddressPrefixAndAddress() {
-        final MacAddress mac = new MacAddress(new byte[]{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF});
-        assertEquals(0xAABB, mac.prefix());
+        final MacAddress mac = new MacAddress((short) 0xAABB, 0xCCDDEEFF);
+        assertEquals((short) 0xAABB, mac.prefix());
+        assertEquals(0xCCDDEEFF, mac.address());
     }
 }

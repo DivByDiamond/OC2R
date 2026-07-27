@@ -10,8 +10,9 @@ public class Rfc1071ChecksumTest {
     @Test
     public void checksumOfZeroData() {
         final ByteBuffer buffer = ByteBuffer.allocate(0);
-        final int checksum = Rfc1071Checksum.rfc1071Checksum(buffer, 0, 0);
-        assertEquals(0, checksum);
+        final short checksum = Rfc1071Checksum.rfc1071Checksum(buffer);
+        // RFC 1071 checksum of empty data is ~0 = 0xFFFF (signed short -1).
+        assertEquals((short) -1, checksum);
     }
 
     @Test
@@ -21,14 +22,15 @@ public class Rfc1071ChecksumTest {
         buffer.putInt(0x00000000);
         buffer.flip();
 
-        final int checksum = Rfc1071Checksum.rfc1071Checksum(buffer, 0, 8);
+        final short checksum = Rfc1071Checksum.rfc1071Checksum(buffer);
         assertNotEquals(0, checksum);
     }
 
     @Test
     public void checksumOfEmptyRange() {
         final ByteBuffer buffer = ByteBuffer.allocate(10);
-        final int checksum = Rfc1071Checksum.rfc1071Checksum(buffer, 5, 0);
-        assertEquals(0, checksum);
+        final short checksum = Rfc1071Checksum.rfc1071Checksum(buffer, 0);
+        // RFC 1071 checksum of empty range is ~0 = 0xFFFF (signed short -1).
+        assertEquals((short) -1, checksum);
     }
 }
