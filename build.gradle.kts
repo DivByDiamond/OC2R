@@ -127,6 +127,7 @@ repositories {
         url = uri("https://maven.blamejared.com/")
     }
     maven { url = uri("https://maven.covers1624.net/") }
+    maven { url = uri("https://api.modrinth.com/maven") }
     maven { url = uri("https://maven.neoforged.net/releases/") }
     if (hasGithubPackageCredentials) {
         val githubPackages = listOf(
@@ -214,7 +215,7 @@ dependencies {
     add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:0.0.64")
 
     implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
-    // Provided via libs/markdown_manual-1.3.1.jar (Modrinth)
+    implementation("maven.modrinth:13P81Hg3:1.3.1")
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}-api:${jei_version}")
