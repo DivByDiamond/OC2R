@@ -11,6 +11,8 @@ import li.cil.oc2.client.gui.screen.file.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.file.FileChooserScreen;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
 import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.common.network.message.misc.MultipartMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -21,8 +23,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
-import li.cil.oc2.common.network.message.misc.MultipartMessage;
 
 public record RequestImportedFileMessage(int id) implements AbstractMessage {
     private static final Logger LOGGER = LogManager.getLogger();

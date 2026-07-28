@@ -4,13 +4,12 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import li.cil.oc2.common.vm.terminal.RendererModel;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.joml.Matrix4f;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Renders terminal content into a DynamicTexture once per change,

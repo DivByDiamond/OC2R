@@ -3,15 +3,15 @@ package li.cil.oc2.common.network.message.robot;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
 
 public record RobotInitializationRequestMessage(int entityId) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, RobotInitializationRequestMessage> STREAM_CODEC =

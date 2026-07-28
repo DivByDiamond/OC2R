@@ -11,10 +11,10 @@ import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
 
 public final class EchoHandler {
     private static final Logger LOGGER = LogManager.getLogger();

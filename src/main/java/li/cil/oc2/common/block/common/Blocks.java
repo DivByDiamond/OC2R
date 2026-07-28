@@ -1,9 +1,6 @@
 package li.cil.oc2.common.block.common;
 
 import li.cil.oc2.api.API;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import li.cil.oc2.common.block.cable.BusCableBlock;
 import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.block.disk.DiskDriveBlock;
@@ -20,6 +17,9 @@ import li.cil.oc2.common.block.network.NetworkHubBlock;
 import li.cil.oc2.common.block.network.NetworkSwitchBlock;
 import li.cil.oc2.common.block.network.VxlanBlock;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class Blocks {
     public static final DeferredRegister.Blocks REGISTRY = DeferredRegister.createBlocks(API.MOD_ID);

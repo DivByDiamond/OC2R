@@ -5,6 +5,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.screen.monitor.BusInterfaceScreen;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.FacadeType;
 import li.cil.oc2.common.integration.Wrenches;
@@ -27,7 +28,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.common.block.types.ConnectionType;
 
 final class BusCableInteractionHandler {
     @Nullable

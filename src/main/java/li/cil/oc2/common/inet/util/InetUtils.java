@@ -9,11 +9,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import li.cil.oc2.common.inet.layer.LayerParametersImpl;
 import li.cil.oc2.common.inet.layer.NullLayer;
 import li.cil.oc2.common.inet.util.checksum.AddressParseException;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 public final class InetUtils {
     private static InetAddress getInetAddressByBytes(final byte[] bytes) {

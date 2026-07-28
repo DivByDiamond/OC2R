@@ -3,14 +3,14 @@ package li.cil.oc2.common.network.message.projector;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
 
 public record ProjectorRequestFramebufferMessage(BlockPos pos) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, ProjectorRequestFramebufferMessage> STREAM_CODEC =

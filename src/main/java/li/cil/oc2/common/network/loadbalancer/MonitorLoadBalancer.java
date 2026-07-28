@@ -10,12 +10,12 @@ import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.network.info.MonitorProjectorInfo;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import li.cil.oc2.common.network.info.MonitorProjectorInfo;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class MonitorLoadBalancer {

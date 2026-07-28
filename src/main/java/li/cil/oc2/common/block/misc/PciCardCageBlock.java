@@ -2,6 +2,8 @@ package li.cil.oc2.common.block.misc;
 
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
+import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.config.Config;
@@ -26,8 +28,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import li.cil.oc2.common.block.common.BlockCodecs;
-import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
 
 public final class PciCardCageBlock extends HorizontalDirectionalBlock
         implements EntityBlock, EnergyConsumingBlock {

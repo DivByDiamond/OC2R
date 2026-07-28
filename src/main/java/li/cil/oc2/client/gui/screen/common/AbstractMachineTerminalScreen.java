@@ -3,6 +3,10 @@ package li.cil.oc2.client.gui.screen.common;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.widget.InputCaptureButton;
+import li.cil.oc2.client.gui.screen.widget.InventoryButton;
+import li.cil.oc2.client.gui.screen.widget.PowerButton;
+import li.cil.oc2.client.gui.screen.widget.SidebarAreas;
 import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
 import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,10 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.widget.InputCaptureButton;
-import li.cil.oc2.client.gui.screen.widget.InventoryButton;
-import li.cil.oc2.client.gui.screen.widget.PowerButton;
-import li.cil.oc2.client.gui.screen.widget.SidebarAreas;
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTerminalContainer>

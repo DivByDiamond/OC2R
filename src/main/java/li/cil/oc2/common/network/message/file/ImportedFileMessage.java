@@ -3,12 +3,12 @@ package li.cil.oc2.common.network.message.file;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
 
 public record ImportedFileMessage(int id, String name, byte[] data) implements AbstractMessage {
 

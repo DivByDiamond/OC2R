@@ -2,6 +2,7 @@ package li.cil.oc2.common.block.cable;
 
 import java.util.Arrays;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.types.ConnectionType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
@@ -10,7 +11,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import li.cil.oc2.common.block.types.ConnectionType;
 
 final class BusCableShapeBuilder {
     static VoxelShape[] makeShapes() {

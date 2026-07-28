@@ -2,13 +2,13 @@ package li.cil.oc2.common.inet.tcp.state;
 
 import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.session.Session;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.session.SessionActions;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import li.cil.oc2.common.inet.tcp.TcpHeader;
 import li.cil.oc2.common.inet.tcp.TcpState;
 import li.cil.oc2.common.inet.tcp.TcpStates;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class EstablishedState extends TcpState {
     private static final Logger LOGGER = LogManager.getLogger();

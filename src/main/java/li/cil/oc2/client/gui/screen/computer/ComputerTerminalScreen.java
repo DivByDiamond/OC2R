@@ -1,12 +1,12 @@
 package li.cil.oc2.client.gui.screen.computer;
 
+import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.container.ComputerTerminalContainer;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
 
 @OnlyIn(Dist.CLIENT)
 public final class ComputerTerminalScreen

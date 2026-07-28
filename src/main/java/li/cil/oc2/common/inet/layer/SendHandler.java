@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.TransportMessage;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.Session;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.protocol.IcmpHandler;
 import li.cil.oc2.common.inet.session.SessionActions;
 import li.cil.oc2.common.inet.session.datagram.DatagramSessionBase;
@@ -16,6 +14,8 @@ import li.cil.oc2.common.inet.session.echo.EchoSessionImpl;
 import li.cil.oc2.common.inet.session.manager.SessionManager;
 import li.cil.oc2.common.inet.session.stream.StreamSessionDiscriminator;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class SendHandler {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,4 +1,5 @@
 package li.cil.oc2.common.inet.tcp;
+
 import li.cil.oc2.common.inet.tcp.state.AcceptState;
 import li.cil.oc2.common.inet.tcp.state.ConnectState;
 import li.cil.oc2.common.inet.tcp.state.EstablishedState;

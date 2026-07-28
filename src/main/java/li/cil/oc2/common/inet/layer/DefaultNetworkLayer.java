@@ -6,12 +6,12 @@ import java.util.Random;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
+import li.cil.oc2.common.inet.internet.InternetManagerImpl;
+import li.cil.oc2.common.inet.util.checksum.Rfc1071Checksum;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import li.cil.oc2.common.inet.internet.InternetManagerImpl;
-import li.cil.oc2.common.inet.util.checksum.Rfc1071Checksum;
 
 public final class DefaultNetworkLayer implements NetworkLayer {
     private static final Logger LOGGER = LogManager.getLogger();

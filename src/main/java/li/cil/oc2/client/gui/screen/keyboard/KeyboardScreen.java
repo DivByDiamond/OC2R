@@ -1,5 +1,6 @@
 package li.cil.oc2.client.gui.screen.keyboard;
 
+import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -14,7 +15,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
-import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 
 public final class KeyboardScreen extends Screen {
     private static final int BORDER_SIZE = 4;

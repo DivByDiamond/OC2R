@@ -1,12 +1,12 @@
 package li.cil.oc2.client.gui.screen.monitor;
 
+import li.cil.oc2.client.gui.screen.common.AbstractMonitorDisplayScreen;
 import li.cil.oc2.common.container.MonitorDisplayContainer;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.common.AbstractMonitorDisplayScreen;
 
 @OnlyIn(Dist.CLIENT)
 public final class MonitorDisplayScreen

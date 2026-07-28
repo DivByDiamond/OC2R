@@ -1,4 +1,5 @@
 package li.cil.oc2.common.inet.util;
+
 import li.cil.oc2.common.inet.util.checksum.AddressParseException;
 
 public final class MacAddressUtils {

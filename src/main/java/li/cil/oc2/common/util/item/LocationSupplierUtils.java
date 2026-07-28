@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+import li.cil.oc2.common.util.world.BlockLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import li.cil.oc2.common.util.world.BlockLocation;
 
 public final class LocationSupplierUtils {
     public static Supplier<Optional<BlockLocation>> of(final BlockEntity blockEntity) {

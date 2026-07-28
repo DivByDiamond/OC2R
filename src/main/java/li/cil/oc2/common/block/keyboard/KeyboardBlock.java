@@ -2,6 +2,7 @@ package li.cil.oc2.common.block.keyboard;
 
 import com.mojang.serialization.MapCodec;
 import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
+import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
@@ -28,7 +29,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
-import li.cil.oc2.common.block.common.BlockCodecs;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
     private static final VoxelShape NEG_Z_SHAPE =

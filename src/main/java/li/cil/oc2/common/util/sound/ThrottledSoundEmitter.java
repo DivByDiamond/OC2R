@@ -3,12 +3,12 @@ package li.cil.oc2.common.util.sound;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
+import li.cil.oc2.common.util.world.BlockLocation;
+import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import li.cil.oc2.common.util.world.BlockLocation;
-import li.cil.oc2.common.util.world.LevelUtils;
 
 public final class ThrottledSoundEmitter {
     private final Supplier<Optional<BlockLocation>> location;

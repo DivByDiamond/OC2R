@@ -3,6 +3,7 @@ package li.cil.oc2.common.network.message.computer;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -12,7 +13,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
 
 public record ComputerBootErrorMessage(BlockPos pos, @Nullable Component value)
         implements AbstractMessage {

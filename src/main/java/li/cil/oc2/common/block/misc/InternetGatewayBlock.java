@@ -1,6 +1,7 @@
 package li.cil.oc2.common.block.misc;
 
 import com.mojang.serialization.MapCodec;
+import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.EntityBlock;
@@ -9,7 +10,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import li.cil.oc2.common.block.common.BlockCodecs;
 
 public class InternetGatewayBlock extends HalfTransparentBlock implements EntityBlock {
 

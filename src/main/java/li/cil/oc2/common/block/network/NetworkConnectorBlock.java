@@ -2,6 +2,7 @@ package li.cil.oc2.common.block.network;
 
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,6 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import li.cil.oc2.common.block.common.BlockCodecs;
 
 public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirectionalBlock
         implements EntityBlock {

@@ -6,8 +6,8 @@ import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
 import li.cil.oc2.common.inet.layer.DefaultNetworkLayer;
 import li.cil.oc2.common.inet.layer.DefaultTransportLayer;
-import li.cil.oc2.common.inet.util.InetUtils;
 import li.cil.oc2.common.inet.layer.NullLayer;
+import li.cil.oc2.common.inet.util.InetUtils;
 
 /**
  * An {@link InternetProvider} partial implementation that expects an {@link TransportLayer}

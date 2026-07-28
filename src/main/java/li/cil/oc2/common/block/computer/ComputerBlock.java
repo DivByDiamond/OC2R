@@ -3,16 +3,15 @@ package li.cil.oc2.common.block.computer;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.config.Config;
-
 import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -38,7 +37,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.common.block.common.BlockCodecs;
 
 public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
 

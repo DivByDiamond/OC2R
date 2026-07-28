@@ -5,6 +5,7 @@ import static li.cil.oc2.common.block.cable.BusCableStateProperties.*;
 import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,6 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import li.cil.oc2.common.block.types.ConnectionType;
 
 final class BusCableItemHelper {
     static void addExtraDrops(

@@ -12,14 +12,14 @@ import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
 import li.cil.oc2.common.config.Config;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 import li.cil.oc2.common.inet.session.echo.EchoHandler;
 import li.cil.oc2.common.inet.session.echo.EchoResponse;
 import li.cil.oc2.common.inet.session.manager.ReadySessions;
 import li.cil.oc2.common.inet.session.manager.SessionChannelHelper;
 import li.cil.oc2.common.inet.session.manager.SocketManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 public final class DefaultSessionLayer implements SessionLayer {
     private static final Logger LOGGER = LogManager.getLogger();

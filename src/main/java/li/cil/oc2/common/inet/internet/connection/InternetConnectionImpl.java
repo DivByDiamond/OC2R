@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
+import li.cil.oc2.common.inet.internet.InternetAdapter;
+import li.cil.oc2.common.inet.internet.InternetConnection;
 import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import li.cil.oc2.common.inet.internet.InternetAdapter;
-import li.cil.oc2.common.inet.internet.InternetConnection;
 
 public final class InternetConnectionImpl implements InternetConnection {
     private static final Logger LOGGER = LogManager.getLogger();

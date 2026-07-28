@@ -2,9 +2,9 @@ package li.cil.oc2.common.inet.protocol;
 
 import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
+import li.cil.oc2.common.inet.util.MacAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import li.cil.oc2.common.inet.util.MacAddress;
 
 public final class ArpProtocol {
     private static final Logger LOGGER = LogManager.getLogger();

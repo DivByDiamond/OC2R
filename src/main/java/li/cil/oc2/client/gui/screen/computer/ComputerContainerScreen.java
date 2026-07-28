@@ -1,13 +1,13 @@
 package li.cil.oc2.client.gui.screen.computer;
 
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.common.AbstractMachineInventoryScreen;
 import li.cil.oc2.common.container.ComputerInventoryContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.common.AbstractMachineInventoryScreen;
 
 @OnlyIn(Dist.CLIENT)
 public final class ComputerContainerScreen

@@ -2,6 +2,7 @@ package li.cil.oc2.common.network.message.robot;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
+import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,7 +12,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import li.cil.oc2.common.network.message.misc.AbstractMessage;
 
 public record RobotRunStateMessage(int entityId, VMRunState value) implements AbstractMessage {
     public static final StreamCodec<FriendlyByteBuf, RobotRunStateMessage> STREAM_CODEC =

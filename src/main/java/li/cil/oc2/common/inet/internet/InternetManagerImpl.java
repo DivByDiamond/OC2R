@@ -9,6 +9,11 @@ import li.cil.oc2.api.inet.InternetManager;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.provider.InternetProvider;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.inet.internet.connection.InternetConnectionImpl;
+import li.cil.oc2.common.inet.internet.connection.TaskImpl;
+import li.cil.oc2.common.inet.layer.LayerParametersImpl;
+import li.cil.oc2.common.inet.util.InetUtils;
+import li.cil.oc2.common.inet.util.Ipv4Space;
 import net.minecraft.nbt.Tag;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -16,11 +21,6 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import li.cil.oc2.common.inet.internet.connection.InternetConnectionImpl;
-import li.cil.oc2.common.inet.internet.connection.TaskImpl;
-import li.cil.oc2.common.inet.layer.LayerParametersImpl;
-import li.cil.oc2.common.inet.util.InetUtils;
-import li.cil.oc2.common.inet.util.Ipv4Space;
 
 public final class InternetManagerImpl implements InternetManager {
     private static final Logger LOGGER = LogManager.getLogger();

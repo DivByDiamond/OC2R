@@ -7,11 +7,11 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.common.config.Config;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.session.SessionBase;
 import li.cil.oc2.common.inet.session.SessionDiscriminator;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class SessionManager {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,4 +1,5 @@
 package li.cil.oc2.common.inet.session.datagram;
+
 import li.cil.oc2.common.inet.session.SessionBase;
 
 public abstract class DatagramSessionBase extends SessionBase {

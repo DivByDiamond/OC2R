@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Textures;
+import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 import li.cil.oc2.client.gui.widget.Texture;
 import li.cil.oc2.client.renderer.ModRenderType;
 import li.cil.oc2.common.item.Items;
@@ -23,7 +24,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 
 public class ComputerBlockItemRenderer {
     public static final int BLOCK_RENDER_SIZE = 48;

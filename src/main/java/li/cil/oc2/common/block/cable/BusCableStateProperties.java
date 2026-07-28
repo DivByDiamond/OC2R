@@ -3,6 +3,8 @@ package li.cil.oc2.common.block.cable;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.Util;
@@ -18,8 +20,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.block.types.ConnectionType;
 
 public final class BusCableStateProperties {
     public static final BooleanProperty HAS_CABLE = BooleanProperty.create("has_cable");

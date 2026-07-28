@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
+import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
@@ -35,8 +37,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import li.cil.oc2.common.block.common.BlockCodecs;
-import li.cil.oc2.common.block.types.ConnectionType;
 
 public final class BusCableBlock extends BaseEntityBlock {
     private final VoxelShape[] shapes;

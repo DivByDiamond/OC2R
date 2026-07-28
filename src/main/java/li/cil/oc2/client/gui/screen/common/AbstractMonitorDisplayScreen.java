@@ -6,6 +6,8 @@ import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.monitor.MonitorInputCaptureButton;
+import li.cil.oc2.client.gui.screen.monitor.MonitorPowerButton;
 import li.cil.oc2.client.gui.widget.MonitorDisplayWidget;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.config.Config;
@@ -19,8 +21,6 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.monitor.MonitorInputCaptureButton;
-import li.cil.oc2.client.gui.screen.monitor.MonitorPowerButton;
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorContainer>

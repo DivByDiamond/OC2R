@@ -1,7 +1,7 @@
 package li.cil.oc2.common.bus.element;
 
-import static li.cil.oc2.common.util.async.OptionalUtils.instanceOf;
 import static li.cil.oc2.common.util.RegistryUtils.optionalKey;
+import static li.cil.oc2.common.util.async.OptionalUtils.instanceOf;
 
 import java.util.*;
 import javax.annotation.Nullable;

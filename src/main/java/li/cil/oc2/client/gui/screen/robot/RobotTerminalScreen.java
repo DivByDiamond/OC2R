@@ -1,6 +1,7 @@
 package li.cil.oc2.client.gui.screen.robot;
 
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
 import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
 import li.cil.oc2.common.container.RobotTerminalContainer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
 
 @OnlyIn(Dist.CLIENT)
 public final class RobotTerminalScreen

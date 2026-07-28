@@ -6,7 +6,6 @@ import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.container.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.util.text.TooltipRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;

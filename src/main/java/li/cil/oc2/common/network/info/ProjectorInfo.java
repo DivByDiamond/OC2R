@@ -8,12 +8,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
 import li.cil.oc2.common.network.message.projector.ProjectorFramebufferMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
 
 public final class ProjectorInfo {
     private static final ExecutorService ENCODER_WORKERS =

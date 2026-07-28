@@ -4,6 +4,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.container.NetworkTunnelContainer;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 
 public final class NetworkTunnelScreen extends AbstractModContainerScreen<NetworkTunnelContainer> {
     private static final int LINK_BUTTON_LEFT = 48;

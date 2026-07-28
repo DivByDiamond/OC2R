@@ -3,12 +3,12 @@ package li.cil.oc2.common.inet.tcp;
 import java.nio.ByteBuffer;
 import li.cil.oc2.api.inet.TransportMessage;
 import li.cil.oc2.api.inet.layer.TransportLayer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.session.SessionActions;
 import li.cil.oc2.common.inet.session.stream.StreamSessionDiscriminator;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import li.cil.oc2.common.inet.util.checksum.Rfc1071Checksum;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class TcpUtils {
     private static final Logger LOGGER = LogManager.getLogger();

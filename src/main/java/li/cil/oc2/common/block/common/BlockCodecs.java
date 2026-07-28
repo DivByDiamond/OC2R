@@ -3,10 +3,6 @@ package li.cil.oc2.common.block.common;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import li.cil.oc2.common.block.cable.BusCableBlock;
 import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.block.disk.DiskDriveBlock;
@@ -23,6 +19,10 @@ import li.cil.oc2.common.block.network.NetworkHubBlock;
 import li.cil.oc2.common.block.network.NetworkSwitchBlock;
 import li.cil.oc2.common.block.network.VxlanBlock;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class BlockCodecs {
     public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =

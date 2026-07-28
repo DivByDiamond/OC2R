@@ -1,3 +1,4 @@
 @MethodsReturnNonnullByDefault
 package li.cil.oc2.common.util.block;
+
 import net.minecraft.MethodsReturnNonnullByDefault;

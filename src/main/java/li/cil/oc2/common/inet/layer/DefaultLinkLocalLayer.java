@@ -6,15 +6,15 @@ import java.util.Random;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
 import li.cil.oc2.api.inet.layer.NetworkLayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.protocol.ArpProtocol;
 import li.cil.oc2.common.inet.util.InetUtils;
 import li.cil.oc2.common.inet.util.MacAddress;
 import li.cil.oc2.common.inet.util.MacAddressUtils;
 import li.cil.oc2.common.inet.util.checksum.AddressParseException;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     private static final Logger LOGGER = LogManager.getLogger();

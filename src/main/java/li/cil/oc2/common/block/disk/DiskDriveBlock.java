@@ -2,6 +2,7 @@ package li.cil.oc2.common.block.disk;
 
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import li.cil.oc2.common.block.common.BlockCodecs;
 
 public final class DiskDriveBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public DiskDriveBlock() {

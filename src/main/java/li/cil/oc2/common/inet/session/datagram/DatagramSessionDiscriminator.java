@@ -1,4 +1,5 @@
 package li.cil.oc2.common.inet.session.datagram;
+
 import li.cil.oc2.common.inet.session.stream.SocketSessionDiscriminator;
 
 public final class DatagramSessionDiscriminator extends SocketSessionDiscriminator<DatagramSessionImpl> {

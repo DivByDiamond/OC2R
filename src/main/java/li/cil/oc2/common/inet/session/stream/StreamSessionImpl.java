@@ -4,13 +4,13 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 import li.cil.oc2.api.inet.session.StreamSession;
 import li.cil.oc2.common.config.Config;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import li.cil.oc2.common.inet.session.SessionActions;
 import li.cil.oc2.common.inet.session.SessionBase;
 import li.cil.oc2.common.inet.tcp.TcpHeader;
 import li.cil.oc2.common.inet.tcp.TcpState;
 import li.cil.oc2.common.inet.tcp.TcpStates;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StreamSessionImpl extends SessionBase implements StreamSession {
 

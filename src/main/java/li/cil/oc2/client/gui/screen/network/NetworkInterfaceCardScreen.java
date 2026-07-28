@@ -4,6 +4,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.computer.ComputerBlockItemRenderer;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -20,7 +21,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
-import li.cil.oc2.client.gui.screen.computer.ComputerBlockItemRenderer;
 
 public final class NetworkInterfaceCardScreen extends Screen {
     private static final Component INFO_TEXT = text("gui.{mod}.network_interface_card.info");

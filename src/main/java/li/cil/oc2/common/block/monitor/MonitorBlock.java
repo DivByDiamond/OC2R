@@ -3,6 +3,8 @@ package li.cil.oc2.common.block.monitor;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.block.common.BlockCodecs;
+import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
@@ -40,8 +42,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import li.cil.oc2.common.block.common.BlockCodecs;
-import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
 
 public final class MonitorBlock extends HorizontalDirectionalBlock
         implements EnergyConsumingBlock, EntityBlock {
