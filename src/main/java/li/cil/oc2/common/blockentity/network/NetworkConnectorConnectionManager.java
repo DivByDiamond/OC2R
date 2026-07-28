@@ -2,11 +2,11 @@ package li.cil.oc2.common.blockentity.network;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.client.renderer.NetworkCableRenderer;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -34,7 +34,7 @@ final class NetworkConnectorConnectionManager {
     final Set<BlockPos> connectorPositions = new HashSet<>();
     final Set<BlockPos> ownedCables = new HashSet<>();
     final Set<BlockPos> dirtyConnectors = new HashSet<>();
-    final Map<BlockPos, NetworkConnectorBlockEntity> connectors = new HashMap<>();
+    final Map<BlockPos, NetworkConnectorBlockEntity> connectors = new ConcurrentHashMap<>();
 
     NetworkConnectorConnectionManager(final NetworkConnectorBlockEntity owner) {
         this.owner = owner;

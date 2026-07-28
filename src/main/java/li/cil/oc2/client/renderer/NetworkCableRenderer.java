@@ -3,6 +3,7 @@ package li.cil.oc2.client.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.*;
+import java.util.Collections;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
 import net.minecraft.client.Minecraft;
@@ -21,13 +22,13 @@ import org.joml.Matrix4f;
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class NetworkCableRenderer {
     private static final Set<NetworkConnectorBlockEntity> connectors =
-            Collections.newSetFromMap(new WeakHashMap<>());
+            Collections.newSetFromMap(Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
     private static final List<NetworkCableConnection> connections = new ArrayList<>();
     private static final Map<NetworkConnectorBlockEntity, List<NetworkCableConnection>>
-            connectionsByConnector = new WeakHashMap<>();
+            connectionsByConnector = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
         connectors.add(connector);

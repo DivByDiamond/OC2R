@@ -3,6 +3,7 @@ package li.cil.oc2.common.entity.robot;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
@@ -11,6 +12,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 final class RobotActionProcessor {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private static final int MAX_QUEUED_ACTIONS = 16;
     private static final int MAX_QUEUED_RESULTS = 16;
 
@@ -46,12 +50,17 @@ final class RobotActionProcessor {
             if (action != null) {
                 final RobotActionResult result = action.perform(robot);
                 if (result != RobotActionResult.INCOMPLETE) {
-                    synchronized (results) {
+                    lock.lock();
+                    try {
+
                         if (results.size() == MAX_QUEUED_RESULTS) {
                             results.remove();
                         }
 
                         results.add(new RobotActionProcessorResult(action.getId(), result));
+                    
+                    } finally {
+                        lock.unlock();
                     }
 
                     action = null;
@@ -137,8 +146,13 @@ final class RobotActionProcessor {
         if (queue.size() < MAX_QUEUED_ACTIONS - 1) {
             lastActionId = (lastActionId + 1) & 0x7FFFFFFF;
             action.setId(lastActionId);
-            synchronized (queue) {
+            lock.lock();
+            try {
+
                 queue.add(action);
+            
+            } finally {
+                lock.unlock();
             }
             return true;
         } else {

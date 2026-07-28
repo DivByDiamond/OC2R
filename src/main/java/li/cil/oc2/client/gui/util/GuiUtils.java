@@ -3,6 +3,7 @@ package li.cil.oc2.client.gui.util;
 import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.widget.Sprite;
@@ -20,7 +21,7 @@ public final class GuiUtils {
     private static final Map<DeviceType, Component> WARNING_BY_DEVICE_TYPE =
             Util.make(
                     () -> {
-                        final Map<DeviceType, Component> map = new HashMap<>();
+                        final Map<DeviceType, Component> map = new ConcurrentHashMap<>();
 
                         map.put(
                                 DeviceTypes.FLASH_MEMORY,

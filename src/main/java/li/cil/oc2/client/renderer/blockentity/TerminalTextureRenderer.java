@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import li.cil.oc2.common.vm.terminal.RendererModel;
 import li.cil.oc2.common.vm.terminal.Terminal;
@@ -49,7 +50,7 @@ public class TerminalTextureRenderer implements RendererModel {
             final Terminal terminal,
             final boolean renderingToBlock) {
         // Track which Terminal we're rendering; re-register as RendererModel on change
-        if (terminal != currentTerminal) {
+        if (!Objects.equals(terminal, currentTerminal)) {
             if (currentTerminal != null) currentTerminal.renderers.remove(this);
             currentTerminal = terminal;
             if (terminal != null) terminal.renderers.add(this);

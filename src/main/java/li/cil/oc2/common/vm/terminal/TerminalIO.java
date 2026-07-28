@@ -1,9 +1,13 @@
 package li.cil.oc2.common.vm.terminal;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 public class TerminalIO {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private final Terminal terminal;
     private final TerminalOutput output;
 
@@ -13,18 +17,25 @@ public class TerminalIO {
     }
 
     public int readInput() {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             if (terminal.input.isEmpty()) {
                 return -1;
             } else {
                 return terminal.input.dequeueByte() & 0xFF;
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     @Nullable
     public ByteBuffer getInput() {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             if (terminal.input.isEmpty()) {
                 return null;
             } else {
@@ -47,20 +58,33 @@ public class TerminalIO {
                 buffer.flip();
                 return buffer;
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public void putInput(final String value) {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             putInput(ByteBuffer.wrap(value.getBytes()));
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public void putInput(final ByteBuffer values) {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             while (values.hasRemaining()) {
                 terminal.input.enqueue(values.get());
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -73,14 +97,24 @@ public class TerminalIO {
     }
 
     public void putInput(final char value) {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             putInput((byte) value);
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public void putInput(final byte value) {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             terminal.input.enqueue(value);
+        
+        } finally {
+            lock.unlock();
         }
     }
 

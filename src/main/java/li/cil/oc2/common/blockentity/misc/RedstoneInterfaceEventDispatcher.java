@@ -1,9 +1,9 @@
 package li.cil.oc2.common.blockentity.misc;
 
 import com.google.gson.JsonObject;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.device.rpc.IEventSink;
 import li.cil.oc2.api.util.Side;
 import net.minecraft.core.BlockPos;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class RedstoneInterfaceEventDispatcher {
-    private final Map<IEventSink, UUID> subscribers = new HashMap<>();
+    private final Map<IEventSink, UUID> subscribers = new ConcurrentHashMap<>();
 
     public void subscribe(final IEventSink sink, final UUID id) {
         subscribers.put(sink, id);

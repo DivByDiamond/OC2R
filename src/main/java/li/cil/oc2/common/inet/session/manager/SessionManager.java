@@ -3,6 +3,7 @@ package li.cil.oc2.common.inet.session.manager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.layer.SessionLayer;
@@ -19,7 +20,7 @@ public final class SessionManager {
 
     private final SessionLayer sessionLayer;
     private final NavigableMap<Instant, SessionBase> expirationQueue = new TreeMap<>();
-    private final Map<SessionDiscriminator<?>, SessionBase> sessions = new HashMap<>();
+    private final Map<SessionDiscriminator<?>, SessionBase> sessions = new ConcurrentHashMap<>();
 
     public SessionManager(final SessionLayer sessionLayer) {
         this.sessionLayer = sessionLayer;

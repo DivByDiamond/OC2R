@@ -7,8 +7,8 @@ import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
@@ -67,7 +67,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
     private static int lastAssignedMultipartMessageId;
 
     private static final Map<Class<? extends AbstractMessage>, Entry> ENTRY_BY_TYPE =
-            new HashMap<>();
+            new ConcurrentHashMap<>();
     private static final Int2ObjectMap<Entry> ENTRY_BY_ID = new Int2ObjectArrayMap<>();
     private static int lastAssignedId;
 

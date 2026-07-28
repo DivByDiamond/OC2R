@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
@@ -35,8 +36,8 @@ import org.apache.logging.log4j.Logger;
 public final class FileSystems {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final LayeredFileSystem LAYERED_FILE_SYSTEM = new LayeredFileSystem();
-    private static final Map<ResourceLocation, BlockDeviceData> BLOCK_DEVICE_DATA = new HashMap<>();
-    private static final Map<String, BlockDeviceData> blocksByName = new HashMap<>();
+    private static final Map<ResourceLocation, BlockDeviceData> BLOCK_DEVICE_DATA = new ConcurrentHashMap<>();
+    private static final Map<String, BlockDeviceData> blocksByName = new ConcurrentHashMap<>();
 
     public static ResourceManager _resourceManager = null;
 

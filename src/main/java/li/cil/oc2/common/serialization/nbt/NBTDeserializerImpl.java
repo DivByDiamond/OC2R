@@ -1,10 +1,10 @@
 package li.cil.oc2.common.serialization.nbt;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVisitor {
     private static final String IS_NULL_KEY = "<is_null>";
 
-    public static final Map<Class<?>, NBTArraySerializer> ARRAY_SERIALIZERS = new HashMap<>();
+    public static final Map<Class<?>, NBTArraySerializer> ARRAY_SERIALIZERS = new ConcurrentHashMap<>();
 
     static {
         ARRAY_SERIALIZERS.put(boolean.class, new BooleanArraySerializer());

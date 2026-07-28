@@ -8,10 +8,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.rpc.AbstractRPCMethod;
@@ -22,11 +23,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 
 public final class Callbacks {
+
+    private static final ReentrantLock lock = new ReentrantLock();
+
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<Class<?>, List<Method>> METHOD_BY_TYPE =
-            Collections.synchronizedMap(new HashMap<>());
+            Collections.synchronizedMap(new ConcurrentHashMap<>());
     private static final Map<Method, RPCParameter[]> PARAMETERS_BY_METHOD =
-            Collections.synchronizedMap(new HashMap<>());
+            Collections.synchronizedMap(new ConcurrentHashMap<>());
 
     private Callbacks() {}
 
@@ -52,13 +56,18 @@ public final class Callbacks {
     }
 
     private static List<Method> getMethods(final Class<?> type) {
-        synchronized (METHOD_BY_TYPE) {
+        lock.lock();
+        try {
+
             return METHOD_BY_TYPE.computeIfAbsent(
                     type,
                     c ->
                             Arrays.stream(c.getMethods())
                                     .filter(m -> m.isAnnotationPresent(Callback.class))
                                     .collect(Collectors.toList()));
+        
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -84,7 +93,7 @@ public final class Callbacks {
                     Strings.isNotBlank(annotation.returnValueDescription())
                             ? annotation.returnValueDescription()
                             : null;
-            final Map<String, String> paramDescs = new HashMap<>();
+            final Map<String, String> paramDescs = new ConcurrentHashMap<>();
             if (target instanceof final DocumentedDevice dd) {
                 final VisitorImpl dv = new VisitorImpl();
                 dd.getDeviceDocumentation(dv);
@@ -194,10 +203,10 @@ public final class Callbacks {
 
     private static final class VisitorImpl
             implements DocumentedDevice.DeviceVisitor, DocumentedDevice.CallbackVisitor {
-        public final Map<String, VisitorImpl> callbacks = new HashMap<>();
+        public final Map<String, VisitorImpl> callbacks = new ConcurrentHashMap<>();
         public String desc;
         public String retValDesc;
-        public final Map<String, String> parameterDescriptions = new HashMap<>();
+        public final Map<String, String> parameterDescriptions = new ConcurrentHashMap<>();
 
         @Override
         public DocumentedDevice.CallbackVisitor visitCallback(final String n) {

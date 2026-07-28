@@ -1,5 +1,6 @@
 package li.cil.oc2.client.audio;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.client.Minecraft;
@@ -8,7 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class LoopingSoundManager {
     private static final Map<BlockEntity, LoopingBlockEntitySound> BLOCK_ENTITY_SOUNDS =
-            new WeakHashMap<>();
+            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void play(
             final BlockEntity blockEntity, final SoundEvent sound, final int delay) {

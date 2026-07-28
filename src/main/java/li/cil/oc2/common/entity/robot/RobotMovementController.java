@@ -1,11 +1,15 @@
 package li.cil.oc2.common.entity.robot;
 
 import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
 import net.minecraft.nbt.CompoundTag;
 
 public class RobotMovementController {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private final RobotActionProcessor actionProcessor;
 
     public RobotMovementController(final Robot robot) {
@@ -67,19 +71,29 @@ public class RobotMovementController {
         if (currentAction != null && currentAction.getId() == actionId) {
             return RobotActionResult.INCOMPLETE;
         }
-        synchronized (actionProcessor.queue) {
+        lock.lock();
+        try {
+
             for (final AbstractRobotAction action : actionProcessor.queue) {
                 if (action.getId() == actionId) {
                     return RobotActionResult.INCOMPLETE;
                 }
             }
+        
+        } finally {
+            lock.unlock();
         }
-        synchronized (actionProcessor.results) {
+        lock.lock();
+        try {
+
             for (final RobotActionProcessorResult result : actionProcessor.results) {
                 if (result.actionId == actionId) {
                     return result.result;
                 }
             }
+        
+        } finally {
+            lock.unlock();
         }
         return null;
     }

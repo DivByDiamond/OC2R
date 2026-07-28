@@ -16,6 +16,8 @@
         <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
         <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="UnitTestContainsTooManyAsserts"/>
+        <exclude name="AvoidUsingHardCodedIP"/>
+        <exclude name="UnitTestShouldIncludeAssert"/>
         <!-- Unavoidable: mixin callbacks called by Mixin framework, not by Java code -->
         <exclude name="UnusedPrivateMethod"/>
         <!-- Unavoidable: Ceres serialization framework requires concrete MemoryRangeList type -->

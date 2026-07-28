@@ -1,6 +1,7 @@
 package li.cil.oc2.common.network.info;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +29,7 @@ public final class ProjectorInfo {
     public ProjectorInfo next;
     ProjectorInfo previous;
     private final BlockPos projectorPos;
-    private final Map<ServerPlayer, Long> players = new WeakHashMap<>();
+    private final Map<ServerPlayer, Long> players = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private int skipCount;
     @Nullable public Supplier<ByteBuffer> nextFrameSupplier;
     @Nullable private Future<?> runningEncode;

@@ -1,10 +1,10 @@
 package li.cil.oc2.common.vm.terminal.modes;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ImplementedPrivateModes {
-    public static Map<Integer, Boolean> modeStatus = new HashMap<>();
+    public static Map<Integer, Boolean> modeStatus = new ConcurrentHashMap<>();
 
     public static ImplementedPrivateModes instance = new ImplementedPrivateModes();
 

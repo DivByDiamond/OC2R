@@ -7,6 +7,7 @@ import static li.cil.oc2.common.vm.device.SimpleFramebufferDevice.STRIDE;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import javax.annotation.Nullable;
@@ -14,6 +15,9 @@ import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
 import li.cil.oc2.jcodec.common.model.Picture;
 
 final class MonitorVideoDecoder {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private final H264Decoder decoder = new H264Decoder();
     private final ByteBuffer decoderBuffer = ByteBuffer.allocateDirect(WIDTH * HEIGHT * STRIDE);
     @Nullable private CompletableFuture<?> runningDecode;
@@ -41,10 +45,15 @@ final class MonitorVideoDecoder {
 
                                 decoder.decodeFrame(decoderBuffer, picture.getData());
 
-                                synchronized (picture) {
+                                lock.lock();
+                                try {
+
                                     if (frameConsumer != null) {
                                         frameConsumer.processFrame(picture);
                                     }
+                                
+                                } finally {
+                                    lock.unlock();
                                 }
                             } catch (final DataFormatException ignored) {
                             }

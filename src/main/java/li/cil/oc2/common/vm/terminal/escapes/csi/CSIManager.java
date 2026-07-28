@@ -1,8 +1,8 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 
@@ -19,7 +19,7 @@ public class CSIManager {
     private boolean exclamation = false;
 
     private final Terminal terminal;
-    private final Map<Character, CSISequenceHandler> sequences = new HashMap<>();
+    private final Map<Character, CSISequenceHandler> sequences = new ConcurrentHashMap<>();
 
     public CSIManager(Terminal terminal) {
         this.terminal = terminal;

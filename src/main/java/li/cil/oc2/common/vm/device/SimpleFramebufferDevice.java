@@ -3,6 +3,7 @@ package li.cil.oc2.common.vm.device;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.RgbToYuv420j;
 import li.cil.sedna.api.device.MemoryMappedDevice;
@@ -10,6 +11,9 @@ import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
 
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     public static final int STRIDE = 2;
 
     private final int width;
@@ -33,10 +37,15 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     public void close() {
-        synchronized (buffer) {
+        lock.lock();
+        try {
+
             length = 0;
             dirtyLines.clear();
             DirectByteBufferUtils.release(buffer);
+        
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -57,8 +66,13 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
             return false;
         }
 
-        synchronized (buffer) {
+        lock.lock();
+        try {
+
             convertR5G6B5ToYUV420J(buffer, width, height, picture);
+        
+        } finally {
+            lock.unlock();
         }
 
         return true;

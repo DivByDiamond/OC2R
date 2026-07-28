@@ -4,12 +4,12 @@ import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UnicodeFontRenderer {
     public final Font font;
-    private final Map<Integer, Glyph> glyphCache = new HashMap<>();
+    private final Map<Integer, Glyph> glyphCache = new ConcurrentHashMap<>();
     private final FontRenderContext frc = new FontRenderContext(null, true, false);
     private final boolean isItalic;
 

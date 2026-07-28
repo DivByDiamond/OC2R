@@ -7,16 +7,16 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import joptsimple.util.InetAddressConverter;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 
 final class NativeLoader {
-    private static final Map<String, String> supportedArch = new HashMap<>();
+    private static final Map<String, String> supportedArch = new ConcurrentHashMap<>();
     private static boolean officiallySupported = true;
     private static final String LOOPBACK_IP = String.format("%d.%d.%d.%d", 127, 0, 0, 1);
 

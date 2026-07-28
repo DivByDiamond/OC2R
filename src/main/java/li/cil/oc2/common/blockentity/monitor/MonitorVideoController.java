@@ -6,6 +6,7 @@ import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -14,6 +15,9 @@ import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
 
 public final class MonitorVideoController {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     final Picture picture = Picture.create(WIDTH, HEIGHT, ColorSpace.YUV420J);
     @Nullable FrameConsumer frameConsumer;
     final MonitorVideoEncoder encoder = new MonitorVideoEncoder();
@@ -27,9 +31,14 @@ public final class MonitorVideoController {
 
     public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
         if (Objects.equals(consumer, frameConsumer)) return;
-        synchronized (picture) {
+        lock.lock();
+        try {
+
             this.frameConsumer = consumer;
             if (frameConsumer != null) frameConsumer.processFrame(picture);
+        
+        } finally {
+            lock.unlock();
         }
     }
 

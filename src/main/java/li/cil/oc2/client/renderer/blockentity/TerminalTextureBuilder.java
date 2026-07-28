@@ -102,7 +102,8 @@ final class TerminalTextureBuilder {
 
     private static void drawCursor(final NativeImage img, final Terminal terminal) {
         if (!terminal.currentPrivateModeState.DECTCEM) return;
-        final int cx = terminal.x, cy = terminal.y;
+        final int cx = terminal.x;
+        final int cy = terminal.y;
         if (cx < 0 || cx >= Terminal.WIDTH || cy < 0 || cy >= Terminal.HEIGHT) return;
         final int px = cx * Terminal.CHAR_WIDTH;
         final int py = cy * Terminal.CHAR_HEIGHT;

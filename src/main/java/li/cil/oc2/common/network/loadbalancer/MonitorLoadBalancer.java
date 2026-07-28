@@ -1,9 +1,9 @@
 package li.cil.oc2.common.network.loadbalancer;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ public final class MonitorLoadBalancer {
     public static final long CACHE_EXPIRES_AFTER = 2000;
 
     private static final Map<MonitorBlockEntity, MonitorProjectorInfo> PROJECTOR_INFO =
-            new HashMap<>();
+            new ConcurrentHashMap<>();
 
     public static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
 

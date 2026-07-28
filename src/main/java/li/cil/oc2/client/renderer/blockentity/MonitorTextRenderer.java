@@ -20,14 +20,8 @@ final class MonitorTextRenderer {
     static final ResourceLocation OVERLAY_POWER_LOCATION =
             ResourceLocation.fromNamespaceAndPath(
                     API.MOD_ID, "block/monitor/monitor_overlay_power");
-    static final ResourceLocation OVERLAY_TERMINAL_LOCATION =
-            ResourceLocation.fromNamespaceAndPath(
-                    API.MOD_ID, "block/computer/computer_overlay_terminal");
-
     private static final Material TEXTURE_POWER =
             new Material(InventoryMenu.BLOCK_ATLAS, OVERLAY_POWER_LOCATION);
-    private static final Material TEXTURE_TERMINAL =
-            new Material(InventoryMenu.BLOCK_ATLAS, OVERLAY_TERMINAL_LOCATION);
 
     static void renderTerminal(
             final MonitorBlockEntity monitor,

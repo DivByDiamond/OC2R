@@ -2,6 +2,7 @@ package li.cil.oc2.common.blockentity.network;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
@@ -24,6 +25,9 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class VxlanBlockEntity extends ModBlockEntity
         implements NetworkInterface, TickableBlockEntity {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private static final int TTL_COST = 1;
     private int vti = 1000;
     private int frameCount;
@@ -85,9 +89,14 @@ public final class VxlanBlockEntity extends ModBlockEntity
 
         final NetworkInterface tunnelInterface = adjacentInterfaces.getTunnelInterface();
         if (tunnelInterface != null) {
-            synchronized (packetQueue) {
+            lock.lock();
+            try {
+
                 packetQueue.forEach(packet -> writeEthernetFrame(tunnelInterface, packet, 255));
                 packetQueue.clear();
+            
+            } finally {
+                lock.unlock();
             }
         } else {
             System.out.printf("VXLAN block is unregistered upstream: VTI=%d\n", vti);

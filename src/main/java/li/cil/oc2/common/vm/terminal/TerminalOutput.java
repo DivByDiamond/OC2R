@@ -2,10 +2,14 @@ package li.cil.oc2.common.vm.terminal;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.vm.terminal.Terminal.State;
 import li.cil.oc2.common.vm.terminal.escapes.*;
 
 class TerminalOutput {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private final Terminal terminal;
     private final Utf8Decoder decoder = new Utf8Decoder();
 
@@ -14,16 +18,25 @@ class TerminalOutput {
     }
 
     public void putOutput(final ByteBuffer values) {
-        synchronized (terminal) {
+        lock.lock();
+        try {
+
             while (values.hasRemaining()) {
                 putOutput(values.get());
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public void putOutput(final byte value) {
-        synchronized (terminal.buffer) {
-            synchronized (terminal.altBuffer) {
+        lock.lock();
+        try {
+
+            lock.lock();
+            try {
+
                 if (!decoder.process(value)) {
                     return;
                 }
@@ -138,7 +151,13 @@ class TerminalOutput {
                     case OSC -> terminal.oscManager.handle(ch);
                     case APC -> terminal.apcManager.handle(ch);
                 }
+            
+            } finally {
+                lock.unlock();
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 }

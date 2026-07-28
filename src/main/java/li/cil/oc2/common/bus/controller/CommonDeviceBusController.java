@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.controller;
 import static java.util.Collections.emptySet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
@@ -22,7 +23,7 @@ public class CommonDeviceBusController implements DeviceBusController {
 
     private final BusElementManager manager;
     private final Set<Device> devices = new HashSet<>();
-    private final Map<Device, Set<UUID>> deviceIds = new HashMap<>();
+    private final Map<Device, Set<UUID>> deviceIds = new ConcurrentHashMap<>();
 
     public CommonDeviceBusController(final DeviceBusElement root, final int baseEnergyConsumption) {
         this.manager = new BusElementManager(this, root, baseEnergyConsumption);
@@ -52,7 +53,7 @@ public class CommonDeviceBusController implements DeviceBusController {
         onBeforeDeviceScan();
 
         final Set<Device> newDevices = new HashSet<>();
-        final Map<Device, Set<UUID>> newDeviceIds = new HashMap<>();
+        final Map<Device, Set<UUID>> newDeviceIds = new ConcurrentHashMap<>();
         for (final DeviceBusElement element : manager.getElements()) {
             for (final Device device : element.getLocalDevices()) {
                 newDevices.add(device);

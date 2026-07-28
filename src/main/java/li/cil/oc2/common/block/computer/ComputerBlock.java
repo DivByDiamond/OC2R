@@ -155,7 +155,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
                 blockEntity instanceof ComputerBlockEntity c ? c : null;
         final BlockState resultState =
                 ComputerBlockInteraction.playerWillDestroy(level, pos, state, player, computer);
-        return resultState != state ? resultState : super.playerWillDestroy(level, pos, state, player);
+        return !resultState.equals(state) ? resultState : super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

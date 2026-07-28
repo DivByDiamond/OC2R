@@ -1,6 +1,7 @@
 package li.cil.oc2.common.bus.adapter;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.device.Device;
@@ -10,7 +11,7 @@ import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
 
 class DeviceRegistry {
     final List<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();
-    final Map<UUID, RPCDeviceList> devicesById = new HashMap<>();
+    final Map<UUID, RPCDeviceList> devicesById = new ConcurrentHashMap<>();
     final Set<RPCDeviceList> unmountedDevices = new HashSet<>();
     final Set<RPCDeviceList> mountedDevices = new HashSet<>();
     final List<RPCEventSource> subscriptions = new ArrayList<>();
@@ -40,7 +41,7 @@ class DeviceRegistry {
     }
 
     void rebuild(final DeviceBusController controller) {
-        final Map<UUID, List<RPCDevice>> devicesByIdentifier = new HashMap<>();
+        final Map<UUID, List<RPCDevice>> devicesByIdentifier = new ConcurrentHashMap<>();
         for (final Device device : controller.getDevices()) {
             if (device instanceof final RPCDevice rpcDevice) {
                 final Set<UUID> identifiers = controller.getDeviceIdentifiers(device);
@@ -52,7 +53,7 @@ class DeviceRegistry {
             }
         }
 
-        final Map<RPCDeviceList, List<UUID>> identifiersByDevice = new HashMap<>();
+        final Map<RPCDeviceList, List<UUID>> identifiersByDevice = new ConcurrentHashMap<>();
         devicesByIdentifier.forEach(
                 (identifier, devices) -> {
                     final RPCDeviceList device = new RPCDeviceList(devices);

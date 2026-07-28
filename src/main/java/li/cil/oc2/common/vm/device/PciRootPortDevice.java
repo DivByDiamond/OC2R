@@ -2,11 +2,14 @@ package li.cil.oc2.common.vm.device;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
 
 public final class PciRootPortDevice implements MemoryMappedDevice {
+
+    private final ReentrantLock lock = new ReentrantLock();
 
     private final ByteBuffer buffer;
     private int length;
@@ -29,9 +32,14 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
     }
 
     public void close() {
-        synchronized (buffer) {
+        lock.lock();
+        try {
+
             length = 0;
             DirectByteBufferUtils.release(buffer);
+        
+        } finally {
+            lock.unlock();
         }
     }
 

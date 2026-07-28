@@ -2,10 +2,10 @@ package li.cil.oc2.common.vm;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
@@ -13,7 +13,7 @@ import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.context.managed.ManagedVMContext;
 
 public final class VMDeviceBusAdapter {
-    private final Map<VMDevice, ManagedVMContext> mountedDevices = new HashMap<>();
+    private final Map<VMDevice, ManagedVMContext> mountedDevices = new ConcurrentHashMap<>();
     private final List<VMDevice> unmountedDevices = new ArrayList<>();
     private BaseAddressProvider baseAddressProvider = unused -> OptionalLong.empty();
 

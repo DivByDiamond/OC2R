@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm;
 
 import java.util.*;
+import java.util.Collections;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import li.cil.oc2.api.bus.DeviceBusElement;
@@ -32,7 +33,7 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     // NB: linked hash map such that order of parameters in constructor is retained.
     //     This is relevant when assigning default addresses for devices.
     private final Map<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
-            new LinkedHashMap<>();
+            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
 
     public final IItemHandler combinedItemHandlers;
 

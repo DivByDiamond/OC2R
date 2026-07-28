@@ -2,9 +2,10 @@ package li.cil.oc2.common.vxlan;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.config.Config;
 import org.apache.logging.log4j.Level;
@@ -13,9 +14,12 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class TunnelManager {
+
+    private final ReentrantLock lock = new ReentrantLock();
+
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final Map<Integer, TunnelInterface> tunnels = new HashMap<>();
+    private final Map<Integer, TunnelInterface> tunnels = new ConcurrentHashMap<>();
     private DatagramSocket socket;
     private static TunnelManager managerInstance;
     private final InetAddress remoteHost;
@@ -104,8 +108,13 @@ public class TunnelManager {
                 System.arraycopy(packet.getData(), 8, inner, 0, packet.getLength() - 8);
 
                 // CircularFifoQueue isn't thread-safe, so we have to synchronize on it.
-                synchronized (iface.packetQueue) {
+                lock.lock();
+                try {
+
                     iface.packetQueue.offer(inner);
+                
+                } finally {
+                    lock.unlock();
                 }
             }
         }

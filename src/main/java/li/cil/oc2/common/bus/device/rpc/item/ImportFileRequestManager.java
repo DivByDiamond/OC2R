@@ -2,31 +2,47 @@ package li.cil.oc2.common.bus.device.rpc.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.file.ServerCanceledImportFileMessage;
 import net.minecraft.server.level.ServerPlayer;
 
 final class ImportFileRequestManager {
+
+    private static final ReentrantLock lock = new ReentrantLock();
+
     private static final Int2ObjectMap<ImportFileRequest> importingDevices =
             new Int2ObjectArrayMap<>();
     private static int nextImportId = 1;
 
     static int registerRequest(final FileImportExportCardItemDevice device) {
         final int id = nextImportId++;
-        synchronized (importingDevices) {
+        lock.lock();
+        try {
+
             importingDevices.put(id, new ImportFileRequest(device));
+        
+        } finally {
+            lock.unlock();
         }
         return id;
     }
 
     static void removeRequest(final int id) {
-        synchronized (importingDevices) {
+        lock.lock();
+        try {
+
             importingDevices.remove(id);
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public static void setImportedFile(final int id, final String name, final byte[] data) {
-        synchronized (importingDevices) {
+        lock.lock();
+        try {
+
             final ImportFileRequest request = importingDevices.remove(id);
             if (request != null) {
                 final FileImportExportCardItemDevice device = request.Device.get();
@@ -39,11 +55,16 @@ final class ImportFileRequestManager {
                     }
                 }
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 
     public static void cancelImport(final ServerPlayer player, final int id) {
-        synchronized (importingDevices) {
+        lock.lock();
+        try {
+
             final ImportFileRequest request = importingDevices.get(id);
             if (request != null) {
                 request.PendingPlayers.remove(player);
@@ -55,6 +76,9 @@ final class ImportFileRequestManager {
                     }
                 }
             }
+        
+        } finally {
+            lock.unlock();
         }
     }
 }

@@ -1,6 +1,8 @@
 package li.cil.oc2.common.util.scheduler;
 
 import java.util.*;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.util.event.ListenerCollection;
 import net.minecraft.world.level.ChunkPos;
@@ -16,13 +18,13 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ServerScheduler {
     private static final TickScheduler globalTickScheduler = new TickScheduler();
     private static final Map<LevelAccessor, TickScheduler> levelTickSchedulers =
-            new WeakHashMap<>();
+            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, SimpleScheduler> levelUnloadSchedulers =
-            new WeakHashMap<>();
+            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
-            chunkLoadSchedulers = new WeakHashMap<>();
+            chunkLoadSchedulers = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
-            chunkUnloadSchedulers = new WeakHashMap<>();
+            chunkUnloadSchedulers = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void initialize() {
         NeoForge.EVENT_BUS.register(EventHandler.class);
@@ -66,7 +68,7 @@ public final class ServerScheduler {
     public static void subscribeOnLoad(
             final LevelAccessor level, final ChunkPos chunkPos, final Runnable listener) {
         chunkLoadSchedulers
-                .computeIfAbsent(level, unused -> new HashMap<>())
+                .computeIfAbsent(level, unused -> new ConcurrentHashMap<>())
                 .computeIfAbsent(chunkPos, unused -> new ListenerCollection())
                 .add(listener);
     }
@@ -94,7 +96,7 @@ public final class ServerScheduler {
     public static void subscribeOnUnload(
             final LevelAccessor level, final ChunkPos chunkPos, final Runnable listener) {
         chunkUnloadSchedulers
-                .computeIfAbsent(level, unused -> new HashMap<>())
+                .computeIfAbsent(level, unused -> new ConcurrentHashMap<>())
                 .computeIfAbsent(chunkPos, unused -> new ListenerCollection())
                 .add(listener);
     }

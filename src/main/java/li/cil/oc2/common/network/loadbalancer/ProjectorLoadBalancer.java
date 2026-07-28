@@ -1,9 +1,9 @@
 package li.cil.oc2.common.network.loadbalancer;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ProjectorLoadBalancer {
     public static final long CACHE_EXPIRES_AFTER = 2000;
 
-    private static final Map<ProjectorBlockEntity, ProjectorInfo> PROJECTOR_INFO = new HashMap<>();
+    private static final Map<ProjectorBlockEntity, ProjectorInfo> PROJECTOR_INFO = new ConcurrentHashMap<>();
 
     public static final AtomicInteger BUDGET = new AtomicInteger(getMaxBudget());
 
