@@ -52,8 +52,6 @@
         <exclude name="AvoidUsingVolatile"/>
         <!-- Unavoidable: singleton pattern in InternetManagerImpl, SocketManager -->
         <exclude name="NonThreadSafeSingleton"/>
-        <!-- Unavoidable: async I/O in BlobChannelManager requires mutable fields -->
-        <exclude name="UnsynchronizedStaticDateFormatter"/>
         <!-- Unavoidable: Mixin classes access Minecraft fields -->
         <exclude name="AvoidSynchronizedAtMethodLevel"/>
     </rule>

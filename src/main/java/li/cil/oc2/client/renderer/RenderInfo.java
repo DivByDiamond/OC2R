@@ -13,6 +13,14 @@ import net.neoforged.api.distmarker.OnlyIn;
 record RenderInfo(DynamicTexture texture) implements FrameConsumer {
     private static final ThreadLocal<byte[]> RGB = ThreadLocal.withInitial(() -> new byte[3]);
 
+    private static final int[] GAMMA_LUT = new int[256];
+
+    static {
+        for (int i = 0; i < 256; i++) {
+            GAMMA_LUT[i] = (int) (Math.pow(i / 255.0, 1.0 / 2.2) * 255 + 0.5);
+        }
+    }
+
     public synchronized void close() {
         texture.close();
     }
@@ -58,9 +66,9 @@ record RenderInfo(DynamicTexture texture) implements FrameConsumer {
             final byte cr) {
         final byte[] bytes = RGB.get();
         Yuv420jToRgb.YUVJtoRGB(y, cb, cr, bytes, 0);
-        final int r = bytes[0] + 128;
-        final int g = bytes[1] + 128;
-        final int b = bytes[2] + 128;
+        final int r = GAMMA_LUT[bytes[0] + 128];
+        final int g = GAMMA_LUT[bytes[1] + 128];
+        final int b = GAMMA_LUT[bytes[2] + 128];
         image.setPixelRGBA(col, row, r | (g << 8) | (b << 16) | (0xFF << 24));
     }
 }

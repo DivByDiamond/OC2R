@@ -56,7 +56,7 @@ public final class ProjectorDepthRenderer {
                             new DepthOnlyRenderTarget(
                                     MainTarget.DEFAULT_WIDTH, MainTarget.DEFAULT_HEIGHT);
                     for (int i = 0; i < ModShaders.MAX_PROJECTORS; i++) {
-                        PROJECTOR_DEPTH_TARGETS[i] = new DepthOnlyRenderTarget(256, 256);
+                        PROJECTOR_DEPTH_TARGETS[i] = new DepthOnlyRenderTarget(512, 512);
                         PROJECTOR_CAMERA_MATRICES[i] = new Matrix4f();
                     }
                 });

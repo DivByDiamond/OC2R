@@ -29,8 +29,8 @@ final class TerminalTextRenderer {
         stack.pushPose();
         stack.translate(2, 2, -0.9f);
 
-        final float textScaleX = 12f / terminal.getWidth();
-        final float textScaleY = 7f / terminal.getHeight();
+        final float textScaleX = 16f / terminal.getWidth();
+        final float textScaleY = 9f / terminal.getHeight();
         final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
 
         final float scaleDeltaX = textScaleX - scale;
