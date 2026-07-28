@@ -1,13 +1,14 @@
-## Описание
+## Description
 
-Что делает этот PR?
+What does this PR do?
 
-## Связанные issue
+## Related Issues
 
 Closes #
 
-## Чеклист
+## Checklist
 
-- [ ] `./gradlew build` проходит
-- [ ] Изменения не ломают API (если иначе — обосновано)
-- [ ] Новые файлы без SPDX заголовков
+- `./gradlew build` passes
+- Public API changes are documented with JavaDoc
+- No `// comments` or SPDX headers in new code
+- Files follow ≤200 lines, ≤4 per folder rules

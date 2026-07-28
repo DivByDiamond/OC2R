@@ -1,24 +1,24 @@
 ---
 name: Bug Report
-about: Сообщить об ошибке
+about: Report a bug to help us improve
 title: "[Bug] "
 labels: bug
 assignees: ''
 ---
 
-**Описание**
-Что произошло и что ожидалось?
+**Description**
+What happened and what did you expect?
 
-**Воспроизведение**
-Шаги:
+**Steps to Reproduce**
 1. Go to '...'
 2. Click on '...'
-3. ...
+3. See error
 
-**Логи/Скриншоты**
-Если есть.
+**Logs / Screenshots**
+If applicable.
 
-**Окружение**
-- Версия OC2R:
-- Версия Minecraft:
-- Загрузчик:
+**Environment**
+- OC2R version:
+- Minecraft version:
+- NeoForge version:
+- OS:

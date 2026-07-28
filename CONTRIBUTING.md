@@ -2,31 +2,55 @@
 
 ## Code Style
 
-- Java 21, NeoForge, Gradle
-- ≤200 строк на файл, ≤4 файлов на папку (SRP)
-- Никаких `// comments` в коде — только JavaDoc на public API
-- Никаких SPDX заголовков
-- Build before commit: `./gradlew build`
+- **Java 21**, NeoForge, Gradle
+- **≤200 lines per file**, **≤4 files per folder** (Single Responsibility Principle)
+- **No `// comments`** in code — only JavaDoc on public API
+- **No SPDX headers**
+- **Build before commit**: `./gradlew build`
 
-## PR Process
-
-1. Форкните репозиторий
-2. Создайте ветку от `1.21.1`
-3. Вносите изменения с коммитами по смыслу
-4. Убедитесь что `./gradlew build` проходит
-5. Откройте Pull Request на `1.21.1`
-
-## Структура
+## Project Layout
 
 ```
 src/main/java/li/cil/oc2/
-├── api/          # Публичное API (не менять без обсуждения!)
-├── client/       # Только клиентский код (рендер, GUI)
-├── common/       # Серверный код (BE, VM, network, bus)
-├── data/         # Data generators
-└── jcodec/       # Внешняя H.264 библиотека (не трогать)
+  api/       — Public API (do not change without discussion!)
+  client/    — Client-side only (rendering, GUI)
+  common/    — Shared logic (blocks, entities, VM, networking, bus)
+  data/      — Data generators (blockstates, recipes, loot tables)
+  jcodec/    — Bundled H.264 library (do not touch)
 ```
+
+See [docs/SRC_STRUCTURE.md](docs/SRC_STRUCTURE.md) for a full breakdown.
+
+## PR Process
+
+1. Fork the repository
+2. Create a branch from `1.21.1`
+3. Make changes with meaningful commits
+4. Ensure `./gradlew build` passes
+5. Open a Pull Request targeting `1.21.1`
+
+## Commit Messages
+
+Use conventional commits:
+
+```
+feat: add redstone controller C API
+fix: correct monitor framebuffer overflow
+refactor: extract ComputerTerminalManager from ComputerBlockEntity
+docs: update networking docs
+test: add Ipv4Space extended tests
+```
+
+## Before Submitting
+
+- `./gradlew build` passes
+- No `// comments` in new code
+- Public API has JavaDoc
+- ≤200 lines per file, ≤4 files per folder
+- No SPDX headers
 
 ## Issues
 
-Используйте шаблоны в `.github/ISSUE_TEMPLATE/`.
+Use the provided templates in `.github/ISSUE_TEMPLATE/`:
+- [Bug Report](.github/ISSUE_TEMPLATE/bug_report.md)
+- [Feature Request](.github/ISSUE_TEMPLATE/feature_request.md)

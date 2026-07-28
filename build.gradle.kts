@@ -350,7 +350,7 @@ allprojects {
 
 checkstyle {
     toolVersion = "10.21.0"
-    configFile = rootProject.file("checkstyle.xml")
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
     isIgnoreFailures = true
 }
 
