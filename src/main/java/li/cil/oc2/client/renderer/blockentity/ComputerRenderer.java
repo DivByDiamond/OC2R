@@ -48,7 +48,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
 
     public ComputerRenderer(final BlockEntityRendererProvider.Context context) {
         this.renderer = context.getBlockEntityRenderDispatcher();
-        this.terminalTextRenderer = new TerminalTextRenderer(context.getFont());
+        this.terminalTextRenderer = new TerminalTextRenderer(context.getFont(), rendererViews);
     }
 
     @Override
@@ -60,8 +60,6 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
             final int light,
             final int overlay) {
         final ComputerBlockEntity terminalSource = computer.terminalManager.getPrimaryForContraptionRendering();
-
-        ComputerRendererDebug.logDiagnostic(computer, terminalSource, stack.last().pose());
 
         final Direction blockFacing = computer.getBlockState().getValue(ComputerBlock.FACING);
 

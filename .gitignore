@@ -31,3 +31,4 @@ qodana-report/
 # Misc
 *.log
 *.tmp
+.ruff_cache/

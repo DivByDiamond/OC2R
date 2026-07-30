@@ -1,8 +1,11 @@
 package li.cil.oc2.client.renderer.blockentity;
 
+import com.google.common.cache.Cache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import li.cil.oc2.common.vm.terminal.RendererView;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -12,11 +15,12 @@ import net.minecraft.network.chat.Style;
 
 final class TerminalTextRenderer {
     private final Font font;
-    private final TerminalTextureRenderer textureRenderer;
+    private final Cache<Terminal, RendererView> rendererViews;
 
-    TerminalTextRenderer(final Font font) {
+    TerminalTextRenderer(
+            final Font font, final Cache<Terminal, RendererView> rendererViews) {
         this.font = font;
-        this.textureRenderer = new TerminalTextureRenderer();
+        this.rendererViews = rendererViews;
     }
 
     void renderTerminal(
@@ -24,13 +28,16 @@ final class TerminalTextRenderer {
             final MultiBufferSource bufferSource,
             final Terminal terminal,
             final double distanceToCamera) {
-        // Always use TerminalTextureRenderer for all distances (LOD: same texture,
-        // just smaller via perspective projection).  NEAREST filtering keeps text crisp.
+        // Render terminal content if close enough.
+        if (distanceToCamera >= 6f) {
+            return;
+        }
+
         stack.pushPose();
         stack.translate(2, 2, -0.9f);
 
-        final float textScaleX = 16f / terminal.getWidth();
-        final float textScaleY = 9f / terminal.getHeight();
+        final float textScaleX = 12f / terminal.getWidth();
+        final float textScaleY = 7f / terminal.getHeight();
         final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
 
         final float scaleDeltaX = textScaleX - scale;
@@ -42,9 +49,21 @@ final class TerminalTextRenderer {
 
         stack.scale(scale, scale, 1f);
 
-        textureRenderer.render(stack, RenderSystem.getProjectionMatrix(), terminal, true);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+
+        try {
+            rendererViews.get(terminal, terminal::getRenderer)
+                    .render(stack, RenderSystem.getProjectionMatrix(), true);
+        } catch (final ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         stack.popPose();
+        RenderSystem.disableDepthTest();
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
     }
 
     void renderStatusText(

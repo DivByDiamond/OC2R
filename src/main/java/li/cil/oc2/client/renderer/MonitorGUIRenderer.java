@@ -3,7 +3,6 @@ package li.cil.oc2.client.renderer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import java.time.Duration;
@@ -65,13 +64,20 @@ public class MonitorGUIRenderer {
     }
 
     @OnlyIn(Dist.CLIENT)
-    private record Renderer(MonitorBlockEntity monitorBlock)
-            implements RendererModel, RendererView {
+    private static final class Renderer implements RendererModel, RendererView {
         private static final Cache<MonitorBlockEntity, RenderInfo> RENDER_INFO =
                 CacheBuilder.newBuilder()
                         .expireAfterAccess(Duration.ofSeconds(5))
                         .removalListener(MonitorGUIRenderer::handleProjectorNoLongerRendering)
                         .build();
+
+        private final MonitorBlockEntity monitorBlock;
+        private final VertexBuffer buffer;
+
+        private Renderer(final MonitorBlockEntity monitorBlock) {
+            this.monitorBlock = monitorBlock;
+            this.buffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        }
 
         private static DynamicTexture getColorBuffer(final MonitorBlockEntity monitor) {
             try {
@@ -96,7 +102,9 @@ public class MonitorGUIRenderer {
         }
 
         @Override
-        public void close() {}
+        public void close() {
+            buffer.close();
+        }
 
         @Override
         public void render(
@@ -105,66 +113,62 @@ public class MonitorGUIRenderer {
                 float width,
                 float height,
                 boolean renderingToBlock) {
-            if (monitorBlock.isValid()) {
-                DynamicTexture texture = getColorBuffer(monitorBlock);
-                monitorBlock.video.onRendering();
-
-                RenderSystem.backupProjectionMatrix();
-                RenderSystem.getModelViewStack().pushMatrix();
-
-                RenderSystem.enableBlend();
-                RenderSystem.blendFunc(
-                        GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-
-                RenderSystem.colorMask(true, true, true, true);
-                RenderSystem.depthMask(false);
-
-                final ShaderInstance shader = GameRenderer.getPositionTexShader();
-
-                if (shader == null) return;
-
-                final BufferBuilder builder =
-                        Tesselator.getInstance()
-                                .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-                RenderSystem.setProjectionMatrix(projectionMatrix, VertexSorting.ORTHOGRAPHIC_Z);
-
-                RenderSystem.setShaderTexture(0, texture.getId());
-
-                VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
-
-                builder.addVertex(0, 0, 0).setUv(0, 0);
-                builder.addVertex(0, height, 0).setUv(0, 1);
-                builder.addVertex(width, height, 0).setUv(1, 1);
-                builder.addVertex(width, 0, 0).setUv(1, 0);
-
-                buffer.bind();
-                buffer.upload(builder.buildOrThrow());
-
-                var modelViewMatrix = stack.last().pose();
-                if (renderingToBlock) {
-                    // Sable/Sodium compatibility: push our pose onto the
-                    // RenderSystem model-view stack and apply, so the
-                    // cached matrix is current before we read it. Sable
-                    // may modify the stack without calling
-                    // applyModelViewMatrix(), leaving the cached field
-                    // stale — which would cause the monitor image to be
-                    // drawn at the wrong position or off-screen.
-                    RenderSystem.getModelViewStack().mul(stack.last().pose());
-                    RenderSystem.applyModelViewMatrix();
-                    modelViewMatrix = RenderSystem.getModelViewMatrix();
-                }
-                buffer.drawWithShader(modelViewMatrix, projectionMatrix, shader);
-
-                VertexBuffer.unbind();
-                buffer.close();
-
-                RenderSystem.restoreProjectionMatrix();
-                RenderSystem.getModelViewStack().popMatrix();
-                RenderSystem.applyModelViewMatrix();
-
-                RenderSystem.depthMask(true);
+            if (!monitorBlock.isValid()) {
+                return;
             }
+
+            final DynamicTexture texture = getColorBuffer(monitorBlock);
+            monitorBlock.video.onRendering();
+
+            final ShaderInstance shader = GameRenderer.getPositionTexShader();
+            if (shader == null) {
+                return;
+            }
+
+            RenderSystem.backupProjectionMatrix();
+            RenderSystem.getModelViewStack().pushMatrix();
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.colorMask(true, true, true, true);
+            RenderSystem.depthMask(false);
+
+            RenderSystem.setProjectionMatrix(projectionMatrix, VertexSorting.ORTHOGRAPHIC_Z);
+            RenderSystem.setShaderTexture(0, texture.getId());
+
+            final BufferBuilder builder =
+                    Tesselator.getInstance()
+                            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            builder.addVertex(0, 0, 0).setUv(0, 0);
+            builder.addVertex(0, height, 0).setUv(0, 1);
+            builder.addVertex(width, height, 0).setUv(1, 1);
+            builder.addVertex(width, 0, 0).setUv(1, 0);
+
+            buffer.bind();
+            buffer.upload(builder.buildOrThrow());
+
+            var modelViewMatrix = stack.last().pose();
+            if (renderingToBlock) {
+                // Sable/Sodium compatibility: push our pose onto the
+                // RenderSystem model-view stack and apply, so the
+                // cached matrix is current before we read it. Sable
+                // may modify the stack without calling
+                // applyModelViewMatrix(), leaving the cached field
+                // stale — which would cause the monitor image to be
+                // drawn at the wrong position or off-screen.
+                RenderSystem.getModelViewStack().mul(stack.last().pose());
+                RenderSystem.applyModelViewMatrix();
+                modelViewMatrix = RenderSystem.getModelViewMatrix();
+            }
+            buffer.drawWithShader(modelViewMatrix, projectionMatrix, shader);
+
+            VertexBuffer.unbind();
+
+            RenderSystem.restoreProjectionMatrix();
+            RenderSystem.getModelViewStack().popMatrix();
+            RenderSystem.applyModelViewMatrix();
+
+            RenderSystem.depthMask(true);
         }
     }
 }

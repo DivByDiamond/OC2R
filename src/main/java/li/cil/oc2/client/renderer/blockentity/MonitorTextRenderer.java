@@ -36,7 +36,7 @@ final class MonitorTextRenderer {
         stack.translate(2, 2, -0.9f);
 
         final MonitorGUIRenderer terminal = monitor.getMonitor();
-        final float textScaleX = 16f / MonitorDevice.WIDTH;
+        final float textScaleX = 12f / MonitorDevice.WIDTH;
         final float textScaleY = 9f / MonitorDevice.HEIGHT;
         final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
 

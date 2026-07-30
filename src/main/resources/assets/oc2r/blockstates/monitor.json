@@ -1,16 +1,19 @@
 {
-  "multipart": [
-    {   "when": {"facing": "north"},
-        "apply": { "model": "oc2r:block/monitor" }
+  "variants": {
+    "facing=north": {
+      "model": "oc2r:block/monitor"
     },
-    {   "when": {"facing": "south"},
-        "apply": { "model": "oc2r:block/monitor", "y": 180 }
+    "facing=south": {
+      "model": "oc2r:block/monitor",
+      "y": 180
     },
-    {   "when": {"facing": "west"},
-        "apply": { "model": "oc2r:block/monitor", "y": 270 }
+    "facing=west": {
+      "model": "oc2r:block/monitor",
+      "y": 270
     },
-    {   "when": {"facing": "east"},
-        "apply": { "model": "oc2r:block/monitor", "y": 90 }
+    "facing=east": {
+      "model": "oc2r:block/monitor",
+      "y": 90
     }
-  ]
+  }
 }
