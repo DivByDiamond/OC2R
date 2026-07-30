@@ -2,7 +2,6 @@ package li.cil.oc2.common.bus.controller;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.tick.TickUtils;
@@ -97,7 +96,7 @@ final class BusElementManager {
     private Optional<Map<DeviceBusElement, DeviceBusElement>> collectBusElements() {
         final Set<DeviceBusElement> closed = new HashSet<>();
         final Deque<DeviceBusElement> open = new ArrayDeque<>();
-        final Map<DeviceBusElement, DeviceBusElement> optionals = new ConcurrentHashMap<>();
+        final Map<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
 
         closed.add(root);
         open.add(root);
