@@ -24,9 +24,9 @@ public class VMSpec {
                                 "Small Disk: SF",
                                 "Medium Disk: 2 * SF",
                                 "Large Disk: 4 * SF",
-                                "Extra Large Disk: 16 * SF",
+                                "Extra Large Disk: 8 * SF",
                                 "With the default factor this is equivalent to (in the same order)"
-                                        + " 2MB, 4MB, 8MB, 32MB.")
+                                        + " 2MB, 4MB, 8MB, 16MB.")
                         .defineInRange(
                                 "diskSizeFactor", 2 * Constants.MEGABYTE, 0, Integer.MAX_VALUE);
     }

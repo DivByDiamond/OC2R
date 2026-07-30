@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -46,6 +47,28 @@ import net.neoforged.api.distmarker.OnlyIn;
 public final class MonitorBlock extends HorizontalDirectionalBlock
         implements EnergyConsumingBlock, EntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
+
+    // ----- Multiblock state properties ------------------------------------------
+    /** Total width of this multiblock, in blocks. Same value on every block of the multiblock. */
+    public static final IntegerProperty WIDTH =
+            IntegerProperty.create("mb_width", 1, MonitorMultiblock.MAX_WIDTH);
+    /** Total height of this multiblock, in blocks. Same value on every block of the multiblock. */
+    public static final IntegerProperty HEIGHT =
+            IntegerProperty.create("mb_height", 1, MonitorMultiblock.MAX_HEIGHT);
+    /** This block's column offset from the origin (0 = origin = top-right from viewer POV). */
+    public static final IntegerProperty ORIGIN_OFFSET_X =
+            IntegerProperty.create("mb_ox", 0, MonitorMultiblock.MAX_WIDTH - 1);
+    /** This block's row offset from the origin (0 = origin = top row). */
+    public static final IntegerProperty ORIGIN_OFFSET_Y =
+            IntegerProperty.create("mb_oy", 0, MonitorMultiblock.MAX_HEIGHT - 1);
+
+    /**
+     * Re-entrancy guard for {@link #playerWillDestroy}. When we proactively remove the other
+     * blocks of a multiblock we don't want those removals to recursively drop items or trigger
+     * multiblock teardown again.
+     */
+    static final ThreadLocal<Boolean> IS_BREAKING_MULTIBLOCK = ThreadLocal.withInitial(() -> false);
+
     // We bake the "screen" indent on the front into the collision shape, to prevent stuff being
     // placeable on that side, such as network connectors, torches, etc.
     private static final VoxelShape NEG_Z_SHAPE =
@@ -71,7 +94,14 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
                         .lightLevel(state -> state.getValue(LIT) ? 8 : 0)
                         .strength(1.5f, 6.0f));
         registerDefaultState(
-                getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
+                getStateDefinition()
+                        .any()
+                        .setValue(FACING, Direction.NORTH)
+                        .setValue(LIT, false)
+                        .setValue(WIDTH, 1)
+                        .setValue(HEIGHT, 1)
+                        .setValue(ORIGIN_OFFSET_X, 0)
+                        .setValue(ORIGIN_OFFSET_Y, 0));
     }
 
     @Override
@@ -111,9 +141,19 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final BlockPos pos,
             final Player player,
             final BlockHitResult hitResult) {
-        final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof final MonitorBlockEntity monitor)) {
-            return super.useWithoutItem(state, level, pos, player, hitResult);
+        // Sub-blocks of a multiblock redirect interaction to the origin (master) block entity.
+        final MonitorBlockEntity monitor;
+        if (MonitorMultiblock.isOrigin(state)) {
+            final BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (!(blockEntity instanceof final MonitorBlockEntity origin)) {
+                return super.useWithoutItem(state, level, pos, player, hitResult);
+            }
+            monitor = origin;
+        } else {
+            monitor = MonitorMultiblock.getOriginEntity(level, pos, state);
+            if (monitor == null) {
+                return super.useWithoutItem(state, level, pos, player, hitResult);
+            }
         }
 
         if (!level.isClientSide()) {
@@ -132,6 +172,82 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
         return super.defaultBlockState()
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    public void setPlacedBy(
+            final Level level, final BlockPos pos, final BlockState state,
+            @Nullable final Player player, final ItemStack stack) {
+        super.setPlacedBy(level, pos, state, player, stack);
+        if (!level.isClientSide()) {
+            // Attempt to merge the freshly placed 1x1 monitor into an adjacent multiblock.
+            // tryMergeIntoMultiblock will re-stamp our BlockState (and possibly our neighbors')
+            // with the new dimensions / offsets if a merge happens.
+            MonitorMultiblock.tryMergeIntoMultiblock(level, pos, state.getValue(FACING));
+        }
+    }
+
+    @Override
+    public void playerWillDestroy(
+            final Level level, final BlockPos pos, final BlockState state, final Player player) {
+        if (!IS_BREAKING_MULTIBLOCK.get() && !level.isClientSide()) {
+            IS_BREAKING_MULTIBLOCK.set(true);
+            try {
+                // Drop W*H items at the broken position (the player's pick-up spot). We drop
+                // W*H-1 here because the vanilla loot table will drop 1 more item for the
+                // original block when destroyBlock() runs right after playerWillDestroy(). In
+                // creative mode the vanilla drop is skipped, so we also skip our drop.
+                final BlockPos originPos = MonitorMultiblock.isOrigin(state)
+                        ? pos : MonitorMultiblock.getOriginPos(pos, state);
+                final BlockState originState = level.getBlockState(originPos);
+                if (originState.getBlock() instanceof MonitorBlock) {
+                    final int W = originState.getValue(WIDTH);
+                    final int H = originState.getValue(HEIGHT);
+                    if (!player.isCreative() && (W > 1 || H > 1)) {
+                        Block.popResource(
+                                level, pos,
+                                new ItemStack(li.cil.oc2.common.item.Items.MONITOR.get(), W * H - 1));
+                    }
+                    // Remove every other block of the multiblock silently. removeBlock does
+                    // not call getDrops, so no items are dropped for them.
+                    final Direction facing = originState.getValue(FACING);
+                    for (int ox = 0; ox < W; ox++) {
+                        for (int oy = 0; oy < H; oy++) {
+                            final BlockPos blockPos = MonitorMultiblock.getBlockPos(originPos, facing, ox, oy);
+                            if (blockPos.equals(pos)) continue;
+                            final BlockEntity be = level.getBlockEntity(blockPos);
+                            if (be != null) be.setRemoved();
+                            level.removeBlock(blockPos, false);
+                        }
+                    }
+                }
+            } finally {
+                IS_BREAKING_MULTIBLOCK.set(false);
+            }
+        }
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public List<ItemStack> getDrops(final BlockState state, final net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        // During multiblock teardown we already popped W*H-1 items in playerWillDestroy; the
+        // vanilla loot table drop for the originally broken block supplies the final item, so
+        // we just defer to the standard loot table here. The IS_BREAKING_MULTIBLOCK flag is
+        // only used to prevent recursive teardown if removeBlock() somehow re-enters this
+        // path (it shouldn't, but we keep the guard for safety).
+        return super.getDrops(state, builder);
+    }
+
+    @Override
+    public BlockState rotate(final BlockState state, final net.minecraft.world.level.LevelAccessor level, final BlockPos pos, final net.minecraft.world.level.block.Rotation rotation) {
+        // Rotating a single block of a multiblock with a wrench would change its FACING and
+        // break the multiblock structure. Refuse to rotate when this block is part of a
+        // multiblock larger than 1x1.
+        if (state.getValue(WIDTH) > 1 || state.getValue(HEIGHT) > 1) {
+            return state;
+        }
+        return super.rotate(state, level, pos, rotation);
     }
 
     // EntityBlock
@@ -153,7 +269,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     protected void createBlockStateDefinition(
             final StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, LIT);
+        builder.add(FACING, LIT, WIDTH, HEIGHT, ORIGIN_OFFSET_X, ORIGIN_OFFSET_Y);
     }
 
     @Override

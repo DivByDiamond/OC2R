@@ -72,7 +72,7 @@ public final class Items {
     public static final DeferredItem<HardDriveItem> HARD_DRIVE_EXTRA_LARGE =
             register(
                     "hard_drive_extra_large",
-                    () -> new HardDriveItem(16 * Config.diskSizeFactor, DyeColor.YELLOW));
+                    () -> new HardDriveItem(8 * Config.diskSizeFactor, DyeColor.YELLOW));
 
     public static final DeferredItem<CPUItem> CPU_TIER_1 =
             register("cpu_tier_1", () -> new CPUItem(25_000_000));
