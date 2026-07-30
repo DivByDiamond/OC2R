@@ -23,6 +23,7 @@ public class TerminalTextureRenderer implements RendererModel {
 
     private final DynamicTexture texture;
     private final AtomicInteger dirtyMask = new AtomicInteger(-1);
+    private volatile boolean closed = false;
     private Terminal currentTerminal;
 
     public TerminalTextureRenderer() {
@@ -41,7 +42,10 @@ public class TerminalTextureRenderer implements RendererModel {
         if (currentTerminal != null) {
             currentTerminal.renderers.remove(this);
         }
-        texture.close();
+        closed = true;
+        // Schedule texture close on the render thread to avoid closing the
+        // NativeImage while a queued upload is still pending in RenderSystem.
+        RenderSystem.recordRenderCall(texture::close);
     }
 
     public void render(
@@ -57,6 +61,7 @@ public class TerminalTextureRenderer implements RendererModel {
             dirtyMask.set(-1); // force full rebuild
         }
         if (terminal == null) return;
+        if (closed) return;
 
         if (dirtyMask.get() != 0) {
             final NativeImage img = texture.getPixels();

@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.context.global;
 
 import java.util.BitSet;
-import java.util.List;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.device.vm.context.*;
 import li.cil.oc2.common.vm.context.EventManager;
@@ -30,7 +29,7 @@ public final class GlobalVMContext implements VMContext, VMContextManagerCollect
     private BitSet reservedInterrupts = new BitSet();
 
     @Serialized
-    private List<MemoryRange> reservedMemoryRanges = new MemoryRangeList();
+    private MemoryRangeList reservedMemoryRanges = new MemoryRangeList();
 
     public GlobalVMContext(final Board board) {
         this.memoryMap = new GlobalMemoryMap(board.getMemoryMap());

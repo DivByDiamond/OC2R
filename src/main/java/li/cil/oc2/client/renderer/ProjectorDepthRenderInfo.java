@@ -1,13 +1,14 @@
 package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.common.blockentity.projector.FrameConsumer;
 import li.cil.oc2.common.bus.device.vm.block.ProjectorDevice;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 
-record ProjectorDepthRenderInfo(DynamicTexture texture) implements FrameConsumer {
+final class ProjectorDepthRenderInfo implements FrameConsumer {
     private static final ThreadLocal<byte[]> RGB = ThreadLocal.withInitial(() -> new byte[3]);
 
     private static final int[] GAMMA_LUT = new int[256];
@@ -18,12 +19,28 @@ record ProjectorDepthRenderInfo(DynamicTexture texture) implements FrameConsumer
         }
     }
 
+    private final DynamicTexture texture;
+    private volatile boolean closed = false;
+
+    ProjectorDepthRenderInfo(final DynamicTexture texture) {
+        this.texture = texture;
+    }
+
+    DynamicTexture texture() {
+        return texture;
+    }
+
     public void close() {
-        texture.close();
+        closed = true;
+        // Schedule texture close on the render thread to avoid closing the
+        // NativeImage while a queued upload is still pending in RenderSystem.
+        RenderSystem.recordRenderCall(texture::close);
     }
 
     @Override
     public synchronized void processFrame(final Picture picture) {
+        if (closed) return;
+
         final NativeImage image = texture.getPixels();
         if (image == null) {
             return;
