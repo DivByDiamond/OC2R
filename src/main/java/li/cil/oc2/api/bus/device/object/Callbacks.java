@@ -128,8 +128,16 @@ public final class Callbacks {
                                                                                 ? p.getName()
                                                                                 : null);
                                                         final Class<?> pt = p.getType();
+                                                        // pn may be null when the class wasn't
+                                                        // compiled with -parameters AND the
+                                                        // parameter has no @Parameter annotation.
+                                                        // ConcurrentHashMap rejects null keys, so
+                                                        // we must skip the lookup in that case.
                                                         final String pd =
-                                                                paramDescs.containsKey(pn)
+                                                                pn != null
+                                                                                && paramDescs
+                                                                                        .containsKey(
+                                                                                                pn)
                                                                         ? paramDescs.get(pn)
                                                                         : a != null
                                                                                         && Strings

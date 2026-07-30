@@ -345,6 +345,10 @@ publishing {
 allprojects {
     tasks.withType<JavaCompile>().configureEach {
         options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-classfile", "-Xlint:-processing", "-Xlint:-path", "-Xlint:-this-escape", "-Xlint:-serial", "-Xlint:-auxiliaryclass"))
+        // Preserve parameter names in bytecode so reflection (e.g. RPCParameter.getName()
+        // in li.cil.oc2.api.bus.device.object.Callbacks) can recover them at runtime without
+        // requiring every @Callback-annotated method to also use @Parameter annotations.
+        options.compilerArgs.add("-parameters")
     }
 }
 
