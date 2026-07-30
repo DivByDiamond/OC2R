@@ -85,7 +85,7 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
         stack.translate(-0.5f, 0, -0.5f);
 
-        stack.translate(1, 1, 0);
+        stack.translate(1, 1, 1);
         stack.scale(-1, -1, -1);
 
         final float pixelScale = 1 / 16f;
