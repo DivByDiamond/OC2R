@@ -17,6 +17,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -177,8 +178,8 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     @Override
     public void setPlacedBy(
             final Level level, final BlockPos pos, final BlockState state,
-            @Nullable final Player player, final ItemStack stack) {
-        super.setPlacedBy(level, pos, state, player, stack);
+            @Nullable final LivingEntity placer, final ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide()) {
             // Attempt to merge the freshly placed 1x1 monitor into an adjacent multiblock.
             // tryMergeIntoMultiblock will re-stamp our BlockState (and possibly our neighbors')
@@ -188,7 +189,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     }
 
     @Override
-    public void playerWillDestroy(
+    public BlockState playerWillDestroy(
             final Level level, final BlockPos pos, final BlockState state, final Player player) {
         if (!IS_BREAKING_MULTIBLOCK.get() && !level.isClientSide()) {
             IS_BREAKING_MULTIBLOCK.set(true);
@@ -225,7 +226,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
                 IS_BREAKING_MULTIBLOCK.set(false);
             }
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @SuppressWarnings("deprecation")
