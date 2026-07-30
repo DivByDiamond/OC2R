@@ -1,10 +1,24 @@
 {
-  "parent": "block/block",
-  "loader": "neoforge:obj",
-  "flip_v": true,
-  "model": "oc2r:models/block/monitor.obj",
+  "parent": "block/cube_bottom_top",
   "textures": {
-    "texture0": "oc2r:block/monitor/monitor",
-    "particle": "oc2r:block/monitor/monitor"
-  }
+    "bottom": "oc2r:block/monitor_oc/generic_top",
+    "top": "oc2r:block/monitor_oc/generic_top",
+    "side": "oc2r:block/monitor_oc/generic_side",
+    "front": "oc2r:block/monitor_oc/fmm",
+    "particle": "oc2r:block/monitor_oc/generic_side"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 4],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#front", "cullface": "north"},
+        "east":  {"uv": [0, 0, 4, 16],  "texture": "#side",  "cullface": "east"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#side",  "cullface": "south"},
+        "west":  {"uv": [0, 0, 4, 16],  "texture": "#side",  "cullface": "west"},
+        "up":    {"uv": [0, 0, 16, 4],  "texture": "#top",   "cullface": "up"},
+        "down":  {"uv": [0, 0, 16, 4],  "texture": "#bottom","cullface": "down"}
+      }
+    }
+  ]
 }
