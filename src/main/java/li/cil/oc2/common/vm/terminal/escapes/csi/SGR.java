@@ -91,9 +91,19 @@ public class SGR extends CSISequenceHandler {
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
                 terminal.sixteenColor.R = arg - 30;
             }
+            case 39 -> { // Default foreground color
+                terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+                terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.Copy();
+                terminal.sixteenColor.R = TerminalColors.Color.WHITE;
+            }
             case 40, 41, 42, 43, 44, 45, 46, 47 -> { // Set background color
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
                 terminal.sixteenColor.G = arg - 40;
+            }
+            case 49 -> { // Default background color
+                terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+                terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
+                terminal.sixteenColor.G = TerminalColors.Color.BLACK;
             }
             case 90, 91, 92, 93, 94, 95, 96, 97 -> { // Set foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT;
