@@ -101,7 +101,7 @@ public class SGR extends CSISequenceHandler {
                 terminal.sixteenColor.G = arg - 40;
             }
             case 49 -> { // Default background color
-                terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+                terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
                 terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
                 terminal.sixteenColor.G = TerminalColors.Color.BLACK;
             }
