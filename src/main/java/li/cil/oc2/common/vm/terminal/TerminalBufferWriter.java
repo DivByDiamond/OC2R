@@ -49,6 +49,8 @@ class TerminalBufferWriter {
                         terminal.altColorsBackground[index] = terminal.backgroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.altColorsBackground[index] = terminal.sixteenColorBright.Copy();
+                case DEFAULT_BACKGROUND ->
+                        terminal.altColorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
                 default -> {}
             }
 
@@ -82,6 +84,8 @@ class TerminalBufferWriter {
                         terminal.colorsBackground[index] = terminal.backgroundColor.Copy();
                 case SIXTEEN_COLOR_BRIGHT ->
                         terminal.colorsBackground[index] = terminal.sixteenColorBright.Copy();
+                case DEFAULT_BACKGROUND ->
+                        terminal.colorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
                 default -> {}
             }
 
