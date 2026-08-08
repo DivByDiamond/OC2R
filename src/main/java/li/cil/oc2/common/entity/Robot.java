@@ -164,6 +164,7 @@ public final class Robot extends AbstractRobotEntity
     public void remove(final RemovalReason reason) {
         super.remove(reason);
         if (!level().isClientSide() && reason.shouldDestroy()) {
+            getEventHandler().unregister();
             virtualMachine.stop();
             virtualMachine.dispose();
         }

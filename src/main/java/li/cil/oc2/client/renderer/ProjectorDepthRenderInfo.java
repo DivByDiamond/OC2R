@@ -26,7 +26,7 @@ final class ProjectorDepthRenderInfo implements FrameConsumer {
         this.texture = texture;
     }
 
-    DynamicTexture texture() {
+    DynamicTexture getTexture() {
         return texture;
     }
 

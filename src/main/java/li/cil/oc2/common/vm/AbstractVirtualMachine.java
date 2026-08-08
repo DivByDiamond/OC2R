@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
@@ -21,6 +22,11 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     public final CommonDeviceBusController busController;
     private BusState busState = BusState.SCAN_PENDING;
+
+    private static final int DEVICE_CHANGE_RESTART_DELAY = 2;
+
+    private final AtomicBoolean devicesChangedWhileRunning = new AtomicBoolean();
+    private int deviceChangeRestartDelay;
 
     public final SerializedState state = new SerializedState();
     public AbstractTerminalVMRunner runner;
@@ -121,6 +127,10 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         lifecycle.stopRunnerAndReset();
     }
 
+    public void markDevicesChanged() {
+        devicesChangedWhileRunning.set(true);
+    }
+
     public void tick() {
         busController.scan();
         setBusState(busController.getState());
@@ -129,6 +139,26 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         if (state.board.isRestarting()) {
             stop();
             start();
+        }
+
+        // If the device set changed while the VM was running, schedule a soft
+        // restart so the guest re-enumerates hardware on the next boot. Defer a
+        // couple of ticks so that multiple devices connected at the same time
+        // (e.g. a monitor together with a keyboard) only cause a single restart.
+        // The atomic flag protects against races between the scan callback and
+        // this tick. Devices that can be hot-plugged (RPC devices) are handled
+        // live by the RPC adapter and do not reach this point.
+        if (devicesChangedWhileRunning.getAndSet(false)) {
+            if (runState == VMRunState.RUNNING && state.board.isRunning()) {
+                deviceChangeRestartDelay = DEVICE_CHANGE_RESTART_DELAY;
+            }
+        }
+        if (deviceChangeRestartDelay > 0) {
+            deviceChangeRestartDelay--;
+            if (deviceChangeRestartDelay == 0 && state.board.isRunning()) {
+                stop();
+                start();
+            }
         }
 
         if (runState == VMRunState.LOADING_DEVICES) {

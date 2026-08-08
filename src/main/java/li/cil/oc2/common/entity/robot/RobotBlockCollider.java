@@ -31,6 +31,13 @@ public final class RobotBlockCollider {
             return;
         }
 
+        // Only clear obstructing blocks while the robot is actually moving or rotating.
+        // Without this check a stationary robot (or one stuck overlapping a block, e.g. due to
+        // a piston, chunk regen or being placed into a block) would continuously "eat" terrain.
+        if (!robot.getMovementController().hasQueuedActions()) {
+            return;
+        }
+
         final VoxelShape shape = Shapes.create(robot.getBoundingBox());
         final Cursor3D iterator = getBlockPosIterator();
         while (iterator.advance()) {

@@ -95,7 +95,7 @@ public class MonitorGUIRenderer {
                                     monitor.video.setFrameConsumer(renderInfo);
                                     return renderInfo;
                                 })
-                        .texture();
+                        .getTexture();
             } catch (final ExecutionException e) {
                 throw new RuntimeException(e);
             }

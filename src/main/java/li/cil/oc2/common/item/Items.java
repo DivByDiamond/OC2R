@@ -85,7 +85,7 @@ public final class Items {
     public static final DeferredItem<CPUItem> CPU_TIER_INF =
             register("cpu_tier_inf", () -> new CPUItem(1_000_000_000));
     public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY =
-            register("flash_memory", () -> new FlashMemoryItem(12 * Constants.MEGABYTE));
+            register("flash_memory", () -> new FlashMemoryItem(Config.flashMemorySize));
     public static final DeferredItem<FlashMemoryWithExternalDataItem> FLASH_MEMORY_CUSTOM =
             register(
                     "flash_memory_custom",

@@ -29,7 +29,7 @@ final class RenderInfo implements FrameConsumer {
         this.texture = texture;
     }
 
-    DynamicTexture texture() {
+    DynamicTexture getTexture() {
         return texture;
     }
 

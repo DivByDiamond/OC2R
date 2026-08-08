@@ -93,6 +93,7 @@ final class BusElementManager {
         controller.scanDevices();
     }
 
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     private Optional<Map<DeviceBusElement, DeviceBusElement>> collectBusElements() {
         final Set<DeviceBusElement> closed = new HashSet<>();
         final Deque<DeviceBusElement> open = new ArrayDeque<>();

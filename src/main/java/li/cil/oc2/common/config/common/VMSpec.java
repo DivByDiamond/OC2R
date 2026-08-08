@@ -7,6 +7,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class VMSpec {
     public final ModConfigSpec.LongValue maxAllocatedMemory;
     public final ModConfigSpec.IntValue diskSizeFactor;
+    public final ModConfigSpec.IntValue flashMemorySize;
 
     VMSpec(ModConfigSpec.Builder builder) {
         maxAllocatedMemory =
@@ -29,10 +30,18 @@ public class VMSpec {
                                         + " 2MB, 4MB, 8MB, 16MB.")
                         .defineInRange(
                                 "diskSizeFactor", 2 * Constants.MEGABYTE, 0, Integer.MAX_VALUE);
+
+        flashMemorySize =
+                builder.comment(
+                                "Size of a flash memory item (in megabytes). This is the size of"
+                                        + " the firmware image that can be stored on a single flash"
+                                        + " memory item.")
+                        .defineInRange("flashMemorySize", 15, 1, Integer.MAX_VALUE);
     }
 
     public void loadValues() {
         Config.maxAllocatedMemory = maxAllocatedMemory.get();
         Config.diskSizeFactor = diskSizeFactor.get();
+        Config.flashMemorySize = flashMemorySize.get() * Constants.MEGABYTE;
     }
 }

@@ -183,7 +183,7 @@ public final class ProjectorDepthRenderer {
                                 projector.setFrameConsumer(renderInfo);
                                 return renderInfo;
                             })
-                    .texture();
+                        .getTexture();
         } catch (final ExecutionException e) {
             throw new RuntimeException(e);
         }

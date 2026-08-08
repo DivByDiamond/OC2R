@@ -54,6 +54,7 @@ final class MonitorStateManager {
     void savePersistent(final CompoundTag tag, final HolderLookup.Provider registries) {
         tag.put("energy", energy.serializeNBT(registries));
         tag.putBoolean("projecting", isPowered);
+        tag.putBoolean("has_energy", hasEnergy);
         tag.putUUID("device_id", deviceId);
     }
 

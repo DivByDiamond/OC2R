@@ -134,9 +134,10 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
             return false;
         }
 
-        if (itemStack.isEmpty()) {
-            inventory.extractItem(selectedSlot, 1, false);
-        }
+        // The block was placed. Deduct the used item from the robot's inventory even if the
+        // placed stack was not fully consumed by the placement (e.g. placing a single item
+        // from a larger stack, where the copy used for the placement still contains an item).
+        inventory.extractItem(selectedSlot, 1, false);
 
         return true;
     }

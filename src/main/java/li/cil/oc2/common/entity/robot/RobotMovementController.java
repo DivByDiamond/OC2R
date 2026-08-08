@@ -1,14 +1,11 @@
 package li.cil.oc2.common.entity.robot;
 
 import java.util.Queue;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.entity.Robot;
 import net.minecraft.nbt.CompoundTag;
 
 public class RobotMovementController {
-
-    private final ReentrantLock lock = new ReentrantLock();
 
     private final RobotActionProcessor actionProcessor;
 
@@ -41,20 +38,20 @@ public class RobotMovementController {
     }
 
     public int getLastActionId() {
-        return actionProcessor.lastActionId;
+        return actionProcessor.getLastActionId();
     }
 
     @Nullable
     public AbstractRobotAction getCurrentAction() {
-        return actionProcessor.action;
+        return actionProcessor.getCurrentAction();
     }
 
     public Queue<AbstractRobotAction> getQueue() {
-        return actionProcessor.queue;
+        return actionProcessor.getQueue();
     }
 
     public Queue<RobotActionProcessorResult> getResults() {
-        return actionProcessor.results;
+        return actionProcessor.getResults();
     }
 
     public CompoundTag serialize() {
@@ -67,34 +64,6 @@ public class RobotMovementController {
 
     @Nullable
     public RobotActionResult findActionResult(final int actionId) {
-        final AbstractRobotAction currentAction = actionProcessor.action;
-        if (currentAction != null && currentAction.getId() == actionId) {
-            return RobotActionResult.INCOMPLETE;
-        }
-        lock.lock();
-        try {
-
-            for (final AbstractRobotAction action : actionProcessor.queue) {
-                if (action.getId() == actionId) {
-                    return RobotActionResult.INCOMPLETE;
-                }
-            }
-        
-        } finally {
-            lock.unlock();
-        }
-        lock.lock();
-        try {
-
-            for (final RobotActionProcessorResult result : actionProcessor.results) {
-                if (result.actionId == actionId) {
-                    return result.result;
-                }
-            }
-        
-        } finally {
-            lock.unlock();
-        }
-        return null;
+        return actionProcessor.findActionResult(actionId);
     }
 }

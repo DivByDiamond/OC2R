@@ -32,3 +32,6 @@ qodana-report/
 *.log
 *.tmp
 .ruff_cache/
+
+# Reference repos
+ref/

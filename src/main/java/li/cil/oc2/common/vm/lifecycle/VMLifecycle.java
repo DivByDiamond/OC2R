@@ -37,9 +37,6 @@ public final class VMLifecycle {
 
     public void handleBeforeDeviceScan() {
         vm.state.rpcAdapter.pause();
-        if (vm.runState == VMRunState.RUNNING) {
-            vm.runState = VMRunState.LOADING_DEVICES;
-        }
     }
 
     public void handleAfterDeviceScan(final AfterDeviceScanEvent event) {
@@ -49,11 +46,16 @@ public final class VMLifecycle {
     public void handleDevicesAdded(final DevicesChangedEvent event) {
         joinWorkerThread();
         vm.state.vmAdapter.addDevices(event.devices());
+        // Deferred mount: on a running VM the added devices are not mounted
+        // until the VM is restarted (see AbstractVirtualMachine.tick), which
+        // lets the guest re-enumerate hardware on the next boot.
+        vm.markDevicesChanged();
     }
 
     public void handleDevicesRemoved(final DevicesChangedEvent event) {
         joinWorkerThread();
         vm.state.vmAdapter.removeDevices(event.devices());
+        vm.markDevicesChanged();
     }
 
     public void load() {

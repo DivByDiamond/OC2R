@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.NetworkMessages;
+import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -61,7 +62,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
      * after some time to avoid malicious clients being able to grow the memory used by this cache
      * to grow infinitely.
      */
-    private static final Cache<Integer, ByteBuf> MULTIPART_MESSAGE_BUFFER_CACHE =
+    private static final Cache<Object, ByteBuf> MULTIPART_MESSAGE_BUFFER_CACHE =
             CacheBuilder.newBuilder().expireAfterAccess(Duration.ofSeconds(30)).build();
 
     private static int lastAssignedMultipartMessageId;
@@ -128,9 +129,9 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         try {
             final boolean isFinalPart = data.length < MAX_PAYLOAD_SIZE - HEADER_SIZE;
 
-            final ByteBuf buffer =
-                    MULTIPART_MESSAGE_BUFFER_CACHE.get(
-                            lastAssignedMultipartMessageId, Unpooled::buffer);
+            final Object key = new MultipartKey(context.connection(), multipartMessageId);
+
+            final ByteBuf buffer = MULTIPART_MESSAGE_BUFFER_CACHE.get(key, Unpooled::buffer);
             if (buffer.capacity() == 0) {
                 return; // Invalidated entry due to being over-sized.
             }
@@ -140,13 +141,12 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
                 LOGGER.error(
                         "Received over-sized multipart message from client [{}], ignoring.",
                         context.player());
-                MULTIPART_MESSAGE_BUFFER_CACHE.put(
-                        lastAssignedMultipartMessageId, Unpooled.buffer(0));
+                MULTIPART_MESSAGE_BUFFER_CACHE.put(key, Unpooled.buffer(0));
                 return;
             }
 
             if (isFinalPart) {
-                MULTIPART_MESSAGE_BUFFER_CACHE.invalidate(lastAssignedMultipartMessageId);
+                MULTIPART_MESSAGE_BUFFER_CACHE.invalidate(key);
 
                 final Entry entry = ENTRY_BY_ID.get(messageId);
                 if (entry == null) {
@@ -166,6 +166,8 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
                     e);
         }
     }
+
+    private record MultipartKey(Connection connection, int messageId) {}
 
     private record Entry(
             int id, StreamCodec<? super FriendlyByteBuf, AbstractMessage> streamCodec) {}

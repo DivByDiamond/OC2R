@@ -10,7 +10,6 @@ import li.cil.oc2.common.vm.context.VMContextManagerCollection;
 import li.cil.sedna.api.Board;
 import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
-import li.cil.sedna.api.memory.MemoryRange;
 
 public final class GlobalVMContext implements VMContext, VMContextManagerCollection {
     private final GlobalMemoryMap memoryMap;

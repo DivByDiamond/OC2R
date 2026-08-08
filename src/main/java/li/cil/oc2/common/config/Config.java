@@ -12,6 +12,7 @@ public final class Config {
     // TODO: Implement configuration of CPU MHzs
     public static long maxAllocatedMemory = 512 * Constants.MEGABYTE;
     public static int diskSizeFactor = 2 * Constants.MEGABYTE;
+    public static int flashMemorySize = 15 * Constants.MEGABYTE;
 
     public static double busCableEnergyPerTick = 0.1;
     public static double busInterfaceEnergyPerTick = 0.5;
