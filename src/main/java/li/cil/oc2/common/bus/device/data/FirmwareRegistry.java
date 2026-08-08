@@ -20,6 +20,9 @@ public final class FirmwareRegistry {
     public static final DeferredHolder<Firmware, MinuxFirmware> MINUX =
             INITIALIZER.register("minux", MinuxFirmware::new);
 
+    public static final DeferredHolder<Firmware, OnyxOSFirmware> ONYXOS =
+            INITIALIZER.register("onyxos", OnyxOSFirmware::new);
+
     public static void initialize(IEventBus modBus) {
         INITIALIZER.register(modBus);
     }
