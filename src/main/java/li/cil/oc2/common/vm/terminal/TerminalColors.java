@@ -98,14 +98,14 @@ public final class TerminalColors {
 
     @SuppressWarnings("unused")
     public static final class Color {
-        static final int BLACK = 0;
-        static final int RED = 1;
-        static final int GREEN = 2;
-        static final int YELLOW = 3;
-        static final int BLUE = 4;
-        static final int MAGENTA = 5;
-        static final int CYAN = 6;
-        static final int WHITE = 7;
+        public static final int BLACK = 0;
+        public static final int RED = 1;
+        public static final int GREEN = 2;
+        public static final int YELLOW = 3;
+        public static final int BLUE = 4;
+        public static final int MAGENTA = 5;
+        public static final int CYAN = 6;
+        public static final int WHITE = 7;
     }
 
     public static class ColorData {
