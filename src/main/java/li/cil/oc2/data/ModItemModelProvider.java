@@ -33,6 +33,10 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.CPU_TIER_3);
         simple(Items.CPU_TIER_4);
         simple(Items.CPU_TIER_INF);
+        simple(Items.GPU_TIER_1);
+        simple(Items.GPU_TIER_2);
+        simple(Items.GPU_TIER_3);
+        simple(Items.GPU_TIER_4);
         simple(Items.SILICON);
         simple(Items.SILICON_BLEND);
         simple(Items.SILICON_WAFER);
@@ -45,6 +49,10 @@ public final class ModItemModelProvider extends ItemModelProvider {
                 .texture("layer1", "item/hard_drive_tint");
         simple(Items.HARD_DRIVE_EXTRA_LARGE, "item/hard_drive_base")
                 .texture("layer1", "item/hard_drive_tint");
+        simple(Items.HARD_DRIVE_ONYXOS, "item/hard_drive_base")
+                .texture("layer1", "item/hard_drive_slot");
+        simple(Items.FLASH_MEMORY_SMALL, "item/flash_memory");
+        simple(Items.FLASH_MEMORY_MEDIUM, "item/flash_memory");
         simple(Items.FLASH_MEMORY);
         simple(Items.FLASH_MEMORY_CUSTOM, "item/flash_memory");
         simple(Items.FLOPPY, "item/floppy_base").texture("layer1", "item/floppy_tint");

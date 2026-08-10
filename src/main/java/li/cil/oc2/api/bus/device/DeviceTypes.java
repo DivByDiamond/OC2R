@@ -19,4 +19,5 @@ public final class DeviceTypes {
     public static final DeviceType NETWORK_TUNNEL =
             li.cil.oc2.common.bus.device.DeviceTypes.NETWORK_TUNNEL;
     public static final DeviceType CPU = li.cil.oc2.common.bus.device.DeviceTypes.CPU;
+    public static final DeviceType GPU = li.cil.oc2.common.bus.device.DeviceTypes.GPU;
 }

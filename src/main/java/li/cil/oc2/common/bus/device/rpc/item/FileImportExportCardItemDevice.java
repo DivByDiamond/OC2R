@@ -12,6 +12,7 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.file.ExportedFileMessage;
 import li.cil.oc2.common.network.message.file.RequestImportedFileMessage;
+import li.cil.oc2.common.network.message.misc.MultipartMessage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
@@ -86,7 +87,7 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
                     final ExportedFileMessage message =
                             new ExportedFileMessage(
                                     exportedFile.name, exportedFile.data.toByteArray());
-                    NetworkMessages.sendToClient(message, serverPlayer);
+                    MultipartMessage.sendToClient(message, serverPlayer);
                 }
             }
         } finally {

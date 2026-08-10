@@ -6,6 +6,7 @@
     "#oc2r:devices/card",
     "#oc2r:devices/robot_module",
     "#oc2r:devices/floppy",
+    "#oc2r:devices/gpu",
     "oc2r:computer",
     "oc2r:redstone_interface",
     "oc2r:disk_drive",

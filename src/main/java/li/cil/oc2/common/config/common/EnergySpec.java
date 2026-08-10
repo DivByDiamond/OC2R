@@ -32,6 +32,10 @@ public class EnergySpec {
     public final ModConfigSpec.IntValue blockOperationsModuleEnergyPerTick;
     public final ModConfigSpec.IntValue inventoryOperationsModuleEnergyPerTick;
     public final ModConfigSpec.IntValue networkTunnelEnergyPerTick;
+    public final ModConfigSpec.IntValue gpuEnergyPerTickTier1;
+    public final ModConfigSpec.IntValue gpuEnergyPerTickTier2;
+    public final ModConfigSpec.IntValue gpuEnergyPerTickTier3;
+    public final ModConfigSpec.IntValue gpuEnergyPerTickTier4;
 
     EnergySpec(ModConfigSpec.Builder builder) {
         builder.push("blocks");
@@ -126,6 +130,22 @@ public class EnergySpec {
                                 "The amount of energy consumed per megahertz per tick for CPU"
                                         + " modules")
                         .defineInRange("cpuEnergyPerMegahertzPerTick", 0.1, 0, Double.MAX_VALUE);
+
+        gpuEnergyPerTickTier1 =
+                builder.comment("The amount of energy consumed per tick for GPU Tier 1 modules")
+                        .defineInRange("gpuEnergyPerTickTier1", 2, 0, Integer.MAX_VALUE);
+
+        gpuEnergyPerTickTier2 =
+                builder.comment("The amount of energy consumed per tick for GPU Tier 2 modules")
+                        .defineInRange("gpuEnergyPerTickTier2", 3, 0, Integer.MAX_VALUE);
+
+        gpuEnergyPerTickTier3 =
+                builder.comment("The amount of energy consumed per tick for GPU Tier 3 modules")
+                        .defineInRange("gpuEnergyPerTickTier3", 5, 0, Integer.MAX_VALUE);
+
+        gpuEnergyPerTickTier4 =
+                builder.comment("The amount of energy consumed per tick for GPU Tier 4 modules")
+                        .defineInRange("gpuEnergyPerTickTier4", 8, 0, Integer.MAX_VALUE);
 
         redstoneInterfaceCardEnergyPerTick =
                 builder.comment(

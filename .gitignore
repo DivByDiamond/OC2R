@@ -35,3 +35,7 @@ qodana-report/
 
 # Reference repos
 ref/
+
+# Generated data
+src/generated/
+src/main/resources/generated/

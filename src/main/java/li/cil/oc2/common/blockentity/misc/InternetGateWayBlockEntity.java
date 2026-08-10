@@ -20,6 +20,9 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -145,6 +148,18 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
     private void notifyPlayers() {
         Level level = getLevel();
         if (level != null) {
+            // Broadcast the block entity data packet so clients receive the
+            // updated inbound/outboundCount values for the sensor animation.
+            // sendBlockUpdated alone only triggers a plain block update and does
+            // not carry the block entity data (the animation counters).
+            if (level instanceof final ServerLevel serverLevel) {
+                for (final ServerPlayer player :
+                        serverLevel.getChunkSource()
+                                .chunkMap
+                                .getPlayers(new ChunkPos(getBlockPos()), false)) {
+                    player.connection.send(ClientboundBlockEntityDataPacket.create(this));
+                }
+            }
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
         }
     }

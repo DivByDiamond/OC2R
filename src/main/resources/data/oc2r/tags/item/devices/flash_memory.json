@@ -1,5 +1,7 @@
 {
   "values": [
+    "oc2r:flash_memory_small",
+    "oc2r:flash_memory_medium",
     "oc2r:flash_memory",
     "oc2r:flash_memory_custom"
   ]

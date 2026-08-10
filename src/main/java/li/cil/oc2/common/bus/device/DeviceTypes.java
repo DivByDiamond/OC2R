@@ -28,6 +28,7 @@ public final class DeviceTypes {
     public static final DeviceType FLOPPY = register(ItemTags.DEVICES_FLOPPY);
     public static final DeviceType NETWORK_TUNNEL = register(ItemTags.DEVICES_NETWORK_TUNNEL);
     public static final DeviceType CPU = register(ItemTags.DEVICES_CPU);
+    public static final DeviceType GPU = register(ItemTags.DEVICES_GPU);
 
     @SubscribeEvent // on the mod event bus
     public static void registerRegistries(NewRegistryEvent event) {

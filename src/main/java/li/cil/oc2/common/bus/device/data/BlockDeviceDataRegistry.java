@@ -22,6 +22,9 @@ public final class BlockDeviceDataRegistry {
     public static final DeferredHolder<BlockDeviceData, BuildrootBlockDeviceData> BUILDROOT =
             INITIALIZER.register("buildroot", BuildrootBlockDeviceData::new);
 
+    public static final DeferredHolder<BlockDeviceData, OnyxOSBlockDeviceData> ONYXOS =
+            INITIALIZER.register("onyxos-base", OnyxOSBlockDeviceData::new);
+
     public static void initialize(IEventBus modBus) {
         INITIALIZER.register(modBus);
     }

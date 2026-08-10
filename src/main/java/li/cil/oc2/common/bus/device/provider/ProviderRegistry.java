@@ -28,6 +28,8 @@ public final class ProviderRegistry {
 
         ITEM_DEVICE_PROVIDERS.register("memory", MemoryItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("hard_drive", HardDriveItemDeviceProvider::new);
+        ITEM_DEVICE_PROVIDERS.register(
+                "hard_drive_custom", HardDriveWithExternalDataItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("flash_memory", FlashMemoryItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register(
                 "flash_memory_custom", FlashMemoryWithExternalDataItemDeviceProvider::new);
@@ -37,6 +39,7 @@ public final class ProviderRegistry {
                 "file_import_export_card", FileImportExportCardItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("sound_card", SoundCardItemDeviceProvider::new);
         ITEM_DEVICE_PROVIDERS.register("cpu", CPUItemDeviceProvider::new);
+        ITEM_DEVICE_PROVIDERS.register("gpu", GPUItemDeviceProvider::new);
 
         ITEM_DEVICE_PROVIDERS.register(
                 "inventory_operations_module", InventoryOperationsModuleDeviceProvider::new);

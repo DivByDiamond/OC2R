@@ -1,0 +1,8 @@
+{
+  "values": [
+    "oc2r:gpu_tier_1",
+    "oc2r:gpu_tier_2",
+    "oc2r:gpu_tier_3",
+    "oc2r:gpu_tier_4"
+  ]
+}

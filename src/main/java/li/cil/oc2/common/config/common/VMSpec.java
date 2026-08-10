@@ -6,8 +6,13 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class VMSpec {
     public final ModConfigSpec.LongValue maxAllocatedMemory;
-    public final ModConfigSpec.IntValue diskSizeFactor;
-    public final ModConfigSpec.IntValue flashMemorySize;
+    public final ModConfigSpec.IntValue diskSizeTier1;
+    public final ModConfigSpec.IntValue diskSizeTier2;
+    public final ModConfigSpec.IntValue diskSizeTier3;
+    public final ModConfigSpec.IntValue diskSizeTier4;
+    public final ModConfigSpec.IntValue flashMemorySizeTier1;
+    public final ModConfigSpec.IntValue flashMemorySizeTier2;
+    public final ModConfigSpec.IntValue flashMemorySizeTier3;
 
     VMSpec(ModConfigSpec.Builder builder) {
         maxAllocatedMemory =
@@ -17,31 +22,55 @@ public class VMSpec {
                         .defineInRange(
                                 "maxAllocatedMemory", 512 * Constants.MEGABYTE, 0, Long.MAX_VALUE);
 
-        diskSizeFactor =
+        diskSizeTier1 =
                 builder.comment(
-                                "Determines the size factor of drives, where SF is the size factor"
-                                        + " set below the sizes are as follows (this settings is in"
-                                        + " bytes):",
-                                "Small Disk: SF",
-                                "Medium Disk: 2 * SF",
-                                "Large Disk: 4 * SF",
-                                "Extra Large Disk: 8 * SF",
-                                "With the default factor this is equivalent to (in the same order)"
-                                        + " 2MB, 4MB, 8MB, 16MB.")
-                        .defineInRange(
-                                "diskSizeFactor", 2 * Constants.MEGABYTE, 0, Integer.MAX_VALUE);
+                                "Size of the Small hard drive (in megabytes).",
+                                "Tier layout:",
+                                "Small Disk: diskSizeTier1",
+                                "Medium Disk: diskSizeTier2",
+                                "Large Disk: diskSizeTier3",
+                                "Extra Large Disk: diskSizeTier4",
+                                "With the default values this is equivalent to (in the same order)"
+                                        + " 8MB, 16MB, 32MB, 128MB.")
+                        .defineInRange("diskSizeTier1", 8, 1, Integer.MAX_VALUE);
+        diskSizeTier2 =
+                builder.comment("Size of the Medium hard drive (in megabytes).")
+                        .defineInRange("diskSizeTier2", 16, 1, Integer.MAX_VALUE);
+        diskSizeTier3 =
+                builder.comment("Size of the Large hard drive (in megabytes).")
+                        .defineInRange("diskSizeTier3", 32, 1, Integer.MAX_VALUE);
+        diskSizeTier4 =
+                builder.comment("Size of the Extra Large hard drive (in megabytes).")
+                        .defineInRange("diskSizeTier4", 128, 1, Integer.MAX_VALUE);
 
-        flashMemorySize =
+        flashMemorySizeTier1 =
                 builder.comment(
-                                "Size of a flash memory item (in megabytes). This is the size of"
-                                        + " the firmware image that can be stored on a single flash"
-                                        + " memory item.")
-                        .defineInRange("flashMemorySize", 15, 1, Integer.MAX_VALUE);
+                                "Size of a small flash memory item (in megabytes). This is the"
+                                        + " size of the firmware image that can be stored on a single"
+                                        + " flash memory item.")
+                        .defineInRange("flashMemorySizeTier1", 4, 1, Integer.MAX_VALUE);
+        flashMemorySizeTier2 =
+                builder.comment(
+                                "Size of a medium flash memory item (in megabytes). This is the"
+                                        + " size of the firmware image that can be stored on a single"
+                                        + " flash memory item.")
+                        .defineInRange("flashMemorySizeTier2", 8, 1, Integer.MAX_VALUE);
+        flashMemorySizeTier3 =
+                builder.comment(
+                                "Size of a standard flash memory item (in megabytes). This is the"
+                                        + " size of the firmware image that can be stored on a single"
+                                        + " flash memory item.")
+                        .defineInRange("flashMemorySizeTier3", 16, 1, Integer.MAX_VALUE);
     }
 
     public void loadValues() {
         Config.maxAllocatedMemory = maxAllocatedMemory.get();
-        Config.diskSizeFactor = diskSizeFactor.get();
-        Config.flashMemorySize = flashMemorySize.get() * Constants.MEGABYTE;
+        Config.diskSizeTier1 = diskSizeTier1.get() * Constants.MEGABYTE;
+        Config.diskSizeTier2 = diskSizeTier2.get() * Constants.MEGABYTE;
+        Config.diskSizeTier3 = diskSizeTier3.get() * Constants.MEGABYTE;
+        Config.diskSizeTier4 = diskSizeTier4.get() * Constants.MEGABYTE;
+        Config.flashMemorySizeTier1 = flashMemorySizeTier1.get() * Constants.MEGABYTE;
+        Config.flashMemorySizeTier2 = flashMemorySizeTier2.get() * Constants.MEGABYTE;
+        Config.flashMemorySizeTier3 = flashMemorySizeTier3.get() * Constants.MEGABYTE;
     }
 }

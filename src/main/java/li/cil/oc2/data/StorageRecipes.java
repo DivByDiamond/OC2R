@@ -120,6 +120,31 @@ final class StorageRecipes {
                 .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_SMALL.get())
+                .pattern("ITI")
+                .pattern("RRR")
+                .pattern("   ")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('T', Items.TRANSISTOR.get())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy(
+                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                .save(consumer);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_MEDIUM.get())
+                .pattern("ITI")
+                .pattern("I I")
+                .pattern("RBR")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('T', Items.TRANSISTOR.get())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .unlockedBy(
+                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                .save(consumer);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY.get())
                 .pattern("ITI")
                 .pattern("RBR")

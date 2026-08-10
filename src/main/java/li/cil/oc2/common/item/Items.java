@@ -60,19 +60,26 @@ public final class Items {
     public static final DeferredItem<HardDriveItem> HARD_DRIVE_SMALL =
             register(
                     "hard_drive_small",
-                    () -> new HardDriveItem(Config.diskSizeFactor, DyeColor.LIGHT_GRAY));
+                    () -> new HardDriveItem(Config.diskSizeTier1, DyeColor.LIGHT_GRAY));
     public static final DeferredItem<HardDriveItem> HARD_DRIVE_MEDIUM =
             register(
                     "hard_drive_medium",
-                    () -> new HardDriveItem(2 * Config.diskSizeFactor, DyeColor.GREEN));
+                    () -> new HardDriveItem(Config.diskSizeTier2, DyeColor.GREEN));
     public static final DeferredItem<HardDriveItem> HARD_DRIVE_LARGE =
             register(
                     "hard_drive_large",
-                    () -> new HardDriveItem(4 * Config.diskSizeFactor, DyeColor.CYAN));
+                    () -> new HardDriveItem(Config.diskSizeTier3, DyeColor.CYAN));
     public static final DeferredItem<HardDriveItem> HARD_DRIVE_EXTRA_LARGE =
             register(
                     "hard_drive_extra_large",
-                    () -> new HardDriveItem(8 * Config.diskSizeFactor, DyeColor.YELLOW));
+                    () -> new HardDriveItem(Config.diskSizeTier4, DyeColor.YELLOW));
+
+    public static final DeferredItem<HardDriveWithExternalDataItem> HARD_DRIVE_ONYXOS =
+            register(
+                    "hard_drive_onyxos",
+                    () -> new HardDriveWithExternalDataItem(
+                            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "onyxos-base"),
+                            DyeColor.RED));
 
     public static final DeferredItem<CPUItem> CPU_TIER_1 =
             register("cpu_tier_1", () -> new CPUItem(25_000_000));
@@ -84,8 +91,24 @@ public final class Items {
             register("cpu_tier_4", () -> new CPUItem(200_000_000));
     public static final DeferredItem<CPUItem> CPU_TIER_INF =
             register("cpu_tier_inf", () -> new CPUItem(1_000_000_000));
+    public static final DeferredItem<GPUItem> GPU_TIER_1 =
+            register("gpu_tier_1", () -> new GPUItem(320, 200, 1));
+    public static final DeferredItem<GPUItem> GPU_TIER_2 =
+            register("gpu_tier_2", () -> new GPUItem(640, 400, 2));
+    public static final DeferredItem<GPUItem> GPU_TIER_3 =
+            register("gpu_tier_3", () -> new GPUItem(1024, 768, 3));
+    public static final DeferredItem<GPUItem> GPU_TIER_4 =
+            register("gpu_tier_4", () -> new GPUItem(1920, 1080, 4));
+    public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY_SMALL =
+            register(
+                    "flash_memory_small",
+                    () -> new FlashMemoryItem(Config.flashMemorySizeTier1));
+    public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY_MEDIUM =
+            register(
+                    "flash_memory_medium",
+                    () -> new FlashMemoryItem(Config.flashMemorySizeTier2));
     public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY =
-            register("flash_memory", () -> new FlashMemoryItem(Config.flashMemorySize));
+            register("flash_memory", () -> new FlashMemoryItem(Config.flashMemorySizeTier3));
     public static final DeferredItem<FlashMemoryWithExternalDataItem> FLASH_MEMORY_CUSTOM =
             register(
                     "flash_memory_custom",

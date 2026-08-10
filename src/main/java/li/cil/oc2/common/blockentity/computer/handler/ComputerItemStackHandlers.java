@@ -24,7 +24,8 @@ public class ComputerItemStackHandlers extends AbstractVMItemStackHandlers {
                 new GroupDefinition(
                         DeviceTypes.FLASH_MEMORY, ComputerBlockEntity.FLASH_MEMORY_SLOTS),
                 new GroupDefinition(DeviceTypes.CARD, ComputerBlockEntity.CARD_SLOTS),
-                new GroupDefinition(DeviceTypes.CPU, ComputerBlockEntity.CPU_SLOTS));
+                new GroupDefinition(DeviceTypes.CPU, ComputerBlockEntity.CPU_SLOTS),
+                new GroupDefinition(DeviceTypes.GPU, ComputerBlockEntity.GPU_SLOTS));
         this.owner = owner;
     }
 

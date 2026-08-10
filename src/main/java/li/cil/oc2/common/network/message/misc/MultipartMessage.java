@@ -19,9 +19,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility wrapper message for client to server messages exceeding the regular custom payload size.
@@ -86,14 +88,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
     }
 
     public static void sendToServer(final AbstractMessage message) {
-        final Entry entry = ENTRY_BY_TYPE.get(message.getClass());
-        if (entry == null) {
-            throw new IllegalArgumentException(
-                    "Trying to send multipart message of unregistered message ("
-                            + message.getClass().getName()
-                            + ").");
-        }
-
+        final Entry entry = getEntry(message);
         final FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         entry.streamCodec.encode(buffer, message);
         if (buffer.readableBytes() <= MAX_PAYLOAD_SIZE) {
@@ -101,6 +96,35 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
             NetworkMessages.sendToServer(message);
             return;
         }
+        sendFragments(entry, buffer, null);
+    }
+
+    public static void sendToClient(
+            final AbstractMessage message, final ServerPlayer player) {
+        final Entry entry = getEntry(message);
+        final FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        entry.streamCodec.encode(buffer, message);
+        if (buffer.readableBytes() <= MAX_PAYLOAD_SIZE) {
+            // Message fits into one custom payload packet, send it as is.
+            NetworkMessages.sendToClient(message, player);
+            return;
+        }
+        sendFragments(entry, buffer, player);
+    }
+
+    private static Entry getEntry(final AbstractMessage message) {
+        final Entry entry = ENTRY_BY_TYPE.get(message.getClass());
+        if (entry == null) {
+            throw new IllegalArgumentException(
+                    "Trying to send multipart message of unregistered message ("
+                            + message.getClass().getName()
+                            + ").");
+        }
+        return entry;
+    }
+
+    private static void sendFragments(
+            final Entry entry, final FriendlyByteBuf buffer, @Nullable final ServerPlayer player) {
         if (buffer.readableBytes() > MAX_MULTIPART_MESSAGE_SIZE) {
             throw new IllegalArgumentException("Message too large.");
         }
@@ -115,7 +139,13 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
             lastPacketFullLength = dataLength == MAX_PAYLOAD_SIZE - HEADER_SIZE;
             final byte[] data = new byte[dataLength];
             buffer.readBytes(data);
-            NetworkMessages.sendToServer(new MultipartMessage(messageId, multipartMessageId, data));
+            final MultipartMessage part =
+                    new MultipartMessage(messageId, multipartMessageId, data);
+            if (player == null) {
+                NetworkMessages.sendToServer(part);
+            } else {
+                NetworkMessages.sendToClient(part, player);
+            }
         }
     }
 

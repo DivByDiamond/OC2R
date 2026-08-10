@@ -64,6 +64,12 @@ public final class ItemGroup {
                                                 output.accept(Items.CPU_TIER_3.get());
                                                 output.accept(Items.CPU_TIER_4.get());
                                                 output.accept(Items.CPU_TIER_INF.get());
+                                                output.accept(Items.GPU_TIER_1.get());
+                                                output.accept(Items.GPU_TIER_2.get());
+                                                output.accept(Items.GPU_TIER_3.get());
+                                                output.accept(Items.GPU_TIER_4.get());
+                                                output.accept(Items.FLASH_MEMORY_SMALL.get());
+                                                output.accept(Items.FLASH_MEMORY_MEDIUM.get());
                                                 output.accept(Items.FLASH_MEMORY.get());
                                                 output.accept(Items.FLASH_MEMORY_CUSTOM.get());
                                                 output.accept(Items.FLOPPY.get());

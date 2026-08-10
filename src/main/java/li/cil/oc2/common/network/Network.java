@@ -118,8 +118,13 @@ public final class Network {
         registrar.playToServer(KeyboardInputMessage.TYPE, KeyboardInputMessage.STREAM_CODEC, KeyboardInputMessage::handleMessage);
         registrar.playToServer(MonitorInputMessage.TYPE, MonitorInputMessage.STREAM_CODEC, MonitorInputMessage::handleMessage);
 
-        // Multipart
-        registrar.playToServer(MultipartMessage.TYPE, MultipartMessage.STREAM_CODEC, MultipartMessage::handleMessage);
+        // Multipart (client->server and server->client for large payloads)
+        registrar.playBidirectional(
+                MultipartMessage.TYPE,
+                MultipartMessage.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        MultipartMessage::handleMessage, MultipartMessage::handleMessage));
         MultipartMessage.registerMessage(ImportedFileMessage.class, ImportedFileMessage.STREAM_CODEC);
+        MultipartMessage.registerMessage(ExportedFileMessage.class, ExportedFileMessage.STREAM_CODEC);
     }
 }

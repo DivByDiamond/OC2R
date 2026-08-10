@@ -4,9 +4,13 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.AsyncConfig;
@@ -19,6 +23,7 @@ public final class BlobStorage {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final LevelResource BLOBS_FOLDER_NAME = new LevelResource(API.MOD_ID + "-blobs");
+    private static final Set<UUID> ACTIVE_HANDLES = ConcurrentHashMap.newKeySet();
     static volatile Path dataDirectory;
 
     static {
@@ -43,6 +48,7 @@ public final class BlobStorage {
 
     public static void close() {
         BlobChannelManager.closeAll();
+        ACTIVE_HANDLES.clear();
 
         boolean debug = false;
         try {
@@ -60,13 +66,16 @@ public final class BlobStorage {
     }
 
     public static UUID validateHandle(@Nullable final UUID handle) {
+        final UUID validated;
         if (handle == null
                 || (handle.getMostSignificantBits() == 0
                         && handle.getLeastSignificantBits() == 0)) {
-            return allocateHandle();
+            validated = allocateHandle();
         } else {
-            return handle;
+            validated = handle;
         }
+        ACTIVE_HANDLES.add(validated);
+        return validated;
     }
 
     public static CompletableFuture<FileChannel> getOrOpenAsync(final UUID handle) {
@@ -99,6 +108,7 @@ public final class BlobStorage {
     }
 
     public static CompletableFuture<Void> deleteAsync(final UUID handle) {
+        ACTIVE_HANDLES.remove(handle);
         return BlobChannelManager.deleteAsync(handle);
     }
 
@@ -108,6 +118,36 @@ public final class BlobStorage {
             deleteAsync(handle).join();
         } catch (final CompletionException e) {
             LOGGER.error("Error in delete operation for blob: " + handle, e);
+        }
+    }
+
+    public static void cleanupOrphaned() {
+        final Path dir = dataDirectory;
+        if (dir == null) {
+            return;
+        }
+
+        final Set<UUID> active = Set.copyOf(ACTIVE_HANDLES);
+        try (final Stream<Path> files = Files.list(dir)) {
+            files.filter(Files::isRegularFile)
+                    .map(BlobStorage::parseHandle)
+                    .flatMap(Optional::stream)
+                    .filter(handle -> !active.contains(handle))
+                    .forEach(
+                            handle -> {
+                                LOGGER.info("Deleting orphaned blob: {}", handle);
+                                deleteAsync(handle);
+                            });
+        } catch (final IOException e) {
+            LOGGER.error("Failed to list blob storage directory: {}", dir, e);
+        }
+    }
+
+    private static Optional<UUID> parseHandle(final Path path) {
+        try {
+            return Optional.of(UUID.fromString(path.getFileName().toString()));
+        } catch (final IllegalArgumentException ignored) {
+            return Optional.empty();
         }
     }
 }

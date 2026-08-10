@@ -11,8 +11,13 @@ import net.minecraft.world.item.Tiers;
 public final class Config {
     // TODO: Implement configuration of CPU MHzs
     public static long maxAllocatedMemory = 512 * Constants.MEGABYTE;
-    public static int diskSizeFactor = 2 * Constants.MEGABYTE;
-    public static int flashMemorySize = 15 * Constants.MEGABYTE;
+    public static int diskSizeTier1 = 8 * Constants.MEGABYTE;
+    public static int diskSizeTier2 = 16 * Constants.MEGABYTE;
+    public static int diskSizeTier3 = 32 * Constants.MEGABYTE;
+    public static int diskSizeTier4 = 128 * Constants.MEGABYTE;
+    public static int flashMemorySizeTier1 = 4 * Constants.MEGABYTE;
+    public static int flashMemorySizeTier2 = 8 * Constants.MEGABYTE;
+    public static int flashMemorySizeTier3 = 16 * Constants.MEGABYTE;
 
     public static double busCableEnergyPerTick = 0.1;
     public static double busInterfaceEnergyPerTick = 0.5;
@@ -35,6 +40,10 @@ public final class Config {
     public static double memoryEnergyPerMegabytePerTick = 0.5;
     public static double hardDriveEnergyPerMegabytePerTick = 1;
     public static double cpuEnergyPerMegahertzPerTick = 0.1;
+    public static int gpuEnergyPerTickTier1 = 2;
+    public static int gpuEnergyPerTickTier2 = 3;
+    public static int gpuEnergyPerTickTier3 = 5;
+    public static int gpuEnergyPerTickTier4 = 8;
     public static int redstoneInterfaceCardEnergyPerTick = 1;
     public static int networkInterfaceEnergyPerTick = 1;
     public static int fileImportExportCardEnergyPerTick = 1;

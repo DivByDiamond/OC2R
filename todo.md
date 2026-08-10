@@ -340,12 +340,12 @@ DeviceBusElement (каждый блок/элемент)
 
 **Проблемы**: orphaned blob-файлы, мёртвый `HardDriveWithExternalDataItem`, размеры HDD через единый множитель, 2D-иконка дискеты, flash 12 MB захардкожен.
 
-- [ ] **Orphaned blobs cleanup**: при `/clear` предмета blob-файл НЕ удаляется (только `MemoryDevice.dispose` вызывает `deleteAsync`). Нужен cleanup-механизм — например, реестр активных blob-handle'ов + периодическая проверка orphaned при старте сервера
-- [ ] **`HardDriveWithExternalDataItem`** — класс определён, провайдер есть, но предмет **не зарегистрирован** в `Items.java`. Мёртвый код — либо добить (зарегистрировать + модель + рецепт), либо удалить класс + провайдер + `HardDriveDeviceWithInitialData`
-- [ ] **Размеры HDD по тирам отдельно**: сейчас все через единый `diskSizeFactor`. Сделать `diskSizeTier1/2/3/4` в конфиге (`StorageSpec`), убрать `diskSizeFactor`
-- [ ] **Новые тиры HDD**: **8 / 16 / 32 / 128 MB** (было 2/4/8/16). Крафты усложнить (T4 — эндгейм, алмазы/незерит)
+- [x] **Orphaned blobs cleanup**: при `/clear` предмета blob-файл НЕ удаляется (только `MemoryDevice.dispose` вызывает `deleteAsync`). Нужен cleanup-механизм — например, реестр активных blob-handle'ов + периодическая проверка orphaned при старте сервера → `BlobStorage.ACTIVE_HANDLES` (регистрируются при `validateHandle`), `cleanupOrphaned()` по `ServerStartedEvent` через `ServerScheduler` с задержкой 5 с (устройства успевают смонтироваться)
+- [ ] **`HardDriveWithExternalDataItem`** — класс определён, провайдер есть, но предмет **не зарегистрирован** в `Items.java`. Мёртвый код — либо добить (зарегистрировать + модель + рецепт), либо удалить класс + провайдер + `HardDriveDeviceWithInitialData` → **зарегистрирован как `HARD_DRIVE_ONYXOS` (OnyxOS liquid-диск, рабочее дерево)**
+- [x] **Размеры HDD по тирам отдельно**: замена `diskSizeFactor` на `diskSizeTier1/2/3/4` (8/16/32/128 MB) в `VMSpec`/`Config`, `Items.java` читает тиры
+- [x] **Новые тиры HDD**: **8 / 16 / 32 / 128 MB** (было 2/4/8/16)
 - [ ] **3D-модель дискеты**: сейчас в слоте дисковода рисуется 2D-иконка (`FIXED` display context). Добавить нормальную 3D-модель floppy для рендера в `DiskDriveRenderer`
-- [ ] **Flash memory — привязать к тирам**: 12 MB захардкожен в `ByteBufferFlashStorageDevice` (`claimMemory(12*MEGABYTE)` + `ByteBuffer.allocate(12*MB)`). Привязать к `capacity` предмета, добавить тиры (например 4/8/16 MB)
+- [x] **Flash memory — тиры**: `flashMemorySizeTier1/2/3` (4/8/16 MB) в конфиге; новые предметы `flash_memory_small`/`flash_memory_medium`, существующий `flash_memory` = 16 MB; `ByteBufferFlashStorageDevice` уже работал на `size` из предмета
 - [ ] Build + проверка в игре (hot-swap, сохранение данных, cleanup)
 
 ---
@@ -365,9 +365,10 @@ DeviceBusElement (каждый блок/элемент)
 | GPU T3 | 1024×768 | 256×96 | Продвинутый, алмазы |
 | GPU T4 | 1920×1080 | 320×135 | Эндгейм, незерит/эмеральды |
 
-- [ ] **Предмет GPU**: `GPUItem` + регистрация в `Items.java` (4 тира), тег `devices/gpu`, тег `device_needs_reboot`
-- [ ] **GPU-устройство**: `GPUDevice` (VMDevice) — хранит `width`/`height` из предмета, передаёт в `SimpleFramebufferDevice` при mount
-- [ ] **Провайдер**: `GPUItemDeviceProvider` — создаёт `GPUDevice` из предмета, энергопотребление по тиру
+- [x] **Предмет GPU**: `GPUItem` (width/height/tier) + регистрация в `Items.java` (4 тира), тег `devices/gpu`, тег `device_needs_reboot`, слот GPU в компьютере (`GPU_SLOTS = 1`, `DeviceType GPU`), крафты, модели, lang
+- [x] **GPU-устройство**: `GPUDevice` (VMDevice) — хранит `width`/`height`/`tier` из предмета, mount без MMIO
+- [x] **Провайдер**: `GPUItemDeviceProvider` — создаёт `GPUDevice` из предмета, энергопотребление по тиру (`gpuEnergyPerTickTier1..4` = 2/3/5/8)
+- [ ] **Интеграция с монитором**: `MonitorDevice` должен использовать разрешение из GPU и не монтировать framebuffer без GPU — отложено, видеопайплайн жёстко захардкожен на 640×480 (пересекается с задачей 18 «убрать jcodec»; `SimpleFramebufferDevice`/провайдер уже размерно-независимы)
 - [ ] **Интеграция с монитором**: `MonitorDevice` спрашивает у bus-контроллера есть ли GPU → если нет, framebuffer не монтируется (чёрный экран). Если есть — `SimpleFramebufferDevice(width, height)` из GPU
 - [ ] **Device-tree**: `SimpleFramebufferDeviceProvider` — `width`/`height`/`stride` из GPU, а не захардкоженные 640×480
 - [ ] **Без GPU → UART-терминал**: монитор не показывает framebuffer, но текстовый терминал (UART) работает
@@ -493,11 +494,11 @@ DeviceBusElement (каждый блок/элемент)
 **Итог аудита**: 3 реальных бага (один ломает мультиплеер) + многочисленное дублирование синхронизации.
 
 ### Баги (критично)
-- [ ] **`MultipartMessage` — баг ключа кэша** (`MultipartMessage.java:133,144,149`): при сборке на сервере используется статическое `lastAssignedMultipartMessageId` вместо поля записи `multipartMessageId` → на выделенном сервере **все импорты файлов всех клиентов пишутся в один буфер (ключ 0)** и перемешиваются. В одиночной игре работает случайно. → использовать поле записи
-- [ ] **`ServerCanceledImportFileMessage` — cast на неправильной стороне** (`:33`): зарегистрирован `playToClient`, но хендлер делает `(ServerPlayer) context.player()` на клиенте → ClassCastException при каждом импорте. → исправить сторону/каст
-- [ ] **`MonitorStateManager` save/load перепутаны** (`:54-67`): `savePersistent` пишет `isPowered` под ключом `projecting`, а `loadPersistent` читает `hasEnergy` из `has_energy` (никогда не пишется) → `hasEnergy` сбрасывается после перезагрузки мира; `isMounted` не сохраняется вовсе
-- [ ] **`InternetGateWayBlockEntity.notifyPlayers`**: только `sendBlockUpdated(2)` без BE-данных → `inbound/outboundCount` (анимация) не обновляются на клиенте живьём
-- [ ] **`ExportedFileMessage`** шлётся одним payload размером до `1MB-1` — на грани лимита NeoForge (1МБ) → большой экспорт может тихо падать; нужен multipart и для S→C
+- [x] **`MultipartMessage` — баг ключа кэша** (`MultipartMessage.java:133,144,149`): при сборке на сервере используется статическое `lastAssignedMultipartMessageId` вместо поля записи `multipartMessageId` → на выделенном сервере **все импорты файлов всех клиентов пишутся в один буфер (ключ 0)** и перемешиваются. В одиночной игре работает случайно. → исправлено в `d59ab0a` (field `multipartMessageId` + key `(connection, multipartMessageId)`); S→C добавлен `sendToClient` + `ExportedFileMessage` зарегистрирован multipart
+- [x] **`ServerCanceledImportFileMessage` — cast на неправильной стороне** (`:33`): зарегистрирован `playToClient`, но хендлер делает `(ServerPlayer) context.player()` на клиенте → ClassCastException при каждом импорте. → исправлено в `d59ab0a` (обработка через `Minecraft.getInstance()` на клиенте)
+- [x] **`MonitorStateManager` save/load перепутаны** (`:54-67`): `savePersistent` пишет `isPowered` под ключом `projecting`, а `loadPersistent` читает `hasEnergy` из `has_energy` (никогда не пишется) → `hasEnergy` сбрасывается после перезагрузки мира; `isMounted` не сохраняется вовсе → `hasEnergy`/`isPowered` консистентно пишутся и читаются; `isMounted` — runtime-состояние, персистить не нужно
+- [x] **`InternetGateWayBlockEntity.notifyPlayers`**: только `sendBlockUpdated(2)` без BE-данных → `inbound/outboundCount` (анимация) не обновляются на клиенте живьём → добавлена рассылка `ClientboundBlockEntityDataPacket.create(this)` игрокам, трекающим чанк
+- [x] **`ExportedFileMessage`** шлётся одним payload размером до `1MB-1` — на грани лимита NeoForge (1МБ) → большой экспорт может тихо падать; нужен multipart и для S→C → `MultipartMessage.sendToClient` + регистрация `ExportedFileMessage`
 
 ### Дублирование (байты на проводе)
 - [ ] Фасад синкается трижды: update-tag + `sendBlockUpdated(UPDATE_ALL)` + `BusCableFacadeMessage`

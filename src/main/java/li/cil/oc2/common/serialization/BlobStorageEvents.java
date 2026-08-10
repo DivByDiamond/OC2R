@@ -1,9 +1,12 @@
 package li.cil.oc2.common.serialization;
 
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 @EventBusSubscriber(modid = API.MOD_ID)
@@ -11,6 +14,12 @@ final class BlobStorageEvents {
     @SubscribeEvent
     public static void handleServerAboutToStart(final ServerAboutToStartEvent event) {
         BlobStorage.setServer(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void handleServerStarted(final ServerStartedEvent event) {
+        ServerScheduler.schedule(
+                BlobStorage::cleanupOrphaned, Constants.SECONDS_TO_TICKS * 5);
     }
 
     @SubscribeEvent

@@ -28,7 +28,8 @@ public final class ComputerBlockEntity extends ModBlockEntity
             HARD_DRIVE_SLOTS = 4,
             FLASH_MEMORY_SLOTS = 1,
             CARD_SLOTS = 4,
-            CPU_SLOTS = 1;
+            CPU_SLOTS = 1,
+            GPU_SLOTS = 1;
     boolean hasAddedOwnDevices;
     public boolean isNeighborUpdateScheduled;
     public final ComputerBusElement busElement = new ComputerBusElement(this);

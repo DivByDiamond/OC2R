@@ -1,6 +1,8 @@
 {
   "values": [
     "oc2r:disk_drive",
+    "oc2r:flash_memory_small",
+    "oc2r:flash_memory_medium",
     "oc2r:flash_memory",
     "oc2r:flash_memory_custom",
     "oc2r:hard_drive_small",
@@ -12,6 +14,10 @@
     "oc2r:cpu_tier_3",
     "oc2r:cpu_tier_4",
     "oc2r:cpu_tier_inf",
+    "oc2r:gpu_tier_1",
+    "oc2r:gpu_tier_2",
+    "oc2r:gpu_tier_3",
+    "oc2r:gpu_tier_4",
     "oc2r:keyboard",
     "oc2r:memory_small",
     "oc2r:memory_medium",

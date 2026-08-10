@@ -35,7 +35,8 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         DEVICES_FLASH_MEMORY,
                         DEVICES_CARD,
                         DEVICES_ROBOT_MODULE,
-                        DEVICES_FLOPPY);
+                        DEVICES_FLOPPY,
+                        DEVICES_GPU);
         tag(DEVICES_MEMORY)
                 .add(
                         Items.MEMORY_SMALL.get(),
@@ -47,8 +48,14 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.HARD_DRIVE_SMALL.get(),
                         Items.HARD_DRIVE_MEDIUM.get(),
                         Items.HARD_DRIVE_LARGE.get(),
-                        Items.HARD_DRIVE_EXTRA_LARGE.get());
-        tag(DEVICES_FLASH_MEMORY).add(Items.FLASH_MEMORY.get(), Items.FLASH_MEMORY_CUSTOM.get());
+                        Items.HARD_DRIVE_EXTRA_LARGE.get(),
+                        Items.HARD_DRIVE_ONYXOS.get());
+        tag(DEVICES_FLASH_MEMORY)
+                .add(
+                        Items.FLASH_MEMORY_SMALL.get(),
+                        Items.FLASH_MEMORY_MEDIUM.get(),
+                        Items.FLASH_MEMORY.get(),
+                        Items.FLASH_MEMORY_CUSTOM.get());
         tag(DEVICES_FLOPPY).add(Items.FLOPPY.get(), Items.FLOPPY_MODERN.get());
         tag(DEVICES_CARD)
                 .add(
@@ -71,6 +78,8 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
         tag(DEVICE_NEEDS_REBOOT)
                 .add(
                         Items.DISK_DRIVE.get(),
+                        Items.FLASH_MEMORY_SMALL.get(),
+                        Items.FLASH_MEMORY_MEDIUM.get(),
                         Items.FLASH_MEMORY.get(),
                         Items.FLASH_MEMORY_CUSTOM.get(),
                         Items.HARD_DRIVE_SMALL.get(),
@@ -82,6 +91,10 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.CPU_TIER_3.get(),
                         Items.CPU_TIER_4.get(),
                         Items.CPU_TIER_INF.get(),
+                        Items.GPU_TIER_1.get(),
+                        Items.GPU_TIER_2.get(),
+                        Items.GPU_TIER_3.get(),
+                        Items.GPU_TIER_4.get(),
                         Items.KEYBOARD.get(),
                         Items.MEMORY_SMALL.get(),
                         Items.MEMORY_MEDIUM.get(),
@@ -99,5 +112,12 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.CPU_TIER_3.get(),
                         Items.CPU_TIER_4.get(),
                         Items.CPU_TIER_INF.get());
+
+        tag(DEVICES_GPU)
+                .add(
+                        Items.GPU_TIER_1.get(),
+                        Items.GPU_TIER_2.get(),
+                        Items.GPU_TIER_3.get(),
+                        Items.GPU_TIER_4.get());
     }
 }
