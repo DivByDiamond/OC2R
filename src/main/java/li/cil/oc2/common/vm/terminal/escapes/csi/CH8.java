@@ -15,7 +15,7 @@ public class CH8
         } else if (state.hash) { // XTTITLEPOS
             System.out.println("XTTITLEPOS not implemented");
         } else { // SU
-            for (int i = 0; i < args[0]; i++) {
+            for (int i = 0; i < Math.max(1, args[0]); i++) {
                 terminal.bufferManager.shiftUpOne();
             }
         }

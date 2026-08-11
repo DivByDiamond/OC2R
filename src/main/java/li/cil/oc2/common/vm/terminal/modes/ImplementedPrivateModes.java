@@ -90,7 +90,7 @@ public class ImplementedPrivateModes {
     }
 
     public void modeUsed(int mode, boolean state) {
-        if (!modeStatus.get(mode)) {
+        if (Boolean.FALSE.equals(modeStatus.get(mode))) {
             System.out.println(
                     "Unimplemented Mode: " + mode + " was " + (state ? "set." : "reset."));
         }
