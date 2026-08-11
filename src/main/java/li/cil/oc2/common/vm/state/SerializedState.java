@@ -2,9 +2,9 @@ package li.cil.oc2.common.vm.state;
 
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
-import li.cil.oc2.common.vm.BuiltinDevices;
-import li.cil.oc2.common.vm.VMDeviceBusAdapter;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
+import li.cil.oc2.common.vm.misc.BuiltinDevices;
+import li.cil.oc2.common.vm.runner.VMDeviceBusAdapter;
 import li.cil.sedna.riscv.R5Board;
 
 @Serialized

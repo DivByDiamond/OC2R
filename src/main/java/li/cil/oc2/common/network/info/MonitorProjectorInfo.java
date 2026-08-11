@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.loadbalancer.MonitorLoadBalancer;
-import li.cil.oc2.common.network.message.monitor.MonitorFramebufferMessage;
+import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorFramebufferMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;

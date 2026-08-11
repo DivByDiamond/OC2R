@@ -1,0 +1,161 @@
+package li.cil.oc2.client.renderer.blockentity.network;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.Objects;
+import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
+import li.cil.oc2.common.blockentity.misc.gateway.GatewayAnimationState;
+import li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayBlockEntity;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.world.phys.AABB;
+import org.joml.Matrix4f;
+
+public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGateWayBlockEntity> {
+    private static final float BLOCK_HEIGHT = 14f / 16f;
+    private static final float PORTAL_POSITION = 0.4f;
+    private static final float EMITTER_POSITION = -3f / 16f;
+    private static final float EMITTER_SIZE = 6f / 16f;
+    private static final float EMITTER_PIXEL_SIZE = EMITTER_SIZE / 9f;
+    private static final int[] SCRAMBLER = {1, 2, 0, 3, 13, 5, 15, 12, 6, 14, 10, 11, 7, 8, 9, 4};
+
+    public InternetGateWayRenderer(final BlockEntityRendererProvider.Context context) {
+        Objects.requireNonNull(context);
+    }
+
+    @Override
+    public void render(
+            InternetGateWayBlockEntity gateWay,
+            final float partialTicks,
+            final PoseStack stack,
+            final MultiBufferSource bufferSource,
+            final int light,
+            final int overlay) {
+        stack.pushPose();
+        stack.translate(0.5f, BLOCK_HEIGHT, 0.5f);
+        stack.pushPose();
+        long time = System.currentTimeMillis();
+        long dt = time - gateWay.animation.lastRender;
+        gateWay.animation.lastRender = time;
+        if (dt > 1000) {
+            // Catch up if rendering stopped
+            gateWay.animation.handledInboundCount = gateWay.animation.inboundCount;
+            gateWay.animation.handledOutboundCount = gateWay.animation.outboundCount;
+        }
+        double phase = ((double) time) / 1000d;
+        stack.translate(0f, PORTAL_POSITION + Math.sin(phase / 2) * 0.03f, 0f);
+        // stack.mulPose(Vector3f.XN.rotationDegrees((float)Math.sin(phase)*5));
+        // stack.mulPose(Vector3f.ZN.rotationDegrees((float)Math.sin(phase+2)*5));
+        VertexConsumer portal = bufferSource.getBuffer(RenderType.endPortal());
+        Matrix4f matrix = stack.last().pose();
+        float halfSide = 0.2f;
+
+        renderCube(portal, matrix, halfSide, 0, 0, 0, false);
+        stack.popPose();
+        stack.translate(0, EMITTER_POSITION, 0);
+        matrix = stack.last().pose();
+        int pendingPackets =
+                Math.max(0, gateWay.animation.inboundCount - gateWay.animation.handledInboundCount)
+                        + Math.max(
+                                0,
+                                gateWay.animation.outboundCount
+                                        - gateWay.animation.handledOutboundCount);
+        float speedMod = Math.max(1f, Math.min(1.5f, pendingPackets * 0.025f));
+        VertexConsumer packet = bufferSource.getBuffer(ModRenderType.getGateWayParticle());
+        for (int x = 0; x < GatewayAnimationState.EMITTER_SIDE_PIXELS; x++) {
+            for (int z = 0; z < GatewayAnimationState.EMITTER_SIDE_PIXELS; z++) {
+                int flatPos = x * GatewayAnimationState.EMITTER_SIDE_PIXELS + z;
+                if (gateWay.animation.animProgress[flatPos] < 1f) {
+                    float animPos = gateWay.animation.animProgress[flatPos];
+                    gateWay.animation.animProgress[flatPos] += dt / 1000f * speedMod;
+                    if (gateWay.animation.animReversed[flatPos]) {
+                        animPos = 1 - animPos;
+                    }
+                    renderCube(
+                            packet,
+                            matrix,
+                            EMITTER_PIXEL_SIZE / 2,
+                            (x * 2 - 3f) * EMITTER_PIXEL_SIZE,
+                            animPos * (PORTAL_POSITION - EMITTER_POSITION),
+                            (z * 2 - 3f) * EMITTER_PIXEL_SIZE,
+                            true);
+                }
+            }
+        }
+        while (gateWay.animation.handledInboundCount < gateWay.animation.inboundCount
+                || gateWay.animation.handledOutboundCount < gateWay.animation.outboundCount) {
+            int scrambledPointer = SCRAMBLER[gateWay.animation.pointer];
+            if (gateWay.animation.animProgress[scrambledPointer] >= 1f) {
+                gateWay.animation.pointer += 1;
+                if (gateWay.animation.pointer
+                        >= GatewayAnimationState.EMITTER_SIDE_PIXELS
+                                * GatewayAnimationState.EMITTER_SIDE_PIXELS) {
+                    gateWay.animation.pointer = 0;
+                }
+                gateWay.animation.animProgress[scrambledPointer] =
+                        0f - (float) Math.random() * 0.1f;
+                if (gateWay.animation.handledInboundCount < gateWay.animation.inboundCount) {
+                    gateWay.animation.animReversed[scrambledPointer] = true;
+                    gateWay.animation.handledInboundCount += 1;
+                } else {
+                    gateWay.animation.animReversed[scrambledPointer] = false;
+                    gateWay.animation.handledOutboundCount += 1;
+                }
+            } else {
+                break;
+            }
+        }
+
+        stack.popPose();
+    }
+
+    private void renderCube(
+            VertexConsumer vertices,
+            Matrix4f matrix,
+            float halfSide,
+            float x,
+            float y,
+            float z,
+            boolean enColor) {
+        // X axis
+        renderCubeFace(vertices, matrix, +halfSide + x, 0 + y, 0 + z, halfSide, 5, 1, 0, enColor);
+        renderCubeFace(vertices, matrix, -halfSide + x, 0 + y, 0 + z, halfSide, 5, 0, 1, enColor);
+        // Y axis
+        renderCubeFace(vertices, matrix, 0 + x, +halfSide + y, 0 + z, halfSide, 0, 5, 1, enColor);
+        renderCubeFace(vertices, matrix, 0 + x, -halfSide + y, 0 + z, halfSide, 1, 5, 0, enColor);
+        // Z axis
+        renderCubeFace(vertices, matrix, 0 + x, 0 + y, -halfSide + z, halfSide, 0, 1, 5, enColor);
+        renderCubeFace(vertices, matrix, 0 + x, 0 + y, +halfSide + z, halfSide, 1, 0, 5, enColor);
+    }
+
+    private void renderCubeFace(
+            VertexConsumer vertices,
+            Matrix4f matrix,
+            float x,
+            float y,
+            float z,
+            float halfSideSize,
+            int signShiftX,
+            int signShiftY,
+            int signShiftZ,
+            boolean enColor) {
+        float signs[] = {-1f, -1f, 1f, 1f, -1f, 0f, 0f, 0f, 0f};
+        for (int i = 0; i < 4; i++) {
+            vertices.addVertex(
+                    matrix,
+                    x + halfSideSize * signs[i + signShiftX],
+                    y + halfSideSize * signs[i + signShiftY],
+                    z + halfSideSize * signs[i + signShiftZ]);
+            if (enColor) {
+                vertices.setColor(1f, 1f, 1f, 1f);
+            }
+        }
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(InternetGateWayBlockEntity block) {
+        return block.getRenderBoundingBox();
+    }
+}

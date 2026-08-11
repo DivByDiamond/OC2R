@@ -16,6 +16,7 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
+import li.cil.oc2.common.bus.device.data.block.ResourceBlockDeviceData;
 import li.cil.oc2.common.vm.fs.LayeredFileSystem;
 import li.cil.sedna.fs.FileSystem;
 import li.cil.sedna.fs.ZipStreamFileSystem;

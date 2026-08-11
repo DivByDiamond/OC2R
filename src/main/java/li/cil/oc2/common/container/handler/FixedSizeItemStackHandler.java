@@ -1,0 +1,42 @@
+package li.cil.oc2.common.container.handler;
+
+import java.util.List;
+import li.cil.oc2.common.util.nbt.NBTTagIds;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.ItemStackHandler;
+
+public class FixedSizeItemStackHandler extends ItemStackHandler {
+    private static final String SIZE_TAG_NAME = "Size";
+
+    public FixedSizeItemStackHandler(final int size) {
+        super(size);
+    }
+
+    public FixedSizeItemStackHandler(final List<ItemStack> stacks) {
+        super((NonNullList<ItemStack>) stacks);
+    }
+
+    public boolean isEmpty() {
+        for (int slot = 0; slot < getSlots(); slot++) {
+            if (!getStackInSlot(slot).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        // Our size is fixed, don't trust NBT data we're loading.
+        if (tag.contains(SIZE_TAG_NAME, NBTTagIds.TAG_INT)) {
+            final CompoundTag safeTag = tag.copy();
+            safeTag.remove(SIZE_TAG_NAME);
+            super.deserializeNBT(provider, safeTag);
+        } else {
+            super.deserializeNBT(provider, tag);
+        }
+    }
+}

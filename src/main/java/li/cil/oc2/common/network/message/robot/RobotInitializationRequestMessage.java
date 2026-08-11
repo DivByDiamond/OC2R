@@ -5,6 +5,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.common.network.message.robot.state.RobotInitializationMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

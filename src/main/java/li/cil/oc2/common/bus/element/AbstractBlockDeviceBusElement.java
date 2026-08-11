@@ -8,8 +8,10 @@ import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
-import li.cil.oc2.common.bus.device.util.BlockDeviceInfo;
 import li.cil.oc2.common.bus.device.util.Devices;
+import li.cil.oc2.common.bus.device.util.info.BlockDeviceInfo;
+import li.cil.oc2.common.bus.element.group.query.BlockEntry;
+import li.cil.oc2.common.bus.element.group.query.BlockQueryResult;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.core.BlockPos;
@@ -153,7 +155,7 @@ public abstract class AbstractBlockDeviceBusElement
     }
 
     @Override
-    protected void onEntryRemoved(
+    public void onEntryRemoved(
             final String dataKey, final CompoundTag tag, @Nullable final BlockDeviceQuery query) {
         super.onEntryRemoved(dataKey, tag, query);
         assert query != null : "Passed null query for block device bus element.";

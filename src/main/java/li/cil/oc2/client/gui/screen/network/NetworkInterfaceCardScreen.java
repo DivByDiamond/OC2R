@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.computer.ComputerBlockItemRenderer;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.NetworkInterfaceCardItem;
+import li.cil.oc2.common.item.network.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.network.NetworkInterfaceCardConfigurationMessage;
 import net.minecraft.client.Minecraft;

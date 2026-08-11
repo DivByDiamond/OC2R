@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Textures;
 import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 import li.cil.oc2.client.gui.widget.Texture;
-import li.cil.oc2.client.renderer.ModRenderType;
+import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;

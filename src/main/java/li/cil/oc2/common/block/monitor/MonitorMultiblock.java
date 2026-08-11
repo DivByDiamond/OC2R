@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * Convention: the origin (offset 0,0) is at the <b>top-right</b> corner of the multiblock from
  * the viewer's point of view (i.e. the player standing in front of the screen). The width axis
  * grows toward the viewer's left, the height axis grows downward. This matches the existing
- * {@link li.cil.oc2.client.renderer.blockentity.MonitorRenderer} which already draws the
+ * {@link li.cil.oc2.client.renderer.blockentity.monitor.MonitorRenderer} which already draws the
  * framebuffer from the top-right corner extending left and down, so enabling multiblock only
  * requires scaling that drawing by {@code width} and {@code height}.
  * <p>

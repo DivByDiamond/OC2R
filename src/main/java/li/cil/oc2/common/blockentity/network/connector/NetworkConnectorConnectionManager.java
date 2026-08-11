@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import li.cil.oc2.client.renderer.NetworkCableRenderer;
+import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;

@@ -12,7 +12,9 @@ import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.rpc.TypeNameRPCDevice;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.bus.device.util.ItemDeviceInfo;
+import li.cil.oc2.common.bus.device.util.info.ItemDeviceInfo;
+import li.cil.oc2.common.bus.element.group.GroupEntry;
+import li.cil.oc2.common.bus.element.group.GroupQueryResult;
 import li.cil.oc2.common.util.item.ItemDeviceUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -103,7 +105,7 @@ public abstract class AbstractItemDeviceBusElement
     }
 
     @Override
-    protected void onEntryRemoved(
+    public void onEntryRemoved(
             final String dataKey, final CompoundTag tag, @Nullable final ItemDeviceQuery query) {
         super.onEntryRemoved(dataKey, tag, query);
         final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();

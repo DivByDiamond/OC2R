@@ -6,7 +6,7 @@ import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.bus.device.vm.block.PciCardCageDevice;
+import li.cil.oc2.common.bus.device.vm.block.misc.PciCardCageDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;

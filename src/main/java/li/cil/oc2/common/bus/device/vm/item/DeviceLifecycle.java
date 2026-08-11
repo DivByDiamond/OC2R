@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.bus.device.vm.item.storage.misc.ListenableBlockDevice;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
 

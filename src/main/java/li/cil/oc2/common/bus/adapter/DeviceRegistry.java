@@ -9,9 +9,9 @@ import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.rpc.*;
 import li.cil.oc2.common.bus.device.rpc.RPCDeviceList;
 
-class DeviceRegistry {
-    final List<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();
-    final Map<UUID, RPCDeviceList> devicesById = new ConcurrentHashMap<>();
+public class DeviceRegistry {
+    public final List<RPCDeviceWithIdentifier> devicesWithId = new ArrayList<>();
+    public final Map<UUID, RPCDeviceList> devicesById = new ConcurrentHashMap<>();
     final Set<RPCDeviceList> unmountedDevices = new HashSet<>();
     final Set<RPCDeviceList> mountedDevices = new HashSet<>();
     final List<RPCEventSource> subscriptions = new ArrayList<>();
@@ -86,7 +86,7 @@ class DeviceRegistry {
         unmountedDevices.retainAll(devices);
     }
 
-    void subscribe(
+    public void subscribe(
             final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
         if (devices != null) {
@@ -111,7 +111,7 @@ class DeviceRegistry {
         }
     }
 
-    void unsubscribe(
+    public void unsubscribe(
             final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
         if (devices != null) {

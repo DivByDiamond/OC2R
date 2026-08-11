@@ -9,7 +9,7 @@ import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
 
 public abstract class AbstractDeviceBusElement implements DeviceBusElement {
-    protected final Object2IntMap<Device> devices = new Object2IntArrayMap<>();
+    public final Object2IntMap<Device> devices = new Object2IntArrayMap<>();
     protected final Set<DeviceBusController> controllers = new HashSet<>();
 
     public void addDevice(final Device device) {
@@ -74,7 +74,7 @@ public abstract class AbstractDeviceBusElement implements DeviceBusElement {
         }
     }
 
-    protected void scanDevices() {
+    public void scanDevices() {
         for (final DeviceBusController controller : controllers) {
             controller.scanDevices();
         }

@@ -1,9 +1,9 @@
 package li.cil.oc2.client.gui.screen.monitor;
 
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.widget.ToggleImageButton;
+import li.cil.oc2.client.gui.widget.misc.ToggleImageButton;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.container.AbstractMonitorContainer;
+import li.cil.oc2.common.container.monitor.AbstractMonitorContainer;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;

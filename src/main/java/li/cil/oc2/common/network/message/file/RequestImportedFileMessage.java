@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.screen.file.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.file.FileChooserScreen;
-import li.cil.oc2.common.bus.device.rpc.item.FileImportExportCardItemDevice;
+import li.cil.oc2.common.bus.device.rpc.item.card.FileImportExportCardItemDevice;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.message.misc.MultipartMessage;

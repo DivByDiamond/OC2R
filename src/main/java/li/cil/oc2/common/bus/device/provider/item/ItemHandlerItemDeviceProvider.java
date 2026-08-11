@@ -4,7 +4,7 @@ import java.util.Optional;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
-import li.cil.oc2.common.bus.device.rpc.ItemHandlerDevice;
+import li.cil.oc2.common.bus.device.rpc.adapter.ItemHandlerDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 

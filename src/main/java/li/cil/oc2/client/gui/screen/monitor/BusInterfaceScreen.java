@@ -4,7 +4,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.widget.ImageButton;
+import li.cil.oc2.client.gui.widget.misc.ImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;

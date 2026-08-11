@@ -10,8 +10,8 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
 
-final class RendererQuadHelper {
-    static void renderQuad(final Matrix4f matrix, final VertexConsumer consumer) {
+public final class RendererQuadHelper {
+    public static void renderQuad(final Matrix4f matrix, final VertexConsumer consumer) {
         consumer.addVertex(matrix, 0, 0, 0).setUv(0, 0);
 
         consumer.addVertex(matrix, 0, 16, 0).setUv(0, 1);
@@ -21,7 +21,7 @@ final class RendererQuadHelper {
         consumer.addVertex(matrix, 16, 0, 0).setUv(1, 0);
     }
 
-    static void drawText(
+    public static void drawText(
             final MultiBufferSource bufferSource,
             final PoseStack stack,
             final Component text,

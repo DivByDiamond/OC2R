@@ -2,8 +2,8 @@ package li.cil.oc2.client.gui.screen.robot;
 
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
-import li.cil.oc2.client.gui.widget.MachineTerminalWidget;
-import li.cil.oc2.common.container.RobotTerminalContainer;
+import li.cil.oc2.client.gui.widget.terminal.MachineTerminalWidget;
+import li.cil.oc2.common.container.robot.RobotTerminalContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;

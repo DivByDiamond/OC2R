@@ -2,32 +2,30 @@ package li.cil.oc2.common.blockentity.monitor;
 
 import java.util.UUID;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
-import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.container.MonitorDisplayContainer;
+import li.cil.oc2.common.blockentity.monitor.misc.MonitorContraptionHelper;
+import li.cil.oc2.common.blockentity.monitor.video.MonitorVideoController;
+import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.loadbalancer.MonitorLoadBalancer;
-import li.cil.oc2.common.network.message.monitor.MonitorStateMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class MonitorBlockEntity extends ModBlockEntity
         implements TickableBlockEntity, ICaptureInputStateStorage {
     public final MonitorVideoController video = new MonitorVideoController(this);
-    final MonitorStateManager stateManager;
+    public final MonitorStateManager stateManager;
+    private final MonitorTickHandler tickHandler;
 
     public MonitorBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.MONITOR.get(), pos, state);
         stateManager = new MonitorStateManager(this, this::handleMountedChanged);
+        tickHandler = new MonitorTickHandler(this);
         setNeedsLevelUnloadEvent();
     }
 
@@ -52,25 +50,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     private void handleMountedChanged(final boolean value) {
-        updateMonitorState(value, stateManager.hasEnergy);
-    }
-
-    private void updateMonitorState(final boolean newIsMounted, final boolean newHasEnergy) {
-        if (!isOrigin()) return;
-        if ((newIsMounted == stateManager.isMounted && newHasEnergy == stateManager.hasEnergy)
-                || !isValid()) return;
-        if (level != null && !level.isClientSide() && level.isLoaded(getBlockPos())) {
-            if (stateManager.isMounted && !newIsMounted)
-                video.clearPicture();
-            stateManager.isMounted = newIsMounted;
-            stateManager.hasEnergy = newHasEnergy;
-            level.setBlock(
-                    getBlockPos(),
-                    getBlockState().setValue(MonitorBlock.LIT, newIsMounted),
-                    Block.UPDATE_CLIENTS);
-            NetworkMessages.sendToClientsTrackingBlockEntity(
-                    new MonitorStateMessage(this, newIsMounted, newHasEnergy), this);
-        }
+        tickHandler.updateMonitorState(value, stateManager.hasEnergy);
     }
 
     public void applyMonitorStateClient(final boolean isRendering, final boolean hasEnergy) {
@@ -120,25 +100,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
 
     @Override
     public void serverTick() {
-        if (level == null || !isValid()) return;
-        // Only the origin runs the live monitor logic (energy, framebuffer, network sync).
-        // Sub-blocks are inert: their BlockEntity exists only so Minecraft can persist their
-        // multiblock offset BlockState.
-        if (!isOrigin()) return;
-        final boolean hasPowered;
-        if (Config.monitorsUseEnergy()) {
-            hasPowered =
-                    stateManager.energy.extractEnergy(Config.monitorEnergyPerTick, true)
-                            >= Config.monitorEnergyPerTick;
-            if (hasPowered) stateManager.energy.extractEnergy(Config.monitorEnergyPerTick, false);
-        } else hasPowered = true;
-        updateMonitorState(stateManager.isMounted, hasPowered);
-        if (!stateManager.hasEnergy
-                || !stateManager.isPowered
-                || (!stateManager.monitorDevice.hasChanges() && !video.isKeyframeRequired()))
-            return;
-        MonitorLoadBalancer.offerFrame(
-                this, () -> video.encodeFrame(stateManager.monitorDevice));
+        tickHandler.tick();
     }
 
     @Override

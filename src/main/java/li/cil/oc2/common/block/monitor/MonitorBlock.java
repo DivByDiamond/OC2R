@@ -10,7 +10,7 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.monitor.MonitorPowerMessageForwarded;
+import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorPowerMessageForwarded;
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

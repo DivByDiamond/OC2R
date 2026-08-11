@@ -1,0 +1,13 @@
+package li.cil.oc2.common.vm.handler;
+
+import java.util.Optional;
+import li.cil.oc2.api.bus.device.DeviceType;
+import net.neoforged.neoforge.items.IItemHandler;
+
+public interface VMItemStackHandlers {
+    Optional<IItemHandler> getItemHandler(DeviceType deviceType);
+
+    boolean isEmpty();
+
+    void exportDeviceDataToItemStacks();
+}

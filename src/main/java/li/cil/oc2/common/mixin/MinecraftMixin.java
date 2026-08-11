@@ -2,7 +2,7 @@ package li.cil.oc2.common.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import li.cil.oc2.client.renderer.ProjectorDepthRenderer;
+import li.cil.oc2.client.renderer.projector.ProjectorDepthRenderer;
 import li.cil.oc2.common.ext.MinecraftExt;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;

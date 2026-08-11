@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.blockentity.misc.RedstoneInterfaceBlockEntity;
+import li.cil.oc2.common.blockentity.misc.redstone.RedstoneInterfaceBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;

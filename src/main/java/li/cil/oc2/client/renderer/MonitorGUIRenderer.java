@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
+import li.cil.oc2.client.renderer.stage.RenderInfo;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.client.renderer.GameRenderer;

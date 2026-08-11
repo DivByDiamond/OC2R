@@ -2,7 +2,7 @@ package li.cil.oc2.client.gui.screen.computer;
 
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractMachineInventoryScreen;
-import li.cil.oc2.common.container.ComputerInventoryContainer;
+import li.cil.oc2.common.container.computer.ComputerInventoryContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;

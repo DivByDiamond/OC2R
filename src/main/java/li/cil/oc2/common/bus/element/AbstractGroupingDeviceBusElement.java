@@ -3,6 +3,9 @@ package li.cil.oc2.common.bus.element;
 import java.util.*;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.common.bus.element.group.GroupEntry;
+import li.cil.oc2.common.bus.element.group.GroupManager;
+import li.cil.oc2.common.bus.element.group.GroupQueryResult;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
@@ -10,10 +13,10 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry
         extends AbstractDeviceBusElement {
     protected final GroupManager<TEntry, TQuery> groupManager;
 
-    protected final int groupCount;
-    protected final List<Set<TEntry>> groups;
-    protected final UUID[] groupIds;
-    protected final CompoundTag[] groupData;
+    public final int groupCount;
+    public final List<Set<TEntry>> groups;
+    public final UUID[] groupIds;
+    public final CompoundTag[] groupData;
 
     protected AbstractGroupingDeviceBusElement(final int groupCount) {
         this.groupCount = groupCount;
@@ -55,10 +58,10 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry
         groupManager.setEntriesForGroup(registries, index, queryResult);
     }
 
-    protected void onEntryAdded(final TEntry entry) {}
+    public void onEntryAdded(final TEntry entry) {}
 
-    protected void onEntryRemoved(final TEntry entry) {}
+    public void onEntryRemoved(final TEntry entry) {}
 
-    protected void onEntryRemoved(
+    public void onEntryRemoved(
             final String dataKey, final CompoundTag data, @Nullable final TQuery query) {}
 }

@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.entity.Robot;
+import li.cil.oc2.common.entity.robot.action.RobotActions;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.robot.RobotInitializationRequestMessage;
 

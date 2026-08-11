@@ -2,7 +2,7 @@ package li.cil.oc2.common.serialization.ceres;
 
 import com.google.gson.JsonArray;
 import li.cil.ceres.Ceres;
-import li.cil.oc2.common.vm.context.global.MemoryRangeList;
+import li.cil.oc2.common.vm.context.global.memory.MemoryRangeList;
 import li.cil.oc2.common.vm.terminal.TerminalColors;
 import li.cil.sedna.api.memory.MemoryRange;
 import net.minecraft.network.chat.Component;

@@ -3,7 +3,7 @@ package li.cil.oc2.common.blockentity.network.connector.interfaces;
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.renderer.NetworkCableRenderer;
+import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;

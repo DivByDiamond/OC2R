@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.util.Registries;
+import li.cil.oc2.common.bus.device.data.block.BuildrootBlockDeviceData;
+import li.cil.oc2.common.bus.device.data.block.OnyxOSBlockDeviceData;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;

@@ -14,6 +14,7 @@ import li.cil.oc2.api.bus.device.vm.event.VMSynchronizeEvent;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
+import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.sedna.riscv.R5Board;
 import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;

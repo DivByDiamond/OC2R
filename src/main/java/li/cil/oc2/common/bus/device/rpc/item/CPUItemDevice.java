@@ -1,7 +1,7 @@
 package li.cil.oc2.common.bus.device.rpc.item;
 
 import li.cil.oc2.api.bus.device.object.Callback;
-import li.cil.oc2.common.item.CPUItem;
+import li.cil.oc2.common.item.computer.CPUItem;
 import net.minecraft.world.item.ItemStack;
 
 public class CPUItemDevice extends AbstractItemRPCDevice {

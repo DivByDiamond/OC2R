@@ -15,6 +15,8 @@ import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.provider.Providers;
+import li.cil.oc2.common.bus.device.util.info.BlockDeviceInfo;
+import li.cil.oc2.common.bus.device.util.info.ItemDeviceInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;

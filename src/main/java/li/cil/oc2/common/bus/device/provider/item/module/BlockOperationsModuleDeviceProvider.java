@@ -1,0 +1,35 @@
+package li.cil.oc2.common.bus.device.provider.item.module;
+
+import java.util.Optional;
+import li.cil.oc2.api.bus.device.ItemDevice;
+import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
+import li.cil.oc2.common.bus.device.rpc.item.module.BlockOperationsModuleDevice;
+import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.item.Items;
+
+public final class BlockOperationsModuleDeviceProvider extends AbstractItemDeviceProvider {
+    public BlockOperationsModuleDeviceProvider() {
+        super(Items.BLOCK_OPERATIONS_MODULE);
+    }
+
+    @Override
+    protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
+        return query.getContainerEntity()
+                .flatMap(
+                        entity ->
+                                Optional.ofNullable(entity.getCapability(Capabilities.Robot.ENTITY))
+                                        .map(
+                                                robot ->
+                                                        new BlockOperationsModuleDevice(
+                                                                query.getItemStack(),
+                                                                entity,
+                                                                robot)));
+    }
+
+    @Override
+    protected int getItemDeviceEnergyConsumption(final ItemDeviceQuery query) {
+        return Config.blockOperationsModuleEnergyPerTick;
+    }
+}

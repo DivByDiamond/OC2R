@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import li.cil.oc2.api.bus.device.vm.context.MemoryAllocator;
-import li.cil.oc2.common.vm.Allocator;
+import li.cil.oc2.common.vm.memory.Allocator;
 
 final class ManagedMemoryAllocator implements MemoryAllocator {
     private final List<UUID> claimedMemory = new ArrayList<>();

@@ -5,7 +5,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceType;
-import li.cil.oc2.common.bus.device.util.DeviceTypeImpl;
+import li.cil.oc2.common.bus.device.util.info.DeviceTypeImpl;
 import li.cil.oc2.common.tags.ItemTags;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

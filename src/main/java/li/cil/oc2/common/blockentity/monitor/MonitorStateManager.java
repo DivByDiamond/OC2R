@@ -12,12 +12,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-final class MonitorStateManager {
-    final DeviceGroup deviceGroup;
+public final class MonitorStateManager {
+    public final DeviceGroup deviceGroup;
     final MonitorDevice monitorDevice;
     final KeyboardDevice<BlockEntity> keyboardDevice;
     final MonitorGUIRenderer monitor = new MonitorGUIRenderer();
-    final FixedEnergyStorage energy;
+    public final FixedEnergyStorage energy;
     UUID deviceId = UUID.randomUUID();
 
     boolean hasEnergy;

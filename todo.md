@@ -62,6 +62,40 @@
 
 ### Файлы ≤200 строк — ✅ ALL DONE (except jcodec/, api/, CSI CH1/CH6/CH2)
 
+### Следующая волна (план) — TODO
+
+**Файлы >200 строк:**
+- [x] `entity/robot/RobotActionProcessor` (297→194) → `RobotActionProcessorSerialization` (serialize/deserialize) + lock-helper `withLock`
+- [x] `blockentity/monitor/MonitorBlockEntity` (239→199) → `MonitorTickHandler` (serverTick + updateMonitorState)
+- [x] `vm/AbstractVirtualMachine` (218→181) → `VirtualMachineTicker` (tick + restart-логика)
+
+**Папки >4 файлов:**
+- [x] `common/item` (25) → storage/, storage/flash/, network/, network/cable/, computer/, block/, tool/, root ≤4
+- [x] `common/container` (23) → base/, computer/, robot/, monitor/, slot/, handler/, network/, data/, root ≤4
+- [x] `common/entity/robot` (25) → action/, action/processor/, movement/, rotation/, state/, misc/, root ≤4
+- [x] `common/bus/device/provider/item` (22) → storage/, storage/disk/, network/, energy/, module/, module/card/, root ≤4
+- [x] `common/bus/device/rpc/item` (20) → module/, util/, card/, file/, file/request/, root ≤4
+- [x] `client/renderer` (15) → stage/ (ColorCompositingStage, DepthBufferStage, DepthOnlyRenderTarget, RenderInfo), stage/shader/ (ModRenderType, ModShaders), projector/ (ProjectorCameraEntity, ProjectorDepthRenderer, ProjectorDepthRenderInfo), cable/ (CableRenderUtils, NetworkCableConnection, NetworkCablePoint, NetworkCableRenderer), root (BusInterfaceNameRenderer, MonitorGUIRenderer, package-info)
+- [x] `client/renderer/blockentity` (13) → computer/, monitor/, projector/, charger/, network/, root (OverlayRenderer, RendererQuadHelper, package-info)
+- [x] `data` (15) → recipe/, recipe/peripheral/, model/, tag/, loot/, root (DataGenerators, package-info)
+- [x] `common/vm` (15) → runner/, handler/, memory/, misc/, root ≤4 (VirtualMachine, VMRunner, VMErrorCalculator, VMRunState, package-info)
+- [x] `common/bus/device/vm/item` (14) → storage/, storage/misc/, network/, misc/, root ≤4
+- [x] `common/network/message/robot` (11) → terminal/, inventory/, state/, root ≤4
+- [x] `common/blockentity/misc` (11) → gateway/, redstone/, redstone/state/, flash/, misc/ (PciCardCageBlockEntity)
+- [x] `common/serialization/gson` (10) → rpc/, rpc/invocation/, root ≤4
+- [x] `common/bus/adapter` (10) → rpc/, rpc/method/, root (RPCDeviceBusAdapter, DeviceRegistry, EmptyMethodGroup, RPCDeviceWithIdentifier)
+- [x] `common/vm/context/global` (9) → memory/, interrupt/, root (GlobalVMContext, GlobalEventBus, package-info)
+- [x] `common/bus/element` (9) → group/, group/query/, root (Abstract*BusElement)
+- [x] `common/bus/device/vm/block` (9) → disk/, flash/, misc/, root (KeyboardDevice, MonitorDevice, package-info)
+- [x] `common/bus/device/util` (9) → info/, optional/, root (Devices, IdentityProxy, package-info)
+- [x] `common/bus/device/rpc` (9) → filter/, adapter/, root ≤4
+- [x] `common/bus/device/data` (9) → firmware/, block/, root ≤4
+- [x] `common/blockentity/projector` (9) → video/, misc/, root (ProjectorBlockEntity, ProjectorCapabilities, ProjectorState)
+- [x] `common/blockentity/monitor` (10) → video/, misc/, root (MonitorBlockEntity, MonitorStateManager, MonitorTickHandler)
+- [x] `common/network/message/computer` (10) → terminal/, misc/ (FirmwareFlasherMessage), root ≤4
+- [x] `client/gui/widget` (9) → terminal/, misc/, root (Sprite, Texture, package-info)
+- [x] `common/network/message/monitor` (8) → input/, framebuffer/, root (MonitorStateMessage, package-info)
+
 ### Deferred
 - jcodec/ — **попытаться заменить на Maven dependency org.jcodec:jcodec**
 - api/ — **не трогать**

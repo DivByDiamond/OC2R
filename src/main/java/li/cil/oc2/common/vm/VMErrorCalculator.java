@@ -4,9 +4,9 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.controller.BusState;
 import net.minecraft.network.chat.Component;
 
-final class VMErrorCalculator {
+public final class VMErrorCalculator {
 
-    static Component getError(final BusState busState, final VMRunState runState, final Component bootError) {
+    public static Component getError(final BusState busState, final VMRunState runState, final Component bootError) {
         switch (busState) {
             case SCAN_PENDING:
             case INCOMPLETE:

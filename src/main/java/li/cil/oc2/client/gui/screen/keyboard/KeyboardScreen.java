@@ -4,7 +4,7 @@ import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.monitor.KeyboardInputMessage;
+import li.cil.oc2.common.network.message.monitor.input.KeyboardInputMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;

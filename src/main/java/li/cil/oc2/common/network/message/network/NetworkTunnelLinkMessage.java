@@ -2,7 +2,7 @@ package li.cil.oc2.common.network.message.network;
 
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.container.NetworkTunnelContainer;
+import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
