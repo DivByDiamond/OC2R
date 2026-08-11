@@ -1,11 +1,10 @@
 package li.cil.oc2.common.vm.terminal;
 
-import li.cil.oc2.common.vm.terminal.Terminal.State;
-import li.cil.oc2.common.vm.terminal.escapes.*;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
+import li.cil.oc2.common.vm.terminal.Terminal.State;
+import li.cil.oc2.common.vm.terminal.escapes.*;
 
 class TerminalOutput {
 

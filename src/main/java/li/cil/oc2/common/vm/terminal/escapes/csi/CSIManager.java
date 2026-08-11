@@ -1,13 +1,12 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 import li.cil.oc2.common.vm.terminal.escapes.IND;
 import li.cil.oc2.common.vm.terminal.escapes.NEL;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class CSIManager {
     private final int[] args = new int[10];

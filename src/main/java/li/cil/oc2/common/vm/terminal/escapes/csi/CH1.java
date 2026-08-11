@@ -240,7 +240,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         int bottom = (argCount > 1 && args[1] > 0) ? args[1] : Terminal.HEIGHT;
         first = top - 1;
         last = bottom - 1;
-        if (first < 0 || last > Terminal.HEIGHT - 1 || last - first <= 0) {
+        if (last - first <= 0) {
             return;
         }
         terminal.scrollFirst = first; // to index
