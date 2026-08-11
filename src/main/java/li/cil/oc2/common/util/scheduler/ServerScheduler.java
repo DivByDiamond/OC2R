@@ -1,7 +1,6 @@
 package li.cil.oc2.common.util.scheduler;
 
 import java.util.*;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.util.event.ListenerCollection;

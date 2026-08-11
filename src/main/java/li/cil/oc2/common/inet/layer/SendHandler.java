@@ -26,10 +26,10 @@ public final class SendHandler {
     private final SessionManager sessionManager;
     private final IcmpHandler icmpHandler;
 
-    StreamSessionImpl streamToAck = null;
-    StreamSessionImpl rejectedStream = null;
+    public StreamSessionImpl streamToAck = null;
+    public StreamSessionImpl rejectedStream = null;
 
-    SendHandler(
+    public SendHandler(
             final SessionLayer sessionLayer,
             final SessionManager sessionManager,
             final IcmpHandler icmpHandler) {
@@ -38,7 +38,7 @@ public final class SendHandler {
         this.icmpHandler = icmpHandler;
     }
 
-    void sendIcmpMessage(
+    public void sendIcmpMessage(
             final ByteBuffer data,
             final int srcIpAddress,
             final int dstIpAddress,
@@ -66,7 +66,7 @@ public final class SendHandler {
         }
     }
 
-    void sendUdpMessage(final ByteBuffer data, final int srcIpAddress, final int dstIpAddress) {
+    public void sendUdpMessage(final ByteBuffer data, final int srcIpAddress, final int dstIpAddress) {
         if (data.remaining() < UDP_HEADER_SIZE) return;
         final short srcPort = data.getShort();
         final short dstPort = data.getShort();
@@ -87,7 +87,7 @@ public final class SendHandler {
         }
     }
 
-    void sendTcpMessage(final ByteBuffer data, final int srcIpAddress, final int dstIpAddress) {
+    public void sendTcpMessage(final ByteBuffer data, final int srcIpAddress, final int dstIpAddress) {
         if (data.remaining() < MIN_TCP_HEADER_SIZE) return;
         final short srcPort = data.getShort();
         final short dstPort = data.getShort();

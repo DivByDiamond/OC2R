@@ -2,8 +2,14 @@ package li.cil.oc2.common.serialization.ceres;
 
 import com.google.gson.JsonArray;
 import li.cil.ceres.Ceres;
+import li.cil.oc2.common.serialization.ceres.color.ColorDataSerializer;
+import li.cil.oc2.common.serialization.ceres.color.ColorModeSerializer;
+import li.cil.oc2.common.serialization.ceres.json.JsonArraySerializer;
+import li.cil.oc2.common.serialization.ceres.memory.MemoryRangeListSerializer;
+import li.cil.oc2.common.serialization.ceres.memory.MemoryRangeSerializer;
+import li.cil.oc2.common.serialization.ceres.text.TextComponentSerializer;
 import li.cil.oc2.common.vm.context.global.memory.MemoryRangeList;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.sedna.api.memory.MemoryRange;
 import net.minecraft.network.chat.Component;
 

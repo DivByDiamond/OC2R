@@ -3,9 +3,9 @@ package li.cil.oc2.api.inet.provider;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.layer.TransportLayer;
-import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
-import li.cil.oc2.common.inet.layer.DefaultTransportLayer;
 import li.cil.oc2.common.inet.layer.NullLayer;
+import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
+import li.cil.oc2.common.inet.layer.impl.DefaultTransportLayer;
 import li.cil.oc2.common.inet.util.InetUtils;
 
 /**

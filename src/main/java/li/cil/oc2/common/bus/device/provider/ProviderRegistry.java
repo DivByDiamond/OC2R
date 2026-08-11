@@ -25,7 +25,11 @@ import li.cil.oc2.common.bus.device.provider.item.storage.MemoryItemDeviceProvid
 import li.cil.oc2.common.bus.device.provider.item.storage.disk.FlashMemoryWithExternalDataItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.storage.disk.HardDriveItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.storage.disk.HardDriveWithExternalDataItemDeviceProvider;
-import li.cil.oc2.common.bus.device.rpc.block.*;
+import li.cil.oc2.common.bus.device.rpc.block.BlockEntityObjectDeviceProvider;
+import li.cil.oc2.common.bus.device.rpc.block.BlockStateObjectDeviceProvider;
+import li.cil.oc2.common.bus.device.rpc.block.adapter.EnergyStorageBlockDeviceProvider;
+import li.cil.oc2.common.bus.device.rpc.block.adapter.FluidHandlerBlockDeviceProvider;
+import li.cil.oc2.common.bus.device.rpc.block.adapter.ItemHandlerBlockDeviceProvider;
 import net.minecraft.core.Registry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;

@@ -13,7 +13,7 @@ import li.cil.oc2.common.bus.device.util.info.BlockDeviceInfo;
 import li.cil.oc2.common.bus.element.group.query.BlockEntry;
 import li.cil.oc2.common.bus.element.group.query.BlockQueryResult;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;

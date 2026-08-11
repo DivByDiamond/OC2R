@@ -1,6 +1,6 @@
 package li.cil.oc2.common.vm.lifecycle;
 
-import li.cil.oc2.common.serialization.NBTSerialization;
+import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;

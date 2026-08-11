@@ -14,7 +14,7 @@ import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;

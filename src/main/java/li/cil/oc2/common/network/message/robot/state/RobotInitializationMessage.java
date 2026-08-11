@@ -6,7 +6,7 @@ import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
-import li.cil.oc2.common.serialization.NBTSerialization;
+import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;

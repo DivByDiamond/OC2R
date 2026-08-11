@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec;
 import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
+import li.cil.oc2.common.block.computer.interaction.ComputerBlockInteraction;
+import li.cil.oc2.common.block.computer.interaction.ComputerBlockRedstone;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;

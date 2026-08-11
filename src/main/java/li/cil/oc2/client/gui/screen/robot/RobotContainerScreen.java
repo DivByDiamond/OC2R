@@ -2,7 +2,7 @@ package li.cil.oc2.client.gui.screen.robot;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.screen.common.AbstractMachineInventoryScreen;
+import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineInventoryScreen;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;

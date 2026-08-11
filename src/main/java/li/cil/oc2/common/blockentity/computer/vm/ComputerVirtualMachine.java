@@ -15,7 +15,7 @@ import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutpu
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
-import li.cil.oc2.common.util.world.ChunkUtils;
+import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.memory.BaseAddressProvider;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;

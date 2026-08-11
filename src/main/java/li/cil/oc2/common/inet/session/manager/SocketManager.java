@@ -9,6 +9,7 @@ import li.cil.oc2.api.inet.InternetManager;
 import li.cil.oc2.api.inet.session.DatagramSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
+import li.cil.oc2.common.inet.session.manager.ready.ReadySessions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

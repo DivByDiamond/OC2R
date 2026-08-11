@@ -1,7 +1,7 @@
 package li.cil.oc2.common.blockentity;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.common.util.world.BlockEntityUtils;
+import li.cil.oc2.common.util.world.blockentity.BlockEntityUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;

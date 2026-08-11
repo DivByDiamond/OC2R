@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.screen.monitor;
 
-import li.cil.oc2.client.gui.screen.common.AbstractMonitorDisplayScreen;
+import li.cil.oc2.client.gui.screen.common.monitor.AbstractMonitorDisplayScreen;
 import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;

@@ -8,7 +8,7 @@ import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
 import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.network.NetworkTunnelLinkMessage;
+import li.cil.oc2.common.network.message.network.connector.NetworkTunnelLinkMessage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;

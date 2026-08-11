@@ -1,6 +1,6 @@
 package li.cil.oc2.data.recipe;
 
-import li.cil.oc2.common.block.computer.ComputerBlockFactory;
+import li.cil.oc2.common.block.computer.factory.ComputerBlockFactory;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;

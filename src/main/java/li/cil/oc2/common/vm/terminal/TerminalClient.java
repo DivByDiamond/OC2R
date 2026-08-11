@@ -1,5 +1,8 @@
 package li.cil.oc2.common.vm.terminal;
 
+import li.cil.oc2.common.vm.terminal.render.RendererModel;
+import li.cil.oc2.common.vm.terminal.render.RendererView;
+import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -124,13 +124,13 @@ public final class BusCableStateProperties {
                 value ? SoundType::getPlaceSound : SoundType::getBreakSound);
     }
 
-    static boolean canHaveCableTo(final BlockState state, final Direction side) {
+    public static boolean canHaveCableTo(final BlockState state, final Direction side) {
         return state.getBlock().equals(Blocks.BUS_CABLE.get())
                 && state.getValue(HAS_CABLE)
                 && state.getValue(FACING_TO_CONNECTION_MAP.get(side)) != ConnectionType.INTERFACE;
     }
 
-    static int getPartCount(final BlockState state) {
+    public static int getPartCount(final BlockState state) {
         int partCount = getInterfaceCount(state);
         if (state.getValue(HAS_CABLE)) {
             partCount++;
@@ -138,7 +138,7 @@ public final class BusCableStateProperties {
         return partCount;
     }
 
-    static void onConnectionTypeChanged(
+    public static void onConnectionTypeChanged(
             final LevelAccessor level,
             final BlockPos pos,
             @Nullable final Direction face,

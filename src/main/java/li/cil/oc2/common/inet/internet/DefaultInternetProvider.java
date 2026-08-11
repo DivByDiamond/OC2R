@@ -3,7 +3,7 @@ package li.cil.oc2.common.inet.internet;
 import li.cil.oc2.api.inet.LayerParameters;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.provider.SessionLayerInternetProvider;
-import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
+import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
 
 public final class DefaultInternetProvider extends SessionLayerInternetProvider {
     public static final DefaultInternetProvider INSTANCE = new DefaultInternetProvider();

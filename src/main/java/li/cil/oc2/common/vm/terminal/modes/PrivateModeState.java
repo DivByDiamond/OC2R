@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.ceres.api.Serialized;
+import li.cil.oc2.common.vm.terminal.modes.impl.MouseMode;
 
 @Serialized
 public class PrivateModeState {

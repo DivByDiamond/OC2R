@@ -4,6 +4,11 @@ import java.util.OptionalLong;
 import java.util.function.Supplier;
 import li.cil.oc2.api.bus.device.vm.context.*;
 import li.cil.oc2.common.vm.context.VMContextManagerCollection;
+import li.cil.oc2.common.vm.context.managed.interrupt.ManagedInterruptAllocator;
+import li.cil.oc2.common.vm.context.managed.interrupt.ManagedInterruptController;
+import li.cil.oc2.common.vm.context.managed.memory.ManagedMemoryAllocator;
+import li.cil.oc2.common.vm.context.managed.memory.ManagedMemoryMap;
+import li.cil.oc2.common.vm.context.managed.memory.ManagedMemoryRangeAllocator;
 import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
 

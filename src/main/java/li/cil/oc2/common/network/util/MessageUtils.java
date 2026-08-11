@@ -2,7 +2,7 @@ package li.cil.oc2.common.network.util;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;

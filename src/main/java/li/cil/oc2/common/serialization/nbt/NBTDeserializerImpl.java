@@ -8,7 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import li.cil.ceres.Ceres;
 import li.cil.ceres.api.DeserializationVisitor;
 import li.cil.ceres.api.SerializationException;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
+import li.cil.oc2.common.serialization.nbt.reference.NBTReferenceArraySerializers.ColorDataArraySerializer;
+import li.cil.oc2.common.serialization.nbt.reference.NBTReferenceArraySerializers.EnumArraySerializer;
+import li.cil.oc2.common.serialization.nbt.reference.NBTReferenceArraySerializers.StringArraySerializer;
+import li.cil.oc2.common.serialization.nbt.reference.NBTReferenceArraySerializers.UUIDArraySerializer;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import net.minecraft.nbt.*;
 import org.jetbrains.annotations.Nullable;
 

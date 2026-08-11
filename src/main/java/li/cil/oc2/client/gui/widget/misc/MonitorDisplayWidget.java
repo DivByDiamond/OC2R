@@ -3,7 +3,7 @@ package li.cil.oc2.client.gui.widget.misc;
 import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.screen.common.AbstractMonitorDisplayScreen;
+import li.cil.oc2.client.gui.screen.common.monitor.AbstractMonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;

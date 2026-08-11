@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal;
 
+import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

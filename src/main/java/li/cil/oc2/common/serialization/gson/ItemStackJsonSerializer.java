@@ -6,7 +6,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Type;
 import li.cil.oc2.common.bus.device.rpc.filter.RPCItemStackTagFilters;
-import li.cil.oc2.common.serialization.NBTToJsonConverter;
+import li.cil.oc2.common.serialization.nbt.util.NBTToJsonConverter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.ItemStack;

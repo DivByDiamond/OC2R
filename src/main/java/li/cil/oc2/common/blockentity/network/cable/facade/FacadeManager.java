@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.network.BusCableFacadeMessage;
+import li.cil.oc2.common.network.message.network.connector.BusCableFacadeMessage;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;

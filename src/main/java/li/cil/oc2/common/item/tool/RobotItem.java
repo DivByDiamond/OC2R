@@ -16,7 +16,7 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.text.TooltipUtils;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;

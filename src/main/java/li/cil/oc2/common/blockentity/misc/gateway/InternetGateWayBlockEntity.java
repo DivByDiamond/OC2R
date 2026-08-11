@@ -11,7 +11,7 @@ import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.inet.internet.InternetAdapter;
 import li.cil.oc2.common.inet.internet.InternetConnection;
 import li.cil.oc2.common.inet.internet.InternetManagerImpl;
-import li.cil.oc2.common.util.world.ChunkUtils;
+import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

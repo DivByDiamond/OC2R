@@ -3,7 +3,7 @@ package li.cil.oc2.common.vm.context.managed;
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.bus.device.vm.context.VMLifecycleEventBus;
-import li.cil.oc2.common.vm.context.EventManager;
+import li.cil.oc2.common.vm.context.event.EventManager;
 
 final class ManagedEventBus implements VMLifecycleEventBus {
     private final VMLifecycleEventBus parent;

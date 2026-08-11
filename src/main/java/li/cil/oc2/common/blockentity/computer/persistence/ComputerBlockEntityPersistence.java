@@ -3,7 +3,7 @@ package li.cil.oc2.common.blockentity.computer.persistence;
 import static li.cil.oc2.common.Constants.ITEMS_TAG_NAME;
 
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.serialization.NBTSerialization;
+import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import net.minecraft.core.HolderLookup;

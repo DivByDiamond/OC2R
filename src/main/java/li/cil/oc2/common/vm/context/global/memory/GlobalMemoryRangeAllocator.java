@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
-import li.cil.oc2.common.vm.context.MemoryRangeManager;
+import li.cil.oc2.common.vm.context.memory.MemoryRangeManager;
 import li.cil.sedna.api.Board;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryRange;

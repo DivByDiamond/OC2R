@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
+import li.cil.oc2.common.bus.controller.event.DevicesChangedEvent;
 import li.cil.oc2.common.util.event.Event;
 import li.cil.oc2.common.util.event.ParameterizedEvent;
 

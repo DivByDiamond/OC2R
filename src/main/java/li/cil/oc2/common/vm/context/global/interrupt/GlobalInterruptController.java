@@ -1,6 +1,6 @@
 package li.cil.oc2.common.vm.context.global.interrupt;
 
-import li.cil.oc2.common.vm.context.InterruptValidator;
+import li.cil.oc2.common.vm.context.interrupt.InterruptValidator;
 import li.cil.sedna.api.device.InterruptController;
 
 public final class GlobalInterruptController implements InterruptController {

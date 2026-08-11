@@ -95,6 +95,28 @@
 - [x] `common/network/message/computer` (10) → terminal/, misc/ (FirmwareFlasherMessage), root ≤4
 - [x] `client/gui/widget` (9) → terminal/, misc/, root (Sprite, Texture, package-info)
 - [x] `common/network/message/monitor` (8) → input/, framebuffer/, root (MonitorStateMessage, package-info)
+- [x] `common/vm/terminal` (16) → buffer/, buffer/utf8/, render/, render/overlay/, color/, root (Terminal, TerminalIO, TerminalOutput, TerminalClient)
+- [x] `common/vm/terminal/escapes` (8) → index/ (IND, NEL, RI, RIS), root (EscapeUtilities, DECSC, DECRC, HTS); apc/dcs/osc/csi не тронуты
+- [x] `common/vm/terminal/modes` (6) → impl/ (ImplementedPrivateModes, MouseMode), root (Mode, ModeState, PrivateMode, PrivateModeState)
+- [x] `common/vm/context/managed` (8) → memory/, interrupt/, root (ManagedVMContext, ManagedEventBus, package-info)
+- [x] `common/serialization` корень (6) → nbt/util/, root (BlobStorage, BlobChannelManager, BlobStorageEvents, package-info)
+- [x] `common/serialization/nbt` (5) → reference/, root ≤4
+- [x] `common/serialization/ceres` (8) → color/, json/, memory/, text/, root (Serializers, package-info)
+- [x] `common/config/common` (8) → energy/, network/, root ≤4
+- [x] `common/inet/layer` (8) → impl/, link/, root (SendHandler, LayerParametersImpl, NullLayer, package-info)
+- [x] `common/inet/tcp/state` (6) → finish/, root (AcceptState, ConnectState, EstablishedState, package-info)
+- [x] `common/inet/session/manager` (5) → ready/, root ≤4
+- [x] `common/network/message/network` (6) → connector/, root ≤4
+- [x] `common/network/message/file` (6) → cancel/, root ≤4
+- [x] `common/bus/controller` (6) → event/, root ≤4
+- [x] `common/bus/device/rpc/block` (6) → adapter/, root ≤4
+- [x] `common/block/computer` (6) → interaction/, factory/, root (ComputerBlock, ComputerBlockShapes, package-info)
+- [x] `common/block/cable` (6) → interaction/, item/, shape/, root ≤4
+- [x] `common/util/world` (6) → chunk/, level/, blockentity/, root (BlockLocation, ChunkLocation, package-info)
+- [x] `common/util/scheduler` (6) → runnable/, root ≤4
+- [x] `common/vm/context` корень (5) → event/, interrupt/, memory/, root (VMContextManagerCollection, package-info)
+- [x] `client/gui/screen/common` (6) → machine/, monitor/, root ≤4
+- [x] `common` корень (6) → setup/ (CommonSetup, NativeLoader), config/ (ConfigManager), root (Main, Constants, package-info)
 
 ### Deferred
 - jcodec/ — **попытаться заменить на Maven dependency org.jcodec:jcodec**

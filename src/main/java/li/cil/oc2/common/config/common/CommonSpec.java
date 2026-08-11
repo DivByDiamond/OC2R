@@ -1,5 +1,8 @@
 package li.cil.oc2.common.config.common;
 
+import li.cil.oc2.common.config.common.energy.EnergySpec;
+import li.cil.oc2.common.config.common.network.InternetCardSpec;
+import li.cil.oc2.common.config.common.network.VXLANSpec;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class CommonSpec {

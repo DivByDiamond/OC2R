@@ -5,6 +5,7 @@ import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.util.text.TooltipRenderer;
 import net.minecraft.ChatFormatting;
@@ -12,9 +13,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 
-final class MachineTerminalEnergyTooltip {
+public final class MachineTerminalEnergyTooltip {
 
-    static void renderEnergyTooltip(
+    public static void renderEnergyTooltip(
             final AbstractMachineTerminalScreen<?> screen,
             final GuiGraphics graphics,
             final int mouseX,
@@ -38,7 +39,7 @@ final class MachineTerminalEnergyTooltip {
         }
     }
 
-    static boolean isMouseOverEnergyArea(
+    public static boolean isMouseOverEnergyArea(
             final AbstractMachineTerminalScreen<?> screen,
             final int mouseX, final int mouseY) {        final int CONTROLS_TOP = 8;
         final int ENERGY_TOP = CONTROLS_TOP + Sprites.SIDEBAR_3.height + 4;

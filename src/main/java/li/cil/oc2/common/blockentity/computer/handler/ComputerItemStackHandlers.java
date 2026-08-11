@@ -5,7 +5,7 @@ import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.util.world.ChunkUtils;
+import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import li.cil.oc2.common.vm.handler.AbstractVMItemStackHandlers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;

@@ -7,7 +7,7 @@ import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.world.ChunkLocation;
-import li.cil.oc2.common.util.world.ChunkUtils;
+import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;

@@ -11,7 +11,7 @@ import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.inet.layer.DefaultSessionLayer;
+import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;

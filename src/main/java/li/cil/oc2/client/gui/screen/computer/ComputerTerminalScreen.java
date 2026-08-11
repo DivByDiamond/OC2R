@@ -1,6 +1,6 @@
 package li.cil.oc2.client.gui.screen.computer;
 
-import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
+import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineTerminalScreen;
 import li.cil.oc2.common.container.computer.ComputerTerminalContainer;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;

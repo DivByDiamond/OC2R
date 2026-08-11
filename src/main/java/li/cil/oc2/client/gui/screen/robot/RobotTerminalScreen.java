@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.screen.robot;
 
 import li.cil.oc2.client.gui.Sprites;
-import li.cil.oc2.client.gui.screen.common.AbstractMachineTerminalScreen;
+import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineTerminalScreen;
 import li.cil.oc2.client.gui.widget.terminal.MachineTerminalWidget;
 import li.cil.oc2.common.container.robot.RobotTerminalContainer;
 import net.minecraft.client.gui.GuiGraphics;

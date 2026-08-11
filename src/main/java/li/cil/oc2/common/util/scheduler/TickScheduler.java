@@ -2,6 +2,7 @@ package li.cil.oc2.common.util.scheduler;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
+import li.cil.oc2.common.util.scheduler.runnable.ScheduledRunnable;
 
 class TickScheduler {
     private final Queue<ScheduledRunnable> queue = new PriorityQueue<>();

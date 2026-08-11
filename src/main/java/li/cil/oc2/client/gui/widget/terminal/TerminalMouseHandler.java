@@ -3,8 +3,8 @@ package li.cil.oc2.client.gui.widget.terminal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.modes.MouseMode;
 import li.cil.oc2.common.vm.terminal.modes.PrivateMode;
+import li.cil.oc2.common.vm.terminal.modes.impl.MouseMode;
 import org.joml.Vector2i;
 
 final class TerminalMouseHandler {

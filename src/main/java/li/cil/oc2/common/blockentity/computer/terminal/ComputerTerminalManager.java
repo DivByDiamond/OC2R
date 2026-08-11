@@ -6,7 +6,7 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.computer.contraption.ComputerContraptionHandler;
-import li.cil.oc2.common.bus.controller.AfterDeviceScanEvent;
+import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
 import li.cil.oc2.common.container.computer.ComputerInventoryContainer;
 import li.cil.oc2.common.container.computer.ComputerTerminalContainer;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;

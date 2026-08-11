@@ -7,7 +7,7 @@ import li.cil.oc2.common.bus.device.rpc.item.card.FileImportExportCardItemDevice
 import li.cil.oc2.common.bus.device.rpc.item.file.ImportExportState;
 import li.cil.oc2.common.bus.device.rpc.item.file.ImportedFile;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.file.ServerCanceledImportFileMessage;
+import li.cil.oc2.common.network.message.file.cancel.ServerCanceledImportFileMessage;
 import net.minecraft.server.level.ServerPlayer;
 
 public class ImportFileRequestManager {

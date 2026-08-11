@@ -19,6 +19,8 @@ import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
 import li.cil.oc2.common.serialization.ceres.Serializers;
+import li.cil.oc2.common.setup.CommonSetup;
+import li.cil.oc2.common.setup.NativeLoader;
 import li.cil.oc2.common.tags.BlockTags;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.item.RegistryUtils;

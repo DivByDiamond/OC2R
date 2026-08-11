@@ -1,7 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.modes.ImplementedPrivateModes;
+import li.cil.oc2.common.vm.terminal.modes.impl.ImplementedPrivateModes;
 
 public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST)
     public CH3(final Terminal terminal) {

@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
 import li.cil.oc2.common.util.world.BlockLocation;
-import li.cil.oc2.common.util.world.LevelUtils;
+import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;

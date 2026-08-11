@@ -1,7 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.TerminalColors;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 
 public class SGR extends CSISequenceHandler {
     public SGR(final Terminal terminal) {

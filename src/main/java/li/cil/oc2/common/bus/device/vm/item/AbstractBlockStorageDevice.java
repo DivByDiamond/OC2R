@@ -14,7 +14,7 @@ import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.optional.OptionalAddress;
 import li.cil.oc2.common.bus.device.util.optional.OptionalInterrupt;
 import li.cil.oc2.common.bus.device.vm.item.storage.misc.BlobStorageCloseHelper;
-import li.cil.oc2.common.serialization.NBTSerialization;
+import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;

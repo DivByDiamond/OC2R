@@ -4,7 +4,7 @@ import static li.cil.oc2.common.Constants.*;
 
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.serialization.NBTSerialization;
+import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.core.component.DataComponents;

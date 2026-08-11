@@ -11,7 +11,7 @@ import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.network.NetworkConnectorConnectionsMessage;
+import li.cil.oc2.common.network.message.network.connector.NetworkConnectorConnectionsMessage;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.tick.TickUtils;

@@ -4,7 +4,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.vm.terminal.Terminal.State;
+import li.cil.oc2.common.vm.terminal.buffer.utf8.Utf8Decoder;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.escapes.*;
+import li.cil.oc2.common.vm.terminal.escapes.index.IND;
+import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
+import li.cil.oc2.common.vm.terminal.escapes.index.RI;
+import li.cil.oc2.common.vm.terminal.escapes.index.RIS;
 
 class TerminalOutput {
 
