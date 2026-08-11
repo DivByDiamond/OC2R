@@ -50,7 +50,6 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
         return FaceAttachedHorizontalDirectionalBlock.getConnectedDirection(state);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,

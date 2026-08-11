@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -108,10 +108,15 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         return proxy.isCustomRenderer();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
+    @SuppressWarnings("deprecation")
     public TextureAtlasSprite getParticleIcon() {
         return proxy.getParticleIcon();
+    }
+
+    @Override
+    public TextureAtlasSprite getParticleIcon(final ModelData data) {
+        return proxy.getParticleIcon(data);
     }
 
     @Override

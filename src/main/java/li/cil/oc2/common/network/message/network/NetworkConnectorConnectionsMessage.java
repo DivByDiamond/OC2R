@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
+import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;

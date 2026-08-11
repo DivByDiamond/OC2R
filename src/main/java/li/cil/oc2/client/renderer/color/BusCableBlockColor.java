@@ -1,7 +1,7 @@
 package li.cil.oc2.client.renderer.color;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;

@@ -89,7 +89,6 @@ public final class PciCardCageBlock extends HorizontalDirectionalBlock
                 level, type, BlockEntities.PCI_CARD_CAGE.get());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,

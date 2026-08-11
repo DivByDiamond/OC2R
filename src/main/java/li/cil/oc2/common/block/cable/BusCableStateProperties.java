@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.LevelUtils;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;

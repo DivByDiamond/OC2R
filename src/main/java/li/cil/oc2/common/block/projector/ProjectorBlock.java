@@ -88,7 +88,6 @@ public final class ProjectorBlock extends HorizontalDirectionalBlock
         return TickableBlockEntity.createServerTicker(level, type, BlockEntities.PROJECTOR.get());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,

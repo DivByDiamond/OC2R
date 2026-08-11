@@ -3,12 +3,11 @@ package li.cil.oc2.client.item;
 import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
 import li.cil.oc2.common.item.Items;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 
 @SuppressWarnings("unused")
 public final class CustomItemColors {
@@ -32,10 +31,8 @@ public final class CustomItemColors {
 
     private static final int NO_TINT = 0xFFFFFFFF;
 
-    @SuppressWarnings("deprecation")
-    public static void initialize() {
-        final ItemColors itemColors = Minecraft.getInstance().getItemColors();
-        itemColors.register(
+    public static void initialize(final RegisterColorHandlersEvent.Item event) {
+        event.register(
                 (stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
                 Items.HARD_DRIVE_SMALL.get(),
                 Items.HARD_DRIVE_MEDIUM.get(),

@@ -37,13 +37,11 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public boolean isSignalSource(final BlockState state) {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public int getSignal(
             final BlockState state,
@@ -60,7 +58,6 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
         return super.getSignal(state, level, pos, side);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public int getDirectSignal(
             final BlockState state,
@@ -71,7 +68,7 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
     }
 
     @Override
-    @SuppressWarnings({"deprecation", "DataFlowIssue"})
+    @SuppressWarnings("DataFlowIssue")
     public void neighborChanged(
             BlockState state,
             Level worldIn,

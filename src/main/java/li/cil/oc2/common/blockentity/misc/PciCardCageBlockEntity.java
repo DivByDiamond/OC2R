@@ -84,12 +84,6 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void setBlockState(final BlockState state) {
-        super.setBlockState(state);
-    }
-
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         if (Config.cardCagesUseEnergy()) {

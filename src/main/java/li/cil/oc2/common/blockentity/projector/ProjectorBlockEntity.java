@@ -161,14 +161,8 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     }
 
     public AABB getRenderBoundingBox() {
+        renderBounds.update(getBlockState(), getBlockPos());
         return renderBounds.get();
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void setBlockState(final BlockState state) {
-        super.setBlockState(state);
-        renderBounds.update(state, getBlockPos());
     }
 
     public void applyProjectorStateClient(final boolean isProjecting, final boolean hasEnergy) {

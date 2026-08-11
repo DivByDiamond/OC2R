@@ -59,7 +59,6 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,

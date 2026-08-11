@@ -120,7 +120,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
         super.appendHoverText(stack, context, tooltip, advanced);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,
@@ -229,7 +228,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
         return super.playerWillDestroy(level, pos, state, player);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public List<ItemStack> getDrops(final BlockState state, final net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
         // During multiblock teardown we already popped W*H-1 items in playerWillDestroy; the

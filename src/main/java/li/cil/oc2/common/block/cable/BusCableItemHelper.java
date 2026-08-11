@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.types.ConnectionType;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

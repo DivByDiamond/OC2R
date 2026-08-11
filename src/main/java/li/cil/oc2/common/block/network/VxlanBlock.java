@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
-import li.cil.oc2.common.blockentity.network.VxlanBlockEntity;
+import li.cil.oc2.common.blockentity.network.vxlan.VxlanBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -38,7 +38,6 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void neighborChanged(
             final BlockState state,

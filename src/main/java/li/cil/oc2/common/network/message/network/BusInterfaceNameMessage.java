@@ -2,7 +2,7 @@ package li.cil.oc2.common.network.message.network;
 
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.core.BlockPos;

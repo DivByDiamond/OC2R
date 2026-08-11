@@ -31,7 +31,6 @@ public final class ChargerBlock extends HalfTransparentBlock implements EntityBl
         return BlockCodecs.CHARGER.get();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public BlockState rotate(final BlockState state, final Rotation rot) {
         return state.setValue(
@@ -39,11 +38,11 @@ public final class ChargerBlock extends HalfTransparentBlock implements EntityBl
                 rot.rotate(state.getValue(HorizontalDirectionalBlock.FACING)));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
-        return state.rotate(
-                mirrorIn.getRotation(state.getValue(HorizontalDirectionalBlock.FACING)));
+        return state.setValue(
+                HorizontalDirectionalBlock.FACING,
+                mirrorIn.mirror(state.getValue(HorizontalDirectionalBlock.FACING)));
     }
 
     @Override

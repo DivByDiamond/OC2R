@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.*;
 import java.util.Collections;
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.network.NetworkConnectorBlockEntity;
+import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;

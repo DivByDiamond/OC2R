@@ -57,11 +57,7 @@ public final class ClientSetup {
         BlockEntityRenderers.register(
                 BlockEntities.INTERNET_GATEWAY.get(), InternetGateWayRenderer::new);
 
-        event.enqueueWork(
-                () -> {
-                    CustomItemModelProperties.initialize();
-                    CustomItemColors.initialize();
-                });
+        event.enqueueWork(CustomItemModelProperties::initialize);
     }
 
     /**
@@ -97,6 +93,16 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void handleColorHandler(final RegisterColorHandlersEvent.Block event) {
         event.register(new BusCableBlockColor(), Blocks.BUS_CABLE.get());
+    }
+
+    /**
+     * Handles the item color handler registration event.
+     *
+     * @param event the item color handler event.
+     */
+    @SubscribeEvent
+    public static void handleItemColorHandler(final RegisterColorHandlersEvent.Item event) {
+        CustomItemColors.initialize(event);
     }
 
     /**

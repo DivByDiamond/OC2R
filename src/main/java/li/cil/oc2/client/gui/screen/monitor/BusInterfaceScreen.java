@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.ImageButton;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.network.BusInterfaceNameMessage;

@@ -56,7 +56,7 @@
 - [x] `common/block/` (27) → computer/, cable/, monitor/, projector/, network/, disk/, keyboard/, energy/, misc/, common/, types/
 - [x] `client/gui/screen/` (25) → computer/, robot/, monitor/, network/, keyboard/, common/, widget/, file/, misc/
 - `common/vm/terminal/escapes/csi/` (31) — не трогать, каждый CSI handler свой файл по дизайну
-- `common/blockentity/network/` (25) — уже разбито, можно докрутить позже
+- `common/blockentity/network/` (25) → ✅ разбито: cable/ (4), cable/facade/ (4), connector/ (4), connector/interfaces/ (4), switches/ (4), switches/host/ (2), switches/port/ (3), hub/ (1), vxlan/ (2)
 
 **Примечание**: Package-private классы, перемещённые в подпапки, стали public для cross-package доступа.
 
@@ -100,6 +100,13 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 ## 9. Lint и статический анализ
 
 - [x] **PMD: multithreading.xml** — добавлено с исключениями для NeoForge thread model
+- [x] **@SuppressWarnings("deprecation") удалены** — заменены на новые API:
+  - CustomItemColors → `RegisterColorHandlersEvent.Item`
+  - BusCableBakedModel → `getParticleIcon(ModelData)` (остался узкий suppression на абстрактном deprecated `getParticleIcon()`)
+  - ProjectorBlockEntity/PciCardCageBlockEntity → override `setBlockState` убран (renderBounds лениво, пустой override удалён)
+  - ChargerBlock → `Mirror.mirror(Direction)` вместо `state.rotate(Rotation)`
+  - InternetCardSpec → `defineList(..., String::new, ...)`
+  - RobotSlot → `stack.canFitInsideContainerItems()`, RobotItem → `canFitInsideContainerItems(ItemStack)`
 - [ ] **PMD: codestyle.xml + design.xml** — после рефакторинга
 - [ ] **SpotBugs** — обновить плагин для Gradle 9+
 - [ ] **Error Prone** — Google-анализатор

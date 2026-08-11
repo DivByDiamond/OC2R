@@ -62,7 +62,6 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         TooltipUtils.addInventoryInformation(stack, tooltip);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public boolean isSignalSource(final BlockState state) {
         return true;
@@ -78,7 +77,6 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         return signal >= 0 ? signal : super.getSignal(state, blockGetter, pos, side);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public int getDirectSignal(
             final BlockState state,
@@ -88,7 +86,6 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         return getSignal(state, level, pos, side);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void neighborChanged(
             final BlockState state,
@@ -100,7 +97,6 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         ComputerBlockRedstone.neighborChanged(level, pos);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(
             final BlockState state,

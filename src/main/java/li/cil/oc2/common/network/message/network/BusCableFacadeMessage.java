@@ -1,7 +1,7 @@
 package li.cil.oc2.common.network.message.network;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.common.blockentity.network.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;

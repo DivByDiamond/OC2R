@@ -14,8 +14,7 @@ public final class RobotSlot extends SlotItemHandler {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public boolean mayPlace(final ItemStack stack) {
-        return super.mayPlace(stack) && stack.getItem().canFitInsideContainerItems();
+        return super.mayPlace(stack) && stack.canFitInsideContainerItems();
     }
 }

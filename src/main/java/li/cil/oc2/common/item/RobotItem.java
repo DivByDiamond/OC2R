@@ -110,8 +110,7 @@ public final class RobotItem extends ModItem {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean canFitInsideContainerItems() {
+    public boolean canFitInsideContainerItems(final ItemStack stack) {
         return false;
     }
 

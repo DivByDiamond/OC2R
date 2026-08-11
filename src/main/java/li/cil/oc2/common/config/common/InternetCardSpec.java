@@ -21,7 +21,6 @@ public class InternetCardSpec {
     public final ModConfigSpec.IntValue streamBufferSize;
     public final ModConfigSpec.IntValue tcpRetransmissionTimeoutMs;
 
-    @SuppressWarnings("deprecation")
     InternetCardSpec(ModConfigSpec.Builder builder) {
         internetCardEnabled =
                 builder.comment("Whether to enable to internet card, VXLAN must also be enabled")
@@ -64,6 +63,7 @@ public class InternetCardSpec {
                                         "172.16.0.0/12",
                                         "192.168.0.0/16",
                                         "224.0.0.0/4"),
+                                String::new,
                                 obj -> obj instanceof String && !((String) obj).isBlank());
 
         allowedHosts =
@@ -74,6 +74,7 @@ public class InternetCardSpec {
                         .defineList(
                                 "allowedHosts",
                                 List.of(),
+                                String::new,
                                 obj -> obj instanceof String && !((String) obj).isBlank());
 
         defaultNameServer =
