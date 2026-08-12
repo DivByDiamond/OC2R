@@ -12,6 +12,9 @@ public class DL extends CSISequenceHandler {
         terminal.setCursorPos(0, terminal.y);
 
         int lines = Math.max(args[0], 1);
+        int maxLines = terminal.scrollLast - terminal.y + 1;
+        lines = Math.min(lines, Math.max(0, maxLines));
+        if (lines == 0) return;
 
         for (int i = 0; i < lines; i++) {
             terminal.bufferManager.clearLine(terminal.y + i);
@@ -22,8 +25,9 @@ public class DL extends CSISequenceHandler {
         if (useAltBuffer) {
             terminal.bufferManager.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
         } else {
-            terminal.bufferManager.shiftLines(
-                    terminal.y + lines, Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 1, -lines);
+            int startRow = (terminal.y + lines) + (terminal.lastRowToDisplayMax - Terminal.HEIGHT);
+            int endRow = terminal.scrollLast + (terminal.lastRowToDisplayMax - Terminal.HEIGHT);
+            terminal.bufferManager.shiftLines(startRow, endRow, -lines);
         }
     }
 }

@@ -9,6 +9,7 @@ public class VPA extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.setClampedCursorPos(terminal.x, args[0] - 1);
+        int row = (argsCount > 0 && args[0] > 0) ? args[0] : 1;
+        terminal.setClampedCursorPos(terminal.x, row - 1);
     }
 }

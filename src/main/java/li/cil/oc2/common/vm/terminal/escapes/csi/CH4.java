@@ -22,23 +22,26 @@ public class CH4
                 case 14 ->
                         terminal.io.putResponse(
                                 "\033[4;"
-                                        + Terminal.HEIGHT
+                                        + (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
                                         + ";"
-                                        + Terminal.WIDTH); // terminal.io.putResponse("\033[4;" +
-                    // (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
-                    // + ";" + (Terminal.WIDTH *
-                    // Terminal.CHAR_WIDTH));
+                                        + (Terminal.WIDTH * Terminal.CHAR_WIDTH)
+                                        + "t");
                 case 15 ->
                         terminal.io.putResponse(
                                 "\033[5;"
                                         + (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
                                         + ";"
-                                        + (Terminal.WIDTH * Terminal.CHAR_WIDTH));
+                                        + (Terminal.WIDTH * Terminal.CHAR_WIDTH)
+                                        + "t");
                 case 16 ->
                         terminal.io.putResponse(
-                                "\033[6;" + Terminal.CHAR_HEIGHT + ";" + Terminal.CHAR_WIDTH);
-                case 18 -> terminal.io.putResponse("\033[8;" + Terminal.HEIGHT + ";" + Terminal.WIDTH);
-                case 19 -> terminal.io.putResponse("\033[9;" + Terminal.HEIGHT + ";" + Terminal.WIDTH);
+                                "\033[6;" + Terminal.CHAR_HEIGHT + ";" + Terminal.CHAR_WIDTH + "t");
+                case 18 ->
+                        terminal.io.putResponse(
+                                "\033[8;" + Terminal.HEIGHT + ";" + Terminal.WIDTH + "t");
+                case 19 ->
+                        terminal.io.putResponse(
+                                "\033[9;" + Terminal.HEIGHT + ";" + Terminal.WIDTH + "t");
                 default -> {}
             }
         }

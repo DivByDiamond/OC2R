@@ -9,6 +9,8 @@ public class HVP extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argsCount, CSIState state) {
-        terminal.setRelativeCursorPos(args[1] - 1, args[0] - 1);
+        int row = (argsCount > 0 && args[0] > 0) ? args[0] : 1;
+        int col = (argsCount > 1 && args[1] > 0) ? args[1] : 1;
+        terminal.setRelativeCursorPos(col - 1, row - 1);
     }
 }
