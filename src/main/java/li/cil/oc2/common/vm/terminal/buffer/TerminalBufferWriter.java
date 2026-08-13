@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal.buffer;
 
+import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
@@ -20,6 +21,53 @@ public class TerminalBufferWriter {
             } else {
                 terminal.setCursorPos(Terminal.WIDTH - 1, terminal.y);
             }
+        }
+
+        if (terminal.currentModeState.IRM) {
+            // Insert mode: shift line right from cursor position, then place char
+            int charsToInsert = 1;
+            int startIndex =
+                    ((terminal.currentPrivateModeState.isAltBufferEnabled())
+                                    ? terminal.y * Terminal.WIDTH
+                                    : (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                                            * Terminal.WIDTH)
+                            + terminal.x;
+            int count = Terminal.WIDTH - terminal.x - charsToInsert;
+            if (count > 0) {
+                TerminalColors.ColorData c;
+                switch (terminal.currentBackgroundColorMode) {
+                    case SIXTEEN_COLOR -> c = terminal.sixteenColor;
+                    case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
+                    case TRUE_COLOR -> c = terminal.backgroundColor;
+                    case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
+                    case DEFAULT_BACKGROUND -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
+                    default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
+                }
+                if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+                    System.arraycopy(terminal.altBuffer, startIndex, terminal.altBuffer, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.altColors, startIndex, terminal.altColors, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.altColorsBackground, startIndex, terminal.altColorsBackground, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.altStyles, startIndex, terminal.altStyles, startIndex + charsToInsert, count);
+                    Arrays.fill(terminal.altBuffer, startIndex, startIndex + charsToInsert, ' ');
+                    Arrays.fill(terminal.altColors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
+                    Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
+                    Arrays.fill(terminal.altStyles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
+                } else {
+                    System.arraycopy(terminal.buffer, startIndex, terminal.buffer, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.colors, startIndex, terminal.colors, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.colorsBackground, startIndex, terminal.colorsBackground, startIndex + charsToInsert, count);
+                    System.arraycopy(terminal.styles, startIndex, terminal.styles, startIndex + charsToInsert, count);
+                    Arrays.fill(terminal.buffer, startIndex, startIndex + charsToInsert, ' ');
+                    Arrays.fill(terminal.colors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
+                    Arrays.fill(terminal.colorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
+                    Arrays.fill(terminal.styles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
+                }
+            }
+            /* Mark the row dirty so the renderer redraws shifted cells */
+            terminal.renderers.forEach(
+                    model ->
+                            model.getDirtyMask()
+                                    .accumulateAndGet(1 << terminal.y, (prev, next) -> prev | next));
         }
 
         setChar(terminal.x, terminal.y, ch);

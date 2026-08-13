@@ -13,15 +13,13 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         int chars = Math.max(args[0], 1);
         if (state.space) { // SL
-            for (int i = 0; i <= terminal.y; i++) {
+            chars = Math.min(chars, Terminal.WIDTH);
+            for (int i = terminal.scrollFirst; i <= terminal.scrollLast; i++) {
                 shiftLeft(chars, i);
             }
         } else { // ICH
-            if (chars >= Terminal.WIDTH) {
-                terminal.bufferManager.clearLine(terminal.y);
-            } else {
-                shiftRight(chars);
-            }
+            chars = Math.min(chars, Terminal.WIDTH - terminal.x);
+            shiftRight(chars);
         }
     }
 
