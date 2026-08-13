@@ -60,8 +60,16 @@ public class Terminal {
     public int y;
     public int savedX;
     public int savedY;
+    public byte savedStyle;
+    public boolean savedUseG0 = true;
+    public int savedDrawingModeG0;
+    public int savedDrawingModeG1;
     public int altSavedX;
     public int altSavedY;
+    public byte altSavedStyle;
+    public boolean altSavedUseG0 = true;
+    public int altSavedDrawingModeG0;
+    public int altSavedDrawingModeG1;
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 

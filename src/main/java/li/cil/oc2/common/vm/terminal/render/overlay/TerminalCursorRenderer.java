@@ -48,7 +48,9 @@ public class TerminalCursorRenderer {
                 Tesselator.getInstance()
                         .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        final int foreground = TerminalColors.COLORS[TerminalColors.Color.WHITE];
+        final int foreground = terminal.currentPrivateModeState.DECSCNM
+                ? TerminalColors.COLORS[TerminalColors.Color.BLACK]
+                : TerminalColors.COLORS[TerminalColors.Color.WHITE];
         final float r = ((foreground >> 16) & 0xFF) / 255f;
         final float g = ((foreground >> 8) & 0xFF) / 255f;
         final float b = (foreground & 0xFF) / 255f;

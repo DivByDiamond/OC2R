@@ -26,7 +26,8 @@ public class TerminalCharRenderer {
                         : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT)) * Terminal.WIDTH;
         for (int col = 0; col < Terminal.WIDTH; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
-            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
+            final boolean screenInverted = terminal.currentPrivateModeState.DECSCNM;
+            final boolean invertBackground = ((style & Terminal.STYLE_INVERT_MASK) != 0) ^ screenInverted;
             final ColorData color =
                     !invertBackground
                             ? useAltBuffer ? terminal.altColors[index] : terminal.colors[index]
@@ -36,18 +37,39 @@ public class TerminalCharRenderer {
 
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
-            final int[] palette =
-                    (style & Terminal.STYLE_DIM_MASK) != 0
-                            ? TerminalColors.DIM_COLORS
-                            : TerminalColors.COLORS;
+            // --- Blink semantics (VT100) ---
+            // invertBackground determines WHAT blinks:
+            //   false → foreground blinks (background stays)
+            //   true  → background blinks (foreground stays)
+            // Bold changes blink from on/off to normal/bright intensity.
+            final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
+            final boolean isDim = (style & Terminal.STYLE_DIM_MASK) != 0;
+            final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
+            final boolean blinkOff = isBlinking
+                    && (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500;
+
+            // Foreground blinks only when NOT inverted.
+            //   Not bold: skip char entirely during off phase (on/off blink)
+            //   Bold: use normal palette during off phase, bright during on phase
+            if (isBlinking && !invertBackground && blinkOff && !isBold) {
+                tx += Terminal.CHAR_WIDTH;
+                continue;
+            }
+            final boolean dimBoldForBlink = isBlinking && !invertBackground && blinkOff && isBold;
             int foreground =
                     switch (color.Mode) {
-                        case SIXTEEN_COLOR -> palette[!invertBackground ? color.R : color.G];
+                        case DEFAULT_FOREGROUND ->
+                                (isDim ? TerminalColors.DIM_COLORS
+                                        : (isBold && !dimBoldForBlink) ? TerminalColors.BRIGHT_COLORS
+                                        : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
+                        case SIXTEEN_COLOR ->
+                                TerminalColors.COLORS[!invertBackground ? color.R : color.G];
                         case TWO_FIFTY_SIX_COLOR ->
                                 TerminalColors.COLORS_256[!invertBackground ? color.R : color.G];
                         case TRUE_COLOR -> color.ToInt();
                         case SIXTEEN_COLOR_BRIGHT ->
-                                TerminalColors.BRIGHT_COLORS[!invertBackground ? color.R : color.G];
+                                (dimBoldForBlink ? TerminalColors.COLORS : TerminalColors.BRIGHT_COLORS)
+                                        [!invertBackground ? color.R : color.G];
                         case DEFAULT_BACKGROUND -> 0x000000;
                         default -> throw new AssertionError(color.Mode);
                     };
@@ -104,10 +126,15 @@ public class TerminalCharRenderer {
         }
 
         if ((style & Terminal.STYLE_UNDERLINE_MASK) != 0) {
-            buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT - 3, 0)
+            // Solid color quad at the bottom of the cell. UV (0,0) samples the
+            // opaque white reference square in the font atlas — the shader is
+            // POSITION_TEX_COLOR so we need a valid texel, but the color comes
+            // from the vertex color, not the texture.
+            // Vertex order: BL → BR → TR → TL (CCW, matching background/glyph quads).
+            buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT, 0)
                     .setColor(r, g, b, 1)
                     .setUv(0, 0);
-            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT - 3, 0)
+            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT, 0)
                     .setColor(r, g, b, 1)
                     .setUv(0, 0);
             buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT - 2, 0)

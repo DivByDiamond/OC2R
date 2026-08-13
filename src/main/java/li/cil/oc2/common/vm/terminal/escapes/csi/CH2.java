@@ -38,7 +38,10 @@ public class CH2 extends CSISequenceHandler {
                             m -> m.getDirtyMask().accumulateAndGet(mask, (l, r) -> l | r));
                 }
                 case 4 -> terminal.currentPrivateModeState.DECSCLM = true;
-                case 5 -> terminal.currentPrivateModeState.DECSCNM = true;
+                case 5 -> {
+                    terminal.currentPrivateModeState.DECSCNM = true;
+                    markScreenDirty();
+                }
                 case 6 -> {
                     terminal.currentPrivateModeState.DECOM = true;
                     terminal.setRelativeCursorPos(0, 0);

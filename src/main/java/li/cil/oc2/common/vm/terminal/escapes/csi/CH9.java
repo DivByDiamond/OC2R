@@ -13,10 +13,9 @@ public class CH9 extends CSISequenceHandler { // Combined Handler 9 (SD, XTHIMOU
             System.out.println("XTRMTITLE not implemented");
         } else if (argsCount == 5) { // XTHIMOUSE
             System.out.println("XTHIMOUSE not implemented");
-        } else { // SD
-            for (int i = 0; i < Math.max(1, args[0]); i++) {
-                terminal.bufferManager.shiftDownOne();
-            }
+        } else { // SD — Scroll Down
+            int count = (argsCount < 1) ? 1 : Math.max(args[0], 1);
+            terminal.bufferManager.shiftDown(count);
         }
     }
 }

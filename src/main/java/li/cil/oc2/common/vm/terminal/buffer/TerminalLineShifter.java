@@ -58,7 +58,7 @@ final class TerminalLineShifter {
                 terminal.altColors,
                 shiftUpOrDown,
                 shiftUpOrDown + clearCount,
-                TerminalColors.DEFAULT_COLORS.Copy());
+                TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy());
         Arrays.fill(
                 terminal.altColorsBackground,
                 shiftUpOrDown,
@@ -110,7 +110,7 @@ final class TerminalLineShifter {
                 terminal.colors,
                 shiftUpOrDown,
                 shiftUpOrDown + clearCount,
-                TerminalColors.DEFAULT_COLORS.Copy());
+                TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy());
         Arrays.fill(
                 terminal.colorsBackground, shiftUpOrDown, shiftUpOrDown + clearCount, c.Copy());
         Arrays.fill(

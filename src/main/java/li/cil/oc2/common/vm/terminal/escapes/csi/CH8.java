@@ -14,10 +14,9 @@ public class CH8
             System.out.println("XTSMGRAPHICS not implemented");
         } else if (state.hash) { // XTTITLEPOS
             System.out.println("XTTITLEPOS not implemented");
-        } else { // SU
-            for (int i = 0; i < Math.max(1, args[0]); i++) {
-                terminal.bufferManager.shiftUpOne();
-            }
+        } else { // SU — Scroll Up
+            int count = (argsCount < 1) ? 1 : Math.max(args[0], 1);
+            terminal.bufferManager.shiftUp(count);
         }
     }
 }

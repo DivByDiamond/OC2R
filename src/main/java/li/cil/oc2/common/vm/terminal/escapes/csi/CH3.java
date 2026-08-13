@@ -38,7 +38,10 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                             m -> m.getDirtyMask().accumulateAndGet(mask, (l, r) -> l | r));
                 }
                 case 4 -> terminal.currentPrivateModeState.DECSCLM = false;
-                case 5 -> terminal.currentPrivateModeState.DECSCNM = false;
+                case 5 -> {
+                    terminal.currentPrivateModeState.DECSCNM = false;
+                    markScreenDirty();
+                }
                 case 6 -> {
                     terminal.currentPrivateModeState.DECOM = false;
                     terminal.setRelativeCursorPos(0, 0);
@@ -183,5 +186,18 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 default -> {}
             }
         }
+    }
+
+    private void markScreenDirty() {
+        int dirtyLinesMask = 0;
+        for (int j = 0; j < Terminal.HEIGHT; j++) {
+            dirtyLinesMask |= 1 << j;
+        }
+        final int finalDirtyLinesMask = dirtyLinesMask;
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(
+                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 }

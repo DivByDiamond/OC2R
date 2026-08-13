@@ -1,6 +1,5 @@
 package li.cil.oc2.common.vm.terminal.buffer;
 
-import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
@@ -23,46 +22,9 @@ public class TerminalBufferWriter {
             }
         }
 
+        // IRM (Insert Mode): shift characters right before placing new char
         if (terminal.currentModeState.IRM) {
-            // Insert mode: shift line right from cursor position, then place char
-            int charsToInsert = 1;
-            int startIndex =
-                    ((terminal.currentPrivateModeState.isAltBufferEnabled())
-                                    ? terminal.y * Terminal.WIDTH
-                                    : (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
-                                            * Terminal.WIDTH)
-                            + terminal.x;
-            int count = Terminal.WIDTH - terminal.x - charsToInsert;
-            if (count > 0) {
-                TerminalColors.ColorData c;
-                switch (terminal.currentBackgroundColorMode) {
-                    case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-                    case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-                    case TRUE_COLOR -> c = terminal.backgroundColor;
-                    case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-                    case DEFAULT_BACKGROUND -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-                    default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-                }
-                if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                    System.arraycopy(terminal.altBuffer, startIndex, terminal.altBuffer, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altColors, startIndex, terminal.altColors, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altColorsBackground, startIndex, terminal.altColorsBackground, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altStyles, startIndex, terminal.altStyles, startIndex + charsToInsert, count);
-                    Arrays.fill(terminal.altBuffer, startIndex, startIndex + charsToInsert, ' ');
-                    Arrays.fill(terminal.altColors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
-                    Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
-                    Arrays.fill(terminal.altStyles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
-                } else {
-                    System.arraycopy(terminal.buffer, startIndex, terminal.buffer, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.colors, startIndex, terminal.colors, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.colorsBackground, startIndex, terminal.colorsBackground, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.styles, startIndex, terminal.styles, startIndex + charsToInsert, count);
-                    Arrays.fill(terminal.buffer, startIndex, startIndex + charsToInsert, ' ');
-                    Arrays.fill(terminal.colors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
-                    Arrays.fill(terminal.colorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
-                    Arrays.fill(terminal.styles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
-                }
-            }
+            terminal.bufferManager.insertChars(terminal.y, terminal.x, 1);
         }
 
         setChar(terminal.x, terminal.y, ch);
@@ -70,77 +32,58 @@ public class TerminalBufferWriter {
     }
 
     public void setChar(final int x, final int y, final int ch) {
-        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            final int index = x + y * Terminal.WIDTH;
+        final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
+        final int index = altBuffer
+                ? x + y * Terminal.WIDTH
+                : x + (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)) * Terminal.WIDTH;
 
+        // Write the character
+        if (altBuffer) {
             terminal.altBuffer[index] = ch;
-
-            switch (terminal.currentForegroundColorMode) {
-                case SIXTEEN_COLOR -> terminal.altColors[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.altColors[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR -> terminal.altColors[index] = terminal.foregroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.altColors[index] = terminal.sixteenColorBright.Copy();
-                default -> {}
-            }
-
-            switch (terminal.currentBackgroundColorMode) {
-                case SIXTEEN_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.backgroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.altColorsBackground[index] = terminal.sixteenColorBright.Copy();
-                case DEFAULT_BACKGROUND ->
-                        terminal.altColorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
-                default -> {}
-            }
-
-            terminal.altStyles[index] = terminal.style;
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(1 << (y), (prev, next) -> prev | next));
         } else {
-            int correctedY = (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT));
-            final int index = x + correctedY * Terminal.WIDTH;
-
             terminal.buffer[index] = ch;
-
-            switch (terminal.currentForegroundColorMode) {
-                case SIXTEEN_COLOR -> terminal.colors[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.colors[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR -> terminal.colors[index] = terminal.foregroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.colors[index] = terminal.sixteenColorBright.Copy();
-                default -> {}
-            }
-
-            switch (terminal.currentBackgroundColorMode) {
-                case SIXTEEN_COLOR ->
-                        terminal.colorsBackground[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.colorsBackground[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR ->
-                        terminal.colorsBackground[index] = terminal.backgroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.colorsBackground[index] = terminal.sixteenColorBright.Copy();
-                case DEFAULT_BACKGROUND ->
-                        terminal.colorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
-                default -> {}
-            }
-
-            terminal.styles[index] = terminal.style;
-            int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
-            int localY = Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(1 << (localY), (prev, next) -> prev | next));
         }
+
+        // Write foreground color
+        final TerminalColors.ColorData fgColor;
+        switch (terminal.currentForegroundColorMode) {
+            case SIXTEEN_COLOR -> fgColor = terminal.sixteenColor.Copy();
+            case TWO_FIFTY_SIX_COLOR -> fgColor = terminal.twoFiftySixColor.Copy();
+            case TRUE_COLOR -> fgColor = terminal.foregroundColor.Copy();
+            case SIXTEEN_COLOR_BRIGHT -> fgColor = terminal.sixteenColorBright.Copy();
+            case DEFAULT_FOREGROUND -> fgColor = TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy();
+            default -> fgColor = TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy();
+        }
+        if (altBuffer) {
+            terminal.altColors[index] = fgColor;
+        } else {
+            terminal.colors[index] = fgColor;
+        }
+
+        // Write background color
+        final TerminalColors.ColorData bgColor;
+        switch (terminal.currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> bgColor = terminal.sixteenColor.Copy();
+            case TWO_FIFTY_SIX_COLOR -> bgColor = terminal.twoFiftySixColor.Copy();
+            case TRUE_COLOR -> bgColor = terminal.backgroundColor.Copy();
+            case SIXTEEN_COLOR_BRIGHT -> bgColor = terminal.sixteenColorBright.Copy();
+            case DEFAULT_BACKGROUND -> bgColor = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
+            default -> bgColor = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
+        }
+        if (altBuffer) {
+            terminal.altColorsBackground[index] = bgColor;
+            terminal.altStyles[index] = terminal.style;
+        } else {
+            terminal.colorsBackground[index] = bgColor;
+            terminal.styles[index] = terminal.style;
+        }
+
+        // Mark dirty — alt buffer uses y directly, main buffer needs scrollback offset
+        final int dirtyLine = altBuffer
+                ? y
+                : Terminal.HEIGHT + (terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay);
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask().accumulateAndGet(1 << dirtyLine, (prev, next) -> prev | next));
     }
 }

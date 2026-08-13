@@ -8,7 +8,7 @@ import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
 
 public class RIS {
     public static void execute(Terminal terminal) {
-        terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+        terminal.currentForegroundColorMode = TerminalColors.ColorMode.DEFAULT_FOREGROUND;
         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
         terminal.Use1006 = false;
         terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.Copy();
@@ -27,11 +27,11 @@ public class RIS {
         terminal.bufferManager.clear();
         terminal.bufferManager.clearAlt();
         Arrays.fill(terminal.buffer, ' ');
-        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.Copy());
+        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy());
         Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());
         Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.Copy());
+        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.Copy());
         Arrays.fill(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.tabs, false);

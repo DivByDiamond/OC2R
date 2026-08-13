@@ -26,7 +26,8 @@ public class TerminalBackgroundRenderer {
                         : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT)) * Terminal.WIDTH;
         for (int col = 0; col < Terminal.WIDTH; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
-            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
+            final boolean screenInverted = terminal.currentPrivateModeState.DECSCNM;
+            final boolean invertBackground = ((style & Terminal.STYLE_INVERT_MASK) != 0) ^ screenInverted;
             final ColorData color =
                     !invertBackground
                             ? useAltBuffer
@@ -36,21 +37,47 @@ public class TerminalBackgroundRenderer {
 
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
-            final int[] palette =
-                    (style & Terminal.STYLE_DIM_MASK) != 0
-                            ? TerminalColors.DIM_COLORS
-                            : TerminalColors.COLORS;
+            // --- Blink semantics (VT100) ---
+            // invertBackground determines WHAT blinks:
+            //   false → foreground blinks (background always renders)
+            //   true  → background blinks (foreground always renders)
+            // Bold changes blink from on/off to normal/bright intensity.
+            final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
+            final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
+            final boolean blinkOff = isBlinking
+                    && (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500;
+
+            // Background blinks only when inverted.
+            //   Not bold: no background during off phase (on/off blink)
+            //   Bold: normal palette during off phase, bright during on phase
+            final boolean suppressBgForBlink = isBlinking && invertBackground && blinkOff && !isBold;
+            final boolean dimBoldBgForBlink = isBlinking && invertBackground && blinkOff && isBold;
+
+            // Palette selection per color mode (must match TerminalCharRenderer):
+            //   DEFAULT_FOREGROUND: bold → bright, else normal. Dim doesn't affect background.
+            //   SIXTEEN_COLOR: always COLORS (bold = typeface only, not color change).
+            //   SIXTEEN_COLOR_BRIGHT: always BRIGHT_COLORS.
             int background =
                     switch (color.Mode) {
-                        case SIXTEEN_COLOR -> palette[!invertBackground ? color.G : color.R];
+                        case SIXTEEN_COLOR ->
+                                TerminalColors.COLORS[!invertBackground ? color.G : color.R];
                         case TWO_FIFTY_SIX_COLOR ->
                                 TerminalColors.COLORS_256[!invertBackground ? color.G : color.R];
                         case TRUE_COLOR -> color.ToInt();
                         case SIXTEEN_COLOR_BRIGHT ->
-                                TerminalColors.BRIGHT_COLORS[!invertBackground ? color.G : color.R];
+                                (dimBoldBgForBlink ? TerminalColors.COLORS : TerminalColors.BRIGHT_COLORS)
+                                        [!invertBackground ? color.G : color.R];
                         case DEFAULT_BACKGROUND -> 0x000000;
+                        case DEFAULT_FOREGROUND ->
+                                ((isBold && !dimBoldBgForBlink) ? TerminalColors.BRIGHT_COLORS
+                                        : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
                         default -> throw new AssertionError(color.Mode);
                     };
+
+            // When background is blinking (inverted + blink), suppress bg on off phase (non-bold only)
+            if (suppressBgForBlink) {
+                background = 0x000000;
+            }
 
             final boolean hadBackground = backgroundStartX >= 0;
             final boolean hasBackground = background != 0x000000;

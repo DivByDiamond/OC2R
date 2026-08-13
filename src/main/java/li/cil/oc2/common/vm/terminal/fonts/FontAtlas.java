@@ -45,7 +45,7 @@ public class FontAtlas {
 
         Graphics2D g = f.createGraphics();
         g.setColor(Color.WHITE);
-        g.draw(new Rectangle(0, 0, 16, 32));
+        g.fill(new Rectangle(0, 0, 16, 32));
 
         g.dispose();
 

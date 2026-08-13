@@ -24,6 +24,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
     public final VertexBuffer[] lines = new VertexBuffer[Terminal.HEIGHT];
     public final AtomicInteger dirty = new AtomicInteger(-1);
 
+    // Blink phase tracking: when the blink phase changes, any lines containing
+    // blink-styled characters must be rebuilt so chars appear/disappear.
+    private boolean lastBlinkPhase = false;
+
     public TerminalRenderer(final Terminal terminal) {
         this.terminal = terminal;
     }
@@ -32,6 +36,36 @@ public class TerminalRenderer implements RendererModel, RendererView {
     public void render(
             final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
+
+        // Check if blink phase changed — if so, mark lines with blink chars dirty.
+        final boolean blinkPhase = (System.currentTimeMillis() + terminal.hashCode()) % 1000 < 500;
+        if (blinkPhase != lastBlinkPhase) {
+            lastBlinkPhase = blinkPhase;
+            // Check which lines have blink-styled characters and mark them dirty.
+            final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
+            final int baseRow = useAltBuffer
+                    ? 0
+                    : terminal.lastRowToDisplay - Terminal.HEIGHT;
+            final byte[] styles = terminal.styles;
+            final byte[] altStyles = terminal.altStyles;
+            int mask = 0;
+            for (int row = 0; row < Terminal.HEIGHT; row++) {
+                final int rowBase = (baseRow + row) * Terminal.WIDTH;
+                for (int col = 0; col < Terminal.WIDTH; col++) {
+                    final int index = rowBase + col;
+                    if ((useAltBuffer
+                            ? (altStyles[index] & Terminal.STYLE_BLINK_MASK)
+                            : (styles[index] & Terminal.STYLE_BLINK_MASK)) != 0) {
+                        mask |= (1 << row);
+                        break;
+                    }
+                }
+            }
+            if (mask != 0) {
+                dirty.accumulateAndGet(mask, (a, b) -> a | b);
+            }
+        }
+
         validateLineCache();
         renderBuffer(stack, projectionMatrix, renderingToBlock);
 
