@@ -9,6 +9,12 @@ public class DA extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        terminal.io.putResponse("\033[?1;0c");
+        if (state.greaterThan) {
+            /* DA2 — Secondary Device Attributes. Pp=61 (VT100 Family), Pv=10 (version 1.0), Pc=22 (color capability) */
+            terminal.io.putResponse("\033[>61;10;22c");
+        } else {
+            /* DA1 — Primary Device Attributes. VT100 with Advanced Video Option (AVO) */
+            terminal.io.putResponse("\033[?1;2c");
+        }
     }
 }

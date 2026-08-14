@@ -10,7 +10,7 @@ public class SGR extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        for (int i = 0; i < argCount; i++) {
+        for (int i = 0; i < Math.max(1, argCount); i++) {
             int v1 = args[i];
             if (v1 == 38 || v1 == 48) {
                 int index = i + 1;

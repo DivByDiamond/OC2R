@@ -11,13 +11,17 @@ public class IL extends CSISequenceHandler {
     public void execute(int[] args, int argCount, CSIState state) {
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         int lines = Math.max(args[0], 1);
+        int maxLines = terminal.scrollLast - terminal.y + 1;
+        lines = Math.min(lines, Math.max(0, maxLines));
+        if (lines == 0) return;
         if (useAltBuffer) {
             terminal.bufferManager.shiftLines(terminal.y, terminal.scrollLast - lines, lines);
         } else {
-            terminal.bufferManager.shiftLines(
-                    terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT,
-                    Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - 2,
-                    lines);
+            int startRow = terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT);
+            int endRow =
+                    (terminal.scrollLast + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                            - lines;
+            terminal.bufferManager.shiftLines(startRow, endRow, lines);
         }
     }
 }

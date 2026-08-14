@@ -24,7 +24,7 @@ public final class DeviceTreeProviders {
         DeviceTreeRegistry.putProvider(
                 AbstractVirtIODevice.class, new MmioDeviceTreeProvider("virtio", "virtio,mmio"));
         DeviceTreeRegistry.putProvider(
-                UART16550A.class, new MmioDeviceTreeProvider("uart", "ns16550a"));
+                UART16550A.class, new MmioDeviceTreeProvider("uart", "ns16550a", 3686400));
         DeviceTreeRegistry.putProvider(GoldfishRTC.class, new GoldfishRTCProvider());
         DeviceTreeRegistry.putProvider(
                 R5CoreLocalInterrupter.class, new R5CoreLocalInterrupterProvider());

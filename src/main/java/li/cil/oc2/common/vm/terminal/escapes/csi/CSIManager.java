@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
+import li.cil.oc2.common.vm.terminal.escapes.index.IND;
+import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
 
 public class CSIManager {
     private final int[] args = new int[10];
@@ -17,6 +19,7 @@ public class CSIManager {
     private boolean singleQuote = false;
     private boolean space = false;
     private boolean exclamation = false;
+    private boolean hasArg = false;
 
     private final Terminal terminal;
     private final Map<Character, CSISequenceHandler> sequences = new ConcurrentHashMap<>();
@@ -53,12 +56,48 @@ public class CSIManager {
         sequences.put('s', new CH6(terminal));
         sequences.put('t', new CH4(terminal));
 
+        sequences.put('x', new DECREQTPARM(terminal));
+
         sequences.put('@', new CH11(terminal));
     }
 
     public void handle(final char ch) {
+        /* Control characters inside CSI sequences: execute them but don't terminate the sequence */
+        if (ch < 0x20 || ch == 0x7F) {
+            switch (ch) {
+                case 0x08 -> { /* BS */
+                    if (terminal.x > 0) terminal.x--;
+                }
+                case 0x0D -> { /* CR */
+                    terminal.x = 0;
+                }
+                case 0x0A, 0x0B -> { /* LF / VT — respect LNM like normal path */
+                    if (terminal.currentModeState.LNM) {
+                        NEL.execute(terminal);
+                    } else {
+                        IND.execute(terminal);
+                    }
+                }
+                case 0x09 -> { /* HT */
+                    terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), Terminal.WIDTH - 1);
+                }
+                case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */
+                    reset();
+                    terminal.state = Terminal.State.NORMAL;
+                    return;
+                }
+                case 0x1B -> { /* ESC — abort current CSI, start new escape */
+                    reset();
+                    terminal.state = Terminal.State.ESCAPE;
+                    return;
+                }
+                default -> {} /* Other control chars: ignore, stay in CSI state */
+            }
+            return;
+        }
         if (ch >= '0' && ch <= '9') {
             if (argCount < args.length) {
+                hasArg = true;
                 args[argCount] = EscapeUtilities.parseArgument(ch, args[argCount]);
             }
         } else {
@@ -97,10 +136,13 @@ public class CSIManager {
                 }
                 case ';' -> {
                     argCount++;
+                    hasArg = true;
                     return; // Keep going, we have another argument.
                 }
-                default -> argCount++;
+                default -> {}
             }
+
+            if (hasArg) argCount++;
 
             terminal.state = Terminal.State.NORMAL;
 
@@ -132,6 +174,8 @@ public class CSIManager {
         quote = false;
         singleQuote = false;
         space = false;
+        exclamation = false;
+        hasArg = false;
         argCount = 0;
         Arrays.fill(args, 0);
     }

@@ -22,7 +22,21 @@ public class CH2 extends CSISequenceHandler {
             switch (args[i]) {
                 case 1 -> terminal.currentPrivateModeState.DECCKM = true;
                 case 2 -> terminal.currentPrivateModeState.DECANM = true;
-                case 3 -> terminal.currentPrivateModeState.DECCOLM = true;
+                case 3 -> {
+                    terminal.currentPrivateModeState.DECCOLM = true;
+                    /* DECCOLM spec: clear screen and reset margins */
+                    terminal.bufferManager.clear();
+                    terminal.scrollFirst = 0;
+                    terminal.scrollLast = Terminal.HEIGHT - 1;
+                    terminal.setRelativeCursorPos(0, 0);
+                    int dirtyLinesMask = 0;
+                    for (int j = 0; j < Terminal.HEIGHT; j++) {
+                        dirtyLinesMask |= 1 << j;
+                    }
+                    final int mask = dirtyLinesMask;
+                    terminal.renderers.forEach(
+                            m -> m.getDirtyMask().accumulateAndGet(mask, (l, r) -> l | r));
+                }
                 case 4 -> terminal.currentPrivateModeState.DECSCLM = true;
                 case 5 -> terminal.currentPrivateModeState.DECSCNM = true;
                 case 6 -> {
@@ -186,7 +200,7 @@ public class CH2 extends CSISequenceHandler {
 
     private void markScreenDirty() {
         int dirtyLinesMask = 0;
-        for (int j = 0; j <= 23; j++) {
+        for (int j = 0; j < Terminal.HEIGHT; j++) {
             dirtyLinesMask |= 1 << j;
         }
         final int finalDirtyLinesMask = dirtyLinesMask;

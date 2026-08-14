@@ -7,7 +7,7 @@ public class RI {
         if (terminal.y <= terminal.scrollFirst) {
             terminal.bufferManager.shiftDownOne();
         } else {
-            terminal.setCursorPos(0, terminal.y - 1);
+            terminal.setCursorPos(terminal.x, terminal.y - 1);
         }
     }
 }

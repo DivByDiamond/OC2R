@@ -20,10 +20,16 @@ import li.cil.sedna.api.memory.MemoryMap;
 public final class MmioDeviceTreeProvider implements DeviceTreeProvider {
     private final String name;
     private final String compatible;
+    private final int clockFrequency;
 
     public MmioDeviceTreeProvider(final String name, final String compatible) {
+        this(name, compatible, 0);
+    }
+
+    public MmioDeviceTreeProvider(final String name, final String compatible, final int clockFrequency) {
         this.name = name;
         this.compatible = compatible;
+        this.clockFrequency = clockFrequency;
     }
 
     @Override
@@ -53,5 +59,8 @@ public final class MmioDeviceTreeProvider implements DeviceTreeProvider {
         memoryMap
                 .getMemoryRange((MemoryMappedDevice) device)
                 .ifPresent(r -> node.addProp("reg", r.address(), r.size()));
+        if (clockFrequency > 0) {
+            node.addProp("clock-frequency", clockFrequency);
+        }
     }
 }

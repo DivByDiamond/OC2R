@@ -6,11 +6,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.vm.terminal.Terminal.State;
 import li.cil.oc2.common.vm.terminal.buffer.utf8.Utf8Decoder;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
-import li.cil.oc2.common.vm.terminal.escapes.*;
+import li.cil.oc2.common.vm.terminal.escapes.DECRC;
+import li.cil.oc2.common.vm.terminal.escapes.DECSC;
+import li.cil.oc2.common.vm.terminal.escapes.HTS;
 import li.cil.oc2.common.vm.terminal.escapes.index.IND;
 import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
 import li.cil.oc2.common.vm.terminal.escapes.index.RI;
 import li.cil.oc2.common.vm.terminal.escapes.index.RIS;
+import li.cil.oc2.common.vm.terminal.modes.impl.KeypadMode;
 
 class TerminalOutput {
 
@@ -30,7 +33,7 @@ class TerminalOutput {
             while (values.hasRemaining()) {
                 putOutput(values.get());
             }
-        
+
         } finally {
             lock.unlock();
         }
@@ -64,10 +67,10 @@ class TerminalOutput {
                                 }
                             }
                             case (byte) '\t' -> {
-                                if (terminal.x < Terminal.WIDTH) {
+                                if (terminal.x < Terminal.WIDTH - 1) {
                                     do {
                                         terminal.x++;
-                                    } while (terminal.x < Terminal.WIDTH
+                                    } while (terminal.x < Terminal.WIDTH - 1
                                             && (terminal.currentPrivateModeState
                                                             .isAltBufferEnabled()
                                                     ? !terminal.altTabs[terminal.x]
@@ -114,8 +117,8 @@ class TerminalOutput {
                                 case '8' -> DECRC.execute(terminal);
                                 case 'H' -> HTS.execute(terminal);
                                 case 'c' -> RIS.execute(terminal);
-                                case '=' -> {}
-                                case '>' -> {}
+                                case '=' -> KeypadMode.setApplication(terminal);
+                                case '>' -> KeypadMode.setNumeric(terminal);
                                 default -> System.out.println("Invalid escape: " + ch);
                             }
                         }
@@ -137,31 +140,30 @@ class TerminalOutput {
                     case HASH -> {
                         terminal.state = State.NORMAL;
                         if (ch == '8') {
-                                if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                                    Arrays.fill(terminal.altBuffer, 'E');
-                                } else {
-                                    Arrays.fill(
-                                            terminal.buffer,
-                                            (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
-                                                    * Terminal.WIDTH,
-                                            ((Terminal.WIDTH - 1)
-                                                            + (Terminal.HEIGHT - 1)
-                                                                    * Terminal.WIDTH)
-                                                    + 1,
-                                            'E');
-                                }
-                                terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
+                            if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+                                Arrays.fill(terminal.altBuffer, 'E');
+                            } else {
+                                int startIndex =
+                                        (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
+                                                * Terminal.WIDTH;
+                                Arrays.fill(
+                                        terminal.buffer,
+                                        startIndex,
+                                        startIndex + Terminal.WIDTH * Terminal.HEIGHT,
+                                        'E');
                             }
+                            terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
+                        }
                     }
                     case DCS -> terminal.dcsManager.handle(ch);
                     case OSC -> terminal.oscManager.handle(ch);
                     case APC -> terminal.apcManager.handle(ch);
                 }
-            
+
             } finally {
                 lock.unlock();
             }
-        
+
         } finally {
             lock.unlock();
         }
