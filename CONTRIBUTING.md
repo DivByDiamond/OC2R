@@ -4,7 +4,8 @@
 
 - **Java 21**, NeoForge, Gradle
 - **≤200 lines per file**, **≤4 files per folder** (Single Responsibility Principle)
-- **No `// comments`** in code — only JavaDoc on public API
+- **Comments**: `//` comments are allowed for complex logic, tricky edge cases, and important modules where intent is not obvious. Keep them concise and meaningful; avoid redundant or obvious comments.
+- **JavaDoc** on public API methods
 - **No SPDX headers**
 - **Build before commit**: `./gradlew build`
 
@@ -44,7 +45,7 @@ test: add Ipv4Space extended tests
 ## Before Submitting
 
 - `./gradlew build` passes
-- No `// comments` in new code
+- `//` comments only where they explain complex logic or important modules
 - Public API has JavaDoc
 - ≤200 lines per file, ≤4 files per folder
 - No SPDX headers
