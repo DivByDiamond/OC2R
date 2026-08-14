@@ -1,23 +1,6 @@
 {
   "parent": "oc2r:block/network_connector",
   "display": {
-    "gui": {
-      "rotation": [
-        30,
-        315,
-        0
-      ],
-      "translation": [
-        0,
-        2,
-        0
-      ],
-      "scale": [
-        0.75,
-        0.75,
-        0.75
-      ]
-    },
     "fixed": {
       "rotation": [
         270,
@@ -28,6 +11,23 @@
         0,
         0,
         -5
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        315,
+        0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "translation": [
+        0,
+        2,
+        0
       ]
     }
   }

@@ -1,0 +1,13 @@
+{
+  "type": "oc2r:wrench",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "oc2r:flash_memory"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:flash_memory_onyxos"
+  }
+}

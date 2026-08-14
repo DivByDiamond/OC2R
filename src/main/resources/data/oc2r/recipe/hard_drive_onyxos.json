@@ -2,23 +2,25 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:ingots/iron"
+    "B": {
+      "item": "oc2r:circuit_board"
     },
-    "R": {
-      "tag": "c:dusts/redstone"
+    "E": {
+      "tag": "c:gems/emerald"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
     },
     "T": {
       "item": "oc2r:transistor"
     }
   },
   "pattern": [
-    "ITI",
-    "RRR",
-    "   "
+    "GTG",
+    "EBE"
   ],
   "result": {
     "count": 1,
-    "id": "oc2r:flash_memory_small"
+    "id": "oc2r:hard_drive_onyxos"
   }
 }
