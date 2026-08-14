@@ -135,14 +135,14 @@ public class CSIManager {
                     return;
                 }
                 case ';' -> {
-                    argCount++;
+                    argCount = Math.min(argCount + 1, args.length);
                     hasArg = true;
                     return; // Keep going, we have another argument.
                 }
                 default -> {}
             }
 
-            if (hasArg) argCount++;
+            if (hasArg) argCount = Math.min(argCount + 1, args.length);
 
             terminal.state = Terminal.State.NORMAL;
 
