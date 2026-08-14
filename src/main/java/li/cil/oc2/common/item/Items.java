@@ -132,6 +132,12 @@ public final class Items {
             register(
                     "flash_memory_custom",
                     () -> new FlashMemoryWithExternalDataItem(FirmwareRegistry.MINUX.getId()));
+    public static final DeferredItem<FlashMemoryWithExternalDataItem> FLASH_MEMORY_ONYXOS =
+            register(
+                    "flash_memory_onyxos",
+                    () ->
+                            new FlashMemoryWithExternalDataItem(
+                                    FirmwareRegistry.ONYXOS.getId()));
 
     public static final DeferredItem<FloppyItem> FLOPPY =
             register("floppy", () -> new FloppyItem(512 * Constants.KILOBYTE));

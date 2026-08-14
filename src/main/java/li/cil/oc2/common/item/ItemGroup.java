@@ -60,6 +60,7 @@ public final class ItemGroup {
                                                 output.accept(Items.HARD_DRIVE_MEDIUM.get());
                                                 output.accept(Items.HARD_DRIVE_LARGE.get());
                                                 output.accept(Items.HARD_DRIVE_EXTRA_LARGE.get());
+                                                output.accept(Items.HARD_DRIVE_ONYXOS.get());
                                                 output.accept(Items.CPU_TIER_1.get());
                                                 output.accept(Items.CPU_TIER_2.get());
                                                 output.accept(Items.CPU_TIER_3.get());
@@ -73,6 +74,7 @@ public final class ItemGroup {
                                                 output.accept(Items.FLASH_MEMORY_MEDIUM.get());
                                                 output.accept(Items.FLASH_MEMORY.get());
                                                 output.accept(Items.FLASH_MEMORY_CUSTOM.get());
+                                                output.accept(Items.FLASH_MEMORY_ONYXOS.get());
                                                 output.accept(Items.FLOPPY.get());
                                                 output.accept(Items.FLOPPY_MODERN.get());
                                                 output.accept(Items.REDSTONE_INTERFACE_CARD.get());

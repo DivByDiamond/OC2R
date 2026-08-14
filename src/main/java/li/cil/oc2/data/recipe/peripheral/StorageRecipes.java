@@ -164,5 +164,24 @@ public final class StorageRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_ONYXOS.get())
+                .requires(Items.FLASH_MEMORY.get())
+                .unlockedBy(
+                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
+                .pattern("GTG")
+                .pattern("EBE")
+                .define('G', Tags.Items.INGOTS_GOLD)
+                .define('T', Items.TRANSISTOR.get())
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .define('E', Tags.Items.GEMS_EMERALD)
+                .unlockedBy(
+                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                .save(consumer);
     }
 }
