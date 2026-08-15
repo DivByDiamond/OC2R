@@ -9,7 +9,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 11 (ICH and S
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        int chars = Math.max(args[0], 1);
+        int chars = (argsCount < 1) ? 1 : Math.max(args[0], 1);
         if (state.space) { // SL — Scroll Left
             // Shift all lines in scroll region left by chars, blanks fill right edge.
             chars = Math.min(chars, Terminal.WIDTH);

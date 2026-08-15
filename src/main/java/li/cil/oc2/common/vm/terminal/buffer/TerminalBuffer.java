@@ -229,10 +229,13 @@ public class TerminalBuffer {
     }
 
     private void markDirty(final int y) {
+        final int dirtyLine = terminal.currentPrivateModeState.isAltBufferEnabled()
+                ? y
+                : Terminal.HEIGHT + (terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay);
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask()
-                                .accumulateAndGet(1 << y, (left, right) -> left | right));
+                                .accumulateAndGet(1 << dirtyLine, (left, right) -> left | right));
     }
 
     public void incrementLastLineToDisplay() {
