@@ -63,11 +63,6 @@ public class TerminalBufferWriter {
                     Arrays.fill(terminal.styles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
                 }
             }
-            /* Mark the row dirty so the renderer redraws shifted cells */
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(1 << terminal.y, (prev, next) -> prev | next));
         }
 
         setChar(terminal.x, terminal.y, ch);
