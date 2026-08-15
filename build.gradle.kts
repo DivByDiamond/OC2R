@@ -16,7 +16,7 @@ plugins {
     id("idea")
     id("maven-publish")
     id("net.neoforged.moddev") version "2.0.124"
-
+    id("org.sonarqube") version "7.3.0.8198"
     id("checkstyle")
     id("pmd")
 }
