@@ -4,7 +4,6 @@ import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
-import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 
 public class TerminalBuffer {
     private final Terminal terminal;
