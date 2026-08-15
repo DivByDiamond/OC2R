@@ -150,12 +150,12 @@ public class Terminal {
     }
 
     public void setCursorPos(final int x, final int y) {
-        this.x = Math.max(0, Math.min(WIDTH - 1, x));
-        this.y = Math.max(0, Math.min(HEIGHT - 1, y));
+        this.x = Math.clamp(x, 0, WIDTH - 1);
+        this.y = Math.clamp(y, 0, HEIGHT - 1);
     }
 
     public void setClampedCursorPos(final int x, final int y) {
-        setCursorPos(x, Math.max(scrollFirst, Math.min(scrollLast, y)));
+        setCursorPos(x, Math.clamp(y, scrollFirst, scrollLast));
     }
 
     public void setRelativeCursorPos(final int x, final int y) {

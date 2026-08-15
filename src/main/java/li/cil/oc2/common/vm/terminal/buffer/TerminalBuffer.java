@@ -70,7 +70,7 @@ public class TerminalBuffer {
      * blanks. Does not shift surrounding characters.
      */
     public void clearChars(final int y, final int x, final int count) {
-        final int clamped = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        final int clamped = Math.clamp(count, 0, Terminal.WIDTH - x);
         if (clamped == 0) return;
         final ColorData c = getCurrentBackgroundColor();
         final int from = getLinearIndex(y, x);
@@ -94,7 +94,7 @@ public class TerminalBuffer {
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int clamped = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int clamped = Math.clamp(count, 1, Terminal.WIDTH - x);
         final int remaining = (Terminal.WIDTH - x) - clamped;
         if (remaining <= 0) {
             clearChars(y, x, Terminal.WIDTH - x);
@@ -166,7 +166,7 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int clamped = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int clamped = Math.clamp(count, 1, Terminal.WIDTH - x);
         final int remaining = (Terminal.WIDTH - x) - clamped;
         if (remaining <= 0) {
             clearChars(y, x, Terminal.WIDTH - x);
