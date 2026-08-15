@@ -64,12 +64,26 @@ public class Terminal {
     public boolean savedUseG0 = true;
     public int savedDrawingModeG0;
     public int savedDrawingModeG1;
+    public ColorMode savedForegroundColorMode;
+    public ColorMode savedBackgroundColorMode;
+    public ColorData savedSixteenColor;
+    public ColorData savedSixteenColorBright;
+    public ColorData savedTwoFiftySixColor;
+    public ColorData savedForegroundColor;
+    public ColorData savedBackgroundColor;
     public int altSavedX;
     public int altSavedY;
     public byte altSavedStyle;
     public boolean altSavedUseG0 = true;
     public int altSavedDrawingModeG0;
     public int altSavedDrawingModeG1;
+    public ColorMode altSavedForegroundColorMode;
+    public ColorMode altSavedBackgroundColorMode;
+    public ColorData altSavedSixteenColor;
+    public ColorData altSavedSixteenColorBright;
+    public ColorData altSavedTwoFiftySixColor;
+    public ColorData altSavedForegroundColor;
+    public ColorData altSavedBackgroundColor;
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 
