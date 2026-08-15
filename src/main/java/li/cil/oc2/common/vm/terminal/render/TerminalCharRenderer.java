@@ -63,7 +63,8 @@ public class TerminalCharRenderer {
                                         : (isBold && !dimBoldForBlink) ? TerminalColors.BRIGHT_COLORS
                                         : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
                         case SIXTEEN_COLOR ->
-                                TerminalColors.COLORS[!invertBackground ? color.R : color.G];
+                                (isDim ? TerminalColors.DIM_COLORS : TerminalColors.COLORS)
+                                        [!invertBackground ? color.R : color.G];
                         case TWO_FIFTY_SIX_COLOR ->
                                 TerminalColors.COLORS_256[!invertBackground ? color.R : color.G];
                         case TRUE_COLOR -> color.ToInt();
