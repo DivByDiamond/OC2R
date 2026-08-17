@@ -37,7 +37,7 @@ public class FontAtlas {
 
         for (int x = 0; x < atlasWidth; x++) {
             for (int y = 0; y < atlasHeight; y++) {
-                this.atlasImage.setPixelRGBA(x, y, new Color(0, 0, 0, 0).getRGB());
+                this.atlasImage.setPixelRGBA(x, y, 0); // transparent, ABGR==ARGB for (0,0,0,0)
             }
         }
 
@@ -70,8 +70,16 @@ public class FontAtlas {
         // Copy the glyph into the atlas at the correct position
         for (int y = 0; y < glyph.image.getHeight(); y++) {
             for (int x = 0; x < glyph.image.getWidth(); x++) {
-                int color = glyph.image.getRGB(x, y);
-                atlasImage.setPixelRGBA(currentX + x, currentY + y, color);
+                int argb = glyph.image.getRGB(x, y);
+                // BufferedImage.getRGB() returns ARGB (0xAARRGGBB),
+                // but NativeImage.setPixelRGBA() expects ABGR (0xAABBGGRR).
+                // Swap red and blue channels.
+                int a = (argb >> 24) & 0xFF;
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+                int abgr = (a << 24) | (b << 16) | (g << 8) | r;
+                atlasImage.setPixelRGBA(currentX + x, currentY + y, abgr);
             }
         }
 
@@ -100,7 +108,7 @@ public class FontAtlas {
         for (int y = 0; y < atlasHeight; y++) {
             for (int x = 0; x < atlasWidth; x++) {
                 int color = oldAtlasImage.getPixelRGBA(x, y);
-                newAtlasImage.setPixelRGBA(x, y, color);
+                newAtlasImage.setPixelRGBA(x, y, color); // already ABGR, no swap needed
             }
         }
         oldAtlasImage.close();

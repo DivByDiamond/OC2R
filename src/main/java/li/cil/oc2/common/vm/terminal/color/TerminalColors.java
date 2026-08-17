@@ -4,23 +4,25 @@ import com.google.gson.annotations.SerializedName;
 
 public final class TerminalColors {
     public static final int[] BRIGHT_COLORS = {
-        0x7B7B7B, 0xFF4524, 0x3AFF5B, 0xFFDB10,
-        0x1281FF, 0xFF3ADE, 0x27DDFF, 0xFFFFFF,
+        0x555555, 0xFF5555, 0x55FF55, 0xFFFF55,
+        0x5555FF, 0xFF55FF, 0x55FFFF, 0xFFFFFF,
     };
 
     public static final int[] COLORS = {
-        0x555555, 0xEE3322, 0x33DD44, 0xFFCC11,
-        0x1188EE, 0xDD33CC, 0x22CCDD, 0xEEEEEE,
+        0x000000, 0xAA0000, 0x00AA00, 0xAAAA00,
+        0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
     };
 
     public static final int[] DIM_COLORS = {
-        0x000000, 0x772211, 0x116622, 0x886611,
-        0x115588, 0x771177, 0x116677, 0x777777,
+        0x000000, 0x550000, 0x005500, 0x555500,
+        0x000055, 0x550055, 0x005555, 0x555555,
     };
 
     public static final int[] COLORS_256 = {
-        0x000000, 0x772211, 0x116622, 0x886611, 0x115588, 0x771177, 0x116677, 0x777777,
-        0x555555, 0xEE3322, 0x33DD44, 0xFFCC11, 0x1188EE, 0xDD33CC, 0x22CCDD, 0xEEEEEE,
+        // 0-7: Normal ANSI colors (must match COLORS)
+        0x000000, 0xAA0000, 0x00AA00, 0xAAAA00, 0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
+        // 8-15: Bright ANSI colors (must match BRIGHT_COLORS)
+        0x555555, 0xFF5555, 0x55FF55, 0xFFFF55, 0x5555FF, 0xFF55FF, 0x55FFFF, 0xFFFFFF,
         0x000000, 0x00005f, 0x000087, 0x0000af, 0x0000d7, 0x0000ff, 0x005f00, 0x005f5f,
         0x005f87, 0x005faf, 0x005fd7, 0x005fff, 0x008700, 0x00875f, 0x008787, 0x0087af,
         0x0087d7, 0x0087ff, 0x00af00, 0x00af5f, 0x00af87, 0x00afaf, 0x00afd7, 0x00afff,
@@ -55,6 +57,8 @@ public final class TerminalColors {
 
     public static final ColorData DEFAULT_BACKGROUND_COLOR =
             new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.DEFAULT_BACKGROUND);
+    public static final ColorData DEFAULT_FOREGROUND_COLOR =
+            new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.DEFAULT_FOREGROUND);
     public static final ColorData DEFAULT_BRIGHT_COLORS =
             new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.SIXTEEN_COLOR_BRIGHT);
     public static final ColorData DEFAULT_COLORS =
@@ -79,6 +83,8 @@ public final class TerminalColors {
         SIXTEEN_COLOR_BRIGHT,
         @SerializedName("4")
         DEFAULT_BACKGROUND,
+        @SerializedName("5")
+        DEFAULT_FOREGROUND,
     }
 
     public static final class CursorMode {

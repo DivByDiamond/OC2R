@@ -9,7 +9,7 @@ public class DL extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        terminal.setCursorPos(0, terminal.y);
+        if (terminal.y < terminal.scrollFirst || terminal.y > terminal.scrollLast) return;
 
         int lines = Math.max(args[0], 1);
         int maxLines = terminal.scrollLast - terminal.y + 1;

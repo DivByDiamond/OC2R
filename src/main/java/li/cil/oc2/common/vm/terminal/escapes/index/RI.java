@@ -4,10 +4,10 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class RI {
     public static void execute(Terminal terminal) {
-        if (terminal.y <= terminal.scrollFirst) {
+        if (terminal.y == terminal.scrollFirst) {
             terminal.bufferManager.shiftDownOne();
         } else {
-            terminal.setCursorPos(terminal.x, terminal.y - 1);
+            terminal.setCursorPos(terminal.x, Math.max(terminal.y - 1, 0));
         }
     }
 }

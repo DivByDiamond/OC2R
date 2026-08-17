@@ -9,12 +9,13 @@ public class ED extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
+        int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         if (state.questionMark) {
             System.out.println("DECSED is not implemented");
         } else {
             switch (args[0]) {
                 case 0 -> { // From cursor to end of screen
-                    terminal.bufferManager.clearLine(terminal.y, terminal.x, Terminal.WIDTH);
+                    terminal.bufferManager.clearLine(terminal.y, x, Terminal.WIDTH);
                     for (int iy = terminal.y + 1; iy < Terminal.HEIGHT; iy++) {
                         terminal.bufferManager.clearLine(iy);
                     }
@@ -23,7 +24,7 @@ public class ED extends CSISequenceHandler {
                     for (int iy = 0; iy < terminal.y; iy++) {
                         terminal.bufferManager.clearLine(iy);
                     }
-                    terminal.bufferManager.clearLine(terminal.y, 0, terminal.x + 1);
+                    terminal.bufferManager.clearLine(terminal.y, 0, x + 1);
                 }
                 case 2 -> // Entire screen
                         terminal.bufferManager.clear();

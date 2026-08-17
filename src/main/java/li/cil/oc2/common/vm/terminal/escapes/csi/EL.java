@@ -9,11 +9,12 @@ public class EL extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
+        int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         switch (args[0]) {
             case 0 -> // From cursor to end of line
-                    terminal.bufferManager.clearLine(terminal.y, terminal.x, Terminal.WIDTH);
+                    terminal.bufferManager.clearLine(terminal.y, x, Terminal.WIDTH);
             case 1 -> // From beginning of line to cursor
-                    terminal.bufferManager.clearLine(terminal.y, 0, terminal.x + 1);
+                    terminal.bufferManager.clearLine(terminal.y, 0, x + 1);
             case 2 -> // Entire line containing cursor
                     terminal.bufferManager.clearLine(terminal.y);
             default -> {}

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
-import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 
 public class TerminalBuffer {
     private final Terminal terminal;
@@ -38,7 +37,6 @@ public class TerminalBuffer {
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.Copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
-        terminal.setCursorPos(0, 0);
         terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 
@@ -51,7 +49,7 @@ public class TerminalBuffer {
             case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
             case TRUE_COLOR -> c = terminal.backgroundColor;
             case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_COLORS.Copy();
+            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
         }
         Arrays.fill(terminal.altColorsBackground, c.Copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
@@ -62,7 +60,6 @@ public class TerminalBuffer {
     }
 
     public void clearLine(final int y, final int fromIndex, final int toIndex) {
-        terminal.currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;
         ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;

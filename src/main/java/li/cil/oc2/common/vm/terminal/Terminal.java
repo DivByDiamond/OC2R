@@ -133,12 +133,12 @@ public class Terminal {
     }
 
     public void setClampedCursorPos(final int x, final int y) {
-        setCursorPos(x, Math.max(scrollFirst, Math.min(scrollLast, y)));
+        setCursorPos(x, Math.max(0, Math.min(HEIGHT - 1, y)));
     }
 
     public void setRelativeCursorPos(final int x, final int y) {
         if (currentPrivateModeState.DECOM) {
-            setCursorPos(x, Math.min(scrollFirst + y, scrollLast));
+            setCursorPos(x, Math.max(scrollFirst, Math.min(scrollFirst + y, scrollLast)));
         } else {
             setCursorPos(x, y);
         }
