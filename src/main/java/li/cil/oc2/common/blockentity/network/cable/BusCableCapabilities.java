@@ -25,5 +25,14 @@ final class BusCableCapabilities {
                     return null;
                 },
                 li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get());
+        event.registerBlock(
+                Capabilities.EnergyStorage.BLOCK,
+                (level, pos, state, be, side) -> {
+                    if (be instanceof final BusCableBlockEntity self) {
+                        return self.energy;
+                    }
+                    return null;
+                },
+                li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get());
     }
 }

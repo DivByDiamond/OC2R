@@ -6,12 +6,15 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeManager;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeType;
 import li.cil.oc2.common.blockentity.network.cable.facade.InterfaceNameManager;
 import li.cil.oc2.common.blockentity.network.cable.facade.NeighborListener;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.energy.CableEnergyStorage;
+import li.cil.oc2.common.energy.EnergyTransferManager;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.world.level.LevelUtils;
@@ -27,16 +30,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
-public final class BusCableBlockEntity extends ModBlockEntity {
+public final class BusCableBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
     private static final String INTERFACE_NAMES_TAG_NAME = "interfaceNames";
     private static final String FACADE_TAG_NAME = "facade";
 
     public final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
+    public final CableEnergyStorage energy = new CableEnergyStorage();
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
-
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
     private final ICapabilityInvalidationListener[] neighborListeners =
             new NeighborListener[Constants.BLOCK_FACE_COUNT];
@@ -48,6 +51,12 @@ public final class BusCableBlockEntity extends ModBlockEntity {
 
     public String getInterfaceName(final Direction side) {
         return interfaceNameManager.getInterfaceName(side);
+    }
+
+    @Override
+    public void serverTick() {
+        assert level != null;
+        EnergyTransferManager.distribute(this);
     }
 
     public void setInterfaceName(final Direction side, final String name) {

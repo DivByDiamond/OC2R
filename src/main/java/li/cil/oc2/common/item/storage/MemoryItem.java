@@ -9,7 +9,7 @@ public final class MemoryItem extends AbstractStorageItem {
     @Nullable private String descriptionId;
 
     public MemoryItem(final int defaultCapacity) {
-        super(defaultCapacity);
+        super(createProperties().stacksTo(4), defaultCapacity);
     }
 
     @Override

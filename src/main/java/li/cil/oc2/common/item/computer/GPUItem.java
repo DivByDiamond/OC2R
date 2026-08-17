@@ -10,6 +10,7 @@ public final class GPUItem extends ModItem {
     private final int tier;
 
     public GPUItem(final int width, final int height, final int tier) {
+        super(createProperties().stacksTo(1));
         this.width = width;
         this.height = height;
         this.tier = tier;

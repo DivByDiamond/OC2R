@@ -28,6 +28,8 @@
   "block.oc2r.keyboard.desc": "プロジェクター使用時にキーボード入力を行います。",
   "block.oc2r.internet_gateway": "インターネットゲートウェイ",
   "block.oc2r.internet_gateway.desc": "インターネットアクセスを許可します。",
+  "block.oc2r.speaker": "スピーカー",
+  "block.oc2r.speaker.desc": "バスに接続されたデバイスの音声（トーンとPCMオーディオ）を再生します。",
 
   "item.oc2r.wrench": "Scrench",
   "item.oc2r.wrench.desc": "デバイスの設定または回収を行います。",
@@ -43,6 +45,8 @@
   "item.oc2r.cpu_tier_3.desc": "コンピュータの命令を実行する。",
   "item.oc2r.cpu_tier_4": "CPU ティア4",
   "item.oc2r.cpu_tier_4.desc": "コンピュータの命令を実行する。",
+  "item.oc2r.cpu_tier_inf": "CPU ティアINF",
+  "item.oc2r.cpu_tier_inf.desc": "コンピュータの命令を実行する。",
   "item.oc2r.network_cable": "ネットワークケーブル",
   "item.oc2r.network_cable.desc": "ネットワークコネクターに接続します。",
   "item.oc2r.memory": "メモリ",
@@ -160,5 +164,7 @@
   "subtitles.oc2r.floppy": "フロッピーディスクへのアクセス",
   "subtitles.oc2r.floppy_eject": "フロッピーディスクが取り出されました",
   "subtitles.oc2r.floppy_insert": "フロッピーディスクが挿入されました",
-  "subtitles.oc2r.hdd": "ハードドライブへのアクセス"
+  "subtitles.oc2r.hdd": "ハードドライブへのアクセス",
+  "subtitles.oc2r.post_beep": "コンピューターのPOSTビープ音",
+  "subtitles.oc2r.sound_card_beep": "サウンドカードのビープ音"
 }

@@ -12,6 +12,7 @@ import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutputMessage;
+import li.cil.oc2.common.util.sound.ComputerPost;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
@@ -115,5 +116,12 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     @Override
     protected void handleBootErrorChanged(@Nullable final Component value) {
         owner.terminalManager.sendToClientsTrackingComputer(new ComputerBootErrorMessage(owner, value));
+        if (value == null || value.getString().isEmpty()) {
+            return;
+        }
+        final Level level = owner.getLevel();
+        if (level != null && !level.isClientSide()) {
+            ComputerPost.playBootError(level, owner.getBlockPos(), value);
+        }
     }
 }

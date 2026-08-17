@@ -28,6 +28,8 @@
   "block.oc2r.keyboard.desc": "能在使用投影仪时进行键盘输入。",
   "block.oc2r.internet_gateway": "因特网网关",
   "block.oc2r.internet_gateway.desc": "用于访问因特网。",
+  "block.oc2r.speaker": "扬声器",
+  "block.oc2r.speaker.desc": "播放连接到总线的设备发出的声音（音调和PCM音频）。",
 
   "item.oc2r.wrench": "螺丝刀扳手",
   "item.oc2r.wrench.desc": "配置或（在潜行时）拆卸设备。",
@@ -43,6 +45,8 @@
   "item.oc2r.cpu_tier_3.desc": "用于执行电脑中的指令。",
   "item.oc2r.cpu_tier_4": "T4 CPU",
   "item.oc2r.cpu_tier_4.desc": "用于执行电脑中的指令。",
+  "item.oc2r.cpu_tier_inf": "T∞ CPU",
+  "item.oc2r.cpu_tier_inf.desc": "用于执行电脑中的指令。",
   "item.oc2r.network_cable": "网络线缆",
   "item.oc2r.network_cable.desc": "用于接通网络连接器。",
   "item.oc2r.memory": "内存条",
@@ -160,5 +164,7 @@
   "subtitles.oc2r.floppy": "读写软盘",
   "subtitles.oc2r.floppy_eject": "弹出软盘",
   "subtitles.oc2r.floppy_insert": "插入软盘",
-  "subtitles.oc2r.hdd": "读写硬盘"
+  "subtitles.oc2r.hdd": "读写硬盘",
+  "subtitles.oc2r.post_beep": "电脑 POST 蜂鸣",
+  "subtitles.oc2r.sound_card_beep": "声卡蜂鸣"
 }

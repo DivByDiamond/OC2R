@@ -14,6 +14,16 @@ public final class SoundEvents {
 
     public static final DeferredHolder<SoundEvent, SoundEvent> COMPUTER_RUNNING =
             register("computer_running");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POST_BEEP_FIRMWARE =
+            register("post_beep_firmware");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POST_BEEP_ENERGY =
+            register("post_beep_energy");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POST_BEEP_CPU =
+            register("post_beep_cpu");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POST_BEEP_MEMORY =
+            register("post_beep_memory");
+    public static final DeferredHolder<SoundEvent, SoundEvent> POST_BEEP_UNKNOWN =
+            register("post_beep_unknown");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLOPPY_ACCESS =
             register("floppy_access");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLOPPY_EJECT =
@@ -21,6 +31,8 @@ public final class SoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> FLOPPY_INSERT =
             register("floppy_insert");
     public static final DeferredHolder<SoundEvent, SoundEvent> HDD_ACCESS = register("hdd_access");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SOUND_CARD_BEEP =
+            register("sound_card_beep");
 
     public static void initialize(IEventBus modBus) {
         SOUNDS.register(modBus);

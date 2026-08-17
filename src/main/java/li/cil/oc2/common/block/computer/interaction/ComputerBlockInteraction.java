@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -59,7 +60,11 @@ public final class ComputerBlockInteraction {
             if (player.isShiftKeyDown()) {
                 computer.terminalManager.start();
             } else if (player instanceof final ServerPlayer serverPlayer) {
-                computer.terminalManager.openTerminalScreen(serverPlayer);
+                if (hitResult.getDirection() == state.getValue(HorizontalDirectionalBlock.FACING)) {
+                    computer.terminalManager.openTerminalScreen(serverPlayer);
+                } else {
+                    computer.terminalManager.openInventoryScreen(serverPlayer);
+                }
             }
         }
 

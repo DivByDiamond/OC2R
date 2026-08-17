@@ -8,6 +8,7 @@ import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;
 import li.cil.oc2.common.blockentity.energy.CreativeEnergyBlockEntity;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.blockentity.misc.PciCardCageBlockEntity;
+import li.cil.oc2.common.blockentity.misc.SpeakerBlockEntity;
 import li.cil.oc2.common.blockentity.misc.flash.FlashMemoryFlasherBlockEntity;
 import li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayBlockEntity;
 import li.cil.oc2.common.blockentity.misc.redstone.RedstoneInterfaceBlockEntity;
@@ -73,6 +74,9 @@ public final class BlockEntities {
     public static final DeferredHolder<
                     BlockEntityType<?>, BlockEntityType<InternetGateWayBlockEntity>>
             INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY, InternetGateWayBlockEntity::new);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpeakerBlockEntity>>
+            SPEAKER = register(Blocks.SPEAKER, SpeakerBlockEntity::new);
 
     public static void initialize(IEventBus modBus) {
         BLOCK_ENTITIES.register(modBus);

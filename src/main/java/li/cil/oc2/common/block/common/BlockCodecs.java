@@ -13,6 +13,7 @@ import li.cil.oc2.common.block.keyboard.KeyboardBlock;
 import li.cil.oc2.common.block.misc.InternetGatewayBlock;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.block.misc.RedstoneInterfaceBlock;
+import li.cil.oc2.common.block.misc.SpeakerBlock;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.block.network.NetworkHubBlock;
@@ -64,6 +65,8 @@ public final class BlockCodecs {
     public static final Supplier<MapCodec<InternetGatewayBlock>> INTERNET_GATEWAY =
             BLOCK_TYPES.register(
                     "internet_gateway", () -> MapCodec.unit(InternetGatewayBlock::new));
+    public static final Supplier<MapCodec<SpeakerBlock>> SPEAKER =
+            BLOCK_TYPES.register("speaker", () -> MapCodec.unit(SpeakerBlock::new));
 
     public static void initialize(IEventBus modBus) {
         BLOCK_TYPES.register(modBus);

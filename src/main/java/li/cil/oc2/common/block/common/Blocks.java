@@ -11,6 +11,7 @@ import li.cil.oc2.common.block.keyboard.KeyboardBlock;
 import li.cil.oc2.common.block.misc.InternetGatewayBlock;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.block.misc.RedstoneInterfaceBlock;
+import li.cil.oc2.common.block.misc.SpeakerBlock;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.block.network.NetworkHubBlock;
@@ -57,6 +58,9 @@ public final class Blocks {
 
     public static final DeferredBlock<InternetGatewayBlock> INTERNET_GATEWAY =
             REGISTRY.register("internet_gateway", InternetGatewayBlock::new);
+
+    public static final DeferredBlock<SpeakerBlock> SPEAKER =
+            REGISTRY.register("speaker", SpeakerBlock::new);
 
     public static void initialize(IEventBus modBus) {
         REGISTRY.register(modBus);

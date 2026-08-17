@@ -7,6 +7,8 @@ final class EnergySpecValues {
         // BLOCKS //
         Config.busCableEnergyPerTick = spec.busCableEnergyPerTick.get();
         Config.busInterfaceEnergyPerTick = spec.busInterfaceEnergyPerTick.get();
+        Config.cableEnergyCapacity = spec.cableEnergyCapacity.get();
+        Config.cableEnergyTransferPerTick = spec.cableEnergyTransferPerTick.get();
         Config.computerEnergyPerTick = spec.computerEnergyPerTick.get();
         Config.computerEnergyStorage = spec.computerEnergyStorage.get();
         Config.chargerEnergyPerTick = spec.chargerEnergyPerTick.get();

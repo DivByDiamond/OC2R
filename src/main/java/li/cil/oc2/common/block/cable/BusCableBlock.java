@@ -13,7 +13,7 @@ import li.cil.oc2.common.block.cable.shape.BusCableShapeBuilder;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.item.Items;
+import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -30,6 +30,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -68,19 +70,10 @@ public final class BusCableBlock extends BaseEntityBlock {
 
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
-        BlockState state = defaultBlockState();
-        final Level level = context.getLevel();
-        final BlockPos position = context.getClickedPos();
-        for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry :
-                FACING_TO_CONNECTION_MAP.entrySet()) {
-            final Direction facing = entry.getKey();
-            final BlockPos facingPos = position.relative(facing);
-            if (context.getItemInHand().getItem().equals(Items.BUS_CABLE.get())
-                    && canHaveCableTo(level.getBlockState(facingPos), facing.getOpposite())) {
-                state = state.setValue(entry.getValue(), ConnectionType.CABLE);
-            }
-        }
-        return state;
+        final BlockState state =
+                defaultBlockState().setValue(HAS_CABLE, true).setValue(HAS_FACADE, false);
+        return BusCableStateProperties.recomputeConnections(
+                context.getLevel(), context.getClickedPos(), state);
     }
 
     @Override
@@ -91,21 +84,23 @@ public final class BusCableBlock extends BaseEntityBlock {
             final LevelAccessor level,
             final BlockPos currentPos,
             final BlockPos facingPos) {
-        final EnumProperty<ConnectionType> property = FACING_TO_CONNECTION_MAP.get(facing);
-        if (state.getValue(property) == ConnectionType.INTERFACE) {
-            return state;
+        final BlockState result =
+                BusCableStateProperties.recomputeConnections((Level) level, currentPos, state);
+        if (!result.equals(state)) {
+            for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry :
+                    FACING_TO_CONNECTION_MAP.entrySet()) {
+                final Direction side = entry.getKey();
+                if (state.getValue(entry.getValue()) != result.getValue(entry.getValue())) {
+                    onConnectionTypeChanged(
+                            level,
+                            currentPos,
+                            side,
+                            result.getValue(entry.getValue()) == ConnectionType.NONE);
+                }
+            }
+            return result;
         }
-        final boolean neighborChanged;
-        BlockState result = state;
-        if (result.getValue(HAS_CABLE) && canHaveCableTo(facingState, facing.getOpposite())) {
-            neighborChanged = result.getValue(property) != ConnectionType.CABLE;
-            result = result.setValue(property, ConnectionType.CABLE);
-        } else {
-            neighborChanged = result.getValue(property) != ConnectionType.NONE;
-            result = result.setValue(property, ConnectionType.NONE);
-        }
-        onConnectionTypeChanged(level, currentPos, facing, neighborChanged);
-        return result;
+        return state;
     }
 
     @Override
@@ -153,6 +148,14 @@ public final class BusCableBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(final BlockPos pos, final BlockState state) {
         return BlockEntities.BUS_CABLE.get().create(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state, final BlockEntityType<T> type) {
+        return TickableBlockEntity.createServerTicker(
+                level, type, BlockEntities.BUS_CABLE.get());
     }
 
     @Override

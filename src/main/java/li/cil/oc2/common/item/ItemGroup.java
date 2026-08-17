@@ -43,6 +43,7 @@ public final class ItemGroup {
                                                 output.accept(Items.DISK_DRIVE.get());
                                                 output.accept(Items.FLASH_MEMORY_FLASHER.get());
                                                 output.accept(Items.KEYBOARD.get());
+                                                output.accept(Items.SPEAKER.get());
                                                 output.accept(Items.NETWORK_CONNECTOR.get());
                                                 output.accept(Items.NETWORK_HUB.get());
                                                 output.accept(Items.PROJECTOR.get());

@@ -28,6 +28,8 @@
   "block.oc2r.keyboard.desc": "Allows keyboard input when using a projector.",
   "block.oc2r.internet_gateway": "Internet Gateway",
   "block.oc2r.internet_gateway.desc": "Gives access to the Internet.",
+  "block.oc2r.speaker": "Speaker",
+  "block.oc2r.speaker.desc": "Emits sound (tones and PCM audio) from devices connected to the bus.",
 
   "item.oc2r.wrench": "Scrench",
   "item.oc2r.wrench.desc": "Configures devices and dismantles them (while sneaking).",
@@ -43,6 +45,8 @@
   "item.oc2r.cpu_tier_3.desc": "Processes computer instructions.",
   "item.oc2r.cpu_tier_4": "CPU Tier 4",
   "item.oc2r.cpu_tier_4.desc": "Processes computer instructions.",
+  "item.oc2r.cpu_tier_inf": "CPU Tier INF",
+  "item.oc2r.cpu_tier_inf.desc": "Processes computer instructions.",
   "item.oc2r.gpu_tier_1": "GPU Tier 1",
   "item.oc2r.gpu_tier_1.desc": "Provides a framebuffer for the Monitor.",
   "item.oc2r.gpu_tier_2": "GPU Tier 2",
@@ -179,5 +183,7 @@
   "subtitles.oc2r.floppy": "Floppy access",
   "subtitles.oc2r.floppy_eject": "Floppy ejected",
   "subtitles.oc2r.floppy_insert": "Floppy inserted",
-  "subtitles.oc2r.hdd": "Hard drive access"
+  "subtitles.oc2r.hdd": "Hard drive access",
+  "subtitles.oc2r.post_beep": "Computer POST beep",
+  "subtitles.oc2r.sound_card_beep": "Sound card beep"
 }

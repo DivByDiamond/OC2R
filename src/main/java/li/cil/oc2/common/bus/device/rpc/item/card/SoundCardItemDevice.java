@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc.item.card;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -10,20 +11,28 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.util.sound.SoundClientMessages;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.util.world.BlockLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 @SuppressWarnings("unused")
 public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     private final int COOLDOWN_IN_TICKS =
             TickUtils.toTicks(Duration.ofSeconds(Config.soundCardCoolDownSeconds));
     private static final int MAX_FIND_RESULTS = 25;
+    private static final int MIN_FREQUENCY = 20;
+    private static final int MAX_FREQUENCY = 20000;
+    private static final int MIN_DURATION_MS = 20;
+    private static final int MAX_DURATION_MS = 5000;
+    private static final int PCM_CHUNK_SIZE = 4096;
 
     private final Supplier<Optional<BlockLocation>> location;
     private long gameTimeCooldownExpiresAt;
@@ -111,5 +120,74 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
         }
 
         return matches;
+    }
+
+    @Callback
+    public void beep(
+            @Parameter("frequency") final float frequency,
+            @Parameter("duration") final int durationMs) {
+        validateTone(frequency, durationMs);
+        sendTone(frequency, durationMs);
+    }
+
+    @Callback
+    public void playTone(
+            @Parameter("frequency") final float frequency,
+            @Parameter("duration") final int durationMs) {
+        beep(frequency, durationMs);
+    }
+
+    @Callback
+    public void write(@Parameter("data") final byte[] data) {
+        if (data == null || data.length == 0) throw new IllegalArgumentException();
+        location.get()
+                .ifPresent(
+                        loc -> {
+                            final BlockPos pos = loc.blockPos();
+                            loc.tryGetLevel()
+                                    .ifPresent(
+                                            level -> {
+                                                if (!(level instanceof final Level lvl)) {
+                                                    return;
+                                                }
+                                                for (int offset = 0;
+                                                        offset < data.length;
+                                                        offset += PCM_CHUNK_SIZE) {
+                                                    final int length =
+                                                            Math.min(
+                                                                    PCM_CHUNK_SIZE,
+                                                                    data.length - offset);
+                                                    SoundClientMessages.sendPcm(
+                                                            lvl,
+                                                            pos,
+                                                            Arrays.copyOfRange(
+                                                                    data, offset, offset + length));
+                                                }
+                                            });
+                        });
+    }
+
+    private void sendTone(final float frequency, final int durationMs) {
+        location.get()
+                .ifPresent(
+                        loc -> {
+                            final BlockPos pos = loc.blockPos();
+                            loc.tryGetLevel()
+                                    .ifPresent(
+                                            level -> {
+                                                if (!(level instanceof final Level lvl)) {
+                                                    return;
+                                                }
+                                                SoundClientMessages.sendBeep(
+                                                        lvl, pos, frequency, durationMs);
+                                            });
+                        });
+    }
+
+    private static void validateTone(final float frequency, final int durationMs) {
+        if (frequency < MIN_FREQUENCY || frequency > MAX_FREQUENCY)
+            throw new IllegalArgumentException("frequency must be between >= 20 and <= 20000");
+        if (durationMs < MIN_DURATION_MS || durationMs > MAX_DURATION_MS)
+            throw new IllegalArgumentException("duration must be between >= 20 and <= 5000");
     }
 }

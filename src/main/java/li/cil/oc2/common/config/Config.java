@@ -21,6 +21,8 @@ public final class Config {
 
     public static double busCableEnergyPerTick = 0.1;
     public static double busInterfaceEnergyPerTick = 0.5;
+    public static int cableEnergyCapacity = 3000;
+    public static int cableEnergyTransferPerTick = 256;
     public static int computerEnergyPerTick = 10;
     public static int computerEnergyStorage = 2000;
     public static int chargerEnergyPerTick = 2500;

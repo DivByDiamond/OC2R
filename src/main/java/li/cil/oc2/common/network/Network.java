@@ -5,6 +5,8 @@ import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerPowerMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
+import li.cil.oc2.common.network.message.computer.SoundCardBeepMessage;
+import li.cil.oc2.common.network.message.computer.SoundCardPcmMessage;
 import li.cil.oc2.common.network.message.computer.misc.FirmwareFlasherMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalInputMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutputMessage;
@@ -62,6 +64,8 @@ public final class Network {
         registrar.playToClient(ComputerRunStateMessage.TYPE, ComputerRunStateMessage.STREAM_CODEC, ComputerRunStateMessage::handleMessage);
         registrar.playToClient(ComputerBusStateMessage.TYPE, ComputerBusStateMessage.STREAM_CODEC, ComputerBusStateMessage::handleMessage);
         registrar.playToClient(ComputerBootErrorMessage.TYPE, ComputerBootErrorMessage.STREAM_CODEC, ComputerBootErrorMessage::handleMessage);
+        registrar.playToClient(SoundCardBeepMessage.TYPE, SoundCardBeepMessage.STREAM_CODEC, SoundCardBeepMessage::handleMessage);
+        registrar.playToClient(SoundCardPcmMessage.TYPE, SoundCardPcmMessage.STREAM_CODEC, SoundCardPcmMessage::handleMessage);
         registrar.playToServer(ComputerPowerMessage.TYPE, ComputerPowerMessage.STREAM_CODEC, ComputerPowerMessage::handleMessage);
         registrar.playToServer(MonitorPowerMessage.TYPE, MonitorPowerMessage.STREAM_CODEC, MonitorPowerMessage::handleMessage);
         registrar.playToClient(MonitorPowerMessageForwarded.TYPE, MonitorPowerMessageForwarded.STREAM_CODEC, MonitorPowerMessageForwarded::handleMessage);

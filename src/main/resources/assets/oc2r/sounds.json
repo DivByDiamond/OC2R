@@ -10,6 +10,51 @@
       }
     ]
   },
+  "post_beep_firmware": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.post_beep",
+    "sounds": [
+      "oc2r:post_beep_firmware"
+    ]
+  },
+  "post_beep_energy": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.post_beep",
+    "sounds": [
+      "oc2r:post_beep_energy"
+    ]
+  },
+  "post_beep_cpu": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.post_beep",
+    "sounds": [
+      "oc2r:post_beep_cpu"
+    ]
+  },
+  "post_beep_memory": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.post_beep",
+    "sounds": [
+      "oc2r:post_beep_memory"
+    ]
+  },
+  "post_beep_unknown": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.post_beep",
+    "sounds": [
+      "oc2r:post_beep_unknown"
+    ]
+  },
+  "sound_card_beep": {
+    "category": "block",
+    "subtitle": "subtitles.oc2r.sound_card_beep",
+    "sounds": [
+      {
+        "name": "oc2r:post_beep_unknown",
+        "stream": true
+      }
+    ]
+  },
   "floppy_access": {
     "category": "block",
     "subtitle": "subtitles.oc2r.floppy",

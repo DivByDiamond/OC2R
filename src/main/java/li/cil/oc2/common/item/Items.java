@@ -59,6 +59,7 @@ public final class Items {
     public static final DeferredItem<Item> VXLAN_HUB = register(Blocks.VXLAN_HUB);
     public static final DeferredItem<Item> PCI_CARD_CAGE = register(Blocks.PCI_CARD_CAGE);
     public static final DeferredItem<Item> INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY);
+    public static final DeferredItem<Item> SPEAKER = register(Blocks.SPEAKER);
 
     public static final DeferredItem<Item> WRENCH = register("wrench", WrenchItem::new);
     public static final DeferredItem<Item> MANUAL = register("manual", ManualItem::new);

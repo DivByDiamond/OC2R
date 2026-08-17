@@ -55,7 +55,8 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.FLASH_MEMORY_SMALL.get(),
                         Items.FLASH_MEMORY_MEDIUM.get(),
                         Items.FLASH_MEMORY.get(),
-                        Items.FLASH_MEMORY_CUSTOM.get());
+                        Items.FLASH_MEMORY_CUSTOM.get(),
+                        Items.FLASH_MEMORY_ONYXOS.get());
         tag(DEVICES_FLOPPY).add(Items.FLOPPY.get(), Items.FLOPPY_MODERN.get());
         tag(DEVICES_CARD)
                 .add(
@@ -82,6 +83,7 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.FLASH_MEMORY_MEDIUM.get(),
                         Items.FLASH_MEMORY.get(),
                         Items.FLASH_MEMORY_CUSTOM.get(),
+                        Items.FLASH_MEMORY_ONYXOS.get(),
                         Items.HARD_DRIVE_SMALL.get(),
                         Items.HARD_DRIVE_MEDIUM.get(),
                         Items.HARD_DRIVE_LARGE.get(),
