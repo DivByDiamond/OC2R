@@ -60,7 +60,6 @@ public class TerminalBuffer {
     }
 
     public void clearLine(final int y, final int fromIndex, final int toIndex) {
-        terminal.currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;
         ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;
