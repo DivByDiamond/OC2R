@@ -10,18 +10,23 @@ public class SGR extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        for (int i = 0; i < Math.max(1, argCount); i++) {
+        int max = Math.max(1, argCount);
+        int i = 0;
+        while (i < max) {
             int v1 = args[i];
             if (v1 == 38 || v1 == 48) {
                 int index = i + 1;
-                if (index >= Math.max(1, argCount)) continue;
+                if (index >= max) {
+                    i++;
+                    continue;
+                }
                 int v2 = args[index];
                 if (v1 == 38) {
                     if (v2 == 5 && index + 1 < argCount) {
                         terminal.currentForegroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.R = args[++index];
-                        i = index;
+
                     } else if (v2 == 2 && index + 3 < argCount) {
                         terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.foregroundColor =
@@ -30,14 +35,14 @@ public class SGR extends CSISequenceHandler {
                                         args[++index],
                                         args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
-                        i = index;
+
                     }
                 } else {
                     if (v2 == 5 && index + 1 < argCount) {
                         terminal.currentBackgroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.G = args[++index];
-                        i = index;
+
                     } else if (v2 == 2 && index + 3 < argCount) {
                         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.backgroundColor =
@@ -46,13 +51,17 @@ public class SGR extends CSISequenceHandler {
                                         args[++index],
                                         args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
-                        i = index;
+
                     }
                 }
+                // Skip consumed sub-args. If nothing matched, still skip v2
+                // so it isn't re-read as a top-level SGR code.
+                i = index + 1;
                 continue;
             }
 
             selectStyle(terminal, v1);
+            i++;
         }
     }
 
