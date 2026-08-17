@@ -3,6 +3,7 @@ package li.cil.oc2.common.block.cable;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.object.Callbacks;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
@@ -155,8 +156,12 @@ public final class BusCableStateProperties {
 
     private static boolean isAutoConnectable(
             final Level level, final BlockPos pos, final Direction side) {
-        return level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side) != null
-                || level.getCapability(Capabilities.DeviceBusElement.BLOCK, pos, side) != null;
+        if (level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side) != null
+                || level.getCapability(Capabilities.DeviceBusElement.BLOCK, pos, side) != null) {
+            return true;
+        }
+        final BlockEntity blockEntity = level.getBlockEntity(pos);
+        return blockEntity != null && Callbacks.hasMethods(blockEntity);
     }
 
     public static int getPartCount(final BlockState state) {

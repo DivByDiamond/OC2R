@@ -54,13 +54,13 @@ public class EnergySpec {
                 builder.comment(
                                 "The maximum amount of energy a bus cable transfers to each"
                                         + " neighbor per tick")
-                        .defineInRange("cableEnergyTransferPerTick", 256, 0, Integer.MAX_VALUE);
+                        .defineInRange("cableEnergyTransferPerTick", 1024, 0, Integer.MAX_VALUE);
         computerEnergyPerTick =
                 builder.comment("The amount of energy consumed per tick by a computer")
                         .defineInRange("computerEnergyPerTick", 10, 0, Integer.MAX_VALUE);
         computerEnergyStorage =
                 builder.comment("The amount of energy stored in a computer")
-                        .defineInRange("computerEnergyStorage", 2000, 0, Integer.MAX_VALUE);
+                        .defineInRange("computerEnergyStorage", 8000, 0, Integer.MAX_VALUE);
         chargerEnergyPerTick =
                 builder.comment("The amount of energy consumed per tick by a charger")
                         .defineInRange("chargerEnergyPerTick", 2500, 0, Integer.MAX_VALUE);

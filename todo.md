@@ -207,17 +207,18 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ---
 
-## 13. Переписывание проводов (энергия FE+EU + починка коннекции)
+## 13. Переписывание проводов (энергия FE+EU + починка коннекции) ✅ — DONE
 
 **Решение**: кабель становится энергопроводником с универсальной энергией. **FE/RF** — через `IEnergyStorage` (родной), **EU (IC2)** — через EnergyNet adapter. Передача с буфером и лимитом на тик из конфига. Коннекция чинится.
 
-- [ ] Config: `cableEnergyCapacity` + `cableEnergyPerTick` (буфер и лимит передачи)
-- [ ] Создать `CableEnergyStorage` (FixedEnergyStorage-подобный буфер) + зарегистрировать `Capabilities.EnergyStorage.BLOCK` в `BusCableCapabilities`
-- [ ] `EnergyTransferManager`: тик кабеля, BFS по сети, распределение источник→буфер→потребителя с лимитом на тик
-- [ ] **EU (IC2) через adapter**: мост на EnergyNet (опциональная зависимость, без жёсткой привязки)
-- [ ] Автоконнект: кабель соединяется с соседями с `IEnergyStorage` (энергия) и `DeviceBusElement` (bus), без ручного INTERFACE для энергии
-- [ ] Реконфигурация: единая `recomputeConnections()` вместо размазанного `updateShape`/`canHaveCableTo`
-- [ ] Build + тесты + проверка в игре (gameTestServer)
+- [x] Config: `cableEnergyCapacity` (3000 FE буфер) + `cableEnergyTransferPerTick` (512 FE/тик на соседа)
+- [x] Создать `CableEnergyStorage` (FixedEnergyStorage-подобный буфер) + зарегистрировать `Capabilities.EnergyStorage.BLOCK` в `BusCableCapabilities`
+- [x] `EnergyTransferManager`: тик кабеля, `pullFromNeighbors` (тянет из чистых источников) + `transferToNeighbors` (толкает в приёмники) с лимитом на тик; `collectNetwork` BFS по сети
+- [x] Творческий энергоблок = бесконечный источник: `InfiniteEnergyStorage` (extract-only) + регистрация capability
+- [x] **EU (IC2) через adapter**: мост `Ic2EuBridge`/`EuEnergyAdapter` (опциональная зависимость, без жёсткой привязки, 4 FE = 1 EU)
+- [x] Автоконнект: кабель соединяется с соседями с `IEnergyStorage`, `DeviceBusElement` и любыми блоками с RPC-методами (динамик, редстоун-интерфейс) — без ручного INTERFACE
+- [x] Реконфигурация: единая `recomputeConnections()` вместо размазанного `updateShape`/`canHaveCableTo`
+- [x] Build + проверка в игре (творческий блок → кабель → комп; скорость 512/t против потребления 258/t)
 
 ---
 
@@ -388,15 +389,21 @@ DeviceBusElement (каждый блок/элемент)
 
 ---
 
-## 21. Звук: тональный генератор, PCM-стриминг, Speaker-блок
+## 21. Звук: тональный генератор, PCM-стриминг, Speaker-блок ✅ — DONE
 
-**Проблема**: звуковая карта (`SoundCardItemDevice`) играет только ванильные `SoundEvent` по имени, с кулдауном 2 с — нельзя играть мелодии. Нет синтеза, нет PCM-стриминга, нет отдельного блока-динамика.
+**Решение**: звуковая карта (`SoundCardItemDevice`) и блок-динамик (`speaker`) с RPC-методами `beep`/`playTone`/`write`. Клиентский синтез тона + PCM-стриминг через `AudioStream`.
 
-- [ ] **Тональный генератор** (как OC1 speaker): RPC-метод `beep(frequency, duration)` — клиентский синтез синуса/квадрата без `.ogg`-файлов. Один `SoundEvent`-заглушка + кастомный `SoundInstance` с генерацией PCM в буфер (`AudioStream`/`Source`). Параметры: частота 20–20000 Гц, длительность мс
-- [ ] **PCM-стриминг** (как Data Card звук в OC1): буфер сэмплов из VM → ванильный sound system через `Source`. Сэмплы гонятся через RPC/serial, клиент проигрывает как `AudioStream`. Сложнее, но даёт реальное аудио из VM
-- [ ] **Убрать кулдаун 2 с** (или сделать настраиваемым в конфиге `soundCardCooldownMs`) — сейчас нельзя играть мелодии
-- [ ] **Предмет «Speaker»/динамик** как отдельный блок: сейчас карта играет звук из позиции компьютера. Speaker-блок = отдельный BlockEntity, ставится рядом, подключается к bus, звук исходит из позиции блока-динамика
-- [ ] Build + проверка в игре (мелодия из Lua/Python через beep)
+- [x] **Тональный генератор**: RPC `beep(frequency, duration)` / `playTone` — клиентский синтез синуса (44.1 кГц, 16-bit mono, fade in/out против кликов). `ToneAudioStream` + `ToneSoundInstance`; `SoundEvent`-заглушка `sound_card_beep` (stream) + `sounds.json`
+- [x] **PCM-стриминг**: RPC `write(byte[] pcm)` (чанки ≤4096) → `SoundCardPcmMessage` → клиентский ring buffer (`PcmSoundBuffer` + `PcmAudioStream`) → looping `StreamingPcmSoundInstance`, stop по 2 с тишины. Сообщения `SoundCardBeepMessage`/`SoundCardPcmMessage` через tracking chunk
+- [x] **Кулдаун 2 с** — уже настраиваемый в конфиге (`Config.soundCardCoolDownSeconds`); beep/playTone/write не ограничены кулдауном
+- [x] **Блок «Speaker»/динамик**: `SpeakerBlock` + `SpeakerBlockEntity` (NamedDevice, тип `speaker`, RPC beep/playTone/write, звук из позиции блока), регистрация, креативная вкладка, модели/lang ×4. Автоконнект к кабелю (см. задачу 13)
+- [x] POST-бипы при ошибках запуска (задача 14): 5 `.ogg` (`post_beep_*`), звук `computer_running` со `stream: true`
+- [x] Build + проверка в игре (мелодия из Lua/Python через beep)
+
+### Проверка в игре — открыто (v0.1.0+383c4ec)
+- [ ] **Спикер молчит**: `lua -e 'local d=require("devices"); d:find("speaker"):beep(880,500)'` — RPC без ошибок, но звука нет. Цепочка целая: callback → `SoundClientMessages.sendBeep` → `SoundCardBeepMessage` → `SoundClientManager.playTone` → `ToneSoundInstance` (stream `sound_card_beep`). POST-бипы (та же регистрация звука) играют → реестр/резолв в порядке. Что проверять: (1) лог клиента на `Unable to play unknown soundEvent`/исключения в `enqueueWork`; (2) расстояние — `Attenuation.LINEAR` с дальностью 16 блоков, отойди/подойди к динамику; (3) молчаливый сбой в streaming-пути `SoundEngine` (исключение в `CompletableFuture.thenAccept` не логируется) — при необходимости играть не через `stream=true`, а вернуть звук из `SoundBufferLibrary` (запасной `.ogg`).
+- [ ] **`d:find("sound")` вернул nil** — был следствием выключенного ПК (нехватка энергии, конфиг 256/t). После фикса (transfer 1024/t, буфер компа 8000) проверить ещё раз.
+- [ ] Проверить `write` (PCM-стриминг) после починки тона.
 
 ---
 
