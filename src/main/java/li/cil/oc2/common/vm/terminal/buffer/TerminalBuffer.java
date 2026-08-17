@@ -49,7 +49,7 @@ public class TerminalBuffer {
             case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
             case TRUE_COLOR -> c = terminal.backgroundColor;
             case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_COLORS.Copy();
+            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
         }
         Arrays.fill(terminal.altColorsBackground, c.Copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
