@@ -10,14 +10,20 @@ public class TBC extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
+        boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         if (args[0] == 0) {
             // Clear tab at current column
-            if (terminal.x >= 0 && terminal.x < Terminal.WIDTH) {
-                terminal.tabs[terminal.x] = false;
+            int x = Math.min(terminal.x, Terminal.WIDTH - 1);
+            if (x >= 0) {
+                if (useAltBuffer)
+                    terminal.altTabs[x] = false;
+                else
+                    terminal.tabs[x] = false;
             }
         } else if (args[0] == 3) {
             // Clear all tabs
             Arrays.fill(terminal.tabs, false);
+            Arrays.fill(terminal.altTabs, false);
         }
     }
 }
