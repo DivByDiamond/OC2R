@@ -14,13 +14,15 @@ public class SGR extends CSISequenceHandler {
             int v1 = args[i];
             if (v1 == 38 || v1 == 48) {
                 int index = i + 1;
+                if (index >= Math.max(1, argCount)) continue;
                 int v2 = args[index];
                 if (v1 == 38) {
-                    if (v2 == 5) {
+                    if (v2 == 5 && index + 1 < argCount) {
                         terminal.currentForegroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.R = args[++index];
-                    } else if (v2 == 2) {
+                        i = index;
+                    } else if (v2 == 2 && index + 3 < argCount) {
                         terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.foregroundColor =
                                 new TerminalColors.ColorData(
@@ -28,13 +30,15 @@ public class SGR extends CSISequenceHandler {
                                         args[++index],
                                         args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
+                        i = index;
                     }
                 } else {
-                    if (v2 == 5) {
+                    if (v2 == 5 && index + 1 < argCount) {
                         terminal.currentBackgroundColorMode =
                                 TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
                         terminal.twoFiftySixColor.G = args[++index];
-                    } else if (v2 == 2) {
+                        i = index;
+                    } else if (v2 == 2 && index + 3 < argCount) {
                         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
                         terminal.backgroundColor =
                                 new TerminalColors.ColorData(
@@ -42,9 +46,10 @@ public class SGR extends CSISequenceHandler {
                                         args[++index],
                                         args[++index],
                                         TerminalColors.ColorMode.TRUE_COLOR);
+                        i = index;
                     }
                 }
-                return;
+                continue;
             }
 
             selectStyle(terminal, v1);

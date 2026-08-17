@@ -37,7 +37,6 @@ public class TerminalBuffer {
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.Copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
-        terminal.setCursorPos(0, 0);
         terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 

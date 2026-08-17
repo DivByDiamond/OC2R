@@ -66,7 +66,7 @@ public final class TerminalColors {
             new ColorData(238, 238, 238, ColorMode.TRUE_COLOR);
     public static final ColorData DEFAULT_TRUE_COLOR_BACKGROUND =
             new ColorData(0, 0, 0, ColorMode.TRUE_COLOR);
-    public static final int TAB_WIDTH = 4;
+    public static final int TAB_WIDTH = 8;
 
     public enum ColorMode {
         @SerializedName("0")
