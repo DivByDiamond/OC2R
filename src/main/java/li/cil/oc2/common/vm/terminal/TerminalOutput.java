@@ -77,10 +77,8 @@ class TerminalOutput {
                                                     : !terminal.tabs[terminal.x]));
                                 }
                             }
-                            case (byte) '\b' -> {
-                                int clampedX = Math.min(terminal.x, Terminal.WIDTH - 1);
-                                terminal.setCursorPos(Math.max(0, clampedX - 1), terminal.y);
-                            }
+                            case (byte) '\b' ->
+                                    terminal.setCursorPos(Math.max(0, terminal.x - 1), terminal.y);
 
                             default -> {
                                 terminal.bufferWriter.putChar(decoder.getCodepoint());
