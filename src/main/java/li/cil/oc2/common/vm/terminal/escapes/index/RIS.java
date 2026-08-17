@@ -26,6 +26,7 @@ public class RIS {
         terminal.useG0 = true;
         terminal.bufferManager.clear();
         terminal.bufferManager.clearAlt();
+        terminal.setCursorPos(0, 0);
         Arrays.fill(terminal.buffer, ' ');
         Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.Copy());
         Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());
