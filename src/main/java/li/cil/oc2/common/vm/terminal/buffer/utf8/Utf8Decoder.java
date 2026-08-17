@@ -47,7 +47,8 @@ public class Utf8Decoder {
                 continuationByte = false;
                 bytesToRead = 0;
                 bytesRead = 0;
-                return false;
+                codepoint = ch;
+                return true;
             }
             bytesRead++;
             codepoint |= (ch & 0x3F) << ((bytesToRead - bytesRead) * 6);
