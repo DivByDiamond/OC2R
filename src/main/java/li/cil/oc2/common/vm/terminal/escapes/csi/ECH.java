@@ -11,6 +11,7 @@ public class ECH extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
+        int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         int chars = args[0];
         TerminalColors.ColorData c;
         switch (terminal.currentBackgroundColorMode) {
@@ -21,11 +22,11 @@ public class ECH extends CSISequenceHandler {
             default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
         }
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            int fromIndex = terminal.x + terminal.y * Terminal.WIDTH;
+            int fromIndex = x + terminal.y * Terminal.WIDTH;
             int toIndex =
                     fromIndex
                             + Math.max(
-                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
+                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.altBuffer, fromIndex, toIndex, ' ');
             Arrays.fill(
                     terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
@@ -33,13 +34,13 @@ public class ECH extends CSISequenceHandler {
             Arrays.fill(terminal.altStyles, fromIndex, toIndex, TerminalColors.DEFAULT_STYLE);
         } else {
             int fromIndex =
-                    terminal.x
+                    x
                             + (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
                                     * Terminal.WIDTH;
             int toIndex =
                     fromIndex
                             + Math.max(
-                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - terminal.x), 1);
+                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.buffer, fromIndex, toIndex, ' ');
             Arrays.fill(terminal.colors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
             Arrays.fill(terminal.colorsBackground, fromIndex, toIndex, c.Copy());
