@@ -9,6 +9,8 @@ public class IL extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
+        if (terminal.y < terminal.scrollFirst || terminal.y > terminal.scrollLast) return;
+
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         int lines = Math.max(args[0], 1);
         int maxLines = terminal.scrollLast - terminal.y + 1;
