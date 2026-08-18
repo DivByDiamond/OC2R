@@ -1,6 +1,7 @@
 package li.cil.oc2.common.container;
 
 import li.cil.oc2.api.API;
+import li.cil.oc2.client.gui.ScreenRegistry;
 import li.cil.oc2.client.gui.screen.computer.ComputerContainerScreen;
 import li.cil.oc2.client.gui.screen.computer.ComputerTerminalScreen;
 import li.cil.oc2.client.gui.screen.monitor.MonitorDisplayScreen;
@@ -64,11 +65,11 @@ public final class Containers {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(COMPUTER.get(), ComputerContainerScreen::new);
-        event.register(COMPUTER_TERMINAL.get(), ComputerTerminalScreen::new);
-        event.register(MONITOR.get(), MonitorDisplayScreen::new);
-        event.register(ROBOT.get(), RobotContainerScreen::new);
-        event.register(ROBOT_TERMINAL.get(), RobotTerminalScreen::new);
-        event.register(NETWORK_TUNNEL.get(), NetworkTunnelScreen::new);
+        ScreenRegistry.register(event, COMPUTER, ComputerContainerScreen::new);
+        ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
+        ScreenRegistry.register(event, MONITOR, MonitorDisplayScreen::new);
+        ScreenRegistry.register(event, ROBOT, RobotContainerScreen::new);
+        ScreenRegistry.register(event, ROBOT_TERMINAL, RobotTerminalScreen::new);
+        ScreenRegistry.register(event, NETWORK_TUNNEL, NetworkTunnelScreen::new);
     }
 }
