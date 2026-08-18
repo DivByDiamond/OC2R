@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 
 public class ECH extends CSISequenceHandler {
@@ -50,6 +51,8 @@ public class ECH extends CSISequenceHandler {
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask()
-                                .accumulateAndGet(1 << terminal.y, (left, right) -> left | right));
+                                .accumulateAndGet(
+                                        1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y),
+                                        (left, right) -> left | right));
     }
 }

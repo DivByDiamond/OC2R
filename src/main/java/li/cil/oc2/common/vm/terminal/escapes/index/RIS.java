@@ -10,7 +10,6 @@ public class RIS {
     public static void execute(Terminal terminal) {
         terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
-        terminal.Use1006 = false;
         terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.Copy();
         terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.Copy();
         terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();

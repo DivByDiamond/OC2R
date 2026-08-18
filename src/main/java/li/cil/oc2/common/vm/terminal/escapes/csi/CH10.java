@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -105,7 +106,8 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                     model ->
                             model.getDirtyMask()
                                     .accumulateAndGet(
-                                            1 << terminal.y, (left, right) -> left | right));
+                                            1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y),
+                                            (left, right) -> left | right));
         }
     }
 }

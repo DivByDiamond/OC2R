@@ -114,7 +114,10 @@ public class TerminalBuffer {
         }
         terminal.renderers.forEach(
                 model ->
-                        model.getDirtyMask().accumulateAndGet(1 << y, (prev, next) -> prev | next));
+                        model.getDirtyMask()
+                                .accumulateAndGet(
+                                        1 << TerminalBufferWriter.getDirtyRow(terminal, y),
+                                        (prev, next) -> prev | next));
     }
 
     public void incrementLastLineToDisplay() {

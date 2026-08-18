@@ -605,7 +605,7 @@ DeviceBusElement (каждый блок/элемент)
 
 ### Блокеры
 
-- [ ] **Б1 — `clearLine()` сбрасывает текущий цвет переднего плана**
+- [x] **Б1 — `clearLine()` сбрасывает текущий цвет переднего плана**
   `[buffer/TerminalBuffer.java:65]` — `terminal.currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;` внутри очистки строки.
   После EL/ED/DL программа в truecolor/256-цветах начинает писать в 16-цветную палитру.
   Фикс: удалить строку 65 + тест: `CSI 38;2;r;g;b` + `CSI K` + символ → цвет не меняется.
@@ -624,12 +624,12 @@ DeviceBusElement (каждый блок/элемент)
 
 ### Major
 
-- [ ] **ED (CSI J) case 2 двигает курсор домой**
+- [x] **ED (CSI J) case 2 двигает курсор домой**
   `[TerminalBuffer.java:41]`, `[escapes/csi/ED.java:28-29]`
   `clear()` вызывает `setCursorPos(0,0)`. По VT100 ED не должен трогать курсор.
   Фикс: отдельный `clearScreen()` без перемещения курсора.
 
-- [ ] **SGR 38/48 обрывает последовательность**
+- [x] **SGR 38/48 обрывает последовательность**
   `[escapes/csi/SGR.java:47]`
   `return;` после обработки 38/48 — `CSI 38;5;196;1m` теряет bold, `...;48;5;52m` теряет фон.
   Фикс: `i = index; continue;` вместо `return`.
@@ -661,23 +661,23 @@ DeviceBusElement (каждый блок/элемент)
 
 ### Minor
 
-- [ ] **TBC очищает только main tabs, HTS пишет в altTabs**
+- [x] **TBC очищает только main tabs, HTS пишет в altTabs**
   `[escapes/csi/TBC.java:13-21]`, `[escapes/HTS.java:8-10]` — согласовать.
 
 - [ ] **getInput() щёлкает вид вниз без пометки dirty**
   `[TerminalIO.java:42-43]` — после прокрутки вверх + нажатия клавиши экран остаётся старым.
 
-- [ ] **Dirty-маска сырым `y` при прокрутке**
+- [x] **Dirty-маска сырым `y` при прокрутке**
   `[CH10.java:104]`, `[CH11.java:91,162]`, `[ECH.java:52]`, `[TerminalBuffer.java:120]`
   Используют `1 << y` вместо `localY`-трансформации из `setChar` (TerminalBufferWriter.java:138-143).
 
-- [ ] **`ColorData()` — локальная переменная `Mode` вместо поля**
+- [x] **`ColorData()` — локальная переменная `Mode` вместо поля**
   `[color/TerminalColors.java:117-123]` — `Mode` остаётся null, рендер может упасть по NPE.
 
-- [ ] **Двойной `lock.lock()`**
+- [x] **Двойной `lock.lock()`**
   `[TerminalOutput.java:43,46]` — реентрантный, не крашит, но маскирует границы. Убрать внутренний.
 
-- [ ] **Мёртвые поля Terminal**
+- [x] **Мёртвые поля Terminal**
   `[Terminal.java:25,78-81]` — `Use1006`, `continuationByte`, `bytesRead`, `bytesToRead`, `unicode` — удалить.
 
 - [ ] **Сериализуемость/размер NBT терминала**

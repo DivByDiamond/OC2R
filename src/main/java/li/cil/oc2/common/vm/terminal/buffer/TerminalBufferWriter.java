@@ -143,4 +143,12 @@ public class TerminalBufferWriter {
                                     .accumulateAndGet(1 << (localY), (prev, next) -> prev | next));
         }
     }
+
+    public static int getDirtyRow(final Terminal terminal, final int y) {
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            return y;
+        }
+        int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
+        return Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
+    }
 }

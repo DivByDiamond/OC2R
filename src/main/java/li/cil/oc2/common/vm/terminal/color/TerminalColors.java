@@ -125,7 +125,7 @@ public final class TerminalColors {
             R = 0;
             G = 0;
             B = 0;
-            ColorMode Mode = ColorMode.SIXTEEN_COLOR;
+            Mode = ColorMode.SIXTEEN_COLOR;
         }
 
         public ColorData(final int r, final int g, final int b, final ColorMode mode) {

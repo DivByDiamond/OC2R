@@ -22,8 +22,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 @Serialized
 public class Terminal {
-    public boolean Use1006 = false;
-
     public static final int WIDTH = 80;
     public static final int HEIGHT = 24;
     public static final int CHAR_WIDTH = 8;
@@ -75,10 +73,6 @@ public class Terminal {
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     public transient boolean displayOnly;
     public transient boolean hasPendingBell;
-    public boolean continuationByte;
-    public int unicode;
-    public int bytesRead;
-    public int bytesToRead;
     public boolean useG0 = true;
     public int drawingModeG0;
     public int drawingModeG1;

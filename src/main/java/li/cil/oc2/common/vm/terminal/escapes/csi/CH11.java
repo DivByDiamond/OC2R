@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 
 public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and SL)
@@ -88,7 +89,9 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask()
-                                .accumulateAndGet(1 << y, (left, right) -> left | right));
+                                .accumulateAndGet(
+                                        1 << TerminalBufferWriter.getDirtyRow(terminal, y),
+                                        (left, right) -> left | right));
     }
 
     private void shiftRight(int chars) {
@@ -159,6 +162,8 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask()
-                                .accumulateAndGet(1 << terminal.y, (left, right) -> left | right));
+                                .accumulateAndGet(
+                                        1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y),
+                                        (left, right) -> left | right));
     }
 }
