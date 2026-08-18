@@ -100,7 +100,7 @@ public class Terminal {
     transient DCSManager dcsManager = new DCSManager(this);
     transient APCManager apcManager = new APCManager(this);
     public transient TerminalIO io = new TerminalIO(this);
-    transient TerminalClient client = new TerminalClient(this);
+    private transient TerminalClient client;
 
     public Terminal() {
         bufferManager = new TerminalBuffer(this);
@@ -118,7 +118,7 @@ public class Terminal {
 
     @OnlyIn(Dist.CLIENT)
     public RendererView getRenderer() {
-        return client.getRenderer();
+        return client().getRenderer();
     }
 
     public void setCursorPos(final int x, final int y) {
@@ -140,16 +140,30 @@ public class Terminal {
 
     @OnlyIn(Dist.CLIENT)
     public void setDisplayOnly(final boolean value) {
-        client.setDisplayOnly(value);
+        client().setDisplayOnly(value);
     }
 
     @OnlyIn(Dist.CLIENT)
     public void releaseRenderer(final RendererView renderer) {
-        client.releaseRenderer(renderer);
+        client().releaseRenderer(renderer);
     }
 
     @OnlyIn(Dist.CLIENT)
     public void clientTick() {
-        client.clientTick();
+        client().clientTick();
+    }
+
+    private TerminalClient client() {
+        TerminalClient result = client;
+        if (result == null) {
+            synchronized (this) {
+                result = client;
+                if (result == null) {
+                    result = new TerminalClient(this);
+                    client = result;
+                }
+            }
+        }
+        return result;
     }
 }

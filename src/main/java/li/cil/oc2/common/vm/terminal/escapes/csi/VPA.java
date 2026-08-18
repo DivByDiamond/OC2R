@@ -8,8 +8,12 @@ public class VPA extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {1};
+    }
+
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        int row = (argsCount > 0 && args[0] > 0) ? args[0] : 1;
-        terminal.setRelativeCursorPos(terminal.x, row - 1);
+        terminal.setRelativeCursorPos(terminal.x, args[0] - 1);
     }
 }

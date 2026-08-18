@@ -11,6 +11,11 @@ public class ECH extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {1};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         int chars = args[0];
@@ -27,7 +32,7 @@ public class ECH extends CSISequenceHandler {
             int toIndex =
                     fromIndex
                             + Math.max(
-                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - x), 1);
+                                    Math.min(chars, Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.altBuffer, fromIndex, toIndex, ' ');
             Arrays.fill(
                     terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
@@ -41,7 +46,7 @@ public class ECH extends CSISequenceHandler {
             int toIndex =
                     fromIndex
                             + Math.max(
-                                    Math.min(Math.max(chars, 1), Terminal.WIDTH - x), 1);
+                                    Math.min(chars, Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.buffer, fromIndex, toIndex, ' ');
             Arrays.fill(terminal.colors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
             Arrays.fill(terminal.colorsBackground, fromIndex, toIndex, c.Copy());

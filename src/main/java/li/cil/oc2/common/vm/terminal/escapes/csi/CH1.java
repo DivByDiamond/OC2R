@@ -12,13 +12,21 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        if (state.questionMark || state.dollarSign) {
+            return new int[0];
+        }
+        return new int[] {1, Terminal.HEIGHT};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) { // XTRESTORE
             handleXTRESTORE(args[0]);
         } else if (state.dollarSign) { // DECCARA
             LOGGER.warn("DECCARA is not implemented");
         } else { /* DECSTBM with 0 or 1 args = reset to full screen */
-            handleDECSTBM(args, argCount);
+            handleDECSTBM(args);
         }
     }
 
@@ -236,13 +244,12 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         }
     }
 
-    private void handleDECSTBM(int[] args, int argCount) {
+    private void handleDECSTBM(int... args) {
         final int first;
         final int last;
         /* Each parameter defaults independently: top=1, bottom=HEIGHT */
-        int top = (argCount > 0 && args[0] > 0) ? args[0] : 1;
-        int bottom = (argCount > 1 && args[1] > 0) ? args[1] : Terminal.HEIGHT;
-        bottom = Math.min(bottom, Terminal.HEIGHT);
+        final int top = args[0];
+        final int bottom = Math.min(args[1], Terminal.HEIGHT);
         first = top - 1;
         last = bottom - 1;
         if (last - first <= 0) {

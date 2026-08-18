@@ -11,8 +11,13 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {1};
+    }
+
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        int chars = Math.max(args[0], 1);
+        int chars = args[0];
         if (state.space) { // SL
             chars = Math.min(chars, Terminal.WIDTH);
             for (int i = terminal.scrollFirst; i <= terminal.scrollLast; i++) {

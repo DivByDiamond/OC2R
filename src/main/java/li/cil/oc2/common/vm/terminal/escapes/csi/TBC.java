@@ -9,6 +9,11 @@ public class TBC extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {0};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         if (args[0] == 0) {

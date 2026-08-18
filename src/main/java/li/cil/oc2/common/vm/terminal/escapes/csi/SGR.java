@@ -9,6 +9,11 @@ public class SGR extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {0};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         int max = Math.max(1, argCount);
         int i = 0;

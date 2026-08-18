@@ -244,6 +244,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiter_version}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
+
+    // The terminal tests construct `new Terminal()` on the plain JUnit runtime classpath,
+    // which (unlike the mod runtimes) does not carry the Minecraft/NeoForge dependency set.
+    // Add the handful of libraries the terminal core reaches for directly.
+    testRuntimeOnly("it.unimi.dsi:fastutil:8.5.12")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.22.1")
 }
 
 System.setProperty("line.separator", "\n")

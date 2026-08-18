@@ -163,6 +163,15 @@ public class CSIManager {
                             exclamation);
 
             if (handler != null) {
+                int[] defaults = handler.defaultParameters(state);
+                if (defaults.length > 0) {
+                    final int count = Math.min(defaults.length, args.length);
+                    for (int i = 0; i < count; i++) {
+                        if (args[i] == 0) {
+                            args[i] = defaults[i];
+                        }
+                    }
+                }
                 handler.execute(args, argCount, state);
             } else {
                 LOGGER.warn("Control sequence: {}", ch);

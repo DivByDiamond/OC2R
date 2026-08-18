@@ -8,6 +8,11 @@ public class EL extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {0};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         switch (args[0]) {

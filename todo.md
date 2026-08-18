@@ -701,12 +701,17 @@ DeviceBusElement (каждый блок/элемент)
 - [ ] **Dirty-механика в buffer-слое** — `TerminalBuffer`/`TerminalLineShifter` знают про `renderers`
   и `getDirtyMask` (TerminalBuffer.java:42,118-120, TerminalLineShifter.java:80-84,131-135).
   Перенести в render-слой.
-- [ ] **Договор молчания по `args`/`argCount`** — CSIManager клампает до 10 и подмешивает пустой нулевой слот;
+- [x] **Договор молчания по `args`/`argCount`** — CSIManager клампает до 10 и подмешивает пустой нулевой слот;
   каждый хендлер сам фильтрует `args[i]==0`. Нормализовать (0 → default) в CSIManager.
+  Решено (2026-08-18): единый дефолт невозможен — зависит от функции и CSI-модификаторов
+  (DECSTBM vs XTRESTORE на одном `r`; DECSCUSR где 0 валиден; DECSET/DECRST где 0 = пустой слот).
+  Дефолт параметризован per-handler: `CSISequenceHandler.defaultParameters(CSIState)` возвращает
+  значения по слотам, CSIManager подменяет пропущенный/0 перед `execute`; хендлеры без дефолта
+  (CH2/CH3/CH6/CH7/DECREQTPARM) не трогаются и читают args как есть.
 
 ### Тесты
 
-- [ ] **Снять `@Disabled` с TerminalBufferTest** — декомпозировать `@OnlyIn(Dist.CLIENT)` с `Terminal`
+- [x] **Снять `@Disabled` с TerminalBufferTest** — декомпозировать `@OnlyIn(Dist.CLIENT)` с `Terminal`
   (оставить только на `getRenderer()`/`clientTick()`), добавить assert'ы (сейчас тел нет).
-- [ ] **Покрыть критичные пути:** CSI-парсер, DECSTBM+DECOM, IL/DL/SU/SD с count>1 и маргинами,
+- [x] **Покрыть критичные пути:** CSI-парсер, DECSTBM+DECOM, IL/DL/SU/SD с count>1 и маргинами,
   alt-буфер 47/1047/1049, SGR 38;2/38;5, pending-wrap (колонка 80), dirty-маску при прокрутке.

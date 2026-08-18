@@ -13,13 +13,21 @@ public class CH8
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        if (state.questionMark || state.hash) {
+            return new int[0];
+        }
+        return new int[] {1};
+    }
+
+    @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.questionMark) { // XTSMGRAPHICS
             LOGGER.warn("XTSMGRAPHICS not implemented");
         } else if (state.hash) { // XTTITLEPOS
             LOGGER.warn("XTTITLEPOS not implemented");
         } else { // SU
-            for (int i = 0; i < Math.max(1, args[0]); i++) {
+            for (int i = 0; i < args[0]; i++) {
                 if (terminal.lastRowToDisplay
                         < Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) {
                     terminal.bufferManager.incrementLastLineToDisplay();

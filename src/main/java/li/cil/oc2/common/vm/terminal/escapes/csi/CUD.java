@@ -8,7 +8,12 @@ public class CUD extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        return new int[] {1};
+    }
+
+    @Override
     public void execute(int[] args, int argsCount, CSIState state) {
-        terminal.setClampedCursorPos(terminal.x, terminal.y + Math.max(1, args[0]));
+        terminal.setClampedCursorPos(terminal.x, terminal.y + args[0]);
     }
 }
