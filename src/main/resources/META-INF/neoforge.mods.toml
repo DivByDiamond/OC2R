@@ -1,13 +1,13 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
-issueTrackerURL = "https://github.com/North-Western-Development/oc2r/issues"
-license = "MIT"
+issueTrackerURL = "https://github.com/TumRedSun/OC2R/issues"
+license = "GPL-3.0-or-later"
 
 [[mods]]
 modId = "oc2r"
 version = "${file.jarVersion}"
-displayName = "OpenComputers II: Reimagined"
-authors = "North Western Development (Originally by Sangar)"
+displayName = "OpenComputers II: Modern"
+authors = "TumRedSun, loki5512344, North Western Development (Originally by Sangar)"
 description = '''
 Modern computers for the modern player.
 

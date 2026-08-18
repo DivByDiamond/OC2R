@@ -40,6 +40,9 @@ jobs:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
           CHANGELOG: ${{ github.event.release.body }}
           GITHUB_TOKEN: ${{ github.token }}
+        # Modrinth version_number regex allows only [a-zA-Z0-9._-]:
+        # strip the leading 'v' from the tag name and never append '+git' (build.gradle.kts).
+        # Tag your releases WITHOUT the 'v' prefix, e.g. 0.1.0, and this stays clean.
 
       - name: Add Artifacts to Github Release
         uses: alexellis/upload-assets@0.4.1

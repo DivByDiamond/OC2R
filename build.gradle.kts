@@ -104,7 +104,7 @@ allprojects {
     }
 }
 
-version = if (System.getenv("RELEASE_TYPE") == "release") semver else "${semver}+${getGitRef()}"
+version = if (System.getenv("RELEASE_TYPE") == "release") semver.trimStart('v') else "${semver.trimStart('v')}+${getGitRef()}"
 group = "li.cil.oc2"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
