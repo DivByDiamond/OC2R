@@ -107,12 +107,7 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                         TerminalColors.DEFAULT_STYLE);
             }
 
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(
-                                            1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y),
-                                            (left, right) -> left | right));
+            terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y));
         }
     }
 }

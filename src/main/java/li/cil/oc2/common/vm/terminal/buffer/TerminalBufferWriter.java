@@ -100,10 +100,7 @@ public class TerminalBufferWriter {
             }
 
             terminal.altStyles[index] = terminal.style;
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(1 << (y), (prev, next) -> prev | next));
+            terminal.markDirty(1 << (y));
         } else {
             int correctedY = (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT));
             final int index = x + correctedY * Terminal.WIDTH;
@@ -137,10 +134,7 @@ public class TerminalBufferWriter {
             terminal.styles[index] = terminal.style;
             int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
             int localY = Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
-            terminal.renderers.forEach(
-                    model ->
-                            model.getDirtyMask()
-                                    .accumulateAndGet(1 << (localY), (prev, next) -> prev | next));
+            terminal.markDirty(1 << (localY));
         }
     }
 

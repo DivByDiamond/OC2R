@@ -36,12 +36,7 @@ class TerminalBufferScrolling {
         for (int i = 0; i <= 23; i++) {
             dirtyLinesMask |= 1 << i;
         }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
+        terminal.markDirty(dirtyLinesMask);
     }
 
     public void decrementLastLineToDisplay() {
@@ -51,12 +46,7 @@ class TerminalBufferScrolling {
         for (int i = 0; i <= 23; i++) {
             dirtyLinesMask |= 1 << i;
         }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
+        terminal.markDirty(dirtyLinesMask);
     }
 
     public void shiftUp(int count) {

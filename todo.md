@@ -165,11 +165,12 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
   - ChargerBlock → `Mirror.mirror(Direction)` вместо `state.rotate(Rotation)`
   - InternetCardSpec → `defineList(..., String::new, ...)`
   - RobotSlot → `stack.canFitInsideContainerItems()`, RobotItem → `canFitInsideContainerItems(ItemStack)`
-- [ ] **PMD: codestyle.xml + design.xml** — после рефакторинга
-- [ ] **SpotBugs** — обновить плагин для Gradle 9+
-- [ ] **Error Prone** — Google-анализатор
-- [ ] **AvoidDuplicateLiterals** — кастомные пороги
-- [ ] **AvoidInstantiatingObjectsInLoops** — точечно @SuppressWarnings
+- [x] **PMD: codestyle.xml + design.xml** — добавлены rulesets с исключениями; итого **422 нарушения** (в отчёте, билд не падает): UselessParentheses 74, AvoidInstantiatingObjectsInLoops 58, CyclomaticComplexity 56, CognitiveComplexity 41, GenericsNaming 27, CollapsibleIfStatements 24, NPathComplexity 23, CallSuperInConstructor 19, AvoidDeeplyNestedIfStmts 16, UnnecessaryModifier 14, UnnecessaryCast 12, остальное <10. Исключены (конфликт со стилем/Checkstyle): ControlStatementBraces, FieldNamingConventions, UseUtilityClass
+- [x] **SpotBugs** — плагин `com.github.spotbugs` **6.5.10** (Gradle 9+), движок `toolVersion` **4.10.3**; `ignoreFailures=true`, отчёты html+xml в `build/reports/spotbugs/`; **453 бага** main (52 priority-1: EI_EXPOSE_REP2 99, MS_CANNOT_BE_FINAL 71, EI_EXPOSE_REP 61, ST_WRITE_TO_STATIC 49, PA_PUBLIC_PRIMITIVE_ATTRIBUTE 47, ...) + 1 в test. Фиксы: `reports.create("html")/("xml")` (6.x не регистрирует отчёты по умолчанию), исключение `package-info.class` из анализа (SpotBugs падает с ResourceNotFoundException), exclude-фильтр на jcodec/generated
+- [x] **Error Prone** — плагин `net.ltgt.errorprone` **5.1.0** + `error_prone_core` **2.50.0**; включён **выборочно**: `./gradlew compileJava -PenableErrorProne`; все диагностики — warnings (билд не падает); **100 предупреждений** (EffectivelyPrivate 21, MutablePublicArray/InconsistentCapitalization/EnumOrdinal/EmptyCatch по 7, ...). Воркэраунды: mixin-процессор шейдит Guava 21.0 → современный Guava подмешивается в начало processorpath (иначе NoSuchMethodError buildOrThrow); `-PenableErrorProne` без `=true` даёт пустую строку свойства → парсинг флага по presence
+- [x] **AvoidDuplicateLiterals** — включено: `maxDuplicateLiterals=8`, `minimumLength=6`, `skipAnnotations=true`; в отчёте 2 нарушения
+- [x] **AvoidInstantiatingObjectsInLoops** — правило включено (было исключено); **58 нарушений** в отчёте (33 файла, топ: ComputerBlockItemRenderer 6, AbstractContainer/RobotInventoryContainer 4) — билд не падает; точечные `@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")` — при рефакторинге
+- [x] **Qodana** — плагин `org.jetbrains.qodana` **2026.2.0** (таск `qodanaScan` в Docker), алиас `./gradlew qodana`, конфиг `qodana.yaml` (jetbrains/qodana-jvm:latest, exclude jcodec/build)
 
 ---
 
@@ -697,10 +698,18 @@ DeviceBusElement (каждый блок/элемент)
 
 ### Архитектура
 
-- [ ] **Дублирование ~60-case таблиц режимов** в CH1/CH2/CH3/CH6 — вынести в один `ModeTable`.
-- [ ] **Dirty-механика в buffer-слое** — `TerminalBuffer`/`TerminalLineShifter` знают про `renderers`
+- [x] **Дублирование ~60-case таблиц режимов** в CH1/CH2/CH3/CH6 — вынести в один `ModeTable`.
+  Создан `modes/ModeTable.java` — единственный источник истины для 74 private + 4 ANSI режимов
+  (номер из `PrivateMode`/`Mode`, kind PRIVATE/ANSI, флаг implemented). CH1/CH6 делают save/restore
+  через `get()`/`set()` таблицы; CH2/CH3 оставили только спец-тела (DECCOLM/DECOM/mouse/alt-buffer
+  и т.п., ~15/6 case) + `default` через `mode.set(...)`; `PrivateModeState.getMode()` и
+  `ImplementedPrivateModes` тоже делегируют таблице. Поведение идентично — 38 тестов зелёные.
+- [x] **Dirty-механика в buffer-слое** — `TerminalBuffer`/`TerminalLineShifter` знают про `renderers`
   и `getDirtyMask` (TerminalBuffer.java:42,118-120, TerminalLineShifter.java:80-84,131-135).
   Перенести в render-слой.
+  Решено (2026-08-18): buffer-слой и CSI-хендлеры больше не трогают `renderers`/`getDirtyMask` —
+  единственная точка распределения dirty — хуки `Terminal.markDirty(mask)` / `Terminal.markAllDirty()`;
+  сам реестр `renderers` живёт в `TerminalClient` (render-слой), маски — в `TerminalRenderer.dirty`.
 - [x] **Договор молчания по `args`/`argCount`** — CSIManager клампает до 10 и подмешивает пустой нулевой слот;
   каждый хендлер сам фильтрует `args[i]==0`. Нормализовать (0 → default) в CSIManager.
   Решено (2026-08-18): единый дефолт невозможен — зависит от функции и CSI-модификаторов

@@ -91,12 +91,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
             Arrays.fill(terminal.styles, endIndex, endIndex + chars, TerminalColors.DEFAULT_STYLE);
         }
 
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        1 << TerminalBufferWriter.getDirtyRow(terminal, y),
-                                        (left, right) -> left | right));
+        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, y));
     }
 
     private void shiftRight(int chars) {
@@ -164,11 +159,6 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.styles, startIndex, startIndex + chars, TerminalColors.DEFAULT_STYLE);
         }
 
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y),
-                                        (left, right) -> left | right));
+        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, terminal.y));
     }
 }

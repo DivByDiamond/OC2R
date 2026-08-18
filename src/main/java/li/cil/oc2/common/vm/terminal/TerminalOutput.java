@@ -151,7 +151,7 @@ class TerminalOutput {
                                     startIndex + Terminal.WIDTH * Terminal.HEIGHT,
                                     'E');
                         }
-                        terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
+                        terminal.markAllDirty();
                     }
                 }
                 case DCS -> terminal.dcsManager.handle(ch);

@@ -46,12 +46,7 @@ public class TerminalIO {
                 for (int i = 0; i <= 23; i++) {
                     dirtyLinesMask |= 1 << i;
                 }
-                final int finalDirtyLinesMask = dirtyLinesMask;
-                terminal.renderers.forEach(
-                        model ->
-                                model.getDirtyMask()
-                                        .accumulateAndGet(
-                                                finalDirtyLinesMask, (left, right) -> left | right));
+                terminal.markDirty(dirtyLinesMask);
                 final ByteBuffer buffer = ByteBuffer.allocate(terminal.input.size());
                 while (!terminal.input.isEmpty()) {
                     buffer.put(terminal.input.dequeueByte());

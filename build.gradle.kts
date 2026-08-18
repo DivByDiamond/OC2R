@@ -2,6 +2,7 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.apache.commons.io.IOUtils
+import net.ltgt.gradle.errorprone.errorprone
 
 buildscript {
     repositories {
@@ -19,6 +20,9 @@ plugins {
 
     id("checkstyle")
     id("pmd")
+    id("com.github.spotbugs") version "6.5.10"
+    id("net.ltgt.errorprone") version "5.1.0"
+    id("org.jetbrains.qodana") version "2026.2.0"
 }
 
 fun getGitRef(): String {
@@ -198,6 +202,10 @@ neoForge {
 
 dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+
+    // §170: Error Prone compiler analysis. Pinned to a version compatible with the
+    // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
+    errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
 
@@ -383,6 +391,81 @@ pmd {
 tasks.withType<Pmd>().configureEach {
     isEnabled = true
     exclude("**/jcodec/**", "**/generated/**")
+}
+
+/* ── Static analysis: SpotBugs (§169) ─────────────────────────────────────── */
+
+spotbugs {
+    // §169: plugin 6.5.10 supports Gradle 9 (6.x line); toolVersion 4.10.3 bundles the analysis engine.
+    toolVersion.set("4.10.3")
+    ignoreFailures.set(true)
+    showProgress.set(true)
+    excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
+}
+
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
+    // Plugin 6.x registers no reports by default; create html + xml explicitly
+    // (output: build/reports/spotbugs/<base>.html|xml, required defaults to true).
+    reports.create("html")
+    reports.create("xml")
+    // SpotBugs crashes with "ResourceNotFoundException" on package-info.class
+    // files (it cannot re-open them as resources), so keep them out of the
+    // analysis input. They carry no runnable code, only annotations.
+    classes = classes?.filter { !it.name.endsWith("package-info.class") }
+}
+
+/* ── Static analysis: Error Prone (§170) ─────────────────────────────────── */
+
+// Error Prone is wired but OFF by default so the regular build (incl. NeoForge
+// moddev compile) is unaffected. Enable per-invocation with: ./gradlew compileJava -PenableErrorProne
+// (bare flag or =true enables; =false disables). All diagnostics are demoted to
+// warnings, so it can never fail the build.
+val enableErrorProne = when (val v = project.findProperty("enableErrorProne")?.toString()) {
+    null -> false // property absent -> off by default
+    "" -> true // -PenableErrorProne (bare flag)
+    else -> v.toBoolean()
+}
+
+// The `errorprone` configuration is a declaration-only (canBeResolved=false)
+// config; create a resolvable view over it so we can pick out the Guava jar
+// that error_prone_core resolves.
+val errorProneResolvable = configurations.create("errorProneResolvable") {
+    extendsFrom(configurations.named("errorprone").get())
+    isCanBeResolved = true
+    isCanBeConsumed = false
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        enabled.set(enableErrorProne)
+        if (enableErrorProne) {
+            allErrorsAsWarnings.set(true)
+            disableWarningsInGeneratedCode.set(true)
+            excludedPaths.set(".*[/\\\\]jcodec[/\\\\].*")
+        }
+    }
+    if (enableErrorProne) {
+        // SpongePowered's mixin annotation processor bundles an unrelocated
+        // Guava 21.0 and lands on the processor path before Error Prone's deps,
+        // so Error Prone crashes with NoSuchMethodError on
+        // ImmutableMap.Builder.buildOrThrow(). Prepend the modern Guava that
+        // error_prone_core resolves so it shadows the bundled copy.
+        val epGuava = errorProneResolvable.filter { it.name.matches(Regex("guava-.*\\.jar")) }
+        options.annotationProcessorPath = epGuava + (options.annotationProcessorPath ?: files())
+    }
+}
+
+/* ── Static analysis: Qodana ──────────────────────────────────────────────── */
+
+qodana {
+    // Driven by qodana.yaml in the project root (linter, excludes, scope).
+}
+
+// Plugin 2026.x exposes the `qodanaScan` task; provide the `./gradlew qodana` alias too.
+tasks.register("qodana") {
+    group = "verification"
+    description = "Run JetBrains Qodana analysis (alias for qodanaScan)."
+    dependsOn("qodanaScan")
 }
 
 tasks.test {

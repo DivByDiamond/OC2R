@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
-    <description>OC2R PMD rules: best practices, error prone, performance</description>
+    <description>OC2R PMD rules: best practices, error prone, performance, codestyle, design, multithreading</description>
 
     <rule ref="category/java/bestpractices.xml">
         <exclude name="GuardLogStatement"/>
@@ -26,7 +26,6 @@
 
     <rule ref="category/java/errorprone.xml">
         <exclude name="NullAssignment"/>
-        <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="UseCorrectExceptionLogging"/>
         <exclude name="MissingSerialVersionUID"/>
@@ -38,8 +37,19 @@
         <exclude name="AvoidCatchingThrowable"/>
     </rule>
 
+    <!-- §171: AvoidDuplicateLiterals re-enabled with custom thresholds instead of blanket exclusion -->
+    <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+        <properties>
+            <!-- default threshold is 4; OC2R intentionally repeats short literals (nbt keys, NAMED_* strings),
+                 raise to 8 and only flag literals >= 6 chars so the report stays actionable -->
+            <property name="maxDuplicateLiterals" value="8"/>
+            <property name="minimumLength" value="6"/>
+            <property name="skipAnnotations" value="true"/>
+        </properties>
+    </rule>
+
     <rule ref="category/java/performance.xml">
-        <exclude name="AvoidInstantiatingObjectsInLoops"/>
+        <!-- §172: enabled again; deliberate allocations inside hot loops get @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") -->
         <exclude name="RedundantFieldInitializer"/>
         <!-- Unavoidable: NBTArraySerializers copies between different primitive types, System.arraycopy won't work -->
         <exclude name="AvoidArrayLoops"/>
@@ -54,5 +64,79 @@
         <exclude name="NonThreadSafeSingleton"/>
         <!-- Unavoidable: Mixin classes access Minecraft fields -->
         <exclude name="AvoidSynchronizedAtMethodLevel"/>
+    </rule>
+
+    <!-- §168: codestyle.xml — reasonable subset (naming/obvious-dead-code rules kept,
+         stylistic/noisy rules excluded so the report stays actionable). -->
+    <rule ref="category/java/codestyle.xml">
+        <!-- EJB / J2EE convention rules are irrelevant for a Minecraft mod -->
+        <exclude name="LocalHomeNamingConvention"/>
+        <exclude name="LocalInterfaceSessionNamingConvention"/>
+        <exclude name="MDBAndSessionBeanNamingConvention"/>
+        <exclude name="RemoteInterfaceNamingConvention"/>
+        <exclude name="RemoteSessionInterfaceNamingConvention"/>
+        <!-- Stylistic / noisy for this codebase -->
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="AvoidProtectedMethodInFinalClassNotExtending"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="ConfusingTernary"/>
+        <exclude name="EmptyMethodInAbstractClassShouldBeAbstract"/>
+        <exclude name="FieldDeclarationsShouldBeAtStartOfClass"/>
+        <exclude name="FinalParameterInAbstractMethod"/>
+        <exclude name="LinguisticNaming"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <exclude name="LongVariable"/>
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="PrematureDeclaration"/>
+        <exclude name="ShortClassName"/>
+        <exclude name="ShortMethodName"/>
+        <!-- Minecraft/VT100 code routinely uses single-letter vars (e, t, c) -->
+        <exclude name="ShortVariable"/>
+        <exclude name="TooManyStaticImports"/>
+        <exclude name="UnnecessaryFullyQualifiedName"/>
+        <exclude name="UseExplicitTypes"/>
+        <exclude name="UseUnderscoresInNumericLiterals"/>
+        <exclude name="UselessQualifiedThis"/>
+        <!-- Project convention: single-statement ifs/loops without braces (checkstyle NeedBraces is suppressed) -->
+        <exclude name="ControlStatementBraces"/>
+        <!-- Project convention: constants keep domain casing (e.g. PROTOCOL_IPv4), not UPPER_SNAKE;
+             checkstyle AbbreviationAsWordInName is suppressed -->
+        <exclude name="FieldNamingConventions"/>
+    </rule>
+
+    <!-- §168: design.xml — complexity metrics + simplification rules kept,
+         law-of-demeter/god-class/noisy data-class rules excluded. -->
+    <rule ref="category/java/design.xml">
+        <exclude name="AbstractClassWithoutAnyMethod"/>
+        <exclude name="AvoidCatchingGenericException"/>
+        <exclude name="AvoidThrowingNewInstanceOfSameException"/>
+        <exclude name="AvoidThrowingNullPointerException"/>
+        <exclude name="AvoidThrowingRawExceptionTypes"/>
+        <!-- Unavoidable: RPC method signatures declare throws Throwable -->
+        <exclude name="AvoidUncheckedExceptionsInSignatures"/>
+        <exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal"/>
+        <exclude name="CouplingBetweenObjects"/>
+        <exclude name="DataClass"/>
+        <exclude name="ExcessiveImports"/>
+        <exclude name="ExcessiveParameterList"/>
+        <exclude name="ExcessivePublicCount"/>
+        <exclude name="GodClass"/>
+        <exclude name="ImmutableField"/>
+        <exclude name="InvalidJavaBean"/>
+        <!-- Unavoidable: dense Minecraft world-interaction code would drown in this rule -->
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="MutableStaticState"/>
+        <exclude name="NcssCount"/>
+        <exclude name="SignatureDeclareThrowsException"/>
+        <exclude name="SingularField"/>
+        <exclude name="SwitchDensity"/>
+        <exclude name="TooManyFields"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="UseObjectForClearerAPI"/>
+        <!-- Project convention: many *Helper/*Util classes keep non-private constructors
+             (checkstyle HideUtilityClassConstructor is suppressed) -->
+        <exclude name="UseUtilityClass"/>
     </rule>
 </ruleset>

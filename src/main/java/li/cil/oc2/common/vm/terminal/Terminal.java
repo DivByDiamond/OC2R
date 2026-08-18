@@ -148,6 +148,17 @@ public class Terminal {
         client().releaseRenderer(renderer);
     }
 
+    public void markDirty(final int mask) {
+        renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(mask, (left, right) -> left | right));
+    }
+
+    public void markAllDirty() {
+        renderers.forEach(model -> model.getDirtyMask().set(-1));
+    }
+
     @OnlyIn(Dist.CLIENT)
     public void clientTick() {
         client().clientTick();

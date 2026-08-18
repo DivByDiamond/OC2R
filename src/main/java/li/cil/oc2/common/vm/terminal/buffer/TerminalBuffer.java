@@ -37,7 +37,7 @@ public class TerminalBuffer {
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.Copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
-        terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
+        terminal.markAllDirty();
     }
 
     public void clearAlt() {
@@ -112,12 +112,7 @@ public class TerminalBuffer {
                     correctedY * Terminal.WIDTH + toIndex,
                     TerminalColors.DEFAULT_STYLE);
         }
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        1 << TerminalBufferWriter.getDirtyRow(terminal, y),
-                                        (prev, next) -> prev | next));
+        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, y));
     }
 
     public void incrementLastLineToDisplay() {
