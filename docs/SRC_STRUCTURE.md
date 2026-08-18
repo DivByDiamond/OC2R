@@ -163,6 +163,7 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 | `assets/oc2r/doc/` | In-game manual (en, ru, zh-CN) |
 | `assets/oc2r/lang/` | Localisation (en, ru, ja, zh-CN) |
 | `data/oc2r/` | Recipes, loot tables, tags, file systems, advancements |
+| `onyxos/` | OnyxOS firmware + root FS (`fw_jump.bin`, `onyx-kernel.bin`, `onyxfs.img`) |
 | `META-INF/` | `neoforge.mods.toml`, access transformer |
 | `natives/` | Prebuilt `oc2rnet` libs: linux, macos, windows, android |
 
@@ -177,7 +178,7 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 | `bin/` | Lua/shell utilities: `export.lua`, `flash.sh`, `redstone.lua`, `setup-network.lua` |
 | `lib/lua/` | Lua device API (`devices.lua`, `robot.lua`) |
 | `lib/micropython/` | MicroPython device API (`devices.py`, `robot.py`) |
-| `lib/rpc/` | C library for RPC protocol (`rpc.c`, `rpc.h`, Makefile) |
+| `lib/rpc/` | C library for RPC protocol (`rpc.c`, `rpc.h`, Makefile) + examples (`redstone_blink.c`, `note_block_player.c`) and a C++ RAII wrapper (`rpc_raii.hpp`, `example_raii.cpp`) |
 | `firmware_files/` | OpenSBI firmware blob (`fw_jump.bin`) |
 
 ---
@@ -202,3 +203,4 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 - [Architecture Overview](ARCHITECTURE.md) — device bus, VM lifecycle, threading
 - [Device System](DEVICES.md) — VMDevice, RPCDevice, ObjectDevice, providers
 - [Networking Stack](NETWORKING.md) — TCP/IP, VXLAN, native library
+- [Buildroot image](BUILDROOT.md) — guest OS image sourcing, TCC, rebuilding

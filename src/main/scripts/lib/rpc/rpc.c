@@ -366,6 +366,68 @@ static int build_params(char *buf, int buf_size, const char *method_name,
     return len;
 }
 
+// ── raw invoke helpers ───────────────────────────────────────────────────────
+
+int rpc_device_invoke_raw(rpc_device_t *device, const char *method_name,
+                          const char *params_json) {
+    char type[64] = {0};
+    char data[RPC_MAX_MESSAGE] = {0};
+    int ret = internal_invoke(device->bus, device->id, method_name,
+                              params_json, type, sizeof(type), data, sizeof(data));
+    if (ret <= 0) return ret;
+    if (strcmp(type, "error") == 0) {
+        fprintf(stderr, "RPC error: %s\n", data);
+        return -1;
+    }
+    return 0;
+}
+
+int rpc_device_invoke_int_raw(rpc_device_t *device, const char *method_name,
+                              const char *params_json) {
+    char type[64] = {0};
+    char data[RPC_MAX_MESSAGE] = {0};
+    int ret = internal_invoke(device->bus, device->id, method_name,
+                              params_json, type, sizeof(type), data, sizeof(data));
+    if (ret <= 0 || strcmp(type, "error") == 0) return 0;
+    return atoi(data);
+}
+
+double rpc_device_invoke_double_raw(rpc_device_t *device, const char *method_name,
+                                    const char *params_json) {
+    char type[64] = {0};
+    char data[RPC_MAX_MESSAGE] = {0};
+    int ret = internal_invoke(device->bus, device->id, method_name,
+                              params_json, type, sizeof(type), data, sizeof(data));
+    if (ret <= 0 || strcmp(type, "error") == 0) return 0.0;
+    return atof(data);
+}
+
+bool rpc_device_invoke_bool_raw(rpc_device_t *device, const char *method_name,
+                                const char *params_json) {
+    char type[64] = {0};
+    char data[RPC_MAX_MESSAGE] = {0};
+    int ret = internal_invoke(device->bus, device->id, method_name,
+                              params_json, type, sizeof(type), data, sizeof(data));
+    if (ret <= 0 || strcmp(type, "error") == 0) return false;
+
+    // JSON booleans are lowercase "true" / "false"
+    const char *p = skip_ws(data);
+    return *p == 't';
+}
+
+void rpc_device_invoke_string_raw(rpc_device_t *device, const char *method_name,
+                                  const char *params_json, char *out, size_t out_size) {
+    char type[64] = {0};
+    char data[RPC_MAX_MESSAGE] = {0};
+    int ret = internal_invoke(device->bus, device->id, method_name,
+                              params_json, type, sizeof(type), data, sizeof(data));
+    if (ret <= 0 || strcmp(type, "error") == 0) {
+        out[0] = '\0';
+        return;
+    }
+    json_extract_string(data, out, out_size);
+}
+
 // ── typed invoke wrappers ────────────────────────────────────────────────────
 
 int rpc_device_invoke(rpc_device_t *device, const char *method_name, ...) {
@@ -375,17 +437,7 @@ int rpc_device_invoke(rpc_device_t *device, const char *method_name, ...) {
     int plen = build_params(params, sizeof(params), method_name, &args);
     va_end(args);
     if (plen < 0) return -1;
-
-    char type[64] = {0};
-    char data[RPC_MAX_MESSAGE] = {0};
-    int ret = internal_invoke(device->bus, device->id, method_name,
-                              params, type, sizeof(type), data, sizeof(data));
-    if (ret <= 0) return ret;
-    if (strcmp(type, "error") == 0) {
-        fprintf(stderr, "RPC error: %s\n", data);
-        return -1;
-    }
-    return 0;
+    return rpc_device_invoke_raw(device, method_name, params);
 }
 
 int rpc_device_invoke_int(rpc_device_t *device, const char *method_name, ...) {
@@ -394,13 +446,7 @@ int rpc_device_invoke_int(rpc_device_t *device, const char *method_name, ...) {
     va_start(args, method_name);
     build_params(params, sizeof(params), method_name, &args);
     va_end(args);
-
-    char type[64] = {0};
-    char data[RPC_MAX_MESSAGE] = {0};
-    int ret = internal_invoke(device->bus, device->id, method_name,
-                              params, type, sizeof(type), data, sizeof(data));
-    if (ret <= 0 || strcmp(type, "error") == 0) return 0;
-    return atoi(data);
+    return rpc_device_invoke_int_raw(device, method_name, params);
 }
 
 double rpc_device_invoke_double(rpc_device_t *device, const char *method_name, ...) {
@@ -409,13 +455,7 @@ double rpc_device_invoke_double(rpc_device_t *device, const char *method_name, .
     va_start(args, method_name);
     build_params(params, sizeof(params), method_name, &args);
     va_end(args);
-
-    char type[64] = {0};
-    char data[RPC_MAX_MESSAGE] = {0};
-    int ret = internal_invoke(device->bus, device->id, method_name,
-                              params, type, sizeof(type), data, sizeof(data));
-    if (ret <= 0 || strcmp(type, "error") == 0) return 0.0;
-    return atof(data);
+    return rpc_device_invoke_double_raw(device, method_name, params);
 }
 
 bool rpc_device_invoke_bool(rpc_device_t *device, const char *method_name, ...) {
@@ -424,16 +464,7 @@ bool rpc_device_invoke_bool(rpc_device_t *device, const char *method_name, ...) 
     va_start(args, method_name);
     build_params(params, sizeof(params), method_name, &args);
     va_end(args);
-
-    char type[64] = {0};
-    char data[RPC_MAX_MESSAGE] = {0};
-    int ret = internal_invoke(device->bus, device->id, method_name,
-                              params, type, sizeof(type), data, sizeof(data));
-    if (ret <= 0 || strcmp(type, "error") == 0) return false;
-
-    // JSON booleans are lowercase "true" / "false"
-    const char *p = skip_ws(data);
-    return *p == 't';
+    return rpc_device_invoke_bool_raw(device, method_name, params);
 }
 
 void rpc_device_invoke_string(rpc_device_t *device, const char *method_name,
@@ -443,16 +474,7 @@ void rpc_device_invoke_string(rpc_device_t *device, const char *method_name,
     va_start(args, out_size);
     build_params(params, sizeof(params), method_name, &args);
     va_end(args);
-
-    char type[64] = {0};
-    char data[RPC_MAX_MESSAGE] = {0};
-    int ret = internal_invoke(device->bus, device->id, method_name,
-                              params, type, sizeof(type), data, sizeof(data));
-    if (ret <= 0 || strcmp(type, "error") == 0) {
-        out[0] = '\0';
-        return;
-    }
-    json_extract_string(data, out, out_size);
+    rpc_device_invoke_string_raw(device, method_name, params, out, out_size);
 }
 
 // ── high-level redstone helpers ──────────────────────────────────────────────

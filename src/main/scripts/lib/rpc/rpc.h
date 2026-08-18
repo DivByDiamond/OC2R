@@ -53,6 +53,20 @@ bool rpc_device_invoke_bool(rpc_device_t *device, const char *method_name, ...);
 void rpc_device_invoke_string(rpc_device_t *device, const char *method_name,
                               char *out, size_t out_size, ...);
 
+// Raw invocation with a pre-built JSON parameter array (e.g. "[\"up\",15]").
+// The variadic helpers above build this array for you; the *_raw variants let
+// callers assemble it programmatically (used by the C++ RAII wrapper).
+int rpc_device_invoke_raw(rpc_device_t *device, const char *method_name,
+                          const char *params_json);
+int rpc_device_invoke_int_raw(rpc_device_t *device, const char *method_name,
+                              const char *params_json);
+double rpc_device_invoke_double_raw(rpc_device_t *device, const char *method_name,
+                                    const char *params_json);
+bool rpc_device_invoke_bool_raw(rpc_device_t *device, const char *method_name,
+                                const char *params_json);
+void rpc_device_invoke_string_raw(rpc_device_t *device, const char *method_name,
+                                  const char *params_json, char *out, size_t out_size);
+
 // High-level redstone helpers
 int rpc_redstone_get_input(rpc_device_t *device, const char *side);
 void rpc_redstone_set_output(rpc_device_t *device, const char *side, int value);

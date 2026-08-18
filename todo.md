@@ -231,9 +231,9 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 **Текущее состояние**: Сделана C-библиотека `librpc` в `src/main/scripts/lib/rpc/`.
 
-- [ ] Добавить TCC в buildroot-образ
-- [ ] Добавить примеры: redstone_blink.c, note_block_player.c
-- [ ] Сделать C++ RAII-обёртку
+- [x] Добавить TCC в buildroot-образ — **уже есть**: sedna-buildroot 0.0.64 (закреплён в `gradle.properties`) содержит `/usr/bin/tcc` (297 КБ) + `/usr/lib/tcc/include/` в `rootfs.cramfs` (проверено по содержимому jar); см. `docs/BUILDROOT.md`
+- [x] Добавить примеры: redstone_blink.c, note_block_player.c — `src/main/scripts/lib/rpc/redstone_blink.c`, `src/main/scripts/lib/rpc/note_block_player.c` (+ обновлён `Makefile`)
+- [x] Сделать C++ RAII-обёртку — `src/main/scripts/lib/rpc/rpc_raii.hpp` (классы `rpc::Bus`/`rpc::Device`, деструкторы закрывают bus) + демо `example_raii.cpp`; для этого в `rpc.c`/`rpc.h` добавлены `rpc_device_invoke_*_raw`
 
 ---
 
@@ -245,8 +245,8 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ## 3. TCC (Tiny C Compiler) в образ
 
-- [ ] Обновить minux чтобы включить TCC
-- [ ] Собрать новый buildroot-образ
+- [x] Обновить minux чтобы включить TCC — сделано апстримом: конфиг minux (buildroot) содержит `BR2_PACKAGE_TINYCC=y`, релиз 0.0.64 уже включает tcc; версия закреплена в `gradle.properties`/`download-libs.sh`
+- [ ] Собрать новый buildroot-образ — требует toolchain/Docker для minux (вне этого репо); инструкция: `docs/BUILDROOT.md`
 
 ---
 
