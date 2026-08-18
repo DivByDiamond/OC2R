@@ -38,8 +38,8 @@ public final class OnyxOSFirmware implements Firmware {
 
     @Override
     public boolean run(final MemoryMap memory, final long startAddress) {
-        try (final InputStream firmware = openOverride("fw_jump.bin", RESOURCE_OPEN_SBI);
-                final InputStream kernel = openOverride("onyx-kernel.bin", RESOURCE_KERNEL)) {
+        try (InputStream firmware = openOverride("fw_jump.bin", RESOURCE_OPEN_SBI);
+                InputStream kernel = openOverride("onyx-kernel.bin", RESOURCE_KERNEL)) {
             if (firmware == null || kernel == null) {
                 LOGGER.error("OnyxOS resources missing from the mod jar — VM will not boot.");
                 return false;

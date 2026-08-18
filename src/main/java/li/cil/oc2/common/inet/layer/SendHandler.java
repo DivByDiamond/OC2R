@@ -100,21 +100,29 @@ public final class SendHandler {
             icmpHandler.reject(data, srcIpAddress);
         } else {
             LOGGER.trace("GOT TCP");
-            final SessionActions sendResult = session.send(data);
-            if (sendResult == SessionActions.FORWARD) {
-                final Session.States state = session.getState();
-                if (state == Session.States.NEW || state == Session.States.FINISH) {
-                    sessionLayer.sendSession(session, null);
-                } else if (state == Session.States.ESTABLISHED) {
-                    sessionLayer.sendSession(session, session.getSendBuffer());
-                }
-                if (state == Session.States.REJECT || state == Session.States.FINISH)
-                    rejectedStream = session;
-                if (session.isNeedsAcknowledgment()) streamToAck = session;
-            } else if (sendResult == SessionActions.DROP) {
-                sessionManager.closeSession(session);
-            }
+            handleSendResult(session, data);
         }
+    }
+
+    private void handleSendResult(final StreamSessionImpl session, final ByteBuffer data) {
+        final SessionActions sendResult = session.send(data);
+        if (sendResult == SessionActions.FORWARD) {
+            sendForwarded(session);
+        } else if (sendResult == SessionActions.DROP) {
+            sessionManager.closeSession(session);
+        }
+    }
+
+    private void sendForwarded(final StreamSessionImpl session) {
+        final Session.States state = session.getState();
+        if (state == Session.States.NEW || state == Session.States.FINISH) {
+            sessionLayer.sendSession(session, null);
+        } else if (state == Session.States.ESTABLISHED) {
+            sessionLayer.sendSession(session, session.getSendBuffer());
+        }
+        if (state == Session.States.REJECT || state == Session.States.FINISH)
+            rejectedStream = session;
+        if (session.isNeedsAcknowledgment()) streamToAck = session;
     }
 
     private void sessionSendFinish(

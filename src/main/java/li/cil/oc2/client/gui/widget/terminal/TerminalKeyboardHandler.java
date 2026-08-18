@@ -34,26 +34,34 @@ final class TerminalKeyboardHandler {
             terminal.io.putInput("\033[0[");
         }
         if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0 && keyCode == GLFW.GLFW_KEY_V) {
-            final String value = clipboardSupplier.get();
-            boolean bracketed = terminal.currentPrivateModeState.SET_BRACKETED_PASTE;
-            if (bracketed) terminal.io.putInput("\033[200~");
-            terminal.io.putInput(value);
-            if (bracketed) terminal.io.putInput("\033[201~");
+            handlePaste(clipboardSupplier);
         } else {
-            byte[] sequence;
-            if (terminal.currentPrivateModeState.DECCKM
-                    && (keyCode == GLFW.GLFW_KEY_UP
-                            || keyCode == GLFW.GLFW_KEY_DOWN
-                            || keyCode == GLFW.GLFW_KEY_LEFT
-                            || keyCode == GLFW.GLFW_KEY_RIGHT))
-                sequence = TerminalInput.getDECCKMSequence(keyCode, modifiers);
-            else sequence = TerminalInput.getSequence(keyCode, modifiers);
-            if (sequence != null) {
-                for (final byte b : sequence) {
-                    terminal.io.putInput(b);
-                }
-            }
+            handleKeySequence(keyCode, modifiers);
         }
         return true;
+    }
+
+    private void handlePaste(final Supplier<String> clipboardSupplier) {
+        final String value = clipboardSupplier.get();
+        final boolean bracketed = terminal.currentPrivateModeState.SET_BRACKETED_PASTE;
+        if (bracketed) terminal.io.putInput("\033[200~");
+        terminal.io.putInput(value);
+        if (bracketed) terminal.io.putInput("\033[201~");
+    }
+
+    private void handleKeySequence(final int keyCode, final int modifiers) {
+        final byte[] sequence;
+        if (terminal.currentPrivateModeState.DECCKM
+                && (keyCode == GLFW.GLFW_KEY_UP
+                        || keyCode == GLFW.GLFW_KEY_DOWN
+                        || keyCode == GLFW.GLFW_KEY_LEFT
+                        || keyCode == GLFW.GLFW_KEY_RIGHT))
+            sequence = TerminalInput.getDECCKMSequence(keyCode, modifiers);
+        else sequence = TerminalInput.getSequence(keyCode, modifiers);
+        if (sequence != null) {
+            for (final byte b : sequence) {
+                terminal.io.putInput(b);
+            }
+        }
     }
 }

@@ -55,10 +55,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
     @Override
     public boolean mouseClicked(final double x, final double y, final int button) {
         wasMouseClicked = true;
-        if (!terminalWidget.mouseClicked(x, y, button)) {
-            return super.mouseClicked(x, y, button);
-        }
-        return true;
+        return terminalWidget.mouseClicked(x, y, button) || super.mouseClicked(x, y, button);
     }
 
     @Override
@@ -75,10 +72,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
     @Override
     public boolean mouseReleased(final double x, final double y, final int button) {
         if (!wasMouseClicked) return super.mouseReleased(x, y, button);
-        if (!terminalWidget.mouseReleased(x, y, button)) {
-            return super.mouseReleased(x, y, button);
-        }
-        return true;
+        return terminalWidget.mouseReleased(x, y, button) || super.mouseReleased(x, y, button);
     }
 
     @Override
@@ -88,11 +82,8 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
         }
 
         final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        if (getMinecraft().options.keyInventory.isActiveAndMatches(input)) {
-            return true;
-        }
-
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+                || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

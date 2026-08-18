@@ -22,6 +22,7 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     public UUID deviceId = UUID.randomUUID();
 
     public ComputerBusElement(final ComputerBlockEntity owner) {
+        super();
         this.owner = owner;
     }
 

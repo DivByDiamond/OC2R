@@ -11,7 +11,7 @@ import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -26,34 +26,46 @@ final class BusCableModelData {
     }
 
     ModelData getModelData() {
-        final var level = owner.getLevel();
-        if (level == null) return ModelData.EMPTY;
+        final Level level = owner.getLevel();
+        if (level == null) {
+            return ModelData.EMPTY;
+        }
         final BlockState state = owner.getBlockState();
         final BlockPos pos = owner.getBlockPos();
-        if (state.hasProperty(BusCableStateProperties.HAS_FACADE)
-                && state.getValue(BusCableStateProperties.HAS_FACADE)) {
-            BlockState facadeState;
-            final ItemStack facadeItem = owner.facadeManager.getFacade();
+        if (hasFacade(state)) {
+            return getFacadeModelData(level, pos);
+        }
+        return getSupportModelData(level, state, pos);
+    }
 
-            facadeState = ItemStackUtils.getBlockState(facadeItem);
-            if (facadeState == null) {
-                facadeState = Blocks.IRON_BLOCK.defaultBlockState();
-            }
+    private static boolean hasFacade(final BlockState state) {
+        return state.hasProperty(BusCableStateProperties.HAS_FACADE)
+                && state.getValue(BusCableStateProperties.HAS_FACADE);
+    }
 
-            final var shapes = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
-            final var model = shapes.getBlockModel(facadeState);
-            final ModelData data = model.getModelData(level, pos, facadeState, currentModelData);
-
-            currentModelData =
-                    ModelData.builder()
-                            .with(
-                                    BUS_CABLE_FACADE_PROPERTY,
-                                    new BusCableModelTypes.BusCableFacade(facadeState, model, data))
-                            .build();
-
-            return currentModelData;
+    private ModelData getFacadeModelData(
+            final Level level, final BlockPos pos) {
+        BlockState facadeState = ItemStackUtils.getBlockState(owner.facadeManager.getFacade());
+        if (facadeState == null) {
+            facadeState = Blocks.IRON_BLOCK.defaultBlockState();
         }
 
+        final var shapes = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
+        final var model = shapes.getBlockModel(facadeState);
+        final ModelData data = model.getModelData(level, pos, facadeState, currentModelData);
+
+        currentModelData =
+                ModelData.builder()
+                        .with(
+                                BUS_CABLE_FACADE_PROPERTY,
+                                new BusCableModelTypes.BusCableFacade(facadeState, model, data))
+                        .build();
+
+        return currentModelData;
+    }
+
+    private ModelData getSupportModelData(
+            final Level level, final BlockState state, final BlockPos pos) {
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
             if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {

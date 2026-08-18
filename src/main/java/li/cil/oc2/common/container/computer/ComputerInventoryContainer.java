@@ -77,8 +77,9 @@ public final class ComputerInventoryContainer extends AbstractComputerContainer 
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD: slot depends on loop variable
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.MEMORY,
                                                 slot,
@@ -91,13 +92,14 @@ public final class ComputerInventoryContainer extends AbstractComputerContainer 
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD: slot depends on loop variable
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.HARD_DRIVE,
                                                 slot,
-                                                100 + (slot % 2) * SLOT_SIZE,
-                                                60 + (slot / 2) * SLOT_SIZE));
+                                                100 + slot % 2 * SLOT_SIZE,
+                                                60 + slot / 2 * SLOT_SIZE));
                             }
                         });
 
@@ -105,8 +107,9 @@ public final class ComputerInventoryContainer extends AbstractComputerContainer 
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD: slot depends on loop variable
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.CARD,
                                                 slot,

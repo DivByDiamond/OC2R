@@ -84,11 +84,6 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
         closeInternetAccess();
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
     private record InternetAdapterImpl(NetworkInterface networkInterface)
             implements InternetAdapter {
 

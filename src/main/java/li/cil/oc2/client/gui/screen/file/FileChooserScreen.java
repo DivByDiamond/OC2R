@@ -7,7 +7,6 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -81,15 +80,6 @@ public final class FileChooserScreen extends Screen {
         if (previousScreen != null) {
             getMinecraft().tell(() -> getMinecraft().setScreen(previousScreen));
         }
-    }
-
-    @Override
-    public void render(
-            final GuiGraphics graphics,
-            final int mouseX,
-            final int mouseY,
-            final float partialTicks) {
-        super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override

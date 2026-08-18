@@ -50,60 +50,103 @@ public final class BusCableInteractionHandler {
         }
 
         if (Wrenches.isWrench(heldItem)) {
-            if (player.isShiftKeyDown()) {
-                final ItemStack facadeItem = busCableBlockEntity.getFacade();
-                if (!facadeItem.isEmpty()) {
-                    if (!level.isClientSide()) {
-                        busCableBlockEntity.removeFacade();
-                        if (!player.isCreative()
-                                && level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
-                            ItemStackUtils.spawnAsEntity(
-                                            level, pos, facadeItem, hitResult.getDirection())
-                                    .ifPresent(
-                                            entity -> {
-                                                entity.setNoPickUpDelay();
-                                                entity.playerTouch(player);
-                                            });
-                        }
-                    }
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
-                } else {
-                    if (getPartCount(state) > 1
-                            && (tryRemoveInterface(state, level, pos, player, hitResult)
-                                    || tryRemoveCable(state, level, pos, player))) {
-                        return ItemInteractionResult.sidedSuccess(level.isClientSide());
-                    }
-                }
-            } else {
-                final Direction side = getHitSide(pos, hitResult);
-                if (getConnectionType(state, side) == ConnectionType.INTERFACE) {
-                    if (level.isClientSide()) {
-                        openBusInterfaceScreen(busCableBlockEntity, side);
-                    }
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
-                }
-            }
-        } else if (!player.isShiftKeyDown()
-                && !state.getValue(HAS_FACADE)
-                && getInterfaceCount(state) == 0) {
-            final var facadeType = busCableBlockEntity.getFacadeType(heldItem);
-            if (facadeType == FacadeType.INVALID_BLOCK) {
-                if (!level.isClientSide()) {
-                    player.displayClientMessage(
-                            text("message.{mod}.invalid_facade_block"), true);
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
-            } else if (facadeType == FacadeType.VALID_BLOCK) {
-                if (!level.isClientSide()) {
-                    busCableBlockEntity.setFacade(heldItem);
-                    if (!player.getAbilities().instabuild) {
-                        heldItem.shrink(1);
-                    }
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
-            }
+            return handleWrench(state, level, pos, player, hitResult, busCableBlockEntity);
         }
 
+        if (!player.isShiftKeyDown()
+                && !state.getValue(HAS_FACADE)
+                && getInterfaceCount(state) == 0) {
+            return handleFacadePlacement(heldItem, level, player, busCableBlockEntity);
+        }
+
+        return null;
+    }
+
+    private static ItemInteractionResult handleWrench(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult,
+            final BusCableBlockEntity busCableBlockEntity) {
+        if (!player.isShiftKeyDown()) {
+            return handleWrenchNonShift(
+                    state, level, pos, hitResult, busCableBlockEntity);
+        }
+        final ItemStack facadeItem = busCableBlockEntity.getFacade();
+        if (!facadeItem.isEmpty()) {
+            return handleFacadeRemoval(
+                    level, pos, player, hitResult, busCableBlockEntity, facadeItem);
+        }
+        if (getPartCount(state) > 1
+                && (tryRemoveInterface(state, level, pos, player, hitResult)
+                        || tryRemoveCable(state, level, pos, player))) {
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        }
+        return null;
+    }
+
+    private static ItemInteractionResult handleWrenchNonShift(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final BlockHitResult hitResult,
+            final BusCableBlockEntity busCableBlockEntity) {
+        final Direction side = getHitSide(pos, hitResult);
+        if (getConnectionType(state, side) != ConnectionType.INTERFACE) {
+            return null;
+        }
+        if (level.isClientSide()) {
+            openBusInterfaceScreen(busCableBlockEntity, side);
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    private static ItemInteractionResult handleFacadeRemoval(
+            final Level level,
+            final BlockPos pos,
+            final Player player,
+            final BlockHitResult hitResult,
+            final BusCableBlockEntity busCableBlockEntity,
+            final ItemStack facadeItem) {
+        if (!level.isClientSide()) {
+            busCableBlockEntity.removeFacade();
+            if (!player.isCreative()
+                    && level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+                ItemStackUtils.spawnAsEntity(
+                                level, pos, facadeItem, hitResult.getDirection())
+                        .ifPresent(
+                                entity -> {
+                                    entity.setNoPickUpDelay();
+                                    entity.playerTouch(player);
+                                });
+            }
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    private static ItemInteractionResult handleFacadePlacement(
+            final ItemStack heldItem,
+            final Level level,
+            final Player player,
+            final BusCableBlockEntity busCableBlockEntity) {
+        final var facadeType = busCableBlockEntity.getFacadeType(heldItem);
+        if (facadeType == FacadeType.INVALID_BLOCK) {
+            if (!level.isClientSide()) {
+                player.displayClientMessage(
+                        text("message.{mod}.invalid_facade_block"), true);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        } else if (facadeType == FacadeType.VALID_BLOCK) {
+            if (level.isClientSide()) {
+                return ItemInteractionResult.sidedSuccess(true);
+            }
+            busCableBlockEntity.setFacade(heldItem);
+            if (!player.getAbilities().instabuild) {
+                heldItem.shrink(1);
+            }
+            return ItemInteractionResult.sidedSuccess(false);
+        }
         return null;
     }
 

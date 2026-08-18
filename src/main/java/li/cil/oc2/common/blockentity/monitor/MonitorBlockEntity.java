@@ -1,6 +1,7 @@
 package li.cil.oc2.common.blockentity.monitor;
 
 import java.util.UUID;
+import li.cil.oc2.client.model.monitor.MonitorModelTypes;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -15,6 +16,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 public final class MonitorBlockEntity extends ModBlockEntity
         implements TickableBlockEntity, ICaptureInputStateStorage {
@@ -32,6 +34,15 @@ public final class MonitorBlockEntity extends ModBlockEntity
     /** @return {@code true} if this block entity is the master (origin) of its multiblock. */
     public boolean isOrigin() {
         return MonitorMultiblock.isOrigin(getBlockState());
+    }
+
+    /**
+     * Expose the block's multiblock position (width/height/offset/facing) to the fragment-based
+     * baked model. Client only; mirror of {@code BusCableBlockEntity#getModelData()}.
+     */
+    @Override
+    public ModelData getModelData() {
+        return MonitorModelTypes.fromState(getBlockState());
     }
 
     public void start() {
@@ -63,7 +74,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
         return stateManager.hasEnergy;
     }
 
-    public boolean getPowerState() {
+    public boolean getPowerState() { // NOPMD getter API consumed by renderer/container/screens
         return stateManager.isPowered;
     }
 

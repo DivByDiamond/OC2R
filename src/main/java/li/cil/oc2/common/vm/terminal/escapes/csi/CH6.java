@@ -22,11 +22,9 @@ public class CH6
             LOGGER.warn("XTSHIFTESCAPE not implemented");
         } else if (argsCount == 2) { // DECSLRM
             LOGGER.warn("DECSLRM not implemented");
-        } else if (argsCount == 0) { // SCOSC
-            if (!terminal.currentPrivateModeState.DECLRMM) {
-                terminal.savedX = terminal.x;
-                terminal.savedY = terminal.y;
-            }
+        } else if (argsCount == 0 && !terminal.currentPrivateModeState.DECLRMM) { // SCOSC
+            terminal.savedX = terminal.x;
+            terminal.savedY = terminal.y;
         }
     }
 

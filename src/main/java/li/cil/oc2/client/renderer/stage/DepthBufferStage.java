@@ -41,7 +41,7 @@ public final class DepthBufferStage {
     private static Entity minecraftCameraEntityBak;
 
     private static float calculateFrustumComponent(final float originalValue) {
-        return (originalValue / (ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE + 4f))
+        return originalValue / (ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE + 4f)
                 / ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE;
     }
 

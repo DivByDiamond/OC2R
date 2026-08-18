@@ -1,7 +1,6 @@
 package li.cil.oc2.api.bus.device;
 
 import li.cil.oc2.api.bus.DeviceBus;
-import li.cil.oc2.api.bus.DeviceBusController;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -12,7 +11,7 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
  * Base interface for objects that can be registered as devices on a {@link DeviceBus}.
  *
  * <p>Which types are handled/supported by a bus depends on context of the {@link
- * DeviceBusController} managing the bus.
+ * li.cil.oc2.api.bus.DeviceBusController} managing the bus.
  *
  * <p>May be provided as a capability on {@link BlockEntity}s and {@link ItemStack}s.
  *

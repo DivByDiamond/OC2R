@@ -7,7 +7,7 @@ public final class MacAddressUtils {
         if (code < 10) {
             return (char) ('0' + code);
         } else {
-            return (char) ('A' + (code - 10));
+            return (char) ('A' + code - 10);
         }
     }
 

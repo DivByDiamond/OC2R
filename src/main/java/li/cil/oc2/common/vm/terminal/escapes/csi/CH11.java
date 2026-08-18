@@ -31,10 +31,10 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
 
     private void shiftLeft(int chars, int y) {
         int startIndex =
-                ((terminal.currentPrivateModeState.isAltBufferEnabled())
+                terminal.currentPrivateModeState.isAltBufferEnabled()
                         ? y * Terminal.WIDTH
-                        : (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)) * Terminal.WIDTH);
-        int count = (Terminal.WIDTH) - chars;
+                        : (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH;
+        int count = Terminal.WIDTH - chars;
         int endIndex = startIndex + count;
         TerminalColors.ColorData c;
         switch (terminal.currentBackgroundColorMode) {
@@ -63,8 +63,8 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.altColors,
                     endIndex,
                     endIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.copy());
             Arrays.fill(
                     terminal.altStyles, endIndex, endIndex + chars, TerminalColors.DEFAULT_STYLE);
         } else {
@@ -86,8 +86,8 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.colors,
                     endIndex,
                     endIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.copy());
             Arrays.fill(terminal.styles, endIndex, endIndex + chars, TerminalColors.DEFAULT_STYLE);
         }
 
@@ -96,12 +96,12 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
 
     private void shiftRight(int chars) {
         int startIndex =
-                ((terminal.currentPrivateModeState.isAltBufferEnabled())
+                (terminal.currentPrivateModeState.isAltBufferEnabled()
                                 ? terminal.y * Terminal.WIDTH
-                                : (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                                : (terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT)
                                         * Terminal.WIDTH)
                         + terminal.x;
-        int count = (Terminal.WIDTH - terminal.x) - chars;
+        int count = Terminal.WIDTH - terminal.x - chars;
         TerminalColors.ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;
@@ -128,8 +128,8 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.altColors,
                     startIndex,
                     startIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + chars, c.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + chars, c.copy());
             Arrays.fill(
                     terminal.altStyles,
                     startIndex,
@@ -153,8 +153,8 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.colors,
                     startIndex,
                     startIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.colorsBackground, startIndex, startIndex + chars, c.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.colorsBackground, startIndex, startIndex + chars, c.copy());
             Arrays.fill(
                     terminal.styles, startIndex, startIndex + chars, TerminalColors.DEFAULT_STYLE);
         }

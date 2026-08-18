@@ -43,20 +43,20 @@ public final class TerminalInput {
         addSequence(GLFW.GLFW_KEY_LEFT, "\033[D");
 
         for (int i = 'A'; i <= 'Z'; i++) {
-            addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_A + (i - 'A'), (byte) (1 + i - 'A'));
+            addSequence(GLFW.GLFW_MOD_CONTROL, GLFW.GLFW_KEY_A + i - 'A', (byte) (1 + i - 'A'));
             addSequence(
                     GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_SHIFT,
-                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    GLFW.GLFW_KEY_A + i - 'A',
                     (byte) (1 + i - 'A'));
 
             addSequence(
                     GLFW.GLFW_MOD_ALT,
-                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    GLFW.GLFW_KEY_A + i - 'A',
                     (byte) '\033',
                     (byte) ('a' + i - 'A'));
             addSequence(
                     GLFW.GLFW_MOD_ALT | GLFW.GLFW_MOD_SHIFT,
-                    GLFW.GLFW_KEY_A + (i - 'A'),
+                    GLFW.GLFW_KEY_A + i - 'A',
                     (byte) '\033',
                     (byte) (i + 128));
         }

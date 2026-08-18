@@ -16,14 +16,10 @@ public class TerminalCursorRenderer {
         if (!terminal.currentPrivateModeState.DECTCEM) return;
 
         int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - terminal.y);
-        int localY = Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
+        int localY = Terminal.HEIGHT + globalY - terminal.lastRowToDisplay;
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
-        if (terminal.x < 0
-                || terminal.x >= Terminal.WIDTH
-                || ((!useAltBuffer && localY < 0) || terminal.y < 0)
-                || ((!useAltBuffer && localY >= Terminal.HEIGHT) || terminal.y >= Terminal.HEIGHT)
-                || (!useAltBuffer && globalY > terminal.lastRowToDisplay)) {
+        if (!isCursorVisible(terminal, useAltBuffer, globalY, localY)) {
             return;
         }
 
@@ -53,7 +49,41 @@ public class TerminalCursorRenderer {
         final float g = ((foreground >> 8) & 0xFF) / 255f;
         final float b = (foreground & 0xFF) / 255f;
 
-        switch (terminal.cursorMode) {
+        drawCursorShape(buffer, matrix, terminal.cursorMode, r, g, b);
+
+        MeshData rb = buffer.buildOrThrow();
+        BufferUploader.drawWithShader(rb);
+
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+        stack.popPose();
+
+        RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
+    }
+
+    private static boolean isCursorVisible(
+            final Terminal terminal,
+            final boolean useAltBuffer,
+            final int globalY,
+            final int localY) {
+        return terminal.x >= 0
+                && terminal.x < Terminal.WIDTH
+                && (useAltBuffer || localY >= 0)
+                && terminal.y >= 0
+                && (useAltBuffer || localY < Terminal.HEIGHT)
+                && terminal.y < Terminal.HEIGHT
+                && (useAltBuffer || globalY <= terminal.lastRowToDisplay);
+    }
+
+    private static void drawCursorShape(
+            final BufferBuilder buffer,
+            final Matrix4f matrix,
+            final int cursorMode,
+            final float r,
+            final float g,
+            final float b) {
+        switch (cursorMode) {
             case TerminalColors.CursorMode.DEFAULT,
                     TerminalColors.CursorMode.BLINK_BLOCK,
                     TerminalColors.CursorMode.STEADY_BLOCK -> {
@@ -79,15 +109,5 @@ public class TerminalCursorRenderer {
             }
             default -> {}
         }
-
-        MeshData rb = buffer.buildOrThrow();
-        BufferUploader.drawWithShader(rb);
-
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
-        stack.popPose();
-
-        RenderSystem.depthMask(true);
-        RenderSystem.defaultBlendFunc();
     }
 }

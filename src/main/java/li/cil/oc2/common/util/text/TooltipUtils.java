@@ -33,18 +33,29 @@ public final class TooltipUtils {
             return;
         }
 
+        addTranslatedDescription(stack, tooltip);
+        addRebootHint(stack, tooltip);
+        addEnergyConsumptionDescription(stack, tooltip);
+        addInternetGatewayDescription(stack, tooltip);
+    }
+
+    private static void addTranslatedDescription(
+            final ItemStack stack, final List<Component> tooltip) {
         final String translationKey =
                 stack.getDescriptionId() + Constants.TOOLTIP_DESCRIPTION_SUFFIX;
-        final Language language = Language.getInstance();
-        if (language.has(translationKey)) {
-            final MutableComponent description = Component.translatable(translationKey);
-            tooltip.add(withFormat(description, ChatFormatting.GRAY));
+        if (Language.getInstance().has(translationKey)) {
+            tooltip.add(withFormat(Component.translatable(translationKey), ChatFormatting.GRAY));
         }
+    }
 
+    private static void addRebootHint(final ItemStack stack, final List<Component> tooltip) {
         if (stack.is(ItemTags.DEVICE_NEEDS_REBOOT)) {
             tooltip.add(DEVICE_NEEDS_REBOOT);
         }
+    }
 
+    private static void addEnergyConsumptionDescription(
+            final ItemStack stack, final List<Component> tooltip) {
         final int energyConsumption;
         if (stack.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof EnergyConsumingBlock energyConsumingBlock) {
@@ -62,25 +73,30 @@ public final class TooltipUtils {
                             Component.translatable(Constants.TOOLTIP_ENERGY_CONSUMPTION, energy),
                             ChatFormatting.GRAY));
         }
+    }
 
-        if (stack.getItem().equals(Items.INTERNET_GATEWAY.get())) {
-            if (Config.gatewayEnergyPerPacket > 0) {
-                final MutableComponent energy =
-                        withFormat(
-                                String.valueOf(Config.gatewayEnergyPerPacket),
-                                ChatFormatting.GREEN);
-                tooltip.add(
-                        withFormat(
-                                Component.translatable(
-                                        Constants.TOOLTIP_INTERNET_ENERGY_PER_PACKET, energy),
-                                ChatFormatting.GRAY));
-            }
-            if (!Config.internetCardEnabled) {
-                tooltip.add(
-                        withFormat(
-                                Component.translatable(Constants.TOOLTIP_INTERNET_DISABLED),
-                                ChatFormatting.RED));
-            }
+    private static void addInternetGatewayDescription(
+            final ItemStack stack, final List<Component> tooltip) {
+        if (!stack.getItem().equals(Items.INTERNET_GATEWAY.get())) {
+            return;
+        }
+
+        if (Config.gatewayEnergyPerPacket > 0) {
+            final MutableComponent energy =
+                    withFormat(
+                            String.valueOf(Config.gatewayEnergyPerPacket),
+                            ChatFormatting.GREEN);
+            tooltip.add(
+                    withFormat(
+                            Component.translatable(
+                                    Constants.TOOLTIP_INTERNET_ENERGY_PER_PACKET, energy),
+                            ChatFormatting.GRAY));
+        }
+        if (!Config.internetCardEnabled) {
+            tooltip.add(
+                    withFormat(
+                            Component.translatable(Constants.TOOLTIP_INTERNET_DISABLED),
+                            ChatFormatting.RED));
         }
     }
 
@@ -97,28 +113,35 @@ public final class TooltipUtils {
             final RestrictedContainer container,
             final List<Component> tooltip,
             final String... subInventoryNames) {
+        final List<ItemStack> itemStacks = aggregateStacks(container);
+        addStackLines(itemStacks, tooltip);
+    }
+
+    private static List<ItemStack> aggregateStacks(final RestrictedContainer container) {
         final List<ItemStack> itemStacks = ITEM_STACKS.get();
         itemStacks.clear();
 
         for (final var typed_stacks : container.items().values()) {
             for (final var x : typed_stacks) {
                 if (x.getCount() == 0) continue;
-
-                var item = x.getItem();
-                var found = false;
-                for (final var y : itemStacks) {
-                    if (y.getItem().equals(item)) {
-                        y.setCount(y.getCount() + 1);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    itemStacks.add(x.copy());
-                }
+                mergeStack(itemStacks, x);
             }
         }
+        return itemStacks;
+    }
 
+    private static void mergeStack(final List<ItemStack> itemStacks, final ItemStack x) {
+        final var item = x.getItem();
+        for (final var y : itemStacks) {
+            if (y.getItem().equals(item)) {
+                y.setCount(y.getCount() + 1);
+                return;
+            }
+        }
+        itemStacks.add(x.copy());
+    }
+
+    private static void addStackLines(final List<ItemStack> itemStacks, final List<Component> tooltip) {
         for (final ItemStack stack : itemStacks) {
             tooltip.add(
                     Component.literal("- ")

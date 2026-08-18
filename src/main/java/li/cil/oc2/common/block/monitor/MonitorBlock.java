@@ -63,13 +63,6 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     public static final IntegerProperty ORIGIN_OFFSET_Y =
             IntegerProperty.create("mb_oy", 0, MonitorMultiblock.MAX_HEIGHT - 1);
 
-    /**
-     * Re-entrancy guard for {@link #playerWillDestroy}. When we proactively remove the other
-     * blocks of a multiblock we don't want those removals to recursively drop items or trigger
-     * multiblock teardown again.
-     */
-    static final ThreadLocal<Boolean> IS_BREAKING_MULTIBLOCK = ThreadLocal.withInitial(() -> false);
-
     // We bake the "screen" indent on the front into the collision shape, to prevent stuff being
     // placeable on that side, such as network connectors, torches, etc.
     private static final VoxelShape NEG_Z_SHAPE =
@@ -180,62 +173,17 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             @Nullable final LivingEntity placer, final ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide()) {
-            // Attempt to merge the freshly placed 1x1 monitor into an adjacent multiblock.
-            // tryMergeIntoMultiblock will re-stamp our BlockState (and possibly our neighbors')
-            // with the new dimensions / offsets if a merge happens.
-            MonitorMultiblock.tryMergeIntoMultiblock(level, pos, state.getValue(FACING));
+            MonitorMerge.tryMergeIntoMultiblock(level, pos, state.getValue(FACING));
         }
     }
 
     @Override
     public BlockState playerWillDestroy(
             final Level level, final BlockPos pos, final BlockState state, final Player player) {
-        if (!IS_BREAKING_MULTIBLOCK.get() && !level.isClientSide()) {
-            IS_BREAKING_MULTIBLOCK.set(true);
-            try {
-                // Drop W*H items at the broken position (the player's pick-up spot). We drop
-                // W*H-1 here because the vanilla loot table will drop 1 more item for the
-                // original block when destroyBlock() runs right after playerWillDestroy(). In
-                // creative mode the vanilla drop is skipped, so we also skip our drop.
-                final BlockPos originPos = MonitorMultiblock.isOrigin(state)
-                        ? pos : MonitorMultiblock.getOriginPos(pos, state);
-                final BlockState originState = level.getBlockState(originPos);
-                if (originState.getBlock() instanceof MonitorBlock) {
-                    final int W = originState.getValue(WIDTH);
-                    final int H = originState.getValue(HEIGHT);
-                    if (!player.isCreative() && (W > 1 || H > 1)) {
-                        Block.popResource(
-                                level, pos,
-                                new ItemStack(li.cil.oc2.common.item.Items.MONITOR.get(), W * H - 1));
-                    }
-                    // Remove every other block of the multiblock silently. removeBlock does
-                    // not call getDrops, so no items are dropped for them.
-                    final Direction facing = originState.getValue(FACING);
-                    for (int ox = 0; ox < W; ox++) {
-                        for (int oy = 0; oy < H; oy++) {
-                            final BlockPos blockPos = MonitorMultiblock.getBlockPos(originPos, facing, ox, oy);
-                            if (blockPos.equals(pos)) continue;
-                            final BlockEntity be = level.getBlockEntity(blockPos);
-                            if (be != null) be.setRemoved();
-                            level.removeBlock(blockPos, false);
-                        }
-                    }
-                }
-            } finally {
-                IS_BREAKING_MULTIBLOCK.set(false);
-            }
+        if (!level.isClientSide()) {
+            MonitorBreak.onBlockBroken(level, pos, state);
         }
         return super.playerWillDestroy(level, pos, state, player);
-    }
-
-    @Override
-    public List<ItemStack> getDrops(final BlockState state, final net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
-        // During multiblock teardown we already popped W*H-1 items in playerWillDestroy; the
-        // vanilla loot table drop for the originally broken block supplies the final item, so
-        // we just defer to the standard loot table here. The IS_BREAKING_MULTIBLOCK flag is
-        // only used to prevent recursive teardown if removeBlock() somehow re-enters this
-        // path (it shouldn't, but we keep the guard for safety).
-        return super.getDrops(state, builder);
     }
 
     @Override

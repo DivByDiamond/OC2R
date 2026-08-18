@@ -69,7 +69,7 @@ public final class MonitorDisplayWidget {
             }
 
             final Matrix4f projectionMatrix =
-                    (new Matrix4f()).setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
+                    new Matrix4f().setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
             rendererView.render(
                     terminalStack,
                     projectionMatrix,

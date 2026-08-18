@@ -24,14 +24,7 @@ public final class BusCableItemHelper {
     public static void addExtraDrops(
             final List<ItemStack> drops, final BlockState state, final LootParams.Builder builder) {
         if (state.getValue(HAS_FACADE)) {
-            final BlockEntity blockEntity =
-                    builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-            if (blockEntity instanceof final BusCableBlockEntity busCable) {
-                final ItemStack stack = busCable.getFacade();
-                if (!stack.isEmpty()) {
-                    drops.add(stack);
-                }
-            }
+            addFacadeDrop(drops, builder);
         }
         if (state.getValue(HAS_CABLE)) {
             drops.add(new ItemStack(Items.BUS_CABLE.get()));
@@ -71,6 +64,18 @@ public final class BusCableItemHelper {
             }
         }
         return null;
+    }
+
+    private static void addFacadeDrop(
+            final List<ItemStack> drops, final LootParams.Builder builder) {
+        final BlockEntity blockEntity =
+                builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if (blockEntity instanceof final BusCableBlockEntity busCable) {
+            final ItemStack stack = busCable.getFacade();
+            if (!stack.isEmpty()) {
+                drops.add(stack);
+            }
+        }
     }
 
     private BusCableItemHelper() {}

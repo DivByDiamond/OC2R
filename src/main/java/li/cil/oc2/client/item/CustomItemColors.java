@@ -2,6 +2,7 @@ package li.cil.oc2.client.item;
 
 import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
+import java.util.Map;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.DyeColor;
@@ -31,6 +32,25 @@ public final class CustomItemColors {
 
     private static final int NO_TINT = 0xFFFFFFFF;
 
+    private static final Map<DyeColor, Integer> COLOR_BY_DYE =
+            Map.ofEntries(
+                    Map.entry(DyeColor.WHITE, WHITE),
+                    Map.entry(DyeColor.ORANGE, ORANGE),
+                    Map.entry(DyeColor.MAGENTA, MAGENTA),
+                    Map.entry(DyeColor.LIGHT_BLUE, LIGHT_BLUE),
+                    Map.entry(DyeColor.YELLOW, YELLOW),
+                    Map.entry(DyeColor.LIME, LIME),
+                    Map.entry(DyeColor.PINK, PINK),
+                    Map.entry(DyeColor.GRAY, GREY),
+                    Map.entry(DyeColor.LIGHT_GRAY, LIGHT_GREY),
+                    Map.entry(DyeColor.CYAN, CYAN),
+                    Map.entry(DyeColor.PURPLE, PURPLE),
+                    Map.entry(DyeColor.BLUE, BLUE),
+                    Map.entry(DyeColor.BROWN, BROWN),
+                    Map.entry(DyeColor.GREEN, GREEN),
+                    Map.entry(DyeColor.RED, RED),
+                    Map.entry(DyeColor.BLACK, BLACK));
+
     public static void initialize(final RegisterColorHandlersEvent.Item event) {
         event.register(
                 (stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
@@ -44,25 +64,11 @@ public final class CustomItemColors {
     }
 
     public static int getColorByDye(final DyeColor dye) {
-        return switch (dye) {
-            case WHITE -> WHITE;
-            case ORANGE -> ORANGE;
-            case MAGENTA -> MAGENTA;
-            case LIGHT_BLUE -> LIGHT_BLUE;
-            case YELLOW -> YELLOW;
-            case LIME -> LIME;
-            case PINK -> PINK;
-            case GRAY -> GREY;
-            case LIGHT_GRAY -> LIGHT_GREY;
-            case CYAN -> CYAN;
-            case PURPLE -> PURPLE;
-            case BLUE -> BLUE;
-            case BROWN -> BROWN;
-            case GREEN -> GREEN;
-            case RED -> RED;
-            case BLACK -> BLACK;
-            default -> throw new AssertionError(dye);
-        };
+        final Integer color = COLOR_BY_DYE.get(dye);
+        if (color == null) {
+            throw new AssertionError(dye);
+        }
+        return color;
     }
 
     public static int getColor(final ItemStack stack) {

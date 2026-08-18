@@ -6,7 +6,7 @@ public final class PacketProcessor {
     public static long macToLong(final byte[] mac, int offset) {
         long ret = 0;
         for (int i = 0; i < 6; i++) {
-            ret |= ((((long) mac[i + offset]) & 0xff) << (i * 8));
+            ret |= (mac[i + offset] & 0xffL) << (i * 8);
         }
         return ret;
     }
@@ -24,7 +24,7 @@ public final class PacketProcessor {
 
     public static short getVLAN(byte[] packet) {
         if (packet[12] == ((byte) 0x81) && packet[13] == 0x00) {
-            return (short) (packet[15] | ((((short) packet[14]) & 0x0f) << 8));
+            return (short) (packet[15] | ((packet[14] & 0x0f) << 8));
         } else {
             return (short) 0;
         }
@@ -50,7 +50,7 @@ public final class PacketProcessor {
             byte[] ret = new byte[packet.length - 4];
             copyBytes(packet, ret, 0, 0, 12);
             copyBytes(packet, ret, 16, 12, packet.length - 16);
-            short tag = (short) (packet[15] | ((((short) packet[14]) & 0x0f) << 8));
+            short tag = (short) (packet[15] | ((packet[14] & 0x0f) << 8));
             return new Pair<>(tag, ret);
         } else {
             return new Pair<>((short) 0, packet);

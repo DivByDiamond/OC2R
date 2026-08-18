@@ -16,19 +16,19 @@ final class SwitchPacketForwarder {
         this.switchEntity = switchEntity;
     }
 
-    void forward(final NetworkInterface source, byte[] frame_bytes, final int timeToLive) {
+    void forward(final NetworkInterface source, byte[] frameBytes, final int timeToLive) {
         switchEntity.validateAdjacentBlocks();
         long tickTime = switchEntity.getLevel().getGameTime();
-        long destMac = PacketProcessor.macToLong(frame_bytes, 0);
-        long srcMac = PacketProcessor.macToLong(frame_bytes, 6);
-        short vlan = PacketProcessor.getVLAN(frame_bytes);
+        long destMac = PacketProcessor.macToLong(frameBytes, 0);
+        long srcMac = PacketProcessor.macToLong(frameBytes, 6);
+        short vlan = PacketProcessor.getVLAN(frameBytes);
         Optional<Integer> optSide = switchEntity.sideReverseLookup(source);
         if (!optSide.isPresent()) return;
         int side = optSide.get();
         switchEntity.hostTable.put(srcMac, side, tickTime);
         PortSettings ingressSettings = switchEntity.portManager.portSettings[side];
         SwitchLog log = new SwitchLog(vlan, side, srcMac, destMac);
-        byte[] frame = frame_bytes;
+        byte[] frame = frameBytes;
         if (vlan == 0) {
             Pair<Short, byte[]> pair = PacketProcessor.removeVLANTag(frame);
             frame = pair.getSecond();
@@ -44,16 +44,36 @@ final class SwitchPacketForwarder {
         }
         HostEntry host = switchEntity.hostTable.get(destMac);
         if (host != null) {
-            if (host.iface == side && !ingressSettings.hairpin) {
-                log.drop("hairpin disabled");
-                return;
-            }
-            writeToSide(frame, host.iface, vlan, log, timeToLive);
+            forwardToHost(frame, side, host, vlan, log, timeToLive, ingressSettings);
         } else {
-            log.flood();
-            for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
-                if (i != side) writeToSide(frame, i, vlan, log, timeToLive);
+            flood(frame, side, vlan, log, timeToLive);
         }
+    }
+
+    private void forwardToHost(
+            final byte[] frame,
+            final int side,
+            final HostEntry host,
+            final short vlan,
+            final SwitchLog log,
+            final int timeToLive,
+            final PortSettings ingressSettings) {
+        if (host.iface == side && !ingressSettings.hairpin) {
+            log.drop("hairpin disabled");
+            return;
+        }
+        writeToSide(frame, host.iface, vlan, log, timeToLive);
+    }
+
+    private void flood(
+            final byte[] frame,
+            final int side,
+            final short vlan,
+            final SwitchLog log,
+            final int timeToLive) {
+        log.flood();
+        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
+            if (i != side) writeToSide(frame, i, vlan, log, timeToLive);
     }
 
     private void writeToSide(byte[] frame, int side, short vlan, SwitchLog log, int timeToLive) {

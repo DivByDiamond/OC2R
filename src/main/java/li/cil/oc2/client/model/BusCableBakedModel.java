@@ -133,43 +133,10 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             final ModelData blockEntityData) {
         if (state.hasProperty(BusCableStateProperties.HAS_FACADE)
                 && state.getValue(BusCableStateProperties.HAS_FACADE)) {
-            final BlockEntity blockEntity = level.getBlockEntity(pos);
-
-            BlockState facadeState = null;
-            if (blockEntity instanceof final BusCableBlockEntity busCable) {
-                final ItemStack facadeItem = busCable.getFacade();
-                facadeState = ItemStackUtils.getBlockState(facadeItem);
-            }
-            if (facadeState == null) {
-                facadeState = Blocks.IRON_BLOCK.defaultBlockState();
-            }
-
-            final BlockModelShaper shapes =
-                    Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
-            final BakedModel model = shapes.getBlockModel(facadeState);
-            final ModelData data = model.getModelData(level, pos, facadeState, blockEntityData);
-
-            return ModelData.builder()
-                    .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
-                    .build();
+            return getFacadeModelData(level, pos, blockEntityData);
         }
 
-        Direction supportSide = null;
-        for (final Direction direction : Constants.DIRECTIONS) {
-            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<ConnectionType> property =
-                        BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
-                if (state.hasProperty(property)
-                        && state.getValue(property) == ConnectionType.INTERFACE) {
-                    return blockEntityData; // Plug is already supporting us, bail.
-                }
-
-                if (supportSide == null) { // Prefer vertical supports.
-                    supportSide = direction;
-                }
-            }
-        }
-
+        final Direction supportSide = getSupportSide(level, pos, state);
         if (supportSide != null) {
             return ModelData.builder()
                     .with(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY, new BusCableModelTypes.BusCableSupportSide(supportSide))
@@ -177,5 +144,52 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         }
 
         return blockEntityData;
+    }
+
+    @Nullable
+    private ModelData getFacadeModelData(
+            final BlockAndTintGetter level,
+            final BlockPos pos,
+            final ModelData blockEntityData) {
+        final BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        BlockState facadeState = null;
+        if (blockEntity instanceof final BusCableBlockEntity busCable) {
+            final ItemStack facadeItem = busCable.getFacade();
+            facadeState = ItemStackUtils.getBlockState(facadeItem);
+        }
+        if (facadeState == null) {
+            facadeState = Blocks.IRON_BLOCK.defaultBlockState();
+        }
+
+        final BlockModelShaper shapes =
+                Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
+        final BakedModel model = shapes.getBlockModel(facadeState);
+        final ModelData data = model.getModelData(level, pos, facadeState, blockEntityData);
+
+        return ModelData.builder()
+                .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
+                .build();
+    }
+
+    @Nullable
+    private Direction getSupportSide(
+            final BlockAndTintGetter level, final BlockPos pos, final BlockState state) {
+        Direction supportSide = null;
+        for (final Direction direction : Constants.DIRECTIONS) {
+            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
+                final EnumProperty<ConnectionType> property =
+                        BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
+                if (state.hasProperty(property)
+                        && state.getValue(property) == ConnectionType.INTERFACE) {
+                    return null; // Plug is already supporting us, bail.
+                }
+
+                if (supportSide == null) { // Prefer vertical supports.
+                    supportSide = direction;
+                }
+            }
+        }
+        return supportSide;
     }
 }

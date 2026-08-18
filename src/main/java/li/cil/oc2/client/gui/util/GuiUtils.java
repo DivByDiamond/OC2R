@@ -37,9 +37,9 @@ public final class GuiUtils {
     private static final int DEVICE_INFO_ICON_SIZE = 28;
     private static final int RELATIVE_ICON_POSITION = (SLOT_SIZE - DEVICE_INFO_ICON_SIZE) / 2;
 
-    public static <TContainer extends AbstractContainerMenu> void renderMissingDeviceInfoIcon(
+    public static <T extends AbstractContainerMenu> void renderMissingDeviceInfoIcon(
             final GuiGraphics graphics,
-            final AbstractContainerScreen<TContainer> screen,
+            final AbstractContainerScreen<T> screen,
             final DeviceType type,
             final Sprite icon) {
         findFirstSlotOfTypeIfAllSlotsOfTypeEmpty(screen.getMenu(), type)
@@ -51,9 +51,9 @@ public final class GuiUtils {
                                         screen.getGuiTop() + slot.y - 1 + RELATIVE_ICON_POSITION));
     }
 
-    public static <TContainer extends AbstractContainerMenu> void renderMissingDeviceInfoTooltip(
+    public static <T extends AbstractContainerMenu> void renderMissingDeviceInfoTooltip(
             final GuiGraphics graphics,
-            final AbstractContainerScreen<TContainer> screen,
+            final AbstractContainerScreen<T> screen,
             final int mouseX,
             final int mouseY,
             final DeviceType type) {
@@ -66,9 +66,9 @@ public final class GuiUtils {
                 Objects.requireNonNull(WARNING_BY_DEVICE_TYPE.get(type)));
     }
 
-    public static <TContainer extends AbstractContainerMenu> void renderMissingDeviceInfoTooltip(
+    public static <T extends AbstractContainerMenu> void renderMissingDeviceInfoTooltip(
             final GuiGraphics graphics,
-            final AbstractContainerScreen<TContainer> screen,
+            final AbstractContainerScreen<T> screen,
             final int mouseX,
             final int mouseY,
             final DeviceType type,
@@ -105,15 +105,16 @@ public final class GuiUtils {
             final AbstractContainerMenu container, final DeviceType type) {
         DeviceTypeSlotItemHandler firstSlot = null;
         for (final Slot slot : container.slots) {
-            if (slot instanceof final DeviceTypeSlotItemHandler typedSlot) {
-                final DeviceType slotType = typedSlot.getDeviceType();
-                if (slotType.equals(type)) {
-                    if (slot.hasItem()) {
-                        return Optional.empty();
-                    } else if (firstSlot == null) {
-                        firstSlot = typedSlot;
-                    }
-                }
+            if (!(slot instanceof final DeviceTypeSlotItemHandler typedSlot)) {
+                continue;
+            }
+            if (!typedSlot.getDeviceType().equals(type)) {
+                continue;
+            }
+            if (slot.hasItem()) {
+                return Optional.empty();
+            } else if (firstSlot == null) {
+                firstSlot = typedSlot;
             }
         }
         return Optional.ofNullable(firstSlot);

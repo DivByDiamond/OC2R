@@ -65,8 +65,8 @@ public final class BuiltinDevices {
                                 FileSystems.getLayeredFileSystem()),
                         VFS_INTERRUPT,
                         VirtIOFileSystemDevice::getInterrupt);
-        try (final InputStream ris = Buildroot.getRootFilesystem();
-             final InputStream bis = Buildroot.getBootFilesystem()) {
+        try (InputStream ris = Buildroot.getRootFilesystem();
+             InputStream bis = Buildroot.getBootFilesystem()) {
             if (ris == null) {
                 LOGGER.error(
                         "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"

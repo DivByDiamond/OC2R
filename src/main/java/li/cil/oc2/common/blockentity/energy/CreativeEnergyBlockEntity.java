@@ -25,7 +25,8 @@ public final class CreativeEnergyBlockEntity extends ModBlockEntity implements T
 
         for (final Direction side : SIDES) {
             final BlockPos neighborPos = getBlockPos().relative(side);
-            final ChunkPos neighborChunkPos = new ChunkPos(neighborPos);
+            final ChunkPos neighborChunkPos =
+                    new ChunkPos(neighborPos); // NOPMD: depends on loop side
             if (level.hasChunk(neighborChunkPos.x, neighborChunkPos.z)) {
                 final var energy =
                         level.getCapability(

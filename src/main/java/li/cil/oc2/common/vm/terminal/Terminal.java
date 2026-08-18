@@ -2,12 +2,12 @@ package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
-import li.cil.oc2.common.vm.terminal.escapes.*;
 import li.cil.oc2.common.vm.terminal.escapes.apc.APCManager;
 import li.cil.oc2.common.vm.terminal.escapes.csi.CSIManager;
 import li.cil.oc2.common.vm.terminal.escapes.dcs.DCSManager;
@@ -100,7 +100,8 @@ public class Terminal {
     transient DCSManager dcsManager = new DCSManager(this);
     transient APCManager apcManager = new APCManager(this);
     public transient TerminalIO io = new TerminalIO(this);
-    private transient TerminalClient client;
+    private transient TerminalClient clientInstance;
+    private final transient ReentrantLock clientLock = new ReentrantLock();
 
     public Terminal() {
         bufferManager = new TerminalBuffer(this);
@@ -165,14 +166,17 @@ public class Terminal {
     }
 
     private TerminalClient client() {
-        TerminalClient result = client;
+        TerminalClient result = clientInstance;
         if (result == null) {
-            synchronized (this) {
-                result = client;
+            clientLock.lock();
+            try {
+                result = clientInstance;
                 if (result == null) {
                     result = new TerminalClient(this);
-                    client = result;
+                    clientInstance = result;
                 }
+            } finally {
+                clientLock.unlock();
             }
         }
         return result;

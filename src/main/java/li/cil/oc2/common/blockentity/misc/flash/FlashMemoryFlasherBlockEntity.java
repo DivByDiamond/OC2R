@@ -113,13 +113,12 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         event.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (be instanceof final FlashMemoryFlasherBlockEntity self) {
-                        if (side
-                                == self.getBlockState()
-                                        .getValue(FlashMemoryFlasherBlock.FACING)
-                                        .getOpposite()) {
-                            return self.device;
-                        }
+                    if (be instanceof final FlashMemoryFlasherBlockEntity self
+                            && side
+                                    == self.getBlockState()
+                                            .getValue(FlashMemoryFlasherBlock.FACING)
+                                            .getOpposite()) {
+                        return self.device;
                     }
                     return null;
                 },

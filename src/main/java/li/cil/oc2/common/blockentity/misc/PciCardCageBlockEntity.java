@@ -34,7 +34,9 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         super(BlockEntities.PCI_CARD_CAGE.get(), pos, state);
     }
 
-    private void handleMountedChanged(final boolean ignored) {}
+    private void handleMountedChanged(final boolean value) {
+        isMounted = value;
+    }
 
     public boolean hasEnergy() {
         return energyPresent;
@@ -47,9 +49,15 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         }
 
         if (Config.cardCagesUseEnergy()) {
-            if (energy.extractEnergy(Config.cardCageEnergyPerTick, true)
-                    >= Config.cardCageEnergyPerTick) {
+            final boolean hasEnergy =
+                    energy.extractEnergy(Config.cardCageEnergyPerTick, true)
+                            >= Config.cardCageEnergyPerTick;
+            if (hasEnergy) {
                 energy.extractEnergy(Config.cardCageEnergyPerTick, false);
+            }
+            if (energyPresent != hasEnergy) {
+                energyPresent = hasEnergy;
+                setChanged();
             }
         }
     }
@@ -101,13 +109,12 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         event.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (be instanceof final PciCardCageBlockEntity self) {
-                        if (side
-                                == self.getBlockState()
-                                        .getValue(PciCardCageBlock.FACING)
-                                        .getOpposite()) {
-                            return self.cardCageDevice;
-                        }
+                    if (be instanceof final PciCardCageBlockEntity self
+                            && side
+                                    == self.getBlockState()
+                                            .getValue(PciCardCageBlock.FACING)
+                                            .getOpposite()) {
+                        return self.cardCageDevice;
                     }
                     return null;
                 },

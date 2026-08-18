@@ -54,9 +54,9 @@ public final class Sprite {
         graphics.blit(
                 texture.location,
                 x,
-                y + (height - h),
+                y + height - h,
                 u0,
-                v0 + (height - h),
+                v0 + height - h,
                 width,
                 h,
                 texture.width,

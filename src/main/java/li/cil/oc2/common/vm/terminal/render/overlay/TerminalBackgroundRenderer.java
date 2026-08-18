@@ -15,63 +15,65 @@ public class TerminalBackgroundRenderer {
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row) {
-        float backgroundStartX = -1;
-        int backgroundColor = 0;
+        final BackgroundRun run = new BackgroundRun();
         float tx = 0f;
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
         int index =
                 useAltBuffer
                         ? row * Terminal.WIDTH
-                        : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT)) * Terminal.WIDTH;
+                        : (row + terminal.lastRowToDisplay - Terminal.HEIGHT) * Terminal.WIDTH;
         for (int col = 0; col < Terminal.WIDTH; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
-            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
-            final ColorData color =
-                    !invertBackground
-                            ? useAltBuffer
-                                    ? terminal.altColorsBackground[index]
-                                    : terminal.colorsBackground[index]
-                            : useAltBuffer ? terminal.altColors[index] : terminal.colors[index];
-
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
-            final int[] palette =
-                    (style & Terminal.STYLE_DIM_MASK) != 0
-                            ? TerminalColors.DIM_COLORS
-                            : TerminalColors.COLORS;
-            int background =
-                    switch (color.Mode) {
-                        case SIXTEEN_COLOR -> palette[!invertBackground ? color.G : color.R];
-                        case TWO_FIFTY_SIX_COLOR ->
-                                TerminalColors.COLORS_256[!invertBackground ? color.G : color.R];
-                        case TRUE_COLOR -> color.ToInt();
-                        case SIXTEEN_COLOR_BRIGHT ->
-                                TerminalColors.BRIGHT_COLORS[!invertBackground ? color.G : color.R];
-                        case DEFAULT_BACKGROUND -> 0x000000;
-                        default -> throw new AssertionError(color.Mode);
-                    };
+            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
+            final ColorData color = resolveColor(terminal, useAltBuffer, index, invertBackground);
+            final int background = resolveBackground(style, color, invertBackground);
 
-            final boolean hadBackground = backgroundStartX >= 0;
-            final boolean hasBackground = background != 0x000000;
-            if (!hadBackground && hasBackground) {
-                backgroundStartX = tx;
-                backgroundColor = background;
-            } else if (hadBackground && (!hasBackground || backgroundColor != background)) {
-                renderBackgroundRect(matrix, buffer, backgroundStartX, tx, backgroundColor);
-                if (hasBackground) {
-                    backgroundStartX = tx;
-                    backgroundColor = background;
-                } else {
-                    backgroundStartX = -1;
-                }
-            }
+            run.advance(tx, background, matrix, buffer);
             tx += Terminal.CHAR_WIDTH;
         }
 
-        if (backgroundStartX >= 0) {
-            renderBackgroundRect(matrix, buffer, backgroundStartX, tx, backgroundColor);
+        if (run.active()) {
+            renderBackgroundRect(matrix, buffer, run.startX, tx, run.color);
         }
+    }
+
+    private static ColorData resolveColor(
+            final Terminal terminal,
+            final boolean useAltBuffer,
+            final int index,
+            final boolean invertBackground) {
+        return !invertBackground
+                ? useAltBuffer
+                        ? terminal.altColorsBackground[index]
+                        : terminal.colorsBackground[index]
+                : useAltBuffer ? terminal.altColors[index] : terminal.colors[index];
+    }
+
+    private static int resolveBackground(
+            final byte style,
+            final ColorData color,
+            final boolean invertBackground) {
+        final int[] palette =
+                (style & Terminal.STYLE_DIM_MASK) != 0
+                        ? TerminalColors.DIM_COLORS
+                        : TerminalColors.COLORS;
+        return switch (color.Mode) {
+            case SIXTEEN_COLOR -> palette[backgroundChannel(color, invertBackground)];
+            case TWO_FIFTY_SIX_COLOR ->
+                    TerminalColors.COLORS_256[backgroundChannel(color, invertBackground)];
+            case TRUE_COLOR -> color.toInt();
+            case SIXTEEN_COLOR_BRIGHT ->
+                    TerminalColors.BRIGHT_COLORS[backgroundChannel(color, invertBackground)];
+            case DEFAULT_BACKGROUND -> 0x000000;
+            default -> throw new AssertionError(color.Mode);
+        };
+    }
+
+    private static int backgroundChannel(final ColorData color, final boolean invertBackground) {
+        return invertBackground ? color.R : color.G;
     }
 
     static void renderBackgroundRect(
@@ -88,5 +90,35 @@ public class TerminalBackgroundRenderer {
         buffer.addVertex(matrix, x1, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1).setUv(0, 0);
         buffer.addVertex(matrix, x1, 0, 0).setColor(r, g, b, 1).setUv(0, 0);
         buffer.addVertex(matrix, x0, 0, 0).setColor(r, g, b, 1).setUv(0, 0);
+    }
+
+    private static final class BackgroundRun {
+        float startX = -1;
+        int color = 0;
+
+        void advance(
+                final float tx,
+                final int background,
+                final Matrix4f matrix,
+                final BufferBuilder buffer) {
+            final boolean hadBackground = startX >= 0;
+            final boolean hasBackground = background != 0x000000;
+            if (!hadBackground && hasBackground) {
+                startX = tx;
+                color = background;
+            } else if (hadBackground && (!hasBackground || color != background)) {
+                renderBackgroundRect(matrix, buffer, startX, tx, color);
+                if (hasBackground) {
+                    startX = tx;
+                    color = background;
+                } else {
+                    startX = -1;
+                }
+            }
+        }
+
+        boolean active() {
+            return startX >= 0;
+        }
     }
 }

@@ -65,17 +65,13 @@ public class MethodInvoker {
             return;
         }
         try {
-            try {
-                final Object result = method.invoke(invocation);
-                messageWriter.writeResult(result);
-            } catch (final Exception e) {
-                throw e;
-            } catch (final Throwable t) {
-                throw new RuntimeException(t);
-            }
+            final Object result = method.invoke(invocation);
+            messageWriter.writeResult(result);
         } catch (final Exception e) {
             messageWriter.writeError(
                     e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+        } catch (final Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 }

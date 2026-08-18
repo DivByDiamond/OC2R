@@ -19,12 +19,12 @@ public final class ItemStackJsonSerializer implements JsonSerializer<ItemStack> 
             return JsonNull.INSTANCE;
         }
 
-        var src_nbt = ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, src).getOrThrow();
-        assert src_nbt instanceof CompoundTag;
+        var srcNbt = ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, src).getOrThrow();
+        assert srcNbt instanceof CompoundTag;
 
         final JsonElement json =
                 NBTToJsonConverter.convert(
-                        RPCItemStackTagFilters.getFilteredTag(src, (CompoundTag) src_nbt));
+                        RPCItemStackTagFilters.getFilteredTag(src, (CompoundTag) srcNbt));
 
         // Manually patch the count: the NBT conversion truncates it to byte, but some mods use
         // larger stack sizes.

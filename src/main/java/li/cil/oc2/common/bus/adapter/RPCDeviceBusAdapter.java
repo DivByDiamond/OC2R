@@ -76,7 +76,7 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
                 new MethodInvoker(
                         gson,
                         messageWriter,
-                        id -> deviceRegistry.devicesById.get(id),
+                        deviceRegistry.devicesById::get,
                         mi -> synchronizedInvocation = mi);
     }
 
@@ -133,23 +133,12 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     }
 
     private void readFromDevice() {
-        while (receiveBuffer == null
-                && synchronizedInvocation == null) {
+        while (receiveBuffer == null && synchronizedInvocation == null) {
             final int value = serialDevice.read();
             if (value < 0) break;
             if (value == 0 || value == 13) {
                 crmode = value == 13;
-                if (transmitBuffer.limit() > 0) {
-                    transmitBuffer.flip();
-                    if (transmitBuffer.hasRemaining()) {
-                        final byte[] message = new byte[transmitBuffer.remaining()];
-                        transmitBuffer.get(message);
-                        processMessage(message);
-                    }
-                } else {
-                    messageWriter.writeError(ERROR_MESSAGE_TOO_LARGE);
-                }
-                transmitBuffer.clear();
+                processReceivedLine();
             } else if (transmitBuffer.hasRemaining()) {
                 transmitBuffer.put((byte) value);
             } else {
@@ -157,6 +146,20 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
                 transmitBuffer.limit(0);
             }
         }
+    }
+
+    private void processReceivedLine() {
+        if (transmitBuffer.limit() > 0) {
+            transmitBuffer.flip();
+            if (transmitBuffer.hasRemaining()) {
+                final byte[] message = new byte[transmitBuffer.remaining()];
+                transmitBuffer.get(message);
+                processMessage(message);
+            }
+        } else {
+            messageWriter.writeError(ERROR_MESSAGE_TOO_LARGE);
+        }
+        transmitBuffer.clear();
     }
 
     private void writeToDevice() {

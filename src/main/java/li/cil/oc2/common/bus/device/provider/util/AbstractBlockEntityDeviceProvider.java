@@ -11,10 +11,12 @@ public abstract class AbstractBlockEntityDeviceProvider<T extends BlockEntity>
     private final BlockEntityType<T> blockEntityType;
 
     protected AbstractBlockEntityDeviceProvider(final BlockEntityType<T> blockEntityType) {
+        super();
         this.blockEntityType = blockEntityType;
     }
 
     protected AbstractBlockEntityDeviceProvider() {
+        super();
         this.blockEntityType = null;
     }
 

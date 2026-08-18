@@ -31,10 +31,8 @@ public final class KeyboardBlockEntity extends ModBlockEntity {
         event.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (side == Direction.DOWN) {
-                        if (be instanceof final KeyboardBlockEntity self) {
-                            return self.keyboardDevice;
-                        }
+                    if (side == Direction.DOWN && be instanceof final KeyboardBlockEntity self) {
+                        return self.keyboardDevice;
                     }
                     return null;
                 },

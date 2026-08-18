@@ -29,7 +29,8 @@ final class SwitchPortManager {
 
     void save(List<Tag> ports) {
         for (PortSettings myPort : portSettings) {
-            CompoundTag port = new CompoundTag();
+            // NOPMD - each port needs its own freshly saved tag
+            CompoundTag port = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
             myPort.save(port);
             ports.add(port);
         }

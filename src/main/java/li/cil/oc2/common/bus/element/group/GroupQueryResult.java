@@ -3,9 +3,9 @@ package li.cil.oc2.common.bus.element.group;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-public abstract class GroupQueryResult<TEntry, TQuery> {
+public abstract class GroupQueryResult<E, Q> {
     @Nullable
-    public abstract TQuery getQuery();
+    public abstract Q getQuery();
 
-    public abstract Set<TEntry> getEntries();
+    public abstract Set<E> getEntries();
 }

@@ -33,23 +33,22 @@ public final class SessionReceiver implements SessionLayer.Receiver {
         buffer.position(position);
         buffer.limit(limit);
         this.session = (SessionBase) session;
-        switch (session.getState()) {
-            case NEW:
-            case FINISH:
-            case REJECT:
-                return null;
-            case ESTABLISHED:
-                if (session instanceof EchoSession || session instanceof DatagramSession) {
-                    buffer.putLong(0);
-                    return buffer;
-                } else if (session instanceof StreamSession) {
-                    final StreamSessionImpl stream = (StreamSessionImpl) session;
-                    return stream.getReceiveBuffer();
-                } else {
-                    throw new IllegalArgumentException("session");
-                }
-            default:
-                throw new IllegalStateException();
+        return switch (session.getState()) {
+            case NEW, FINISH, REJECT -> null;
+            case ESTABLISHED -> receiveEstablished(session);
+            default -> throw new IllegalStateException();
+        };
+    }
+
+    private ByteBuffer receiveEstablished(final Session session) {
+        if (session instanceof EchoSession || session instanceof DatagramSession) {
+            buffer.putLong(0);
+            return buffer;
+        } else if (session instanceof StreamSession) {
+            final StreamSessionImpl stream = (StreamSessionImpl) session;
+            return stream.getReceiveBuffer();
+        } else {
+            throw new IllegalArgumentException("session");
         }
     }
 }

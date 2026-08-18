@@ -98,36 +98,50 @@ public final class DefaultNetworkLayer implements NetworkLayer {
             LOGGER.trace("IP header is too small");
             return;
         }
+
+        final IpPacketHeader header = parseIpPacketHeader(packet);
+        if (header == null) {
+            return;
+        }
+
+        /// Next layer
+        LOGGER.trace("Transport message received");
+        outMessage.initializeBuffer(packet);
+        outMessage.updateIpv4(header.srcIpAddress, header.dstIpAddress, header.ttl);
+        transportLayer.sendTransportMessage(header.transportProtocol, outMessage);
+    }
+
+    private IpPacketHeader parseIpPacketHeader(final ByteBuffer packet) {
         final byte versionAndIhl = packet.get();
         if ((versionAndIhl >>> 4) != IPv4_VERSION) {
             LOGGER.trace("Invalid protocol version");
-            return;
+            return null;
         }
         final int headerSize = (versionAndIhl & 0xF) * 4;
         if (headerSize < IPv4_HEADER_SIZE || packet.remaining() < headerSize) {
             LOGGER.trace("Invalid header size");
-            return;
+            return null;
         }
         packet.get(); // too hard, ignore
         int messageLength = Short.toUnsignedInt(packet.getShort());
         if (packet.remaining() + 4 < messageLength) {
             LOGGER.trace("Packet size is lower than IP message size");
-            return;
+            return null;
         }
         packet.getShort(); // normally, we don't expect message to be fragmented
         short flagsAndFragmentOffset = packet.getShort();
         if (((flagsAndFragmentOffset >>> 13) & 0b101) != 0) {
             LOGGER.trace("Fragmented packet prohibited (1)");
-            return; // no fragments!
+            return null; // no fragments!
         }
         if ((flagsAndFragmentOffset & 0x1FFF) != 0) {
             LOGGER.trace("Fragmented packet prohibited (2)");
-            return; // no fragments!
+            return null; // no fragments!
         }
         byte ttl = (byte) (packet.get() - 1);
         if (ttl == 0) {
             LOGGER.trace("Small TTL value");
-            return;
+            return null;
         }
         byte transportProtocol = packet.get();
         packet.getShort(); // I don't think, that we should expect packet corruption in Minecraft
@@ -135,15 +149,13 @@ public final class DefaultNetworkLayer implements NetworkLayer {
         int dstIpAddress = packet.getInt();
         if (!internetManager.isAllowedToConnect(dstIpAddress)) {
             LOGGER.trace("Forbidden IP address");
-            return;
+            return null;
         }
         packet.position(packet.position() + headerSize - IPv4_HEADER_SIZE); // skip options
         packet.limit(packet.position() + messageLength - headerSize); // set correct limit
-
-        /// Next layer
-        LOGGER.trace("Transport message received");
-        outMessage.initializeBuffer(packet);
-        outMessage.updateIpv4(srcIpAddress, dstIpAddress, ttl);
-        transportLayer.sendTransportMessage(transportProtocol, outMessage);
+        return new IpPacketHeader(transportProtocol, srcIpAddress, dstIpAddress, ttl);
     }
+
+    private record IpPacketHeader(
+            byte transportProtocol, int srcIpAddress, int dstIpAddress, byte ttl) {}
 }

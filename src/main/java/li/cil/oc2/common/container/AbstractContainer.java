@@ -31,58 +31,63 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
         final boolean intoPlayerInventory = !from.container.equals(player.getInventory());
         final ItemStack fromStack = from.getItem();
 
-        final int step;
-        final int begin;
-        if (intoPlayerInventory) {
-            step = -1;
-            begin = slots.size() - 1;
-        } else {
-            step = 1;
-            begin = 0;
-        }
+        final int step = intoPlayerInventory ? -1 : 1;
+        final int begin = intoPlayerInventory ? slots.size() - 1 : 0;
 
         if (fromStack.getMaxStackSize() > 1) {
-            for (int i = begin; i >= 0 && i < slots.size(); i += step) {
-                final Slot into = slots.get(i);
-                if (into.container.equals(from.container)) {
-                    continue;
-                }
+            stackIntoExistingSlots(from, fromStack, stack, step, begin);
+        }
+        moveIntoEmptySlots(from, fromStack, step, begin);
 
-                if (!into.mayPlace(fromStack)) {
-                    continue;
-                }
+        return from.getItem().getCount() < stack.getCount() ? from.getItem() : ItemStack.EMPTY;
+    }
 
-                if (!into.hasItem()) {
-                    continue;
-                }
-
-                final ItemStack intoStack = into.getItem();
-                final boolean itemsAreEqual = ItemStack.matches(fromStack, intoStack);
-                if (!itemsAreEqual) {
-                    continue;
-                }
-
-                final int maxSizeInSlot =
-                        Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(stack));
-                final int spaceInSlot = maxSizeInSlot - intoStack.getCount();
-                if (spaceInSlot <= 0) {
-                    continue;
-                }
-
-                final int itemsMoved = Math.min(spaceInSlot, fromStack.getCount());
-                if (itemsMoved <= 0) {
-                    continue;
-                }
-
-                intoStack.grow(from.remove(itemsMoved).getCount());
-                into.setChanged();
-
-                if (from.getItem().isEmpty()) {
-                    break;
-                }
+    private void stackIntoExistingSlots(
+            final Slot from,
+            final ItemStack fromStack,
+            final ItemStack stack,
+            final int step,
+            final int begin) {
+        for (int i = begin; i >= 0 && i < slots.size(); i += step) {
+            final Slot into = slots.get(i);
+            if (stackIntoSlot(from, fromStack, stack, into)) {
+                return;
             }
         }
+    }
 
+    private boolean stackIntoSlot(
+            final Slot from, final ItemStack fromStack, final ItemStack stack, final Slot into) {
+        if (into.container.equals(from.container)) {
+            return false;
+        }
+        if (!into.mayPlace(fromStack)) {
+            return false;
+        }
+        if (!into.hasItem()) {
+            return false;
+        }
+        final ItemStack intoStack = into.getItem();
+        if (!ItemStack.matches(fromStack, intoStack)) {
+            return false;
+        }
+        final int maxSizeInSlot =
+                Math.min(fromStack.getMaxStackSize(), into.getMaxStackSize(stack));
+        final int spaceInSlot = maxSizeInSlot - intoStack.getCount();
+        if (spaceInSlot <= 0) {
+            return false;
+        }
+        final int itemsMoved = Math.min(spaceInSlot, fromStack.getCount());
+        if (itemsMoved <= 0) {
+            return false;
+        }
+        intoStack.grow(from.remove(itemsMoved).getCount());
+        into.setChanged();
+        return from.getItem().isEmpty();
+    }
+
+    private void moveIntoEmptySlots(
+            final Slot from, final ItemStack fromStack, final int step, final int begin) {
         for (int i = begin; i >= 0 && i < slots.size(); i += step) {
             if (from.getItem().isEmpty()) {
                 break;
@@ -106,8 +111,6 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
             final int itemsMoved = Math.min(maxSizeInSlot, fromStack.getCount());
             into.set(from.remove(itemsMoved));
         }
-
-        return from.getItem().getCount() < stack.getCount() ? from.getItem() : ItemStack.EMPTY;
     }
 
     protected int createPlayerInventoryAndHotbarSlots(
@@ -133,9 +136,9 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
 
                 final Slot slot;
                 if (isSlotLocked(inventory, index)) {
-                    slot = new LockedSlot(inventory, index, x, y);
+                    slot = new LockedSlot(inventory, index, x, y); // NOPMD per-slot data
                 } else {
-                    slot = new Slot(inventory, index, x, y);
+                    slot = new Slot(inventory, index, x, y); // NOPMD per-slot data
                 }
 
                 this.addSlot(slot);
@@ -153,9 +156,9 @@ public abstract class AbstractContainer extends AbstractContainerMenu {
 
             final Slot slot;
             if (isSlotLocked(inventory, index)) {
-                slot = new LockedSlot(inventory, index, x, startY);
+                slot = new LockedSlot(inventory, index, x, startY); // NOPMD per-slot data
             } else {
-                slot = new Slot(inventory, index, x, startY);
+                slot = new Slot(inventory, index, x, startY); // NOPMD per-slot data
             }
 
             this.addSlot(slot);

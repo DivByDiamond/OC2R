@@ -70,7 +70,8 @@ public final class NBTUtils {
         CompoundTag childTag = tag;
         for (final String tagName : path) {
             if (!childTag.contains(tagName, NBTTagIds.TAG_COMPOUND)) {
-                childTag.put(tagName, new CompoundTag());
+                // NOPMD: each child tag is a distinct node stored in the tree
+                childTag.put(tagName, new CompoundTag()); // NOPMD allocation depends on loop iteration / per-item state
             }
             childTag = childTag.getCompound(tagName);
         }

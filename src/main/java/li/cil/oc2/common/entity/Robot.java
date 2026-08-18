@@ -65,10 +65,11 @@ public final class Robot extends AbstractRobotEntity
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
         animationState =
                 new RobotAnimationState(
-                        virtualMachine, () -> movementController.hasQueuedActions());
+                        virtualMachine, movementController::hasQueuedActions);
         eventHandler = new RobotEventHandler(this, virtualMachine);
         blockCollider = new RobotBlockCollider(this);
-        robotInventory.setOnDeviceChanged(() -> virtualMachine.busController.scheduleBusScan());
+        robotInventory.setOnDeviceChanged(
+                virtualMachine.busController::scheduleBusScan);
     }
 
     @OnlyIn(Dist.CLIENT)

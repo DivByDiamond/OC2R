@@ -11,6 +11,9 @@ import net.minecraft.tags.ItemTags;
 import net.neoforged.neoforge.common.Tags;
 
 public final class StorageRecipes {
+    private static final String UNLOCK_COMPUTER = "has_computer";
+    private static final String UNLOCK_ROBOT = "has_robot";
+
     public static void build(final RecipeOutput consumer) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.DISK_DRIVE.get())
                 .pattern("IUI")
@@ -23,7 +26,7 @@ public final class StorageRecipes {
                 .define('D', net.minecraft.world.item.Items.DISPENSER)
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_SMALL.get(), 2)
@@ -33,8 +36,8 @@ public final class StorageRecipes {
                 .define('T', Items.TRANSISTOR.get())
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_MEDIUM.get(), 2)
@@ -44,8 +47,8 @@ public final class StorageRecipes {
                 .define('T', Items.TRANSISTOR.get())
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_LARGE.get(), 2)
@@ -55,8 +58,8 @@ public final class StorageRecipes {
                 .define('T', Items.TRANSISTOR.get())
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_EXTRA_LARGE.get(), 2)
@@ -68,8 +71,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_SMALL.get())
@@ -80,8 +83,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_MEDIUM.get())
@@ -92,8 +95,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_LARGE.get())
@@ -104,8 +107,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_EXTRA_LARGE.get())
@@ -117,8 +120,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_SMALL.get())
@@ -129,8 +132,8 @@ public final class StorageRecipes {
                 .define('T', Items.TRANSISTOR.get())
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_MEDIUM.get())
@@ -142,8 +145,8 @@ public final class StorageRecipes {
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY.get())
@@ -154,22 +157,22 @@ public final class StorageRecipes {
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_CUSTOM.get())
                 .requires(Items.FLASH_MEMORY.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_ONYXOS.get())
                 .requires(Items.FLASH_MEMORY.get())
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
@@ -180,8 +183,8 @@ public final class StorageRecipes {
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .define('E', Tags.Items.GEMS_EMERALD)
                 .unlockedBy(
-                        "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
+                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
+                .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
     }
 }

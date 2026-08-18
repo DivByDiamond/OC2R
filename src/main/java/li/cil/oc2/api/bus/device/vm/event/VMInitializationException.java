@@ -18,11 +18,13 @@ public final class VMInitializationException extends RuntimeException {
      * @param message the error message component.
      */
     public VMInitializationException(final Component message) {
+        super();
         this.message = message;
     }
 
     /** Creates a new initialization exception without a message. */
     public VMInitializationException() {
+        super();
         this.message = null;
     }
 

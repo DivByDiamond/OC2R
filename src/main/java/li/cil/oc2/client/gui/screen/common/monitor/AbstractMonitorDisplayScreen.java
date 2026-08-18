@@ -53,11 +53,8 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         }
 
         final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        if (getMinecraft().options.keyInventory.isActiveAndMatches(input)) {
-            return true;
-        }
-
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+                || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
@@ -67,11 +64,8 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         }
 
         final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        if (getMinecraft().options.keyInventory.isActiveAndMatches(input)) {
-            return true;
-        }
-
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+                || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
@@ -151,29 +145,27 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
     protected void renderTooltip(final GuiGraphics graphics, final int mouseX, final int mouseY) {
         super.renderTooltip(graphics, mouseX, mouseY);
 
-        if (shouldRenderEnergyBar()) {
-
-            if (isMouseOver(
-                    mouseX,
-                    mouseY,
-                    -Sprites.SIDEBAR_2.width + 4,
-                    ENERGY_TOP + 4,
-                    Sprites.ENERGY_BAR.width,
-                    Sprites.ENERGY_BAR.height)) {
-                final List<? extends FormattedText> tooltip =
-                        asList(
-                                Component.translatable(
-                                        Constants.TOOLTIP_ENERGY,
-                                        withFormat(
-                                                menu.getEnergy() + "/" + menu.getEnergyCapacity(),
-                                                ChatFormatting.GREEN)),
-                                Component.translatable(
-                                        Constants.TOOLTIP_ENERGY_CONSUMPTION,
-                                        withFormat(
-                                                String.valueOf(Config.monitorEnergyPerTick),
-                                                ChatFormatting.GREEN)));
-                TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
-            }
+        if (shouldRenderEnergyBar()
+                && isMouseOver(
+                        mouseX,
+                        mouseY,
+                        -Sprites.SIDEBAR_2.width + 4,
+                        ENERGY_TOP + 4,
+                        Sprites.ENERGY_BAR.width,
+                        Sprites.ENERGY_BAR.height)) {
+            final List<? extends FormattedText> tooltip =
+                    asList(
+                            Component.translatable(
+                                    Constants.TOOLTIP_ENERGY,
+                                    withFormat(
+                                            menu.getEnergy() + "/" + menu.getEnergyCapacity(),
+                                            ChatFormatting.GREEN)),
+                            Component.translatable(
+                                    Constants.TOOLTIP_ENERGY_CONSUMPTION,
+                                    withFormat(
+                                            String.valueOf(Config.monitorEnergyPerTick),
+                                            ChatFormatting.GREEN)));
+            TooltipRenderer.drawTooltip(graphics, tooltip, mouseX, mouseY, 200);
         }
     }
 

@@ -20,7 +20,7 @@ class TerminalBufferScrolling {
             terminal.lastRowToDisplayMax =
                     Math.min(
                             terminal.lastRowToDisplayMax + 1,
-                            (Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT));
+                            Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT);
         } else if (terminal.lastRowToDisplay == terminal.lastRowToDisplayMax) {
             return;
         }
@@ -58,13 +58,13 @@ class TerminalBufferScrolling {
                     || terminal.scrollFirst != 0) {
                 shiftLines(
                         terminal.scrollFirst != 0
-                                ? (terminal.scrollFirst
-                                                + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                                ? terminal.scrollFirst
+                                        + terminal.lastRowToDisplayMax
+                                        - Terminal.HEIGHT
                                         + 1
                                 : 1,
                         terminal.scrollLast != Terminal.HEIGHT - 1
-                                ? terminal.scrollLast
-                                        + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
+                                ? terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT
                                 : (Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) - 1,
                         -count);
             }
@@ -81,8 +81,8 @@ class TerminalBufferScrolling {
                     count);
         } else {
             shiftLines(
-                    terminal.scrollFirst + (terminal.lastRowToDisplayMax - Terminal.HEIGHT),
-                    terminal.scrollLast + (terminal.lastRowToDisplayMax - Terminal.HEIGHT) - 1,
+                    terminal.scrollFirst + terminal.lastRowToDisplayMax - Terminal.HEIGHT,
+                    terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT - 1,
                     count);
         }
     }

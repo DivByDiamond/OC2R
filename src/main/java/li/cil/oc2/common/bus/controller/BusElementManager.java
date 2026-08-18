@@ -115,11 +115,9 @@ final class BusElementManager {
             }
 
             for (final DeviceBusElement neighborElement : elementNeighbors.get()) {
-                if (neighborElement != null) {
-                    if (closed.add(neighborElement)) {
-                        open.add(neighborElement);
-                        optionals.put(neighborElement, neighborElement);
-                    }
+                if (neighborElement != null && closed.add(neighborElement)) {
+                    open.add(neighborElement);
+                    optionals.put(neighborElement, neighborElement);
                 }
             }
 

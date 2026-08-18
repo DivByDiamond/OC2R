@@ -25,16 +25,16 @@ public class TerminalBuffer {
         }
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             Arrays.fill(terminal.altBuffer, ' ');
-            Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.altColorsBackground, c.Copy());
+            Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColorsBackground, c.copy());
             Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         } else {
             int startIndex = (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH;
             int endIndex = startIndex + (Terminal.HEIGHT * Terminal.WIDTH);
             Arrays.fill(terminal.buffer, startIndex, endIndex, ' ');
             Arrays.fill(
-                    terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.Copy());
+                    terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
         terminal.markAllDirty();
@@ -42,16 +42,16 @@ public class TerminalBuffer {
 
     public void clearAlt() {
         Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.Copy());
+        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
         ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;
             case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
             case TRUE_COLOR -> c = terminal.backgroundColor;
             case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
+            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
         }
-        Arrays.fill(terminal.altColorsBackground, c.Copy());
+        Arrays.fill(terminal.altColorsBackground, c.copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
     }
 
@@ -78,19 +78,19 @@ public class TerminalBuffer {
                     terminal.altColors,
                     y * Terminal.WIDTH + fromIndex,
                     y * Terminal.WIDTH + toIndex,
-                    TerminalColors.DEFAULT_COLORS.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
             Arrays.fill(
                     terminal.altColorsBackground,
                     y * Terminal.WIDTH + fromIndex,
                     y * Terminal.WIDTH + toIndex,
-                    c.Copy());
+                    c.copy());
             Arrays.fill(
                     terminal.altStyles,
                     y * Terminal.WIDTH + fromIndex,
                     y * Terminal.WIDTH + toIndex,
                     TerminalColors.DEFAULT_STYLE);
         } else {
-            int correctedY = (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT));
+            int correctedY = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
             Arrays.fill(
                     terminal.buffer,
                     correctedY * Terminal.WIDTH + fromIndex,
@@ -100,12 +100,12 @@ public class TerminalBuffer {
                     terminal.colors,
                     correctedY * Terminal.WIDTH + fromIndex,
                     correctedY * Terminal.WIDTH + toIndex,
-                    TerminalColors.DEFAULT_COLORS.Copy());
+                    TerminalColors.DEFAULT_COLORS.copy());
             Arrays.fill(
                     terminal.colorsBackground,
                     correctedY * Terminal.WIDTH + fromIndex,
                     correctedY * Terminal.WIDTH + toIndex,
-                    c.Copy());
+                    c.copy());
             Arrays.fill(
                     terminal.styles,
                     correctedY * Terminal.WIDTH + fromIndex,

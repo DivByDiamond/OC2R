@@ -22,7 +22,7 @@ public final class NetworkConnectorConnectionStore {
             final Set<BlockPos> connectorPositions) {
         final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
-            final CompoundTag connectionTag = new CompoundTag(1);
+            final CompoundTag connectionTag = new CompoundTag(1); // NOPMD per-connection data
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
             connections.add(connectionTag);
         }
@@ -50,7 +50,7 @@ public final class NetworkConnectorConnectionStore {
             final Set<BlockPos> ownedCables) {
         final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
-            final CompoundTag connectionTag = new CompoundTag(2);
+            final CompoundTag connectionTag = new CompoundTag(2); // NOPMD per-connection data
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
             if (ownedCables.contains(position)) {
                 connectionTag.putBoolean(IS_OWNER_TAG_NAME, true);

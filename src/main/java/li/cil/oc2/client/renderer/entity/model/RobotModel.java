@@ -32,6 +32,7 @@ public final class RobotModel extends EntityModel<Robot> {
     private final float[] topRotation = new float[3];
 
     public RobotModel(final ModelPart modelPart) {
+        super();
         topRenderer = modelPart.getChild("top");
         baseRenderer = modelPart.getChild("base");
         coreRenderer = modelPart.getChild("core");

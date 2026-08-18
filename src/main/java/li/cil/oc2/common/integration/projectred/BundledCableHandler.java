@@ -30,14 +30,14 @@ public final class BundledCableHandler implements IBundledTileInteraction {
     public boolean isValidInteractionFor(
             final Level level, final BlockPos blockPos, final Direction direction) {
         BlockEntity entity = level.getBlockEntity(blockPos);
-        return (entity instanceof RedstoneInterfaceBlockEntity);
+        return entity instanceof RedstoneInterfaceBlockEntity;
     }
 
     @Override
     public boolean canConnectBundled(
             final Level level, final BlockPos blockPos, final Direction direction) {
         BlockEntity entity = level.getBlockEntity(blockPos);
-        return (entity instanceof RedstoneInterfaceBlockEntity);
+        return entity instanceof RedstoneInterfaceBlockEntity;
     }
 
     @Nullable

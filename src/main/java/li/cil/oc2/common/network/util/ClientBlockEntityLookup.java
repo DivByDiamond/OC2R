@@ -86,20 +86,25 @@ public final class ClientBlockEntityLookup {
         Class<?> cls = root.getClass();
         while (cls != null && cls != Object.class) {
             for (final Field field : cls.getDeclaredFields()) {
-                if (!Level.class.isAssignableFrom(field.getType())) {
-                    continue;
-                }
-                if (Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-                try {
-                    final Object value = field.get(root);
-                    if (value instanceof final ClientLevel cl && !result.contains(cl)) {
-                        result.add(cl);
-                    }
-                } catch (final Exception ignored) { /* ignored */ }
+                scanField(root, field, result);
             }
             cls = cls.getSuperclass();
         }
+    }
+
+    private static void scanField(
+            final Object root, final Field field, final java.util.List<ClientLevel> result) {
+        if (!Level.class.isAssignableFrom(field.getType())) {
+            return;
+        }
+        if (Modifier.isStatic(field.getModifiers())) {
+            return;
+        }
+        try {
+            final Object value = field.get(root);
+            if (value instanceof final ClientLevel cl && !result.contains(cl)) {
+                result.add(cl);
+            }
+        } catch (final Exception ignored) { /* ignored */ }
     }
 }

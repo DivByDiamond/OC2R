@@ -40,7 +40,7 @@ public final class InterfaceNameManager {
 
         if (!level.isClientSide()) {
             final BusInterfaceNameMessage message =
-                    BusInterfaceNameMessage.ToClient(
+                    BusInterfaceNameMessage.toClient(
                             owner, side, interfaceNames[side.get3DDataValue()]);
             NetworkMessages.sendToClientsTrackingBlockEntity(message, owner);
             owner.busElement.updateDevicesForNeighbor(side);

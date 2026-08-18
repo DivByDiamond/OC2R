@@ -45,11 +45,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
     public BlockState playerWillDestroy(
             final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!level.isClientSide() && blockEntity instanceof final DiskDriveBlockEntity diskDrive) {
-            if (!diskDrive.getDiskItemStack().isEmpty()) {
-                final ItemStack stack = diskDrive.getDiskItemStack();
-                popResource(level, pos, stack);
-            }
+        if (!level.isClientSide()
+                && blockEntity instanceof final DiskDriveBlockEntity diskDrive
+                && !diskDrive.getDiskItemStack().isEmpty()) {
+            final ItemStack stack = diskDrive.getDiskItemStack();
+            popResource(level, pos, stack);
         }
 
         return super.playerWillDestroy(level, pos, state, player);
@@ -69,13 +69,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         }
 
-        if (!player.isShiftKeyDown()) {
-            if (diskDrive.canInsert(stack)) {
-                if (!level.isClientSide()) {
-                    player.setItemInHand(hand, diskDrive.insert(stack, player));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        if (!player.isShiftKeyDown() && diskDrive.canInsert(stack)) {
+            if (!level.isClientSide()) {
+                player.setItemInHand(hand, diskDrive.insert(stack, player));
             }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -93,13 +91,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
             return super.useWithoutItem(state, level, pos, player, hitResult);
         }
 
-        if (player.isShiftKeyDown()) {
-            if (diskDrive.canEject()) {
-                if (!level.isClientSide()) {
-                    diskDrive.eject(player);
-                }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+        if (player.isShiftKeyDown() && diskDrive.canEject()) {
+            if (!level.isClientSide()) {
+                diskDrive.eject(player);
             }
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
         return super.useWithoutItem(state, level, pos, player, hitResult);

@@ -17,54 +17,64 @@ public final class RPCMessageProcessor {
             final byte[] messageData,
             final GsonContext ctx) {
         if (new String(messageData).isBlank()) return;
-        try (final InputStreamReader stream =
+        try (InputStreamReader stream =
                 new InputStreamReader(new ByteArrayInputStream(messageData))) {
             final Message message = ctx.gson.fromJson(stream, Message.class);
             switch (message.type()) {
                 case Message.MESSAGE_TYPE_LIST ->
                         ctx.messageWriter.writeDeviceList(ctx.deviceRegistry.devicesWithId);
-                case Message.MESSAGE_TYPE_METHODS -> {
-                    if (message.data() != null) {
-                        final UUID deviceId = (UUID) message.data();
-                        final RPCDevice device = ctx.deviceRegistry.devicesById.get(deviceId);
-                        if (device != null) {
-                            ctx.messageWriter.writeDeviceMethods(device.getMethodGroups());
-                        } else {
-                            ctx.messageWriter.writeError("unknown device");
-                        }
-                    } else {
-                        ctx.messageWriter.writeError("missing device id");
-                    }
-                }
-                case Message.MESSAGE_TYPE_INVOKE_METHOD -> {
-                    if (message.data() != null) {
-                        ctx.methodInvoker.processMethodInvocation(
-                                (MethodInvocation) message.data(), false);
-                    } else {
-                        ctx.messageWriter.writeError("missing invocation data");
-                    }
-                }
-                case Message.MESSAGE_TYPE_SUBSCRIBE -> {
-                    if (message.data() != null) {
-                        ctx.deviceRegistry.subscribe(
-                                adapter, (UUID) message.data(), ctx.messageWriter::writeError);
-                    } else {
-                        ctx.messageWriter.writeError("missing invocation data");
-                    }
-                }
-                case Message.MESSAGE_TYPE_UNSUBSCRIBE -> {
-                    if (message.data() != null) {
-                        ctx.deviceRegistry.unsubscribe(
-                                adapter, (UUID) message.data(), ctx.messageWriter::writeError);
-                    } else {
-                        ctx.messageWriter.writeError("missing invocation data");
-                    }
-                }
+                case Message.MESSAGE_TYPE_METHODS -> handleMethods(ctx, message);
+                case Message.MESSAGE_TYPE_INVOKE_METHOD -> handleInvokeMethod(ctx, message);
+                case Message.MESSAGE_TYPE_SUBSCRIBE -> handleSubscribe(adapter, ctx, message);
+                case Message.MESSAGE_TYPE_UNSUBSCRIBE -> handleUnsubscribe(adapter, ctx, message);
                 default -> ctx.messageWriter.writeError(
                         RPCDeviceBusAdapter.ERROR_UNKNOWN_MESSAGE_TYPE + message.type());
             }
         } catch (final Exception e) {
             ctx.messageWriter.writeError(e.getMessage());
+        }
+    }
+
+    private static void handleMethods(final GsonContext ctx, final Message message) {
+        if (message.data() != null) {
+            final UUID deviceId = (UUID) message.data();
+            final RPCDevice device = ctx.deviceRegistry.devicesById.get(deviceId);
+            if (device != null) {
+                ctx.messageWriter.writeDeviceMethods(device.getMethodGroups());
+            } else {
+                ctx.messageWriter.writeError("unknown device");
+            }
+        } else {
+            ctx.messageWriter.writeError("missing device id");
+        }
+    }
+
+    private static void handleInvokeMethod(final GsonContext ctx, final Message message) {
+        if (message.data() != null) {
+            ctx.methodInvoker.processMethodInvocation(
+                    (MethodInvocation) message.data(), false);
+        } else {
+            ctx.messageWriter.writeError("missing invocation data");
+        }
+    }
+
+    private static void handleSubscribe(
+            final RPCDeviceBusAdapter adapter, final GsonContext ctx, final Message message) {
+        if (message.data() != null) {
+            ctx.deviceRegistry.subscribe(
+                    adapter, (UUID) message.data(), ctx.messageWriter::writeError);
+        } else {
+            ctx.messageWriter.writeError("missing invocation data");
+        }
+    }
+
+    private static void handleUnsubscribe(
+            final RPCDeviceBusAdapter adapter, final GsonContext ctx, final Message message) {
+        if (message.data() != null) {
+            ctx.deviceRegistry.unsubscribe(
+                    adapter, (UUID) message.data(), ctx.messageWriter::writeError);
+        } else {
+            ctx.messageWriter.writeError("missing invocation data");
         }
     }
 

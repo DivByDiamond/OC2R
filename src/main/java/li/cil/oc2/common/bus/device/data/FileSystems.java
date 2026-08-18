@@ -103,73 +103,11 @@ public final class FileSystems {
         for (final ResourceLocation fileSystemDescriptorLocation : fileSystemDescriptorLocations) {
             LOGGER.info("Found [{}]", fileSystemDescriptorLocation);
             try {
-                final Resource fileSystemDescriptor =
-                        resourceManager.getResource(fileSystemDescriptorLocation).get();
-                final JsonObject json;
-                try (final InputStreamReader reader =
-                        new InputStreamReader(fileSystemDescriptor.open())) {
-                    json = JsonParser.parseReader(reader).getAsJsonObject();
-                }
-                final String type = json.getAsJsonPrimitive("type").getAsString();
-                switch (type) {
-                    case "layer" -> {
-                        final ResourceLocation location =
-                                ResourceLocation.parse(
-                                        json.getAsJsonPrimitive("location").getAsString());
-
-                        final ZipStreamFileSystem fileSystem;
-                        try (final InputStream stream =
-                                resourceManager.getResource(location).get().open()) {
-                            fileSystem = new ZipStreamFileSystem(stream);
-                        }
-
-                        final long fileCount = fileSystem.statfs().fileCount;
-                        if (fileCount > 0) {
-                            LOGGER.info("  Adding layer with [{}] file(s).", fileCount);
-                            fileSystems.add(fileSystem);
-                        } else {
-                            LOGGER.info("  Skipping empty layer.");
-                        }
-
-                        if (json.has("order")) {
-                            final JsonPrimitive order = json.getAsJsonPrimitive("order");
-                            fileSystemOrder.put(fileSystem, order.getAsInt());
-                        } else {
-                            fileSystemOrder.put(fileSystem, 0);
-                        }
-                    }
-                    case "block" -> {
-                        final ResourceLocation location =
-                                ResourceLocation.parse(
-                                        json.getAsJsonPrimitive("location").getAsString());
-                        if (BlockDeviceDataRegistry.getValue(location) != null) {
-                            LOGGER.error(
-                                    "Block device from datapack collides with already registered"
-                                            + " location [{}].",
-                                    location);
-                            continue;
-                        }
-
-                        final String name;
-                        if (json.has("name")) {
-                            name = json.getAsJsonPrimitive("name").getAsString();
-                        } else {
-                            name = "???";
-                        }
-
-                        final ResourceBlockDeviceData data =
-                                new ResourceBlockDeviceData(resourceManager, location, name);
-
-                        LOGGER.info(
-                                "  Adding block device [{}] with id [{}] and a size of [{}].",
-                                name,
-                                location,
-                                formatSize(data.getBlockDevice().getCapacity()));
-                        BLOCK_DEVICE_DATA.put(location, data);
-                        blocksByName.put(name, data);
-                    }
-                    default -> LOGGER.error("Unsupported file system type [{}].", type);
-                }
+                loadFileSystemDescriptor(
+                        resourceManager,
+                        fileSystemDescriptorLocation,
+                        fileSystems,
+                        fileSystemOrder);
             } catch (final Exception e) {
                 LOGGER.error(e);
             }
@@ -177,6 +115,87 @@ public final class FileSystems {
 
         fileSystems.sort(Comparator.comparingInt(fileSystemOrder::getInt));
         fileSystems.forEach(LAYERED_FILE_SYSTEM::addLayer);
+    }
+
+    private static void loadFileSystemDescriptor(
+            final ResourceManager resourceManager,
+            final ResourceLocation fileSystemDescriptorLocation,
+            final List<ZipStreamFileSystem> fileSystems,
+            final Object2IntMap<ZipStreamFileSystem> fileSystemOrder)
+            throws Exception {
+        final Resource fileSystemDescriptor =
+                resourceManager.getResource(fileSystemDescriptorLocation).get();
+        final JsonObject json;
+        try (InputStreamReader reader =
+                new InputStreamReader(fileSystemDescriptor.open())) {
+            json = JsonParser.parseReader(reader).getAsJsonObject();
+        }
+        final String type = json.getAsJsonPrimitive("type").getAsString();
+        switch (type) {
+            case "layer" -> handleLayer(resourceManager, json, fileSystems, fileSystemOrder);
+            case "block" -> handleBlock(resourceManager, json);
+            default -> LOGGER.error("Unsupported file system type [{}].", type);
+        }
+    }
+
+    private static void handleLayer(
+            final ResourceManager resourceManager,
+            final JsonObject json,
+            final List<ZipStreamFileSystem> fileSystems,
+            final Object2IntMap<ZipStreamFileSystem> fileSystemOrder)
+            throws Exception {
+        final ResourceLocation location =
+                ResourceLocation.parse(json.getAsJsonPrimitive("location").getAsString());
+
+        final ZipStreamFileSystem fileSystem;
+        try (InputStream stream = resourceManager.getResource(location).get().open()) {
+            fileSystem = new ZipStreamFileSystem(stream);
+        }
+
+        final long fileCount = fileSystem.statfs().fileCount;
+        if (fileCount > 0) {
+            LOGGER.info("  Adding layer with [{}] file(s).", fileCount);
+            fileSystems.add(fileSystem);
+        } else {
+            LOGGER.info("  Skipping empty layer.");
+        }
+
+        if (json.has("order")) {
+            final JsonPrimitive order = json.getAsJsonPrimitive("order");
+            fileSystemOrder.put(fileSystem, order.getAsInt());
+        } else {
+            fileSystemOrder.put(fileSystem, 0);
+        }
+    }
+
+    private static void handleBlock(final ResourceManager resourceManager, final JsonObject json)
+            throws Exception {
+        final ResourceLocation location =
+                ResourceLocation.parse(json.getAsJsonPrimitive("location").getAsString());
+        if (BlockDeviceDataRegistry.getValue(location) != null) {
+            LOGGER.error(
+                    "Block device from datapack collides with already registered location [{}].",
+                    location);
+            return;
+        }
+
+        final String name;
+        if (json.has("name")) {
+            name = json.getAsJsonPrimitive("name").getAsString();
+        } else {
+            name = "???";
+        }
+
+        final ResourceBlockDeviceData data =
+                new ResourceBlockDeviceData(resourceManager, location, name);
+
+        LOGGER.info(
+                "  Adding block device [{}] with id [{}] and a size of [{}].",
+                name,
+                location,
+                formatSize(data.getBlockDevice().getCapacity()));
+        BLOCK_DEVICE_DATA.put(location, data);
+        blocksByName.put(name, data);
     }
 
     private static final class ReloadListener implements PreparableReloadListener {

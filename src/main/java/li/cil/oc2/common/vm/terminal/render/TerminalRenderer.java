@@ -88,56 +88,48 @@ public class TerminalRenderer implements RendererModel, RendererView {
             RenderSystem.getModelViewStack().mul(stack.last().pose());
             RenderSystem.applyModelViewMatrix();
 
-            final Matrix4f blockModelViewMatrix = RenderSystem.getModelViewMatrix();
-            final Matrix4f blockProjectionMatrix = RenderSystem.getProjectionMatrix();
-
-            for (final VertexBuffer line : lines) {
-                if (line != null && !line.isInvalid()) {
-                    try {
-                        line.bind();
-                        line.drawWithShader(blockModelViewMatrix, blockProjectionMatrix, shader);
-                        VertexBuffer.unbind();
-                    } catch (final Exception e) {
-                        RENDERER_LOGGER.error(
-                                "Failed to draw terminal line {}", findLineIndex(lines, line), e);
-                    }
-                }
-            }
+            drawLines(shader, RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix());
 
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.applyModelViewMatrix();
         } else {
-            var modelViewMatrix = stack.last().pose();
-
-            for (final VertexBuffer line : lines) {
-                if (line != null && !line.isInvalid()) {
-                    try {
-                        line.bind();
-                        line.drawWithShader(modelViewMatrix, projectionMatrix, shader);
-                        VertexBuffer.unbind();
-                    } catch (final Exception e) {
-                        RENDERER_LOGGER.error(
-                                "Failed to draw terminal line {}", findLineIndex(lines, line), e);
-                    }
-                }
-            }
+            drawLines(shader, stack.last().pose(), projectionMatrix);
         }
 
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
     }
 
+    private void drawLines(
+            final ShaderInstance shader,
+            final Matrix4f modelViewMatrix,
+            final Matrix4f projectionMatrix) {
+        for (final VertexBuffer line : lines) {
+            if (line != null && !line.isInvalid()) {
+                try {
+                    line.bind();
+                    line.drawWithShader(modelViewMatrix, projectionMatrix, shader);
+                    VertexBuffer.unbind();
+                } catch (final Exception e) {
+                    RENDERER_LOGGER.error(
+                            "Failed to draw terminal line {}", findLineIndex(lines, line), e);
+                }
+            }
+        }
+    }
+
     public void validateLineCache() {
         if (dirty.get() == 0) return;
 
         final int mask = dirty.getAndSet(0);
+        final Matrix4f matrix = new Matrix4f();
         for (int row = 0; row < lines.length; row++) {
             if ((mask & (1 << row)) == 0) continue;
 
             BufferBuilder builder =
                     Tesselator.getInstance()
                             .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            final Matrix4f matrix = new Matrix4f().translate(0, row * Terminal.CHAR_HEIGHT, 0);
+            matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
             TerminalBackgroundRenderer.renderBackground(terminal, matrix, builder, row);
             TerminalCharRenderer.renderForeground(terminal, matrix, builder, row);

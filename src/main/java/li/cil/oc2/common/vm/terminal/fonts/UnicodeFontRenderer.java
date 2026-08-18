@@ -39,7 +39,7 @@ public class UnicodeFontRenderer {
         GlyphVector gv = font.createGlyphVector(frc, Character.toChars(character));
         BufferedImage img =
                 new BufferedImage(
-                        (isItalic) ? 44 : 20,
+                        isItalic ? 44 : 20,
                         32,
                         BufferedImage.TYPE_INT_ARGB); // size can be dynamic
         Graphics2D g = img.createGraphics();
@@ -54,7 +54,7 @@ public class UnicodeFontRenderer {
         g.dispose();
 
         Glyph glyph =
-                new Glyph(img, (isItalic) ? 44 : 20, 32, (int) gv.getGlyphMetrics(0).getAdvance());
+                new Glyph(img, isItalic ? 44 : 20, 32, (int) gv.getGlyphMetrics(0).getAdvance());
 
         FontHandling.FontAtlas.addGlyph(glyph);
         return glyph;

@@ -111,15 +111,7 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
 
         try {
             blobHandle = BlobStorage.validateHandle(blobHandle);
-            final FileChannel channel;
-            try {
-                channel = BlobStorage.getOrOpenAsync(blobHandle).join();
-            } catch (final CompletionException e) {
-                if (e.getCause() instanceof IOException) {
-                    throw new IOException("Failed to open blob: " + blobHandle, e);
-                }
-                throw new IOException("Failed to open blob: " + blobHandle, e);
-            }
+            final FileChannel channel = openChannel();
             final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
             device = new ByteBufferMemory(size, buffer);
         } catch (final IOException e) {
@@ -128,6 +120,14 @@ public final class MemoryDevice extends IdentityProxy<ItemStack> implements VMDe
         }
 
         return true;
+    }
+
+    private FileChannel openChannel() throws IOException {
+        try {
+            return BlobStorage.getOrOpenAsync(blobHandle).join();
+        } catch (final CompletionException e) {
+            throw new IOException("Failed to open blob: " + blobHandle, e);
+        }
     }
 
     private void closeDevice() {

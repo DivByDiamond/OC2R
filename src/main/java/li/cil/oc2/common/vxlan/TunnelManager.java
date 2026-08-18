@@ -79,10 +79,10 @@ public class TunnelManager {
                 socket.isBound());
 
         byte[] buffer = new byte[65535];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         // TODO shut this thread down more cleanly on server shutdown?
         //noinspection InfiniteLoopStatement
         while (true) {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             socket.receive(packet);
 
             if (packet.getLength() < 8) {
@@ -104,7 +104,8 @@ public class TunnelManager {
             TunnelInterface iface = tunnels.get(vni);
 
             if (iface != null) {
-                byte[] inner = new byte[packet.getLength() - 8];
+                // NOPMD - the buffer length depends on the received packet.
+                byte[] inner = new byte[packet.getLength() - 8]; // NOPMD allocation depends on loop iteration / per-item state
                 System.arraycopy(packet.getData(), 8, inner, 0, packet.getLength() - 8);
 
                 // CircularFifoQueue isn't thread-safe, so we have to synchronize on it.

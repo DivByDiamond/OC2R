@@ -23,39 +23,52 @@ public class TerminalCharRenderer {
         int index =
                 useAltBuffer
                         ? row * Terminal.WIDTH
-                        : (row + (terminal.lastRowToDisplay - Terminal.HEIGHT)) * Terminal.WIDTH;
+                        : (row + terminal.lastRowToDisplay - Terminal.HEIGHT) * Terminal.WIDTH;
         for (int col = 0; col < Terminal.WIDTH; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
-            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
-            final ColorData color =
-                    !invertBackground
-                            ? useAltBuffer ? terminal.altColors[index] : terminal.colors[index]
-                            : useAltBuffer
-                                    ? terminal.altColorsBackground[index]
-                                    : terminal.colorsBackground[index];
-
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
-            final int[] palette =
-                    (style & Terminal.STYLE_DIM_MASK) != 0
-                            ? TerminalColors.DIM_COLORS
-                            : TerminalColors.COLORS;
-            int foreground =
-                    switch (color.Mode) {
-                        case SIXTEEN_COLOR -> palette[!invertBackground ? color.R : color.G];
-                        case TWO_FIFTY_SIX_COLOR ->
-                                TerminalColors.COLORS_256[!invertBackground ? color.R : color.G];
-                        case TRUE_COLOR -> color.ToInt();
-                        case SIXTEEN_COLOR_BRIGHT ->
-                                TerminalColors.BRIGHT_COLORS[!invertBackground ? color.R : color.G];
-                        case DEFAULT_BACKGROUND -> 0x000000;
-                        default -> throw new AssertionError(color.Mode);
-                    };
-
             final int character = useAltBuffer ? terminal.altBuffer[index] : terminal.buffer[index];
+            final int foreground = getForegroundColor(terminal, style, index, useAltBuffer);
             renderForegroundChar(matrix, buffer, tx, character, foreground, style);
             tx += Terminal.CHAR_WIDTH;
         }
+    }
+
+    private static int getForegroundColor(
+            final Terminal terminal, final byte style, final int index, final boolean useAltBuffer) {
+        final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
+        final ColorData color = selectColor(terminal, index, useAltBuffer, invertBackground);
+        final int[] palette =
+                (style & Terminal.STYLE_DIM_MASK) != 0
+                        ? TerminalColors.DIM_COLORS
+                        : TerminalColors.COLORS;
+        return switch (color.Mode) {
+            case SIXTEEN_COLOR -> palette[foregroundChannel(color, invertBackground)];
+            case TWO_FIFTY_SIX_COLOR ->
+                    TerminalColors.COLORS_256[foregroundChannel(color, invertBackground)];
+            case TRUE_COLOR -> color.toInt();
+            case SIXTEEN_COLOR_BRIGHT ->
+                    TerminalColors.BRIGHT_COLORS[foregroundChannel(color, invertBackground)];
+            case DEFAULT_BACKGROUND -> 0x000000;
+            default -> throw new AssertionError(color.Mode);
+        };
+    }
+
+    private static ColorData selectColor(
+            final Terminal terminal,
+            final int index,
+            final boolean useAltBuffer,
+            final boolean invertBackground) {
+        return !invertBackground
+                ? useAltBuffer ? terminal.altColors[index] : terminal.colors[index]
+                : useAltBuffer
+                        ? terminal.altColorsBackground[index]
+                        : terminal.colorsBackground[index];
+    }
+
+    private static int foregroundChannel(final ColorData color, final boolean invertBackground) {
+        return invertBackground ? color.G : color.R;
     }
 
     static void renderForegroundChar(

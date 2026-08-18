@@ -46,7 +46,8 @@ public final class NetworkCableRenderer {
 
             final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
-                final ChunkPos connectorChunkPos = new ChunkPos(connector.getBlockPos());
+                final ChunkPos connectorChunkPos =
+                        new ChunkPos(connector.getBlockPos()); // NOPMD: depends on connector
                 if (Objects.equals(connectorChunkPos, chunkPos)) {
                     connectors.remove(connector);
                 }
@@ -144,11 +145,13 @@ public final class NetworkCableRenderer {
             final BlockPos position = connector.getBlockPos();
             for (final BlockPos connectedPosition : connector.getConnectedPositions()) {
                 final NetworkCableConnection connection =
-                        new NetworkCableConnection(position, connectedPosition);
+                        new NetworkCableConnection(// NOPMD: depends on loop positions
+                                position, connectedPosition);
                 if (seen.add(connection)) {
                     connections.add(connection);
                     connectionsByConnector
-                            .computeIfAbsent(connector, unused -> new ArrayList<>())
+                            .computeIfAbsent(// NOPMD: per-connector list
+                                    connector, unused -> new ArrayList<>()) // NOPMD allocation depends on loop iteration / per-item state
                             .add(connection);
                 }
             }

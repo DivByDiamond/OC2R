@@ -68,35 +68,7 @@ public class CSIManager {
     public void handle(final char ch) {
         /* Control characters inside CSI sequences: execute them but don't terminate the sequence */
         if (ch < 0x20 || ch == 0x7F) {
-            switch (ch) {
-                case 0x08 -> { /* BS */
-                    if (terminal.x > 0) terminal.x--;
-                }
-                case 0x0D -> { /* CR */
-                    terminal.x = 0;
-                }
-                case 0x0A, 0x0B -> { /* LF / VT — respect LNM like normal path */
-                    if (terminal.currentModeState.LNM) {
-                        NEL.execute(terminal);
-                    } else {
-                        IND.execute(terminal);
-                    }
-                }
-                case 0x09 -> { /* HT */
-                    terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), Terminal.WIDTH - 1);
-                }
-                case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */
-                    reset();
-                    terminal.state = Terminal.State.NORMAL;
-                    return;
-                }
-                case 0x1B -> { /* ESC — abort current CSI, start new escape */
-                    reset();
-                    terminal.state = Terminal.State.ESCAPE;
-                    return;
-                }
-                default -> {} /* Other control chars: ignore, stay in CSI state */
-            }
+            handleControlChar(ch);
             return;
         }
         if (ch >= '0' && ch <= '9') {
@@ -105,77 +77,124 @@ public class CSIManager {
                 args[argCount] = EscapeUtilities.parseArgument(ch, args[argCount]);
             }
         } else {
-            switch (ch) {
-                case ' ' -> {
-                    space = true;
-                    return;
-                }
-                case '?' -> {
-                    questionMark = true;
-                    return;
-                }
-                case '>' -> {
-                    greaterThan = true;
-                    return;
-                }
-                case '$' -> {
-                    dollarSign = true;
-                    return;
-                }
-                case '#' -> {
-                    hash = true;
-                    return;
-                }
-                case '"' -> {
-                    quote = true;
-                    return;
-                }
-                case '\'' -> {
-                    singleQuote = true;
-                    return;
-                }
-                case '!' -> {
-                    exclamation = true;
-                    return;
-                }
-                case ';' -> {
-                    argCount = Math.min(argCount + 1, args.length);
-                    hasArg = true;
-                    return; // Keep going, we have another argument.
-                }
-                default -> {}
+            handleModifierAndExecute(ch);
+        }
+    }
+
+    private void handleControlChar(final char ch) { // NOPMD 10-case VT100 control-char dispatch
+        switch (ch) {
+            case 0x08 -> { /* BS */
+                if (terminal.x > 0) terminal.x--;
             }
+            case 0x0D -> { /* CR */
+                terminal.x = 0;
+            }
+            case 0x0A, 0x0B -> handleControlLineFeed(); /* LF / VT — respect LNM like normal path */
+            case 0x09 -> { /* HT */
+                terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), Terminal.WIDTH - 1);
+            }
+            case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */
+                reset();
+                terminal.state = Terminal.State.NORMAL;
+            }
+            case 0x1B -> { /* ESC — abort current CSI, start new escape */
+                reset();
+                terminal.state = Terminal.State.ESCAPE;
+            }
+            default -> {} /* Other control chars: ignore, stay in CSI state */
+        }
+    }
 
-            if (hasArg) argCount = Math.min(argCount + 1, args.length);
+    private void handleControlLineFeed() {
+        if (terminal.currentModeState.LNM) {
+            NEL.execute(terminal);
+        } else {
+            IND.execute(terminal);
+        }
+    }
 
-            terminal.state = Terminal.State.NORMAL;
+    private void handleModifierAndExecute(final char ch) {
+        if (handleModifier(ch)) {
+            return;
+        }
+        executeHandler(ch);
+    }
 
-            CSISequenceHandler handler = sequences.get(ch);
-            CSIState state =
-                    new CSIState(
-                            questionMark,
-                            greaterThan,
-                            dollarSign,
-                            hash,
-                            quote,
-                            singleQuote,
-                            space,
-                            exclamation);
+    private boolean handleModifier(final char ch) { // NOPMD 10-case VT100 modifier dispatch
+        switch (ch) {
+            case ' ' -> {
+                space = true;
+                return true;
+            }
+            case '?' -> {
+                questionMark = true;
+                return true;
+            }
+            case '>' -> {
+                greaterThan = true;
+                return true;
+            }
+            case '$' -> {
+                dollarSign = true;
+                return true;
+            }
+            case '#' -> {
+                hash = true;
+                return true;
+            }
+            case '"' -> {
+                quote = true;
+                return true;
+            }
+            case '\'' -> {
+                singleQuote = true;
+                return true;
+            }
+            case '!' -> {
+                exclamation = true;
+                return true;
+            }
+            case ';' -> {
+                argCount = Math.min(argCount + 1, args.length);
+                hasArg = true;
+                return true; // Keep going, we have another argument.
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
 
-            if (handler != null) {
-                int[] defaults = handler.defaultParameters(state);
-                if (defaults.length > 0) {
-                    final int count = Math.min(defaults.length, args.length);
-                    for (int i = 0; i < count; i++) {
-                        if (args[i] == 0) {
-                            args[i] = defaults[i];
-                        }
+    private void executeHandler(final char ch) {
+        if (hasArg) argCount = Math.min(argCount + 1, args.length);
+
+        terminal.state = Terminal.State.NORMAL;
+
+        CSISequenceHandler handler = sequences.get(ch);
+        CSIState state =
+                new CSIState(
+                        questionMark,
+                        greaterThan,
+                        dollarSign,
+                        hash,
+                        quote,
+                        singleQuote,
+                        space,
+                        exclamation);
+
+        if (handler != null) {
+            int[] defaults = handler.defaultParameters(state);
+            if (defaults.length > 0) {
+                final int count = Math.min(defaults.length, args.length);
+                for (int i = 0; i < count; i++) {
+                    if (args[i] == 0) {
+                        args[i] = defaults[i];
                     }
                 }
-                handler.execute(args, argCount, state);
-            } else {
-                LOGGER.warn("Control sequence: {}", ch);
             }
+            handler.execute(args, argCount, state);
+        } else {
+            LOGGER.warn("Control sequence: {}", ch);
         }
     }
 

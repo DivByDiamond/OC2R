@@ -44,21 +44,28 @@ public final class NetworkConnectorConnectionManager {
     public static ConnectionResult connect(
             final NetworkConnectorBlockEntity connectorA,
             final NetworkConnectorBlockEntity connectorB) {
-        if (connectorA.equals(connectorB) || !connectorA.isValid() || !connectorB.isValid()) {
+        final ConnectionResult validation = validateConnection(connectorA, connectorB);
+        if (validation != null) {
+            return validation;
+        }
+
+        return establishConnection(
+                connectorA, connectorB, connectorA.getBlockPos(), connectorB.getBlockPos());
+    }
+
+    private static ConnectionResult validateConnection(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB) {
+        if (areInvalid(connectorA, connectorB)) {
             return ConnectionResult.FAILURE;
         }
 
         final Level level = connectorA.getLevel();
-        if (level == null || level.isClientSide()) {
+        if (!isValidLevel(level, connectorB)) {
             return ConnectionResult.FAILURE;
         }
 
-        if (!level.equals(connectorB.getLevel())) {
-            return ConnectionResult.FAILURE;
-        }
-
-        if (!connectorA.connectionManager.canConnectMore()
-                || !connectorB.connectionManager.canConnectMore()) {
+        if (!canConnectMore(connectorA, connectorB)) {
             return ConnectionResult.FAILURE_FULL;
         }
 
@@ -73,6 +80,36 @@ public final class NetworkConnectorConnectionManager {
             return ConnectionResult.FAILURE_OBSTRUCTED;
         }
 
+        return null;
+    }
+
+    private static boolean areInvalid(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB) {
+        return connectorA.equals(connectorB)
+                || !connectorA.isValid()
+                || !connectorB.isValid();
+    }
+
+    private static boolean isValidLevel(
+            final Level level, final NetworkConnectorBlockEntity connectorB) {
+        return level != null
+                && !level.isClientSide()
+                && level.equals(connectorB.getLevel());
+    }
+
+    private static boolean canConnectMore(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB) {
+        return connectorA.connectionManager.canConnectMore()
+                && connectorB.connectionManager.canConnectMore();
+    }
+
+    private static ConnectionResult establishConnection(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB,
+            final BlockPos posA,
+            final BlockPos posB) {
         if (connectorA.connectionManager.connectorPositions.add(posB)) {
             connectorA.connectionManager.dirtyConnectors.add(posB);
             connectorA.connectionManager.onConnectedPositionsChanged();

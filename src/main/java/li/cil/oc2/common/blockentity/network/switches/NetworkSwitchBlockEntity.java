@@ -24,8 +24,8 @@ import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 
 public final class NetworkSwitchBlockEntity extends ModBlockEntity
         implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
-    private final long HOST_TTL = 20 * 60 * 2;
-    final int TTL_COST = 1;
+    private static final long HOST_TTL = 20 * 60 * 2;
+    static final int TTL_COST = 1;
     final SwitchHostTable hostTable = new SwitchHostTable();
     final SwitchPortManager portManager = new SwitchPortManager();
     private int tickCount = 0;
@@ -44,10 +44,10 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     protected void loadServer() {
         super.loadServer();
         final BlockPos pos = getBlockPos();
-        var adj =
-                new ArrayList<BlockCapabilityCache<NetworkInterface, Direction>>(
-                        Constants.BLOCK_FACE_COUNT);
-        for (var side : Constants.DIRECTIONS)
+        final List<BlockCapabilityCache<NetworkInterface, Direction>> adj =
+                new ArrayList<>(Constants.BLOCK_FACE_COUNT);
+        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) adj.add(null);
+        for (final Direction side : Constants.DIRECTIONS)
             adj.set(
                     side.get3DDataValue(),
                     BlockCapabilityCache.create(
@@ -62,8 +62,8 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
 
     @Override
     public void writeEthernetFrame(
-            final NetworkInterface source, byte[] frame_bytes, final int timeToLive) {
-        packetForwarder.forward(source, frame_bytes, timeToLive);
+            final NetworkInterface source, byte[] frameBytes, final int timeToLive) {
+        packetForwarder.forward(source, frameBytes, timeToLive);
     }
 
     @Override
@@ -78,7 +78,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     public void serverTick() {
         if (level == null) return;
         tickCount++;
-        if ((tickCount) % 20 == 1) {
+        if (tickCount % 20 == 1) {
             long threshold = getLevel().getGameTime() - HOST_TTL;
             if (threshold < 0) return;
             hostTable.removeExpired(threshold);
@@ -113,9 +113,9 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        final List<Tag> hosts = (List<Tag>) tag.getList("hosts", Tag.TAG_COMPOUND);
+        final List<Tag> hosts = tag.getList("hosts", Tag.TAG_COMPOUND);
         hostTable.load(hosts);
-        final List<Tag> ports = (List<Tag>) tag.getList("ports", Tag.TAG_COMPOUND);
+        final List<Tag> ports = tag.getList("ports", Tag.TAG_COMPOUND);
         portManager.load(ports);
     }
 

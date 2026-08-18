@@ -15,7 +15,7 @@ final class BundledRedstoneCallbacks {
             @Nullable final Level level, final BlockPos pos, final Side side) {
         final BundledRedstone bundledRedstone = BundledRedstone.getInstance();
         if (bundledRedstone.isAvailable()) {
-            return bundledRedstone.getBundledInput(level, pos, side.getDirection().getOpposite());
+            return bundledRedstone.getBundledInput(level, pos, side.getDirection());
         }
         return new byte[Constants.BLOCK_FACE_COUNT];
     }
@@ -26,7 +26,7 @@ final class BundledRedstoneCallbacks {
 
     static boolean setBundledOutput(
             final Side side, final int value, final int color, final RedstoneInterfaceState state) {
-        final int index = side.getDirection().getOpposite().get3DDataValue();
+        final int index = side.getDirection().get3DDataValue();
         final byte clampedValue = (byte) Mth.clamp(value, 0, 255);
         final byte clampedColor = (byte) Mth.clamp(color, 0, 15);
 
@@ -40,7 +40,7 @@ final class BundledRedstoneCallbacks {
     static boolean setBundledOutputs(
             final Side side, final int[] values, final RedstoneInterfaceState state) {
         boolean changed = false;
-        final int index = side.getDirection().getOpposite().get3DDataValue();
+        final int index = side.getDirection().get3DDataValue();
         final byte[] output = state.getBundledOutput(index);
         for (int i = 0; i < values.length; i++) {
             final byte clampedValue = (byte) Mth.clamp(values[i], 0, 255);

@@ -60,60 +60,73 @@ public final class EstablishedState extends TcpState {
     @Override
     public SessionActions send(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
-        final boolean correct = header.read(segment);
-        if (!correct) {
-            LOGGER.trace("Got invalid TCP header");
-            return SessionActions.IGNORE;
-        }
-        if (header.syn) {
-            LOGGER.trace("Got syn on established connection");
-            return SessionActions.IGNORE;
-        }
-        if (header.sequenceNumber != session.vmSequence) {
-            LOGGER.trace(
-                    "VM sent invalid sequence number (expected {}, got {})",
-                    session.vmSequence,
-                    header.sequenceNumber);
+        if (!isValidSegment(session, segment, header)) {
             return SessionActions.IGNORE;
         }
         final int length = segment.remaining();
-        if (header.psh && length > session.computeWindow()) {
-            LOGGER.info("Received length > window size");
-            return SessionActions.IGNORE;
-        }
-        if (header.ack) {
-            if (header.acknowledgmentNumber != (session.mySequence + session.nextSegmentMark)) {
-                LOGGER.trace(
-                        "VM acked wrong number (expected {}, got {})",
-                        session.mySequence,
-                        header.acknowledgmentNumber);
-                return SessionActions.IGNORE;
-            }
-            if (header.acknowledgmentNumber == (session.mySequence + session.nextSegmentMark)) {
-                final ByteBuffer receiveBuffer = session.receiveBuffer;
-                final int newPosition = receiveBuffer.position() - session.nextSegmentMark;
-                receiveBuffer.position(session.nextSegmentMark);
-                receiveBuffer.compact();
-                receiveBuffer.position(newPosition);
-                receiveBuffer.limit(receiveBuffer.capacity());
-                session.mySequence += session.nextSegmentMark;
-                session.nextSegmentMark = 0;
-            }
-        }
         session.vmWindow = header.window;
         if (header.psh) {
-            session.vmSequence += length;
-            final ByteBuffer sendBuffer = session.sendBuffer;
-            sendBuffer.compact();
-            sendBuffer.put(segment);
-            sendBuffer.flip();
-            session.needsAcknowledgment = true;
+            handlePush(session, segment, length);
         }
         if (header.fin) {
             ++session.vmSequence;
             session.state = TcpStates.FINISH;
         }
         return SessionActions.FORWARD;
+    }
+
+    private boolean isValidSegment(
+            final StreamSessionImpl session, final ByteBuffer segment, final TcpHeader header) {
+        if (!header.read(segment)) {
+            LOGGER.trace("Got invalid TCP header");
+            return false;
+        }
+        if (header.syn) {
+            LOGGER.trace("Got syn on established connection");
+            return false;
+        }
+        if (header.sequenceNumber != session.vmSequence) {
+            LOGGER.trace(
+                    "VM sent invalid sequence number (expected {}, got {})",
+                    session.vmSequence,
+                    header.sequenceNumber);
+            return false;
+        }
+        final int length = segment.remaining();
+        if (header.psh && length > session.computeWindow()) {
+            LOGGER.info("Received length > window size");
+            return false;
+        }
+        return !header.ack || handleAcknowledgment(session, header);
+    }
+
+    private boolean handleAcknowledgment(final StreamSessionImpl session, final TcpHeader header) {
+        if (header.acknowledgmentNumber != (session.mySequence + session.nextSegmentMark)) {
+            LOGGER.trace(
+                    "VM acked wrong number (expected {}, got {})",
+                    session.mySequence,
+                    header.acknowledgmentNumber);
+            return false;
+        }
+        final ByteBuffer receiveBuffer = session.receiveBuffer;
+        final int newPosition = receiveBuffer.position() - session.nextSegmentMark;
+        receiveBuffer.position(session.nextSegmentMark);
+        receiveBuffer.compact();
+        receiveBuffer.position(newPosition);
+        receiveBuffer.limit(receiveBuffer.capacity());
+        session.mySequence += session.nextSegmentMark;
+        session.nextSegmentMark = 0;
+        return true;
+    }
+
+    private void handlePush(
+            final StreamSessionImpl session, final ByteBuffer segment, final int length) {
+        session.vmSequence += length;
+        final ByteBuffer sendBuffer = session.sendBuffer;
+        sendBuffer.compact();
+        sendBuffer.put(segment);
+        sendBuffer.flip();
+        session.needsAcknowledgment = true;
     }
 
     @Override

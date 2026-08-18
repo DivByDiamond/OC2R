@@ -117,13 +117,12 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
         event.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (be instanceof final DiskDriveBlockEntity self) {
-                        if (side
-                                == self.getBlockState()
-                                        .getValue(DiskDriveBlock.FACING)
-                                        .getOpposite()) {
-                            return self.device;
-                        }
+                    if (be instanceof final DiskDriveBlockEntity self
+                            && side
+                                    == self.getBlockState()
+                                            .getValue(DiskDriveBlock.FACING)
+                                            .getOpposite()) {
+                        return self.device;
                     }
                     return null;
                 },

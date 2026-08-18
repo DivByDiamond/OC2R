@@ -40,10 +40,9 @@ public abstract class MinecraftMixin implements MinecraftExt {
     @Inject(method = "useShaderTransparency", at = @At("HEAD"), cancellable = true, remap = false)
     private static void noTransparencyWhileRenderingProjectorDepth(
             final CallbackInfoReturnable<Boolean> cir) {
-        if (RenderSystem.isOnRenderThread()) {
-            if (ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
-                cir.setReturnValue(false);
-            }
+        if (RenderSystem.isOnRenderThread()
+                && ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
+            cir.setReturnValue(false);
         }
     }
 }

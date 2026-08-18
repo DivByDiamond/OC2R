@@ -70,6 +70,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         try {
 
             convertR5G6B5ToYUV420J(buffer, width, height, picture);
+            dirtyLines.clear();
         
         } finally {
             lock.unlock();
@@ -88,6 +89,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         byte[] vPlane = yuvData[2];
 
         int uvWidth = width / 2;
+        int[] yuv = new int[3];
 
         // Iterate through each pixel
         for (int j = 0; j < height; j++) {
@@ -104,8 +106,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
                 final byte g = (byte) ((g6 * 255 / 0b111111) - 128);
                 final byte b = (byte) ((b5 * 255 / 0b11111) - 128);
 
-                int[] yuv = new int[3];
-
                 RgbToYuv420j.rgb2yuv(r, g, b, yuv);
 
                 // Set Y plane
@@ -113,7 +113,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
                 // Set U and V planes (subsampled)
                 if (j % 2 == 0 && i % 2 == 0) {
-                    int uvIndex = (j / 2) * uvWidth + (i / 2);
+                    int uvIndex = j / 2 * uvWidth + i / 2;
                     uPlane[uvIndex] = (byte) yuv[1];
                     vPlane[uvIndex] = (byte) yuv[2];
                 }

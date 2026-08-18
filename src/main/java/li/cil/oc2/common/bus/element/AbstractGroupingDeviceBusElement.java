@@ -9,16 +9,17 @@ import li.cil.oc2.common.bus.element.group.GroupQueryResult;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
-public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry, TQuery>
+public abstract class AbstractGroupingDeviceBusElement<E extends GroupEntry, Q>
         extends AbstractDeviceBusElement {
-    protected final GroupManager<TEntry, TQuery> groupManager;
+    protected final GroupManager<E, Q> groupManager;
 
     public final int groupCount;
-    public final List<Set<TEntry>> groups;
+    public final List<Set<E>> groups;
     public final UUID[] groupIds;
     public final CompoundTag[] groupData;
 
     protected AbstractGroupingDeviceBusElement(final int groupCount) {
+        super();
         this.groupCount = groupCount;
         this.groups = new ArrayList<>(groupCount);
         this.groupIds = new UUID[groupCount];
@@ -54,14 +55,14 @@ public abstract class AbstractGroupingDeviceBusElement<TEntry extends GroupEntry
     protected final void setEntriesForGroup(
             final HolderLookup.Provider registries,
             final int index,
-            final GroupQueryResult<TEntry, TQuery> queryResult) {
+            final GroupQueryResult<E, Q> queryResult) {
         groupManager.setEntriesForGroup(registries, index, queryResult);
     }
 
-    public void onEntryAdded(final TEntry entry) {}
+    public void onEntryAdded(final E entry) {}
 
-    public void onEntryRemoved(final TEntry entry) {}
+    public void onEntryRemoved(final E entry) {}
 
     public void onEntryRemoved(
-            final String dataKey, final CompoundTag data, @Nullable final TQuery query) {}
+            final String dataKey, final CompoundTag data, @Nullable final Q query) {}
 }

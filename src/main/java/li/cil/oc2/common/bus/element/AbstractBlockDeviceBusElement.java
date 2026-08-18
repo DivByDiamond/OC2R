@@ -51,7 +51,8 @@ public abstract class AbstractBlockDeviceBusElement
 
             final BlockPos neighborPos = getPosition().relative(neighborDirection);
 
-            final ChunkPos chunkPos = new ChunkPos(neighborPos);
+            final ChunkPos chunkPos =
+                    new ChunkPos(neighborPos); // NOPMD: depends on loop direction
             if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
                 return Optional.empty();
             }
@@ -101,7 +102,10 @@ public abstract class AbstractBlockDeviceBusElement
             final BlockPos pos = getPosition().relative(side);
             final BlockDeviceQuery query = Devices.makeQuery(level, pos, side.getOpposite());
             setEntriesForGroup(
-                    registries, index, new BlockQueryResult(query, Collections.emptySet()));
+                    registries,
+                    index,
+                    new BlockQueryResult(// NOPMD: depends on loop side
+                            query, Collections.emptySet()));
         }
 
         scheduleScan();

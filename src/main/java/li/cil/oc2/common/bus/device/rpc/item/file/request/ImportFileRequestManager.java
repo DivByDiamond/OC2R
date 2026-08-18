@@ -69,15 +69,17 @@ public class ImportFileRequestManager {
         try {
 
             final ImportFileRequest request = importingDevices.get(id);
-            if (request != null) {
-                request.PendingPlayers.remove(player);
-                if (request.PendingPlayers.isEmpty()) {
-                    importingDevices.remove(id);
-                    final FileImportExportCardItemDevice device = request.Device.get();
-                    if (device != null) {
-                        device.state = ImportExportState.IMPORT_CANCELED;
-                    }
-                }
+            if (request == null) {
+                return;
+            }
+            request.PendingPlayers.remove(player);
+            if (!request.PendingPlayers.isEmpty()) {
+                return;
+            }
+            importingDevices.remove(id);
+            final FileImportExportCardItemDevice device = request.Device.get();
+            if (device != null) {
+                device.state = ImportExportState.IMPORT_CANCELED;
             }
         
         } finally {

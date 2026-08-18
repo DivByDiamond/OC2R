@@ -1,21 +1,22 @@
 {
   "parent": "block/block",
   "textures": {
-    "atlas0": "oc2r:block/charger/charger_atlas0",
-    "atlas2": "oc2r:block/charger/charger_atlas2",
-    "particle": "#atlas0"
+    "front": "oc2r:block/speaker/front",
+    "side": "oc2r:block/speaker/side",
+    "top": "oc2r:block/speaker/top",
+    "particle": "#side"
   },
   "elements": [
     {
       "from": [0, 0, 0],
       "to": [16, 16, 16],
       "faces": {
-        "east": { "texture": "atlas0", "cullface": "east", "uv": [0, 0, 16, 16] },
-        "west": { "texture": "atlas0", "cullface": "west", "uv": [0, 0, 16, 16] },
-        "up": { "texture": "atlas0", "cullface": "up", "uv": [0, 0, 16, 16] },
-        "down": { "texture": "atlas0", "cullface": "down", "uv": [0, 0, 16, 16] },
-        "north": { "texture": "atlas2", "cullface": "north", "uv": [0, 0, 16, 16] },
-        "south": { "texture": "atlas0", "cullface": "south", "uv": [0, 0, 16, 16] }
+        "east": { "texture": "side", "cullface": "east", "uv": [0, 0, 16, 16] },
+        "west": { "texture": "side", "cullface": "west", "uv": [0, 0, 16, 16] },
+        "up": { "texture": "top", "cullface": "up", "uv": [0, 0, 16, 16] },
+        "down": { "texture": "top", "cullface": "down", "uv": [0, 0, 16, 16] },
+        "north": { "texture": "side", "cullface": "north", "uv": [0, 0, 16, 16] },
+        "south": { "texture": "front", "cullface": "south", "uv": [0, 0, 16, 16] }
       }
     }
   ]

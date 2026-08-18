@@ -81,7 +81,8 @@ final class CableRenderUtils {
                 final Vec3 p = quadraticBezier(p0, p1, p2, t);
                 final Vec3 n = getExtrusionVector(eye, p, connection.forward);
 
-                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p));
+                // NOPMD - the block position depends on the per-iteration point p
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD allocation depends on loop iteration / per-item state
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
                 final int packedLight = LightTexture.pack(blockLight, skyLight);
@@ -142,7 +143,7 @@ final class CableRenderUtils {
     private static Vec3 animateCableSwing(
             final Vec3 c, @Nullable final Vec3 right, final float swingAmount, final int seed) {
         final float relTime =
-                ((System.currentTimeMillis() + seed) % CABLE_SWING_INTERVAL)
+                (System.currentTimeMillis() + seed) % CABLE_SWING_INTERVAL
                         / (float) CABLE_SWING_INTERVAL;
         final float relRadialTime = relTime * 2 * (float) Math.PI;
 

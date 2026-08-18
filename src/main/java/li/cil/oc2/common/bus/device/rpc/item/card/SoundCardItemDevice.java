@@ -22,6 +22,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
 @SuppressWarnings("unused")
 public final class SoundCardItemDevice extends AbstractItemRPCDevice {
@@ -60,47 +61,55 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
             @Nullable @Parameter("name") final String name,
             @Parameter("volume") final float volume,
             @Parameter("pitch") final float pitch) {
+        validateParameters(name, volume, pitch);
+        if (volume == 0) return;
+
+        location.get()
+                .ifPresent(
+                        loc ->
+                                loc.tryGetLevel()
+                                        .ifPresent(
+                                                level ->
+                                                        playSoundAt(
+                                                                loc, level, name, volume, pitch)));
+    }
+
+    private static void validateParameters(
+            @Nullable final String name, final float volume, final float pitch) {
         if (name == null) throw new IllegalArgumentException();
         if (volume < 0 || volume > 1.0f)
             throw new IllegalArgumentException("volume must be between >= 0 and <= 1");
         if (pitch < 0.5f || pitch > 2.0f)
             throw new IllegalArgumentException("pitch must be between >= 0.5 and <= 2");
-        if (volume == 0) return;
+    }
 
-        location.get()
-                .ifPresent(
-                        location ->
-                                location.tryGetLevel()
-                                        .ifPresent(
-                                                level -> {
-                                                    if (!(level
-                                                            instanceof
-                                                            final ServerLevel serverLevel)) {
-                                                        return;
-                                                    }
+    private void playSoundAt(
+            final BlockLocation location,
+            final LevelAccessor level,
+            final String name,
+            final float volume,
+            final float pitch) {
+        if (!(level instanceof final ServerLevel serverLevel)) {
+            return;
+        }
 
-                                                    final long gameTime = serverLevel.getGameTime();
-                                                    if (gameTime < gameTimeCooldownExpiresAt) {
-                                                        return;
-                                                    }
+        final long gameTime = serverLevel.getGameTime();
+        if (gameTime < gameTimeCooldownExpiresAt) {
+            return;
+        }
 
-                                                    gameTimeCooldownExpiresAt =
-                                                            gameTime + COOLDOWN_IN_TICKS;
+        gameTimeCooldownExpiresAt = gameTime + COOLDOWN_IN_TICKS;
 
-                                                    final SoundEvent soundEvent =
-                                                            BuiltInRegistries.SOUND_EVENT.get(
-                                                                    ResourceLocation.parse(name));
-                                                    if (soundEvent == null)
-                                                        throw new IllegalArgumentException(
-                                                                "Sound not found.");
-                                                    level.playSound(
-                                                            null,
-                                                            location.blockPos(),
-                                                            soundEvent,
-                                                            SoundSource.BLOCKS,
-                                                            volume,
-                                                            pitch);
-                                                }));
+        final SoundEvent soundEvent =
+                BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(name));
+        if (soundEvent == null) throw new IllegalArgumentException("Sound not found.");
+        serverLevel.playSound(
+                null,
+                location.blockPos(),
+                soundEvent,
+                SoundSource.BLOCKS,
+                volume,
+                pitch);
     }
 
     @Callback

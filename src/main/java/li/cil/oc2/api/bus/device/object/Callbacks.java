@@ -87,6 +87,22 @@ public final class Callbacks {
                             "Method without Callback annotation.");
             final String methodName =
                     Strings.isNotBlank(annotation.name()) ? annotation.name() : method.getName();
+            final Documentation documentation =
+                    collectDocumentation(target, methodName, annotation);
+            final RPCParameter[] parameters =
+                    collectParameters(method, documentation.parameterDescriptions());
+            return new ConstructorData(
+                    methodName,
+                    annotation.synchronize(),
+                    method.getReturnType(),
+                    parameters,
+                    MethodHandles.lookup().unreflect(method).bindTo(target),
+                    documentation.description(),
+                    documentation.returnValueDescription());
+        }
+
+        private static Documentation collectDocumentation(
+                final Object target, final String methodName, final Callback annotation) {
             String desc =
                     Strings.isNotBlank(annotation.description()) ? annotation.description() : null;
             String retDesc =
@@ -98,83 +114,70 @@ public final class Callbacks {
                 final VisitorImpl dv = new VisitorImpl();
                 dd.getDeviceDocumentation(dv);
                 final VisitorImpl cv = dv.callbacks.get(methodName);
-                if (cv != null) {
-                    if (Strings.isNotBlank(cv.desc)) {
-                        desc = cv.desc;
-                    }
-                    if (Strings.isNotBlank(cv.retValDesc)) {
-                        retDesc = cv.retValDesc;
-                    }
-                    paramDescs.putAll(cv.parameterDescriptions);
+                if (cv == null) {
+                    return new Documentation(desc, retDesc, paramDescs);
                 }
+                if (Strings.isNotBlank(cv.desc)) {
+                    desc = cv.desc;
+                }
+                if (Strings.isNotBlank(cv.retValDesc)) {
+                    retDesc = cv.retValDesc;
+                }
+                paramDescs.putAll(cv.parameterDescriptions);
             }
-            final RPCParameter[] parameters =
-                    PARAMETERS_BY_METHOD.computeIfAbsent(
-                            method,
-                            m ->
-                                    Arrays.stream(m.getParameters())
-                                            .map(
-                                                    p -> {
-                                                        final Parameter a =
-                                                                p.getAnnotation(Parameter.class);
-                                                        final String pn =
-                                                                a != null
-                                                                                && Strings
-                                                                                        .isNotBlank(
-                                                                                                a
-                                                                                                        .value())
-                                                                        ? a.value()
-                                                                        : (p.isNamePresent()
-                                                                                ? p.getName()
-                                                                                : null);
-                                                        final Class<?> pt = p.getType();
-                                                        // pn may be null when the class wasn't
-                                                        // compiled with -parameters AND the
-                                                        // parameter has no @Parameter annotation.
-                                                        // ConcurrentHashMap rejects null keys, so
-                                                        // we must skip the lookup in that case.
-                                                        final String pd =
-                                                                pn != null
-                                                                                && paramDescs
-                                                                                        .containsKey(
-                                                                                                pn)
-                                                                        ? paramDescs.get(pn)
-                                                                        : a != null
-                                                                                        && Strings
-                                                                                                .isNotBlank(
-                                                                                                        a
-                                                                                                                .description())
-                                                                                ? a.description()
-                                                                                : null;
-                                                        return new RPCParameter() {
-                                                            @Override
-                                                            public Class<?> getType() {
-                                                                return pt;
-                                                            }
+            return new Documentation(desc, retDesc, paramDescs);
+        }
 
-                                                            @Override
-                                                            public Optional<String> getName() {
-                                                                return Optional.ofNullable(pn);
-                                                            }
+        private static RPCParameter[] collectParameters(
+                final Method method, final Map<String, String> paramDescs) {
+            return PARAMETERS_BY_METHOD.computeIfAbsent(
+                    method,
+                    m ->
+                            Arrays.stream(m.getParameters())
+                                    .map(p -> createParameter(p, paramDescs))
+                                    .toArray(RPCParameter[]::new));
+        }
 
-                                                            @Override
-                                                            public Optional<String>
-                                                                    getDescription() {
-                                                                return Optional.ofNullable(pd);
-                                                            }
-                                                        };
-                                                    })
-                                            .toArray(RPCParameter[]::new));
-            return new ConstructorData(
-                    methodName,
-                    annotation.synchronize(),
-                    method.getReturnType(),
-                    parameters,
-                    MethodHandles.lookup().unreflect(method).bindTo(target),
-                    desc,
-                    retDesc);
+        private static RPCParameter createParameter(
+                final java.lang.reflect.Parameter p, final Map<String, String> paramDescs) {
+            final Parameter a = p.getAnnotation(Parameter.class);
+            final String pn =
+                    a != null && Strings.isNotBlank(a.value())
+                            ? a.value()
+                            : p.isNamePresent() ? p.getName() : null;
+            final Class<?> pt = p.getType();
+            // pn may be null when the class wasn't compiled with -parameters AND the parameter has
+            // no @Parameter annotation. ConcurrentHashMap rejects null keys, so we must skip the
+            // lookup in that case.
+            final String pd =
+                    pn != null && paramDescs.containsKey(pn)
+                            ? paramDescs.get(pn)
+                            : a != null && Strings.isNotBlank(a.description())
+                                    ? a.description()
+                                    : null;
+            return new RPCParameter() {
+                @Override
+                public Class<?> getType() {
+                    return pt;
+                }
+
+                @Override
+                public Optional<String> getName() {
+                    return Optional.ofNullable(pn);
+                }
+
+                @Override
+                public Optional<String> getDescription() {
+                    return Optional.ofNullable(pd);
+                }
+            };
         }
     }
+
+    private record Documentation(
+            String description,
+            String returnValueDescription,
+            Map<String, String> parameterDescriptions) {}
 
     private static final class ObjectRpcMethod extends AbstractRPCMethod {
         private final MethodHandle handle;

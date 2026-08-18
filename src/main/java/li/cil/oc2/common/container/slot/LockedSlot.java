@@ -11,12 +11,12 @@ public final class LockedSlot extends Slot {
     }
 
     @Override
-    public boolean mayPlace(final ItemStack p_40231_) {
+    public boolean mayPlace(final ItemStack stack) {
         return false;
     }
 
     @Override
-    public boolean mayPickup(final Player p_40228_) {
+    public boolean mayPickup(final Player player) {
         return false;
     }
 }

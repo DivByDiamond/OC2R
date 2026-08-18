@@ -31,38 +31,7 @@ public class BlockHarvestHelper {
         }
 
         final ServerPlayer player = FakePlayerUtils.getFakePlayer(level, entity);
-        final var breakEvent =
-                CommonHooks.fireBlockBreak(
-                        level, GameType.DEFAULT_MODE, player, blockPos, blockState);
-        if (breakEvent.isCanceled()) {
-            return false;
-        }
-
-        final BlockEntity blockEntity = level.getBlockEntity(blockPos);
-        final Block block = blockState.getBlock();
-        final boolean isCommandBlock =
-                block instanceof CommandBlock
-                        || block instanceof StructureBlock
-                        || block instanceof JigsawBlock;
-        if (isCommandBlock && !player.canUseGameMasterBlocks()) {
-            return false;
-        }
-
-        if (player.blockActionRestricted(level, blockPos, GameType.DEFAULT_MODE)) {
-            return false;
-        }
-
-        Tier toolTier;
-        try {
-            toolTier = Tiers.valueOf(Config.blockOperationsModuleToolTier);
-        } catch (final IllegalArgumentException e) {
-            toolTier = null;
-        }
-        if (toolTier == null || blockState.is(toolTier.getIncorrectBlocksForDrops())) {
-            return false;
-        }
-
-        if (!EventHooks.doPlayerHarvestCheck(player, blockState, level, blockPos)) {
+        if (!isHarvestAllowed(level, player, blockPos, blockState)) {
             return false;
         }
 
@@ -78,9 +47,52 @@ public class BlockHarvestHelper {
             return false;
         }
 
+        final BlockEntity blockEntity = level.getBlockEntity(blockPos);
+        final Block block = blockState.getBlock();
         block.destroy(level, blockPos, blockState);
         block.playerDestroy(level, player, blockPos, blockState, blockEntity, ItemStack.EMPTY);
 
         return true;
+    }
+
+    private static boolean isHarvestAllowed(
+            final ServerLevel level,
+            final ServerPlayer player,
+            final BlockPos blockPos,
+            final BlockState blockState) {
+        final var breakEvent =
+                CommonHooks.fireBlockBreak(
+                        level, GameType.DEFAULT_MODE, player, blockPos, blockState);
+        if (breakEvent.isCanceled()) {
+            return false;
+        }
+
+        final Block block = blockState.getBlock();
+        final boolean isCommandBlock =
+                block instanceof CommandBlock
+                        || block instanceof StructureBlock
+                        || block instanceof JigsawBlock;
+        if (isCommandBlock && !player.canUseGameMasterBlocks()) {
+            return false;
+        }
+
+        if (player.blockActionRestricted(level, blockPos, GameType.DEFAULT_MODE)) {
+            return false;
+        }
+
+        final Tier toolTier = getToolTier();
+        if (toolTier == null || blockState.is(toolTier.getIncorrectBlocksForDrops())) {
+            return false;
+        }
+
+        return EventHooks.doPlayerHarvestCheck(player, blockState, level, blockPos);
+    }
+
+    private static Tier getToolTier() {
+        try {
+            return Tiers.valueOf(Config.blockOperationsModuleToolTier);
+        } catch (final IllegalArgumentException e) {
+            return null;
+        }
     }
 }

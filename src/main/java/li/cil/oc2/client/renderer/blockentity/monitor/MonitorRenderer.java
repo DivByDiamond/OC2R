@@ -86,6 +86,23 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         final float pixelScale = 1 / 16f;
         stack.scale(pixelScale * width, pixelScale * height, pixelScale);
 
+        renderTerminalOrStatus(framebufferSource, stack, bufferSource, distanceToCamera);
+
+        stack.popPose();
+
+        // ---- Power overlay -----------------------------------------------------
+        // Drawn at the origin block's corner (which is the top-right of the multiblock from
+        // the viewer's POV) at the original 1-block scale so the icon keeps its aspect ratio.
+        if (framebufferSource.getPowerState() && framebufferSource.hasPower()) {
+            renderPowerOverlay(stack, bufferSource, blockFacing, pixelScale);
+        }
+    }
+
+    private void renderTerminalOrStatus(
+            final MonitorBlockEntity framebufferSource,
+            final PoseStack stack,
+            final MultiBufferSource bufferSource,
+            final double distanceToCamera) {
         if (framebufferSource.getPowerState()
                 && framebufferSource.isMounted()
                 && framebufferSource.hasPower()) {
@@ -95,30 +112,29 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
             MonitorTextRenderer.renderStatusText(
                     bufferSource, framebufferSource, stack, distanceToCamera, font);
         }
+    }
+
+    private void renderPowerOverlay(
+            final PoseStack stack,
+            final MultiBufferSource bufferSource,
+            final Direction blockFacing,
+            final float pixelScale) {
+        stack.pushPose();
+
+        stack.translate(0.5f, 0, 0.5f);
+        stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
+        stack.translate(-0.5f, 0, -0.5f);
+
+        stack.translate(1, 1, 1);
+        stack.scale(-1, -1, -1);
+
+        stack.scale(pixelScale, pixelScale, pixelScale);
+        stack.translate(0, 0, -0.1f);
+
+        final Matrix4f matrix = stack.last().pose();
+        MonitorTextRenderer.renderPowerOverlay(matrix, bufferSource);
 
         stack.popPose();
-
-        // ---- Power overlay -----------------------------------------------------
-        // Drawn at the origin block's corner (which is the top-right of the multiblock from
-        // the viewer's POV) at the original 1-block scale so the icon keeps its aspect ratio.
-        if (framebufferSource.getPowerState() && framebufferSource.hasPower()) {
-            stack.pushPose();
-
-            stack.translate(0.5f, 0, 0.5f);
-            stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
-            stack.translate(-0.5f, 0, -0.5f);
-
-            stack.translate(1, 1, 1);
-            stack.scale(-1, -1, -1);
-
-            stack.scale(pixelScale, pixelScale, pixelScale);
-            stack.translate(0, 0, -0.1f);
-
-            final Matrix4f matrix = stack.last().pose();
-            MonitorTextRenderer.renderPowerOverlay(matrix, bufferSource);
-
-            stack.popPose();
-        }
     }
 
     @SubscribeEvent

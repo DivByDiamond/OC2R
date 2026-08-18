@@ -77,8 +77,9 @@ public final class RobotInventoryContainer extends AbstractRobotContainer {
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD - each slot requires its own DeviceTypeSlotItemHandler.
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.MEMORY,
                                                 slot,
@@ -91,13 +92,14 @@ public final class RobotInventoryContainer extends AbstractRobotContainer {
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD - each slot requires its own DeviceTypeSlotItemHandler.
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.HARD_DRIVE,
                                                 slot,
-                                                70 + (slot % 2) * SLOT_SIZE,
-                                                60 + (slot / 2) * SLOT_SIZE));
+                                                70 + slot % 2 * SLOT_SIZE,
+                                                60 + slot / 2 * SLOT_SIZE));
                             }
                         });
 
@@ -105,8 +107,9 @@ public final class RobotInventoryContainer extends AbstractRobotContainer {
                 .ifPresent(
                         itemHandler -> {
                             for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                                // NOPMD - each slot requires its own DeviceTypeSlotItemHandler.
                                 addSlot(
-                                        new DeviceTypeSlotItemHandler(
+                                        new DeviceTypeSlotItemHandler(// NOPMD allocation depends on loop iteration / per-item state
                                                 itemHandler,
                                                 DeviceTypes.ROBOT_MODULE,
                                                 slot,
@@ -127,9 +130,9 @@ public final class RobotInventoryContainer extends AbstractRobotContainer {
 
         final ItemStackHandler inventory = robot.getInventory();
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
-            final int x = 116 + (slot % 3) * SLOT_SIZE;
-            final int y = 24 + (slot / 3) * SLOT_SIZE;
-            addSlot(new RobotSlot(inventory, slot, x, y));
+            final int x = 116 + slot % 3 * SLOT_SIZE;
+            final int y = 24 + slot / 3 * SLOT_SIZE;
+            addSlot(new RobotSlot(inventory, slot, x, y)); // NOPMD allocation depends on loop iteration / per-item state
         }
 
         createPlayerInventoryAndHotbarSlots(player.getInventory(), 8, 115);

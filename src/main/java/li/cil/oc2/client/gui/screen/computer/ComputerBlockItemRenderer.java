@@ -38,8 +38,8 @@ public class ComputerBlockItemRenderer {
                 new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
         quaternion.conjugate();
 
-        final float relMouseX = -mouseX / (float) BLOCK_RENDER_SIZE;
-        final float relMouseY = -mouseY / (float) BLOCK_RENDER_SIZE;
+        final float relMouseX = -mouseX / BLOCK_RENDER_SIZE;
+        final float relMouseY = -mouseY / BLOCK_RENDER_SIZE;
 
         final Vector3f source = new Vector3f();
         source.add(relMouseX, relMouseY, 1);
@@ -118,18 +118,11 @@ public class ComputerBlockItemRenderer {
             poseStack.translate(
                     -side.getStepX() * 0.51f, side.getStepY() * 0.51f, -side.getStepZ() * 0.51f);
 
-            Vector3f sideRotation =
-                    switch (side) {
-                        case DOWN -> new Vector3f(-90, 0, 0);
-                        case UP -> new Vector3f(90, 0, 0);
-                        case NORTH -> new Vector3f(0, 180, 0);
-                        case WEST -> new Vector3f(0, -90, 0);
-                        case EAST -> new Vector3f(0, 90, 0);
-                        default -> throw new IllegalStateException("Unexpected value: " + side);
-                    };
+            final Vector3f sideRotation = getSideRotation(side);
             sideRotation.mul((float) Math.PI / 180.0f);
+            // NOPMD - depends on loop variable (per-face rotation)
             poseStack.rotate(
-                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z));
+                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z)); // NOPMD allocation depends on loop iteration / per-item state
 
             poseStack.translate(-0.5f, -0.5f, 0f);
 
@@ -145,6 +138,17 @@ public class ComputerBlockItemRenderer {
 
             poseStack.popMatrix();
         }
+    }
+
+    private static Vector3f getSideRotation(final Direction side) {
+        return switch (side) {
+            case DOWN -> new Vector3f(-90, 0, 0);
+            case UP -> new Vector3f(90, 0, 0);
+            case NORTH -> new Vector3f(0, 180, 0);
+            case WEST -> new Vector3f(0, -90, 0);
+            case EAST -> new Vector3f(0, 90, 0);
+            default -> throw new IllegalStateException("Unexpected value: " + side);
+        };
     }
 
     private void renderOverlay(

@@ -14,9 +14,9 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
     private final ByteBuffer buffer;
     private int length;
 
-    public PciRootPortDevice(final int window_size, final ByteBuffer buffer) {
+    public PciRootPortDevice(final int windowSize, final ByteBuffer buffer) {
 
-        length = window_size * 2;
+        length = windowSize * 2;
         if (buffer.capacity() < length) {
             throw new IllegalArgumentException("Buffer too small.");
         }

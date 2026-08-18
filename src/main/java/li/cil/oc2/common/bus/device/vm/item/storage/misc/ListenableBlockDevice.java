@@ -59,6 +59,7 @@ final class ListenableInputStream extends InputStream {
     public final Set<Runnable> accessCallbacks = new Event();
 
     ListenableInputStream(final InputStream inner) {
+        super();
         this.inner = inner;
     }
 
@@ -123,6 +124,7 @@ final class ListenableOutputStream extends OutputStream {
     public final Set<Runnable> accessCallbacks = new Event();
 
     ListenableOutputStream(final OutputStream inner) {
+        super();
         this.inner = inner;
     }
 

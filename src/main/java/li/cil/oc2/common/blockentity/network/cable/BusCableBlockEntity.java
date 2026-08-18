@@ -37,6 +37,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
 
     public final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
     public final CableEnergyStorage energy = new CableEnergyStorage();
+    public long energyDistributionTick = -1;
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
@@ -160,7 +161,8 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         assert level != null;
         final ServerLevel serverLevel = (ServerLevel) level;
         for (final var side : Direction.values()) {
-            final var listener = new NeighborListener(serverLevel, busElement, side);
+            // NOPMD: listener is tied to the loop's side and registered per-neighbor position
+            final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state
             neighborListeners[side.ordinal()] = listener;
             serverLevel.registerCapabilityListener(getBlockPos().relative(side), listener);
         }

@@ -57,7 +57,7 @@ final class RobotActionProcessorSerialization {
         final List<Tag> resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(resultsTag.size(), RobotActionProcessor.MAX_QUEUED_RESULTS); i++) {
             final RobotActionProcessorResult result =
-                    new RobotActionProcessorResult((CompoundTag) resultsTag.get(i));
+                    new RobotActionProcessorResult((CompoundTag) resultsTag.get(i)); // NOPMD per-result data
             if (result.actionId != 0) {
                 processor.results.add(result);
             }

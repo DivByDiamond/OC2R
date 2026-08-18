@@ -31,50 +31,14 @@ public final class NativeLoader {
     public static void loadLibrary() {
         Platform platform = getPlatformName();
         String arch = getArchString();
-        String libName =
-                switch (platform) {
-                    case MACOS -> "liboc2rnet-" + arch + ".dylib";
-                    case WINDOWS -> "oc2rnet-" + arch + ".dll";
-                    case LINUX -> "liboc2rnet-linux-" + arch + ".so";
-                    case ANDROID -> "liboc2rnet-android-" + arch + ".so";
-                    case UNSUPPORTED -> "NONE";
-                    default -> throw new AssertionError(platform);
-                };
+        String libName = getLibraryName(platform, arch);
 
         String resourcePath = "/natives/" + platform + "/" + libName;
         try {
             Path tempFile = extractToTemp(resourcePath);
             System.load(tempFile.toAbsolutePath().toString());
             Main.LoadedLibrary = true;
-            InetAddress address = new InetAddressConverter().convert(LOOPBACK_IP);
-            Random garbageGenerator = new Random();
-            byte[] dataToSend = new byte[64];
-            for (int i = 0; i < 64; i++) {
-                dataToSend[i] = (byte) garbageGenerator.nextInt(0, 255);
-            }
-            byte[] data =
-                    DefaultSessionLayer.sendICMP(
-                            address.getAddress(),
-                            dataToSend,
-                            64,
-                            Config.defaultEchoRequestTimeoutMs);
-            if (data != null) {
-                for (int i = 0; i < 64; i++) {
-                    if (data[i] != dataToSend[i]) {
-                        LogManager.getLogger()
-                                .error(
-                                        "ICMP data does not match, falling back to JVM UDP"
-                                                + " implementation");
-                        Main.LoadedLibrary = false;
-                    }
-                }
-            } else {
-                Main.LoadedLibrary = false;
-                LogManager.getLogger()
-                        .error(
-                                "Loaded native library successfully but ICMP still failed, falling"
-                                        + " back to JVM UDP implementation");
-            }
+            probeLoopback();
         } catch (FileNotFoundException fileNotFoundException) {
             if (officiallySupported) {
                 Main.LoadedLibrary = false;
@@ -115,6 +79,49 @@ public final class NativeLoader {
                             "Native library probe failed due to a missing class ({}); falling"
                                     + " back to JVM UDP implementation.",
                             classError.getMessage());
+        }
+    }
+
+    private static String getLibraryName(final Platform platform, final String arch) {
+        return switch (platform) {
+            case MACOS -> "liboc2rnet-" + arch + ".dylib";
+            case WINDOWS -> "oc2rnet-" + arch + ".dll";
+            case LINUX -> "liboc2rnet-linux-" + arch + ".so";
+            case ANDROID -> "liboc2rnet-android-" + arch + ".so";
+            case UNSUPPORTED -> "NONE";
+            default -> throw new AssertionError(platform);
+        };
+    }
+
+    private static void probeLoopback() {
+        InetAddress address = new InetAddressConverter().convert(LOOPBACK_IP);
+        Random garbageGenerator = new Random();
+        byte[] dataToSend = new byte[64];
+        for (int i = 0; i < 64; i++) {
+            dataToSend[i] = (byte) garbageGenerator.nextInt(0, 255);
+        }
+        byte[] data =
+                DefaultSessionLayer.sendICMP(
+                        address.getAddress(),
+                        dataToSend,
+                        64,
+                        Config.defaultEchoRequestTimeoutMs);
+        if (data != null) {
+            for (int i = 0; i < 64; i++) {
+                if (data[i] != dataToSend[i]) {
+                    LogManager.getLogger()
+                            .error(
+                                    "ICMP data does not match, falling back to JVM UDP"
+                                            + " implementation");
+                    Main.LoadedLibrary = false;
+                }
+            }
+        } else {
+            Main.LoadedLibrary = false;
+            LogManager.getLogger()
+                    .error(
+                            "Loaded native library successfully but ICMP still failed, falling"
+                                    + " back to JVM UDP implementation");
         }
     }
 

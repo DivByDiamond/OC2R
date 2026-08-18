@@ -23,8 +23,8 @@ import net.minecraft.nbt.CompoundTag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TIdentity>
-        extends IdentityProxy<TIdentity> implements VMDevice, ItemDevice {
+public abstract class AbstractBlockStorageDevice<B extends BlockDevice, I>
+        extends IdentityProxy<I> implements VMDevice, ItemDevice {
     protected static final Logger LOGGER = LogManager.getLogger();
 
     protected static final ExecutorService WORKERS = DeviceLifecycle.WORKERS;
@@ -45,7 +45,7 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
 
     @Nullable protected UUID blobHandle;
 
-    protected AbstractBlockStorageDevice(final TIdentity identity, final boolean readonly) {
+    protected AbstractBlockStorageDevice(final I identity, final boolean readonly) {
         super(identity);
         this.readonly = readonly;
     }
@@ -164,7 +164,7 @@ public abstract class AbstractBlockStorageDevice<TBlock extends BlockDevice, TId
         lifecycle.setOpenJob(job);
     }
 
-    protected abstract CompletableFuture<TBlock> createBlockDevice();
+    protected abstract CompletableFuture<B> createBlockDevice();
 
     protected void handleDataAccess() {}
 }

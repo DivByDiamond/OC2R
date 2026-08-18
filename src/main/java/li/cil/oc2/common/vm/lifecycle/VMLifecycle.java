@@ -2,7 +2,6 @@ package li.cil.oc2.common.vm.lifecycle;
 
 import java.time.Duration;
 import java.util.Optional;
-import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.common.Constants;
@@ -64,66 +63,81 @@ public final class VMLifecycle {
             return;
         }
 
-        if (!vm.consumeEnergy(vm.busController.getEnergyConsumption(), true)) {
-            vm.error(Component.translatable(Constants.COMPUTER_ERROR_NOT_ENOUGH_ENERGY));
+        if (!hasRequiredDevicesAndEnergy()) {
             return;
-        }
-
-        if (vm.busController.getDevices().stream()
-                .noneMatch(device -> device instanceof FirmwareLoader)) {
-            vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_FIRMWARE));
-            return;
-        }
-
-        if (vm.busController.getDevices().stream()
-                .noneMatch(device -> device instanceof CPUItemDevice)) {
-            vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
-            return;
-        } else {
-            Optional<Device> cpu =
-                    vm.busController.getDevices().stream()
-                            .filter(device -> device instanceof CPUItemDevice)
-                            .findFirst();
-            if (cpu.isEmpty()) {
-                vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
-                return;
-            }
-            vm.state.board.getCpu().setFrequency(((CPUItemDevice) cpu.get()).getFrequency());
         }
 
         assert vm.runner == null : "Runner active while still in load phase.";
 
-        final VMDeviceLoadResult loadResult = vm.state.vmAdapter.mountDevices();
-        if (!loadResult.wasSuccessful()) {
-            if (loadResult.getErrorMessage() != null) {
-                vm.error(loadResult.getErrorMessage(), false);
-            } else {
-                vm.error(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN), false);
-            }
-            loadDevicesDelay = DEVICE_LOAD_RETRY_INTERVAL;
+        if (!mountDevices()) {
             return;
         }
 
         if (vm.runner == null) {
-            try {
-                vm.state.board.reset();
-                vm.state.board.initialize();
-                vm.state.board.setRunning(true);
-            } catch (final IllegalStateException e) {
-                vm.error(Component.translatable(Constants.COMPUTER_ERROR_INSUFFICIENT_MEMORY));
-                return;
-            } catch (final MemoryAccessException e) {
-                LOGGER.error(e);
-                vm.error(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN));
+            if (!startBoard()) {
                 return;
             }
-
             vm.runner = vm.createRunner();
         }
 
         vm.state.rpcAdapter.mountDevices();
 
         vm.setRunState(VMRunState.RUNNING);
+    }
+
+    private boolean hasRequiredDevicesAndEnergy() {
+        if (!vm.consumeEnergy(vm.busController.getEnergyConsumption(), true)) {
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_NOT_ENOUGH_ENERGY));
+            return false;
+        }
+
+        if (vm.busController.getDevices().stream()
+                .noneMatch(device -> device instanceof FirmwareLoader)) {
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_FIRMWARE));
+            return false;
+        }
+
+        final Optional<CPUItemDevice> cpu =
+                vm.busController.getDevices().stream()
+                        .filter(device -> device instanceof CPUItemDevice)
+                        .map(device -> (CPUItemDevice) device)
+                        .findFirst();
+        if (cpu.isEmpty()) {
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
+            return false;
+        }
+        vm.state.board.getCpu().setFrequency(cpu.get().getFrequency());
+        return true;
+    }
+
+    private boolean mountDevices() {
+        final VMDeviceLoadResult loadResult = vm.state.vmAdapter.mountDevices();
+        if (loadResult.wasSuccessful()) {
+            return true;
+        }
+        if (loadResult.getErrorMessage() != null) {
+            vm.error(loadResult.getErrorMessage(), false);
+        } else {
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN), false);
+        }
+        loadDevicesDelay = DEVICE_LOAD_RETRY_INTERVAL;
+        return false;
+    }
+
+    private boolean startBoard() {
+        try {
+            vm.state.board.reset();
+            vm.state.board.initialize();
+            vm.state.board.setRunning(true);
+            return true;
+        } catch (final IllegalStateException e) {
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_INSUFFICIENT_MEMORY));
+            return false;
+        } catch (final MemoryAccessException e) {
+            LOGGER.error(e);
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN));
+            return false;
+        }
     }
 
     public void run() {

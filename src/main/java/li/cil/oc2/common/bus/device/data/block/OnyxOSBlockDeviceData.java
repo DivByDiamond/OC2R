@@ -35,12 +35,14 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
                 LOGGER.info("OnyxOS: using override {}", override);
                 instance = ByteBufferBlockDevice.createFromStream(Files.newInputStream(override), true);
             } else {
-                try (final InputStream stream =
+                try (InputStream stream =
                         OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs.img")) {
                     if (stream == null) {
-                        throw new IOException("onyxos/onyxfs.img missing from mod jar");
+                        LOGGER.error("onyxos/onyxfs.img missing from mod jar");
+                        instance = ByteBufferBlockDevice.create(0, true);
+                    } else {
+                        instance = ByteBufferBlockDevice.createFromStream(stream, true);
                     }
-                    instance = ByteBufferBlockDevice.createFromStream(stream, true);
                 }
             }
         } catch (final IOException e) {

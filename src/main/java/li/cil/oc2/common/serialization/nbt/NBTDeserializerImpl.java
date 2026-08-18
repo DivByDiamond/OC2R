@@ -130,21 +130,11 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
     @Nullable
     public static Object getGenericArray(
             final Tag tag, final Class<?> componentType, final @Nullable Object into) {
-        final ArrayComponentDeserializer componentDeserializer;
-        if (componentType.isArray()) {
-            componentDeserializer = NBTDeserializerImpl::getArray;
-        } else {
-            final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
-            componentDeserializer =
-                    (n, t, i) ->
-                            serializer.deserialize(
-                                    new NBTDeserializerImpl((CompoundTag) n), (Class) t, i);
-        }
+        final ArrayComponentDeserializer componentDeserializer =
+                createComponentDeserializer(componentType);
 
-        Object[] data = (Object[]) into;
         final List<Tag> listTag;
         final int[] nulls;
-        int nullsIndex = 0;
         if (tag instanceof ListTag) {
             listTag = (ListTag) tag;
             nulls = new int[0];
@@ -153,18 +143,41 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
             listTag = (ListTag) compoundTag.get("value");
             nulls = compoundTag.getIntArray("nulls");
         } else {
-            return data;
+            return (Object[]) into;
         }
 
+        return deserializeIntoArray(listTag, nulls, componentType, into, componentDeserializer);
+    }
+
+    private static ArrayComponentDeserializer createComponentDeserializer(
+            final Class<?> componentType) {
+        if (componentType.isArray()) {
+            return NBTDeserializerImpl::getArray;
+        }
+        final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
+        return (n, t, i) ->
+                serializer.deserialize(new NBTDeserializerImpl((CompoundTag) n), (Class) t, i);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Nullable
+    private static Object deserializeIntoArray(
+            final List<Tag> listTag,
+            final int[] nulls,
+            final Class<?> componentType,
+            final @Nullable Object into,
+            final ArrayComponentDeserializer componentDeserializer) {
         if (listTag == null) {
-            return data;
+            return into;
         }
 
+        Object[] data = (Object[]) into;
         final int length = listTag.size() + nulls.length;
         if (data == null || data.length != length) {
             data = (Object[]) Array.newInstance(componentType, length);
         }
 
+        int nullsIndex = 0;
         for (int i = 0; i < length; i++) {
             if (nullsIndex < nulls.length && i == nulls[nullsIndex]) {
                 nullsIndex++;

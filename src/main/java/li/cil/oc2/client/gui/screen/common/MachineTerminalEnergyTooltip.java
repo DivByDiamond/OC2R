@@ -41,13 +41,13 @@ public final class MachineTerminalEnergyTooltip {
 
     public static boolean isMouseOverEnergyArea(
             final AbstractMachineTerminalScreen<?> screen,
-            final int mouseX, final int mouseY) {        final int CONTROLS_TOP = 8;
-        final int ENERGY_TOP = CONTROLS_TOP + Sprites.SIDEBAR_3.height + 4;
+            final int mouseX, final int mouseY) {        final int controlsTop = 8;
+        final int energyTop = controlsTop + Sprites.SIDEBAR_3.height + 4;
         return screen.isMouseOver(
                 mouseX,
                 mouseY,
                 -Sprites.SIDEBAR_2.width + 4,
-                ENERGY_TOP + 4,
+                energyTop + 4,
                 Sprites.ENERGY_BAR.width,
                 Sprites.ENERGY_BAR.height);
     }

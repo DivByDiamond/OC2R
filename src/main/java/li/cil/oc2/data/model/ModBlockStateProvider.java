@@ -57,7 +57,11 @@ public final class ModBlockStateProvider extends BlockStateProvider {
     protected void registerStatesAndModels() {
         horizontalBlock(Blocks.CHARGER, Items.CHARGER, CHARGER_MODEL);
         horizontalBlock(Blocks.COMPUTER, Items.COMPUTER, COMPUTER_MODEL);
-        horizontalBlock(Blocks.MONITOR, Items.MONITOR, MONITOR_MODEL);
+        // Monitor uses a hand-written blockstate (multiblock size properties) + custom model
+        // loader; the generated item model below mirrors the manual assets/oc2r/models/item.
+        itemModels()
+                .getBuilder(Items.MONITOR.getId().getPath())
+                .parent(models().getExistingFile(MONITOR_MODEL));
         simpleBlock(Blocks.CREATIVE_ENERGY, Items.CREATIVE_ENERGY);
         horizontalBlock(Blocks.DISK_DRIVE, Items.DISK_DRIVE, DISK_DRIVE_MODEL);
         horizontalBlock(Blocks.KEYBOARD, Items.KEYBOARD, KEYBOARD_MODEL);

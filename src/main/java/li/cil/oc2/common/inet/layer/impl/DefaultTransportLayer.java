@@ -45,52 +45,81 @@ public final class DefaultTransportLayer implements TransportLayer {
     public byte receiveTransportMessage(final TransportMessage message) {
         sessionManager.processSessionExpirationQueue();
         while (true) {
-            if (sendHandler.rejectedStream != null) {
-                LOGGER.trace("Rejecting stream {}", sendHandler.rejectedStream.getDiscriminator());
-                final SessionActions success =
-                        TcpUtils.prepareTCPSegment(message, sendHandler.rejectedStream);
-                assert success == SessionActions.FORWARD;
-                sessionManager.closeSession(sendHandler.rejectedStream);
-                sendHandler.rejectedStream = null;
-                return PROTOCOL_TCP;
+            final byte queuedResult = handleQueuedMessages(message);
+            if (queuedResult != PROTOCOL_NONE) {
+                return queuedResult;
             }
-            if (icmpHandler.consume(message)) return PROTOCOL_ICMP;
-            if (sendHandler.streamToAck != null) {
-                final StreamSessionImpl stream = sendHandler.streamToAck;
-                sendHandler.streamToAck = null;
-                sessionManager.updateSession(stream);
-                final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, stream);
-                if (segmentResult == SessionActions.FORWARD) {
-                    if (stream.isClosed()) sessionManager.closeSession(stream);
-                    return PROTOCOL_TCP;
-                } else if (segmentResult == SessionActions.DROP) {
-                    sessionManager.closeSession(stream);
-                }
-            }
+
             receiver.prepare(message.getData());
             sessionLayer.receiveSession(receiver);
             final SessionBase session = receiver.session;
-            if (session == null) return PROTOCOL_NONE;
+            if (session == null) {
+                return PROTOCOL_NONE;
+            }
+
             sessionManager.updateSession(session);
-            if (session instanceof EchoSession) {
-                final byte result = handleEchoSession((EchoSessionImpl) session, message);
-                if (result != PROTOCOL_NONE) return result;
-            } else if (session instanceof DatagramSession) {
-                final byte result = handleDatagramSession((DatagramSessionImpl) session, message);
-                if (result != PROTOCOL_NONE) return result;
-            } else if (session instanceof StreamSession) {
-                final StreamSessionImpl streamSession = (StreamSessionImpl) session;
-                final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, streamSession);
-                if (segmentResult == SessionActions.FORWARD) {
-                    if (streamSession.isClosed()) sessionManager.closeSession(streamSession);
-                    return PROTOCOL_TCP;
-                } else if (segmentResult == SessionActions.DROP) {
-                    sessionManager.closeSession(streamSession);
-                }
-            } else {
-                throw new IllegalStateException();
+            final byte sessionResult = handleSession(session, message);
+            if (sessionResult != PROTOCOL_NONE) {
+                return sessionResult;
             }
         }
+    }
+
+    private byte handleQueuedMessages(final TransportMessage message) {
+        if (sendHandler.rejectedStream != null) {
+            LOGGER.trace("Rejecting stream {}", sendHandler.rejectedStream.getDiscriminator());
+            final SessionActions success =
+                    TcpUtils.prepareTCPSegment(message, sendHandler.rejectedStream);
+            assert success == SessionActions.FORWARD;
+            sessionManager.closeSession(sendHandler.rejectedStream);
+            sendHandler.rejectedStream = null;
+            return PROTOCOL_TCP;
+        }
+        if (icmpHandler.consume(message)) {
+            return PROTOCOL_ICMP;
+        }
+        if (sendHandler.streamToAck != null) {
+            final StreamSessionImpl stream = sendHandler.streamToAck;
+            sendHandler.streamToAck = null;
+            sessionManager.updateSession(stream);
+            final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, stream);
+            if (segmentResult == SessionActions.FORWARD) {
+                if (stream.isClosed()) {
+                    sessionManager.closeSession(stream);
+                }
+                return PROTOCOL_TCP;
+            } else if (segmentResult == SessionActions.DROP) {
+                sessionManager.closeSession(stream);
+            }
+        }
+        return PROTOCOL_NONE;
+    }
+
+    private byte handleSession(final SessionBase session, final TransportMessage message) {
+        if (session instanceof EchoSession) {
+            return handleEchoSession((EchoSessionImpl) session, message);
+        }
+        if (session instanceof DatagramSession) {
+            return handleDatagramSession((DatagramSessionImpl) session, message);
+        }
+        if (session instanceof StreamSession) {
+            return handleStreamSession((StreamSessionImpl) session, message);
+        }
+        throw new IllegalStateException();
+    }
+
+    private byte handleStreamSession(
+            final StreamSessionImpl streamSession, final TransportMessage message) {
+        final SessionActions segmentResult = TcpUtils.prepareTCPSegment(message, streamSession);
+        if (segmentResult == SessionActions.FORWARD) {
+            if (streamSession.isClosed()) {
+                sessionManager.closeSession(streamSession);
+            }
+            return PROTOCOL_TCP;
+        } else if (segmentResult == SessionActions.DROP) {
+            sessionManager.closeSession(streamSession);
+        }
+        return PROTOCOL_NONE;
     }
 
     private byte handleEchoSession(

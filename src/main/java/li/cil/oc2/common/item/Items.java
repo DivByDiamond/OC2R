@@ -191,8 +191,8 @@ public final class Items {
         return register(block, ModBlockItem::new);
     }
 
-    private static <TBlock extends Block, TItem extends Item> DeferredItem<TItem> register(
-            final DeferredBlock<TBlock> block, final Function<TBlock, TItem> factory) {
+    private static <T extends Block, U extends Item> DeferredItem<U> register(
+            final DeferredBlock<T> block, final Function<T, U> factory) {
         return register(block.getId().getPath(), () -> factory.apply(block.get()));
     }
 }

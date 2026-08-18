@@ -35,6 +35,7 @@ public abstract class IntPrecisionContainerData implements ContainerData {
         private final SimpleContainerData data;
 
         public Client(final int size) {
+            super();
             data = new SimpleContainerData(size * 2);
         }
 

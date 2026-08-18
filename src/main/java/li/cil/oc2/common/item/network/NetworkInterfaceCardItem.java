@@ -107,10 +107,9 @@ public final class NetworkInterfaceCardItem extends ModItem {
             final Level level, final Player player, final InteractionHand hand) {
         final ItemStack itemStack = player.getItemInHand(hand);
 
-        if (player.level().isClientSide()) {
-            if (itemStack.is(Items.NETWORK_INTERFACE_CARD.get())) {
-                openConfigurationScreen(player, hand);
-            }
+        if (player.level().isClientSide()
+                && itemStack.is(Items.NETWORK_INTERFACE_CARD.get())) {
+            openConfigurationScreen(player, hand);
         }
 
         return InteractionResultHolder.sidedSuccess(itemStack, player.level().isClientSide());

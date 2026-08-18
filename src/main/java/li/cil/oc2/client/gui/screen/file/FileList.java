@@ -40,33 +40,7 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
 
         if (directory != null && Files.isDirectory(directory)) {
             addEntry(createDirectoryEntry(directory.getParent(), ".."));
-
-            try {
-                final List<Path> files =
-                        Files.list(directory)
-                                .sorted(
-                                        (p1, p2) -> {
-                                            if (Files.isDirectory(p1) && !Files.isDirectory(p2))
-                                                return -1;
-                                            if (!Files.isDirectory(p1) && Files.isDirectory(p2))
-                                                return 1;
-                                            return p1.getFileName().compareTo(p2.getFileName());
-                                        })
-                                .toList();
-                for (final Path path : files) {
-                    try {
-                        if (Files.isHidden(path)) continue;
-                        if (Files.isDirectory(path)) {
-                            addEntry(createDirectoryEntry(path));
-                        } else {
-                            addEntry(createFileEntry(path));
-                        }
-                    } catch (final IOException | SecurityException ignored) {
-                    }
-                }
-            } catch (final IOException | SecurityException e) {
-                LOGGER.error(e);
-            }
+            addDirectoryEntries(directory);
         } else {
             for (final Path path : FileSystems.getDefault().getRootDirectories()) {
                 addEntry(createDirectoryEntry(path, path.toString()));
@@ -74,6 +48,31 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
         }
 
         screen.fileNameTextField.setValue("");
+    }
+
+    private void addDirectoryEntries(final Path directory) {
+        try {
+            final List<Path> files = Files.list(directory).sorted(FileList::compareEntries).toList();
+            for (final Path path : files) {
+                try {
+                    if (Files.isHidden(path)) continue;
+                    if (Files.isDirectory(path)) {
+                        addEntry(createDirectoryEntry(path));
+                    } else {
+                        addEntry(createFileEntry(path));
+                    }
+                } catch (final IOException | SecurityException ignored) {
+                }
+            }
+        } catch (final IOException | SecurityException e) {
+            LOGGER.error(e);
+        }
+    }
+
+    private static int compareEntries(final Path p1, final Path p2) {
+        if (Files.isDirectory(p1) && !Files.isDirectory(p2)) return -1;
+        if (!Files.isDirectory(p1) && Files.isDirectory(p2)) return 1;
+        return p1.getFileName().compareTo(p2.getFileName());
     }
 
     void selectPath(final Path path) {
@@ -123,6 +122,7 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
         private long lastEntryClickTime = 0;
 
         FileEntry(@Nullable final Path file, final Component displayName) {
+            super();
             this.file = file;
             this.displayName = displayName;
         }

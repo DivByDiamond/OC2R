@@ -30,8 +30,9 @@ public final class VMDeviceBusAdapter {
 
     public VMDeviceLoadResult mountDevices() {
         for (final VMDevice device : unmountedDevices) {
+            // NOPMD - each device requires its own ManagedVMContext.
             final ManagedVMContext context =
-                    new ManagedVMContext(
+                    new ManagedVMContext(// NOPMD allocation depends on loop iteration / per-item state
                             globalContext,
                             globalContext,
                             () -> baseAddressProvider.getBaseAddress(device));
@@ -79,12 +80,10 @@ public final class VMDeviceBusAdapter {
 
     public void addDevices(final Collection<Device> devices) {
         for (final Device device : devices) {
-            if (device instanceof final VMDevice vmDevice) {
+            if (device instanceof final VMDevice vmDevice && !mountedDevices.containsKey(vmDevice)) {
                 // Add to set of unmounted devices if we don't already track it. It's a set, so
                 // there won't be duplicates in the unmounted set due to this.
-                if (!mountedDevices.containsKey(vmDevice)) {
-                    unmountedDevices.add(vmDevice);
-                }
+                unmountedDevices.add(vmDevice);
             }
         }
     }

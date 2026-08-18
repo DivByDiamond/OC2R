@@ -128,7 +128,7 @@ public final class BlobStorage {
         }
 
         final Set<UUID> active = Set.copyOf(ACTIVE_HANDLES);
-        try (final Stream<Path> files = Files.list(dir)) {
+        try (Stream<Path> files = Files.list(dir)) {
             files.filter(Files::isRegularFile)
                     .map(BlobStorage::parseHandle)
                     .flatMap(Optional::stream)

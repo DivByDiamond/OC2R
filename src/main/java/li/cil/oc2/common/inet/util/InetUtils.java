@@ -25,13 +25,12 @@ public final class InetUtils {
     }
 
     public static InetAddress toJavaInetAddress(final int ipAddress) {
-        final byte[] bytes =
-                new byte[] {
-                    (byte) (ipAddress >>> 24),
-                    (byte) (ipAddress >>> 16),
-                    (byte) (ipAddress >>> 8),
-                    (byte) (ipAddress)
-                };
+        final byte[] bytes = {
+            (byte) (ipAddress >>> 24),
+            (byte) (ipAddress >>> 16),
+            (byte) (ipAddress >>> 8),
+            (byte) ipAddress
+        };
         return getInetAddressByBytes(bytes);
     }
 
@@ -167,11 +166,11 @@ public final class InetUtils {
         }
     }
 
-    public static <PL, CL> PL createLayerIfNotStub(
-            final CL currentLayer, final Function<CL, PL> getNextLayer) {
+    public static <P, C> P createLayerIfNotStub(
+            final C currentLayer, final Function<C, P> getNextLayer) {
         if (currentLayer == NullLayer.INSTANCE) {
             @SuppressWarnings("unchecked")
-            final PL result = (PL) NullLayer.INSTANCE;
+            final P result = (P) NullLayer.INSTANCE;
             return result;
         } else {
             return getNextLayer.apply(currentLayer);

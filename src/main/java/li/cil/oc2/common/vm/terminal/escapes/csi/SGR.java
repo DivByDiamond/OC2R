@@ -25,43 +25,9 @@ public class SGR extends CSISequenceHandler {
                     i++;
                     continue;
                 }
-                int v2 = args[index];
-                if (v1 == 38) {
-                    if (v2 == 5 && index + 1 < argCount) {
-                        terminal.currentForegroundColorMode =
-                                TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
-                        terminal.twoFiftySixColor.R = args[++index];
-
-                    } else if (v2 == 2 && index + 3 < argCount) {
-                        terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
-                        terminal.foregroundColor =
-                                new TerminalColors.ColorData(
-                                        args[++index],
-                                        args[++index],
-                                        args[++index],
-                                        TerminalColors.ColorMode.TRUE_COLOR);
-
-                    }
-                } else {
-                    if (v2 == 5 && index + 1 < argCount) {
-                        terminal.currentBackgroundColorMode =
-                                TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
-                        terminal.twoFiftySixColor.G = args[++index];
-
-                    } else if (v2 == 2 && index + 3 < argCount) {
-                        terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
-                        terminal.backgroundColor =
-                                new TerminalColors.ColorData(
-                                        args[++index],
-                                        args[++index],
-                                        args[++index],
-                                        TerminalColors.ColorMode.TRUE_COLOR);
-
-                    }
-                }
                 // Skip consumed sub-args. If nothing matched, still skip v2
                 // so it isn't re-read as a top-level SGR code.
-                i = index + 1;
+                i = handleExtendedColor(terminal, v1, args, index, argCount) + 1;
                 continue;
             }
 
@@ -70,17 +36,64 @@ public class SGR extends CSISequenceHandler {
         }
     }
 
-    private static void selectStyle(Terminal terminal, int arg) {
+    private static int handleExtendedColor(
+            Terminal terminal, int v1, int[] args, int index, int argCount) {
+        int idx = index;
+        int v2 = args[idx];
+        return v1 == 38
+                ? handleForegroundColor(terminal, v2, args, idx, argCount)
+                : handleBackgroundColor(terminal, v2, args, idx, argCount);
+    }
+
+    private static int handleForegroundColor(
+            Terminal terminal, int v2, int[] args, int index, int argCount) {
+        int idx = index;
+        if (v2 == 5 && idx + 1 < argCount) {
+            terminal.currentForegroundColorMode =
+                    TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
+            terminal.twoFiftySixColor.R = args[++idx];
+        } else if (v2 == 2 && idx + 3 < argCount) {
+            terminal.currentForegroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
+            terminal.foregroundColor =
+                    new TerminalColors.ColorData(
+                            args[++idx],
+                            args[++idx],
+                            args[++idx],
+                            TerminalColors.ColorMode.TRUE_COLOR);
+        }
+        return idx;
+    }
+
+    private static int handleBackgroundColor(
+            Terminal terminal, int v2, int[] args, int index, int argCount) {
+        int idx = index;
+        if (v2 == 5 && idx + 1 < argCount) {
+            terminal.currentBackgroundColorMode =
+                    TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR;
+            terminal.twoFiftySixColor.G = args[++idx];
+        } else if (v2 == 2 && idx + 3 < argCount) {
+            terminal.currentBackgroundColorMode = TerminalColors.ColorMode.TRUE_COLOR;
+            terminal.backgroundColor =
+                    new TerminalColors.ColorData(
+                            args[++idx],
+                            args[++idx],
+                            args[++idx],
+                            TerminalColors.ColorMode.TRUE_COLOR);
+        }
+        return idx;
+    }
+
+    private static void selectStyle(Terminal terminal, int arg) { // NOPMD: inherently large data-driven ANSI SGR style switch
         switch (arg) {
             case 0 -> { // Reset / Normal
-                terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.Copy();
-                terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.Copy();
+                terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.copy();
+                terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
                 terminal.style = TerminalColors.DEFAULT_STYLE;
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
-                terminal.twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.Copy();
-                terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.Copy();
-                terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
+                terminal.twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
+                terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
+                terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
             }
             case 1 -> // Bold or increased intensity
                     terminal.style |= Terminal.STYLE_BOLD_MASK;
@@ -112,7 +125,7 @@ public class SGR extends CSISequenceHandler {
             }
             case 39 -> { // Default foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
-                terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.Copy();
+                terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
                 terminal.sixteenColor.R = TerminalColors.Color.WHITE;
             }
             case 40, 41, 42, 43, 44, 45, 46, 47 -> { // Set background color
@@ -121,7 +134,7 @@ public class SGR extends CSISequenceHandler {
             }
             case 49 -> { // Default background color
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
-                terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
+                terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
                 terminal.sixteenColor.G = TerminalColors.Color.BLACK;
             }
             case 90, 91, 92, 93, 94, 95, 96, 97 -> { // Set foreground color

@@ -65,18 +65,22 @@ public final class RobotMovementAction extends AbstractRobotAction {
             start = origin;
             target = start;
             if (direction != null) {
-                switch (direction) {
-                    case UPWARD -> target = target.relative(Direction.UP);
-                    case DOWNWARD -> target = target.relative(Direction.DOWN);
-                    case FORWARD -> target = target.relative(robot.getDirection());
-                    case BACKWARD -> target = target.relative(robot.getDirection().getOpposite());
-                    default -> throw new AssertionError(direction);
-                }
+                target = resolveDirection(robot, target);
             }
         }
 
         targetPos = getTargetPositionInBlock(target);
         robot.getEntityData().set(Robot.TARGET_POSITION, target);
+    }
+
+    private BlockPos resolveDirection(final Robot robot, final BlockPos current) {
+        return switch (direction) {
+            case UPWARD -> current.relative(Direction.UP);
+            case DOWNWARD -> current.relative(Direction.DOWN);
+            case FORWARD -> current.relative(robot.getDirection());
+            case BACKWARD -> current.relative(robot.getDirection().getOpposite());
+            default -> throw new AssertionError(direction);
+        };
     }
 
     @Override

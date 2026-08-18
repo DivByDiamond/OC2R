@@ -56,8 +56,9 @@ public final class RobotBlockCollider {
                     blockState.getCollisionShape(serverLevel, mutablePosition);
             if (Shapes.joinIsNotEmpty(shape, blockShape.move(x, y, z), BooleanOp.AND)) {
                 final BlockEntity blockEntity = serverLevel.getBlockEntity(mutablePosition);
+                // NOPMD: builder accumulates per-block loot parameters
                 final LootParams.Builder builder =
-                        new LootParams.Builder(serverLevel)
+                        new LootParams.Builder(serverLevel) // NOPMD allocation depends on loop iteration / per-item state
                                 .withParameter(LootContextParams.THIS_ENTITY, robot)
                                 .withParameter(LootContextParams.ORIGIN, robot.position())
                                 .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)

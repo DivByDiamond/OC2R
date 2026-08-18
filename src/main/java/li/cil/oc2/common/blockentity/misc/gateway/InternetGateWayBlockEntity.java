@@ -167,12 +167,10 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
     @Override
     public void sendEthernetFrame(byte[] frame) {
         LOGGER.trace("Got inbound packet");
-        if (inboundQueue.size() < QUEUE_MAX) {
-            if (tryUseEnergy()) {
-                animation.inboundCount += 1;
-                notifyPlayers();
-                inboundQueue.addLast(frame);
-            }
+        if (inboundQueue.size() < QUEUE_MAX && tryUseEnergy()) {
+            animation.inboundCount += 1;
+            notifyPlayers();
+            inboundQueue.addLast(frame);
         }
     }
 
@@ -184,12 +182,10 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
     @Override
     public void writeEthernetFrame(NetworkInterface source, byte[] frame, int timeToLive) {
         LOGGER.trace("Got outbound packet");
-        if (outboundQueue.size() < QUEUE_MAX) {
-            if (tryUseEnergy()) {
-                animation.outboundCount += 1;
-                notifyPlayers();
-                outboundQueue.addLast(frame);
-            }
+        if (outboundQueue.size() < QUEUE_MAX && tryUseEnergy()) {
+            animation.outboundCount += 1;
+            notifyPlayers();
+            outboundQueue.addLast(frame);
         }
     }
 

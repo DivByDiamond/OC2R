@@ -44,15 +44,21 @@ public final class RobotRotationAction extends AbstractRobotAction {
         if (target == null) {
             target = robot.getDirection();
             if (direction != null) {
-                if (direction == RotationDirection.LEFT) {
-                    target = target.getCounterClockWise();
-                } else if (direction == RotationDirection.RIGHT) {
-                    target = target.getClockWise();
-                }
+                target = rotateDirection(target);
             }
         }
 
         robot.getEntityData().set(Robot.TARGET_DIRECTION, target);
+    }
+
+    private Direction rotateDirection(final Direction direction) {
+        if (this.direction == RotationDirection.LEFT) {
+            return direction.getCounterClockWise();
+        }
+        if (this.direction == RotationDirection.RIGHT) {
+            return direction.getClockWise();
+        }
+        return direction;
     }
 
     @Override

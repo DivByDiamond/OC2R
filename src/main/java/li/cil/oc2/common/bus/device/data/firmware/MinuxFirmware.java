@@ -15,8 +15,8 @@ public final class MinuxFirmware implements Firmware {
 
     @Override
     public boolean run(final MemoryMap memory, final long startAddress) {
-        try (final InputStream firmware = Buildroot.getFirmware();
-             final InputStream linuxImage = Buildroot.getLinuxImage()) {
+        try (InputStream firmware = Buildroot.getFirmware();
+             InputStream linuxImage = Buildroot.getLinuxImage()) {
             if (firmware == null) {
                 LOGGER.error(
                         "Minux firmware resource (generated/fw_jump.bin) is missing from"

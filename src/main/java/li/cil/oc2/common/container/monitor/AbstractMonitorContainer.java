@@ -47,7 +47,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
         return monitor.hasPower();
     }
 
-    public boolean getPowerState() {
+    public boolean getPowerState() { // NOPMD getter API consumed from monitor widgets/screens
         return monitor.getPowerState();
     }
 
@@ -55,7 +55,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
         return monitor.isMounted();
     }
 
-    public boolean getCaptureInputState() {
+    public boolean getCaptureInputState() { // NOPMD getter API implemented across containers
         return switch (Config.captureInputMode) {
             case PER_BLOCK -> monitor.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;

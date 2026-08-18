@@ -135,11 +135,11 @@ public final class TerminalColors {
             Mode = mode;
         }
 
-        public int ToInt() {
-            return (((R & 0b11111111) << 16) | ((G & 0b11111111) << 8) | (B & 0b11111111));
+        public int toInt() {
+            return (R & 0b11111111) << 16 | (G & 0b11111111) << 8 | (B & 0b11111111);
         }
 
-        public ColorData Copy() {
+        public ColorData copy() {
             return new ColorData(R, G, B, Mode);
         }
     }

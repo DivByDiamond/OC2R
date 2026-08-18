@@ -15,7 +15,7 @@ public abstract class AbstractMachineTerminalContainer extends AbstractMachineCo
 
     public abstract Terminal getTerminal();
 
-    public abstract boolean getCaptureInputState();
+    public abstract boolean getCaptureInputState(); // NOPMD getter API implemented by computer/monitor/robot containers
 
     public abstract void setCaptureInputState(boolean state);
 

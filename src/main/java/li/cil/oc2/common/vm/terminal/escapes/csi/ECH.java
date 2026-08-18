@@ -35,21 +35,21 @@ public class ECH extends CSISequenceHandler {
                                     Math.min(chars, Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.altBuffer, fromIndex, toIndex, ' ');
             Arrays.fill(
-                    terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.altColorsBackground, fromIndex, toIndex, c.Copy());
+                    terminal.altColors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColorsBackground, fromIndex, toIndex, c.copy());
             Arrays.fill(terminal.altStyles, fromIndex, toIndex, TerminalColors.DEFAULT_STYLE);
         } else {
             int fromIndex =
                     x
-                            + (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
+                            + (terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT)
                                     * Terminal.WIDTH;
             int toIndex =
                     fromIndex
                             + Math.max(
                                     Math.min(chars, Terminal.WIDTH - x), 1);
             Arrays.fill(terminal.buffer, fromIndex, toIndex, ' ');
-            Arrays.fill(terminal.colors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.Copy());
-            Arrays.fill(terminal.colorsBackground, fromIndex, toIndex, c.Copy());
+            Arrays.fill(terminal.colors, fromIndex, toIndex, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.colorsBackground, fromIndex, toIndex, c.copy());
             Arrays.fill(terminal.styles, fromIndex, toIndex, TerminalColors.DEFAULT_STYLE);
         }
 

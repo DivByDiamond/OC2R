@@ -104,6 +104,15 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         stack.translate(0, 0, -0.1f);
         final Matrix4f matrix = stack.last().pose();
 
+        renderOverlays(terminalSource, matrix, bufferSource);
+
+        stack.popPose();
+    }
+
+    private void renderOverlays(
+            final ComputerBlockEntity terminalSource,
+            final Matrix4f matrix,
+            final MultiBufferSource bufferSource) {
         switch (terminalSource.getVirtualMachine().getBusState()) {
             case SCAN_PENDING:
             case INCOMPLETE:
@@ -116,24 +125,29 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
                 OverlayRenderer.renderStatus(matrix, bufferSource, 250);
                 break;
             case READY:
-                switch (terminalSource.getVirtualMachine().getRunState()) {
-                    case STOPPED:
-                        break;
-                    case LOADING_DEVICES:
-                        OverlayRenderer.renderStatus(matrix, bufferSource);
-                        break;
-                    case RUNNING:
-                        OverlayRenderer.renderPower(matrix, bufferSource);
-                        break;
-                    default:
-                        throw new AssertionError(terminalSource.getVirtualMachine().getRunState());
-                }
+                renderReadyOverlay(terminalSource, matrix, bufferSource);
                 break;
             default:
                 throw new AssertionError(terminalSource.getVirtualMachine().getBusState());
         }
+    }
 
-        stack.popPose();
+    private void renderReadyOverlay(
+            final ComputerBlockEntity terminalSource,
+            final Matrix4f matrix,
+            final MultiBufferSource bufferSource) {
+        switch (terminalSource.getVirtualMachine().getRunState()) {
+            case STOPPED:
+                break;
+            case LOADING_DEVICES:
+                OverlayRenderer.renderStatus(matrix, bufferSource);
+                break;
+            case RUNNING:
+                OverlayRenderer.renderPower(matrix, bufferSource);
+                break;
+            default:
+                throw new AssertionError(terminalSource.getVirtualMachine().getRunState());
+        }
     }
 
     @SubscribeEvent

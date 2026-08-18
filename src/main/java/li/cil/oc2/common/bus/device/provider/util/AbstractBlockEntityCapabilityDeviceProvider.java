@@ -11,35 +11,34 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractBlockEntityCapabilityDeviceProvider<
-                TCapability, TBlockEntity extends BlockEntity>
-        extends AbstractBlockEntityDeviceProvider<TBlockEntity> {
-    private final Supplier<BlockCapability<TCapability, @Nullable Direction>> capabilitySupplier;
+public abstract class AbstractBlockEntityCapabilityDeviceProvider<T, U extends BlockEntity>
+        extends AbstractBlockEntityDeviceProvider<U> {
+    private final Supplier<BlockCapability<T, @Nullable Direction>> capabilitySupplier;
 
     protected AbstractBlockEntityCapabilityDeviceProvider(
-            final BlockEntityType<TBlockEntity> blockEntityType,
-            final Supplier<BlockCapability<TCapability, @Nullable Direction>> capabilitySupplier) {
+            final BlockEntityType<U> blockEntityType,
+            final Supplier<BlockCapability<T, @Nullable Direction>> capabilitySupplier) {
         super(blockEntityType);
         this.capabilitySupplier = capabilitySupplier;
     }
 
     protected AbstractBlockEntityCapabilityDeviceProvider(
-            final Supplier<BlockCapability<TCapability, @Nullable Direction>> capabilitySupplier) {
+            final Supplier<BlockCapability<T, @Nullable Direction>> capabilitySupplier) {
+        super();
         this.capabilitySupplier = capabilitySupplier;
     }
 
     @Override
     protected final Optional<Device> getBlockDevice(
-            final BlockDeviceQuery query, final TBlockEntity blockEntity) {
-        final BlockCapability<TCapability, @Nullable Direction> capability =
-                capabilitySupplier.get();
+            final BlockDeviceQuery query, final U blockEntity) {
+        final BlockCapability<T, @Nullable Direction> capability = capabilitySupplier.get();
         if (capability == null) throw new IllegalStateException();
         final var blockEntityLevel = blockEntity.getLevel();
         if (!(blockEntityLevel instanceof ServerLevel level))
             throw new IllegalStateException();
 
         final var blockPos = blockEntity.getBlockPos();
-        final TCapability optional =
+        final T optional =
                 level.getCapability(capability, blockPos, null, blockEntity, query.getQuerySide());
         if (optional == null) {
             return Optional.empty();
@@ -49,5 +48,5 @@ public abstract class AbstractBlockEntityCapabilityDeviceProvider<
     }
 
     protected abstract Optional<Device> getBlockDevice(
-            final BlockDeviceQuery query, final TCapability value);
+            final BlockDeviceQuery query, final T value);
 }

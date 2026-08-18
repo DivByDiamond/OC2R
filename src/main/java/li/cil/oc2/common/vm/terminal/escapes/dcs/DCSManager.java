@@ -11,7 +11,7 @@ public class DCSManager {
     }
 
     public void handle(int ch) {
-        if ((lastChar == '\033' && ch == '\\')) {
+        if (lastChar == '\033' && ch == '\\') {
             terminal.state = Terminal.State.NORMAL;
         } else {
             lastChar = ch;

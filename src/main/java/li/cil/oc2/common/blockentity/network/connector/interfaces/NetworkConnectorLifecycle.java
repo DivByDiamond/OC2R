@@ -23,10 +23,11 @@ public final class NetworkConnectorLifecycle {
         event.registerBlock(
                 Capabilities.NetworkInterface.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (be instanceof final NetworkConnectorBlockEntity self) {
-                        if (side
-                                == NetworkConnectorBlock.getFacing(self.getBlockState())
-                                        .getOpposite()) return self.networkInterface;
+                    if (be instanceof final NetworkConnectorBlockEntity self
+                            && side
+                                    == NetworkConnectorBlock.getFacing(self.getBlockState())
+                                            .getOpposite()) {
+                        return self.networkInterface;
                     }
                     return null;
                 },

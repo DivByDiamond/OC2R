@@ -22,54 +22,58 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
         for (int i = 0; i < argCount; i++) {
             final ModeTable mode = ModeTable.forPrivateMode(args[i]);
             if (mode != null) {
-                switch (mode) {
-                    case DECCOLM -> {
-                        terminal.currentPrivateModeState.DECCOLM = false;
-                        /* DECCOLM spec: clear screen and reset margins */
-                        terminal.bufferManager.clear();
-                        terminal.scrollFirst = 0;
-                        terminal.scrollLast = Terminal.HEIGHT - 1;
-                        terminal.setRelativeCursorPos(0, 0);
-                        markScreenDirty();
-                    }
-                    case DECOM -> {
-                        terminal.currentPrivateModeState.DECOM = false;
-                        terminal.setRelativeCursorPos(0, 0);
-                    }
-                    case ALT_BUFFER -> {
-                        terminal.currentPrivateModeState.ALT_BUFFER = false;
-                        markScreenDirty();
-                    }
-                    case SWITCH_ALT_BUFFER -> {
-                        terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = false;
-                        markScreenDirty();
-                    }
-                    case SAVE_CURSOR -> {
-                        terminal.currentPrivateModeState.SAVE_CURSOR = false;
-                        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                            terminal.x = terminal.altSavedX;
-                            terminal.y = terminal.altSavedY;
-                        } else {
-                            terminal.x = terminal.savedX;
-                            terminal.y = terminal.savedY;
-                        }
-                    }
-                    case SAVE_CLEAR_AND_SWITCH -> {
-                        terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = false;
-                        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                            terminal.x = terminal.altSavedX;
-                            terminal.y = terminal.altSavedY;
-                        } else {
-                            terminal.x = terminal.savedX;
-                            terminal.y = terminal.savedY;
-                        }
-                        markScreenDirty();
-                    }
-                    default -> mode.set(terminal.currentPrivateModeState, false);
-                }
+                resetMode(mode);
             }
 
             ImplementedPrivateModes.instance.modeUsed(args[i], false);
+        }
+    }
+
+    private void resetMode(final ModeTable mode) {
+        switch (mode) {
+            case DECCOLM -> resetDECCOLM();
+            case DECOM -> {
+                terminal.currentPrivateModeState.DECOM = false;
+                terminal.setRelativeCursorPos(0, 0);
+            }
+            case ALT_BUFFER -> {
+                terminal.currentPrivateModeState.ALT_BUFFER = false;
+                markScreenDirty();
+            }
+            case SWITCH_ALT_BUFFER -> {
+                terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = false;
+                markScreenDirty();
+            }
+            case SAVE_CURSOR -> {
+                terminal.currentPrivateModeState.SAVE_CURSOR = false;
+                restoreSavedCursor();
+            }
+            case SAVE_CLEAR_AND_SWITCH -> {
+                terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = false;
+                restoreSavedCursor();
+                markScreenDirty();
+            }
+            default -> mode.set(terminal.currentPrivateModeState, false);
+        }
+    }
+
+    private void resetDECCOLM() {
+        terminal.currentPrivateModeState.DECCOLM = false;
+        /* DECCOLM spec: clear screen and reset margins */
+        terminal.bufferManager.clear();
+        terminal.scrollFirst = 0;
+        terminal.scrollLast = Terminal.HEIGHT - 1;
+        terminal.setRelativeCursorPos(0, 0);
+        markScreenDirty();
+    }
+
+    private void restoreSavedCursor() {
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            terminal.x = terminal.altSavedX;
+            terminal.y = terminal.altSavedY;
+        } else {
+            terminal.x = terminal.savedX;
+            terminal.y = terminal.savedY;
         }
     }
 

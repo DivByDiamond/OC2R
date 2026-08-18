@@ -22,6 +22,7 @@ public final class Ipv4Space extends IntegerSpace {
     private final boolean isAllowListMode;
 
     public Ipv4Space(final Modes mode) {
+        super();
         isAllowListMode = mode == Modes.ALLOWLIST;
     }
 
@@ -64,50 +65,72 @@ public final class Ipv4Space extends IntegerSpace {
     public boolean put(final String string) {
         final Matcher ipAddressMatch = ipAddressPattern.matcher(string);
         if (ipAddressMatch.matches()) {
-            final int ipAddress = InetUtils.surelyParseValidIpv4Address(ipAddressMatch.group("ip"));
-            return put(ipAddress);
+            return putIpAddress(ipAddressMatch.group("ip"));
         }
 
         final Matcher ipRangeMatch = ipRangePattern.matcher(string);
         if (ipRangeMatch.matches()) {
-            final int rangeStart =
-                    InetUtils.surelyParseValidIpv4Address(ipRangeMatch.group("start"));
-            final int rangeEnd = InetUtils.surelyParseValidIpv4Address(ipRangeMatch.group("end"));
-            return put(rangeStart, rangeEnd);
+            return putRange(ipRangeMatch.group("start"), ipRangeMatch.group("end"));
         }
 
         final Matcher subnetMatch = subnetPattern.matcher(string);
         if (subnetMatch.matches()) {
-            final int ipAddress = InetUtils.surelyParseValidIpv4Address(subnetMatch.group("ip"));
-            final int prefix = Integer.parseInt(subnetMatch.group("prefix"));
-            return putSubnet(ipAddress, prefix);
+            return putSubnet(subnetMatch.group("ip"), subnetMatch.group("prefix"));
         }
 
         final Matcher interfaceNameMatch = interfaceNamePattern.matcher(string);
         if (interfaceNameMatch.matches()) {
-            final String interfaceName = interfaceNameMatch.group("name");
-            try {
-                final NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
-                return putNetworkInterface(networkInterface);
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to get a network interface by name", e);
-            }
+            return putNetworkInterfaceByName(interfaceNameMatch.group("name"));
         }
 
         final Matcher interfaceIdMatch = interfaceIdPattern.matcher(string);
         if (interfaceIdMatch.matches()) {
-            final int interfaceId = Integer.parseInt(interfaceIdMatch.group("id"));
-            try {
-                final NetworkInterface networkInterface = NetworkInterface.getByIndex(interfaceId);
-                return putNetworkInterface(networkInterface);
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to get a network interface by index", e);
-            }
+            return putNetworkInterfaceById(interfaceIdMatch.group("id"));
         }
 
         // Assume it is a hostname
+        return putHostname(string);
+    }
+
+    private boolean putIpAddress(final String ip) {
+        final int ipAddress = InetUtils.surelyParseValidIpv4Address(ip);
+        return put(ipAddress);
+    }
+
+    private boolean putRange(final String start, final String end) {
+        final int rangeStart = InetUtils.surelyParseValidIpv4Address(start);
+        final int rangeEnd = InetUtils.surelyParseValidIpv4Address(end);
+        return put(rangeStart, rangeEnd);
+    }
+
+    private boolean putSubnet(final String ip, final String prefix) {
+        final int ipAddress = InetUtils.surelyParseValidIpv4Address(ip);
+        final int prefixValue = Integer.parseInt(prefix);
+        return putSubnet(ipAddress, prefixValue);
+    }
+
+    private boolean putNetworkInterfaceByName(final String name) {
         try {
-            final InetAddress[] addresses = InetAddress.getAllByName(string);
+            final NetworkInterface networkInterface = NetworkInterface.getByName(name);
+            return putNetworkInterface(networkInterface);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to get a network interface by name", e);
+        }
+    }
+
+    private boolean putNetworkInterfaceById(final String id) {
+        final int interfaceId = Integer.parseInt(id);
+        try {
+            final NetworkInterface networkInterface = NetworkInterface.getByIndex(interfaceId);
+            return putNetworkInterface(networkInterface);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to get a network interface by index", e);
+        }
+    }
+
+    private boolean putHostname(final String hostname) {
+        try {
+            final InetAddress[] addresses = InetAddress.getAllByName(hostname);
             boolean result = false;
             for (final InetAddress address : addresses) {
                 if (address instanceof Inet4Address) {

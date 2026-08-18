@@ -32,8 +32,8 @@ public final class HardDriveDeviceWithInitialData extends HardDriveDevice {
                         device -> {
                             if (isInitializing) {
                                 try {
-                                    try (final InputStream input = base.getInputStream(0);
-                                            final OutputStream output = device.getOutputStream(0)) {
+                                    try (InputStream input = base.getInputStream(0);
+                                            OutputStream output = device.getOutputStream(0)) {
                                         ByteStreams.copy(input, output);
                                     }
                                 } catch (final IOException e) {

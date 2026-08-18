@@ -4,11 +4,11 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
 
-public abstract class AbstractDeviceInfo<TProvider, TDevice extends Device> {
-    @Nullable public final TProvider provider;
-    public final TDevice device;
+public abstract class AbstractDeviceInfo<P, D extends Device> {
+    @Nullable public final P provider;
+    public final D device;
 
-    protected AbstractDeviceInfo(@Nullable final TProvider provider, final TDevice device) {
+    protected AbstractDeviceInfo(@Nullable final P provider, final D device) {
         this.provider = provider;
         this.device = device;
     }

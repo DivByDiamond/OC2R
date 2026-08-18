@@ -1,10 +1,4 @@
 {
   "parent": "block/block",
-  "loader": "neoforge:obj",
-  "flip_v": true,
-  "model": "oc2r:models/block/monitor.obj",
-  "textures": {
-    "texture0": "oc2r:block/monitor/monitor",
-    "particle": "oc2r:block/monitor/monitor"
-  }
+  "loader": "oc2r:monitor"
 }

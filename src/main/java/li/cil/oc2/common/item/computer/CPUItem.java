@@ -9,6 +9,7 @@ public class CPUItem extends ModItem {
     private final int frequency;
 
     public CPUItem(int frequency) {
+        super();
         this.frequency = frequency;
     }
 

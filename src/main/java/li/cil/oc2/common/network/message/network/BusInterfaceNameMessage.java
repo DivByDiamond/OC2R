@@ -36,7 +36,7 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
         return TYPE;
     }
 
-    public static BusInterfaceNameMessage ToClient(
+    public static BusInterfaceNameMessage toClient(
             final BusCableBlockEntity busCable, final Direction side, final String value) {
         return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);
     }
@@ -46,7 +46,7 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
                 pos, BusCableBlockEntity.class, busCable -> busCable.setInterfaceName(side, value));
     }
 
-    public static BusInterfaceNameMessage ToServer(
+    public static BusInterfaceNameMessage toServer(
             final BusCableBlockEntity busCable, final Direction side, final String value) {
         return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);
     }

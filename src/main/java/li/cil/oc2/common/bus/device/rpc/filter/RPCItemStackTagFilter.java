@@ -53,7 +53,8 @@ public final class RPCItemStackTagFilter {
             final String segment = path[j];
             if (currentSource.contains(segment, NBTTagIds.TAG_COMPOUND)) {
                 currentSource = currentSource.getCompound(segment);
-                currentTarget.put(segment, new CompoundTag());
+                // NOPMD - each nested level of the path requires a distinct CompoundTag.
+                currentTarget.put(segment, new CompoundTag()); // NOPMD allocation depends on loop iteration / per-item state
                 currentTarget = currentTarget.getCompound(segment);
             } else {
                 return null; // Path mismatch, inner element is not a compound tag.

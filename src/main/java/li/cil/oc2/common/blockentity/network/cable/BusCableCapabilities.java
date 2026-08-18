@@ -16,11 +16,10 @@ final class BusCableCapabilities {
         event.registerBlock(
                 Capabilities.DeviceBusElement.BLOCK,
                 (level, pos, state, be, side) -> {
-                    if (be instanceof final BusCableBlockEntity self) {
-                        if (BusCableStateProperties.getConnectionType(be.getBlockState(), side)
-                                != ConnectionType.NONE) {
-                            return self.busElement;
-                        }
+                    if (be instanceof final BusCableBlockEntity self
+                            && BusCableStateProperties.getConnectionType(be.getBlockState(), side)
+                                    != ConnectionType.NONE) {
+                        return self.busElement;
                     }
                     return null;
                 },

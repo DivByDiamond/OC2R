@@ -24,49 +24,70 @@ public class TerminalBufferWriter {
         }
 
         if (terminal.currentModeState.IRM) {
-            // Insert mode: shift line right from cursor position, then place char
-            int charsToInsert = 1;
-            int startIndex =
-                    ((terminal.currentPrivateModeState.isAltBufferEnabled())
-                                    ? terminal.y * Terminal.WIDTH
-                                    : (terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
-                                            * Terminal.WIDTH)
-                            + terminal.x;
-            int count = Terminal.WIDTH - terminal.x - charsToInsert;
-            if (count > 0) {
-                TerminalColors.ColorData c;
-                switch (terminal.currentBackgroundColorMode) {
-                    case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-                    case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-                    case TRUE_COLOR -> c = terminal.backgroundColor;
-                    case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-                    case DEFAULT_BACKGROUND -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-                    default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-                }
-                if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                    System.arraycopy(terminal.altBuffer, startIndex, terminal.altBuffer, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altColors, startIndex, terminal.altColors, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altColorsBackground, startIndex, terminal.altColorsBackground, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.altStyles, startIndex, terminal.altStyles, startIndex + charsToInsert, count);
-                    Arrays.fill(terminal.altBuffer, startIndex, startIndex + charsToInsert, ' ');
-                    Arrays.fill(terminal.altColors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
-                    Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
-                    Arrays.fill(terminal.altStyles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
-                } else {
-                    System.arraycopy(terminal.buffer, startIndex, terminal.buffer, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.colors, startIndex, terminal.colors, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.colorsBackground, startIndex, terminal.colorsBackground, startIndex + charsToInsert, count);
-                    System.arraycopy(terminal.styles, startIndex, terminal.styles, startIndex + charsToInsert, count);
-                    Arrays.fill(terminal.buffer, startIndex, startIndex + charsToInsert, ' ');
-                    Arrays.fill(terminal.colors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.Copy());
-                    Arrays.fill(terminal.colorsBackground, startIndex, startIndex + charsToInsert, c.Copy());
-                    Arrays.fill(terminal.styles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
-                }
-            }
+            insertChar();
         }
 
         setChar(terminal.x, terminal.y, ch);
         terminal.x++;
+    }
+
+    private void insertChar() {
+        // Insert mode: shift line right from cursor position, then place char
+        final int charsToInsert = 1;
+        final int startIndex =
+                (terminal.currentPrivateModeState.isAltBufferEnabled()
+                                ? terminal.y * Terminal.WIDTH
+                                : (terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT)
+                                        * Terminal.WIDTH)
+                        + terminal.x;
+        final int count = Terminal.WIDTH - terminal.x - charsToInsert;
+        if (count <= 0) {
+            return;
+        }
+
+        final TerminalColors.ColorData c = getBackgroundColor();
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            System.arraycopy(terminal.altBuffer, startIndex, terminal.altBuffer, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.altColors, startIndex, terminal.altColors, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.altColorsBackground, startIndex, terminal.altColorsBackground, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.altStyles, startIndex, terminal.altStyles, startIndex + charsToInsert, count);
+            Arrays.fill(terminal.altBuffer, startIndex, startIndex + charsToInsert, ' ');
+            Arrays.fill(terminal.altColors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + charsToInsert, c.copy());
+            Arrays.fill(terminal.altStyles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
+        } else {
+            System.arraycopy(terminal.buffer, startIndex, terminal.buffer, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.colors, startIndex, terminal.colors, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.colorsBackground, startIndex, terminal.colorsBackground, startIndex + charsToInsert, count);
+            System.arraycopy(terminal.styles, startIndex, terminal.styles, startIndex + charsToInsert, count);
+            Arrays.fill(terminal.buffer, startIndex, startIndex + charsToInsert, ' ');
+            Arrays.fill(terminal.colors, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.colorsBackground, startIndex, startIndex + charsToInsert, c.copy());
+            Arrays.fill(terminal.styles, startIndex, startIndex + charsToInsert, TerminalColors.DEFAULT_STYLE);
+        }
+    }
+
+    private TerminalColors.ColorData getBackgroundColor() {
+        switch (terminal.currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> {
+                return terminal.sixteenColor;
+            }
+            case TWO_FIFTY_SIX_COLOR -> {
+                return terminal.twoFiftySixColor;
+            }
+            case TRUE_COLOR -> {
+                return terminal.backgroundColor;
+            }
+            case SIXTEEN_COLOR_BRIGHT -> {
+                return terminal.sixteenColorBright;
+            }
+            case DEFAULT_BACKGROUND -> {
+                return TerminalColors.DEFAULT_BACKGROUND_COLOR;
+            }
+            default -> {
+                return TerminalColors.DEFAULT_BACKGROUND_COLOR;
+            }
+        }
     }
 
     public void setChar(final int x, final int y, final int ch) {
@@ -74,67 +95,43 @@ public class TerminalBufferWriter {
             final int index = x + y * Terminal.WIDTH;
 
             terminal.altBuffer[index] = ch;
-
-            switch (terminal.currentForegroundColorMode) {
-                case SIXTEEN_COLOR -> terminal.altColors[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.altColors[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR -> terminal.altColors[index] = terminal.foregroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.altColors[index] = terminal.sixteenColorBright.Copy();
-                default -> {}
-            }
-
-            switch (terminal.currentBackgroundColorMode) {
-                case SIXTEEN_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR ->
-                        terminal.altColorsBackground[index] = terminal.backgroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.altColorsBackground[index] = terminal.sixteenColorBright.Copy();
-                case DEFAULT_BACKGROUND ->
-                        terminal.altColorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
-                default -> {}
-            }
-
+            setForegroundColor(terminal.altColors, index);
+            setBackgroundColor(terminal.altColorsBackground, index);
             terminal.altStyles[index] = terminal.style;
-            terminal.markDirty(1 << (y));
+            terminal.markDirty(1 << y);
         } else {
-            int correctedY = (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT));
+            int correctedY = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
             final int index = x + correctedY * Terminal.WIDTH;
 
             terminal.buffer[index] = ch;
-
-            switch (terminal.currentForegroundColorMode) {
-                case SIXTEEN_COLOR -> terminal.colors[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.colors[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR -> terminal.colors[index] = terminal.foregroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.colors[index] = terminal.sixteenColorBright.Copy();
-                default -> {}
-            }
-
-            switch (terminal.currentBackgroundColorMode) {
-                case SIXTEEN_COLOR ->
-                        terminal.colorsBackground[index] = terminal.sixteenColor.Copy();
-                case TWO_FIFTY_SIX_COLOR ->
-                        terminal.colorsBackground[index] = terminal.twoFiftySixColor.Copy();
-                case TRUE_COLOR ->
-                        terminal.colorsBackground[index] = terminal.backgroundColor.Copy();
-                case SIXTEEN_COLOR_BRIGHT ->
-                        terminal.colorsBackground[index] = terminal.sixteenColorBright.Copy();
-                case DEFAULT_BACKGROUND ->
-                        terminal.colorsBackground[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy();
-                default -> {}
-            }
-
+            setForegroundColor(terminal.colors, index);
+            setBackgroundColor(terminal.colorsBackground, index);
             terminal.styles[index] = terminal.style;
             int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
-            int localY = Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
-            terminal.markDirty(1 << (localY));
+            int localY = Terminal.HEIGHT + globalY - terminal.lastRowToDisplay;
+            terminal.markDirty(1 << localY);
+        }
+    }
+
+    private void setForegroundColor(final TerminalColors.ColorData[] colors, final int index) {
+        switch (terminal.currentForegroundColorMode) {
+            case SIXTEEN_COLOR -> colors[index] = terminal.sixteenColor.copy();
+            case TWO_FIFTY_SIX_COLOR -> colors[index] = terminal.twoFiftySixColor.copy();
+            case TRUE_COLOR -> colors[index] = terminal.foregroundColor.copy();
+            case SIXTEEN_COLOR_BRIGHT -> colors[index] = terminal.sixteenColorBright.copy();
+            default -> {}
+        }
+    }
+
+    private void setBackgroundColor(final TerminalColors.ColorData[] colors, final int index) {
+        switch (terminal.currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> colors[index] = terminal.sixteenColor.copy();
+            case TWO_FIFTY_SIX_COLOR -> colors[index] = terminal.twoFiftySixColor.copy();
+            case TRUE_COLOR -> colors[index] = terminal.backgroundColor.copy();
+            case SIXTEEN_COLOR_BRIGHT -> colors[index] = terminal.sixteenColorBright.copy();
+            case DEFAULT_BACKGROUND ->
+                    colors[index] = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+            default -> {}
         }
     }
 
@@ -143,6 +140,6 @@ public class TerminalBufferWriter {
             return y;
         }
         int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
-        return Terminal.HEIGHT + (globalY - terminal.lastRowToDisplay);
+        return Terminal.HEIGHT + globalY - terminal.lastRowToDisplay;
     }
 }

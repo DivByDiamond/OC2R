@@ -24,10 +24,8 @@ public class IL extends CSISequenceHandler {
         if (useAltBuffer) {
             terminal.bufferManager.shiftLines(terminal.y, terminal.scrollLast - lines, lines);
         } else {
-            int startRow = terminal.y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT);
-            int endRow =
-                    (terminal.scrollLast + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
-                            - lines;
+            int startRow = terminal.y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+            int endRow = terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT - lines;
             terminal.bufferManager.shiftLines(startRow, endRow, lines);
         }
     }

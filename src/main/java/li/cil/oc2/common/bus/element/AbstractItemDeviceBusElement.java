@@ -56,7 +56,8 @@ public abstract class AbstractItemDeviceBusElement
             entry.getDeviceDataKey()
                     .ifPresent(
                             key -> {
-                                final CompoundTag deviceTag = new CompoundTag();
+                                // NOPMD - fresh tag needed per exported device
+                                final CompoundTag deviceTag = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
                                 entry.getDevice().exportToItemStack(deviceTag);
                                 if (!deviceTag.isEmpty()) {
                                     exportedTag.put(key, deviceTag);
@@ -129,9 +130,7 @@ public abstract class AbstractItemDeviceBusElement
                                         // Try loading from that if we can't load normally
                                         entry.getLegacyDeviceDataKey().map(exportedTag::get))
                         .flatMap(instanceOf(CompoundTag.class))
-                        .ifPresent(
-                                deviceTag ->
-                                        entry.deviceInfo.device.importFromItemStack(deviceTag));
+                        .ifPresent(entry.deviceInfo.device::importFromItemStack);
             }
         }
     }
@@ -142,6 +141,7 @@ public abstract class AbstractItemDeviceBusElement
 
         public ItemQueryResult(
                 @Nullable final ItemDeviceQuery query, final Set<ItemEntry> entries) {
+            super();
             this.query = query;
             this.entries = entries;
         }

@@ -10,11 +10,11 @@ public class RIS {
     public static void execute(Terminal terminal) {
         terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
-        terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.Copy();
-        terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.Copy();
-        terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.Copy();
-        terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.Copy();
-        terminal.twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.Copy();
+        terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.copy();
+        terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
+        terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
+        terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
+        terminal.twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
         terminal.style = TerminalColors.DEFAULT_STYLE;
         terminal.currentModeState = new ModeState();
         terminal.currentPrivateModeState = new PrivateModeState();
@@ -35,12 +35,12 @@ public class RIS {
         terminal.bufferManager.clearAlt();
         terminal.setCursorPos(0, 0);
         Arrays.fill(terminal.buffer, ' ');
-        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.Copy());
-        Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());
+        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.copy());
+        Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
         Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.Copy());
-        Arrays.fill(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.Copy());
+        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
+        Arrays.fill(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.tabs, false);
         Arrays.fill(terminal.altTabs, false);

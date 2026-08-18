@@ -200,13 +200,17 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 **Цель**: заменить OBJ-модель монитора на фрагментные JSON-модели + кастомную BakedModel по позиции блока в мультиблоке. Референс: `ref/` (CaitlynMainer/OpenComputers), файл `ScreenModel.scala`, текстуры `textures/block/screen/`.
 
-- [ ] Скопировать 48 фрагментных текстур (f*/b*) из ref в `assets/oc2r/textures/block/monitor/`, оставить overlay
-- [ ] Config: `monitorMaxWidth`/`monitorMaxHeight` (по умолчанию 5), читать в `MonitorMultiblock` вместо захардкоженных MAX
-- [ ] ModelData: `MonitorBlockEntity` отдаёт width/height/offset/facing через ModelProperty
-- [ ] `MonitorBakedModel` (аналог `ScreenModel`): выбор фрагмента рамки по позиции блока
-- [ ] Заменить JSON blockstate/models: фрагментная модель вместо monotonic OBJ
-- [ ] Удалить `monitor.obj`/`monitor.mtl`, синхронизировать item-модель
-- [ ] Build + проверка в игре мультимонитора разных размеров
+- [x] Скопировать 48 фрагментных текстур (f*/b*) из ref в `assets/oc2r/textures/block/monitor/`, оставить overlay
+- [x] Config: `monitorMaxWidth`/`monitorMaxHeight` (по умолчанию 5), читать в `MonitorMultiblock` вместо захардкоженных MAX
+- [x] ModelData: `MonitorBlockEntity` отдаёт width/height/offset/facing через ModelProperty
+- [x] `MonitorBakedModel` (аналог `ScreenModel`): выбор фрагмента рамки по позиции блока
+- [x] Заменить JSON blockstate/models: фрагментная модель вместо monotonic OBJ
+- [x] Удалить `monitor.obj`/`monitor.mtl`, синхронизировать item-модель
+- [x] Item-модель: `getQuads(side=null)` отдаёт все 6 граней (иначе предмет не рендерился); datagen MONITOR убран из `ModBlockStateProvider` (blockstate теперь ручной, избегаем регенерации)
+- [x] **Сборка мультиблока → полный прямоугольник** (любой порядок): `MonitorMerge` (BFS по 4-соседству всех same-facing мониторов, развёртка в footprint; объединение только если bounding box полностью заполнен и ≤ конфиг-лимита; иначе новый блок остаётся 1×1). `MonitorRepartition` — общая переразметка (W/H/offset + перенос живого состояния на новый origin). Исправляет «дырявый 2×2» (раньше extend DOWN расширял H без проверки полноты строки).
+- [x] **Ломание одного блока** вместо всего мультиблока: `MonitorBreak` — рушится только кликнутый блок; остальные делятся на связные компоненты и переразмечаются в один/несколько полных прямоугольников (жадное извлечение максимального полного прямоугольника); состояние следует за origin (или на ближайший к нему блок). Убран `IS_BREAKING_MULTIBLOCK` и drop W×H-1 предметов (ванильная loot-table даёт 1 предмет).
+- [x] `MonitorMultiblock` сокращён до координатных хелперов (139 строк), логика вынесена в `MonitorMerge`/`MonitorBreak`/`MonitorRepartition`
+- [ ] Build + проверка в игре мультимонитора разных размеров (сборка 2×2/3×3 в любом порядке, ломание одного блока → переразметка)
 
 ---
 
@@ -216,7 +220,7 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 - [x] Config: `cableEnergyCapacity` (3000 FE буфер) + `cableEnergyTransferPerTick` (512 FE/тик на соседа)
 - [x] Создать `CableEnergyStorage` (FixedEnergyStorage-подобный буфер) + зарегистрировать `Capabilities.EnergyStorage.BLOCK` в `BusCableCapabilities`
-- [x] `EnergyTransferManager`: тик кабеля, `pullFromNeighbors` (тянет из чистых источников) + `transferToNeighbors` (толкает в приёмники) с лимитом на тик; `collectNetwork` BFS по сети
+- [x] `EnergyTransferManager`: сетевое распределение раз в тик — `collectNetwork` BFS по сети, пул из чистых источников, равномерное перераспределение буферов по сети, пуш в приёмники с лимитом на тик (чинит «пинг-понг» энергии между кабелями, из-за которого энергия не шла дальше 1-го кабеля)
 - [x] Творческий энергоблок = бесконечный источник: `InfiniteEnergyStorage` (extract-only) + регистрация capability
 - [x] **EU (IC2) через adapter**: мост `Ic2EuBridge`/`EuEnergyAdapter` (опциональная зависимость, без жёсткой привязки, 4 FE = 1 EU)
 - [x] Автоконнект: кабель соединяется с соседями с `IEnergyStorage`, `DeviceBusElement` и любыми блоками с RPC-методами (динамик, редстоун-интерфейс) — без ручного INTERFACE
@@ -724,3 +728,54 @@ DeviceBusElement (каждый блок/элемент)
   (оставить только на `getRenderer()`/`clientTick()`), добавить assert'ы (сейчас тел нет).
 - [x] **Покрыть критичные пути:** CSI-парсер, DECSTBM+DECOM, IL/DL/SU/SD с count>1 и маргинами,
   alt-буфер 47/1047/1049, SGR 38;2/38;5, pending-wrap (колонка 80), dirty-маску при прокрутке.
+
+---
+
+## 32. Аудит блоков на логические баги + PMD (2026-08-18, ветка work)
+
+Аудит мониторов и логики блоков на баги по образцу кабеля (энергия не шла дальше 1-го кабеля из-за «пинг-понга»). Формат: `[файл:строка]`.
+
+### Баги (найдено при аудите)
+
+- [x] **Монитор перекодирует кадры вечно**
+  `[vm/device/SimpleFramebufferDevice.java:72]` — `applyChanges()` конвертил буфер, но не чистил `dirtyLines`
+  (в оригинале OC2 чистит). → `hasChanges()` всегда true → монитор шлёт кадры каждый тик бюджета лоадбалансера даже без изменений.
+  Фикс: `dirtyLines.clear()` внутри lock после конвертации.
+
+- [x] **NetworkSwitch — краш на загрузке (IndexOutOfBoundsException)**
+  `[blockentity/network/switches/NetworkSwitchBlockEntity.java:47-51]` —
+  `new ArrayList<>(BLOCK_FACE_COUNT)` создаёт *пустой* список (capacity 6, size 0), а `adj.set(side.get3DDataValue(), …)` на нём всегда кидает IOOBE.
+  → любой чанк со свитчем крашит сервер при загрузке (свитч в креативе/командой).
+  Фикс: предзаполнить список null'ами перед `set`.
+
+- [x] **NetworkConnector — бесконечный цикл пустых кадров → краш свитча**
+  `[blockentity/network/connector/NetworkConnectorBlockEntity.java:72-77]` —
+  контракт `NetworkInterface.readEthernetFrame()`: «нет данных → null», но `NullNetworkInterface`/свитч/хаб/VXLAN возвращают пустой `byte[0]`.
+  Цикл `while (frame != null && byteBudget > 0)` крутится ~78 раз/тик и шлёт пустые кадры.
+  Пустой кадр в свитче → `SwitchPacketForwarder.forward` → `PacketProcessor.macToLong(frame, 0)` на `byte[0]` → ArrayIndexOutOfBoundsException → краш сервера.
+  Фикс: `while (frame != null && frame.length > 0 && byteBudget > 0)`.
+
+- [x] **PCI Card Cage — потребление энергии мертво**
+  `[blockentity/misc/PciCardCageBlockEntity.java:37]` — `handleMountedChanged(boolean)` пустой → `isMounted` никогда не true → `serverTick()` ранний выход.
+  Плюс `energyPresent` считался только на клиенте (`handleUpdateTag`), на сервере не вычислялся → `has_energy` всегда false в апдейт-теге.
+  Фикс: `isMounted = value;` + вычислять `energyPresent` на сервере и слать через `setChanged()`.
+
+- [x] **BundledRedstone — get/set на разных гранях**
+  `[blockentity/misc/redstone/BundledRedstoneCallbacks.java:18,24,29,43]` —
+  `getBundledOutput` читает индекс `side.getDirection()`, а `setBundledOutput`/`setBundledOutputs`/`getBundledInput` используют `side.getDirection().getOpposite()`.
+  → записанный bundled-сигнал выходит на противоположной грани, read-back возвращает чужую грань.
+  Фикс: убрать `.getOpposite()` (set/get/input симметричны, мировой считыватель `getBundledSignal` читает `worldDir`-индекс напрямую).
+
+### PMD — 423 предсуществующих warning'ов (все правила, не только complexity)
+
+- [ ] **Обнулить PMD-вёрдл в `./gradlew pmdMain`** — починить 423 warning'а (см. `build/reports/pmd/main.html`),
+  сгруппировать по правилам (Avoid instantiating new objects inside loops, complexity: Cognitive/Cyclomatic/NPath,
+  Useless parentheses, Unnecessary cast, final→static, параметр `frame_bytes` не по нотации и т.д.).
+  Мой код добавляет: `EnergyTransferManager` (complexity 10-12/NPath 216-392), `BusCableBlockEntity.java:164`,
+  `NetworkSwitchBlockEntity` (6 шт, в осн. предсуществующие). Решение по каждому правилу: фикс кода / обоснованный `// NOPMD` / конфиг PMD.
+
+### Заметка (не чинено, требует решения по спецификации)
+
+- [ ] **Redstone Interface: индекс сторон** — `setRedstoneOutput`/`getRedstoneOutput` используют `side.getDirection()` (мировой индекс),
+  а мировой считыватель `getOutputForDirection` конвертит world→local (`HorizontalBlockUtils.toLocal`) →
+  при FACING != NORTH выходы/чтения расходятся. Нужно решить: Side = world-фикс или local-относительный, и привести всё к одному.

@@ -31,11 +31,11 @@ public interface TickableBlockEntity {
 
     /** Creates a ticker that will only run on the client. */
     @Nullable
-    static <THave extends BlockEntity, TWant extends BlockEntity & TickableBlockEntity>
-            BlockEntityTicker<THave> createClientTicker(
+    static <H extends BlockEntity, W extends BlockEntity & TickableBlockEntity>
+            BlockEntityTicker<H> createClientTicker(
                     final Level level,
-                    final BlockEntityType<THave> haveType,
-                    final BlockEntityType<TWant> wantType) {
+                    final BlockEntityType<H> haveType,
+                    final BlockEntityType<W> wantType) {
         if (level.isClientSide()) {
             return BlockEntityUtils.createTicker(
                     haveType,
@@ -48,11 +48,11 @@ public interface TickableBlockEntity {
 
     /** Creates a ticker that will only run on the server. */
     @Nullable
-    static <THave extends BlockEntity, TWant extends BlockEntity & TickableBlockEntity>
-            BlockEntityTicker<THave> createServerTicker(
+    static <H extends BlockEntity, W extends BlockEntity & TickableBlockEntity>
+            BlockEntityTicker<H> createServerTicker(
                     final Level level,
-                    final BlockEntityType<THave> haveType,
-                    final BlockEntityType<TWant> wantType) {
+                    final BlockEntityType<H> haveType,
+                    final BlockEntityType<W> wantType) {
         if (level.isClientSide()) {
             return null;
         } else {
@@ -65,11 +65,11 @@ public interface TickableBlockEntity {
 
     /** Creates a ticker for either the client and the server. */
     @Nullable
-    static <THave extends BlockEntity, TWant extends BlockEntity & TickableBlockEntity>
-            BlockEntityTicker<THave> createTicker(
+    static <H extends BlockEntity, W extends BlockEntity & TickableBlockEntity>
+            BlockEntityTicker<H> createTicker(
                     final Level level,
-                    final BlockEntityType<THave> haveType,
-                    final BlockEntityType<TWant> wantType) {
+                    final BlockEntityType<H> haveType,
+                    final BlockEntityType<W> wantType) {
         if (level.isClientSide()) {
             return BlockEntityUtils.createTicker(
                     haveType,

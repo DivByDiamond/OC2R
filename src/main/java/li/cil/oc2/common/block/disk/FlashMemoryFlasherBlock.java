@@ -56,13 +56,11 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         }
 
-        if (!player.isShiftKeyDown()) {
-            if (diskDrive.canInsert(stack)) {
-                if (!level.isClientSide()) {
-                    player.setItemInHand(hand, diskDrive.insert(stack, player));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        if (!player.isShiftKeyDown() && diskDrive.canInsert(stack)) {
+            if (!level.isClientSide()) {
+                player.setItemInHand(hand, diskDrive.insert(stack, player));
             }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -80,13 +78,11 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             return super.useWithoutItem(state, level, pos, player, hitResult);
         }
 
-        if (player.isShiftKeyDown()) {
-            if (diskDrive.canEject()) {
-                if (!level.isClientSide()) {
-                    diskDrive.eject(player);
-                }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+        if (player.isShiftKeyDown() && diskDrive.canEject()) {
+            if (!level.isClientSide()) {
+                diskDrive.eject(player);
             }
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
         return super.useWithoutItem(state, level, pos, player, hitResult);
@@ -97,11 +93,10 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             final Level level, final BlockPos pos, final BlockState state, final Player player) {
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!level.isClientSide()
-                && blockEntity instanceof final FlashMemoryFlasherBlockEntity flashFlasher) {
-            if (!flashFlasher.getDiskItemStack().isEmpty()) {
-                final ItemStack stack = flashFlasher.getDiskItemStack();
-                popResource(level, pos, stack);
-            }
+                && blockEntity instanceof final FlashMemoryFlasherBlockEntity flashFlasher
+                && !flashFlasher.getDiskItemStack().isEmpty()) {
+            final ItemStack stack = flashFlasher.getDiskItemStack();
+            popResource(level, pos, stack);
         }
 
         return super.playerWillDestroy(level, pos, state, player);

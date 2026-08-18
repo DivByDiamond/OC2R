@@ -82,10 +82,10 @@ public class FontAtlas {
         }
 
         // Calculate the UV coordinates for this glyph
-        float uStart = (float) currentX * (1f / atlasWidth);
-        float vStart = (float) currentY * (1f / atlasHeight);
-        float uEnd = (float) (currentX + glyph.image.getWidth() + 1) * (1f / atlasWidth);
-        float vEnd = (float) (currentY + glyph.image.getHeight() + 1) * (1f / atlasHeight);
+        float uStart = currentX * (1f / atlasWidth);
+        float vStart = currentY * (1f / atlasHeight);
+        float uEnd = (currentX + glyph.image.getWidth() + 1) * (1f / atlasWidth);
+        float vEnd = (currentY + glyph.image.getHeight() + 1) * (1f / atlasHeight);
 
         glyph.setUV(uStart, vStart, uEnd, vEnd);
 

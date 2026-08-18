@@ -44,7 +44,7 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
             gateWay.animation.handledInboundCount = gateWay.animation.inboundCount;
             gateWay.animation.handledOutboundCount = gateWay.animation.outboundCount;
         }
-        double phase = ((double) time) / 1000d;
+        double phase = time / 1000d;
         stack.translate(0f, PORTAL_POSITION + Math.sin(phase / 2) * 0.03f, 0f);
         // stack.mulPose(Vector3f.XN.rotationDegrees((float)Math.sin(phase)*5));
         // stack.mulPose(Vector3f.ZN.rotationDegrees((float)Math.sin(phase+2)*5));
@@ -64,6 +64,18 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
                                         - gateWay.animation.handledOutboundCount);
         float speedMod = Math.max(1f, Math.min(1.5f, pendingPackets * 0.025f));
         VertexConsumer packet = bufferSource.getBuffer(ModRenderType.getGateWayParticle());
+        renderEmitter(packet, matrix, gateWay, dt, speedMod);
+        updateAnimation(gateWay);
+
+        stack.popPose();
+    }
+
+    private void renderEmitter(
+            VertexConsumer packet,
+            Matrix4f matrix,
+            InternetGateWayBlockEntity gateWay,
+            long dt,
+            float speedMod) {
         for (int x = 0; x < GatewayAnimationState.EMITTER_SIDE_PIXELS; x++) {
             for (int z = 0; z < GatewayAnimationState.EMITTER_SIDE_PIXELS; z++) {
                 int flatPos = x * GatewayAnimationState.EMITTER_SIDE_PIXELS + z;
@@ -84,6 +96,9 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
                 }
             }
         }
+    }
+
+    private void updateAnimation(InternetGateWayBlockEntity gateWay) {
         while (gateWay.animation.handledInboundCount < gateWay.animation.inboundCount
                 || gateWay.animation.handledOutboundCount < gateWay.animation.outboundCount) {
             int scrambledPointer = SCRAMBLER[gateWay.animation.pointer];
@@ -107,8 +122,6 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
                 break;
             }
         }
-
-        stack.popPose();
     }
 
     private void renderCube(

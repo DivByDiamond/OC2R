@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  * context-dependent ({@code ?} selects the private mode, otherwise the ANSI mode) and are resolved
  * via {@link #forPrivateMode(int)} vs {@link #forAnsiMode(int)}.
  */
-public enum ModeTable {
+public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number lookup table
     // --- ANSI modes (SM/RM, no '?' modifier) ---
     KAM(Mode.KAM, Kind.ANSI, true),
     IRM(Mode.IRM, Kind.ANSI, true),
@@ -161,7 +161,7 @@ public enum ModeTable {
      * @return the current boolean value of this mode.
      * @throws IllegalStateException when called on a non-private mode.
      */
-    public boolean get(final PrivateModeState state) {
+    public boolean get(final PrivateModeState state) { // NOPMD: 1:1 data-mapping switch
         return switch (this) {
             case DECCKM -> state.DECCKM;
             case DECANM -> state.DECANM;
@@ -248,7 +248,7 @@ public enum ModeTable {
      * @param value the boolean value to store.
      * @throws IllegalStateException when called on a non-private mode.
      */
-    public void set(final PrivateModeState state, final boolean value) {
+    public void set(final PrivateModeState state, final boolean value) { // NOPMD: 1:1 data-mapping switch
         switch (this) {
             case DECCKM -> state.DECCKM = value;
             case DECANM -> state.DECANM = value;

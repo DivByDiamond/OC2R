@@ -38,7 +38,8 @@ final class SwitchHostTable {
 
     void save(final List<Tag> hosts) {
         for (Map.Entry<Long, HostEntry> host : hostTable.entrySet()) {
-            CompoundTag thisHost = new CompoundTag();
+            // NOPMD: a distinct CompoundTag is required per entry as each is added to the list
+            CompoundTag thisHost = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
             thisHost.put("mac", LongTag.valueOf(host.getKey()));
             thisHost.put("side", IntTag.valueOf(host.getValue().iface));
             thisHost.put("timestamp", LongTag.valueOf(host.getValue().timestamp));
@@ -49,9 +50,10 @@ final class SwitchHostTable {
     void load(List<Tag> hosts) {
         for (Tag host_ : hosts) {
             CompoundTag host = (CompoundTag) host_;
+            // NOPMD: entry depends on per-iteration host data
             hostTable.put(
                     host.getLong("mac"),
-                    new HostEntry(host.getInt("side"), host.getLong("timestamp")));
+                    new HostEntry(host.getInt("side"), host.getLong("timestamp"))); // NOPMD allocation depends on loop iteration / per-item state
         }
     }
 }

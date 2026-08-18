@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public class Oc2rStreamCodecs {
     public static final StreamCodec<FriendlyByteBuf, ByteBuffer> BYTE_BUFFER =
-            new StreamCodec<FriendlyByteBuf, ByteBuffer>() {
+            new StreamCodec<>() {
                 @Override
                 public ByteBuffer decode(FriendlyByteBuf buf) {
                     var limit = buf.readVarInt();

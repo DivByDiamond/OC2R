@@ -95,53 +95,66 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
                 NBTDeserializerImpl.ARRAY_SERIALIZERS.get(componentType);
         if (arraySerializer != null) {
             return arraySerializer.serialize(value);
+        }
+
+        final ArrayComponentSerializer componentSerializer =
+                createComponentSerializer(name, componentType);
+
+        final List<Tag> listTag = new ListTag();
+        final IntList nullIndices = new IntArrayList();
+
+        final Object[] data = (Object[]) value;
+        for (int i = 0; i < data.length; i++) {
+            serializeElement(
+                    componentSerializer, componentType, data[i], listTag, nullIndices, i, name);
+        }
+
+        if (nullIndices.isEmpty()) {
+            return (ListTag) listTag;
         } else {
-            final ArrayComponentSerializer componentSerializer;
-            if (componentType.isArray()) {
-                componentSerializer = (t, v) -> putArray(name, t, v);
-            } else {
-                final li.cil.ceres.api.Serializer<?> serializer =
-                        Ceres.getSerializer(componentType);
-                componentSerializer =
-                        (t, v) -> {
-                            final CompoundTag innerTag = new CompoundTag();
-                            serializer.serialize(new NBTSerializerImpl(innerTag), (Class) t, v);
-                            return innerTag;
-                        };
-            }
-
-            final List<Tag> listTag = new ListTag();
-            final IntList nullIndices = new IntArrayList();
-
-            final Object[] data = (Object[]) value;
-            for (int i = 0; i < data.length; i++) {
-                final Object datum = data[i];
-                if (datum == null) {
-                    nullIndices.add(i);
-                } else {
-                    if (datum.getClass() != componentType) {
-                        throw new SerializationException(
-                                String.format(
-                                        "Polymorphism detected in generic array [%s]. This is not"
-                                                + " supported.",
-                                        name));
-                    }
-                    listTag.add(componentSerializer.serialize(componentType, datum));
-                }
-            }
-
-            if (nullIndices.isEmpty()) {
-                return (ListTag) listTag;
-            } else {
-                final CompoundTag arrayTag = new CompoundTag();
-                arrayTag.put("value", (ListTag) listTag);
-                arrayTag.putIntArray("nulls", nullIndices);
-                return arrayTag;
-            }
+            final CompoundTag arrayTag = new CompoundTag();
+            arrayTag.put("value", (ListTag) listTag);
+            arrayTag.putIntArray("nulls", nullIndices);
+            return arrayTag;
         }
     }
 
-    @Contract(value = "_, null -> true")
+    private ArrayComponentSerializer createComponentSerializer(
+            final String name, final Class<?> componentType) {
+        if (componentType.isArray()) {
+            return (t, v) -> putArray(name, t, v);
+        }
+        final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
+        return (t, v) -> {
+            final CompoundTag innerTag = new CompoundTag();
+            serializer.serialize(new NBTSerializerImpl(innerTag), (Class) t, v);
+            return innerTag;
+        };
+    }
+
+    private void serializeElement(
+            final ArrayComponentSerializer componentSerializer,
+            final Class<?> componentType,
+            final Object datum,
+            final List<Tag> listTag,
+            final IntList nullIndices,
+            final int index,
+            final String name) {
+        if (datum == null) {
+            nullIndices.add(index);
+            return;
+        }
+        if (datum.getClass() != componentType) {
+            throw new SerializationException(
+                    String.format(
+                            "Polymorphism detected in generic array [%s]. This is not"
+                                    + " supported.",
+                            name));
+        }
+        listTag.add(componentSerializer.serialize(componentType, datum));
+    }
+
+    @Contract("_, null -> true")
     private boolean putIsNull(final String name, @Nullable final Object value) {
         final boolean isNull = value == null;
         if (isNull) {

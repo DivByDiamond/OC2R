@@ -22,7 +22,7 @@ public final class OverlayRenderer {
 
     public static void renderStatus(
             final Matrix4f matrix, final MultiBufferSource bufferSource, final int frequency) {
-        if (frequency <= 0 || ((System.currentTimeMillis() / frequency) % 2) == 1) {
+        if (frequency <= 0 || System.currentTimeMillis() / frequency % 2 == 1) {
             renderQuad(matrix, TEXTURE_STATUS.buffer(bufferSource, ModRenderType::getUnlitBlock));
         }
     }

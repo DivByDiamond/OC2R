@@ -71,28 +71,19 @@ public enum Side {
         return base != null ? base.toString() : super.toString();
     }
 
-    public static Direction relativeDirection(BlockPos from, BlockPos to) {
-        int dx = to.getX() - from.getX();
-        int dy = to.getY() - from.getY();
-        int dz = to.getZ() - from.getZ();
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > Math.abs(dz)) {
-            if (dx > 0) {
-                return Direction.EAST;
-            } else {
-                return Direction.WEST;
-            }
-        } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > Math.abs(dz)) {
-            if (dy > 0) {
-                return Direction.UP;
-            } else {
-                return Direction.DOWN;
-            }
-        } else {
-            if (dz > 0) {
-                return Direction.SOUTH;
-            } else {
-                return Direction.NORTH;
-            }
+    public static Direction relativeDirection(final BlockPos from, final BlockPos to) {
+        final int dx = to.getX() - from.getX();
+        final int dy = to.getY() - from.getY();
+        final int dz = to.getZ() - from.getZ();
+        final int ax = Math.abs(dx);
+        final int ay = Math.abs(dy);
+        final int az = Math.abs(dz);
+        if (ax > ay && ax > az) {
+            return dx > 0 ? Direction.EAST : Direction.WEST;
         }
+        if (ay > ax && ay > az) {
+            return dy > 0 ? Direction.UP : Direction.DOWN;
+        }
+        return dz > 0 ? Direction.SOUTH : Direction.NORTH;
     }
 }

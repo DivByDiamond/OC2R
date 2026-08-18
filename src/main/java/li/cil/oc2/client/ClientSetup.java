@@ -5,6 +5,7 @@ import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.model.BusCableModelLoader;
+import li.cil.oc2.client.model.monitor.MonitorModelLoader;
 import li.cil.oc2.client.renderer.BusInterfaceNameRenderer;
 import li.cil.oc2.client.renderer.blockentity.charger.ChargerRenderer;
 import li.cil.oc2.client.renderer.blockentity.computer.ComputerRenderer;
@@ -71,6 +72,7 @@ public final class ClientSetup {
             throw new RuntimeException("Null bus cable ID");
         }
         event.register(Blocks.BUS_CABLE.getId(), new BusCableModelLoader());
+        event.register(Blocks.MONITOR.getId(), new MonitorModelLoader());
     }
 
     /**
@@ -132,7 +134,7 @@ public final class ClientSetup {
      *
      * @return the capture input state.
      */
-    public static boolean getCaptureInputState() {
+    public static boolean getCaptureInputState() { // NOPMD getter API consumed across client/server
         if (captureInputState == null) {
             captureInputState = Config.captureInputDefaultState;
         }

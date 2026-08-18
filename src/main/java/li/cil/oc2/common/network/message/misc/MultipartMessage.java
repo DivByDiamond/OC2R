@@ -137,10 +137,10 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         while (buffer.readableBytes() > 0 || lastPacketFullLength) {
             int dataLength = Math.min(buffer.readableBytes(), MAX_PAYLOAD_SIZE - HEADER_SIZE);
             lastPacketFullLength = dataLength == MAX_PAYLOAD_SIZE - HEADER_SIZE;
-            final byte[] data = new byte[dataLength];
+            final byte[] data = new byte[dataLength]; // NOPMD per-fragment data
             buffer.readBytes(data);
             final MultipartMessage part =
-                    new MultipartMessage(messageId, multipartMessageId, data);
+                    new MultipartMessage(messageId, multipartMessageId, data); // NOPMD per-fragment
             if (player == null) {
                 NetworkMessages.sendToServer(part);
             } else {

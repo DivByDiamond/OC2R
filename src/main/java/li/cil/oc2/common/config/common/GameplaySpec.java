@@ -11,6 +11,8 @@ public class GameplaySpec {
     public final ModConfigSpec.IntValue cpuFrequencyTier2;
     public final ModConfigSpec.IntValue cpuFrequencyTier3;
     public final ModConfigSpec.IntValue cpuFrequencyTier4;
+    public final ModConfigSpec.IntValue monitorMaxWidth;
+    public final ModConfigSpec.IntValue monitorMaxHeight;
 
     GameplaySpec(ModConfigSpec.Builder builder) {
         blockOperationsModuleToolTier =
@@ -22,6 +24,23 @@ public class GameplaySpec {
                                 "The number of seconds between sound card uses, to prevent"
                                         + " spam/abuse")
                         .defineInRange("soundCardCoolDownSeconds", 2, 1, Long.MAX_VALUE);
+
+        monitorMaxWidth =
+                builder.comment(
+                                "Maximum width (in blocks) a monitor multiblock can grow to when"
+                                        + " placing monitors next to each other. The blockstate"
+                                        + " property range is always 1..8, so monitors wider than"
+                                        + " this configured limit can still be loaded from existing"
+                                        + " saves.")
+                        .defineInRange("monitorMaxWidth", 5, 1, 8);
+        monitorMaxHeight =
+                builder.comment(
+                                "Maximum height (in blocks) a monitor multiblock can grow to when"
+                                        + " placing monitors next to each other. The blockstate"
+                                        + " property range is always 1..8, so monitors taller than"
+                                        + " this configured limit can still be loaded from existing"
+                                        + " saves.")
+                        .defineInRange("monitorMaxHeight", 5, 1, 8);
 
         cpuFrequencyTier1 =
                 builder.comment(
@@ -53,5 +72,7 @@ public class GameplaySpec {
         Config.cpuFrequencyTier2 = cpuFrequencyTier2.get() * 1_000_000;
         Config.cpuFrequencyTier3 = cpuFrequencyTier3.get() * 1_000_000;
         Config.cpuFrequencyTier4 = cpuFrequencyTier4.get() * 1_000_000;
+        Config.monitorMaxWidth = monitorMaxWidth.get();
+        Config.monitorMaxHeight = monitorMaxHeight.get();
     }
 }

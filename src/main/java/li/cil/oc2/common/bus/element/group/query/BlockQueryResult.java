@@ -9,6 +9,7 @@ public final class BlockQueryResult extends GroupQueryResult<BlockEntry, BlockDe
     private final Set<BlockEntry> entries;
 
     public BlockQueryResult(final BlockDeviceQuery query, final Set<BlockEntry> entries) {
+        super();
         this.query = query;
         this.entries = entries;
     }

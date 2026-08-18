@@ -88,11 +88,10 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
     public void finishExportFile() {
         if (state != ImportExportState.EXPORTING) throw new IllegalStateException("invalid state");
         try {
+            final ExportedFileMessage message =
+                    new ExportedFileMessage(exportedFile.name, exportedFile.data.toByteArray());
             for (final Player player : userProvider.getTerminalUsers()) {
                 if (player instanceof final ServerPlayer serverPlayer) {
-                    final ExportedFileMessage message =
-                            new ExportedFileMessage(
-                                    exportedFile.name, exportedFile.data.toByteArray());
                     MultipartMessage.sendToClient(message, serverPlayer);
                 }
             }
@@ -111,8 +110,8 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
         if (players.isEmpty()) return false;
         state = ImportExportState.IMPORT_REQUESTED;
         importingId = ImportFileRequestManager.registerRequest(this);
+        final RequestImportedFileMessage message = new RequestImportedFileMessage(importingId);
         for (final ServerPlayer serverPlayer : players) {
-            final RequestImportedFileMessage message = new RequestImportedFileMessage(importingId);
             NetworkMessages.sendToClient(message, serverPlayer);
         }
         return true;

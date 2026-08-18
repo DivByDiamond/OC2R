@@ -19,6 +19,7 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
     private final BusCableBlockEntity owner;
 
     BusCableBusElement(final BusCableBlockEntity owner) {
+        super();
         this.owner = owner;
     }
 

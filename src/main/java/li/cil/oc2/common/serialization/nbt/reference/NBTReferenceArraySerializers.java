@@ -55,17 +55,18 @@ public final class NBTReferenceArraySerializers {
         @Override
         public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
             String[] data = (String[]) into;
-            if (tag instanceof ListTag) {
-                final List<Tag> serializedData = (ListTag) tag;
-                if (serializedData.isEmpty()
-                        || ((ListTag) serializedData).getElementType() == NBTTagIds.TAG_STRING) {
-                    if (data == null || data.length != serializedData.size()) {
-                        data = new String[serializedData.size()];
-                    }
-                    for (int i = 0; i < serializedData.size(); i++) {
-                        data[i] = ((ListTag) serializedData).getString(i);
-                    }
-                }
+            if (!(tag instanceof ListTag)) {
+                return data;
+            }
+            final ListTag serializedData = (ListTag) tag;
+            if (!serializedData.isEmpty() && serializedData.getElementType() != NBTTagIds.TAG_STRING) {
+                return data;
+            }
+            if (data == null || data.length != serializedData.size()) {
+                data = new String[serializedData.size()];
+            }
+            for (int i = 0; i < serializedData.size(); i++) {
+                data[i] = serializedData.getString(i);
             }
             return data;
         }
@@ -85,17 +86,18 @@ public final class NBTReferenceArraySerializers {
         @Override
         public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
             UUID[] data = (UUID[]) into;
-            if (tag instanceof ListTag) {
-                final List<Tag> serializedData = (ListTag) tag;
-                if (serializedData.isEmpty()
-                        || ((ListTag) serializedData).getElementType() == NBTTagIds.TAG_STRING) {
-                    if (data == null || data.length != serializedData.size()) {
-                        data = new UUID[serializedData.size()];
-                    }
-                    for (int i = 0; i < serializedData.size(); i++) {
-                        data[i] = UUID.fromString(((ListTag) serializedData).getString(i));
-                    }
-                }
+            if (!(tag instanceof ListTag)) {
+                return data;
+            }
+            final ListTag serializedData = (ListTag) tag;
+            if (!serializedData.isEmpty() && serializedData.getElementType() != NBTTagIds.TAG_STRING) {
+                return data;
+            }
+            if (data == null || data.length != serializedData.size()) {
+                data = new UUID[serializedData.size()];
+            }
+            for (int i = 0; i < serializedData.size(); i++) {
+                data[i] = UUID.fromString(serializedData.getString(i));
             }
             return data;
         }

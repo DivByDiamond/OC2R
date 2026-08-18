@@ -32,17 +32,16 @@ public final class ComputerBlockInteraction {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        if (Wrenches.isWrench(stack)) {
-            if (!player.isShiftKeyDown()) {
-                if (!level.isClientSide() && player instanceof final ServerPlayer serverPlayer) {
-                    computer.terminalManager.openInventoryScreen(serverPlayer);
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
-            }
+        if (!Wrenches.isWrench(stack)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (player.isShiftKeyDown()) {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
-
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if (!level.isClientSide() && player instanceof final ServerPlayer serverPlayer) {
+            computer.terminalManager.openInventoryScreen(serverPlayer);
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide());
     }
 
     public static InteractionResult useWithoutItem(
@@ -74,14 +73,13 @@ public final class ComputerBlockInteraction {
     public static BlockState playerWillDestroy(
             final Level level, final BlockPos pos, final BlockState state, final Player player,
             @Nullable final ComputerBlockEntity computer) {
-        if (!level.isClientSide() && computer != null) {
-            if (!computer.getItemStackHandlers().isEmpty()) {
-                if (player.isCreative()) {
-                    final ItemStack stack = new ItemStack(Items.COMPUTER.get());
-                    computer.exportToItemStack(stack);
-                    Block.popResource(level, pos, stack);
-                }
-            }
+        if (!level.isClientSide()
+                && computer != null
+                && !computer.getItemStackHandlers().isEmpty()
+                && player.isCreative()) {
+            final ItemStack stack = new ItemStack(Items.COMPUTER.get());
+            computer.exportToItemStack(stack);
+            Block.popResource(level, pos, stack);
         }
         return state;
     }

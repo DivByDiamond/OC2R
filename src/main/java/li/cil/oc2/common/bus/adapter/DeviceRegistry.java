@@ -47,7 +47,7 @@ public class DeviceRegistry {
                 final Set<UUID> identifiers = controller.getDeviceIdentifiers(device);
                 for (final UUID identifier : identifiers) {
                     devicesByIdentifier
-                            .computeIfAbsent(identifier, unused -> new ArrayList<>())
+                            .computeIfAbsent(identifier, unused -> new ArrayList<>()) // NOPMD per-key list
                             .add(rpcDevice);
                 }
             }

@@ -113,11 +113,6 @@ public final class BusInterfaceScreen extends Screen {
     }
 
     @Override
-    public void onClose() {
-        super.onClose();
-    }
-
-    @Override
     public void tick() {
         super.tick();
 
@@ -162,6 +157,6 @@ public final class BusInterfaceScreen extends Screen {
     }
 
     private void setInterfaceName(final String name) {
-        NetworkMessages.sendToServer(BusInterfaceNameMessage.ToServer(busCable, side, name));
+        NetworkMessages.sendToServer(BusInterfaceNameMessage.toServer(busCable, side, name));
     }
 }

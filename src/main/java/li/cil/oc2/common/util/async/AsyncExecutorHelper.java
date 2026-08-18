@@ -32,11 +32,7 @@ public final class AsyncExecutorHelper {
             return;
         }
 
-        boolean debug = false;
-        try {
-            debug = AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get();
-        } catch (IllegalStateException ignored) {
-        }
+        final boolean debug = isDebugEnabled();
 
         if (debug) {
             LOGGER.info("Initiating async executor shutdown...");
@@ -46,25 +42,7 @@ public final class AsyncExecutorHelper {
 
         try {
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                if (debug) {
-                    LOGGER.warn(
-                            "Async executor did not shut down within timeout, forcing immediate"
-                                    + " shutdown");
-                } else {
-                    LOGGER.warn(
-                            "Async executor did not shut down within timeout, forcing immediate"
-                                    + " shutdown");
-                }
-
-                final var runningTasks = executor.shutdownNow();
-
-                if (debug && !runningTasks.isEmpty()) {
-                    LOGGER.warn("Cancelled {} running tasks", runningTasks.size());
-                }
-
-                if (!executor.awaitTermination(100, TimeUnit.MILLISECONDS)) {
-                    LOGGER.warn("Some tasks did not respond to cancellation");
-                }
+                forceShutdown(executor, debug);
             }
         } catch (final InterruptedException e) {
             LOGGER.warn(
@@ -73,6 +51,30 @@ public final class AsyncExecutorHelper {
                     e);
             executor.shutdownNow();
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private static boolean isDebugEnabled() {
+        try {
+            return AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get();
+        } catch (IllegalStateException ignored) {
+            return false;
+        }
+    }
+
+    private static void forceShutdown(
+            final ExecutorService executor, final boolean debug) throws InterruptedException {
+        LOGGER.warn(
+                "Async executor did not shut down within timeout, forcing immediate shutdown");
+
+        final var runningTasks = executor.shutdownNow();
+
+        if (debug && !runningTasks.isEmpty()) {
+            LOGGER.warn("Cancelled {} running tasks", runningTasks.size());
+        }
+
+        if (!executor.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+            LOGGER.warn("Some tasks did not respond to cancellation");
         }
     }
 

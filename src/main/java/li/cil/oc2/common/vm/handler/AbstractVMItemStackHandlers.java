@@ -40,9 +40,10 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     public AbstractVMItemStackHandlers(
             Supplier<HolderLookup.Provider> providerSupplier, final GroupDefinition... groups) {
         for (final GroupDefinition group : groups) {
+            // NOPMD - each group requires its own VMItemHandler.
             itemHandlers.put(
                     group.deviceType,
-                    new VMItemHandler(providerSupplier, group.count, group.deviceType));
+                    new VMItemHandler(providerSupplier, group.count, group.deviceType)); // NOPMD allocation depends on loop iteration / per-item state
         }
 
         combinedItemHandlers =

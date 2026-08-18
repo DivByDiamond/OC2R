@@ -8,20 +8,21 @@ import li.cil.oc2.common.bus.device.provider.util.AbstractItemDeviceProvider;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability>
+public abstract class AbstractItemStackCapabilityDeviceProvider<T>
         extends AbstractItemDeviceProvider {
-    private final Supplier<ItemCapability<TCapability, @Nullable Void>> capabilitySupplier;
+    private final Supplier<ItemCapability<T, @Nullable Void>> capabilitySupplier;
 
     protected AbstractItemStackCapabilityDeviceProvider(
-            final Supplier<ItemCapability<TCapability, @Nullable Void>> capabilitySupplier) {
+            final Supplier<ItemCapability<T, @Nullable Void>> capabilitySupplier) {
+        super();
         this.capabilitySupplier = capabilitySupplier;
     }
 
     @Override
     protected Optional<ItemDevice> getItemDevice(final ItemDeviceQuery query) {
-        final ItemCapability<TCapability, @Nullable Void> capability = capabilitySupplier.get();
+        final ItemCapability<T, @Nullable Void> capability = capabilitySupplier.get();
         if (capability == null) throw new IllegalStateException();
-        final TCapability optional = query.getItemStack().getCapability(capability);
+        final T optional = query.getItemStack().getCapability(capability);
         if (optional == null) {
             return Optional.empty();
         }
@@ -29,5 +30,5 @@ public abstract class AbstractItemStackCapabilityDeviceProvider<TCapability>
         return getItemDevice(query, optional);
     }
 
-    protected abstract Optional<ItemDevice> getItemDevice(ItemDeviceQuery query, TCapability value);
+    protected abstract Optional<ItemDevice> getItemDevice(ItemDeviceQuery query, T value);
 }

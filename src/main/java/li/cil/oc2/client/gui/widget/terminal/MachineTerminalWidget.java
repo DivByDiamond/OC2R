@@ -70,7 +70,7 @@ public final class MachineTerminalWidget {
             }
 
             final Matrix4f projectionMatrix =
-                    (new Matrix4f()).setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
+                    new Matrix4f().setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
             rendererView.render(terminalStack, projectionMatrix, false);
         } else {
             final Font font = getClient().font;
@@ -167,7 +167,7 @@ public final class MachineTerminalWidget {
                 scanCode,
                 modifiers,
                 shouldCaptureInput(),
-                () -> getClient().keyboardHandler.getClipboard());
+                getClient().keyboardHandler::getClipboard);
     }
 
     public void init() {

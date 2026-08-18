@@ -62,9 +62,10 @@ public class CommonDeviceBusController implements DeviceBusController {
                 element.getDeviceIdentifier(device)
                         .ifPresent(
                                 identifier ->
-                                        newDeviceIds
-                                                .computeIfAbsent(device, unused -> new HashSet<>())
-                                                .add(identifier));
+                        newDeviceIds
+                                .computeIfAbsent(// NOPMD: per-device set
+                                        device, unused -> new HashSet<>()) // NOPMD allocation depends on loop iteration / per-item state
+                                .add(identifier));
             }
         }
 

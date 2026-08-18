@@ -36,10 +36,20 @@ final class VirtualMachineTicker {
         // The atomic flag protects against races between the scan callback and
         // this tick. Devices that can be hot-plugged (RPC devices) are handled
         // live by the RPC adapter and do not reach this point.
-        if (devicesChangedWhileRunning.getAndSet(false)) {
-            if (vm.runState == VMRunState.RUNNING && vm.state.board.isRunning()) {
-                deviceChangeRestartDelay = DEVICE_CHANGE_RESTART_DELAY;
-            }
+        maybeScheduleRestart();
+
+        if (vm.runState == VMRunState.LOADING_DEVICES) {
+            vm.lifecycle.load();
+        } else if (vm.runState == VMRunState.RUNNING) {
+            vm.lifecycle.run();
+        }
+    }
+
+    private void maybeScheduleRestart() {
+        if (devicesChangedWhileRunning.getAndSet(false)
+                && vm.runState == VMRunState.RUNNING
+                && vm.state.board.isRunning()) {
+            deviceChangeRestartDelay = DEVICE_CHANGE_RESTART_DELAY;
         }
         if (deviceChangeRestartDelay > 0) {
             deviceChangeRestartDelay--;
@@ -47,12 +57,6 @@ final class VirtualMachineTicker {
                 vm.stop();
                 vm.start();
             }
-        }
-
-        if (vm.runState == VMRunState.LOADING_DEVICES) {
-            vm.lifecycle.load();
-        } else if (vm.runState == VMRunState.RUNNING) {
-            vm.lifecycle.run();
         }
     }
 }

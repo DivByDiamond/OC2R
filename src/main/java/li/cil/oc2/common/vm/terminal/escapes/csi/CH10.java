@@ -26,14 +26,14 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
         } else { // DCH
             int chars = Math.min(args[0], Terminal.WIDTH - terminal.x);
             int startIndex =
-                    ((terminal.currentPrivateModeState.isAltBufferEnabled())
+                    (terminal.currentPrivateModeState.isAltBufferEnabled()
                                     ? terminal.y * Terminal.WIDTH
                                     : (terminal.y
-                                                    + (terminal.lastRowToDisplayMax
-                                                            - Terminal.HEIGHT))
+                                                    + terminal.lastRowToDisplayMax
+                                                    - Terminal.HEIGHT)
                                             * Terminal.WIDTH)
                             + terminal.x;
-            int count = (Terminal.WIDTH - terminal.x) - chars;
+            int count = Terminal.WIDTH - terminal.x - chars;
             int endIndex = startIndex + count;
             TerminalColors.ColorData c;
             switch (terminal.currentBackgroundColorMode) {
@@ -73,8 +73,8 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                         terminal.altColors,
                         endIndex,
                         endIndex + chars,
-                        TerminalColors.DEFAULT_COLORS.Copy());
-                Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.Copy());
+                        TerminalColors.DEFAULT_COLORS.copy());
+                Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.copy());
                 Arrays.fill(
                         terminal.altStyles,
                         endIndex,
@@ -98,8 +98,8 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                         terminal.colors,
                         endIndex,
                         endIndex + chars,
-                        TerminalColors.DEFAULT_COLORS.Copy());
-                Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.Copy());
+                        TerminalColors.DEFAULT_COLORS.copy());
+                Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.copy());
                 Arrays.fill(
                         terminal.styles,
                         endIndex,

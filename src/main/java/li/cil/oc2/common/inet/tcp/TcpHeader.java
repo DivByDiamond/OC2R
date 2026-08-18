@@ -92,7 +92,7 @@ public class TcpHeader {
                         | (bool2int(psh) << 3)
                         | (bool2int(rst) << 2)
                         | (bool2int(syn) << 1)
-                        | (bool2int(fin));
+                        | bool2int(fin);
         data.put((byte) flags);
         data.putShort((short) window);
         data.putShort((short) 0); // checksum
