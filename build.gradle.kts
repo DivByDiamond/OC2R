@@ -252,6 +252,10 @@ tasks.register<Zip>("packageScripts") {
     archiveFileName = "scripts.zip"
     destinationDirectory = file("${layout.buildDirectory.get()}/resources/main/data/oc2r/file_systems")
     from("src/main/scripts")
+    from("src/main/resources/onyxos") {
+        include("fw_jump.bin")
+        into("firmware_files")
+    }
 }
 
 tasks.register<Copy>("copyLicensesToResources") {

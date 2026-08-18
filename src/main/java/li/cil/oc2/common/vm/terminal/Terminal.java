@@ -45,11 +45,11 @@ public class Terminal {
     public byte style;
 
     public int SCROLL_BACK_COUNT = 20;
-    public ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
-    public int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public transient ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
+    public transient int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public transient ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public transient ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
+    public transient byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
     public boolean[] tabs = new boolean[WIDTH];
     public State state = State.NORMAL;
     public int scrollFirst = 0;
@@ -63,10 +63,10 @@ public class Terminal {
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 
-    public int[] altBuffer = new int[WIDTH * HEIGHT];
-    public ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
-    public ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
-    public byte[] altStyles = new byte[WIDTH * HEIGHT];
+    public transient int[] altBuffer = new int[WIDTH * HEIGHT];
+    public transient ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
+    public transient ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
+    public transient byte[] altStyles = new byte[WIDTH * HEIGHT];
     public boolean[] altTabs = new boolean[WIDTH];
 
     public final transient Set<RendererModel> renderers =

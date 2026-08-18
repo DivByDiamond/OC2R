@@ -52,8 +52,6 @@ public class FontAtlas {
         Glyph square = new Glyph(f, 16, 32, 0);
 
         addGlyph(square);
-
-        glyphs.add(square);
     }
 
     public final void addGlyph(Glyph glyph) {

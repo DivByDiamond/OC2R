@@ -1,5 +1,8 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import static li.cil.oc2.common.vm.terminal.modes.Mode.*;
+import static li.cil.oc2.common.vm.terminal.modes.PrivateMode.*;
+
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.modes.impl.ImplementedPrivateModes;
 
@@ -20,9 +23,9 @@ public class CH2 extends CSISequenceHandler {
     private void handleDECSET(int[] args, int argCount) {
         for (int i = 0; i < argCount; i++) {
             switch (args[i]) {
-                case 1 -> terminal.currentPrivateModeState.DECCKM = true;
-                case 2 -> terminal.currentPrivateModeState.DECANM = true;
-                case 3 -> {
+                case DECCKM -> terminal.currentPrivateModeState.DECCKM = true;
+                case DECANM -> terminal.currentPrivateModeState.DECANM = true;
+                case DECCOLM -> {
                     terminal.currentPrivateModeState.DECCOLM = true;
                     /* DECCOLM spec: clear screen and reset margins */
                     terminal.bufferManager.clear();
@@ -37,22 +40,22 @@ public class CH2 extends CSISequenceHandler {
                     terminal.renderers.forEach(
                             m -> m.getDirtyMask().accumulateAndGet(mask, (l, r) -> l | r));
                 }
-                case 4 -> terminal.currentPrivateModeState.DECSCLM = true;
-                case 5 -> terminal.currentPrivateModeState.DECSCNM = true;
-                case 6 -> {
+                case DECSCLM -> terminal.currentPrivateModeState.DECSCLM = true;
+                case DECSCNM -> terminal.currentPrivateModeState.DECSCNM = true;
+                case DECOM -> {
                     terminal.currentPrivateModeState.DECOM = true;
                     terminal.setRelativeCursorPos(0, 0);
                 }
-                case 7 -> terminal.currentPrivateModeState.DECAWM = true;
-                case 8 -> terminal.currentPrivateModeState.DECARM = true;
-                case 9 -> {
+                case DECAWM -> terminal.currentPrivateModeState.DECAWM = true;
+                case DECARM -> terminal.currentPrivateModeState.DECARM = true;
+                case X10MM -> {
                     terminal.currentPrivateModeState.X11MM = false;
                     terminal.currentPrivateModeState.CELL_MOTION_MOUSE = false;
                     terminal.currentPrivateModeState.ALL_MOTION_MOUSE_TRACKING = false;
                     terminal.currentPrivateModeState.X10MM = true;
                 }
-                case 10 -> terminal.currentPrivateModeState.TOOLBAR = true;
-                case 12 -> {
+                case TOOLBAR -> terminal.currentPrivateModeState.TOOLBAR = true;
+                case START_BLINKING_CURSOR -> {
                     terminal.cursorMode =
                             switch (terminal.cursorMode) {
                                 case 2 -> 1;
@@ -62,123 +65,123 @@ public class CH2 extends CSISequenceHandler {
                             };
                     terminal.currentPrivateModeState.START_BLINKING_CURSOR = true;
                 }
-                case 13 -> terminal.currentPrivateModeState.START_BLINKING_CURSOR2 = true;
-                case 14 -> terminal.currentPrivateModeState.XORBLINK = true;
-                case 18 -> terminal.currentPrivateModeState.DECPFF = true;
-                case 19 -> terminal.currentPrivateModeState.DECPEX = true;
-                case 25 -> terminal.currentPrivateModeState.DECTCEM = true;
-                case 30 -> terminal.currentPrivateModeState.SHOW_SCROLL = true;
-                case 35 -> terminal.currentPrivateModeState.FONT_SHIFT = true;
-                case 38 -> terminal.currentPrivateModeState.TEKTRONIX = true;
-                case 40 -> terminal.currentPrivateModeState.ENABLE_80_132 = true;
-                case 41 -> terminal.currentPrivateModeState.MORE_FIX = true;
-                case 42 -> terminal.currentPrivateModeState.DECNRCM = true;
-                case 43 -> terminal.currentPrivateModeState.DECGEPM = true;
-                case 44 -> terminal.currentPrivateModeState.MARG_BELL = true;
-                case 45 -> terminal.currentPrivateModeState.XTREVWRAP = true;
-                case 46 -> terminal.currentPrivateModeState.XTLOGGING = true;
-                case 47 -> {
+                case START_BLINKING_CURSOR2 -> terminal.currentPrivateModeState.START_BLINKING_CURSOR2 = true;
+                case XORBLINK -> terminal.currentPrivateModeState.XORBLINK = true;
+                case DECPFF -> terminal.currentPrivateModeState.DECPFF = true;
+                case DECPEX -> terminal.currentPrivateModeState.DECPEX = true;
+                case DECTCEM -> terminal.currentPrivateModeState.DECTCEM = true;
+                case SHOW_SCROLL -> terminal.currentPrivateModeState.SHOW_SCROLL = true;
+                case FONT_SHIFT -> terminal.currentPrivateModeState.FONT_SHIFT = true;
+                case TEKTRONIX -> terminal.currentPrivateModeState.TEKTRONIX = true;
+                case ENABLE_80_132 -> terminal.currentPrivateModeState.ENABLE_80_132 = true;
+                case MORE_FIX -> terminal.currentPrivateModeState.MORE_FIX = true;
+                case DECNRCM -> terminal.currentPrivateModeState.DECNRCM = true;
+                case DECGEPM -> terminal.currentPrivateModeState.DECGEPM = true;
+                case MARG_BELL -> terminal.currentPrivateModeState.MARG_BELL = true;
+                case XTREVWRAP -> terminal.currentPrivateModeState.XTREVWRAP = true;
+                case XTLOGGING -> terminal.currentPrivateModeState.XTLOGGING = true;
+                case ALT_BUFFER -> {
                     terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.ALT_BUFFER = true;
                     markScreenDirty();
                 }
-                case 66 -> terminal.currentPrivateModeState.DECNKM = true;
-                case 67 -> terminal.currentPrivateModeState.DECBKM = true;
-                case 69 -> terminal.currentPrivateModeState.DECLRMM = true;
-                case 80 -> terminal.currentPrivateModeState.DECSDM = true;
-                case 96 -> terminal.currentPrivateModeState.DECNCSM = true;
-                case 1000 -> {
+                case DECNKM -> terminal.currentPrivateModeState.DECNKM = true;
+                case DECBKM -> terminal.currentPrivateModeState.DECBKM = true;
+                case DECLRMM -> terminal.currentPrivateModeState.DECLRMM = true;
+                case DECSDM -> terminal.currentPrivateModeState.DECSDM = true;
+                case DECNCSM -> terminal.currentPrivateModeState.DECNCSM = true;
+                case X11MM -> {
                     terminal.currentPrivateModeState.CELL_MOTION_MOUSE = false;
                     terminal.currentPrivateModeState.ALL_MOTION_MOUSE_TRACKING = false;
                     terminal.currentPrivateModeState.X10MM = false;
                     terminal.currentPrivateModeState.X11MM = true;
                 }
-                case 1001 -> terminal.currentPrivateModeState.HILITE_MOUSE = true;
-                case 1002 -> {
+                case HILITE_MOUSE -> terminal.currentPrivateModeState.HILITE_MOUSE = true;
+                case CELL_MOTION_MOUSE -> {
                     terminal.currentPrivateModeState.ALL_MOTION_MOUSE_TRACKING = false;
                     terminal.currentPrivateModeState.X10MM = false;
                     terminal.currentPrivateModeState.X11MM = false;
                     terminal.currentPrivateModeState.CELL_MOTION_MOUSE = true;
                 }
-                case 1003 -> {
+                case ALL_MOTION_MOUSE_TRACKING -> {
                     terminal.currentPrivateModeState.CELL_MOTION_MOUSE = false;
                     terminal.currentPrivateModeState.X10MM = false;
                     terminal.currentPrivateModeState.X11MM = false;
                     terminal.currentPrivateModeState.ALL_MOTION_MOUSE_TRACKING = true;
                 }
-                case 1004 -> terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT = true;
-                case 1005 -> {
+                case FOCUS_IN_FOCUS_OUT -> terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT = true;
+                case UTF8_MOUSE -> {
                     terminal.currentPrivateModeState.SGR_MOUSE = false;
                     terminal.currentPrivateModeState.URXVT_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE_PIXEL = false;
                     terminal.currentPrivateModeState.UTF8_MOUSE = true;
                 }
-                case 1006 -> {
+                case SGR_MOUSE -> {
                     terminal.currentPrivateModeState.UTF8_MOUSE = false;
                     terminal.currentPrivateModeState.URXVT_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE_PIXEL = false;
                     terminal.currentPrivateModeState.SGR_MOUSE = true;
                 }
-                case 1007 -> terminal.currentPrivateModeState.ALTERNATE_SCROLL_MODE = true;
-                case 1010 -> terminal.currentPrivateModeState.SCROLL_BOTTOM_ON_OUTPUT = true;
-                case 1011 -> terminal.currentPrivateModeState.SCROLL_BOTTOM_ON_KEY_PRESS = true;
-                case 1014 -> terminal.currentPrivateModeState.FAST_SCROLL = true;
-                case 1015 -> {
+                case ALTERNATE_SCROLL_MODE -> terminal.currentPrivateModeState.ALTERNATE_SCROLL_MODE = true;
+                case SCROLL_BOTTOM_ON_OUTPUT -> terminal.currentPrivateModeState.SCROLL_BOTTOM_ON_OUTPUT = true;
+                case SCROLL_BOTTOM_ON_KEY_PRESS -> terminal.currentPrivateModeState.SCROLL_BOTTOM_ON_KEY_PRESS = true;
+                case FAST_SCROLL -> terminal.currentPrivateModeState.FAST_SCROLL = true;
+                case URXVT_MOUSE -> {
                     terminal.currentPrivateModeState.UTF8_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE_PIXEL = false;
                     terminal.currentPrivateModeState.URXVT_MOUSE = true;
                 }
-                case 1016 -> {
+                case SGR_MOUSE_PIXEL -> {
                     terminal.currentPrivateModeState.UTF8_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE = false;
                     terminal.currentPrivateModeState.URXVT_MOUSE = false;
                     terminal.currentPrivateModeState.SGR_MOUSE_PIXEL = true;
                 }
-                case 1034 -> terminal.currentPrivateModeState.META_KEY = true;
-                case 1035 -> terminal.currentPrivateModeState.SPECIAL_MODIFIERS = true;
-                case 1036 -> terminal.currentPrivateModeState.META_SENDS_ESCAPE = true;
-                case 1037 -> terminal.currentPrivateModeState.DEL_EDIT_KEYPAD_DEL = true;
-                case 1039 -> terminal.currentPrivateModeState.ALT_SENDS_ESC = true;
-                case 1040 -> terminal.currentPrivateModeState.KEEP_SELECTION = true;
-                case 1041 -> terminal.currentPrivateModeState.USE_CLIP = true;
-                case 1042 -> terminal.currentPrivateModeState.ENABLE_URGENCY = true;
-                case 1043 -> terminal.currentPrivateModeState.RAISE_ON_CTRL_G = true;
-                case 1044 -> terminal.currentPrivateModeState.KEEP_CLIP = true;
-                case 1045 -> terminal.currentPrivateModeState.EXT_REV_WRAP = true;
-                case 1046 -> terminal.currentPrivateModeState.ALLOW_ALT_BUFFER = true;
-                case 1047 -> {
+                case META_KEY -> terminal.currentPrivateModeState.META_KEY = true;
+                case SPECIAL_MODIFIERS -> terminal.currentPrivateModeState.SPECIAL_MODIFIERS = true;
+                case META_SENDS_ESCAPE -> terminal.currentPrivateModeState.META_SENDS_ESCAPE = true;
+                case DEL_EDIT_KEYPAD_DEL -> terminal.currentPrivateModeState.DEL_EDIT_KEYPAD_DEL = true;
+                case ALT_SENDS_ESC -> terminal.currentPrivateModeState.ALT_SENDS_ESC = true;
+                case KEEP_SELECTION -> terminal.currentPrivateModeState.KEEP_SELECTION = true;
+                case USE_CLIP -> terminal.currentPrivateModeState.USE_CLIP = true;
+                case ENABLE_URGENCY -> terminal.currentPrivateModeState.ENABLE_URGENCY = true;
+                case RAISE_ON_CTRL_G -> terminal.currentPrivateModeState.RAISE_ON_CTRL_G = true;
+                case KEEP_CLIP -> terminal.currentPrivateModeState.KEEP_CLIP = true;
+                case EXT_REV_WRAP -> terminal.currentPrivateModeState.EXT_REV_WRAP = true;
+                case ALLOW_ALT_BUFFER -> terminal.currentPrivateModeState.ALLOW_ALT_BUFFER = true;
+                case SWITCH_ALT_BUFFER -> {
                     terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = true;
                     markScreenDirty();
                 }
-                case 1048 -> {
+                case SAVE_CURSOR -> {
                     saveCursorPosition();
                     terminal.currentPrivateModeState.SAVE_CURSOR = true;
                 }
-                case 1049 -> {
+                case SAVE_CLEAR_AND_SWITCH -> {
                     saveCursorPosition();
                     terminal.bufferManager.clearAlt();
                     terminal.setCursorPos(0, 0);
                     terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = true;
                     markScreenDirty();
                 }
-                case 1050 -> terminal.currentPrivateModeState.SET_TERMINFO_FUNC_KEY_MODE = true;
-                case 1051 -> terminal.currentPrivateModeState.SET_SUN_KEY_MODE = true;
-                case 1052 -> terminal.currentPrivateModeState.SET_HP_K0EY_MODE = true;
-                case 1053 -> terminal.currentPrivateModeState.SET_SCO_KEY_MODE = true;
-                case 1060 -> terminal.currentPrivateModeState.SET_LEGACY_KEYBOARD = true;
-                case 1061 -> terminal.currentPrivateModeState.SET_VT220_KEYBOARD = true;
-                case 2001 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_1 = true;
-                case 2002 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_2 = true;
-                case 2003 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_3 = true;
-                case 2004 -> terminal.currentPrivateModeState.SET_BRACKETED_PASTE = true;
-                case 2005 -> terminal.currentPrivateModeState.ENABLE_READLINE_CHAR_QUOTE = true;
-                case 2006 -> terminal.currentPrivateModeState.ENABLE_READLINE_NEWLINE_PASTE = true;
-                case 2026 -> terminal.currentPrivateModeState.APPLICATION_SYNC = true;
-                case 7727 -> terminal.currentPrivateModeState.APPLICATION_ESC_MODE = true;
+                case SET_TERMINFO_FUNC_KEY_MODE -> terminal.currentPrivateModeState.SET_TERMINFO_FUNC_KEY_MODE = true;
+                case SET_SUN_KEY_MODE -> terminal.currentPrivateModeState.SET_SUN_KEY_MODE = true;
+                case SET_HP_K0EY_MODE -> terminal.currentPrivateModeState.SET_HP_K0EY_MODE = true;
+                case SET_SCO_KEY_MODE -> terminal.currentPrivateModeState.SET_SCO_KEY_MODE = true;
+                case SET_LEGACY_KEYBOARD -> terminal.currentPrivateModeState.SET_LEGACY_KEYBOARD = true;
+                case SET_VT220_KEYBOARD -> terminal.currentPrivateModeState.SET_VT220_KEYBOARD = true;
+                case ENABLE_READLINE_MOUSE_1 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_1 = true;
+                case ENABLE_READLINE_MOUSE_2 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_2 = true;
+                case ENABLE_READLINE_MOUSE_3 -> terminal.currentPrivateModeState.ENABLE_READLINE_MOUSE_3 = true;
+                case SET_BRACKETED_PASTE -> terminal.currentPrivateModeState.SET_BRACKETED_PASTE = true;
+                case ENABLE_READLINE_CHAR_QUOTE -> terminal.currentPrivateModeState.ENABLE_READLINE_CHAR_QUOTE = true;
+                case ENABLE_READLINE_NEWLINE_PASTE -> terminal.currentPrivateModeState.ENABLE_READLINE_NEWLINE_PASTE = true;
+                case APPLICATION_SYNC -> terminal.currentPrivateModeState.APPLICATION_SYNC = true;
+                case APPLICATION_ESC_MODE -> terminal.currentPrivateModeState.APPLICATION_ESC_MODE = true;
                 default -> {}
             }
 
@@ -189,10 +192,10 @@ public class CH2 extends CSISequenceHandler {
     private void handleSM(int[] args, int argCount) {
         for (int i = 0; i < argCount; i++) {
             switch (args[i]) {
-                case 2 -> terminal.currentModeState.KAM = true;
-                case 4 -> terminal.currentModeState.IRM = true;
-                case 12 -> terminal.currentModeState.SRM = true;
-                case 20 -> terminal.currentModeState.LNM = true;
+                case KAM -> terminal.currentModeState.KAM = true;
+                case IRM -> terminal.currentModeState.IRM = true;
+                case SRM -> terminal.currentModeState.SRM = true;
+                case LNM -> terminal.currentModeState.LNM = true;
                 default -> {}
             }
         }

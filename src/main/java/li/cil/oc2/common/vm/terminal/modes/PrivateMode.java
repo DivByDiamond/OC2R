@@ -1,6 +1,5 @@
 package li.cil.oc2.common.vm.terminal.modes;
 
-@SuppressWarnings("unused")
 public final class PrivateMode {
     public static final int DECCKM = 1; // Cursor key
     public static final int DECANM = 2; // ANSI/VT52
