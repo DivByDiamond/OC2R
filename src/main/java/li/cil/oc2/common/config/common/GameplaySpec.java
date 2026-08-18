@@ -7,6 +7,10 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class GameplaySpec {
     public final ModConfigSpec.EnumValue<Tiers> blockOperationsModuleToolTier;
     public final ModConfigSpec.LongValue soundCardCoolDownSeconds;
+    public final ModConfigSpec.IntValue cpuFrequencyTier1;
+    public final ModConfigSpec.IntValue cpuFrequencyTier2;
+    public final ModConfigSpec.IntValue cpuFrequencyTier3;
+    public final ModConfigSpec.IntValue cpuFrequencyTier4;
 
     GameplaySpec(ModConfigSpec.Builder builder) {
         blockOperationsModuleToolTier =
@@ -18,10 +22,36 @@ public class GameplaySpec {
                                 "The number of seconds between sound card uses, to prevent"
                                         + " spam/abuse")
                         .defineInRange("soundCardCoolDownSeconds", 2, 1, Long.MAX_VALUE);
+
+        cpuFrequencyTier1 =
+                builder.comment(
+                                "Frequency of the Tier 1 CPU (in megahertz).",
+                                "Tier layout:",
+                                "CPU T1: cpuFrequencyTier1",
+                                "CPU T2: cpuFrequencyTier2",
+                                "CPU T3: cpuFrequencyTier3",
+                                "CPU T4: cpuFrequencyTier4",
+                                "CPU T_INF is not configurable (creative, 1000 MHz).",
+                                "With the default values this is 50MHz, 100MHz, 200MHz,"
+                                        + " 400MHz respectively.")
+                        .defineInRange("cpuFrequencyTier1", 50, 1, Integer.MAX_VALUE);
+        cpuFrequencyTier2 =
+                builder.comment("Frequency of the Tier 2 CPU (in megahertz).")
+                        .defineInRange("cpuFrequencyTier2", 100, 1, Integer.MAX_VALUE);
+        cpuFrequencyTier3 =
+                builder.comment("Frequency of the Tier 3 CPU (in megahertz).")
+                        .defineInRange("cpuFrequencyTier3", 200, 1, Integer.MAX_VALUE);
+        cpuFrequencyTier4 =
+                builder.comment("Frequency of the Tier 4 CPU (in megahertz).")
+                        .defineInRange("cpuFrequencyTier4", 400, 1, Integer.MAX_VALUE);
     }
 
     public void loadValues() {
         Config.blockOperationsModuleToolTier = blockOperationsModuleToolTier.get().name();
         Config.soundCardCoolDownSeconds = soundCardCoolDownSeconds.get();
+        Config.cpuFrequencyTier1 = cpuFrequencyTier1.get() * 1_000_000;
+        Config.cpuFrequencyTier2 = cpuFrequencyTier2.get() * 1_000_000;
+        Config.cpuFrequencyTier3 = cpuFrequencyTier3.get() * 1_000_000;
+        Config.cpuFrequencyTier4 = cpuFrequencyTier4.get() * 1_000_000;
     }
 }

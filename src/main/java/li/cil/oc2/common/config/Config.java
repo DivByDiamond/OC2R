@@ -9,7 +9,6 @@ import net.minecraft.world.item.Tiers;
 
 @SuppressWarnings("FieldMayBeFinal")
 public final class Config {
-    // TODO: Implement configuration of CPU MHzs
     public static long maxAllocatedMemory = 512 * Constants.MEGABYTE;
     public static int diskSizeTier1 = 8 * Constants.MEGABYTE;
     public static int diskSizeTier2 = 16 * Constants.MEGABYTE;
@@ -42,6 +41,10 @@ public final class Config {
     public static double memoryEnergyPerMegabytePerTick = 0.5;
     public static double hardDriveEnergyPerMegabytePerTick = 1;
     public static double cpuEnergyPerMegahertzPerTick = 0.1;
+    public static int cpuFrequencyTier1 = 50_000_000;
+    public static int cpuFrequencyTier2 = 100_000_000;
+    public static int cpuFrequencyTier3 = 200_000_000;
+    public static int cpuFrequencyTier4 = 400_000_000;
     public static int gpuEnergyPerTickTier1 = 2;
     public static int gpuEnergyPerTickTier2 = 3;
     public static int gpuEnergyPerTickTier3 = 5;
@@ -56,6 +59,7 @@ public final class Config {
 
     public static String blockOperationsModuleToolTier = Tiers.DIAMOND.name();
     public static long soundCardCoolDownSeconds = 2;
+    public static int vmTimeQuotaMs = 25;
 
     public static UUID fakePlayerUUID = UUID.fromString("e39dd9a7-514f-4a2d-aa5e-b6030621416d");
     public static int projectorAverageMaxBytesPerSecond = 160 * 1024;

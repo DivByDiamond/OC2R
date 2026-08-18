@@ -102,13 +102,13 @@ public final class Items {
                             DyeColor.RED));
 
     public static final DeferredItem<CPUItem> CPU_TIER_1 =
-            register("cpu_tier_1", () -> new CPUItem(25_000_000));
+            register("cpu_tier_1", () -> new CPUItem(Config.cpuFrequencyTier1));
     public static final DeferredItem<CPUItem> CPU_TIER_2 =
-            register("cpu_tier_2", () -> new CPUItem(50_000_000));
+            register("cpu_tier_2", () -> new CPUItem(Config.cpuFrequencyTier2));
     public static final DeferredItem<CPUItem> CPU_TIER_3 =
-            register("cpu_tier_3", () -> new CPUItem(100_000_000));
+            register("cpu_tier_3", () -> new CPUItem(Config.cpuFrequencyTier3));
     public static final DeferredItem<CPUItem> CPU_TIER_4 =
-            register("cpu_tier_4", () -> new CPUItem(200_000_000));
+            register("cpu_tier_4", () -> new CPUItem(Config.cpuFrequencyTier4));
     public static final DeferredItem<CPUItem> CPU_TIER_INF =
             register("cpu_tier_inf", () -> new CPUItem(1_000_000_000));
     public static final DeferredItem<GPUItem> GPU_TIER_1 =

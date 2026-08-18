@@ -6,6 +6,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class VMSpec {
     public final ModConfigSpec.LongValue maxAllocatedMemory;
+    public final ModConfigSpec.IntValue vmTimeQuotaMs;
     public final ModConfigSpec.IntValue diskSizeTier1;
     public final ModConfigSpec.IntValue diskSizeTier2;
     public final ModConfigSpec.IntValue diskSizeTier3;
@@ -21,6 +22,13 @@ public class VMSpec {
                                         + " (computers/robots) at any one time (in bytes)")
                         .defineInRange(
                                 "maxAllocatedMemory", 512 * Constants.MEGABYTE, 0, Long.MAX_VALUE);
+
+        vmTimeQuotaMs =
+                builder.comment(
+                                "The amount of time (in milliseconds) a virtual machine may run"
+                                        + " per tick. Lower on weak servers, higher on powerful"
+                                        + " ones.")
+                        .defineInRange("vmTimeQuotaMs", 25, 1, Integer.MAX_VALUE);
 
         diskSizeTier1 =
                 builder.comment(
@@ -65,6 +73,7 @@ public class VMSpec {
 
     public void loadValues() {
         Config.maxAllocatedMemory = maxAllocatedMemory.get();
+        Config.vmTimeQuotaMs = vmTimeQuotaMs.get();
         Config.diskSizeTier1 = diskSizeTier1.get() * Constants.MEGABYTE;
         Config.diskSizeTier2 = diskSizeTier2.get() * Constants.MEGABYTE;
         Config.diskSizeTier3 = diskSizeTier3.get() * Constants.MEGABYTE;

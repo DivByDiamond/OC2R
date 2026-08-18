@@ -13,6 +13,7 @@ import li.cil.oc2.api.bus.device.vm.event.VMResumedRunningEvent;
 import li.cil.oc2.api.bus.device.vm.event.VMSynchronizeEvent;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.sedna.riscv.R5Board;
@@ -24,7 +25,6 @@ public class VMRunner implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final int TICKS_PER_SECOND = 20;
-    private static final int TIMESLICE_IN_MS = 500 / TICKS_PER_SECOND;
 
     private static final ExecutorService VM_RUNNERS =
             Executors.newCachedThreadPool(
@@ -62,10 +62,12 @@ public class VMRunner implements Runnable {
     public void tick() {
         rpcAdapter.tick();
 
-        cycleLimit += getCyclesPerTick();
+        final int cyclesPerTick = getCyclesPerTick();
+        cycleLimit = Math.min(cycleLimit + cyclesPerTick, 2L * cyclesPerTick);
 
         final int timeQuota =
-                timeQuotaInMillis.updateAndGet(x -> Math.min(x + TIMESLICE_IN_MS, TIMESLICE_IN_MS));
+                timeQuotaInMillis.updateAndGet(
+                        x -> Math.min(x + Config.vmTimeQuotaMs, Config.vmTimeQuotaMs));
         final boolean needsScheduling =
                 lastSchedule == null || lastSchedule.isDone() || lastSchedule.isCancelled();
         if (cycleLimit > 0 && timeQuota > 0 && needsScheduling) {
