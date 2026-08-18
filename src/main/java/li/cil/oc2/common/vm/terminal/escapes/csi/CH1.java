@@ -1,8 +1,12 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & XTRESTORE)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH1(final Terminal terminal) {
         super(terminal);
     }
@@ -12,7 +16,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         if (state.questionMark) { // XTRESTORE
             handleXTRESTORE(args[0]);
         } else if (state.dollarSign) { // DECCARA
-            System.out.println("DECCARA is not implemented");
+            LOGGER.warn("DECCARA is not implemented");
         } else { /* DECSTBM with 0 or 1 args = reset to full screen */
             handleDECSTBM(args, argCount);
         }

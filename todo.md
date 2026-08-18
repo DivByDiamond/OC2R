@@ -142,7 +142,7 @@
 
 ---
 
-## 8. Screen↔Container auto-регистрация
+## 8. Screen↔Container auto-регистрация ✅ — DONE
 
 **Опционально**: вместо ручного `event.register(CONTAINER.get(), Screen::new)` для каждого —
 DSL через ScreenRegistry:
@@ -150,6 +150,8 @@ DSL через ScreenRegistry:
 ScreenRegistry.register(event, COMPUTER, ComputerContainerScreen::new);
 ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 ```
+
+- [x] Создан `ScreenRegistry` (DSL поверх `RegisterMenuScreensEvent`), `Containers.registerScreens` переведён на него
 
 ---
 
@@ -443,7 +445,7 @@ DeviceBusElement (каждый блок/элемент)
 - [ ] **Интеграция с монитором**: `MonitorDevice` спрашивает у bus-контроллера есть ли GPU → если нет, framebuffer не монтируется (чёрный экран). Если есть — `SimpleFramebufferDevice(width, height)` из GPU
 - [ ] **Device-tree**: `SimpleFramebufferDeviceProvider` — `width`/`height`/`stride` из GPU, а не захардкоженные 640×480
 - [ ] **Без GPU → UART-терминал**: монитор не показывает framebuffer, но текстовый терминал (UART) работает
-- [ ] Конфиг: `gpuEnergyPerTickTier1..4` в `EnergySpec`
+- [x] Конфиг: `gpuEnergyPerTickTier1..4` в `EnergySpec`
 - [ ] Build + проверка в игре (монитор с GPU T1/T2/T3/T4, без GPU — чёрный)
 
 ---
@@ -452,7 +454,7 @@ DeviceBusElement (каждый блок/элемент)
 
 **Проблема**: частоты захардкожены в `Items.java` (25/50/100/200/1000 MHz), конфиг не реализован (`Config.java:12` — TODO). `timeQuota` 25 ms захардкожен. На T_INF cycleLimit копится бесконечно.
 
-- [ ] **Новые тиры CPU** (минимальный не 25, а 50 MHz):
+- [x] **Новые тиры CPU** (минимальный не 25, а 50 MHz):
 
 | Тир | Частота | Описание |
 |---|---|---|
@@ -462,10 +464,10 @@ DeviceBusElement (каждый блок/элемент)
 | CPU T4 | 400 MHz | Эндгейм (было 200) |
 | CPU T_INF | 1000 MHz | Creative (без изменений) |
 
-- [ ] **Конфиг частот**: реализовать `cpuFrequencyTier1/2/3/4` в `GameplaySpec` (убрать TODO из `Config.java:12`). `Items.java` читает из конфига, а не захардкоженные константы
-- [ ] **`timeQuota` в конфиг**: вынести `TIMESLICE_IN_MS = 25` из `VMRunner.java` в `Config.vmTimeQuotaMs`. На слабых серверах — снизить, на мощных — поднять
-- [ ] **Cap на накопление `cycleLimit`**: сейчас `cycleLimit` растёт без ограничений → на T_INF копится «долг» циклов. Добавить cap: `cycleLimit = min(cycleLimit + getCyclesPerTick(), 2 × getCyclesPerTick())` — не больше 2 тиков вперёд
-- [ ] Обновить крафты `recipe/cpu_tier_1..4.json` под новые частоты
+- [x] **Конфиг частот**: реализовать `cpuFrequencyTier1/2/3/4` в `GameplaySpec` (убрать TODO из `Config.java:12`). `Items.java` читает из конфига, а не захардкоженные константы
+- [x] **`timeQuota` в конфиг**: вынести `TIMESLICE_IN_MS = 25` из `VMRunner.java` в `Config.vmTimeQuotaMs`. На слабых серверах — снизить, на мощных — поднять
+- [x] **Cap на накопление `cycleLimit`**: сейчас `cycleLimit` растёт без ограничений → на T_INF копится «долг» циклов. Добавить cap: `cycleLimit = min(cycleLimit + getCyclesPerTick(), 2 × getCyclesPerTick())` — не больше 2 тиков вперёд
+- [x] Обновить крафты `recipe/cpu_tier_1..4.json` под новые частоты
 - [ ] Build + проверка в игре (разные CPU, баланс энергии/производительности)
 
 ---
@@ -596,3 +598,111 @@ DeviceBusElement (каждый блок/элемент)
 - [ ] Механизм «внешних образов» уже заложен: `OnyxOSFirmware`/`OnyxOSBlockDeviceData` читают `config/oc2r/*` с fallback на jar (коммит `0b90b3b`). Блок должен использовать тот же источник, но с выбором конкретного файла.
 - [ ] Альтернатива/расширение: скачивание по URL (сеть из `inet/`) в `config/oc2r/` и прошивка.
 - [ ] Build + проверка в игре: прошил флешку из файла → вставил в комп → OnyxOS грузится с кастомным kernel/rootfs.
+
+## 31. Аудит VT100-терминала (2026-08-18, ветка work, HEAD 75c8cc4)
+
+Аудит модуля `src/main/java/li/cil/oc2/common/vm/terminal/**`. Формат: `[файл:строка]`.
+
+### Блокеры
+
+- [ ] **Б1 — `clearLine()` сбрасывает текущий цвет переднего плана**
+  `[buffer/TerminalBuffer.java:65]` — `terminal.currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;` внутри очистки строки.
+  После EL/ED/DL программа в truecolor/256-цветах начинает писать в 16-цветную палитру.
+  Фикс: удалить строку 65 + тест: `CSI 38;2;r;g;b` + `CSI K` + символ → цвет не меняется.
+
+- [x] **Б2 — SU (CSI S) — no-op, пока scrollback не заполнен**
+  `[buffer/TerminalBufferScrolling.java:66-68]`, `[escapes/csi/CH8.java:18-20]`
+  Условие `lastRowToDisplay == HEIGHT * SCROLL_BACK_COUNT` ложно на свежем терминале,
+  а CH8 не вызывает `incrementLastLineToDisplay()` → `printf` + `CSI S` не двигает экран.
+  Фикс: при `lastRowToDisplay < max` — `incrementLastLineToDisplay()`, физический сдвиг — при достижении max.
+
+- [x] **Б3 — dirty-маска `shiftMainBuffer` мапит не те строки**
+  `[buffer/TerminalLineShifter.java:126-128]`
+  `i` — абсолютный индекс строки буфера, а формула — копия из `setChar` для относительной.
+  Правильно: `localI = i + HEIGHT - lastRowToDisplay`. Текущая даёт смещение на `(max - HEIGHT)`.
+  Эффект: после IL/DL/SU/SD с маргинами (при выросшем scrollback) видимые строки не перерисовываются.
+
+### Major
+
+- [ ] **ED (CSI J) case 2 двигает курсор домой**
+  `[TerminalBuffer.java:41]`, `[escapes/csi/ED.java:28-29]`
+  `clear()` вызывает `setCursorPos(0,0)`. По VT100 ED не должен трогать курсор.
+  Фикс: отдельный `clearScreen()` без перемещения курсора.
+
+- [ ] **SGR 38/48 обрывает последовательность**
+  `[escapes/csi/SGR.java:47]`
+  `return;` после обработки 38/48 — `CSI 38;5;196;1m` теряет bold, `...;48;5;52m` теряет фон.
+  Фикс: `i = index; continue;` вместо `return`.
+
+- [x] **Не-ASCII ввод обрезается до одного байта**
+  `[client/gui/widget/terminal/TerminalKeyboardHandler.java:17,41]`, `[TerminalIO.java:99-108]`
+  `putInput((byte) ch)` — кириллица/вставка из буфера → моджибек. Фикс: UTF-8-кодировать.
+
+- [x] **RIS не сбрасывает часть состояния**
+  `[escapes/index/RIS.java:10-45]`
+  Не сбрасываются: `scrollFirst`/`scrollLast`, `savedX`/`savedY`, `altSavedX`/`altSavedY`, `cursorMode`, очередь `input`.
+
+- [x] **SD/RI сдвигают весь буфер — втягивают scrollback в экран**
+  `[buffer/TerminalBufferScrolling.java:84-100]`
+  `shiftDown` всегда сдвигает `[0..478]`; при выросшем scrollback верхняя строка экрана заполняется
+  содержимым scrollback вместо пустой. Верный диапазон — видимая область `[L-24 .. L-1]`.
+
+- [x] **Гонка на серверной очереди input**
+  `[TerminalIO.java:121-135]`, `[TerminalOutput.java:43-46]`
+  `putResponse`/`enqueueInput` пишут под `TerminalOutput.lock`, а `readInput`/`putInput` — под `TerminalIO.lock`.
+  Разные лока, `ByteArrayFIFOQueue` не потокобезопасен → потерянные/перемешанные байты при DSR-запросе + вводе.
+  Фикс: единый лок на оба пути.
+
+- [x] **System.out.println в продакшн-коде**
+  `[TerminalOutput.java:122]`, `[CSIManager.java:164]`, `[CH1.java:15]`, `[CH4.java:15,17,19]`,
+  `[CH5.java:15,17,19,38]`, `[CH7.java:27,29,31]`, `[CH8.java:14,16]`, `[CH9.java:13,15]`,
+  `[CH10.java:15]`, `[ED.java:13]`, `[CH6.java:17,19]`, `[modes/impl/ImplementedPrivateModes.java:94]`
+  Печать на каждый нераспознанный байт/режим → консольный спам. Заменить на логгер.
+
+### Minor
+
+- [ ] **TBC очищает только main tabs, HTS пишет в altTabs**
+  `[escapes/csi/TBC.java:13-21]`, `[escapes/HTS.java:8-10]` — согласовать.
+
+- [ ] **getInput() щёлкает вид вниз без пометки dirty**
+  `[TerminalIO.java:42-43]` — после прокрутки вверх + нажатия клавиши экран остаётся старым.
+
+- [ ] **Dirty-маска сырым `y` при прокрутке**
+  `[CH10.java:104]`, `[CH11.java:91,162]`, `[ECH.java:52]`, `[TerminalBuffer.java:120]`
+  Используют `1 << y` вместо `localY`-трансформации из `setChar` (TerminalBufferWriter.java:138-143).
+
+- [ ] **`ColorData()` — локальная переменная `Mode` вместо поля**
+  `[color/TerminalColors.java:117-123]` — `Mode` остаётся null, рендер может упасть по NPE.
+
+- [ ] **Двойной `lock.lock()`**
+  `[TerminalOutput.java:43,46]` — реентрантный, не крашит, но маскирует границы. Убрать внутренний.
+
+- [ ] **Мёртвые поля Terminal**
+  `[Terminal.java:25,78-81]` — `Use1006`, `continuationByte`, `bytesRead`, `bytesToRead`, `unicode` — удалить.
+
+- [ ] **Сериализуемость/размер NBT терминала**
+  `[Terminal.java:50]` — публичное `ByteArrayFIFOQueue input` сериализуется (RobotInitializationMessage.java:60);
+  38400-элементные массивы → тяжёлый пакет. Проверить.
+
+### Nit
+
+- [ ] **Дубликат square-глифа в FontAtlas** `[fonts/FontAtlas.java:52-56]`
+- [ ] **Дубликат fw_jump.bin в 3 местах + легаси onyx-kernel**
+  `src/main/resources/onyxos/`, `src/main/resources/generated/`, `src/main/scripts/firmware_files/` — оставить один источник.
+- [ ] **Константы PrivateMode/Mode не используются** — CH2/CH3 захардкожены, заменить на константы.
+
+### Архитектура
+
+- [ ] **Дублирование ~60-case таблиц режимов** в CH1/CH2/CH3/CH6 — вынести в один `ModeTable`.
+- [ ] **Dirty-механика в buffer-слое** — `TerminalBuffer`/`TerminalLineShifter` знают про `renderers`
+  и `getDirtyMask` (TerminalBuffer.java:42,118-120, TerminalLineShifter.java:80-84,131-135).
+  Перенести в render-слой.
+- [ ] **Договор молчания по `args`/`argCount`** — CSIManager клампает до 10 и подмешивает пустой нулевой слот;
+  каждый хендлер сам фильтрует `args[i]==0`. Нормализовать (0 → default) в CSIManager.
+
+### Тесты
+
+- [ ] **Снять `@Disabled` с TerminalBufferTest** — декомпозировать `@OnlyIn(Dist.CLIENT)` с `Terminal`
+  (оставить только на `getRenderer()`/`clientTick()`), добавить assert'ы (сейчас тел нет).
+- [ ] **Покрыть критичные пути:** CSI-парсер, DECSTBM+DECOM, IL/DL/SU/SD с count>1 и маргинами,
+  alt-буфер 47/1047/1049, SGR 38;2/38;5, pending-wrap (колонка 80), dirty-маску при прокрутке.

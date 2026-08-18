@@ -21,6 +21,14 @@ public class RIS {
         terminal.currentPrivateModeState = new PrivateModeState();
         terminal.lastRowToDisplay = 24;
         terminal.lastRowToDisplayMax = 24;
+        terminal.scrollFirst = 0;
+        terminal.scrollLast = Terminal.HEIGHT - 1;
+        terminal.savedX = 0;
+        terminal.savedY = 0;
+        terminal.altSavedX = 0;
+        terminal.altSavedY = 0;
+        terminal.cursorMode = TerminalColors.CursorMode.DEFAULT;
+        terminal.input.clear();
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;

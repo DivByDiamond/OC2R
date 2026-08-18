@@ -1,8 +1,12 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ED extends CSISequenceHandler {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public ED(final Terminal terminal) {
         super(terminal);
     }
@@ -11,7 +15,7 @@ public class ED extends CSISequenceHandler {
     public void execute(int[] args, int argCount, CSIState state) {
         int x = Math.min(terminal.x, Terminal.WIDTH - 1);
         if (state.questionMark) {
-            System.out.println("DECSED is not implemented");
+            LOGGER.warn("DECSED is not implemented");
         } else {
             switch (args[0]) {
                 case 0 -> { // From cursor to end of screen

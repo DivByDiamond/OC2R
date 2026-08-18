@@ -1,10 +1,14 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH6
         extends CSISequenceHandler { // Combined Handler 6 (XTSAVE, XTSHIFTESCAPE, DECSLRM, and
     // SCOSC)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH6(final Terminal terminal) {
         super(terminal);
     }
@@ -14,9 +18,9 @@ public class CH6
         if (state.questionMark) { // XTSAVE
             handleXTSAVE(args[0]);
         } else if (state.greaterThan) { // XTSHIFTESCAPE
-            System.out.println("XTSHIFTESCAPE not implemented");
+            LOGGER.warn("XTSHIFTESCAPE not implemented");
         } else if (argsCount == 2) { // DECSLRM
-            System.out.println("DECSLRM not implemented");
+            LOGGER.warn("DECSLRM not implemented");
         } else if (argsCount == 0) { // SCOSC
             if (!terminal.currentPrivateModeState.DECLRMM) {
                 terminal.savedX = terminal.x;

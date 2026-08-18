@@ -14,7 +14,7 @@ final class TerminalKeyboardHandler {
 
     public boolean charTyped(final char ch, final int modifier) {
         if (modifier == 0 || modifier == GLFW.GLFW_MOD_SHIFT) {
-            terminal.io.putInput((byte) ch);
+            terminal.io.putInput(String.valueOf(ch));
         }
         return true;
     }
@@ -37,9 +37,7 @@ final class TerminalKeyboardHandler {
             final String value = clipboardSupplier.get();
             boolean bracketed = terminal.currentPrivateModeState.SET_BRACKETED_PASTE;
             if (bracketed) terminal.io.putInput("\033[200~");
-            for (final char ch : value.toCharArray()) {
-                terminal.io.putInput((byte) ch);
-            }
+            terminal.io.putInput(value);
             if (bracketed) terminal.io.putInput("\033[201~");
         } else {
             byte[] sequence;

@@ -2,10 +2,14 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH7
         extends CSISequenceHandler { // Combined Handler 7 (XTVERSION, DECLL, DECSCUSR, DECSCA, and
     // XTPOPSGR)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH7(final Terminal terminal) {
         super(terminal);
     }
@@ -24,11 +28,11 @@ public class CH7
             }
             terminal.cursorMode = cursorStyle;
         } else if (state.quote) { // DECSCA
-            System.out.println("DECSCA not implemented");
+            LOGGER.warn("DECSCA not implemented");
         } else if (state.hash) { // XTPOPSGR
-            System.out.println("XTPOPSGR not implemented");
+            LOGGER.warn("XTPOPSGR not implemented");
         } else { // DECLL
-            System.out.println("DECLL not implemented");
+            LOGGER.warn("DECLL not implemented");
         }
     }
 }

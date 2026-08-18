@@ -1,10 +1,14 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH5
         extends CSISequenceHandler { // Combined Handler 5 (XTSMPOINTER, DECSTR, DECSCL, and
     // DECRARA)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH5(final Terminal terminal) {
         super(terminal);
     }
@@ -12,11 +16,11 @@ public class CH5
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.greaterThan) { // XTSMPOINTER
-            System.out.println("XTSMPOINTER not implemented");
+            LOGGER.warn("XTSMPOINTER not implemented");
         } else if (state.exclamation) { // DECSTR
-            System.out.println("DECSTR not implemented");
+            LOGGER.warn("DECSTR not implemented");
         } else if (state.quote) { // DECSCL
-            System.out.println("DECSCL not implemented");
+            LOGGER.warn("DECSCL not implemented");
         } else if (state.dollarSign) { // DECRQM
             int mode = args[0];
             if (state.questionMark) { // DECSET/DECRST
@@ -35,7 +39,7 @@ public class CH5
                                 + "$y");
             }
         } else { // XTPUSHSGR
-            System.out.println("XTPUSHSGR not implemented");
+            LOGGER.warn("XTPUSHSGR not implemented");
         }
     }
 }

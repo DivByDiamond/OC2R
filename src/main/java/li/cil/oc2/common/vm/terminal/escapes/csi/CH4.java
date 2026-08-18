@@ -1,10 +1,14 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH4
         extends CSISequenceHandler { // Combined Handler 4 (XTWINOPS, XTSMTITLE, DECSWBV, and
     // DECRARA)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH4(final Terminal terminal) {
         super(terminal);
     }
@@ -12,11 +16,11 @@ public class CH4
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.greaterThan) { // XTSMTITLE
-            System.out.println("XTSMTITLE is not implemented");
+            LOGGER.warn("XTSMTITLE is not implemented");
         } else if (state.space) { // DECSWBV
-            System.out.println("DECSWBV is not implemented yet");
+            LOGGER.warn("DECSWBV is not implemented yet");
         } else if (state.dollarSign) { // DECRARA
-            System.out.println("DECRARA is not implemented");
+            LOGGER.warn("DECRARA is not implemented");
         } else { // XTWINOPS
             switch (args[0]) {
                 case 14 ->

@@ -7,8 +7,12 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.EscapeUtilities;
 import li.cil.oc2.common.vm.terminal.escapes.index.IND;
 import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CSIManager {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private final int[] args = new int[10];
     private int argCount = 0;
     private boolean questionMark = false;
@@ -161,7 +165,7 @@ public class CSIManager {
             if (handler != null) {
                 handler.execute(args, argCount, state);
             } else {
-                System.out.println("Control sequence: " + ch);
+                LOGGER.warn("Control sequence: {}", ch);
             }
         }
     }

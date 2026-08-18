@@ -3,8 +3,12 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and XTPUSHCOLORS)
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CH10(final Terminal terminal) {
         super(terminal);
     }
@@ -12,7 +16,7 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.hash) { // XTPUSHCOLORS
-            System.out.println("XTPUSHCOLORS not implemented");
+            LOGGER.warn("XTPUSHCOLORS not implemented");
         } else { // DCH
             int chars = Math.min(Math.max(args[0], 1), Terminal.WIDTH - terminal.x);
             int startIndex =

@@ -84,17 +84,15 @@ class TerminalBufferScrolling {
     public void shiftDown(int count) {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shiftLines(terminal.scrollFirst, terminal.scrollLast - 1, count);
+        } else if (terminal.scrollFirst == 0 && terminal.scrollLast == Terminal.HEIGHT - 1) {
+            shiftLines(
+                    terminal.lastRowToDisplay - Terminal.HEIGHT,
+                    terminal.lastRowToDisplay - 1,
+                    count);
         } else {
             shiftLines(
-                    terminal.scrollFirst != 0
-                            ? (terminal.scrollFirst
-                                    + (terminal.lastRowToDisplayMax - Terminal.HEIGHT))
-                            : 0,
-                    terminal.scrollLast != Terminal.HEIGHT - 1
-                            ? terminal.scrollLast
-                                    + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
-                                    - 1
-                            : ((Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) - 1) - 1,
+                    terminal.scrollFirst + (terminal.lastRowToDisplayMax - Terminal.HEIGHT),
+                    terminal.scrollLast + (terminal.lastRowToDisplayMax - Terminal.HEIGHT) - 1,
                     count);
         }
     }

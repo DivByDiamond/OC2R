@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
@@ -13,7 +14,7 @@ public class TerminalIO {
 
     TerminalIO(final Terminal terminal) {
         this.terminal = terminal;
-        this.output = new TerminalOutput(terminal);
+        this.output = new TerminalOutput(terminal, lock);
     }
 
     public int readInput() {
@@ -68,8 +69,8 @@ public class TerminalIO {
         lock.lock();
         try {
 
-            putInput(ByteBuffer.wrap(value.getBytes()));
-        
+            putInput(ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8)));
+
         } finally {
             lock.unlock();
         }
@@ -119,7 +120,12 @@ public class TerminalIO {
     }
 
     private void enqueueInput(final byte value) {
-        terminal.input.enqueue(value);
+        lock.lock();
+        try {
+            terminal.input.enqueue(value);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void putResponse(final String value) {
