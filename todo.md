@@ -680,16 +680,20 @@ DeviceBusElement (каждый блок/элемент)
 - [x] **Мёртвые поля Terminal**
   `[Terminal.java:25,78-81]` — `Use1006`, `continuationByte`, `bytesRead`, `bytesToRead`, `unicode` — удалить.
 
-- [ ] **Сериализуемость/размер NBT терминала**
-  `[Terminal.java:50]` — публичное `ByteArrayFIFOQueue input` сериализуется (RobotInitializationMessage.java:60);
-  38400-элементные массивы → тяжёлый пакет. Проверить.
+- [x] **Сериализуемость/размер NBT терминала**
+  `[Terminal.java:50]` — буфер/alt-массивы и `input` помечены `transient` (Ceres создаёт инстанс через
+  no-arg конструктор, экран сбрасывается при загрузке). NBT ~512 КиБ → ~2 КиБ на снимок.
+  `input` и так не сериализовался (поля fastutil transient).
 
 ### Nit
 
-- [ ] **Дубликат square-глифа в FontAtlas** `[fonts/FontAtlas.java:52-56]`
-- [ ] **Дубликат fw_jump.bin в 3 местах + легаси onyx-kernel**
-  `src/main/resources/onyxos/`, `src/main/resources/generated/`, `src/main/scripts/firmware_files/` — оставить один источник.
-- [ ] **Константы PrivateMode/Mode не используются** — CH2/CH3 захардкожены, заменить на константы.
+- [x] **Дубликат square-глифа в FontAtlas** `[fonts/FontAtlas.java:52-56]`
+  Удалён второй `glyphs.add(square)` — при resize UV делился на 2 дважды.
+- [x] **Дубликат fw_jump.bin в 3 местах + легаси onyx-kernel**
+  `src/main/resources/generated/` удалён (gitignored мёртвый вес, легаси onyx-kernel нигде не читается);
+  копия из `scripts/firmware_files/` удалена — `packageScripts` теперь кладёт fw_jump.bin в zip из `onyxos/`.
+  Один источник: `src/main/resources/onyxos/fw_jump.bin`.
+- [x] **Константы PrivateMode/Mode не используются** — CH2/CH3 захардкожены, заменить на константы.
 
 ### Архитектура
 
