@@ -779,3 +779,34 @@ DeviceBusElement (каждый блок/элемент)
 - [ ] **Redstone Interface: индекс сторон** — `setRedstoneOutput`/`getRedstoneOutput` используют `side.getDirection()` (мировой индекс),
   а мировой считыватель `getOutputForDirection` конвертит world→local (`HorizontalBlockUtils.toLocal`) →
   при FACING != NORTH выходы/чтения расходятся. Нужно решить: Side = world-фикс или local-относительный, и привести всё к одному.
+
+## 33. Документация кода + разбор NOPMD-маркеров (2026-08-19, ветка work, HEAD 8168a1f)
+
+PMD обнулён (423→0), но ценой ~81 inline `// NOPMD`-маркера и отсутствия документации на сложной логике.
+Два направления: (а) полноценные Javadoc'и, (б) пересмотр NOPMD, где он прикрывает неудачный рефакторинг.
+
+### Документация (Javadoc)
+
+- [ ] **Классы без шапки** — добавить Javadoc на верх класса (назначение, инварианты, threading-модель) для:
+  `EnergyTransferManager` (сетевое распределение энергии раз в тик, pull/redistribute/push), `BusCableBlockEntity`,
+  `NetworkConnectorConnectionManager`, `SwitchHostTable`/`SwitchPortManager`, `MonitorBreak`/`MonitorMerge`/`MonitorRepartition`
+  (алгоритм поиска прямоугольника: BFS-расширение, приоритет corners), `TerminalOutput`/`CSIManager`/`SGR` (конечный автомат VT100,
+  фазы ESC/CSI/OSC, что делает каждый диспетчер), `ModeTable` (таблица режимов ANSI), `EstablishedState` (конечный автомат TCP-сессии),
+  `SimpleFramebufferDevice` (dirty-слои и кодирование кадров), `AbstractContainer`/`AbstractMachineTerminalContainer` (слотовая логика),
+  `ICaptureInputStateStorage` (контракт захвата ввода).
+- [ ] **Сложные методы** — Javadoc/комментарии перед сложной логикой: `distribute`/`redistribute`/`collectNetwork` (энергия),
+  `findBestRectangle`/`expandBlock` (монитор-мультиблок), `selectStyle`/`handleExtendedColor` (SGR), `playSound` (SoundCardItemDevice),
+  `stackIntoExistingSlots` (контейнеры), `renderBackground` (run-length отрисовка).
+- [ ] Правило: документация на том же языке, что и остальной код (в проекте вперемешку; выбрать RU/EN и вести в одном стиле).
+
+### Разбор NOPMD
+
+- [ ] Пересмотреть ~81 маркер, заменить где возможно на реальный код:
+  - `// NOPMD getter API ... renaming is API churn` (6 шт: `getCaptureInputState`/`getPowerState`) — либо переименовать
+    в `isXxx` со всеми каллерами (~20 файлов), либо вынести в интерфейс с нормальной Javadoc-спецификацией контракта.
+  - `// NOPMD 10-case VT100 ... dispatch` (4 шт: `dispatch`, `handleSingleCharEscape`, `handleControlChar`, `handleModifier`) —
+    порог PMD = 10, а у них ровно 10 веток; можно вынести каждую группу case'ов в отдельный метод/таблицу, чтобы уйти ниже порога.
+  - `// NOPMD ... depends on loop iteration` (26 шт) — проверить, нельзя ли вынести аллокацию из цикла (пулы, mutable-буферы);
+    где зависит от итерации — оставить, но с Javadoc-обоснованием вместо однострочника.
+  - `// NOPMD immutable after init` (CH2) и `// NOPMD allocation depends on loop iteration` — свести к одному стилю формулировок.
+- [ ] Цель: после рефакторинга повторить `./gradlew pmdMain` (0) + `checkstyleMain` (0) + `test`.
