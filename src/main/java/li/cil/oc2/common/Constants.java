@@ -59,6 +59,8 @@ public final class Constants {
             key("gui.{mod}.computer.bus_state.multiple_controllers");
     public static final String COMPUTER_ERROR_NOT_ENOUGH_ENERGY =
             key("gui.{mod}.computer.error.not_enough_energy");
+    public static final String COMPUTER_ERROR_NOT_CONNECTED =
+            key("gui.{mod}.computer.error.not_connected");
     public static final String MACHINE_OPEN_INVENTORY_CAPTION =
             key("gui.{mod}.machine.open_inventory.capt");
     public static final String MACHINE_OPEN_TERMINAL_CAPTION =

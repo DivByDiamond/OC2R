@@ -1,6 +1,5 @@
 {
   "item_group.oc2r.common": "开放式电脑 II",
-
   "block.oc2r.computer": "电脑",
   "block.oc2r.computer.desc": "运行闪存或硬盘中的软件。",
   "block.oc2r.computer.preconfigured": "电脑（已预配置）",
@@ -30,7 +29,6 @@
   "block.oc2r.internet_gateway.desc": "用于访问因特网。",
   "block.oc2r.speaker": "扬声器",
   "block.oc2r.speaker.desc": "播放连接到总线的设备发出的声音（音调和PCM音频）。",
-
   "item.oc2r.wrench": "螺丝刀扳手",
   "item.oc2r.wrench.desc": "配置或（在潜行时）拆卸设备。",
   "item.oc2r.manual": "电脑操作员手册",
@@ -80,12 +78,10 @@
   "item.oc2r.network_tunnel_module.desc": "与所连接的设备进行网络数据包的收发。",
   "item.oc2r.internet_card": "因特网卡",
   "item.oc2r.internet_card.desc": "用于访问因特网",
-
   "item.oc2r.transistor": "晶体管",
   "item.oc2r.transistor.desc": "合成用材料。",
   "item.oc2r.circuit_board": "电路板",
   "item.oc2r.circuit_board.desc": "合成用材料。",
-
   "item.oc2r.silicon": "硅",
   "item.oc2r.silicon.desc": "合成用材料。",
   "item.oc2r.silicon_blend": "硅混合物",
@@ -94,10 +90,7 @@
   "item.oc2r.silicon_wafer.desc": "可用于制造处理器的硅晶圆。",
   "item.oc2r.raw_silicon_wafer": "未加工硅晶圆",
   "item.oc2r.raw_silicon_wafer.desc": "带有小瑕疵的硅晶圆，需要加热以去除。",
-
-
   "entity.oc2r.robot": "机器人",
-
   "gui.oc2r.computer.error.unknown": "未知错误",
   "gui.oc2r.computer.error.missing_firmware": "缺少固件",
   "gui.oc2r.computer.error.insufficient_memory": "内存不足",
@@ -106,20 +99,16 @@
   "gui.oc2r.computer.bus_state.multiple_controllers": "有多个总线控制器",
   "gui.oc2r.computer.error.not_enough_energy": "能量不足",
   "gui.oc2r.computer.error.missing_cpu": "缺少CPU",
-
   "gui.oc2r.computer.capture_input.capt": "捕获输入",
   "gui.oc2r.computer.capture_input.desc": "若启用，鼠标移动到终端内时将捕获所有的输入，包括ESC键。",
   "gui.oc2r.computer.power.capt": "切换电源状态",
   "gui.oc2r.computer.power.desc": "开启或关闭电脑。",
-
   "gui.oc2r.machine.open_inventory.capt": "打开物品栏",
   "gui.oc2r.machine.open_terminal.capt": "打开终端",
-
   "gui.oc2r.device_type.memory": "内存条",
   "gui.oc2r.device_type.hard_drive": "硬盘",
   "gui.oc2r.device_type.flash_memory": "闪存",
   "gui.oc2r.device_type.card": "扩展卡",
-
   "gui.oc2r.file_chooser.title.load": "打开文件",
   "gui.oc2r.file_chooser.title.save": "保存文件",
   "gui.oc2r.file_chooser.text_field.filename": "文件名称",
@@ -127,26 +116,20 @@
   "gui.oc2r.file_chooser.confirm_button.save": "保存",
   "gui.oc2r.file_chooser.confirm_button.overwrite": "覆盖",
   "gui.oc2r.file_chooser.cancel_button": "取消",
-
   "gui.oc2r.network_interface_card.side_state": "可连接性：%s",
   "gui.oc2r.network_interface_card.connectivity.enabled": "已启用",
   "gui.oc2r.network_interface_card.connectivity.disabled": "已禁用",
   "gui.oc2r.network_interface_card.info": "拖动以旋转。点击面以切换可连接性。",
-
   "gui.oc2r.keyboard.close_info": "右键点击以关闭。",
-
   "gui.oc2r.network_tunnel.link": "连接",
-
   "manual.oc2r.home": "主页",
   "manual.oc2r.blocks": "方块",
   "manual.oc2r.items": "物品",
-
   "message.oc2r.connector.error.full": "无法连接更多线缆。",
   "message.oc2r.connector.error.too_far": "连接器间距离过远。",
   "message.oc2r.connector.error.obstructed": "连接器间有阻挡。",
   "message.oc2r.import_file.file_too_large": "文件过大",
   "message.oc2r.invalid_facade_block": "该方块不能被用作伪装。",
-
   "tooltip.oc2r.device_needs_reboot": "需要重启。",
   "tooltip.oc2r.flash_memory_missing": "引导启动时需要内含固件的闪存。",
   "tooltip.oc2r.memory_missing": "需要内存以加载并执行闪存中的内容才可引导启动。",
@@ -157,14 +140,14 @@
   "tooltip.oc2r.confirm": "确认",
   "tooltip.oc2r.cancel": "取消",
   "tooltip.oc2r.network_tunnel_id": "隧道id：%s",
-    "tooltip.oc2r.internet.disabled": "请注意，对因特网的访问当前是禁用的。您可以在mod的配置文件中将其启用，但这么做可能会有潜在的安全隐患。请确保与您一同游玩的玩家都可信任，并且/或者在配置文件中限制可连接的地址。",
+  "tooltip.oc2r.internet.disabled": "请注意，对因特网的访问当前是禁用的。您可以在mod的配置文件中将其启用，但这么做可能会有潜在的安全隐患。请确保与您一同游玩的玩家都可信任，并且/或者在配置文件中限制可连接的地址。",
   "tooltip.oc2r.internet.energy_per_packet": "每数据包发送能耗：%s",
-
   "subtitles.oc2r.computer": "电脑风扇运作",
   "subtitles.oc2r.floppy": "读写软盘",
   "subtitles.oc2r.floppy_eject": "弹出软盘",
   "subtitles.oc2r.floppy_insert": "插入软盘",
   "subtitles.oc2r.hdd": "读写硬盘",
   "subtitles.oc2r.post_beep": "电脑 POST 蜂鸣",
-  "subtitles.oc2r.sound_card_beep": "声卡蜂鸣"
+  "subtitles.oc2r.sound_card_beep": "声卡蜂鸣",
+  "gui.oc2r.computer.error.not_connected": "未连接电脑"
 }

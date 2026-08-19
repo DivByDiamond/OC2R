@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "oc2r:item/memory_extra_large"
+    "layer0": "oc2r:item/components/memory/memory_extra_large"
   }
 }

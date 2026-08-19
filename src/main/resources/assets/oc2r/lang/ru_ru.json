@@ -161,5 +161,6 @@
   "tooltip.oc2r.flash_memory_missing": "Карта памяти содержит прошивку, необходимую для загрузки.",
   "tooltip.oc2r.hard_drive_missing": "Большинству ОС для загрузки необходима файловая система.",
   "tooltip.oc2r.memory_missing": "Оперативная память требуется для загрузки прошивки из карты памяти и последующей работы.",
-  "tooltip.oc2r.network_tunnel_id": "Туннель: %s"
+  "tooltip.oc2r.network_tunnel_id": "Туннель: %s",
+  "gui.oc2r.computer.error.not_connected": "Компьютер не подключён"
 }

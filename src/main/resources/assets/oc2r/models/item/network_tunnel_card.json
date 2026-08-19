@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "oc2r:item/network_tunnel_card"
+    "layer0": "oc2r:item/cards/network_tunnel_card"
   }
 }

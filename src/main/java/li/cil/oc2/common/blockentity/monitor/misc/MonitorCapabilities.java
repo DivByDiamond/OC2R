@@ -27,7 +27,7 @@ final class MonitorCapabilities {
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlock(
                 Capabilities.Device.BLOCK,
-                (level, pos, state, be, side) -> getDevice(state, be, side),
+                (level, pos, state, be, side) -> getDevice(level, pos, state, be, side),
                 Blocks.MONITOR.get());
         if (Config.monitorsUseEnergy()) {
             event.registerBlock(
@@ -39,17 +39,25 @@ final class MonitorCapabilities {
 
     @Nullable
     private static Device getDevice(
-            final BlockState state, final BlockEntity be, final Direction side) {
+            final Level level,
+            final BlockPos pos,
+            final BlockState state,
+            final BlockEntity be,
+            final Direction side) {
         if (!(be instanceof final MonitorBlockEntity self)) {
             return null;
         }
-        // Only the origin (master) of a multiblock exposes the device group.
-        // Sub-blocks have no devices of their own; their bus connectivity is
-        // provided by the origin's group via the multiblock.
-        if (MonitorMultiblock.isOrigin(state) && side == state.getValue(MonitorBlock.FACING)) {
-            return self.stateManager.deviceGroup;
+        // Bus connectivity is available from the rear of every block of a monitor
+        // multiblock. Sub-blocks don't own a separate device group; route their
+        // capability to the live origin instead. This is important when the bus
+        // cable is attached to a non-origin monitor block.
+        if (side == state.getValue(MonitorBlock.FACING)) {
+            return null;
         }
-        return null;
+
+        final MonitorBlockEntity origin =
+                MonitorMultiblock.getOriginEntity(level, pos, state);
+        return origin == null ? null : origin.stateManager.deviceGroup;
     }
 
     @Nullable

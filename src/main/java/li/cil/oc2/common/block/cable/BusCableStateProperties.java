@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -142,8 +141,7 @@ public final class BusCableStateProperties {
             final ConnectionType next;
             if (canHaveCableTo(level.getBlockState(neighborPos), side.getOpposite())) {
                 next = ConnectionType.CABLE;
-            } else if (state.getValue(property) == ConnectionType.INTERFACE
-                    || isAutoConnectable(level, neighborPos, side.getOpposite())) {
+            } else if (state.getValue(property) == ConnectionType.INTERFACE) {
                 next = ConnectionType.INTERFACE;
             } else {
                 next = ConnectionType.NONE;
@@ -151,12 +149,6 @@ public final class BusCableStateProperties {
             result = result.setValue(property, next);
         }
         return result;
-    }
-
-    private static boolean isAutoConnectable(
-            final Level level, final BlockPos pos, final Direction side) {
-        return level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side) != null
-                || level.getCapability(Capabilities.DeviceBusElement.BLOCK, pos, side) != null;
     }
 
     public static int getPartCount(final BlockState state) {

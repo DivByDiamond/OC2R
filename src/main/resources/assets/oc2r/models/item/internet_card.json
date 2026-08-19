@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "oc2r:item/internet_card"
+    "layer0": "oc2r:item/cards/internet_card"
   }
 }

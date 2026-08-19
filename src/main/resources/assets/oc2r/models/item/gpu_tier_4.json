@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "oc2r:item/gpu_tier_4"
+    "layer0": "oc2r:item/components/gpu/gpu_tier_4"
   }
 }

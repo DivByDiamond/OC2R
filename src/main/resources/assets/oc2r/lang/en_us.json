@@ -1,6 +1,5 @@
 {
   "item_group.oc2r.common": "OpenComputers II",
-
   "block.oc2r.computer": "Computer",
   "block.oc2r.computer.desc": "Runs software from Flash Memory and Hard Disks.",
   "block.oc2r.computer.preconfigured": "Preconfigured Computer",
@@ -30,7 +29,6 @@
   "block.oc2r.internet_gateway.desc": "Gives access to the Internet.",
   "block.oc2r.speaker": "Speaker",
   "block.oc2r.speaker.desc": "Emits sound (tones and PCM audio) from devices connected to the bus.",
-
   "item.oc2r.wrench": "Scrench",
   "item.oc2r.wrench.desc": "Configures devices and dismantles them (while sneaking).",
   "item.oc2r.manual": "The Computerist's Handbook",
@@ -98,12 +96,10 @@
   "item.oc2r.network_tunnel_module.desc": "Sends and receives network packets to a linked device.",
   "item.oc2r.internet_card": "Internet Card",
   "item.oc2r.internet_card.desc": "Gives access to the Internet",
-
   "item.oc2r.transistor": "Transistor",
   "item.oc2r.transistor.desc": "Crafting material.",
   "item.oc2r.circuit_board": "Circuit Board",
   "item.oc2r.circuit_board.desc": "Crafting material.",
-
   "item.oc2r.silicon": "Silicon",
   "item.oc2r.silicon.desc": "Crafting material.",
   "item.oc2r.silicon_blend": "Silicon Blend",
@@ -112,10 +108,7 @@
   "item.oc2r.silicon_wafer.desc": "A wafer ready for processor construction.",
   "item.oc2r.raw_silicon_wafer": "Raw Silicon Wafer",
   "item.oc2r.raw_silicon_wafer.desc": "A wafer with small imperfections that must be cooked out.",
-
-
   "entity.oc2r.robot": "Robot",
-
   "gui.oc2r.computer.error.unknown": "Unknown Error",
   "gui.oc2r.computer.error.missing_firmware": "Missing Firmware",
   "gui.oc2r.computer.error.insufficient_memory": "Insufficient Memory",
@@ -124,21 +117,17 @@
   "gui.oc2r.computer.bus_state.multiple_controllers": "Multiple Bus Controllers",
   "gui.oc2r.computer.error.not_enough_energy": "Not Enough Energy",
   "gui.oc2r.computer.error.missing_cpu": "Missing CPU",
-
   "gui.oc2r.computer.capture_input.capt": "Capture Input",
   "gui.oc2r.computer.capture_input.desc": "When enabled, as long as the mouse cursor is hovering the terminal contents, all input will be captured, including the escape key.",
   "gui.oc2r.computer.power.capt": "Toggle Power",
   "gui.oc2r.computer.power.desc": "Toggles the power state of the computer.",
-
   "gui.oc2r.machine.open_inventory.capt": "Open Inventory",
   "gui.oc2r.machine.open_terminal.capt": "Open Terminal",
-
   "gui.oc2r.device_type.memory": "Memory",
   "gui.oc2r.device_type.hard_drive": "Hard Drive",
   "gui.oc2r.device_type.flash_memory": "Flash Memory",
   "gui.oc2r.device_type.card": "Card",
   "gui.oc2r.device_type.gpu": "Graphic Card",
-
   "gui.oc2r.file_chooser.title.load": "Open file",
   "gui.oc2r.file_chooser.title.save": "Save file",
   "gui.oc2r.file_chooser.text_field.filename": "File name",
@@ -146,26 +135,20 @@
   "gui.oc2r.file_chooser.confirm_button.save": "Save",
   "gui.oc2r.file_chooser.confirm_button.overwrite": "Overwrite",
   "gui.oc2r.file_chooser.cancel_button": "Cancel",
-
   "gui.oc2r.network_interface_card.side_state": "Connectivity: %s",
   "gui.oc2r.network_interface_card.connectivity.enabled": "Enabled",
   "gui.oc2r.network_interface_card.connectivity.disabled": "Disabled",
   "gui.oc2r.network_interface_card.info": "Drag to rotate. Click faces to toggle connectivity.",
-
   "gui.oc2r.keyboard.close_info": "Right click to close.",
-
   "gui.oc2r.network_tunnel.link": "Link",
-
   "manual.oc2r.home": "Home",
   "manual.oc2r.blocks": "Blocks",
   "manual.oc2r.items": "Items",
-
   "message.oc2r.connector.error.full": "Cannot attach more cables.",
   "message.oc2r.connector.error.too_far": "Distance between connectors is too large.",
   "message.oc2r.connector.error.obstructed": "No clear line of sight between connectors.",
   "message.oc2r.import_file.file_too_large": "File is too large.",
   "message.oc2r.invalid_facade_block": "This block cannot be used as a facade.",
-
   "tooltip.oc2r.device_needs_reboot": "Requires reboot",
   "tooltip.oc2r.flash_memory_missing": "A flash memory containing a firmware is required to boot.",
   "tooltip.oc2r.memory_missing": "Some memory is required to load the flash memory for execution to boot.",
@@ -178,12 +161,12 @@
   "tooltip.oc2r.network_tunnel_id": "Tunnel: %s",
   "tooltip.oc2r.internet.disabled": "Note that Internet access is currently disabled. It can be enabled in the mod config, but expect this to be potentially unsafe. Make sure that you trust everyone you're playing with and/or limit addresses which can be connected to in the config.",
   "tooltip.oc2r.internet.energy_per_packet": "Energy per packet sent: %s",
-
   "subtitles.oc2r.computer": "Computer fans running",
   "subtitles.oc2r.floppy": "Floppy access",
   "subtitles.oc2r.floppy_eject": "Floppy ejected",
   "subtitles.oc2r.floppy_insert": "Floppy inserted",
   "subtitles.oc2r.hdd": "Hard drive access",
   "subtitles.oc2r.post_beep": "Computer POST beep",
-  "subtitles.oc2r.sound_card_beep": "Sound card beep"
+  "subtitles.oc2r.sound_card_beep": "Sound card beep",
+  "gui.oc2r.computer.error.not_connected": "No Computer Connected"
 }
