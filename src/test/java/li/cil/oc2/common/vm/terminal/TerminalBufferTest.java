@@ -23,13 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TerminalBufferTest {
     private Terminal terminal;
     private TerminalBuffer buffer;
-    private TestRenderer renderer;
+    private DummyRenderer renderer;
 
     @BeforeEach
     void setUp() {
         terminal = new Terminal();
         buffer = terminal.bufferManager;
-        renderer = new TestRenderer();
+        renderer = new DummyRenderer();
         terminal.renderers.add(renderer);
     }
 
@@ -486,7 +486,7 @@ public class TerminalBufferTest {
         renderer.dirtyMask.set(0);
     }
 
-    private static final class TestRenderer implements RendererModel {
+    private static final class DummyRenderer implements RendererModel {
         private final AtomicInteger dirtyMask = new AtomicInteger();
 
         @Override

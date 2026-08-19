@@ -27,7 +27,7 @@ final class MonitorCapabilities {
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlock(
                 Capabilities.Device.BLOCK,
-                (level, pos, state, be, side) -> getDevice(level, pos, state, be, side),
+                MonitorCapabilities::getDevice,
                 Blocks.MONITOR.get());
         if (Config.monitorsUseEnergy()) {
             event.registerBlock(
@@ -44,7 +44,7 @@ final class MonitorCapabilities {
             final BlockState state,
             final BlockEntity be,
             final Direction side) {
-        if (!(be instanceof final MonitorBlockEntity self)) {
+        if (!(be instanceof MonitorBlockEntity)) {
             return null;
         }
         // Bus connectivity is available from the rear of every block of a monitor

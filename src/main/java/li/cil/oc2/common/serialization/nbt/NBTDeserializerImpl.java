@@ -126,12 +126,11 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Nullable
     public static Object getGenericArray(
             final Tag tag, final Class<?> componentType, final @Nullable Object into) {
         final ArrayComponentDeserializer componentDeserializer =
-                createComponentDeserializer(componentType);
+                createComponentDeserializer((Class) componentType);
 
         final List<Tag> listTag;
         final int[] nulls;
@@ -149,17 +148,16 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
         return deserializeIntoArray(listTag, nulls, componentType, into, componentDeserializer);
     }
 
-    private static ArrayComponentDeserializer createComponentDeserializer(
-            final Class<?> componentType) {
+    @SuppressWarnings({"unchecked", "rawtypes"}) // generic array deserialization is inherently untype-safe
+    private static ArrayComponentDeserializer createComponentDeserializer(final Class<?> componentType) {
         if (componentType.isArray()) {
             return NBTDeserializerImpl::getArray;
         }
-        final li.cil.ceres.api.Serializer<?> serializer = Ceres.getSerializer(componentType);
+        final li.cil.ceres.api.Serializer serializer = Ceres.getSerializer(componentType);
         return (n, t, i) ->
                 serializer.deserialize(new NBTDeserializerImpl((CompoundTag) n), (Class) t, i);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Nullable
     private static Object deserializeIntoArray(
             final List<Tag> listTag,

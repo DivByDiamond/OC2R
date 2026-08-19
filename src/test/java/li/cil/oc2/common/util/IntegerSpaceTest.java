@@ -9,8 +9,7 @@ public class IntegerSpaceTest {
     @Test
     void integerSpaceTest() {
         final IntegerSpace space = new IntegerSpace();
-        try {
-            assertEquals(0, space.count());
+        assertEquals(0, space.count());
             assertFalse(space.contains(30));
 
             assertTrue(space.put(30)); // [30]
@@ -105,8 +104,5 @@ public class IntegerSpaceTest {
 
             assertTrue(space.put(23, 26));
             assertEquals("[23-27, 29-39]", space.toString());
-        } catch (final AssertionError e) {
-            throw e;
-        }
     }
 }

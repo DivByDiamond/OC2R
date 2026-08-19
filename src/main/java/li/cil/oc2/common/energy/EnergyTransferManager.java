@@ -295,7 +295,6 @@ public final class EnergyTransferManager {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static IEnergyStorage getExternalEnergy(
             final Level level, final BlockPos pos, final Direction side) {
         if (level.getBlockState(pos).getBlock().equals(Blocks.BUS_CABLE.get())) {

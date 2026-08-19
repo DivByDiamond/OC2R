@@ -6,7 +6,6 @@ import com.google.common.eventbus.Subscribe;
 import java.nio.ByteBuffer;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
-import li.cil.oc2.api.bus.device.vm.VMDevice;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.bus.device.vm.event.VMInitializationException;
@@ -26,7 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
-        implements VMDevice, ItemDevice, FirmwareLoader {
+        implements ItemDevice, FirmwareLoader {
     private final int size;
     private MemoryMap memoryMap;
     private ByteBuffer data;

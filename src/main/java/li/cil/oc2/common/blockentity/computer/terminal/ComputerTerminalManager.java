@@ -80,7 +80,7 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Device> @Nullable T getFirstDevice(Class<T> cls) {
+    public <T extends Device> T getFirstDevice(Class<T> cls) {
         for (final Device device : computer.virtualMachine.busController.getDevices())
             if (cls.isAssignableFrom(device.getClass())) return (T) device;
         return null;

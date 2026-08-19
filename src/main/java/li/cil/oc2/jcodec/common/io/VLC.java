@@ -83,7 +83,7 @@ public class VLC {
     public int readVLC(final BitReader _in) {
 
         int code = 0, len = 0, overall = 0;
-        for (int i = 0; len == 0; i++) {
+        for (int e = 0; len == 0; e++) {
             final int string = _in.checkNBit(8);
             final int ind = string + code;
             code = values[ind];

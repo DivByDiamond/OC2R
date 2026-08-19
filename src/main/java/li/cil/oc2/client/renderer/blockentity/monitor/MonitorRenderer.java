@@ -37,9 +37,6 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
             final MultiBufferSource bufferSource,
             final int light,
             final int overlay) {
-        // Only the origin (master) of a multiblock renders the framebuffer. Sub-blocks are
-        // just casing — their visuals come entirely from the baked block model. This also
-        // prevents the framebuffer from being drawn N times across an N-block multiblock.
         if (!MonitorMultiblock.isOrigin(monitor.getBlockState())) {
             return;
         }
@@ -80,61 +77,34 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
         stack.translate(-0.5f, 0, -0.5f);
 
-        stack.translate(1, 1, 1);
+        stack.translate(1, 1, 0);
         stack.scale(-1, -1, -1);
 
         final float pixelScale = 1 / 16f;
         stack.scale(pixelScale * width, pixelScale * height, pixelScale);
 
-        renderTerminalOrStatus(framebufferSource, stack, bufferSource, distanceToCamera);
+        renderTerminalOrStatus(
+                framebufferSource, stack, bufferSource, distanceToCamera, width, height);
 
         stack.popPose();
-
-        // ---- Power overlay -----------------------------------------------------
-        // Drawn at the origin block's corner (which is the top-right of the multiblock from
-        // the viewer's POV) at the original 1-block scale so the icon keeps its aspect ratio.
-        if (framebufferSource.getPowerState() && framebufferSource.hasPower()) {
-            renderPowerOverlay(stack, bufferSource, blockFacing, pixelScale);
-        }
     }
 
     private void renderTerminalOrStatus(
             final MonitorBlockEntity framebufferSource,
             final PoseStack stack,
             final MultiBufferSource bufferSource,
-            final double distanceToCamera) {
+            final double distanceToCamera,
+            final int width,
+            final int height) {
         if (framebufferSource.getPowerState()
                 && framebufferSource.isMounted()
                 && framebufferSource.hasPower()) {
             MonitorTextRenderer.renderTerminal(
-                    framebufferSource, stack, bufferSource, distanceToCamera, font);
+                    framebufferSource, stack, bufferSource, distanceToCamera, font, width, height);
         } else if (framebufferSource.getPowerState()) {
             MonitorTextRenderer.renderStatusText(
-                    bufferSource, framebufferSource, stack, distanceToCamera, font);
+                    bufferSource, framebufferSource, stack, distanceToCamera, font, width);
         }
-    }
-
-    private void renderPowerOverlay(
-            final PoseStack stack,
-            final MultiBufferSource bufferSource,
-            final Direction blockFacing,
-            final float pixelScale) {
-        stack.pushPose();
-
-        stack.translate(0.5f, 0, 0.5f);
-        stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
-        stack.translate(-0.5f, 0, -0.5f);
-
-        stack.translate(1, 1, 1);
-        stack.scale(-1, -1, -1);
-
-        stack.scale(pixelScale, pixelScale, pixelScale);
-        stack.translate(0, 0, -0.1f);
-
-        final Matrix4f matrix = stack.last().pose();
-        MonitorTextRenderer.renderPowerOverlay(matrix, bufferSource);
-
-        stack.popPose();
     }
 
     @SubscribeEvent

@@ -40,24 +40,24 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     protected void loadServer() {
         super.loadServer();
         final BlockPos pos = getBlockPos();
-        final List<BlockCapabilityCache<NetworkInterface, Direction>> adj =
-                new ArrayList<>(Constants.BLOCK_FACE_COUNT);
-        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) adj.add(null);
+        @SuppressWarnings("unchecked") // generic array of a parameterized type is not expressible
+        final BlockCapabilityCache<NetworkInterface, Direction>[] caches =
+                (BlockCapabilityCache<NetworkInterface, Direction>[])
+                        new BlockCapabilityCache<?, ?>[Constants.BLOCK_FACE_COUNT];
         for (final Direction side : Constants.DIRECTIONS)
-            adj.set(
-                    side.get3DDataValue(),
+            caches[side.get3DDataValue()] =
                     BlockCapabilityCache.create(
                             Capabilities.NetworkInterface.BLOCK,
                             (ServerLevel) level,
                             pos.relative(side),
                             side.getOpposite(),
                             () -> !this.isRemoved(),
-                            this::handleNeighborChanged));
-        adjacentBlockCaches = adj.toArray(new BlockCapabilityCache[0]);
+                            this::handleNeighborChanged);
+        adjacentBlockCaches = caches;
     }
 
     @Override

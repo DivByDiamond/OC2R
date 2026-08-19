@@ -98,7 +98,7 @@ final class SwitchPacketForwarder {
                 log.egressVlan = vlan;
             }
             log.emit();
-            iface.writeEthernetFrame(switchEntity, egressFrame, timeToLive - switchEntity.TTL_COST);
+            iface.writeEthernetFrame(switchEntity, egressFrame, timeToLive - NetworkSwitchBlockEntity.TTL_COST);
         }
     }
 }

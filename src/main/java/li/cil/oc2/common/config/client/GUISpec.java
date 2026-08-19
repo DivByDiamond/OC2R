@@ -6,6 +6,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class GUISpec {
     public final ModConfigSpec.EnumValue<CaptureInputMode> captureInputMode;
     public final ModConfigSpec.BooleanValue captureInputDefaultState;
+    public final ModConfigSpec.DoubleValue monitorBorder;
 
     GUISpec(ModConfigSpec.Builder builder) {
         captureInputMode =
@@ -27,6 +28,16 @@ public class GUISpec {
                                 "Defines whether input capture should be enabled by default in a"
                                         + " session")
                         .define("captureInputDefaultState", false);
+
+        monitorBorder =
+                builder.comment(
+                                "Width of the monitor bezel/border in block pixels (1 px = 1 unit"
+                                        + " in the renderer's normalized screen space). The visible"
+                                        + " screen area is (16 - 2*border) x (16 - 2*border), which"
+                                        + " the terminal framebuffer is fitted into.",
+                                "Higher values make the terminal text smaller/more inset; lower"
+                                        + " values make it fill more of the screen.")
+                        .defineInRange("monitorBorder", 2.0, 0.0, 7.0);
     }
 
     public enum CaptureInputMode {
@@ -38,5 +49,6 @@ public class GUISpec {
     public void loadValues() {
         Config.captureInputMode = captureInputMode.get();
         Config.captureInputDefaultState = captureInputDefaultState.get();
+        Config.monitorBorder = monitorBorder.get().floatValue();
     }
 }

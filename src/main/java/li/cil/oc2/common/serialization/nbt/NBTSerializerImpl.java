@@ -87,7 +87,6 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
         Tag serialize(Class<?> type, Object value);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private Tag putArray(final String name, final Class<?> type, final Object value) {
         final Class<?> componentType = type.getComponentType();
 
@@ -119,6 +118,7 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"}) // Ceres serializer API is wildcard-generic; the component type is only known as Class<?>
     private ArrayComponentSerializer createComponentSerializer(
             final String name, final Class<?> componentType) {
         if (componentType.isArray()) {

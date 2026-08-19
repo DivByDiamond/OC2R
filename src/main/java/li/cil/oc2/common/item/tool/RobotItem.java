@@ -117,7 +117,7 @@ public final class RobotItem extends ModItem {
     }
 
     @Override
-    @SuppressWarnings("removal")
+    @SuppressWarnings("removal") // required to provide a custom block-entity renderer for the robot
     public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
         consumer.accept(
                 new IClientItemExtensions() {

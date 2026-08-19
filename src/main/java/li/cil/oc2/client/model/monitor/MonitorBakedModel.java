@@ -128,7 +128,7 @@ public final class MonitorBakedModel implements IDynamicBakedModel {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // BakedModel#getParticleIcon is the supported override point
     public TextureAtlasSprite getParticleIcon() {
         return sprites.get(MonitorModelTypes.PARTICLE_TEXTURE);
     }

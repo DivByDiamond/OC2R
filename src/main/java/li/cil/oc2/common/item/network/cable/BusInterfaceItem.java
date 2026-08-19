@@ -72,7 +72,7 @@ public final class BusInterfaceItem extends ModBlockItem {
     public void registerBlocks(final Map<Block, Item> map, final Item item) {}
 
     @Override
-    @SuppressWarnings("removal")
+    @SuppressWarnings("removal") // intentional empty override to keep the bus interface mapped
     public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {}
 
     @Nullable
