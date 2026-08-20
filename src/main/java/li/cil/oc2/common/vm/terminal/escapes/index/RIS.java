@@ -18,6 +18,8 @@ public class RIS {
         terminal.style = TerminalColors.DEFAULT_STYLE;
         terminal.currentModeState = new ModeState();
         terminal.currentPrivateModeState = new PrivateModeState();
+        terminal.savePrivateModeState = new PrivateModeState();
+        terminal.state = Terminal.State.NORMAL;
         terminal.lastRowToDisplay = 24;
         terminal.lastRowToDisplayMax = 24;
         terminal.scrollFirst = 0;

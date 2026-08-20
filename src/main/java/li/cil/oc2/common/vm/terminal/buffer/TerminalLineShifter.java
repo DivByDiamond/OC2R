@@ -74,7 +74,10 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            dirtyLinesMask |= 1 << i;
+            final int row = TerminalBufferWriter.getDirtyRow(terminal, i);
+            if (row >= 0 && row < Terminal.HEIGHT) {
+                dirtyLinesMask |= 1 << row;
+            }
         }
         terminal.markDirty(dirtyLinesMask);
     }
@@ -118,9 +121,9 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            int localI = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
-            if (localI >= 0 && localI < Terminal.HEIGHT) {
-                dirtyLinesMask |= 1 << localI;
+            final int row = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
+            if (row >= 0 && row < Terminal.HEIGHT) {
+                dirtyLinesMask |= 1 << row;
             }
         }
         terminal.markDirty(dirtyLinesMask);
