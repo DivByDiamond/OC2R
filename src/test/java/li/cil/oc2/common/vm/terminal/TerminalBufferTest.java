@@ -463,6 +463,161 @@ public class TerminalBufferTest {
         assertEquals(1, renderer.dirtyMask.get());
     }
 
+    // --- setClampedCursorPos: cursor outside scroll region should NOT clamp Y ---
+
+    @Test
+    void setClampedCursorPosOutsideScrollRegionDoesNotClampY() {
+        // Set a scroll region [5..10] (0-indexed: rows 4..9)
+        write(terminal, "\u001b[5;10r");
+        assertEquals(4, terminal.scrollFirst);
+        assertEquals(9, terminal.scrollLast);
+        // Move cursor to row 1 (0-indexed: 0), which is outside the scroll region
+        write(terminal, "\u001b[1;1H");
+        assertEquals(0, terminal.y);
+        // setClampedCursorPos with a Y outside the scroll region should NOT clamp
+        // because cursor is already outside the scroll region
+        terminal.setClampedCursorPos(10, 20);
+        assertEquals(10, terminal.x);
+        assertEquals(20, terminal.y);
+    }
+
+    @Test
+    void setClampedCursorPosInsideScrollRegionClampsY() {
+        // Set a scroll region [5..10] (0-indexed: rows 4..9)
+        write(terminal, "\u001b[5;10r");
+        // Move cursor into the scroll region
+        write(terminal, "\u001b[7;1H");
+        assertEquals(6, terminal.y);
+        assertTrue(terminal.y >= terminal.scrollFirst && terminal.y <= terminal.scrollLast);
+        // setClampedCursorPos should clamp Y to scroll region [4..9]
+        // Request Y=20 (well beyond scrollLast=9)
+        terminal.setClampedCursorPos(10, 20);
+        assertEquals(10, terminal.x);
+        assertEquals(9, terminal.y); // clamped to scrollLast
+        // Request Y=0 (well before scrollFirst=4)
+        terminal.setClampedCursorPos(10, 0);
+        assertEquals(10, terminal.x);
+        assertEquals(4, terminal.y); // clamped to scrollFirst
+        // Request Y within scroll region — should stay as-is
+        terminal.setClampedCursorPos(10, 7);
+        assertEquals(10, terminal.x);
+        assertEquals(7, terminal.y);
+    }
+
+    // --- RIS resets savePrivateModeState to defaults ---
+
+    @Test
+    void risResetsSavePrivateModeState() {
+        // Modify private modes, then XTSAVE to capture them into savePrivateModeState
+        write(terminal, "\u001b[?7l");        // DECAWM off
+        write(terminal, "\u001b[?6h");        // DECOM on
+        write(terminal, "\u001b[?7s");        // XTSAVE mode 7 (DECAWM)
+        write(terminal, "\u001b[?6s");        // XTSAVE mode 6 (DECOM)
+        // Verify savePrivateModeState captured the modified values
+        assertFalse(terminal.savePrivateModeState.DECAWM, "DECAWM should be saved as off");
+        assertTrue(terminal.savePrivateModeState.DECOM, "DECOM should be saved as on");
+        // Now RIS
+        write(terminal, "\u001bc");
+        // savePrivateModeState should be reset to defaults
+        assertTrue(terminal.savePrivateModeState.DECAWM, "DECAWM should be default (on) after RIS");
+        assertFalse(terminal.savePrivateModeState.DECOM, "DECOM should be default (off) after RIS");
+    }
+
+    // --- RIS resets terminal.state to NORMAL ---
+
+    @Test
+    void risResetsTerminalStateToNormal() {
+        // Put the terminal into an escape state by sending ESC followed by a non-completing char
+        write(terminal, "\u001b[3");
+        // We should be in CONTROL_SEQUENCE state (partial CSI)
+        assertEquals(Terminal.State.CONTROL_SEQUENCE, terminal.state);
+        // Now RIS
+        write(terminal, "\u001bc");
+        assertEquals(Terminal.State.NORMAL, terminal.state);
+    }
+
+    @Test
+    void risResetsStateFromEscape() {
+        // Put terminal into ESCAPE state
+        write(terminal, "\u001b");
+        assertEquals(Terminal.State.ESCAPE, terminal.state);
+        // RIS
+        write(terminal, "\u001bc");
+        assertEquals(Terminal.State.NORMAL, terminal.state);
+    }
+
+    // --- RIS clears terminal.input ---
+
+    @Test
+    void risClearsInput() {
+        // Enqueue some input bytes via the TerminalIO API
+        terminal.io.putInput((byte) 'A');
+        terminal.io.putInput((byte) 'B');
+        terminal.io.putInput((byte) 'C');
+        // Verify input is non-empty (readInput returns -1 when empty)
+        assertNotEquals(-1, terminal.io.readInput(), "input should be non-empty before RIS");
+        // RIS
+        write(terminal, "\u001bc");
+        assertEquals(-1, terminal.io.readInput(), "input queue should be empty after RIS");
+    }
+
+    // --- getDirtyRow refactor: scrolling main buffer with scrollback marks correct dirty lines ---
+
+    @Test
+    void dirtyMaskScrollMainBufferWithScrollback() {
+        // Fill rows 0-3 with distinct content (the "nano bug" scenario)
+        fillRows(0, "ABCD");
+        // Scroll up 1 line — this grows lastRowToDisplayMax to 25
+        resetDirty();
+        write(terminal, "\u001b[1S");
+        assertEquals(25, terminal.lastRowToDisplayMax);
+        // After scrolling up 1, rows 0-2 have B,C,D and row 3 is blank.
+        // All 24 visible rows should be marked dirty (content shifted up by 1).
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+    }
+
+    @Test
+    void dirtyMaskScrollMainBufferWithScrollbackTwoLines() {
+        // Fill rows 0-3 with content
+        fillRows(0, "ABCD");
+        // Scroll up 2 lines — lastRowToDisplayMax grows to 26
+        resetDirty();
+        write(terminal, "\u001b[2S");
+        assertEquals(26, terminal.lastRowToDisplayMax);
+        // All visible rows dirty
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+    }
+
+    @Test
+    void dirtyMaskScrollMainBufferWithScrollbackMatchesWrittenRows() {
+        // This test verifies the getDirtyRow refactor: after scrolling with scrollback,
+        // the dirty mask should match exactly the rows that actually changed.
+        // We write to a specific row after scroll and verify the dirty bit goes to the right place.
+        fillRows(0, "AB");
+        write(terminal, "\u001b[1S"); // scroll up 1, lastRowToDisplayMax=25
+        resetDirty();
+        // Write a character at row 0 — should mark row 0 dirty
+        write(terminal, "\u001b[1;1HZ");
+        assertEquals(1, renderer.dirtyMask.get(), "Only row 0 should be dirty after writing to row 0");
+        assertEquals('Z', charAt(0, 0));
+    }
+
+    @Test
+    void dirtyMaskScrollUpInMarginRegionWithScrollback() {
+        // Set scroll region [2..8] (0-indexed: 1..7)
+        write(terminal, "\u001b[2;8r");
+        fillRows(1, "ABCDEFG");
+        // Scroll up 1 within the margin
+        resetDirty();
+        write(terminal, "\u001b[1S");
+        // Rows 1..7 should be dirty (the scroll region), row 0 should NOT
+        int expected = 0;
+        for (int i = 1; i <= 7; i++) {
+            expected |= (1 << i);
+        }
+        assertEquals(expected, renderer.dirtyMask.get() & 0xFF);
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
