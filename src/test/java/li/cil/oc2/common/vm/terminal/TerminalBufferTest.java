@@ -654,4 +654,21 @@ public class TerminalBufferTest {
             dirtyMask.set(0);
         }
     }
+
+    @Test
+    void dirtyMaskScrollDownAfterScrollbackGrowth() {
+        // Loki's repro: 30 line-feeds grow lastRowToDisplayMax to 54,
+        // then CSI 1 T (scroll down) must still mark visible rows dirty.
+        for (int i = 0; i < 30; i++) {
+            write(terminal, "\n");
+        }
+        assertTrue(terminal.lastRowToDisplayMax > Terminal.HEIGHT,
+            "lastRowToDisplayMax should exceed HEIGHT after 30 line-feeds");
+
+        resetDirty();
+        write(terminal, "\u001b[1T"); // scroll down 1 line
+        int mask = renderer.dirtyMask.get();
+        assertNotEquals(0, mask,
+            "Scroll down after scrollback growth must mark rows dirty (getDirtyRow regression)");
+    }
 }

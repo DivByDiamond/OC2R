@@ -121,7 +121,7 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            final int row = TerminalBufferWriter.getDirtyRow(terminal, i);
+            final int row = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
             if (row >= 0 && row < Terminal.HEIGHT) {
                 dirtyLinesMask |= 1 << row;
             }
