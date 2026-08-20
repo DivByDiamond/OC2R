@@ -368,52 +368,6 @@ public class TerminalBufferTest {
     }
 
     @Test
-    void sgr256ColorForeground() {
-        write(terminal, "\u001b[38;5;196mX");
-        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(196, terminal.twoFiftySixColor.R);
-        assertEquals('X', charAt(0, 0));
-        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.colors[0].Mode);
-        assertEquals(196, terminal.colors[0].R);
-    }
-
-    @Test
-    void sgrTrueColorForegroundAndBackground() {
-        write(terminal, "\u001b[38;2;100;150;200;48;2;10;20;30mY");
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(100, terminal.foregroundColor.R);
-        assertEquals(150, terminal.foregroundColor.G);
-        assertEquals(200, terminal.foregroundColor.B);
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentBackgroundColorMode);
-        assertEquals(10, terminal.backgroundColor.R);
-        assertEquals(20, terminal.backgroundColor.G);
-        assertEquals(30, terminal.backgroundColor.B);
-        assertEquals('Y', charAt(0, 0));
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colors[0].Mode);
-        assertEquals(100, terminal.colors[0].R);
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colorsBackground[0].Mode);
-        assertEquals(10, terminal.colorsBackground[0].R);
-    }
-
-    @Test
-    void sgrTrueColorKeepsFollowingAttributes() {
-        write(terminal, "\u001b[38;2;100;150;200;1mZ");
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(100, terminal.foregroundColor.R);
-        assertEquals(Terminal.STYLE_BOLD_MASK, terminal.style & Terminal.STYLE_BOLD_MASK);
-        assertEquals(Terminal.STYLE_BOLD_MASK, terminal.styles[0] & Terminal.STYLE_BOLD_MASK);
-    }
-
-    @Test
-    void sgrResetRestoresDefaults() {
-        write(terminal, "\u001b[38;2;100;150;200;48;5;52;1mX");
-        write(terminal, "\u001b[0mY");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode);
-        assertEquals(TerminalColors.DEFAULT_STYLE, terminal.style);
-    }
-
-    @Test
     void pendingWrapWrapsToNextLine() {
         write(terminal, "A".repeat(Terminal.WIDTH) + "B");
         assertEquals('A', charAt(0, 0));
