@@ -47,7 +47,7 @@ public final class SGRColorParser {
 
         if (mode == 5 && offset + 1 < limit) {
             /* 256-color: 5;N → N is the color index */
-            int index = args[offset + 1];
+            int index = Math.clamp(args[offset + 1], 0, 255);
             return new SGRColorResult(
                     ColorMode.TWO_FIFTY_SIX_COLOR,
                     new ColorData(index, 0, 0, ColorMode.TWO_FIFTY_SIX_COLOR),
@@ -56,9 +56,9 @@ public final class SGRColorParser {
 
         if (mode == 2 && offset + 3 < limit) {
             /* True color: 2;R;G;B */
-            int r = args[offset + 1];
-            int g = args[offset + 2];
-            int b = args[offset + 3];
+            int r = Math.clamp(args[offset + 1], 0, 255);
+            int g = Math.clamp(args[offset + 2], 0, 255);
+            int b = Math.clamp(args[offset + 3], 0, 255);
             return new SGRColorResult(
                     ColorMode.TRUE_COLOR,
                     new ColorData(r, g, b, ColorMode.TRUE_COLOR),

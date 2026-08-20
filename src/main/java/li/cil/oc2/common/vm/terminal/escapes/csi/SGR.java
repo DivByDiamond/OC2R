@@ -29,8 +29,11 @@ public class SGR extends CSISequenceHandler {
                     applyExtendedColor(terminal, code, result);
                     i += 1 + result.consumed();
                 } else {
-                    /* Malformed — skip the mode selector and move on */
-                    i += 1;
+                    /* Malformed: skip the selector AND the following mode byte. The bytes after
+                       38/48 are arguments to that extended-color group, not independent SGR
+                       codes — re-reading them as SGR 5/2/7 would turn malformed color data into
+                       a style change. ECMA-48 leaves this recovery implementation-defined. */
+                    i += (i + 1 < count) ? 2 : 1;
                 }
                 continue;
             }
