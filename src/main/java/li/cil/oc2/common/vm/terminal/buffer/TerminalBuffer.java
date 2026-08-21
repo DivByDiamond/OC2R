@@ -92,7 +92,8 @@ public class TerminalBuffer {
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int n = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int n = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        if (n == 0) return;
         final int remaining = Terminal.WIDTH - x - n;
         if (remaining <= 0) {
             clearChars(y, x, Terminal.WIDTH - x);
@@ -164,7 +165,8 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int n = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int n = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        if (n == 0) return;
         final int remaining = Terminal.WIDTH - x - n;
         if (remaining <= 0) {
             clearChars(y, x, Terminal.WIDTH - x);
