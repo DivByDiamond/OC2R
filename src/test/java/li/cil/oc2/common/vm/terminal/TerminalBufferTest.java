@@ -46,7 +46,7 @@ public class TerminalBufferTest {
         assertEquals(' ', charAt(Terminal.WIDTH - 1, Terminal.HEIGHT - 1));
         assertFalse(terminal.currentPrivateModeState.isAltBufferEnabled());
         assertTrue(terminal.currentPrivateModeState.DECAWM);
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
     }
 
     @Test
