@@ -70,7 +70,7 @@ public class TerminalCursorRenderer {
             final int globalY,
             final int localY) {
         return terminal.x >= 0
-                && terminal.x < Terminal.WIDTH
+                && terminal.x < terminal.width
                 && (useAltBuffer || localY >= 0)
                 && terminal.y >= 0
                 && (useAltBuffer || localY < Terminal.HEIGHT)

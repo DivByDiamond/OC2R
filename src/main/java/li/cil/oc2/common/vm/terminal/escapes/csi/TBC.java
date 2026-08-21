@@ -18,7 +18,7 @@ public class TBC extends CSISequenceHandler {
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         if (args[0] == 0) {
             // Clear tab at current column
-            int x = Math.min(terminal.x, Terminal.WIDTH - 1);
+            int x = Math.min(terminal.x, terminal.width - 1);
             if (x >= 0) {
                 if (useAltBuffer)
                     terminal.altTabs[x] = false;

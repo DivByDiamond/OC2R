@@ -91,7 +91,7 @@ public class CSIManager {
             }
             case 0x0A, 0x0B -> handleControlLineFeed(); /* LF / VT — respect LNM like normal path */
             case 0x09 -> { /* HT */
-                terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), Terminal.WIDTH - 1);
+                terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), terminal.width - 1);
             }
             case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */
                 reset();

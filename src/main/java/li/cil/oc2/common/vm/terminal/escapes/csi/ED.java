@@ -18,13 +18,13 @@ public class ED extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
-        int x = Math.min(terminal.x, Terminal.WIDTH - 1);
+        int x = Math.min(terminal.x, terminal.width - 1);
         if (state.questionMark) {
             LOGGER.warn("DECSED is not implemented");
         } else {
             switch (args[0]) {
                 case 0 -> { // From cursor to end of screen
-                    terminal.bufferManager.clearLine(terminal.y, x, Terminal.WIDTH);
+                    terminal.bufferManager.clearLine(terminal.y, x, terminal.width);
                     for (int iy = terminal.y + 1; iy < Terminal.HEIGHT; iy++) {
                         terminal.bufferManager.clearLine(iy);
                     }

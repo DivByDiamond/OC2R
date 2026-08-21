@@ -48,8 +48,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final byte[] altStyles = terminal.altStyles;
             int mask = 0;
             for (int row = 0; row < Terminal.HEIGHT; row++) {
-                final int rowBase = (baseRow + row) * Terminal.WIDTH;
-                for (int col = 0; col < Terminal.WIDTH; col++) {
+                final int rowBase = (baseRow + row) * terminal.width;
+                for (int col = 0; col < terminal.width; col++) {
                     final int index = rowBase + col;
                     if ((useAltBuffer
                             ? (altStyles[index] & Terminal.STYLE_BLINK_MASK)

@@ -20,9 +20,9 @@ public class TerminalBackgroundRenderer {
 
         int index =
                 useAltBuffer
-                        ? row * Terminal.WIDTH
-                        : (row + terminal.lastRowToDisplay - Terminal.HEIGHT) * Terminal.WIDTH;
-        for (int col = 0; col < Terminal.WIDTH; col++, index++) {
+                        ? row * terminal.width
+                        : (row + terminal.lastRowToDisplay - Terminal.HEIGHT) * terminal.width;
+        for (int col = 0; col < terminal.width; col++, index++) {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 

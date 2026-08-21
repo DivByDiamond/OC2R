@@ -16,9 +16,9 @@ public class DL extends CSISequenceHandler {
     public void execute(int[] args, int argCount, CSIState state) {
         if (terminal.y < terminal.scrollFirst || terminal.y > terminal.scrollLast) return;
 
-        int lines = args[0];
+        int lines = (argCount < 1) ? 1 : Math.max(args[0], 1);
         int maxLines = terminal.scrollLast - terminal.y + 1;
-        lines = Math.min(lines, Math.max(0, maxLines));
+        lines = Math.clamp(lines, 0, Math.max(0, maxLines));
         if (lines == 0) return;
 
         for (int i = 0; i < lines; i++) {
