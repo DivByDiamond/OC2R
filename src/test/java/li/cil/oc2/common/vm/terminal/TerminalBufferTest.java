@@ -633,6 +633,112 @@ public class TerminalBufferTest {
         assertEquals('A', charAt(1, 0), "with IRM off, writes overwrite in place");
     }
 
+    // --- Char ops while scrolled back must mark the rendered screen row (getDirtyRow) ---
+
+    @Test
+    void echWhileScrolledBackMarksCorrectScreenRow() {
+        // Grow scrollback so lastRowToDisplayMax exceeds HEIGHT; the view stays at the bottom
+        // (lastRowToDisplay == lastRowToDisplayMax), which alone does not expose the bug.
+        for (int i = 0; i < 30; i++) write(terminal, "\n");
+        // Scroll the view one line back into scrollback. The cursor's bottom-window row now
+        // renders (lastRowToDisplayMax - lastRowToDisplay) screen rows below terminal.y.
+        buffer.decrementLastLineToDisplay();
+        final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
+        assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
+        // Cursor to the top row; its buffer row is still visible and renders at row scrollBack.
+        write(terminal, "\u001b[1;1H");
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[1;1H");
+        resetDirty();
+        write(terminal, "\u001b[2X"); // ECH 2: erase 2 chars at the cursor, no shift
+        // The erased buffer row renders at screen row scrollBack, not at row 0 (terminal.y).
+        assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
+            "ECH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
+    }
+
+    @Test
+    void dchWhileScrolledBackMarksCorrectScreenRow() {
+        for (int i = 0; i < 30; i++) write(terminal, "\n");
+        buffer.decrementLastLineToDisplay();
+        final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
+        assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
+        write(terminal, "\u001b[1;1H");
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[1;1H");
+        resetDirty();
+        write(terminal, "\u001b[2P"); // DCH 2: delete 2, shift left, blank the tail
+        assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
+            "DCH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
+    }
+
+    @Test
+    void ichWhileScrolledBackMarksCorrectScreenRow() {
+        for (int i = 0; i < 30; i++) write(terminal, "\n");
+        buffer.decrementLastLineToDisplay();
+        final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
+        assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
+        write(terminal, "\u001b[1;1H");
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[1;1H");
+        resetDirty();
+        write(terminal, "\u001b[2@"); // ICH 2: insert 2 blanks, shift right
+        assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
+            "ICH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
+    }
+
+    // --- DCH/ICH arg-0 (normalized to 1 by the dispatcher) and arg-overflow (clamped to width) ---
+
+    @Test
+    void dchArgZeroDeletesOneChar() {
+        // CSIManager replaces arg 0 with the default (1) before the handler runs, so an
+        // explicit 0 deletes exactly one character rather than being a no-op.
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");    // x=2 (C)
+        write(terminal, "\u001b[0P");     // DCH 0 -> delete 1
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        assertEquals('D', charAt(2, 0), "arg 0 is normalized to 1, deleting one char");
+        assertEquals('E', charAt(3, 0));
+        assertEquals('H', charAt(6, 0));
+        assertEquals(' ', charAt(7, 0), "the freed tail cell is blanked");
+    }
+
+    @Test
+    void ichArgZeroInsertsOne() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");    // x=2 (C)
+        write(terminal, "\u001b[0@");     // ICH 0 -> insert 1
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        assertEquals(' ', charAt(2, 0), "arg 0 is normalized to 1, inserting one blank");
+        assertEquals('C', charAt(3, 0), "existing chars shift right by one");
+        assertEquals('D', charAt(4, 0));
+    }
+
+    @Test
+    void dchArgOverflowClearsToEndOfLine() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");    // x=2 (C)
+        write(terminal, "\u001b[999P");   // DCH 999 -> clamp to width, clear to end of line
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        for (int x = 2; x < Terminal.WIDTH; x++) {
+            assertEquals(' ', charAt(x, 0), "overflow count clears from the cursor to end of line");
+        }
+    }
+
+    @Test
+    void ichArgOverflowBlanksToEndOfLine() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");    // x=2 (C)
+        write(terminal, "\u001b[999@");   // ICH 999 -> clamp to width, blank to end of line
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        for (int x = 2; x < Terminal.WIDTH; x++) {
+            assertEquals(' ', charAt(x, 0), "overflow count blanks from the cursor to end of line");
+        }
+    }
+
     @Test
     void decscnmToggleMarksWholeScreenDirty() {
         assertFalse(terminal.currentPrivateModeState.DECSCNM);
