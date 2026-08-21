@@ -48,7 +48,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Changed
 
-- Dependencies updated: NeoForge 21.1.248, JEI 19.44, ProjectRed 4.23.0, ceres 0.0.6, sedna-buildroot 0.0.71 (new guest image), Mockito 5, JUnit 5.13 (ed75650)
+- Dependencies updated: NeoForge 21.1.248, JEI 19.44, ProjectRed 4.23.0, ceres 0.0.6, sedna-buildroot 0.0.70 (0.0.71 rolled back: it removed 9p from the guest kernel, which broke `/mnt/builtin` — minux issue #12), Mockito 5, JUnit 5.13 (ed75650)
 - Versioning switched to a Modrinth-friendly format, mod metadata updated (109f6e9)
 - Item textures reorganized into folders; bilinear filtering disabled on the monitor screen — crisp pixels (a5ba9cc)
 - Speaker received a Charger-style model/texture (8168a1f)
