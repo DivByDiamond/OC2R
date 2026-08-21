@@ -1,50 +1,60 @@
 # Changelog
 
 All notable changes to OC2R are documented in this file.
-Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
+Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
 ## [0.1.1-beta.1] — 2026-08-21
 
-### Fixed
-
-- **inet**: `assert false;` in `DefaultSessionLayer` crashed the JVM on every TCP read when assertions were enabled (`-ea`).
-- **inet**: fragmented IP packets (e.g. large EDNS0 DNS responses) were dropped silently; the stack now answers with ICMP Destination Unreachable / fragmentation needed (type 3, code 4, MTU 1500).
-- **inet**: packets dropped due to exhausted TTL now get an ICMP Time Exceeded (type 11) reply instead of a silent timeout on the guest side.
-- **inet**: ICMP port-unreachable replies were sent with source address `0.0.0.0`; they now carry the address of the unreachable host (`IcmpHandler.reject`, `SendHandler`).
-- **inet**: `InetUtils.quickICMPBody` overwrote the quoted packet with zero bytes (`put` instead of `get`), so every ICMP unreachable carried an empty RFC 792 quote.
-- **inet**: `MacAddressUtils` mis-parsed and mis-formatted any MAC address containing a byte ≥ `0x80` (signed-byte promotion); e.g. `5E:D1:...` parsed as prefix `0xFFD1`.
-- **inet**: internet card enabled while VXLAN is disabled is now reported with a WARN at startup instead of failing silently; misleading config comment corrected.
-- **inet**: one-shot WARN when the JVM-level ping fallback (`InetAddress.isReachable`) fails — on dedicated servers without `CAP_NET_RAW` it produces false negatives and made `ping` look broken (issue #13).
-- **terminal**: DCH/ICH clamping cleanup in `TerminalBuffer.deleteChars`/`insertChars` — redundant min-1 clamp removed; a future `count <= 0` caller becomes a safe no-op instead of deleting one char (PR #14).
-- **terminal**: test literals extracted into `ESC`/`CSI`/`SAMPLE_LINE`/`MARGIN_CONTENT` constants; PMD `AvoidDuplicateLiterals` violations reduced to zero (PR #15).
-
 ### Added
 
-- Unit tests for the inet network layer (ICMP error generation, IP header parsing, TTL/fragment/denied-host handling), MAC address parsing/formatting, ICMP handler and session manager: +29 tests (152 total).
-- Guest networking guide with addressing/DNS/diagnostics: [docs/NETWORKING.md](docs/NETWORKING.md).
+- **Terminal**: text rendering — bright foreground on bold (bold-bright), blink, underline, full-screen inverse (DECSCNM) (4494906)
+- **Terminal**: insert mode (IRM) — typed characters shift the line right instead of overwriting (67a0d65)
+- **Energy**: cable networks distribute energy across the network with a per-tick buffer and limit; creative energy block as an infinite source (383c4ec, 8168a1f)
+- **Sound**: Speaker block and sound card — tone generator (`beep`/`playTone`) and PCM streaming from the guest (383c4ec)
+- **Monitor**: fragment-based multiblock model replacing OBJ; assemble 2×2/3×3 in any order, breaking a single block repartitions the rest without losing state (8168a1f)
+- **CPU**: configurable processor frequencies and VM time quota in the config (89aaf6c)
+- **Guest development**: C RPC examples (redstone blink, note block player) and a C++ RAII wrapper for `librpc` (da00ae8)
+- **Monitor**: configurable client-side border `monitorBorder` (fe9cded)
+
+### Fixed
+
+**Network / internet**
+- ICMP replies instead of silent packet loss: fragmentation needed for fragments (large DNS responses no longer time out), Time Exceeded on TTL exhaustion; port-unreachable now comes from the unreachable host's address instead of `0.0.0.0` (2d4f38c)
+- Ping no longer looks broken on dedicated servers: false negatives from the JVM fallback (`CAP_NET_RAW`) are logged with a one-shot WARN (2d4f38c, issue #13)
+- MAC addresses containing bytes ≥ `0x80` are parsed and formatted correctly; ICMP-unreachable carried an all-zero packet quote (2d4f38c)
+- JVM crash on TCP reads when running with `-ea` (debug `assert false`) (2d4f38c)
+- Internet card enabled while VXLAN is disabled now logs a WARN instead of failing silently (2d4f38c)
+
+**Energy and blocks**
+- Energy only reached the first cable neighbor ("ping-pong" buffers) — network-wide distribution once per tick (8168a1f, 75c8cc4)
+- Server crash when loading a chunk with a network switch; empty-frame spam from connectors that crashed switches (8168a1f)
+- Monitor re-encoded frames every tick even without changes (8168a1f)
+- Bundled redstone wrote and read the signal on opposite block faces (8168a1f)
+- Screen positioning was off on multiblock monitors; monitor connects to the bus from any face (fe9cded, a5ba9cc)
+- OnyxOS: kernel crash at boot with a network card installed (virtio-net) — updated `onyx-kernel.bin` (c9db904)
+
+**Terminal (VT100/vttest)**
+- CSI argument parser and cursor control brought to VT100 spec (57b7581); insert/delete char/line (ICH/DCH/IL/DL) per vttest suite 8 (d36e579)
+- Scrolling IND/RI/NEL only at scroll-region boundaries; line/line clearing, tab stops (width 8), backspace at pending-wrap, DECOM origin mode (80bb076, b921a05, fb4c55a, c78643f, e92000b, f6b1b44)
+- Clearing a line no longer resets the text color; SGR 38/48 no longer drops trailing parameters; ANSI/256-color palettes synchronized; font red/blue channels were swapped (e7d352e, 80bb076, adaba93, 32a7521, 943e39c)
+- DECSC/DECRC save and restore style, charset and colors, not just the cursor; RIS fully resets saved state and parser state (cc10421, ed77e0f)
+- Malformed extended-color SGR sequences no longer enable blink/dim; out-of-range 256/RGB values are clamped (c9f254d, 72abd63)
+- Stale-line rendering artifacts after scrolling into scrollback and IL/DL/SU/SD (dirty-mask) (a86fafb, 8a673c9, c858266, 62dfb63)
+- The cursor is correctly constrained to the scroll region on absolute movement (099b88e, 8644c6a, 6dd4415)
+- Keyboard input is encoded as UTF-8 — Cyrillic and clipboard paste no longer turn into mojibake (be838ab)
+- Utf8Decoder no longer drops control characters interrupting multi-byte sequences (8338484)
+- Terminal screen data is no longer written to chunk NBT (~512 KiB → ~2 KiB) (71fb105)
+- Double UV calculation for the square glyph in the font atlas (71fb105)
 
 ### Changed
 
-- Dependencies updated (all verified against Minecraft 1.21.1 / NeoForge 21.1.x):
-  - NeoForge 21.1.233 → 21.1.248
-  - ModDevGradle 2.0.124 → 2.0.144
-  - Mixin annotation processor 0.8.5 → 0.8.7
-  - ceres 0.0.4 → 0.0.6
-  - sedna-buildroot 0.0.64 → 0.0.71 (vendored into `libs/`; guest image update)
-  - JEI 19.25.1.332 → 19.44.0.403
-  - ProjectRed 4.22.0-beta+33 → 4.23.0
-  - Mockito 4.3.1 → 5.23.0 (byte-buddy 1.12.x cannot instrument Java 21 classes; inline mock maker is the default in Mockito 5)
-  - JUnit Jupiter 5.12.2 → 5.13.4 (+ platform launcher 1.13.4)
-- Test classpaths now share the main dependency set so inet-layer tests can load Minecraft NBT classes at runtime.
-- Repository declarations got `content` filters so modules resolve only from their own mavens (cursemaven rate-limiting no longer breaks builds).
+- Dependencies updated: NeoForge 21.1.248, JEI 19.44, ProjectRed 4.23.0, ceres 0.0.6, sedna-buildroot 0.0.71 (new guest image), Mockito 5, JUnit 5.13 (ed75650)
+- Versioning switched to a Modrinth-friendly format, mod metadata updated (109f6e9)
+- Item textures reorganized into folders; bilinear filtering disabled on the monitor screen — crisp pixels (a5ba9cc)
+- Speaker received a Charger-style model/texture (8168a1f)
+- Default parameters of all CSI sequences normalized per VT100 (f3f4501)
+- Internal: ScreenRegistry DSL for screen registration, unified private-mode table (ModeTable), dirty-layer separation, +29 inet unit tests (67b2a8b, 6135a0c, f3f4501, 2d4f38c)
 
-### Not changed
+### Docs
 
-- sedna stays at 2.0.13 (latest release).
-- Parchment mappings stay at 2024.11.17 (latest for 1.21.1).
-- Error Prone stays at 2.50.0 (latest).
-- CodeChickenLib / CBMultipart dynamic versions already resolve to the latest 1.21.1 builds.
-
-## [0.1.0] — 2026-08-XX
-
-Initial public release.
+- Guest OS networking guide: [docs/NETWORKING.md](docs/NETWORKING.md) (08c9a60)
