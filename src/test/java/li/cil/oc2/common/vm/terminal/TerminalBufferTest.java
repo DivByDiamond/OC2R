@@ -572,6 +572,97 @@ public class TerminalBufferTest {
         assertEquals(expected, renderer.dirtyMask.get() & 0xFF);
     }
 
+    // --- Screen features: ECH / DCH / ICH / IRM / DECSCNM ---
+
+    @Test
+    void echErasesCharsFromCursorWithoutShifting() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");     // cursor to col 3 (x=2, the 'C')
+        write(terminal, "\u001b[2X");     // ECH 2: erase 2 chars, no shift
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        assertEquals(' ', charAt(2, 0), "ECH blanks the char at the cursor");
+        assertEquals(' ', charAt(3, 0), "ECH blanks N chars from the cursor");
+        assertEquals('E', charAt(4, 0), "ECH must not shift; later chars stay put");
+        assertEquals('F', charAt(5, 0));
+    }
+
+    @Test
+    void dchDeletesCharsShiftingLeft() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");     // x=2 (C)
+        write(terminal, "\u001b[2P");     // DCH 2: delete 2, shift left, blank the tail
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        assertEquals('E', charAt(2, 0), "DCH shifts chars left into the deleted gap");
+        assertEquals('F', charAt(3, 0));
+        assertEquals('G', charAt(4, 0));
+        assertEquals('H', charAt(5, 0));
+        assertEquals(' ', charAt(6, 0), "DCH fills the tail with blanks");
+        assertEquals(' ', charAt(7, 0));
+    }
+
+    @Test
+    void ichInsertsBlanksShiftingRight() {
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");     // x=2 (C)
+        write(terminal, "\u001b[2@");     // ICH 2: insert 2 blanks, shift right
+        assertEquals('A', charAt(0, 0));
+        assertEquals('B', charAt(1, 0));
+        assertEquals(' ', charAt(2, 0), "ICH inserts blanks at the cursor");
+        assertEquals(' ', charAt(3, 0));
+        assertEquals('C', charAt(4, 0), "ICH shifts existing chars right");
+        assertEquals('D', charAt(5, 0));
+        assertEquals('E', charAt(6, 0));
+        assertEquals('F', charAt(7, 0));
+    }
+
+    @Test
+    void irmInsertsCharsShiftingRight() {
+        write(terminal, "AB");
+        write(terminal, "\u001b[1G");     // x=0 (A)
+        write(terminal, "\u001b[4h");     // IRM on (SM 4)
+        write(terminal, "X");             // insert X at col 0; A,B shift right
+        assertEquals('X', charAt(0, 0));
+        assertEquals('A', charAt(1, 0), "IRM shifts existing chars right");
+        assertEquals('B', charAt(2, 0));
+        write(terminal, "\u001b[4l");     // IRM off (RM 4)
+        write(terminal, "\u001b[1G");     // x=0
+        write(terminal, "Y");             // overwrite in place, no shift
+        assertEquals('Y', charAt(0, 0));
+        assertEquals('A', charAt(1, 0), "with IRM off, writes overwrite in place");
+    }
+
+    @Test
+    void decscnmToggleMarksWholeScreenDirty() {
+        assertFalse(terminal.currentPrivateModeState.DECSCNM);
+        resetDirty();
+        write(terminal, "\u001b[?5h");    // DECSCNM on
+        assertTrue(terminal.currentPrivateModeState.DECSCNM, "?5h enables screen-inverse");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get(), "DECSCNM toggle must redraw the whole screen");
+        resetDirty();
+        write(terminal, "\u001b[?5l");    // DECSCNM off
+        assertFalse(terminal.currentPrivateModeState.DECSCNM);
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get(), "DECSCNM toggle must redraw the whole screen");
+    }
+
+    @Test
+    void echErasedCellsTakeDefaultForegroundAndCurrentBackground() {
+        write(terminal, "\u001b[41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[3G");     // x=2
+        write(terminal, "\u001b[2X");     // ECH 2
+        final int idx = cellIndex(2, 0);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.colors[idx].Mode,
+            "erased cell foreground must be the DEFAULT_FOREGROUND marker");
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.colorsBackground[idx].Mode,
+            "erased cell background must keep the current bg mode");
+        assertEquals(1, terminal.colorsBackground[idx].G,
+            "erased cell background must keep the current bg color (red)");
+        assertEquals(TerminalColors.DEFAULT_STYLE, terminal.styles[idx],
+            "erased cell style must reset to default");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -585,6 +676,11 @@ public class TerminalBufferTest {
     private char charAt(final int x, final int y) {
         final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
         return (char) terminal.buffer[x + row * Terminal.WIDTH];
+    }
+
+    private int cellIndex(final int x, final int y) {
+        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        return x + row * Terminal.WIDTH;
     }
 
     private char altCharAt(final int x, final int y) {
