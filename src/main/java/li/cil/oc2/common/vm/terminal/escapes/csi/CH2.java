@@ -48,11 +48,15 @@ public class CH2 extends CSISequenceHandler {
             terminal.scrollFirst = 0;
             terminal.scrollLast = Terminal.HEIGHT - 1;
             terminal.setRelativeCursorPos(0, 0);
-            markScreenDirty(terminal);
+            terminal.markAllDirty();
         });
         actions.put(ModeTable.DECOM, terminal -> {
             terminal.currentPrivateModeState.DECOM = true;
             terminal.setRelativeCursorPos(0, 0);
+        });
+        actions.put(ModeTable.DECSCNM, terminal -> {
+            terminal.currentPrivateModeState.DECSCNM = true;
+            terminal.markAllDirty();
         });
         actions.put(ModeTable.X10MM, terminal ->
                 setMouseTracking(terminal, true, false, false, false));
@@ -70,7 +74,7 @@ public class CH2 extends CSISequenceHandler {
             terminal.bufferManager.clearAlt();
             terminal.setCursorPos(0, 0);
             terminal.currentPrivateModeState.ALT_BUFFER = true;
-            markScreenDirty(terminal);
+            terminal.markAllDirty();
         });
         actions.put(ModeTable.X11MM, terminal ->
                 setMouseTracking(terminal, false, true, false, false));
@@ -90,7 +94,7 @@ public class CH2 extends CSISequenceHandler {
             terminal.bufferManager.clearAlt();
             terminal.setCursorPos(0, 0);
             terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = true;
-            markScreenDirty(terminal);
+            terminal.markAllDirty();
         });
         actions.put(ModeTable.SAVE_CURSOR, terminal -> {
             saveCursorPosition(terminal);
@@ -101,7 +105,7 @@ public class CH2 extends CSISequenceHandler {
             terminal.bufferManager.clearAlt();
             terminal.setCursorPos(0, 0);
             terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = true;
-            markScreenDirty(terminal);
+            terminal.markAllDirty();
         });
         return actions;
     }
@@ -143,19 +147,6 @@ public class CH2 extends CSISequenceHandler {
                 }
             }
         }
-    }
-
-    private static void markScreenDirty(final Terminal terminal) {
-        int dirtyLinesMask = 0;
-        for (int j = 0; j < Terminal.HEIGHT; j++) {
-            dirtyLinesMask |= 1 << j;
-        }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 
     private static void saveCursorPosition(final Terminal terminal) {

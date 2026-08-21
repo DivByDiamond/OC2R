@@ -10,8 +10,7 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalBackgroundRenderer {
-    public static void renderBackground(
-            final Terminal terminal,
+    public static void renderBackground(final Terminal terminal, // NOPMD: data-driven background render (DECSCNM, blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row) {
@@ -27,9 +26,20 @@ public class TerminalBackgroundRenderer {
             final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
-            final boolean invertBackground = (style & Terminal.STYLE_INVERT_MASK) != 0;
+            // DECSCNM screen inverse: XOR the per-cell SGR 7 invert with the screen-inverse mode.
+            final boolean screenInverted = terminal.currentPrivateModeState.DECSCNM;
+            final boolean invertBackground = ((style & Terminal.STYLE_INVERT_MASK) != 0) ^ screenInverted;
+            final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
+            final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
+            final boolean blinkOff = isBlinking
+                    && Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
             final ColorData color = resolveColor(terminal, useAltBuffer, index, invertBackground);
-            final int background = resolveBackground(style, color, invertBackground);
+            int background = resolveBackground(style, color, invertBackground, isBold, isBlinking, blinkOff);
+            // When the background blinks (inverted + blink), suppress it on the off phase
+            // (non-bold only — bold blink alternates normal/bright instead).
+            if (isBlinking && invertBackground && blinkOff && !isBold) {
+                background = 0x000000;
+            }
 
             run.advance(tx, background, matrix, buffer);
             tx += Terminal.CHAR_WIDTH;
@@ -52,22 +62,28 @@ public class TerminalBackgroundRenderer {
                 : useAltBuffer ? terminal.altColors[index] : terminal.colors[index];
     }
 
-    private static int resolveBackground(
-            final byte style,
+    private static int resolveBackground(final byte style, // NOPMD: data-driven color-mode switch (bold-bright, blink)
             final ColorData color,
-            final boolean invertBackground) {
+            final boolean invertBackground,
+            final boolean isBold, final boolean isBlinking, final boolean blinkOff) {
         final int[] palette =
                 (style & Terminal.STYLE_DIM_MASK) != 0
                         ? TerminalColors.DIM_COLORS
                         : TerminalColors.COLORS;
+        // Bold blink alternates normal/bright intensity instead of on/off.
+        final boolean dimBoldForBlink = isBlinking && invertBackground && blinkOff && isBold;
         return switch (color.Mode) {
             case SIXTEEN_COLOR -> palette[backgroundChannel(color, invertBackground)];
             case TWO_FIFTY_SIX_COLOR ->
                     TerminalColors.COLORS_256[backgroundChannel(color, invertBackground)];
             case TRUE_COLOR -> color.toInt();
             case SIXTEEN_COLOR_BRIGHT ->
-                    TerminalColors.BRIGHT_COLORS[backgroundChannel(color, invertBackground)];
+                    (dimBoldForBlink ? TerminalColors.COLORS : TerminalColors.BRIGHT_COLORS)
+                            [backgroundChannel(color, invertBackground)];
             case DEFAULT_BACKGROUND -> 0x000000;
+            case DEFAULT_FOREGROUND ->
+                    ((isBold && !dimBoldForBlink) ? TerminalColors.BRIGHT_COLORS
+                            : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
             default -> throw new AssertionError(color.Mode);
         };
     }

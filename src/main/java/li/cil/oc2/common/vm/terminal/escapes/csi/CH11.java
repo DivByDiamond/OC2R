@@ -63,7 +63,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.altColors,
                     endIndex,
                     endIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.copy());
             Arrays.fill(
                     terminal.altStyles, endIndex, endIndex + chars, TerminalColors.DEFAULT_STYLE);
@@ -86,7 +86,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.colors,
                     endIndex,
                     endIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.copy());
             Arrays.fill(terminal.styles, endIndex, endIndex + chars, TerminalColors.DEFAULT_STYLE);
         }
@@ -128,7 +128,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.altColors,
                     startIndex,
                     startIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.altColorsBackground, startIndex, startIndex + chars, c.copy());
             Arrays.fill(
                     terminal.altStyles,
@@ -153,7 +153,7 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 10 (ICH and S
                     terminal.colors,
                     startIndex,
                     startIndex + chars,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.colorsBackground, startIndex, startIndex + chars, c.copy());
             Arrays.fill(
                     terminal.styles, startIndex, startIndex + chars, TerminalColors.DEFAULT_STYLE);

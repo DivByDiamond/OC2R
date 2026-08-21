@@ -73,7 +73,7 @@ public class SGRTest {
     void sgrResetRestoresDefaults() {
         write(terminal, "\u001b[38;2;100;150;200;48;5;52;1mX");
         write(terminal, "\u001b[0mY");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
         assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode);
         assertEquals(TerminalColors.DEFAULT_STYLE, terminal.style);
     }
@@ -89,7 +89,7 @@ public class SGRTest {
         // 38;5 with no color index: must NOT fall through to SGR 5 (blink).
         write(terminal, "\u001b[38;5m");
         assertEquals(0, terminal.style & Terminal.STYLE_BLINK_MASK, "malformed 38;5 must not enable blink");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
             "malformed 38;5 must not change the foreground color mode");
 
         // 38;2 with no RGB triple: must NOT fall through to SGR 2 (dim).
@@ -107,7 +107,7 @@ public class SGRTest {
     void sgrMalformedExtendedColorBareSelectorDoesNotCrash() {
         // 38 as the very last arg (no mode byte at all): skip just the selector, no crash.
         write(terminal, "\u001b[38m");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
         assertEquals(TerminalColors.DEFAULT_STYLE, terminal.style);
     }
 
@@ -185,17 +185,17 @@ public class SGRTest {
     void decrcAfterRisRestoresDefaultsNotStaleColor() {
         // RIS resets saved state, so a DECRC after RIS restores the branch defaults (a no-op for
         // current state, since RIS already set it there), not the pre-RIS color. The saved
-        // foreground mode default must match the operative current-state default (SIXTEEN_COLOR),
-        // not DEFAULT_FOREGROUND — whose rendering semantics arrive with the screen-features work.
+        // foreground mode default is DEFAULT_FOREGROUND, matching the current-state default;
+        // its boldIsBright rendering arrives with this screen-features work.
         write(terminal, "\u001b[38;5;196m");
         write(terminal, "\u001b7");             // save 196
         write(terminal, "\u001bc");             // RIS: reset current + saved state to defaults
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
         write(terminal, "\u001b8");             // DECRC: restore saved (now defaults) — no-op
         assertNotEquals(196, terminal.twoFiftySixColor.R,
             "RIS must have reset saved state so DECRC does not restore the stale color");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
-            "DECRC after RIS is a no-op: current stays at the SIXTEEN_COLOR default");
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "DECRC after RIS is a no-op: current stays at the DEFAULT_FOREGROUND default");
     }
 
     @Test
@@ -209,6 +209,48 @@ public class SGRTest {
         assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
         assertEquals(160, terminal.twoFiftySixColor.R,
             "DECRC in alt buffer must restore the saved color via altSaved*");
+    }
+
+    // --- Default fg/bg (SGR 39/49): flip to DEFAULT_* and reset the bright channel ---
+
+    @Test
+    void sgr39DefaultForegroundResetsBrightChannel() {
+        write(terminal, "\u001b[91m");    // bright fg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.R = 1
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT, terminal.currentForegroundColorMode);
+        assertEquals(1, terminal.sixteenColorBright.R);
+        write(terminal, "\u001b[39m");    // default fg
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "SGR 39 must select the default-foreground mode");
+        assertEquals(TerminalColors.Color.WHITE, terminal.sixteenColorBright.R,
+            "SGR 39 must reset the bright foreground channel to white");
+    }
+
+    @Test
+    void sgr49DefaultBackgroundResetsBrightChannel() {
+        write(terminal, "\u001b[101m");   // bright bg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.G = 1
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT, terminal.currentBackgroundColorMode);
+        assertEquals(1, terminal.sixteenColorBright.G);
+        write(terminal, "\u001b[49m");    // default bg
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode,
+            "SGR 49 must select the default-background mode");
+        assertEquals(TerminalColors.Color.BLACK, terminal.sixteenColorBright.G,
+            "SGR 49 must reset the bright background channel to black");
+    }
+
+    @Test
+    void risResetsCurrentAndSavedColorModesToDefaults() {
+        write(terminal, "\u001b[38;5;196m");   // fg 256-color
+        write(terminal, "\u001b[48;5;21m");    // bg 256-color
+        write(terminal, "\u001b7");            // DECSC: save the non-default modes
+        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedBackgroundColorMode);
+        write(terminal, "\u001bc");            // RIS
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.savedForegroundColorMode,
+            "RIS must reset the saved foreground mode to the default");
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.savedBackgroundColorMode,
+            "RIS must reset the saved background mode to the default");
     }
 
     private void write(final Terminal target, final String text) {

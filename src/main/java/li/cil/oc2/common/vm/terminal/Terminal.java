@@ -36,8 +36,8 @@ public class Terminal {
     public static final int STYLE_HIDDEN_MASK = 1 << 5;
     public static final int STYLE_ITALIC_MASK = 1 << 6;
 
-    public ColorMode currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;
-    public ColorMode currentBackgroundColorMode = ColorMode.SIXTEEN_COLOR;
+    public ColorMode currentForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
+    public ColorMode currentBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
     public ColorData sixteenColor,
             sixteenColorBright,
             twoFiftySixColor,
@@ -63,7 +63,7 @@ public class Terminal {
     public boolean savedUseG0 = true;
     public int savedDrawingModeG0;
     public int savedDrawingModeG1;
-    public ColorMode savedForegroundColorMode = ColorMode.SIXTEEN_COLOR;
+    public ColorMode savedForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
     public ColorMode savedBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
     public ColorData savedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
     public ColorData savedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
@@ -76,7 +76,7 @@ public class Terminal {
     public boolean altSavedUseG0 = true;
     public int altSavedDrawingModeG0;
     public int altSavedDrawingModeG1;
-    public ColorMode altSavedForegroundColorMode = ColorMode.SIXTEEN_COLOR;
+    public ColorMode altSavedForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
     public ColorMode altSavedBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
     public ColorData altSavedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
     public ColorData altSavedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();

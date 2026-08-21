@@ -8,7 +8,7 @@ import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
 
 public class RIS {
     public static void execute(Terminal terminal) {
-        terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+        terminal.currentForegroundColorMode = TerminalColors.ColorMode.DEFAULT_FOREGROUND;
         terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
         terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.copy();
         terminal.sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
@@ -39,7 +39,7 @@ public class RIS {
         terminal.savedUseG0 = true;
         terminal.savedDrawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.savedDrawingModeG1 = TerminalColors.DrawingMode.ASCII;
-        terminal.savedForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+        terminal.savedForegroundColorMode = TerminalColors.ColorMode.DEFAULT_FOREGROUND;
         terminal.savedBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
         terminal.savedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
         terminal.savedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
@@ -50,7 +50,7 @@ public class RIS {
         terminal.altSavedUseG0 = true;
         terminal.altSavedDrawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.altSavedDrawingModeG1 = TerminalColors.DrawingMode.ASCII;
-        terminal.altSavedForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
+        terminal.altSavedForegroundColorMode = TerminalColors.ColorMode.DEFAULT_FOREGROUND;
         terminal.altSavedBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
         terminal.altSavedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
         terminal.altSavedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
@@ -61,11 +61,11 @@ public class RIS {
         terminal.bufferManager.clearAlt();
         terminal.setCursorPos(0, 0);
         Arrays.fill(terminal.buffer, ' ');
-        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_COLORS.copy());
+        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
         Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
+        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.tabs, false);
