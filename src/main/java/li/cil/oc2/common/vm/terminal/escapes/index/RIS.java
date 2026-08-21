@@ -1,6 +1,5 @@
 package li.cil.oc2.common.vm.terminal.escapes.index;
 
-import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.modes.ModeState;
@@ -20,10 +19,11 @@ public class RIS {
         terminal.currentPrivateModeState = new PrivateModeState();
         terminal.savePrivateModeState = new PrivateModeState();
         terminal.state = Terminal.State.NORMAL;
-        terminal.lastRowToDisplay = 24;
-        terminal.lastRowToDisplayMax = 24;
-        terminal.scrollFirst = 0;
-        terminal.scrollLast = Terminal.HEIGHT - 1;
+        // Return to the 80-column power-on default. setWidth reallocates the buffers, clears
+        // the screen, rebuilds tab stops, resets margins, and homes the cursor — the full
+        // geometry reset. The DECCOLM flag is cleared above via the fresh PrivateModeState;
+        // this keeps the flag and the allocated width in agreement.
+        terminal.setWidth(Terminal.WIDTH);
         terminal.savedX = 0;
         terminal.savedY = 0;
         terminal.altSavedX = 0;
@@ -57,24 +57,5 @@ public class RIS {
         terminal.altSavedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
         terminal.altSavedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
         terminal.altSavedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-        terminal.bufferManager.clear();
-        terminal.bufferManager.clearAlt();
-        terminal.setCursorPos(0, 0);
-        Arrays.fill(terminal.buffer, ' ');
-        Arrays.fill(terminal.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(terminal.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
-        Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
-        Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
-        Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
-        Arrays.fill(terminal.tabs, false);
-        Arrays.fill(terminal.altTabs, false);
-        for (int i = 1; i < terminal.width; i++) {
-            if (i % TerminalColors.TAB_WIDTH == 0) {
-                terminal.tabs[i] = true;
-                terminal.altTabs[i] = true;
-            }
-        }
     }
 }

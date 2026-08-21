@@ -49,11 +49,14 @@ public class Terminal {
     public transient ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
     // DECCOLM dynamic width; setWidth reallocates buffers. Transient: re-inits to WIDTH on load.
     public transient int width = WIDTH;
-    public transient int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public boolean[] tabs = new boolean[WIDTH];
+    // Width-dependent buffers are allocated solely by setWidth (called from the constructor via
+    // RIS, and on every DECCOLM/RIS width switch). No field initializer here — that would just be
+    // allocated and immediately discarded by setWidth's reallocation.
+    public transient int[] buffer;
+    public transient ColorData[] colors;
+    public transient ColorData[] colorsBackground;
+    public transient byte[] styles;
+    public boolean[] tabs;
     public State state = State.NORMAL;
     public int scrollFirst = 0;
     public int scrollLast = HEIGHT - 1;
@@ -88,11 +91,11 @@ public class Terminal {
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 
-    public transient int[] altBuffer = new int[WIDTH * HEIGHT];
-    public transient ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
-    public transient ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
-    public transient byte[] altStyles = new byte[WIDTH * HEIGHT];
-    public boolean[] altTabs = new boolean[WIDTH];
+    public transient int[] altBuffer;
+    public transient ColorData[] altColors;
+    public transient ColorData[] altColorsBackground;
+    public transient byte[] altStyles;
+    public boolean[] altTabs;
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));

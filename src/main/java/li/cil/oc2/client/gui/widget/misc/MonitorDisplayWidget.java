@@ -22,7 +22,7 @@ import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)
 public final class MonitorDisplayWidget {
-    private static final int TERMINAL_WIDTH = 80 * Terminal.CHAR_WIDTH / 2;
+    private static final int TERMINAL_WIDTH = Terminal.WIDTH * Terminal.CHAR_WIDTH / 2;
     private static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2;
 
     private static final int MARGIN_SIZE = 8;
