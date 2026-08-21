@@ -54,6 +54,10 @@ public class CH2 extends CSISequenceHandler {
             terminal.currentPrivateModeState.DECOM = true;
             terminal.setRelativeCursorPos(0, 0);
         });
+        actions.put(ModeTable.DECSCNM, terminal -> {
+            terminal.currentPrivateModeState.DECSCNM = true;
+            markScreenDirty(terminal);
+        });
         actions.put(ModeTable.X10MM, terminal ->
                 setMouseTracking(terminal, true, false, false, false));
         actions.put(ModeTable.START_BLINKING_CURSOR, terminal -> {

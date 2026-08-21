@@ -4,6 +4,7 @@ import java.util.Arrays;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 
 public class TerminalBuffer {
     private final Terminal terminal;
@@ -25,7 +26,7 @@ public class TerminalBuffer {
         }
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             Arrays.fill(terminal.altBuffer, ' ');
-            Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
+            Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.altColorsBackground, c.copy());
             Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         } else {
@@ -33,16 +34,16 @@ public class TerminalBuffer {
             int endIndex = startIndex + (Terminal.HEIGHT * Terminal.WIDTH);
             Arrays.fill(terminal.buffer, startIndex, endIndex, ' ');
             Arrays.fill(
-                    terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_COLORS.copy());
+                    terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
-        terminal.markAllDirty();
+        terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 
     public void clearAlt() {
         Arrays.fill(terminal.altBuffer, ' ');
-        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_COLORS.copy());
+        Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;
@@ -60,59 +61,177 @@ public class TerminalBuffer {
     }
 
     public void clearLine(final int y, final int fromIndex, final int toIndex) {
-        ColorData c;
-        switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-            case TRUE_COLOR -> c = terminal.backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-        }
+        clearChars(y, fromIndex, toIndex - fromIndex);
+    }
+
+    /**
+     * Erase {@code count} characters starting at column {@code x} on line {@code y}, filling with
+     * blanks. Does not shift surrounding characters.
+     */
+    public void clearChars(final int y, final int x, int count) {
+        count = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        if (count == 0) return;
+        final ColorData c = getCurrentBackgroundColor();
+        final int from = getLinearIndex(y, x);
+        final int to = from + count;
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            Arrays.fill(
-                    terminal.altBuffer,
-                    y * Terminal.WIDTH + fromIndex,
-                    y * Terminal.WIDTH + toIndex,
-                    ' ');
+            Arrays.fill(terminal.altBuffer, from, to, ' ');
+            Arrays.fill(terminal.altColors, from, to, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+            Arrays.fill(terminal.altColorsBackground, from, to, c.copy());
+            Arrays.fill(terminal.altStyles, from, to, TerminalColors.DEFAULT_STYLE);
+        } else {
+            Arrays.fill(terminal.buffer, from, to, ' ');
+            Arrays.fill(terminal.colors, from, to, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+            Arrays.fill(terminal.colorsBackground, from, to, c.copy());
+            Arrays.fill(terminal.styles, from, to, TerminalColors.DEFAULT_STYLE);
+        }
+        markDirty(y);
+    }
+
+    /**
+     * Delete {@code count} characters at column {@code x} on line {@code y}, shifting remaining
+     * characters left and filling blanks at the end.
+     */
+    public void deleteChars(final int y, final int x, int count) {
+        count = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int remaining = (Terminal.WIDTH - x) - count;
+        if (remaining <= 0) {
+            clearChars(y, x, Terminal.WIDTH - x);
+            return;
+        }
+        final ColorData c = getCurrentBackgroundColor();
+        final int index = getLinearIndex(y, x);
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            System.arraycopy(
+                    terminal.altBuffer, index + count, terminal.altBuffer, index, remaining);
+            System.arraycopy(
+                    terminal.altColors, index + count, terminal.altColors, index, remaining);
+            System.arraycopy(
+                    terminal.altColorsBackground,
+                    index + count,
+                    terminal.altColorsBackground,
+                    index,
+                    remaining);
+            System.arraycopy(
+                    terminal.altStyles, index + count, terminal.altStyles, index, remaining);
+            Arrays.fill(terminal.altBuffer, index + remaining, index + remaining + count, ' ');
             Arrays.fill(
                     terminal.altColors,
-                    y * Terminal.WIDTH + fromIndex,
-                    y * Terminal.WIDTH + toIndex,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    index + remaining,
+                    index + remaining + count,
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(
                     terminal.altColorsBackground,
-                    y * Terminal.WIDTH + fromIndex,
-                    y * Terminal.WIDTH + toIndex,
+                    index + remaining,
+                    index + remaining + count,
                     c.copy());
             Arrays.fill(
                     terminal.altStyles,
-                    y * Terminal.WIDTH + fromIndex,
-                    y * Terminal.WIDTH + toIndex,
+                    index + remaining,
+                    index + remaining + count,
                     TerminalColors.DEFAULT_STYLE);
         } else {
-            int correctedY = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
-            Arrays.fill(
-                    terminal.buffer,
-                    correctedY * Terminal.WIDTH + fromIndex,
-                    correctedY * Terminal.WIDTH + toIndex,
-                    ' ');
+            System.arraycopy(terminal.buffer, index + count, terminal.buffer, index, remaining);
+            System.arraycopy(terminal.colors, index + count, terminal.colors, index, remaining);
+            System.arraycopy(
+                    terminal.colorsBackground,
+                    index + count,
+                    terminal.colorsBackground,
+                    index,
+                    remaining);
+            System.arraycopy(terminal.styles, index + count, terminal.styles, index, remaining);
+            Arrays.fill(terminal.buffer, index + remaining, index + remaining + count, ' ');
             Arrays.fill(
                     terminal.colors,
-                    correctedY * Terminal.WIDTH + fromIndex,
-                    correctedY * Terminal.WIDTH + toIndex,
-                    TerminalColors.DEFAULT_COLORS.copy());
+                    index + remaining,
+                    index + remaining + count,
+                    TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(
                     terminal.colorsBackground,
-                    correctedY * Terminal.WIDTH + fromIndex,
-                    correctedY * Terminal.WIDTH + toIndex,
+                    index + remaining,
+                    index + remaining + count,
                     c.copy());
             Arrays.fill(
                     terminal.styles,
-                    correctedY * Terminal.WIDTH + fromIndex,
-                    correctedY * Terminal.WIDTH + toIndex,
+                    index + remaining,
+                    index + remaining + count,
                     TerminalColors.DEFAULT_STYLE);
         }
-        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, y));
+        markDirty(y);
+    }
+
+    /**
+     * Insert {@code count} blank characters at column {@code x} on line {@code y}, shifting
+     * existing characters right. Characters pushed past the line width are lost.
+     */
+    public void insertChars(final int y, final int x, int count) {
+        count = Math.min(Math.max(count, 1), Terminal.WIDTH - x);
+        final int remaining = (Terminal.WIDTH - x) - count;
+        if (remaining <= 0) {
+            clearChars(y, x, Terminal.WIDTH - x);
+            return;
+        }
+        final ColorData c = getCurrentBackgroundColor();
+        final int index = getLinearIndex(y, x);
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            System.arraycopy(
+                    terminal.altBuffer, index, terminal.altBuffer, index + count, remaining);
+            System.arraycopy(
+                    terminal.altColors, index, terminal.altColors, index + count, remaining);
+            System.arraycopy(
+                    terminal.altColorsBackground,
+                    index,
+                    terminal.altColorsBackground,
+                    index + count,
+                    remaining);
+            System.arraycopy(
+                    terminal.altStyles, index, terminal.altStyles, index + count, remaining);
+            Arrays.fill(terminal.altBuffer, index, index + count, ' ');
+            Arrays.fill(
+                    terminal.altColors, index, index + count, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+            Arrays.fill(terminal.altColorsBackground, index, index + count, c.copy());
+            Arrays.fill(terminal.altStyles, index, index + count, TerminalColors.DEFAULT_STYLE);
+        } else {
+            System.arraycopy(terminal.buffer, index, terminal.buffer, index + count, remaining);
+            System.arraycopy(terminal.colors, index, terminal.colors, index + count, remaining);
+            System.arraycopy(
+                    terminal.colorsBackground,
+                    index,
+                    terminal.colorsBackground,
+                    index + count,
+                    remaining);
+            System.arraycopy(terminal.styles, index, terminal.styles, index + count, remaining);
+            Arrays.fill(terminal.buffer, index, index + count, ' ');
+            Arrays.fill(
+                    terminal.colors, index, index + count, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+            Arrays.fill(terminal.colorsBackground, index, index + count, c.copy());
+            Arrays.fill(terminal.styles, index, index + count, TerminalColors.DEFAULT_STYLE);
+        }
+        markDirty(y);
+    }
+
+    private int getLinearIndex(final int y, final int x) {
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            return y * Terminal.WIDTH + x;
+        }
+        return (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)) * Terminal.WIDTH + x;
+    }
+
+    private ColorData getCurrentBackgroundColor() {
+        return switch (terminal.currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> terminal.sixteenColor;
+            case TWO_FIFTY_SIX_COLOR -> terminal.twoFiftySixColor;
+            case TRUE_COLOR -> terminal.backgroundColor;
+            case SIXTEEN_COLOR_BRIGHT -> terminal.sixteenColorBright;
+            default -> TerminalColors.DEFAULT_BACKGROUND_COLOR;
+        };
+    }
+
+    private void markDirty(final int y) {
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(1 << y, (left, right) -> left | right));
     }
 
     public void incrementLastLineToDisplay() {

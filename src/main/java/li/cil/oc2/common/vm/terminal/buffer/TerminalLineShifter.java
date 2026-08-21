@@ -58,7 +58,7 @@ final class TerminalLineShifter {
                 terminal.altColors,
                 shiftUpOrDown,
                 shiftUpOrDown + clearCount,
-                TerminalColors.DEFAULT_COLORS.copy());
+                TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(
                 terminal.altColorsBackground,
                 shiftUpOrDown,
@@ -74,12 +74,14 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            final int row = TerminalBufferWriter.getDirtyRow(terminal, i);
-            if (row >= 0 && row < Terminal.HEIGHT) {
-                dirtyLinesMask |= 1 << row;
-            }
+            dirtyLinesMask |= 1 << i;
         }
-        terminal.markDirty(dirtyLinesMask);
+        final int finalDirtyLinesMask = dirtyLinesMask;
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(
+                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 
     private static void shiftMainBuffer(
@@ -108,7 +110,7 @@ final class TerminalLineShifter {
                 terminal.colors,
                 shiftUpOrDown,
                 shiftUpOrDown + clearCount,
-                TerminalColors.DEFAULT_COLORS.copy());
+                TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(
                 terminal.colorsBackground, shiftUpOrDown, shiftUpOrDown + clearCount, c.copy());
         Arrays.fill(
@@ -121,11 +123,15 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            final int row = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
-            if (row >= 0 && row < Terminal.HEIGHT) {
-                dirtyLinesMask |= 1 << row;
-            }
+            int globalI = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - i);
+            int localI = Terminal.HEIGHT + (globalI - terminal.lastRowToDisplay);
+            dirtyLinesMask |= 1 << localI;
         }
-        terminal.markDirty(dirtyLinesMask);
+        final int finalDirtyLinesMask = dirtyLinesMask;
+        terminal.renderers.forEach(
+                model ->
+                        model.getDirtyMask()
+                                .accumulateAndGet(
+                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 }

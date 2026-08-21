@@ -36,6 +36,10 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 terminal.currentPrivateModeState.DECOM = false;
                 terminal.setRelativeCursorPos(0, 0);
             }
+            case DECSCNM -> {
+                terminal.currentPrivateModeState.DECSCNM = false;
+                markScreenDirty();
+            }
             case ALT_BUFFER -> {
                 terminal.currentPrivateModeState.ALT_BUFFER = false;
                 markScreenDirty();

@@ -73,7 +73,7 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                         terminal.altColors,
                         endIndex,
                         endIndex + chars,
-                        TerminalColors.DEFAULT_COLORS.copy());
+                        TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
                 Arrays.fill(terminal.altColorsBackground, endIndex, endIndex + chars, c.copy());
                 Arrays.fill(
                         terminal.altStyles,
@@ -98,7 +98,7 @@ public class CH10 extends CSISequenceHandler { // Combined Handler 10 (DCH and X
                         terminal.colors,
                         endIndex,
                         endIndex + chars,
-                        TerminalColors.DEFAULT_COLORS.copy());
+                        TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
                 Arrays.fill(terminal.colorsBackground, endIndex, endIndex + chars, c.copy());
                 Arrays.fill(
                         terminal.styles,
