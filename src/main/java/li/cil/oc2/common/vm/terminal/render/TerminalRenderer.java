@@ -33,8 +33,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
     @Override
-    public void render(
-            final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
+    public void render(final PoseStack stack, // NOPMD: blink phase tracking + render dispatch
+            final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
 
         // Blink phase tracking: when the blink phase changes, mark lines containing

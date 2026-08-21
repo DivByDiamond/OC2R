@@ -124,7 +124,7 @@ final class TerminalLineShifter {
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
             int globalI = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - i);
-            int localI = Terminal.HEIGHT + (globalI - terminal.lastRowToDisplay);
+            int localI = Terminal.HEIGHT + globalI - terminal.lastRowToDisplay;
             dirtyLinesMask |= 1 << localI;
         }
         final int finalDirtyLinesMask = dirtyLinesMask;

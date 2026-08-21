@@ -31,11 +31,11 @@ public class TerminalBufferWriter {
         terminal.x++;
     }
 
-    public void setChar(final int x, final int y, final int ch) {
+    public void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches
         final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         final int index = altBuffer
                 ? x + y * Terminal.WIDTH
-                : x + (y + (terminal.lastRowToDisplayMax - Terminal.HEIGHT)) * Terminal.WIDTH;
+                : x + (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH;
 
         // Write the character
         if (altBuffer) {
@@ -81,7 +81,7 @@ public class TerminalBufferWriter {
         // Mark dirty — alt buffer uses y directly, main buffer needs scrollback offset
         final int dirtyLine = altBuffer
                 ? y
-                : Terminal.HEIGHT + (terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay);
+                : Terminal.HEIGHT + terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay;
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask().accumulateAndGet(1 << dirtyLine, (prev, next) -> prev | next));

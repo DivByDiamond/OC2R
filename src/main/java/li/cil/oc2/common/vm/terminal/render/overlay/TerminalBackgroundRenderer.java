@@ -10,8 +10,7 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalBackgroundRenderer {
-    public static void renderBackground(
-            final Terminal terminal,
+    public static void renderBackground(final Terminal terminal, // NOPMD: data-driven background render (DECSCNM, blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row) {
@@ -63,8 +62,7 @@ public class TerminalBackgroundRenderer {
                 : useAltBuffer ? terminal.altColors[index] : terminal.colors[index];
     }
 
-    private static int resolveBackground(
-            final byte style,
+    private static int resolveBackground(final byte style, // NOPMD: data-driven color-mode switch (bold-bright, blink)
             final ColorData color,
             final boolean invertBackground,
             final boolean isBold, final boolean isBlinking, final boolean blinkOff) {

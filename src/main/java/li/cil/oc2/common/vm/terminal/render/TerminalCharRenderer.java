@@ -12,8 +12,7 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalCharRenderer {
-    static void renderForeground(
-            final Terminal terminal,
+    static void renderForeground(final Terminal terminal, // NOPMD: data-driven render loop (DECSCNM inverse, VT100 blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row) {
@@ -50,8 +49,8 @@ public class TerminalCharRenderer {
         }
     }
 
-    private static int getForegroundColor(
-            final Terminal terminal, final byte style, final int index, final boolean useAltBuffer,
+    private static int getForegroundColor(final Terminal terminal, // NOPMD: data-driven color-mode switch (boldIsBright, VT100 blink)
+            final byte style, final int index, final boolean useAltBuffer,
             final boolean invertBackground, final boolean isBold, final boolean isBlinking, final boolean blinkOff) {
         final ColorData color = selectColor(terminal, index, useAltBuffer, invertBackground);
         final boolean isDim = (style & Terminal.STYLE_DIM_MASK) != 0;
