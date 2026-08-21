@@ -151,7 +151,7 @@ final class TerminalMouseHandler {
 
     private Vector2i getMousePosition(
             final double x, final double y, final int leftPos, final int topPos) {
-        int tx = MachineTerminalWidget.TERMINAL_WIDTH / Terminal.WIDTH;
+        int tx = MachineTerminalWidget.getInnerWidth() / terminal.width;
         int ty = MachineTerminalWidget.TERMINAL_HEIGHT / Terminal.HEIGHT;
         int sx = (int) ((x - leftPos - MachineTerminalWidget.TERMINAL_X) / tx) + 1;
         int sy = (int) ((y - topPos - MachineTerminalWidget.TERMINAL_Y) / ty) + 1;

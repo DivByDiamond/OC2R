@@ -102,10 +102,10 @@ class TerminalOutput {
     }
 
     private void handleTab() {
-        if (terminal.x < Terminal.WIDTH - 1) {
+        if (terminal.x < terminal.width - 1) {
             do {
                 terminal.x++;
-            } while (terminal.x < Terminal.WIDTH - 1
+            } while (terminal.x < terminal.width - 1
                     && (terminal.currentPrivateModeState.isAltBufferEnabled()
                             ? !terminal.altTabs[terminal.x]
                             : !terminal.tabs[terminal.x]));
@@ -175,11 +175,11 @@ class TerminalOutput {
             } else {
                 int startIndex =
                         (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
-                                * Terminal.WIDTH;
+                                * terminal.width;
                 Arrays.fill(
                         terminal.buffer,
                         startIndex,
-                        startIndex + Terminal.WIDTH * Terminal.HEIGHT,
+                        startIndex + terminal.width * Terminal.HEIGHT,
                         'E');
             }
             terminal.markAllDirty();

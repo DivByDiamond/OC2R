@@ -13,9 +13,9 @@ final class TerminalLineShifter {
             final int count) {
         if (count == 0) return;
 
-        final int srcIndex = firstLine * Terminal.WIDTH;
-        final int charCount = (lastLine + 1) * Terminal.WIDTH - srcIndex;
-        final int dstIndex = srcIndex + count * Terminal.WIDTH;
+        final int srcIndex = firstLine * terminal.width;
+        final int charCount = (lastLine + 1) * terminal.width - srcIndex;
+        final int dstIndex = srcIndex + count * terminal.width;
         ColorData c;
         switch (terminal.currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> c = terminal.sixteenColor;
@@ -52,7 +52,7 @@ final class TerminalLineShifter {
                 charCount);
         System.arraycopy(terminal.altStyles, srcIndex, terminal.altStyles, dstIndex, charCount);
 
-        final int clearCount = Math.abs(count * Terminal.WIDTH);
+        final int clearCount = Math.abs(count * terminal.width);
         Arrays.fill(terminal.altBuffer, shiftUpOrDown, shiftUpOrDown + clearCount, ' ');
         Arrays.fill(
                 terminal.altColors,
@@ -108,7 +108,7 @@ final class TerminalLineShifter {
                 charCount);
         System.arraycopy(terminal.styles, srcIndex, terminal.styles, dstIndex, charCount);
 
-        final int clearCount = Math.abs(count * Terminal.WIDTH);
+        final int clearCount = Math.abs(count * terminal.width);
         Arrays.fill(terminal.buffer, shiftUpOrDown, shiftUpOrDown + clearCount, ' ');
         Arrays.fill(
                 terminal.colors,

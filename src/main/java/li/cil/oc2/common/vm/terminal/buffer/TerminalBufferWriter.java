@@ -14,11 +14,11 @@ public class TerminalBufferWriter {
     public void putChar(final int ch) {
         if (Character.isISOControl(ch)) return;
 
-        if (terminal.x >= Terminal.WIDTH) {
+        if (terminal.x >= terminal.width) {
             if (terminal.currentPrivateModeState.DECAWM) {
                 NEL.execute(terminal);
             } else {
-                terminal.setCursorPos(Terminal.WIDTH - 1, terminal.y);
+                terminal.setCursorPos(terminal.width - 1, terminal.y);
             }
         }
 
@@ -34,8 +34,8 @@ public class TerminalBufferWriter {
     public void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches
         final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         final int index = altBuffer
-                ? x + y * Terminal.WIDTH
-                : x + (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH;
+                ? x + y * terminal.width
+                : x + (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width;
 
         // Write the character
         if (altBuffer) {

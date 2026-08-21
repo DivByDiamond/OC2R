@@ -38,16 +38,19 @@ final class TerminalTextRenderer {
 
         final float textScaleX = 12f / terminal.getWidth();
         final float textScaleY = 7f / terminal.getHeight();
-        final float scale = Math.min(textScaleX, textScaleY) * 0.95f;
+        // Keep aspect ratio by using independent X/Y scales. At 80 cols both produce
+        // the same uniform scale. At 132 cols X shrinks (narrower chars) while Y
+        // stays the same — characters squish horizontally like a real VT100.
+        final float scaleX = textScaleX * 0.95f;
+        final float scaleY = textScaleY * 0.95f;
 
-        final float scaleDeltaX = textScaleX - scale;
-        final float scaleDeltaY = textScaleY - scale;
+        // Center the terminal in the block face.
         stack.translate(
-                terminal.getWidth() * scaleDeltaX * 0.5f,
-                terminal.getHeight() * scaleDeltaY * 0.5f,
+                terminal.getWidth() * (textScaleX - scaleX) * 0.5f,
+                terminal.getHeight() * (textScaleY - scaleY) * 0.5f,
                 0f);
 
-        stack.scale(scale, scale, 1f);
+        stack.scale(scaleX, scaleY, 1f);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();

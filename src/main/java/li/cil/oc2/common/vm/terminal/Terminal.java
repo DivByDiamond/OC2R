@@ -47,11 +47,16 @@ public class Terminal {
 
     public int SCROLL_BACK_COUNT = 20;
     public transient ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
-    public transient int[] buffer = new int[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient ColorData[] colors = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient ColorData[] colorsBackground = new ColorData[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public transient byte[] styles = new byte[WIDTH * HEIGHT * SCROLL_BACK_COUNT];
-    public boolean[] tabs = new boolean[WIDTH];
+    // DECCOLM dynamic width; setWidth reallocates buffers. Transient: re-inits to WIDTH on load.
+    public transient int width = WIDTH;
+    // Width-dependent buffers are allocated solely by setWidth (called from the constructor via
+    // RIS, and on every DECCOLM/RIS width switch). No field initializer here — that would just be
+    // allocated and immediately discarded by setWidth's reallocation.
+    public transient int[] buffer;
+    public transient ColorData[] colors;
+    public transient ColorData[] colorsBackground;
+    public transient byte[] styles;
+    public boolean[] tabs;
     public State state = State.NORMAL;
     public int scrollFirst = 0;
     public int scrollLast = HEIGHT - 1;
@@ -86,11 +91,11 @@ public class Terminal {
     public int lastRowToDisplay = 24;
     public int lastRowToDisplayMax = 24;
 
-    public transient int[] altBuffer = new int[WIDTH * HEIGHT];
-    public transient ColorData[] altColors = new ColorData[WIDTH * HEIGHT];
-    public transient ColorData[] altColorsBackground = new ColorData[WIDTH * HEIGHT];
-    public transient byte[] altStyles = new byte[WIDTH * HEIGHT];
-    public boolean[] altTabs = new boolean[WIDTH];
+    public transient int[] altBuffer;
+    public transient ColorData[] altColors;
+    public transient ColorData[] altColorsBackground;
+    public transient byte[] altStyles;
+    public boolean[] altTabs;
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
@@ -133,11 +138,61 @@ public class Terminal {
     }
 
     public int getWidth() {
-        return WIDTH * CHAR_WIDTH;
+        return width * CHAR_WIDTH;
     }
 
     public int getHeight() {
         return HEIGHT * CHAR_HEIGHT;
+    }
+
+    public int getTerminalWidth() {
+        return width;
+    }
+
+    public void setWidth(final int newWidth) {
+        this.width = newWidth;
+
+        // Reallocate main buffer arrays
+        final int mainSize = newWidth * HEIGHT * SCROLL_BACK_COUNT;
+        this.buffer = new int[mainSize];
+        this.colors = new ColorData[mainSize];
+        this.colorsBackground = new ColorData[mainSize];
+        this.styles = new byte[mainSize];
+        java.util.Arrays.fill(this.buffer, ' ');
+        java.util.Arrays.fill(this.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        java.util.Arrays.fill(this.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
+        java.util.Arrays.fill(this.styles, TerminalColors.DEFAULT_STYLE);
+
+        // Reallocate alt buffer arrays
+        final int altSize = newWidth * HEIGHT;
+        this.altBuffer = new int[altSize];
+        this.altColors = new ColorData[altSize];
+        this.altColorsBackground = new ColorData[altSize];
+        this.altStyles = new byte[altSize];
+        java.util.Arrays.fill(this.altBuffer, ' ');
+        java.util.Arrays.fill(this.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        java.util.Arrays.fill(this.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
+        java.util.Arrays.fill(this.altStyles, TerminalColors.DEFAULT_STYLE);
+
+        // Reset tab stops
+        this.tabs = new boolean[newWidth];
+        this.altTabs = new boolean[newWidth];
+        for (int i = 1; i < newWidth; i++) {
+            if (i % TerminalColors.TAB_WIDTH == 0) {
+                this.tabs[i] = true;
+                this.altTabs[i] = true;
+            }
+        }
+
+        // DECCOLM spec: clear screen, reset margins, home cursor
+        this.scrollFirst = 0;
+        this.scrollLast = HEIGHT - 1;
+        this.lastRowToDisplay = HEIGHT;
+        this.lastRowToDisplayMax = HEIGHT;
+        this.setCursorPos(0, 0);
+
+        // Mark all rows dirty
+        this.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -146,13 +201,13 @@ public class Terminal {
     }
 
     public void setCursorPos(final int x, final int y) {
-        this.x = Math.max(0, Math.min(WIDTH - 1, x));
-        this.y = Math.max(0, Math.min(HEIGHT - 1, y));
+        this.x = Math.clamp(x, 0, width - 1);
+        this.y = Math.clamp(y, 0, HEIGHT - 1);
     }
 
     public void setClampedCursorPos(final int x, final int y) {
         if (this.y >= scrollFirst && this.y <= scrollLast) {
-            setCursorPos(x, Math.max(scrollFirst, Math.min(scrollLast, y)));
+            setCursorPos(x, Math.clamp(y, scrollFirst, scrollLast));
         } else {
             setCursorPos(x, y);
         }

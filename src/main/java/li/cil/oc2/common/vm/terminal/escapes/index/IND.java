@@ -8,7 +8,7 @@ public class IND {
             terminal.bufferManager.shiftUpOne();
             if (!terminal.currentPrivateModeState.isAltBufferEnabled())
                 terminal.bufferManager.incrementLastLineToDisplay();
-            terminal.x = Math.min(terminal.x, Terminal.WIDTH - 1);
+            terminal.x = Math.min(terminal.x, terminal.width - 1);
         } else {
             terminal.setCursorPos(terminal.x, Math.min(terminal.y + 1, Terminal.HEIGHT - 1));
         }
