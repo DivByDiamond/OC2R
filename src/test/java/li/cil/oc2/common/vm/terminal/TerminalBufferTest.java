@@ -825,6 +825,20 @@ public class TerminalBufferTest {
         assertEquals(expected80, terminal.buffer.length, "buffers reallocate back to 80 columns");
     }
 
+    @Test
+    void risResetsColumnWidthToEighty() {
+        // DECCOLM to 132, then RIS (ESC c, full reset) must return to the 80-column power-on
+        // default. RIS builds a fresh PrivateModeState (so the DECCOLM flag reads false) but must
+        // also reset the allocated width — otherwise the flag and the buffer width silently diverge.
+        write(terminal, CSI + "?3h");
+        assertEquals(132, terminal.getTerminalWidth(), "precondition: DECCOLM switches to 132");
+
+        write(terminal, ESC + "c");   // RIS
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "RIS clears the DECCOLM flag");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(),
+            "RIS must reset the column width to the 80-column default, not leave it at 132");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
