@@ -633,6 +633,29 @@ public class TerminalBufferTest {
         assertEquals('A', charAt(1, 0), "with IRM off, writes overwrite in place");
     }
 
+    // --- Char ops while scrolled back must mark the rendered screen row (getDirtyRow) ---
+
+    @Test
+    void echWhileScrolledBackMarksCorrectScreenRow() {
+        // Grow scrollback so lastRowToDisplayMax exceeds HEIGHT; the view stays at the bottom
+        // (lastRowToDisplay == lastRowToDisplayMax), which alone does not expose the bug.
+        for (int i = 0; i < 30; i++) write(terminal, "\n");
+        // Scroll the view one line back into scrollback. The cursor's bottom-window row now
+        // renders (lastRowToDisplayMax - lastRowToDisplay) screen rows below terminal.y.
+        buffer.decrementLastLineToDisplay();
+        final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
+        assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
+        // Cursor to the top row; its buffer row is still visible and renders at row scrollBack.
+        write(terminal, "\u001b[1;1H");
+        write(terminal, "ABCDEFGH");
+        write(terminal, "\u001b[1;1H");
+        resetDirty();
+        write(terminal, "\u001b[2X"); // ECH 2: erase 2 chars at the cursor, no shift
+        // The erased buffer row renders at screen row scrollBack, not at row 0 (terminal.y).
+        assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
+            "ECH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
+    }
+
     @Test
     void decscnmToggleMarksWholeScreenDirty() {
         assertFalse(terminal.currentPrivateModeState.DECSCNM);

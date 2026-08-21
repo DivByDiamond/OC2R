@@ -227,10 +227,15 @@ public class TerminalBuffer {
     }
 
     private void markDirty(final int y) {
+        // Map the screen row to its dirty bit via getDirtyRow, mirroring setChar, so a char
+        // op on row y marks the screen row where that buffer row currently renders — including
+        // the scrollback offset (lastRowToDisplayMax - lastRowToDisplay). Plain 1 << y would
+        // mark the wrong visible row when the view is scrolled back into scrollback.
+        final int dirtyBit = 1 << TerminalBufferWriter.getDirtyRow(terminal, y);
         terminal.renderers.forEach(
                 model ->
                         model.getDirtyMask()
-                                .accumulateAndGet(1 << y, (left, right) -> left | right));
+                                .accumulateAndGet(dirtyBit, (left, right) -> left | right));
     }
 
     public void incrementLastLineToDisplay() {
