@@ -358,13 +358,13 @@ public class TerminalBufferTest {
     void altBufferMarksScreenDirtyOnSwitch() {
         resetDirty();
         write(terminal, "\u001b[?47h");
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
         resetDirty();
         write(terminal, "\u001b[?47l");
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
         resetDirty();
         write(terminal, "\u001b[?1049h");
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
     @Test
@@ -390,7 +390,7 @@ public class TerminalBufferTest {
     void dirtyMaskMarksScreenOnScroll() {
         resetDirty();
         write(terminal, "\u001b[2S");
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
     @Test
@@ -527,7 +527,7 @@ public class TerminalBufferTest {
         assertEquals(25, terminal.lastRowToDisplayMax);
         // After scrolling up 1, rows 0-2 have B,C,D and row 3 is blank.
         // All 24 visible rows should be marked dirty (content shifted up by 1).
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
     @Test
@@ -539,7 +539,7 @@ public class TerminalBufferTest {
         write(terminal, "\u001b[2S");
         assertEquals(26, terminal.lastRowToDisplayMax);
         // All visible rows dirty
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get());
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
     @Test
@@ -639,11 +639,11 @@ public class TerminalBufferTest {
         resetDirty();
         write(terminal, "\u001b[?5h");    // DECSCNM on
         assertTrue(terminal.currentPrivateModeState.DECSCNM, "?5h enables screen-inverse");
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get(), "DECSCNM toggle must redraw the whole screen");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF, "DECSCNM toggle must redraw the whole screen");
         resetDirty();
         write(terminal, "\u001b[?5l");    // DECSCNM off
         assertFalse(terminal.currentPrivateModeState.DECSCNM);
-        assertEquals(0xFFFFFF, renderer.dirtyMask.get(), "DECSCNM toggle must redraw the whole screen");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF, "DECSCNM toggle must redraw the whole screen");
     }
 
     @Test

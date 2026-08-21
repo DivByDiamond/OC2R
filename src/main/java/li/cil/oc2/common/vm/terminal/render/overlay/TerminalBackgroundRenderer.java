@@ -32,7 +32,7 @@ public class TerminalBackgroundRenderer {
             final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
             final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
             final boolean blinkOff = isBlinking
-                    && (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500;
+                    && Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
             final ColorData color = resolveColor(terminal, useAltBuffer, index, invertBackground);
             int background = resolveBackground(style, color, invertBackground, isBold, isBlinking, blinkOff);
             // When the background blinks (inverted + blink), suppress it on the off phase

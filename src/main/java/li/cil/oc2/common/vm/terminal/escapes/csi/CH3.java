@@ -38,15 +38,15 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
             }
             case DECSCNM -> {
                 terminal.currentPrivateModeState.DECSCNM = false;
-                markScreenDirty();
+                terminal.markAllDirty();
             }
             case ALT_BUFFER -> {
                 terminal.currentPrivateModeState.ALT_BUFFER = false;
-                markScreenDirty();
+                terminal.markAllDirty();
             }
             case SWITCH_ALT_BUFFER -> {
                 terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = false;
-                markScreenDirty();
+                terminal.markAllDirty();
             }
             case SAVE_CURSOR -> {
                 terminal.currentPrivateModeState.SAVE_CURSOR = false;
@@ -55,7 +55,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
             case SAVE_CLEAR_AND_SWITCH -> {
                 terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = false;
                 restoreSavedCursor();
-                markScreenDirty();
+                terminal.markAllDirty();
             }
             default -> mode.set(terminal.currentPrivateModeState, false);
         }
@@ -68,7 +68,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
         terminal.scrollFirst = 0;
         terminal.scrollLast = Terminal.HEIGHT - 1;
         terminal.setRelativeCursorPos(0, 0);
-        markScreenDirty();
+        terminal.markAllDirty();
     }
 
     private void restoreSavedCursor() {
@@ -94,18 +94,5 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
                 }
             }
         }
-    }
-
-    private void markScreenDirty() {
-        int dirtyLinesMask = 0;
-        for (int j = 0; j < Terminal.HEIGHT; j++) {
-            dirtyLinesMask |= 1 << j;
-        }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
     }
 }

@@ -39,7 +39,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
         // Blink phase tracking: when the blink phase changes, mark lines containing
         // blink-styled chars dirty so they rebuild and the chars appear/disappear.
-        final boolean blinkPhase = (System.currentTimeMillis() + terminal.hashCode()) % 1000 < 500;
+        final boolean blinkPhase = Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) < 500;
         if (blinkPhase != lastBlinkPhase) {
             lastBlinkPhase = blinkPhase;
             final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
@@ -71,7 +71,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
                 || terminal.cursorMode == TerminalColors.CursorMode.STEADY_UNDERLINE
                 || terminal.cursorMode == TerminalColors.CursorMode.STEADY_BAR_LINE;
 
-        if (steady || (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500) {
+        if (steady || Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500) {
             TerminalCursorRenderer.renderCursor(terminal, stack);
         }
     }

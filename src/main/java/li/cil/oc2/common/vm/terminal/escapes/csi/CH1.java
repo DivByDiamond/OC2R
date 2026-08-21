@@ -36,7 +36,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         if (table != null) {
             table.set(terminal.currentPrivateModeState, table.get(terminal.savePrivateModeState));
             // DECSCNM (reverse video) affects the whole viewport, so restoring it must trigger a
-            // full redraw — matching DECSET/DECRST (CH2/CH3), which also mark the screen dirty.
+            // full redraw — matching DECSET/DECRST (CH2/CH3), which mark the whole screen dirty.
             if (table == ModeTable.DECSCNM) {
                 terminal.markAllDirty();
             }

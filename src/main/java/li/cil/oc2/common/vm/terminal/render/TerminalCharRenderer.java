@@ -33,9 +33,12 @@ public class TerminalCharRenderer {
             final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
             final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
             final boolean blinkOff = isBlinking
-                    && (System.currentTimeMillis() + terminal.hashCode()) % 1000 > 500;
+                    && Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
             // VT100 blink: non-bold, non-inverted blink chars disappear on the off phase;
             // bold blink alternates normal/bright intensity instead (handled below).
+            // For inverted (SGR 7 / DECSCNM) blink cells the glyph stays visible and the
+            // background blinks instead (see TerminalBackgroundRenderer) — xterm semantics
+            // where blink affects the background of reverse-video text.
             if (isBlinking && !invertBackground && blinkOff && !isBold) {
                 tx += Terminal.CHAR_WIDTH;
                 continue;
