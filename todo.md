@@ -430,6 +430,8 @@ DeviceBusElement (каждый блок/элемент)
 
 ## 23. GPU — видеокарта как предмет (Tier 1/2/3/4)
 
+**⚠ Merge-blocker для `work` → `1.21.1`**: GPU-предметы сейчас бесполезны (монитор игнорирует тир/разрешение и mount'ится без GPU). Пока не доделана интеграция GPU↔монитор, ветки не сливать.
+
 **Проблема**: GPU отсутствует полностью. Монитор сам предоставляет `SimpleFramebufferDevice` 640×480 RGB565 — разрешение захардкожено, тиров нет. Без ощущения «собираешь компьютер из компонентов».
 
 **Решение**: добавить предмет GPU, который **управляет разрешением** framebuffer. `SimpleFramebufferDevice` уже поддерживает произвольные `WIDTH/HEIGHT` — параметризовать из GPU-предмета при mount. **GPU — обязательное условие для монитора** (без GPU → чёрный экран, только UART-терминал).
@@ -448,7 +450,9 @@ DeviceBusElement (каждый блок/элемент)
 - [x] **Провайдер**: `GPUItemDeviceProvider` — создаёт `GPUDevice` из предмета, энергопотребление по тиру (`gpuEnergyPerTickTier1..4` = 2/3/5/8)
 - [ ] **Интеграция с монитором**: `MonitorDevice` должен использовать разрешение из GPU и не монтировать framebuffer без GPU — отложено, видеопайплайн жёстко захардкожен на 640×480 (пересекается с задачей 18 «убрать jcodec»; `SimpleFramebufferDevice`/провайдер уже размерно-независимы)
 - [ ] **Интеграция с монитором**: `MonitorDevice` спрашивает у bus-контроллера есть ли GPU → если нет, framebuffer не монтируется (чёрный экран). Если есть — `SimpleFramebufferDevice(width, height)` из GPU
-- [ ] **Device-tree**: `SimpleFramebufferDeviceProvider` — `width`/`height`/`stride` из GPU, а не захардкоженные 640×480
+- [ ] **Убрать хардкод 640×480 в encode-пайплайне**: `MonitorVideoController` создаёт `Picture.create(WIDTH, HEIGHT, YUV420J)` со статическими `MonitorDevice.WIDTH/HEIGHT` — параметризовать от фактического разрешения framebuffer'а (GPU)
+- [ ] **Device-tree**: `SimpleFramebufferDeviceProvider` — width/height/stride из GPU, а не захардкоженные 640×480
+  - **Уточнение (2026-08-21)**: провайдер уже размерно-независим (`fb.getWidth()/getHeight()`, `stride = width × 2`). Реальный хардкод — только `MonitorDevice.WIDTH/HEIGHT` + `Picture` в `MonitorVideoController` и клиентский рендер (задача 6: зона 12×7 px на блоке, кадр 640×384 DynamicTexture).
 - [ ] **Без GPU → UART-терминал**: монитор не показывает framebuffer, но текстовый терминал (UART) работает
 - [x] Конфиг: `gpuEnergyPerTickTier1..4` в `EnergySpec`
 - [ ] Build + проверка в игре (монитор с GPU T1/T2/T3/T4, без GPU — чёрный)
@@ -549,6 +553,17 @@ DeviceBusElement (каждый блок/элемент)
 - [ ] **GUI/контейнеры**: `ComputerInventoryContainer`, `AbstractMachineInventoryScreen` — как синкаются слоты, баги
 - [x] **Синхронизация мира**: `BusCableFacadeMessage`, network sync, ChunkData — мультиплеер → см. задачу 29
 - [ ] **`inet/` TCP/IP-стек**: `StreamSessionImpl`, `SessionManager`, retransmission — качество реализации
+
+### Находки аудита inet/ (2026-08-21, из issue #13)
+
+Контекст: Nathan22211 не смог завести интернет из VM (ping 1.1.1.1, DNS через 8.8.8.8 — всё молча падает). Разбор показал реальные баги стека:
+
+- [ ] **`assert false;` в `DefaultSessionLayer.java:112`** — убрать. Отладочный артефакт: с `-ea` любой TCP-read крашит JVM, без `-ea` — мёртвый код
+- [ ] **Нет ICMP Destination Unreachable** при дропе пакетов: `DefaultNetworkLayer.parseIpPacketHeader` (deniedHosts, фрагменты, TTL) просто возвращает null — гость не узнаёт причину сбоя, таймауты вместо ошибки. Добавить ICMP type 3 ответ
+- [ ] **Фрагментированные IP-пакеты дропаются молча** (`DefaultNetworkLayer.java:133-139`) — крупные DNS-ответы с EDNS0 (>512 байт) теряются. Минимум: отправлять ICMP frag-needed (type 3 code 4) с MTU; максимум: сборка фрагментов
+- [ ] **ICMP-fallback `InetAddress.isReachable()`** (`EchoHandler.java:71`) на выделенных серверах без root/CAP_NET_RAW почти всегда false-negative → ping «не работает» даже при живой сети. Логировать warn при первом неудачном fallback
+- [ ] **VXLAN-зависимость интернет-карты не проверяется**: комментарий конфига говорит "VXLAN must also be enabled", но `InternetManagerImpl.initialize()` не проверяет `Config.enable` VXLAN. Либо добавить проверку, либо поправить комментарий
+- [ ] **Документация для пользователей**: нет DHCP, карточка = point-to-point линк (гость назначает себе любой IP, карточка отвечает на ARP). Написать в README/доку как настраивать сеть в госте + предупреждение про deniedHosts
 
 ---
 
@@ -826,3 +841,21 @@ PMD обнулён (423→0), но ценой ~81 inline `// NOPMD`-маркер
 - [ ] **Монитор** — отрисовка кадра не должна «пережёвывать» CPU без изменений (фикс `dirtyLines.clear()`);
   текст терминала рендерится корректно; мультиблок монитора (объединение/разъединение/ломание) работает.
 - [ ] **Спикер** — новая текстура/модель в стиле Charger отображается со всех сторон.
+
+## 35. Terminal follow-up PRs (из ревью PR #10, 2026-08-21)
+
+Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изолированные, ревьюятся за 10 минут. Всё на ветке `work`.
+
+- [ ] **CH10/CH11 → новые buffer-хелперы + убрать `System.out.println`** (маленький)
+  - `escapes/csi/CH10.java` (DCH) и `escapes/csi/CH11.java` (ICH/SL) оставлены на inline-реализациях сдвига — в `TerminalBuffer` уже есть `deleteChars`/`insertChars`. Перевести на хелперы (убрать две параллельные копии логики).
+  - `client/gui/widget/terminal/TerminalMouseHandler.java:82` — `System.out.println("ERR: Unsupported primary mode")` в продакшн-коде → логгер.
+  - Автор PR #10 согласен открыть этот PR (в ответе на ревью: «I'd rather not expand the port's blast radius. Happy to open a follow-up PR»).
+
+- [ ] **DEC Special Graphics рендер** (средний, ~100 строк + тесты)
+  - `drawingMode`/`SPECIAL_GRAPHICS` парсится (`ESC ( 0`, `TerminalOutput.java:161-163`), но **не используется в рендере**: `TerminalCharRenderer.isPrintableCharacter` берёт сырой кодпоинт без трансляции DEC-графики (`0x6A`→`─`, `0x71`→`─`, `0x71`→`┘` и т.д.).
+  - Результат: +vttest suite 2 (charsets), рамки в ncurses-приложениях (vim/top/mc).
+  - Проверить после: `ESC ( 0` + box-drawing в vttest suite 2.
+
+- [ ] **DECSLRM + DECSTR** (средний)
+  - `DECSLRM` (left/right margins, `CSI Pl;Pr s` — в `CH6.java:24` стоит `LOGGER.warn("DECSLRM not implemented")`) — нужен tmux / вертикальные сплиты vim. Пересечение с `DECOM` и `DECLRMM`/`DECRLM`.
+  - `DECSTR` (soft reset, `CSI ! p` — `CH5.java:21` warn) — сброс таблиц режимов без полного RIS (курсор/тэбы/скролл-маргины сохраняются).
