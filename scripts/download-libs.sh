@@ -11,9 +11,9 @@
 #     li/cil/sedna/sedna/2.0.13/
 #         sedna-2.0.13.jar
 #         sedna-2.0.13.pom
-#     li/cil/sedna/sedna-buildroot/0.0.64/
-#         sedna-buildroot-0.0.64.jar
-#         sedna-buildroot-0.0.64.pom
+#     li/cil/sedna/sedna-buildroot/0.0.70/
+#         sedna-buildroot-0.0.70.jar
+#         sedna-buildroot-0.0.70.pom
 #
 # Run this once after cloning the repo. Re-run with --force after bumping
 # the dep versions in build.gradle / gradle.properties.
@@ -77,7 +77,7 @@ EOF
 # Versions must match build.gradle / gradle.properties
 CERES_VERSION="0.0.6"
 SEDNA_VERSION="2.0.13"
-SEDNA_BUILDROOT_VERSION="0.0.71"
+SEDNA_BUILDROOT_VERSION="0.0.70"
 
 install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
     "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"

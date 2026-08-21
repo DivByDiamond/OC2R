@@ -27,7 +27,7 @@ fun substituteLocal(directoryName: String, libraryName: String) {
 
 gradle.settingsEvaluated {
     val rootDir = settings.rootDir
-    val marker = java.io.File(rootDir, "libs/li/cil/sedna/sedna-buildroot/0.0.64/sedna-buildroot-0.0.64.jar")
+    val marker = java.io.File(rootDir, "libs/li/cil/sedna/sedna-buildroot/0.0.70/sedna-buildroot-0.0.70.jar")
     if (!marker.isFile) {
         val script = java.io.File(rootDir, "scripts/download-libs.sh")
         if (script.isFile) {
