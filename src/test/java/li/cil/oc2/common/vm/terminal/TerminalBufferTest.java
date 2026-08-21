@@ -647,6 +647,20 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void xtrestoreDecscnmRestoresAndMarksWholeScreenDirty() {
+        write(terminal, "\u001b[?5h");    // DECSCNM on
+        write(terminal, "\u001b[?5s");    // XTSAVE mode 5: save DECSCNM=true
+        assertTrue(terminal.savePrivateModeState.DECSCNM, "XTSAVE must capture DECSCNM");
+        write(terminal, "\u001b[?5l");    // DECSCNM off
+        assertFalse(terminal.currentPrivateModeState.DECSCNM);
+        resetDirty();
+        write(terminal, "\u001b[?5r");    // XTRESTORE mode 5: restore DECSCNM=true
+        assertTrue(terminal.currentPrivateModeState.DECSCNM, "XTRESTORE must restore DECSCNM");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
+            "restoring DECSCNM via XTRESTORE must redraw the whole screen, like DECSET/DECRST");
+    }
+
+    @Test
     void echErasedCellsTakeDefaultForegroundAndCurrentBackground() {
         write(terminal, "\u001b[41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
         write(terminal, "ABCDEFGH");
