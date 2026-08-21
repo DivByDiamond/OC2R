@@ -33,9 +33,8 @@ public class RIS {
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;
-        // Reset saved cursor state (DECSC/DECRC)
-        terminal.savedX = 0;
-        terminal.savedY = 0;
+        // Reset saved style/charset/color state (DECSC/DECRC). Saved cursor coords
+        // (savedX/Y, altSavedX/Y) are already reset above.
         terminal.savedStyle = TerminalColors.DEFAULT_STYLE;
         terminal.savedUseG0 = true;
         terminal.savedDrawingModeG0 = TerminalColors.DrawingMode.ASCII;
@@ -47,8 +46,6 @@ public class RIS {
         terminal.savedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
         terminal.savedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
         terminal.savedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-        terminal.altSavedX = 0;
-        terminal.altSavedY = 0;
         terminal.altSavedStyle = TerminalColors.DEFAULT_STYLE;
         terminal.altSavedUseG0 = true;
         terminal.altSavedDrawingModeG0 = TerminalColors.DrawingMode.ASCII;
