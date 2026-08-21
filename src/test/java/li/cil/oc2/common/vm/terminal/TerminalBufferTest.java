@@ -24,6 +24,13 @@ public class TerminalBufferTest {
     private Terminal terminal;
     private TerminalBuffer buffer;
     private DummyRenderer renderer;
+    // Shared test literals: keep these as constants so the many CSI sequences and sample
+    // lines read as composable pieces (CSI = ESC + "[") and stay below PMD's
+    // AvoidDuplicateLiterals threshold.
+    private static final String ESC = "\u001b";
+    private static final String CSI = ESC + "[";
+    private static final String SAMPLE_LINE = "ABCDEFGH";
+    private static final String MARGIN_CONTENT = "ABCDEFG";
 
     @BeforeEach
     void setUp() {
@@ -51,7 +58,7 @@ public class TerminalBufferTest {
 
     @Test
     void clearLineClearsRow() {
-        write(terminal, "ABCDEFGH\u001b[2;1HXYZ");
+        write(terminal, SAMPLE_LINE + CSI + "2;1HXYZ");
         buffer.clearLine(0);
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(7, 0));
@@ -60,8 +67,8 @@ public class TerminalBufferTest {
 
     @Test
     void shiftUpOneMovesRows() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
         buffer.shiftUpOne();
         assertEquals(' ', charAt(0, 0));
         assertEquals('B', charAt(0, 1));
@@ -71,8 +78,8 @@ public class TerminalBufferTest {
 
     @Test
     void shiftDownOneMovesRows() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
         buffer.shiftDownOne();
         assertEquals(' ', charAt(0, 1));
         assertEquals('A', charAt(0, 2));
@@ -82,7 +89,7 @@ public class TerminalBufferTest {
 
     @Test
     void clearAllLines() {
-        write(terminal, "ABCDEFGH\u001b[2;1HXYZ");
+        write(terminal, SAMPLE_LINE + CSI + "2;1HXYZ");
         buffer.clear();
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(7, 0));
@@ -91,39 +98,39 @@ public class TerminalBufferTest {
 
     @Test
     void cupMovesCursor() {
-        write(terminal, "\u001b[3;4H");
+        write(terminal, CSI + "3;4H");
         assertEquals(3, terminal.x);
         assertEquals(2, terminal.y);
-        write(terminal, "\u001b[5;6f");
+        write(terminal, CSI + "5;6f");
         assertEquals(5, terminal.x);
         assertEquals(4, terminal.y);
-        write(terminal, "\u001b[999;999H");
+        write(terminal, CSI + "999;999H");
         assertEquals(Terminal.WIDTH - 1, terminal.x);
         assertEquals(Terminal.HEIGHT - 1, terminal.y);
-        write(terminal, "\u001b[H");
+        write(terminal, CSI + "H");
         assertEquals(0, terminal.x);
         assertEquals(0, terminal.y);
     }
 
     @Test
     void chaMovesColumnOnly() {
-        write(terminal, "\u001b[3;4H\u001b[40G");
+        write(terminal, CSI + "3;4H" + CSI + "40G");
         assertEquals(39, terminal.x);
         assertEquals(2, terminal.y);
-        write(terminal, "\u001b[G");
+        write(terminal, CSI + "G");
         assertEquals(0, terminal.x);
     }
 
     @Test
     void vpaMovesRowOnly() {
-        write(terminal, "\u001b[3;4H\u001b[7d");
+        write(terminal, CSI + "3;4H" + CSI + "7d");
         assertEquals(3, terminal.x);
         assertEquals(6, terminal.y);
     }
 
     @Test
     void edClearsFromCursorToEndOfScreen() {
-        write(terminal, "ABCDEFGH\u001b[3G\u001b[J");
+        write(terminal, SAMPLE_LINE + CSI + "3G" + CSI + "J");
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals(' ', charAt(2, 0));
@@ -134,7 +141,7 @@ public class TerminalBufferTest {
 
     @Test
     void edClearsFromStartOfScreenToCursor() {
-        write(terminal, "ABCDEFGH\u001b[5G\u001b[1J");
+        write(terminal, SAMPLE_LINE + CSI + "5G" + CSI + "1J");
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(4, 0));
         assertEquals('F', charAt(5, 0));
@@ -143,7 +150,7 @@ public class TerminalBufferTest {
 
     @Test
     void edClearsWholeScreenWithoutMovingCursor() {
-        write(terminal, "ABCDEFGH\u001b[6;11H\u001b[2J");
+        write(terminal, SAMPLE_LINE + CSI + "6;11H" + CSI + "2J");
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(7, 0));
         assertEquals(' ', charAt(0, 5));
@@ -153,7 +160,7 @@ public class TerminalBufferTest {
 
     @Test
     void elClearsFromCursorToEndOfLine() {
-        write(terminal, "ABCDEFGH\u001b[5G\u001b[K");
+        write(terminal, SAMPLE_LINE + CSI + "5G" + CSI + "K");
         assertEquals('A', charAt(0, 0));
         assertEquals('D', charAt(3, 0));
         assertEquals(' ', charAt(4, 0));
@@ -163,7 +170,7 @@ public class TerminalBufferTest {
 
     @Test
     void elClearsFromStartOfLineToCursor() {
-        write(terminal, "ABCDEFGH\u001b[5G\u001b[1K");
+        write(terminal, SAMPLE_LINE + CSI + "5G" + CSI + "1K");
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(4, 0));
         assertEquals('F', charAt(5, 0));
@@ -172,7 +179,7 @@ public class TerminalBufferTest {
 
     @Test
     void elClearsWholeLine() {
-        write(terminal, "ABCDEFGH\u001b[2K");
+        write(terminal, SAMPLE_LINE + CSI + "2K");
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(7, 0));
         assertEquals(8, terminal.x);
@@ -180,39 +187,39 @@ public class TerminalBufferTest {
 
     @Test
     void decstbmSetsMarginsAndHomesCursor() {
-        write(terminal, "\u001b[3;8r");
+        write(terminal, CSI + "3;8r");
         assertEquals(2, terminal.scrollFirst);
         assertEquals(7, terminal.scrollLast);
         assertEquals(0, terminal.x);
         assertEquals(0, terminal.y);
-        write(terminal, "\u001b[2;3r");
+        write(terminal, CSI + "2;3r");
         assertEquals(1, terminal.scrollFirst);
         assertEquals(2, terminal.scrollLast);
     }
 
     @Test
     void decstbmIgnoresDegenerateMargins() {
-        write(terminal, "\u001b[5;5r");
+        write(terminal, CSI + "5;5r");
         assertEquals(0, terminal.scrollFirst);
         assertEquals(Terminal.HEIGHT - 1, terminal.scrollLast);
-        write(terminal, "\u001b[10;3r");
+        write(terminal, CSI + "10;3r");
         assertEquals(0, terminal.scrollFirst);
         assertEquals(Terminal.HEIGHT - 1, terminal.scrollLast);
     }
 
     @Test
     void decomOriginModeClampsCursorToMargins() {
-        write(terminal, "\u001b[3;8r\u001b[?6h");
+        write(terminal, CSI + "3;8r" + CSI + "?6h");
         assertTrue(terminal.currentPrivateModeState.DECOM);
         assertEquals(0, terminal.x);
         assertEquals(2, terminal.y);
-        write(terminal, "\u001b[4;4H");
+        write(terminal, CSI + "4;4H");
         assertEquals(3, terminal.x);
         assertEquals(5, terminal.y);
-        write(terminal, "\u001b[5d");
+        write(terminal, CSI + "5d");
         assertEquals(3, terminal.x);
         assertEquals(6, terminal.y);
-        write(terminal, "\u001b[?6l");
+        write(terminal, CSI + "?6l");
         assertFalse(terminal.currentPrivateModeState.DECOM);
         assertEquals(0, terminal.x);
         assertEquals(0, terminal.y);
@@ -220,9 +227,9 @@ public class TerminalBufferTest {
 
     @Test
     void insertLinesShiftsContentDownWithinMargins() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
-        write(terminal, "\u001b[4;1H\u001b[2L");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
+        write(terminal, CSI + "4;1H" + CSI + "2L");
         assertEquals('A', charAt(0, 1));
         assertEquals('B', charAt(0, 2));
         assertEquals(' ', charAt(0, 3));
@@ -235,9 +242,9 @@ public class TerminalBufferTest {
 
     @Test
     void deleteLinesShiftsContentUpWithinMargins() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
-        write(terminal, "\u001b[4;1H\u001b[2M");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
+        write(terminal, CSI + "4;1H" + CSI + "2M");
         assertEquals('A', charAt(0, 1));
         assertEquals('B', charAt(0, 2));
         assertEquals('E', charAt(0, 3));
@@ -250,9 +257,9 @@ public class TerminalBufferTest {
 
     @Test
     void scrollUpMovesContentUpWithinMargins() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
-        write(terminal, "\u001b[2S");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
+        write(terminal, CSI + "2S");
         assertEquals(' ', charAt(0, 0));
         assertEquals('C', charAt(0, 1));
         assertEquals('D', charAt(0, 2));
@@ -263,9 +270,9 @@ public class TerminalBufferTest {
 
     @Test
     void scrollDownMovesContentDownWithinMargins() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
-        write(terminal, "\u001b[2T");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
+        write(terminal, CSI + "2T");
         assertEquals(' ', charAt(0, 1));
         assertEquals(' ', charAt(0, 2));
         assertEquals('A', charAt(0, 3));
@@ -279,7 +286,7 @@ public class TerminalBufferTest {
     @Test
     void scrollUpWithScrollbackGrowsViewWindow() {
         fillRows(0, "ABCD");
-        write(terminal, "\u001b[1S");
+        write(terminal, CSI + "1S");
         assertEquals('B', charAt(0, 0));
         assertEquals('C', charAt(0, 1));
         assertEquals('D', charAt(0, 2));
@@ -290,7 +297,7 @@ public class TerminalBufferTest {
     @Test
     void scrollUpCountMovesMultipleLines() {
         fillRows(0, "ABCD");
-        write(terminal, "\u001b[2S");
+        write(terminal, CSI + "2S");
         assertEquals('C', charAt(0, 0));
         assertEquals('D', charAt(0, 1));
         assertEquals(' ', charAt(0, 2));
@@ -300,7 +307,7 @@ public class TerminalBufferTest {
     @Test
     void scrollDownCountMovesMultipleLines() {
         fillRows(1, "ABCD");
-        write(terminal, "\u001b[2T");
+        write(terminal, CSI + "2T");
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(0, 1));
         assertEquals(' ', charAt(0, 2));
@@ -313,13 +320,13 @@ public class TerminalBufferTest {
     @Test
     void altBuffer47SwitchesAndPreservesMain() {
         write(terminal, "Hello");
-        write(terminal, "\u001b[?47h");
+        write(terminal, CSI + "?47h");
         assertTrue(terminal.currentPrivateModeState.isAltBufferEnabled());
         write(terminal, "World");
         assertEquals('H', charAt(0, 0));
         assertEquals('W', altCharAt(0, 0));
         assertEquals(' ', altCharAt(5, 0));
-        write(terminal, "\u001b[?47l");
+        write(terminal, CSI + "?47l");
         assertFalse(terminal.currentPrivateModeState.isAltBufferEnabled());
         assertEquals('H', charAt(0, 0));
     }
@@ -327,27 +334,27 @@ public class TerminalBufferTest {
     @Test
     void altBuffer1047Switches() {
         write(terminal, "Hello");
-        write(terminal, "\u001b[?1047h");
+        write(terminal, CSI + "?1047h");
         assertTrue(terminal.currentPrivateModeState.isAltBufferEnabled());
         write(terminal, "abc");
         assertEquals('H', charAt(0, 0));
         assertEquals('a', altCharAt(0, 0));
-        write(terminal, "\u001b[?1047l");
+        write(terminal, CSI + "?1047l");
         assertFalse(terminal.currentPrivateModeState.isAltBufferEnabled());
         assertEquals('H', charAt(0, 0));
     }
 
     @Test
     void altBuffer1049SavesAndRestoresCursor() {
-        write(terminal, "A\u001b[5;6H");
-        write(terminal, "\u001b[?1049h");
+        write(terminal, "A" + CSI + "5;6H");
+        write(terminal, CSI + "?1049h");
         assertTrue(terminal.currentPrivateModeState.isAltBufferEnabled());
         assertEquals(0, terminal.x);
         assertEquals(0, terminal.y);
-        write(terminal, "B\u001b[10;10H");
+        write(terminal, "B" + CSI + "10;10H");
         assertEquals(9, terminal.x);
         assertEquals(9, terminal.y);
-        write(terminal, "\u001b[?1049l");
+        write(terminal, CSI + "?1049l");
         assertFalse(terminal.currentPrivateModeState.isAltBufferEnabled());
         assertEquals(5, terminal.x);
         assertEquals(4, terminal.y);
@@ -357,13 +364,13 @@ public class TerminalBufferTest {
     @Test
     void altBufferMarksScreenDirtyOnSwitch() {
         resetDirty();
-        write(terminal, "\u001b[?47h");
+        write(terminal, CSI + "?47h");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
         resetDirty();
-        write(terminal, "\u001b[?47l");
+        write(terminal, CSI + "?47l");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
         resetDirty();
-        write(terminal, "\u001b[?1049h");
+        write(terminal, CSI + "?1049h");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
@@ -379,7 +386,7 @@ public class TerminalBufferTest {
 
     @Test
     void pendingWrapDisabledOverwritesLastColumn() {
-        write(terminal, "\u001b[?7l");
+        write(terminal, CSI + "?7l");
         write(terminal, "A".repeat(Terminal.WIDTH) + "B");
         assertEquals('B', charAt(Terminal.WIDTH - 1, 0));
         assertEquals(' ', charAt(0, 1));
@@ -389,24 +396,24 @@ public class TerminalBufferTest {
     @Test
     void dirtyMaskMarksScreenOnScroll() {
         resetDirty();
-        write(terminal, "\u001b[2S");
+        write(terminal, CSI + "2S");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
     }
 
     @Test
     void dirtyMaskMarksMarginRowsOnScroll() {
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
         resetDirty();
-        write(terminal, "\u001b[2S");
+        write(terminal, CSI + "2S");
         assertEquals(0b11111110, renderer.dirtyMask.get() & 0xFF);
     }
 
     @Test
     void dirtyMaskMarksClearedLine() {
-        write(terminal, "X\u001b[5;1H");
+        write(terminal, "X" + CSI + "5;1H");
         resetDirty();
-        write(terminal, "\u001b[K");
+        write(terminal, CSI + "K");
         assertEquals(1 << 4, renderer.dirtyMask.get());
     }
 
@@ -422,11 +429,11 @@ public class TerminalBufferTest {
     @Test
     void setClampedCursorPosOutsideScrollRegionDoesNotClampY() {
         // Set a scroll region [5..10] (0-indexed: rows 4..9)
-        write(terminal, "\u001b[5;10r");
+        write(terminal, CSI + "5;10r");
         assertEquals(4, terminal.scrollFirst);
         assertEquals(9, terminal.scrollLast);
         // Move cursor to row 1 (0-indexed: 0), which is outside the scroll region
-        write(terminal, "\u001b[1;1H");
+        write(terminal, CSI + "1;1H");
         assertEquals(0, terminal.y);
         // setClampedCursorPos with a Y outside the scroll region should NOT clamp
         // because cursor is already outside the scroll region
@@ -438,9 +445,9 @@ public class TerminalBufferTest {
     @Test
     void setClampedCursorPosInsideScrollRegionClampsY() {
         // Set a scroll region [5..10] (0-indexed: rows 4..9)
-        write(terminal, "\u001b[5;10r");
+        write(terminal, CSI + "5;10r");
         // Move cursor into the scroll region
-        write(terminal, "\u001b[7;1H");
+        write(terminal, CSI + "7;1H");
         assertEquals(6, terminal.y);
         assertTrue(terminal.y >= terminal.scrollFirst && terminal.y <= terminal.scrollLast);
         // setClampedCursorPos should clamp Y to scroll region [4..9]
@@ -463,15 +470,15 @@ public class TerminalBufferTest {
     @Test
     void risResetsSavePrivateModeState() {
         // Modify private modes, then XTSAVE to capture them into savePrivateModeState
-        write(terminal, "\u001b[?7l");        // DECAWM off
-        write(terminal, "\u001b[?6h");        // DECOM on
-        write(terminal, "\u001b[?7s");        // XTSAVE mode 7 (DECAWM)
-        write(terminal, "\u001b[?6s");        // XTSAVE mode 6 (DECOM)
+        write(terminal, CSI + "?7l");        // DECAWM off
+        write(terminal, CSI + "?6h");        // DECOM on
+        write(terminal, CSI + "?7s");        // XTSAVE mode 7 (DECAWM)
+        write(terminal, CSI + "?6s");        // XTSAVE mode 6 (DECOM)
         // Verify savePrivateModeState captured the modified values
         assertFalse(terminal.savePrivateModeState.DECAWM, "DECAWM should be saved as off");
         assertTrue(terminal.savePrivateModeState.DECOM, "DECOM should be saved as on");
         // Now RIS
-        write(terminal, "\u001bc");
+        write(terminal, ESC + "c");
         // savePrivateModeState should be reset to defaults
         assertTrue(terminal.savePrivateModeState.DECAWM, "DECAWM should be default (on) after RIS");
         assertFalse(terminal.savePrivateModeState.DECOM, "DECOM should be default (off) after RIS");
@@ -482,21 +489,21 @@ public class TerminalBufferTest {
     @Test
     void risResetsTerminalStateToNormal() {
         // Put the terminal into an escape state by sending ESC followed by a non-completing char
-        write(terminal, "\u001b[3");
+        write(terminal, CSI + "3");
         // We should be in CONTROL_SEQUENCE state (partial CSI)
         assertEquals(Terminal.State.CONTROL_SEQUENCE, terminal.state);
         // Now RIS
-        write(terminal, "\u001bc");
+        write(terminal, ESC + "c");
         assertEquals(Terminal.State.NORMAL, terminal.state);
     }
 
     @Test
     void risResetsStateFromEscape() {
         // Put terminal into ESCAPE state
-        write(terminal, "\u001b");
+        write(terminal, ESC);
         assertEquals(Terminal.State.ESCAPE, terminal.state);
         // RIS
-        write(terminal, "\u001bc");
+        write(terminal, ESC + "c");
         assertEquals(Terminal.State.NORMAL, terminal.state);
     }
 
@@ -511,7 +518,7 @@ public class TerminalBufferTest {
         // Verify input is non-empty (readInput returns -1 when empty)
         assertNotEquals(-1, terminal.io.readInput(), "input should be non-empty before RIS");
         // RIS
-        write(terminal, "\u001bc");
+        write(terminal, ESC + "c");
         assertEquals(-1, terminal.io.readInput(), "input queue should be empty after RIS");
     }
 
@@ -523,7 +530,7 @@ public class TerminalBufferTest {
         fillRows(0, "ABCD");
         // Scroll up 1 line — this grows lastRowToDisplayMax to 25
         resetDirty();
-        write(terminal, "\u001b[1S");
+        write(terminal, CSI + "1S");
         assertEquals(25, terminal.lastRowToDisplayMax);
         // After scrolling up 1, rows 0-2 have B,C,D and row 3 is blank.
         // All 24 visible rows should be marked dirty (content shifted up by 1).
@@ -536,7 +543,7 @@ public class TerminalBufferTest {
         fillRows(0, "ABCD");
         // Scroll up 2 lines — lastRowToDisplayMax grows to 26
         resetDirty();
-        write(terminal, "\u001b[2S");
+        write(terminal, CSI + "2S");
         assertEquals(26, terminal.lastRowToDisplayMax);
         // All visible rows dirty
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF);
@@ -548,10 +555,10 @@ public class TerminalBufferTest {
         // the dirty mask should match exactly the rows that actually changed.
         // We write to a specific row after scroll and verify the dirty bit goes to the right place.
         fillRows(0, "AB");
-        write(terminal, "\u001b[1S"); // scroll up 1, lastRowToDisplayMax=25
+        write(terminal, CSI + "1S"); // scroll up 1, lastRowToDisplayMax=25
         resetDirty();
         // Write a character at row 0 — should mark row 0 dirty
-        write(terminal, "\u001b[1;1HZ");
+        write(terminal, CSI + "1;1HZ");
         assertEquals(1, renderer.dirtyMask.get(), "Only row 0 should be dirty after writing to row 0");
         assertEquals('Z', charAt(0, 0));
     }
@@ -559,11 +566,11 @@ public class TerminalBufferTest {
     @Test
     void dirtyMaskScrollUpInMarginRegionWithScrollback() {
         // Set scroll region [2..8] (0-indexed: 1..7)
-        write(terminal, "\u001b[2;8r");
-        fillRows(1, "ABCDEFG");
+        write(terminal, CSI + "2;8r");
+        fillRows(1, MARGIN_CONTENT);
         // Scroll up 1 within the margin
         resetDirty();
-        write(terminal, "\u001b[1S");
+        write(terminal, CSI + "1S");
         // Rows 1..7 should be dirty (the scroll region), row 0 should NOT
         int expected = 0;
         for (int i = 1; i <= 7; i++) {
@@ -576,9 +583,9 @@ public class TerminalBufferTest {
 
     @Test
     void echErasesCharsFromCursorWithoutShifting() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");     // cursor to col 3 (x=2, the 'C')
-        write(terminal, "\u001b[2X");     // ECH 2: erase 2 chars, no shift
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");     // cursor to col 3 (x=2, the 'C')
+        write(terminal, CSI + "2X");     // ECH 2: erase 2 chars, no shift
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals(' ', charAt(2, 0), "ECH blanks the char at the cursor");
@@ -589,9 +596,9 @@ public class TerminalBufferTest {
 
     @Test
     void dchDeletesCharsShiftingLeft() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");     // x=2 (C)
-        write(terminal, "\u001b[2P");     // DCH 2: delete 2, shift left, blank the tail
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");     // x=2 (C)
+        write(terminal, CSI + "2P");     // DCH 2: delete 2, shift left, blank the tail
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals('E', charAt(2, 0), "DCH shifts chars left into the deleted gap");
@@ -604,9 +611,9 @@ public class TerminalBufferTest {
 
     @Test
     void ichInsertsBlanksShiftingRight() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");     // x=2 (C)
-        write(terminal, "\u001b[2@");     // ICH 2: insert 2 blanks, shift right
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");     // x=2 (C)
+        write(terminal, CSI + "2@");     // ICH 2: insert 2 blanks, shift right
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals(' ', charAt(2, 0), "ICH inserts blanks at the cursor");
@@ -620,14 +627,14 @@ public class TerminalBufferTest {
     @Test
     void irmInsertsCharsShiftingRight() {
         write(terminal, "AB");
-        write(terminal, "\u001b[1G");     // x=0 (A)
-        write(terminal, "\u001b[4h");     // IRM on (SM 4)
+        write(terminal, CSI + "1G");     // x=0 (A)
+        write(terminal, CSI + "4h");     // IRM on (SM 4)
         write(terminal, "X");             // insert X at col 0; A,B shift right
         assertEquals('X', charAt(0, 0));
         assertEquals('A', charAt(1, 0), "IRM shifts existing chars right");
         assertEquals('B', charAt(2, 0));
-        write(terminal, "\u001b[4l");     // IRM off (RM 4)
-        write(terminal, "\u001b[1G");     // x=0
+        write(terminal, CSI + "4l");     // IRM off (RM 4)
+        write(terminal, CSI + "1G");     // x=0
         write(terminal, "Y");             // overwrite in place, no shift
         assertEquals('Y', charAt(0, 0));
         assertEquals('A', charAt(1, 0), "with IRM off, writes overwrite in place");
@@ -646,11 +653,11 @@ public class TerminalBufferTest {
         final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
         assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
         // Cursor to the top row; its buffer row is still visible and renders at row scrollBack.
-        write(terminal, "\u001b[1;1H");
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[1;1H");
+        write(terminal, CSI + "1;1H");
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "1;1H");
         resetDirty();
-        write(terminal, "\u001b[2X"); // ECH 2: erase 2 chars at the cursor, no shift
+        write(terminal, CSI + "2X"); // ECH 2: erase 2 chars at the cursor, no shift
         // The erased buffer row renders at screen row scrollBack, not at row 0 (terminal.y).
         assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
             "ECH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
@@ -662,11 +669,11 @@ public class TerminalBufferTest {
         buffer.decrementLastLineToDisplay();
         final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
         assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
-        write(terminal, "\u001b[1;1H");
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[1;1H");
+        write(terminal, CSI + "1;1H");
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "1;1H");
         resetDirty();
-        write(terminal, "\u001b[2P"); // DCH 2: delete 2, shift left, blank the tail
+        write(terminal, CSI + "2P"); // DCH 2: delete 2, shift left, blank the tail
         assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
             "DCH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
     }
@@ -677,11 +684,11 @@ public class TerminalBufferTest {
         buffer.decrementLastLineToDisplay();
         final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
         assertTrue(scrollBack >= 1, "view should be scrolled back into scrollback");
-        write(terminal, "\u001b[1;1H");
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[1;1H");
+        write(terminal, CSI + "1;1H");
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "1;1H");
         resetDirty();
-        write(terminal, "\u001b[2@"); // ICH 2: insert 2 blanks, shift right
+        write(terminal, CSI + "2@"); // ICH 2: insert 2 blanks, shift right
         assertEquals(1 << scrollBack, renderer.dirtyMask.get() & 0xFFFFFF,
             "ICH while scrolled back must mark the screen row where the cursor row renders, not terminal.y");
     }
@@ -692,9 +699,9 @@ public class TerminalBufferTest {
     void dchArgZeroDeletesOneChar() {
         // CSIManager replaces arg 0 with the default (1) before the handler runs, so an
         // explicit 0 deletes exactly one character rather than being a no-op.
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");    // x=2 (C)
-        write(terminal, "\u001b[0P");     // DCH 0 -> delete 1
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");    // x=2 (C)
+        write(terminal, CSI + "0P");     // DCH 0 -> delete 1
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals('D', charAt(2, 0), "arg 0 is normalized to 1, deleting one char");
@@ -705,9 +712,9 @@ public class TerminalBufferTest {
 
     @Test
     void ichArgZeroInsertsOne() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");    // x=2 (C)
-        write(terminal, "\u001b[0@");     // ICH 0 -> insert 1
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");    // x=2 (C)
+        write(terminal, CSI + "0@");     // ICH 0 -> insert 1
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         assertEquals(' ', charAt(2, 0), "arg 0 is normalized to 1, inserting one blank");
@@ -717,9 +724,9 @@ public class TerminalBufferTest {
 
     @Test
     void dchArgOverflowClearsToEndOfLine() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");    // x=2 (C)
-        write(terminal, "\u001b[999P");   // DCH 999 -> clamp to width, clear to end of line
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");    // x=2 (C)
+        write(terminal, CSI + "999P");   // DCH 999 -> clamp to width, clear to end of line
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         for (int x = 2; x < Terminal.WIDTH; x++) {
@@ -729,9 +736,9 @@ public class TerminalBufferTest {
 
     @Test
     void ichArgOverflowBlanksToEndOfLine() {
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");    // x=2 (C)
-        write(terminal, "\u001b[999@");   // ICH 999 -> clamp to width, blank to end of line
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");    // x=2 (C)
+        write(terminal, CSI + "999@");   // ICH 999 -> clamp to width, blank to end of line
         assertEquals('A', charAt(0, 0));
         assertEquals('B', charAt(1, 0));
         for (int x = 2; x < Terminal.WIDTH; x++) {
@@ -743,24 +750,24 @@ public class TerminalBufferTest {
     void decscnmToggleMarksWholeScreenDirty() {
         assertFalse(terminal.currentPrivateModeState.DECSCNM);
         resetDirty();
-        write(terminal, "\u001b[?5h");    // DECSCNM on
+        write(terminal, CSI + "?5h");    // DECSCNM on
         assertTrue(terminal.currentPrivateModeState.DECSCNM, "?5h enables screen-inverse");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF, "DECSCNM toggle must redraw the whole screen");
         resetDirty();
-        write(terminal, "\u001b[?5l");    // DECSCNM off
+        write(terminal, CSI + "?5l");    // DECSCNM off
         assertFalse(terminal.currentPrivateModeState.DECSCNM);
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF, "DECSCNM toggle must redraw the whole screen");
     }
 
     @Test
     void xtrestoreDecscnmRestoresAndMarksWholeScreenDirty() {
-        write(terminal, "\u001b[?5h");    // DECSCNM on
-        write(terminal, "\u001b[?5s");    // XTSAVE mode 5: save DECSCNM=true
+        write(terminal, CSI + "?5h");    // DECSCNM on
+        write(terminal, CSI + "?5s");    // XTSAVE mode 5: save DECSCNM=true
         assertTrue(terminal.savePrivateModeState.DECSCNM, "XTSAVE must capture DECSCNM");
-        write(terminal, "\u001b[?5l");    // DECSCNM off
+        write(terminal, CSI + "?5l");    // DECSCNM off
         assertFalse(terminal.currentPrivateModeState.DECSCNM);
         resetDirty();
-        write(terminal, "\u001b[?5r");    // XTRESTORE mode 5: restore DECSCNM=true
+        write(terminal, CSI + "?5r");    // XTRESTORE mode 5: restore DECSCNM=true
         assertTrue(terminal.currentPrivateModeState.DECSCNM, "XTRESTORE must restore DECSCNM");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
             "restoring DECSCNM via XTRESTORE must redraw the whole screen, like DECSET/DECRST");
@@ -768,10 +775,10 @@ public class TerminalBufferTest {
 
     @Test
     void echErasedCellsTakeDefaultForegroundAndCurrentBackground() {
-        write(terminal, "\u001b[41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
-        write(terminal, "ABCDEFGH");
-        write(terminal, "\u001b[3G");     // x=2
-        write(terminal, "\u001b[2X");     // ECH 2
+        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
+        write(terminal, SAMPLE_LINE);
+        write(terminal, CSI + "3G");     // x=2
+        write(terminal, CSI + "2X");     // ECH 2
         final int idx = cellIndex(2, 0);
         assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.colors[idx].Mode,
             "erased cell foreground must be the DEFAULT_FOREGROUND marker");
@@ -789,7 +796,7 @@ public class TerminalBufferTest {
 
     private void fillRows(final int startRow, final String chars) {
         for (int i = 0; i < chars.length(); i++) {
-            write(terminal, "\u001b[" + (startRow + 1 + i) + ";1H" + chars.charAt(i));
+            write(terminal, CSI + (startRow + 1 + i) + ";1H" + chars.charAt(i));
         }
     }
 
@@ -837,7 +844,7 @@ public class TerminalBufferTest {
             "lastRowToDisplayMax should exceed HEIGHT after 30 line-feeds");
 
         resetDirty();
-        write(terminal, "\u001b[1T"); // scroll down 1 line
+        write(terminal, CSI + "1T"); // scroll down 1 line
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
             "Scroll down after scrollback growth must mark all 24 visible rows dirty");
     }
@@ -849,9 +856,9 @@ public class TerminalBufferTest {
         for (int i = 0; i < 30; i++) {
             write(terminal, "\n");
         }
-        write(terminal, "\u001b[2;8r"); // scroll region rows 1..7 (0-indexed)
+        write(terminal, CSI + "2;8r"); // scroll region rows 1..7 (0-indexed)
         resetDirty();
-        write(terminal, "\u001b[1S");  // scroll up 1 within the margin
+        write(terminal, CSI + "1S");  // scroll up 1 within the margin
         int expected = 0;
         for (int i = 1; i <= 7; i++) {
             expected |= (1 << i);
