@@ -23,6 +23,8 @@ public final class EchoHandler {
             Executors.newSingleThreadExecutor(
                     runnable -> new Thread(runnable, "internet/blocking-session"));
 
+    private static volatile boolean warnedAboutIcmpFallback = false;
+
     public static boolean deliverPendingResponse(
             final AtomicReference<EchoResponse> echoResponse,
             final SessionLayer.Receiver receiver) {
@@ -73,12 +75,27 @@ public final class EchoHandler {
                                     echoSession.getTtl(),
                                     Config.defaultEchoRequestTimeoutMs)) {
                                 echoResponse.set(response);
+                            } else {
+                                warnAboutIcmpFallbackOnce(null);
                             }
                         } catch (IOException e) {
+                            warnAboutIcmpFallbackOnce(e);
                             LOGGER.error("Failed to get echo response", e);
                         }
                     });
         }
         return true;
+    }
+
+    private static void warnAboutIcmpFallbackOnce(@Nullable final IOException e) {
+        if (warnedAboutIcmpFallback) {
+            return;
+        }
+        warnedAboutIcmpFallback = true;
+        LOGGER.warn(
+                "ICMP fallback via InetAddress.isReachable failed"
+                        + " — on dedicated servers without CAP_NET_RAW this is a false negative;"
+                        + " ping may report failure even though the network works",
+                e);
     }
 }

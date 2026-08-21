@@ -109,7 +109,6 @@ public final class DefaultSessionLayer implements SessionLayer {
             try {
                 final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
                 assert stream != null;
-                assert false;
                 final int read = channel.read(stream);
                 LOGGER.trace("Read from real world: {}", read);
                 if (read == -1) {
