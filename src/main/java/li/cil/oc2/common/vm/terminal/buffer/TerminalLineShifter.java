@@ -74,7 +74,11 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            dirtyLinesMask |= 1 << i;
+            // Alt callers pass screen-row indices (terminal.y / scrollLast, no scrollback
+            // offset), so the dirty row is i itself; guard the shift against out-of-range rows.
+            if (i >= 0 && i < Terminal.HEIGHT) {
+                dirtyLinesMask |= 1 << i;
+            }
         }
         final int finalDirtyLinesMask = dirtyLinesMask;
         terminal.renderers.forEach(
@@ -123,9 +127,13 @@ final class TerminalLineShifter {
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
-            int globalI = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - i);
-            int localI = Terminal.HEIGHT + globalI - terminal.lastRowToDisplay;
-            dirtyLinesMask |= 1 << localI;
+            // firstLine/lastLine are buffer-row indices on the main buffer (callers offset by
+            // lastRowToDisplayMax - HEIGHT); invert the renderer's screen->buffer map
+            // (bufferRow = screenRow + lastRowToDisplay - HEIGHT) to recover the screen row.
+            final int row = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
+            if (row >= 0 && row < Terminal.HEIGHT) {
+                dirtyLinesMask |= 1 << row;
+            }
         }
         final int finalDirtyLinesMask = dirtyLinesMask;
         terminal.renderers.forEach(

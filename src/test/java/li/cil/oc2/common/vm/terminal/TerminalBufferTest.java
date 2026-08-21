@@ -721,8 +721,9 @@ public class TerminalBufferTest {
 
     @Test
     void dirtyMaskScrollDownAfterScrollbackGrowth() {
-        // Loki's repro: 30 line-feeds grow lastRowToDisplayMax to 54,
-        // then CSI 1 T (scroll down) must still mark visible rows dirty.
+        // Loki's repro: 30 line-feeds grow lastRowToDisplayMax, then CSI 1 T (scroll down)
+        // must mark ALL visible rows dirty. The pre-fix code mapped buffer rows to screen
+        // rows with lastRowToDisplayMax instead of lastRowToDisplay, leaving rows 0..6 stale.
         for (int i = 0; i < 30; i++) {
             write(terminal, "\n");
         }
@@ -731,8 +732,25 @@ public class TerminalBufferTest {
 
         resetDirty();
         write(terminal, "\u001b[1T"); // scroll down 1 line
-        int mask = renderer.dirtyMask.get();
-        assertNotEquals(0, mask,
-            "Scroll down after scrollback growth must mark rows dirty (getDirtyRow regression)");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
+            "Scroll down after scrollback growth must mark all 24 visible rows dirty");
+    }
+
+    @Test
+    void dirtyMaskScrollUpInMarginAfterScrollbackGrowth() {
+        // Second half of the same regression: set a margin AFTER scrollback has grown, then
+        // scroll up within it. The margin rows (not buffer rows) must be the dirty bits.
+        for (int i = 0; i < 30; i++) {
+            write(terminal, "\n");
+        }
+        write(terminal, "\u001b[2;8r"); // scroll region rows 1..7 (0-indexed)
+        resetDirty();
+        write(terminal, "\u001b[1S");  // scroll up 1 within the margin
+        int expected = 0;
+        for (int i = 1; i <= 7; i++) {
+            expected |= (1 << i);
+        }
+        assertEquals(expected, renderer.dirtyMask.get() & 0xFF,
+            "Margin scroll after scrollback growth must mark the margin rows, not stale buffer rows");
     }
 }
