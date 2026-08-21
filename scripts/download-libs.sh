@@ -75,12 +75,12 @@ EOF
 }
 
 # Versions must match build.gradle / gradle.properties
-CERES_VERSION="0.0.4"
+CERES_VERSION="0.0.6"
 SEDNA_VERSION="2.0.13"
-SEDNA_BUILDROOT_VERSION="0.0.64"
+SEDNA_BUILDROOT_VERSION="0.0.71"
 
 install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
-    "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}%2Ba598bbd.jar"
+    "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"
 
 install_maven "li/cil/sedna" "sedna" "${SEDNA_VERSION}" \
     "https://github.com/North-Western-Development/sedna/releases/download/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}%2Bbe63555.jar"
