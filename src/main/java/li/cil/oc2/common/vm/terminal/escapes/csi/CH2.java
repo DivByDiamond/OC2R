@@ -33,7 +33,6 @@ public class CH2 extends CSISequenceHandler {
                 } else {
                     mode.set(terminal.currentPrivateModeState, true);
                 }
-
             }
 
             ImplementedPrivateModes.instance.modeUsed(args[i], true);
@@ -44,7 +43,11 @@ public class CH2 extends CSISequenceHandler {
         final Map<ModeTable, Consumer<Terminal>> actions = new EnumMap<>(ModeTable.class); // NOPMD immutable after init
         actions.put(ModeTable.DECCOLM, terminal -> {
             terminal.currentPrivateModeState.DECCOLM = true;
-            /* DECCOLM spec: switch to 132 columns, clear screen, reset margins, home cursor. */
+            /* DECCOLM spec: switch to 132 columns, clear screen, reset margins, home cursor.
+               Deliberately unconditional: VT100 through VT420 always perform the full reset,
+               and legacy software (All-in-1, DECNOTES, the OpenVMS terminal driver) relies on
+               the destructive clear. The non-destructive path is DECSET 95 (DECNCSM) on VT510+,
+               to be added separately; the modern replacement is DECSCPP (CSI Ps $|). */
             terminal.setWidth(132);
         });
         actions.put(ModeTable.DECOM, terminal -> {

@@ -48,10 +48,28 @@ devices over `/dev/hvc0`; examples: `redstone_blink.c`, `note_block_player.c`,
 
 ### Pinning the version
 
-- `gradle.properties` → `sedna_buildroot_version=0.0.64`
-- `build.gradle.kts` → `implementation("li.cil.sedna:sedna-buildroot:0.0.64")`
-- `scripts/download-libs.sh` → downloads
-  `sedna-buildroot-0.0.64+unknown.jar` from the minux GitHub releases
+- `gradle.properties` → `sedna_buildroot_version=0.0.72-oc2r1`
+- `build.gradle.kts` → `implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")`
+- `scripts/download-libs.sh` → downloads the jar from the OC2R
+  [bundled-deps release](https://github.com/TumRedSun/OC2R/releases/tag/bundled-deps)
+
+## Custom image: 0.0.72-oc2r1
+
+Upstream minux **0.0.71** removed 9p from the guest kernel
+([minux#12](https://github.com/North-Western-Development/minux/issues/12)),
+which broke the `/mnt/builtin` mount (OC2R issue #17). The maintainer reverted
+this on master (`a49110a1`), but no fixed release exists yet, so we ship a
+custom image:
+
+- `rootfs.cramfs`, `bootfs.squashfs`, `fw_jump.bin` — verbatim from minux 0.0.71;
+- `Image` — Linux **6.12.104** built from minux master with
+  `CONFIG_9P_FS=y` / `CONFIG_NET_9P=y` / `CONFIG_NET_9P_VIRTIO=y`
+  (verified in QEMU: `builtin` tag mounts to `/mnt/builtin`).
+
+Switch back to upstream as soon as a minux release >= 0.0.72 is published:
+revert `scripts/download-libs.sh` to the minux release URL and bump versions.
+
+## Rebuilding the image
 
 ## Rebuilding the image
 

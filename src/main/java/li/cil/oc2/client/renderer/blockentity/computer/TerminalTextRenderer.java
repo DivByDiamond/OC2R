@@ -38,10 +38,10 @@ final class TerminalTextRenderer {
 
         final float textScaleX = 12f / terminal.getWidth();
         final float textScaleY = 7f / terminal.getHeight();
-        // Keep aspect ratio by using independent X/Y scales. At 80 cols both produce
-        // the same uniform scale. At 132 cols X shrinks (narrower chars) while Y
-        // stays the same — characters squish horizontally like a real VT100.
-        final float scaleX = textScaleX * 0.95f;
+        // Preserve the pre-DECCOLM uniform scale as the baseline so the 80-column
+        // rendering is pixel-identical to before. At 132 cols textScaleX shrinks below
+        // the uniform floor, so characters squish horizontally like a real VT100.
+        final float scaleX = Math.min(textScaleX, textScaleY) * 0.95f;
         final float scaleY = textScaleY * 0.95f;
 
         // Center the terminal in the block face.

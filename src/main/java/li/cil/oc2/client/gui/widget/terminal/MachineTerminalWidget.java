@@ -21,17 +21,16 @@ public final class MachineTerminalWidget {
     private static final int MARGIN_SIZE = 8;
     static final int TERMINAL_X = MARGIN_SIZE;
     static final int TERMINAL_Y = MARGIN_SIZE;
+    static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2;
+
+    public static final int WIDTH = Sprites.TERMINAL_SCREEN.width;
+    public static final int HEIGHT = Sprites.TERMINAL_SCREEN.height;
 
     // The terminal's inner pixel width inside the GUI sprite (sprite width minus both side
     // margins). Pixel width, not columns — distinct from Terminal.getWidth()/getTerminalWidth().
     static int getInnerWidth() {
         return Sprites.TERMINAL_SCREEN.width - 2 * MARGIN_SIZE;
     }
-
-    static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2;
-
-    public static final int WIDTH = Sprites.TERMINAL_SCREEN.width;
-    public static final int HEIGHT = Sprites.TERMINAL_SCREEN.height;
 
     private final AbstractMachineTerminalScreen<?> parent;
     private final AbstractMachineTerminalContainer container;
@@ -69,11 +68,9 @@ public final class MachineTerminalWidget {
             // Scale terminal rendering to fit inside the sprite's inner area. Terminal.getWidth()
             // returns the terminal's pixel width (columns * CHAR_WIDTH); getInnerWidth() is the
             // sprite's inner pixel area. Scale = inner / terminal so the terminal fills the area.
-            final float innerWidth = Sprites.TERMINAL_SCREEN.width - 2 * MARGIN_SIZE;
-            final float innerHeight = TERMINAL_HEIGHT;
             terminalStack.scale(
-                    innerWidth / terminal.getWidth(),
-                    innerHeight / terminal.getHeight(),
+                    getInnerWidth() / (float) terminal.getWidth(),
+                    TERMINAL_HEIGHT / (float) terminal.getHeight(),
                     1f);
 
             if (rendererView == null) {

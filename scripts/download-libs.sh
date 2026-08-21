@@ -11,9 +11,9 @@
 #     li/cil/sedna/sedna/2.0.13/
 #         sedna-2.0.13.jar
 #         sedna-2.0.13.pom
-#     li/cil/sedna/sedna-buildroot/0.0.64/
-#         sedna-buildroot-0.0.64.jar
-#         sedna-buildroot-0.0.64.pom
+#     li/cil/sedna/sedna-buildroot/0.0.72-oc2r1/
+#         sedna-buildroot-0.0.72-oc2r1.jar
+#         sedna-buildroot-0.0.72-oc2r1.pom
 #
 # Run this once after cloning the repo. Re-run with --force after bumping
 # the dep versions in build.gradle / gradle.properties.
@@ -75,18 +75,24 @@ EOF
 }
 
 # Versions must match build.gradle / gradle.properties
-CERES_VERSION="0.0.4"
+CERES_VERSION="0.0.6"
 SEDNA_VERSION="2.0.13"
-SEDNA_BUILDROOT_VERSION="0.0.64"
+# Custom build: minux 0.0.71 + kernel 6.12.104 with CONFIG_9P_FS=y (from minux
+# master, commit a49110a1). Hosted on the OC2R "bundled-deps" release until a
+# fixed upstream minux release (>= 0.0.72) is published.
+SEDNA_BUILDROOT_VERSION="0.0.72-oc2r1"
 
 install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
-    "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}%2Ba598bbd.jar"
+    "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"
 
 install_maven "li/cil/sedna" "sedna" "${SEDNA_VERSION}" \
     "https://github.com/North-Western-Development/sedna/releases/download/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}%2Bbe63555.jar"
 
 install_maven "li/cil/sedna" "sedna-buildroot" "${SEDNA_BUILDROOT_VERSION}" \
-    "https://github.com/North-Western-Development/minux/releases/download/${SEDNA_BUILDROOT_VERSION}/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}%2Bunknown.jar"
+    "https://github.com/TumRedSun/OC2R/releases/download/bundled-deps/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}.jar"
+
+# Upstream URL to switch back to once minux ships 9p again:
+#   "https://github.com/North-Western-Development/minux/releases/download/${SEDNA_BUILDROOT_VERSION}/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}%2Bunknown.jar"
 
 echo
 echo "Done. Maven layout under libs/:"
