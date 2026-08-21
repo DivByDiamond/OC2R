@@ -839,6 +839,21 @@ public class TerminalBufferTest {
             "RIS must reset the column width to the 80-column default, not leave it at 132");
     }
 
+    @Test
+    void repeatedDeccolmSetDoesNotClearScreen() {
+        // xterm only performs the DECCOLM clear/home on an actual width change; a redundant
+        // ?3h while already at 132 columns must be a no-op, not a second screen wipe.
+        write(terminal, CSI + "?3h");
+        write(terminal, CSI + "2;1H" + "X");
+        final int[] bufferBefore = terminal.buffer.clone();
+
+        write(terminal, CSI + "?3h");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "flag stays set");
+        assertEquals(132, terminal.getTerminalWidth(), "width unchanged");
+        assertArrayEquals(bufferBefore, terminal.buffer,
+            "redundant ?3h must not reallocate or clear the buffers");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }

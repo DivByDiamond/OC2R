@@ -150,7 +150,23 @@ public class Terminal {
     }
 
     public void setWidth(final int newWidth) {
+        // Guard against degenerate widths: width-1 feeds Math.clamp as a max everywhere,
+        // so a zero/negative width would throw IAE on the next cursor movement.
+        if (newWidth < 1) {
+            return;
+        }
         this.width = newWidth;
+
+        // Erase color: DECCOLM clears with the current SGR background (VT510 erase
+        // character), matching bufferManager.clear(). RIS resets the modes before
+        // calling setWidth, so it still fills with defaults.
+        final ColorData background = switch (currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> sixteenColor;
+            case TWO_FIFTY_SIX_COLOR -> twoFiftySixColor;
+            case TRUE_COLOR -> backgroundColor;
+            case SIXTEEN_COLOR_BRIGHT -> sixteenColorBright;
+            default -> TerminalColors.DEFAULT_BACKGROUND_COLOR;
+        };
 
         // Reallocate main buffer arrays
         final int mainSize = newWidth * HEIGHT * SCROLL_BACK_COUNT;
@@ -158,10 +174,10 @@ public class Terminal {
         this.colors = new ColorData[mainSize];
         this.colorsBackground = new ColorData[mainSize];
         this.styles = new byte[mainSize];
-        java.util.Arrays.fill(this.buffer, ' ');
-        java.util.Arrays.fill(this.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        java.util.Arrays.fill(this.colorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
-        java.util.Arrays.fill(this.styles, TerminalColors.DEFAULT_STYLE);
+        Arrays.fill(this.buffer, ' ');
+        Arrays.fill(this.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(this.colorsBackground, background.copy());
+        Arrays.fill(this.styles, TerminalColors.DEFAULT_STYLE);
 
         // Reallocate alt buffer arrays
         final int altSize = newWidth * HEIGHT;
@@ -169,10 +185,10 @@ public class Terminal {
         this.altColors = new ColorData[altSize];
         this.altColorsBackground = new ColorData[altSize];
         this.altStyles = new byte[altSize];
-        java.util.Arrays.fill(this.altBuffer, ' ');
-        java.util.Arrays.fill(this.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        java.util.Arrays.fill(this.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR.copy());
-        java.util.Arrays.fill(this.altStyles, TerminalColors.DEFAULT_STYLE);
+        Arrays.fill(this.altBuffer, ' ');
+        Arrays.fill(this.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(this.altColorsBackground, background.copy());
+        Arrays.fill(this.altStyles, TerminalColors.DEFAULT_STYLE);
 
         // Reset tab stops
         this.tabs = new boolean[newWidth];

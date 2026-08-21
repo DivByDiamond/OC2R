@@ -33,7 +33,6 @@ public class CH2 extends CSISequenceHandler {
                 } else {
                     mode.set(terminal.currentPrivateModeState, true);
                 }
-
             }
 
             ImplementedPrivateModes.instance.modeUsed(args[i], true);
@@ -44,8 +43,11 @@ public class CH2 extends CSISequenceHandler {
         final Map<ModeTable, Consumer<Terminal>> actions = new EnumMap<>(ModeTable.class); // NOPMD immutable after init
         actions.put(ModeTable.DECCOLM, terminal -> {
             terminal.currentPrivateModeState.DECCOLM = true;
-            /* DECCOLM spec: switch to 132 columns, clear screen, reset margins, home cursor. */
-            terminal.setWidth(132);
+            /* DECCOLM spec: switch to 132 columns, clear screen, reset margins, home cursor.
+               No-op if already 132 columns — xterm only resets on an actual width change. */
+            if (terminal.width != 132) {
+                terminal.setWidth(132);
+            }
         });
         actions.put(ModeTable.DECOM, terminal -> {
             terminal.currentPrivateModeState.DECOM = true;
