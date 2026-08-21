@@ -29,8 +29,8 @@ public class TerminalBuffer {
             Arrays.fill(terminal.altColorsBackground, c.copy());
             Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         } else {
-            int startIndex = (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH;
-            int endIndex = startIndex + (Terminal.HEIGHT * Terminal.WIDTH);
+            int startIndex = (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width;
+            int endIndex = startIndex + (Terminal.HEIGHT * terminal.width);
             Arrays.fill(terminal.buffer, startIndex, endIndex, ' ');
             Arrays.fill(
                     terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
@@ -56,7 +56,7 @@ public class TerminalBuffer {
     }
 
     public void clearLine(final int y) {
-        clearLine(y, 0, Terminal.WIDTH);
+        clearLine(y, 0, terminal.width);
     }
 
     public void clearLine(final int y, final int fromIndex, final int toIndex) {
@@ -68,7 +68,7 @@ public class TerminalBuffer {
      * blanks. Does not shift surrounding characters.
      */
     public void clearChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        final int n = Math.max(Math.min(count, terminal.width - x), 0);
         if (n == 0) return;
         final ColorData c = getCurrentBackgroundColor();
         final int from = getLinearIndex(y, x);
@@ -92,11 +92,11 @@ public class TerminalBuffer {
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        final int n = Math.max(Math.min(count, terminal.width - x), 0);
         if (n == 0) return;
-        final int remaining = Terminal.WIDTH - x - n;
+        final int remaining = terminal.width - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, Terminal.WIDTH - x);
+            clearChars(y, x, terminal.width - x);
             return;
         }
         final ColorData c = getCurrentBackgroundColor();
@@ -165,11 +165,11 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, Terminal.WIDTH - x), 0);
+        final int n = Math.max(Math.min(count, terminal.width - x), 0);
         if (n == 0) return;
-        final int remaining = Terminal.WIDTH - x - n;
+        final int remaining = terminal.width - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, Terminal.WIDTH - x);
+            clearChars(y, x, terminal.width - x);
             return;
         }
         final ColorData c = getCurrentBackgroundColor();
@@ -213,9 +213,9 @@ public class TerminalBuffer {
 
     private int getLinearIndex(final int y, final int x) {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            return y * Terminal.WIDTH + x;
+            return y * terminal.width + x;
         }
-        return (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * Terminal.WIDTH + x;
+        return (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width + x;
     }
 
     private ColorData getCurrentBackgroundColor() {

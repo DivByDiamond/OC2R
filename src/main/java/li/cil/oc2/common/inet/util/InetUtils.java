@@ -81,9 +81,7 @@ public final class InetUtils {
         final byte[] result = new byte[data.remaining() + 4];
         result[2] = 0x5;
         result[3] = (byte) 0xDC;
-        // Copy the quoted header+payload INTO the result. put() here would overwrite
-        // the original packet with zero bytes and return an empty quote instead.
-        data.get(result, 4, data.remaining());
+        data.put(result, 4, data.remaining());
         data.limit(tmpLimit);
         data.position(tmpPosition);
         return result;

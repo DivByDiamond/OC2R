@@ -63,12 +63,8 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
 
     private void resetDECCOLM() {
         terminal.currentPrivateModeState.DECCOLM = false;
-        /* DECCOLM spec: clear screen and reset margins */
-        terminal.bufferManager.clear();
-        terminal.scrollFirst = 0;
-        terminal.scrollLast = Terminal.HEIGHT - 1;
-        terminal.setRelativeCursorPos(0, 0);
-        terminal.markAllDirty();
+        /* DECCOLM spec: switch to 80 columns, clear screen, reset margins, home cursor. */
+        terminal.setWidth(Terminal.WIDTH);
     }
 
     private void restoreSavedCursor() {

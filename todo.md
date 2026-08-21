@@ -556,27 +556,14 @@ DeviceBusElement (каждый блок/элемент)
 
 ### Находки аудита inet/ (2026-08-21, из issue #13)
 
-Контекст: Nathan22211 не смог завести интернет из VM (ping 1.1.1.1, DNS через 8.8.8.8 — всё молча падает). Разбор показал реальные баги стека.
+Контекст: Nathan22211 не смог завести интернет из VM (ping 1.1.1.1, DNS через 8.8.8.8 — всё молча падает). Разбор показал реальные баги стека:
 
-**Верификация (2026-08-21, ветка work, HEAD 6518289)**: все 5 кодовых находок подтверждены по исходникам; строки/файлы совпадают.
-
-**Вероятная первопричина у репортера** — комбинация пунктов 3+4: ping идёт через ICMP-fallback `isReachable()` (ложно-отрицательный на выделенном сервере без CAP_NET_RAW), DNS падает из-за молчаливого дропа фрагментированных UDP-ответов (EDNS0 >512 Б). Плюс возможная misconfiguration: DHCP нет, гость должен сам назначить себе IP (карточка — point-to-point линк).
-
-- [x] **`assert false;` в `DefaultSessionLayer.java:112`** — убран (2026-08-21). Отладочный артефакт: с `-ea` любой TCP-read крашит JVM, без `-ea` — мёртвый код
-- [x] **Нет ICMP Destination Unreachable / Time Exceeded при дропе пакетов** — исправлено (2026-08-21): `DefaultNetworkLayer.queueIcmpError` ставит в очередь ICMP type 3 code 4 (frag-needed, MTU 1500) для фрагментов и type 11 code 0 для TTL=1; доставка гостю на следующем receive-поллинге (паттерн ARP-reply из `DefaultLinkLocalLayer`). deniedHosts остался silent drop (security-фильтр) с комментарием
-- [x] **Фрагментированные IP-пакеты дропаются молча** (`DefaultNetworkLayer.java`) — исправлено тем же механизмом (см. выше); сборка фрагментов не делается (только ICMP frag-needed с MTU)
-- [x] **ICMP-fallback `InetAddress.isReachable()`** (`EchoHandler.java`) — исправлено (2026-08-21): одноразовый WARN при первом неудачном fallback (CAP_NET_RAW false-negative), семантика ответа не менялась
-- [x] **VXLAN-зависимость интернет-карты не проверяется** — исправлено (2026-08-21): `InternetManagerImpl.initialize()` логирует WARN «internet card is enabled but VXLAN is disabled»; комментарий в `InternetCardSpec.java` поправлен; ключ конфига не переименован
+- [ ] **`assert false;` в `DefaultSessionLayer.java:112`** — убрать. Отладочный артефакт: с `-ea` любой TCP-read крашит JVM, без `-ea` — мёртвый код
+- [ ] **Нет ICMP Destination Unreachable** при дропе пакетов: `DefaultNetworkLayer.parseIpPacketHeader` (deniedHosts, фрагменты, TTL) просто возвращает null — гость не узнаёт причину сбоя, таймауты вместо ошибки. Добавить ICMP type 3 ответ
+- [ ] **Фрагментированные IP-пакеты дропаются молча** (`DefaultNetworkLayer.java:133-139`) — крупные DNS-ответы с EDNS0 (>512 байт) теряются. Минимум: отправлять ICMP frag-needed (type 3 code 4) с MTU; максимум: сборка фрагментов
+- [ ] **ICMP-fallback `InetAddress.isReachable()`** (`EchoHandler.java:71`) на выделенных серверах без root/CAP_NET_RAW почти всегда false-negative → ping «не работает» даже при живой сети. Логировать warn при первом неудачном fallback
+- [ ] **VXLAN-зависимость интернет-карты не проверяется**: комментарий конфига говорит "VXLAN must also be enabled", но `InternetManagerImpl.initialize()` не проверяет `Config.enable` VXLAN. Либо добавить проверку, либо поправить комментарий
 - [ ] **Документация для пользователей**: нет DHCP, карточка = point-to-point линк (гость назначает себе любой IP, карточка отвечает на ARP). Написать в README/доку как настраивать сеть в госте + предупреждение про deniedHosts
-- [ ] Ответить в issue #13 после фиксов ping/DNS + приложить инструкцию из предыдущего пункта
-
-### Новые баги, найденные при написании тестов (2026-08-21)
-
-- [x] **`MacAddressUtils` — знаковое расширение байта**: `parseMacAddress` собирал prefix/address без маски `& 0xFF` → любой MAC с байтом ≥ 0x80 парсился мусором (`5E:D1:...` → prefix `0xFFD1`, `...:FF` → адрес `0xFFFFFFFF`); `byteToHex` форматировал отрицательные байты мусорными символами. Исправлено + тесты `MacAddressUtilsTest`
-- [x] **`InetUtils.quickICMPBody` — `put()` вместо `get()`**: буфер перезаписывался нулями вместо копирования в результат → все ICMP-unreachable ответы уходили с обнулённой цитатой исходного пакета (RFC 792 payload). Исправлено на `data.get(result, 4, ...)`
-- [x] **`IcmpHandler.reject` — source address 0.0.0.0**: `ICMPReply` создаётся с `srcIpAddress=0`, consume делает `updateIpv4(0, dst)` → порт-unreachable ответ приходит гостю с источника `0.0.0.0`. Задокументировано тестом `IcmpHandlerTest` (поведение сохранено), **нужен фикс**: передавать адрес недоступного хоста как src
-- [x] **Mockito 4.3.1 → 5.17.0**: byte-buddy 1.12.7 не поддерживает Java 21 («Could not modify all classes»); до этого Mockito в тестах фактически не использовался. `mockito-inline` → `mockito-core` (inline-мокер встроен в 5.x). Тестовый classpath теперь наследует main (`testCompileClasspath`/`testRuntimeClasspath` extendsFrom), т.к. inet-слои грузят NBT/MC-классы в рантайме
-- Итого: **+29 модульных тестов** (`DefaultNetworkLayerTest` 12, `MacAddressUtilsTest` 7, `IcmpHandlerTest` 4, `SessionManagerTest` 6), всего 152, зелёные; checkstyle/PMD без новых нарушений
 
 ---
 

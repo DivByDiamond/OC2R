@@ -12,7 +12,7 @@ public final class MacAddressUtils {
     }
 
     private static void byteToHex(final StringBuilder builder, final byte code) {
-        builder.append(hexCodeToChar((code & 0xFF) >>> 4))
+        builder.append(hexCodeToChar(code >>> 4))
                 .append(hexCodeToChar(code & 15));
     }
 
@@ -75,17 +75,14 @@ public final class MacAddressUtils {
         if (string.charAt(2) != ':') {
             throw illegalDelimiter(string, 2);
         }
-        // Mask with 0xFF: parseMacAddressByte returns a sign-extended byte, and an
-        // unmasked byte >= 0x80 would poison the upper bits of the combined value.
-        final short prefix = (short)
-                ((first & 0xFF) << 8 | (parseMacAddressByte(string, 3) & 0xFF));
+        final short prefix = (short) (first << 8 | parseMacAddressByte(string, 3));
         int address = 0;
         for (int i = 0; i < 4; ++i) {
             final int pos = i * 3 + 5;
             if (string.charAt(pos) != ':') {
                 throw illegalDelimiter(string, pos);
             }
-            address = (address << 8) | (parseMacAddressByte(string, pos + 1) & 0xFF);
+            address = (address << 8) | parseMacAddressByte(string, pos + 1);
         }
         return new MacAddress(prefix, address);
     }

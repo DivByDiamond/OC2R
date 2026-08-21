@@ -37,8 +37,6 @@ This repository is a **fork** of [North-Western-Development/OC2R], which was its
 
 The default Linux image is bundled with the mod - no extra download needed.
 
-> **Try a custom OS:** [OnyxOS] is a hobby operating system (custom kernel, FAT32/OnyxFS, RISC-V) that runs inside OC2R's virtual computers - build the flash image and boot it in-game.
-
 ### Features
 
 | Feature | Description |
@@ -92,8 +90,6 @@ OC2R - мод для Minecraft, добавляющий полноценные в
 4. **ПКМ с гаечным ключом** - открыть инвентарь для компонентов
 
 Стандартный Linux-образ уже встроен в мод - ничего качать не нужно.
-
-> **Попробуйте свою ОС:** [OnyxOS] - хобби-операционная система (свой кернел, FAT32/OnyxFS, RISC-V), которая запускается на виртуальных компьютерах OC2R - соберите flash-образ и загрузите его в игре.
 
 ### Возможности
 
@@ -153,4 +149,3 @@ GNU General Public License v3.0. See [LICENSE](LICENSE).
 [North-Western-Development/OC2R]: https://github.com/North-Western-Development/OC2R
 [OpenComputers 2]: https://github.com/fnuecke/oc2
 [Sedna]: https://github.com/fnuecke/sedna
-[OnyxOS]: https://github.com/loki5512344/OnyxOS

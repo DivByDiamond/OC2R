@@ -21,7 +21,12 @@ public final class MachineTerminalWidget {
     private static final int MARGIN_SIZE = 8;
     static final int TERMINAL_X = MARGIN_SIZE;
     static final int TERMINAL_Y = MARGIN_SIZE;
-    static final int TERMINAL_WIDTH = Terminal.WIDTH * Terminal.CHAR_WIDTH / 2;
+
+    static int getTerminalWidth(Terminal terminal) {
+        // Scale terminal to fit inside the sprite's inner area (sprite width - 2 * MARGIN_SIZE)
+        return Sprites.TERMINAL_SCREEN.width - 2 * MARGIN_SIZE;
+    }
+
     static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2;
 
     public static final int WIDTH = Sprites.TERMINAL_SCREEN.width;
@@ -60,9 +65,14 @@ public final class MachineTerminalWidget {
         if (container.getVirtualMachine().isRunning()) {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);
+            // Scale terminal rendering to fit inside the sprite's inner area.
+            // Terminal getWidth() returns width * CHAR_WIDTH (pixel width of the terminal).
+            // Inner area is sprite width minus margins.
+            final float innerWidth = Sprites.TERMINAL_SCREEN.width - 2 * MARGIN_SIZE;
+            final float innerHeight = TERMINAL_HEIGHT;
             terminalStack.scale(
-                    TERMINAL_WIDTH / (float) terminal.getWidth(),
-                    TERMINAL_HEIGHT / (float) terminal.getHeight(),
+                    innerWidth / terminal.getWidth(),
+                    innerHeight / terminal.getHeight(),
                     1f);
 
             if (rendererView == null) {
@@ -76,7 +86,7 @@ public final class MachineTerminalWidget {
             final Font font = getClient().font;
             if (error != null) {
                 final int textWidth = font.width(error);
-                final int textOffsetX = (TERMINAL_WIDTH - textWidth) / 2;
+                final int textOffsetX = (getTerminalWidth(terminal) - textWidth) / 2;
                 final int textOffsetY = (TERMINAL_HEIGHT - font.lineHeight) / 2;
                 drawShadow(
                         font,
@@ -194,6 +204,6 @@ public final class MachineTerminalWidget {
 
     private boolean isMouseOverTerminal(final int mouseX, final int mouseY) {
         return parent.isMouseOver(
-                mouseX, mouseY, TERMINAL_X, TERMINAL_Y, TERMINAL_WIDTH, TERMINAL_HEIGHT);
+                mouseX, mouseY, TERMINAL_X, TERMINAL_Y, getTerminalWidth(terminal), TERMINAL_HEIGHT);
     }
 }

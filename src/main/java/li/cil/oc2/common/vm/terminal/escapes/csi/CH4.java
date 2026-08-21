@@ -28,24 +28,24 @@ public class CH4
                                 "\033[4;"
                                         + (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
                                         + ";"
-                                        + (Terminal.WIDTH * Terminal.CHAR_WIDTH)
+                                        + (terminal.width * Terminal.CHAR_WIDTH)
                                         + "t");
                 case 15 ->
                         terminal.io.putResponse(
                                 "\033[5;"
                                         + (Terminal.HEIGHT * Terminal.CHAR_HEIGHT)
                                         + ";"
-                                        + (Terminal.WIDTH * Terminal.CHAR_WIDTH)
+                                        + (terminal.width * Terminal.CHAR_WIDTH)
                                         + "t");
                 case 16 ->
                         terminal.io.putResponse(
                                 "\033[6;" + Terminal.CHAR_HEIGHT + ";" + Terminal.CHAR_WIDTH + "t");
                 case 18 ->
                         terminal.io.putResponse(
-                                "\033[8;" + Terminal.HEIGHT + ";" + Terminal.WIDTH + "t");
+                                "\033[8;" + Terminal.HEIGHT + ";" + terminal.width + "t");
                 case 19 ->
                         terminal.io.putResponse(
-                                "\033[9;" + Terminal.HEIGHT + ";" + Terminal.WIDTH + "t");
+                                "\033[9;" + Terminal.HEIGHT + ";" + terminal.width + "t");
                 default -> {}
             }
         }

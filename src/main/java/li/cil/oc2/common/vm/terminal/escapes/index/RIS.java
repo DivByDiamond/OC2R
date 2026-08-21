@@ -70,7 +70,7 @@ public class RIS {
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.tabs, false);
         Arrays.fill(terminal.altTabs, false);
-        for (int i = 1; i < Terminal.WIDTH; i++) {
+        for (int i = 1; i < terminal.width; i++) {
             if (i % TerminalColors.TAB_WIDTH == 0) {
                 terminal.tabs[i] = true;
                 terminal.altTabs[i] = true;

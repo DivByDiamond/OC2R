@@ -57,12 +57,12 @@ public final class SendHandler {
                         discriminator,
                         it -> new EchoSessionImpl(dstIpAddress, IcmpHandler.PORT_ECHO, it));
         if (session == null) {
-            icmpHandler.reject(data, dstIpAddress, srcIpAddress);
+            icmpHandler.reject(data, srcIpAddress);
         } else {
             session.setSequenceNumber(sequence);
             session.setTtl(message.getTtl());
             sessionLayer.sendSession(session, data);
-            sessionSendFinish(session, data, srcIpAddress, dstIpAddress);
+            sessionSendFinish(session, data, srcIpAddress);
         }
     }
 
@@ -80,10 +80,10 @@ public final class SendHandler {
                 sessionManager.getOrCreateSession(
                         discriminator, it -> new DatagramSessionImpl(dstIpAddress, dstPort, it));
         if (session == null) {
-            icmpHandler.reject(data, dstIpAddress, srcIpAddress);
+            icmpHandler.reject(data, srcIpAddress);
         } else {
             sessionLayer.sendSession(session, data);
-            sessionSendFinish(session, data, srcIpAddress, dstIpAddress);
+            sessionSendFinish(session, data, srcIpAddress);
         }
     }
 
@@ -97,7 +97,7 @@ public final class SendHandler {
                 sessionManager.getOrCreateSession(
                         discriminator, it -> new StreamSessionImpl(dstIpAddress, dstPort, it));
         if (session == null) {
-            icmpHandler.reject(data, dstIpAddress, srcIpAddress);
+            icmpHandler.reject(data, srcIpAddress);
         } else {
             LOGGER.trace("GOT TCP");
             handleSendResult(session, data);
@@ -126,13 +126,10 @@ public final class SendHandler {
     }
 
     private void sessionSendFinish(
-            final DatagramSessionBase session,
-            final ByteBuffer payload,
-            final int srcIpAddress,
-            final int dstIpAddress) {
+            final DatagramSessionBase session, final ByteBuffer payload, final int srcIpAddress) {
         switch (session.getState()) {
             case NEW -> session.setState(Session.States.ESTABLISHED);
-            case REJECT -> icmpHandler.reject(payload, dstIpAddress, srcIpAddress);
+            case REJECT -> icmpHandler.reject(payload, srcIpAddress);
             case FINISH -> sessionManager.closeSession(session);
             case ESTABLISHED -> {}
             default -> throw new IllegalStateException();

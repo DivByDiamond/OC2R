@@ -27,17 +27,14 @@ public final class IcmpHandler {
         buffer.position(position);
     }
 
-    public void reject(
-            final ByteBuffer payload,
-            final int unreachableHostAddress,
-            final int guestAddress) {
+    public void reject(final ByteBuffer payload, final int srcIpAddress) {
         final byte[] data = InetUtils.quickICMPBody(payload);
         icmpReply =
                 new ICMPReply(
                         ICMP_TYPE_ECHO_UNREACHABLE,
                         ICMP_CODE_ECHO_UNREACHABLE_PROHIBITED,
-                        unreachableHostAddress,
-                        guestAddress,
+                        0,
+                        srcIpAddress,
                         data);
     }
 

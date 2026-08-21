@@ -52,11 +52,6 @@ public final class InternetManagerImpl implements InternetManager {
         if (!Config.internetCardEnabled) {
             LOGGER.info("Internet card is disabled; Internet manager will not start");
         } else {
-            if (!Config.enable) {
-                LOGGER.warn(
-                        "internet card is enabled but VXLAN is disabled"
-                                + " — internet will not work");
-            }
             INSTANCE = new InternetManagerImpl();
             LOGGER.warn("Internet card is enabled; Players may access to the internal network");
         }

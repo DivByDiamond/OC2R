@@ -16,7 +16,7 @@ buildscript {
 plugins {
     id("idea")
     id("maven-publish")
-    id("net.neoforged.moddev") version "2.0.144"
+    id("net.neoforged.moddev") version "2.0.124"
 
     id("checkstyle")
     id("pmd")
@@ -39,9 +39,6 @@ fun getGitRef(): String {
 val semver: String get() = property("semver") as String
 val modId: String get() = property("modId") as String
 val neo_version: String get() = property("neo_version") as String
-val ceres_version: String get() = property("ceres_version") as String
-val sedna_version: String get() = property("sedna_version") as String
-val sedna_buildroot_version: String get() = property("sedna_buildroot_version") as String
 val parchment_mappings_version: String get() = property("parchment_mappings_version") as String
 val parchment_minecraft_version: String get() = property("parchment_minecraft_version") as String
 val minecraft_version: String get() = property("minecraft_version") as String
@@ -128,26 +125,14 @@ repositories {
     mavenCentral()
     maven {
         url = uri("https://cursemaven.com")
-        // Without the filter a 429 from cursemaven aborts resolution of modules
-        // that were never going to be found here (JEI, ProjectRed, li.cil, ...).
-        content { includeGroup("curse.maven") }
     }
     maven {
         name = "Jared's maven"
         url = uri("https://maven.blamejared.com/")
-        content { includeGroupByRegex("mezz\\..*") }
     }
-    maven {
-        url = uri("https://maven.covers1624.net/")
-        content { includeGroupByRegex("io\\.codechicken(\\..*)?|mrtjp(\\..*)?") }
-    }
-    maven {
-        url = uri("https://api.modrinth.com/maven")
-        content { includeGroup("maven.modrinth") }
-    }
-    maven {
-        url = uri("https://maven.neoforged.net/releases/")
-    }
+    maven { url = uri("https://maven.covers1624.net/") }
+    maven { url = uri("https://api.modrinth.com/maven") }
+    maven { url = uri("https://maven.neoforged.net/releases/") }
     if (hasGithubPackageCredentials) {
         val githubPackages = listOf(
             "fnuecke/ceres" to "li.cil.ceres",
@@ -216,7 +201,7 @@ neoForge {
 }
 
 dependencies {
-    annotationProcessor("org.spongepowered:mixin:0.8.7:processor")
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     // §170: Error Prone compiler analysis. Pinned to a version compatible with the
     // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
@@ -224,18 +209,18 @@ dependencies {
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
 
-    implementation("li.cil.ceres:ceres:${ceres_version}")
-    add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
+    implementation("li.cil.ceres:ceres:0.0.4")
+    add("jarJar", "li.cil.ceres:ceres:0.0.4")
 
-    implementation("li.cil.sedna:sedna:${sedna_version}")
-    add("jarJar", "li.cil.sedna:sedna:${sedna_version}")
+    implementation("li.cil.sedna:sedna:2.0.13")
+    add("jarJar", "li.cil.sedna:sedna:2.0.13")
 
-    implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
-    add("jarJar", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    implementation("li.cil.sedna:sedna-buildroot:0.0.64")
+    add("jarJar", "li.cil.sedna:sedna-buildroot:0.0.64")
 
-    add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    add("additionalRuntimeClasspath", "li.cil.ceres:ceres:0.0.4")
+    add("additionalRuntimeClasspath", "li.cil.sedna:sedna:2.0.13")
+    add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:0.0.64")
 
     implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
     implementation("maven.modrinth:13P81Hg3:1.3.1")
@@ -263,25 +248,16 @@ dependencies {
         runtimeOnly("curse.maven:oculus-${oculus_project_id}:${oculus_file_id}")
     }
 
-    testImplementation("org.mockito:mockito-core:${mockito_version}")
+    testImplementation("org.mockito:mockito-inline:${mockito_version}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiter_version}")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
 
-    // The terminal tests construct `new Terminal()` on the plain JUnit runtime classpath.
-    // fastutil/log4j used to be added here by hand; since the test classpaths now share
-    // the main dependency set (see below), Minecraft pins their versions transitively.
-}
-
-// Mockito cannot create mocks for interfaces whose method signatures reach into
-// Minecraft types (e.g. LayerParameters.getSavedState -> Optional<Tag>), and inet
-// layer classes load Minecraft NBT classes at runtime. Share the main dependency
-// set (which carries the compiled Minecraft/NeoForge classes) with the test set.
-configurations.named("testCompileClasspath") {
-    extendsFrom(configurations.compileClasspath.get())
-}
-configurations.named("testRuntimeClasspath") {
-    extendsFrom(configurations.runtimeClasspath.get())
+    // The terminal tests construct `new Terminal()` on the plain JUnit runtime classpath,
+    // which (unlike the mod runtimes) does not carry the Minecraft/NeoForge dependency set.
+    // Add the handful of libraries the terminal core reaches for directly.
+    testRuntimeOnly("it.unimi.dsi:fastutil:8.5.12")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.22.1")
 }
 
 System.setProperty("line.separator", "\n")

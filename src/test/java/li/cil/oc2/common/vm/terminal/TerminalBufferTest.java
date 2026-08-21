@@ -790,6 +790,41 @@ public class TerminalBufferTest {
             "erased cell style must reset to default");
     }
 
+    @Test
+    void deccolmSwitchesColumnWidthAndClearsScreen() {
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
+
+        // DECCOLM set (?3h): switch to 132 columns, clear screen, reset margins, home cursor.
+        resetDirty();
+        write(terminal, CSI + "?3h");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "?3h enables DECCOLM");
+        assertEquals(132, terminal.getTerminalWidth(), "DECCOLM switches to 132 columns");
+        final int expected132 = 132 * Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT;
+        assertEquals(expected132, terminal.buffer.length, "buffers reallocate to 132 columns");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
+            "DECCOLM must redraw the whole screen");
+        assertEquals(0, terminal.x, "DECCOLM homes the cursor to column 0");
+        assertEquals(0, terminal.y, "DECCOLM homes the cursor to row 0");
+
+        // 132 chars fit on row 0 with no wrap — proves putChar wraps at the dynamic
+        // width, not the static Terminal.WIDTH (which would wrap at 80 and spill to row 1).
+        write(terminal, "A".repeat(132));
+        assertEquals('A', charAt(131, 0), "last column of the 132-col row is filled");
+        assertEquals(' ', charAt(0, 1), "no wrap to row 1 at 132 columns");
+
+        // A char placed on row 1 must use the 132-column stride, not the 80-column one.
+        write(terminal, CSI + "2;6H");   // CUP -> line 2, column 6 (x=5, y=1)
+        write(terminal, "Z");
+        assertEquals('Z', charAt(5, 1), "row 1 indexing uses the 132-column stride");
+
+        // DECCOLM reset (?3l): switch back to 80 columns.
+        write(terminal, CSI + "?3l");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "?3l disables DECCOLM");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "reset returns to 80 columns");
+        final int expected80 = Terminal.WIDTH * Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT;
+        assertEquals(expected80, terminal.buffer.length, "buffers reallocate back to 80 columns");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -802,7 +837,7 @@ public class TerminalBufferTest {
 
     private char charAt(final int x, final int y) {
         final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
-        return (char) terminal.buffer[x + row * Terminal.WIDTH];
+        return (char) terminal.buffer[x + row * terminal.width];
     }
 
     private int cellIndex(final int x, final int y) {

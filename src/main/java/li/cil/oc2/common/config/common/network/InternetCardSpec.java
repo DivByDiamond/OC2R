@@ -23,10 +23,7 @@ public class InternetCardSpec {
 
     public InternetCardSpec(ModConfigSpec.Builder builder) {
         internetCardEnabled =
-                builder.comment(
-                                "Whether to enable the internet card.",
-                                        "VXLAN must also be enabled, otherwise the internet card"
-                                                + " will not work")
+                builder.comment("Whether to enable to internet card, VXLAN must also be enabled")
                         .define("internetCardEnabled", false);
 
         defaultSessionLifetimeMs =
