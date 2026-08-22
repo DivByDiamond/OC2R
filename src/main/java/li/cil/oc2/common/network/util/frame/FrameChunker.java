@@ -33,6 +33,7 @@ public final class FrameChunker {
         private static final class Partial {
             final int width;
             final int height;
+            final int chunkCount;
             final byte[] data;
             final BitSet received;
             final long createdAt;
@@ -40,6 +41,7 @@ public final class FrameChunker {
             Partial(final int width, final int height, final int chunkCount) {
                 this.width = width;
                 this.height = height;
+                this.chunkCount = chunkCount;
                 this.data = new byte[width * height * 2];
                 this.received = new BitSet(chunkCount);
                 this.createdAt = System.currentTimeMillis();
@@ -64,7 +66,7 @@ public final class FrameChunker {
             Partial partial = partials.get(pos);
             if (partial == null
                     || partial.data.length != expectedSize
-                    || partial.received.size() != chunkCount) {
+                    || partial.chunkCount != chunkCount) {
                 partial = new Partial(width, height, chunkCount);
                 partials.put(pos, partial);
             }

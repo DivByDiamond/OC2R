@@ -21,7 +21,6 @@ public record ProjectorFramebufferMessage(
         int chunkIndex,
         int chunkCount,
         byte[] data) implements AbstractMessage {
-    private static final FrameChunker.Reassembler REASSEMBLER = new FrameChunker.Reassembler();
 
     public static final StreamCodec<FriendlyByteBuf, ProjectorFramebufferMessage> STREAM_CODEC =
             StreamCodec.composite(
@@ -51,13 +50,10 @@ public record ProjectorFramebufferMessage(
 
     @Override
     public void handleMessage(IPayloadContext context) {
-        final var completed = REASSEMBLER.offer(
-                pos, width, height, chunkIndex, chunkCount, data);
-        if (completed == null) return;
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 ProjectorBlockEntity.class,
-                projector -> projector.applyClientFrame(
-                        completed.width(), completed.height(), completed.data()));
+                projector -> projector.applyChunk(
+                        width, height, chunkIndex, chunkCount, data));
     }
 }

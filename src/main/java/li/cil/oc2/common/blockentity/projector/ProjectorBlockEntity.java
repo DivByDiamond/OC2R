@@ -165,6 +165,16 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         frameSender.applyClientFrame(width, height, data);
     }
 
+    public void applyChunk(
+            final int width,
+            final int height,
+            final int chunkIndex,
+            final int chunkCount,
+            final byte[] data) {
+        if (level == null || !level.isClientSide()) return;
+        frameSender.applyChunk(width, height, chunkIndex, chunkCount, data);
+    }
+
     private void handleMountedChanged(final boolean value) {
         projectorState.update(
                 level,

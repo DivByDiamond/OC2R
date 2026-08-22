@@ -21,7 +21,6 @@ public record MonitorFramebufferMessage(
         int chunkIndex,
         int chunkCount,
         byte[] data) implements AbstractMessage {
-    private static final FrameChunker.Reassembler REASSEMBLER = new FrameChunker.Reassembler();
 
     public static final StreamCodec<FriendlyByteBuf, MonitorFramebufferMessage> STREAM_CODEC =
             StreamCodec.composite(
@@ -51,13 +50,8 @@ public record MonitorFramebufferMessage(
 
     @Override
     public void handleMessage(IPayloadContext context) {
-        final var completed = REASSEMBLER.offer(
-                pos, width, height, chunkIndex, chunkCount, data);
-        if (completed == null) return;
         ClientBlockEntityLookup.withClientBlockEntityAt(
-                pos,
-                MonitorBlockEntity.class,
-                monitor -> monitor.video.applyClientFrame(
-                        completed.width(), completed.height(), completed.data()));
+                pos, MonitorBlockEntity.class, monitor -> monitor.video.applyChunk(
+                        width, height, chunkIndex, chunkCount, data));
     }
 }

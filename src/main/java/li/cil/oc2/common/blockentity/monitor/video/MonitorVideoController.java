@@ -26,6 +26,7 @@ public final class MonitorVideoController {
 
     private final Map<ServerPlayer, Long> watchers =
             Collections.synchronizedMap(new WeakHashMap<>());
+    private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
 
     @Nullable FrameConsumer frameConsumer;
     private long lastKeepAliveSentAt;
@@ -63,6 +64,19 @@ public final class MonitorVideoController {
 
     public void handleWatchedBy(final ServerPlayer player) {
         watchers.put(player, System.currentTimeMillis());
+    }
+
+    public void applyChunk(
+            final int width,
+            final int height,
+            final int chunkIndex,
+            final int chunkCount,
+            final byte[] data) {
+        final FrameChunker.Reassembler.CompletedFrame completed =
+                reassembler.offer(monitor.getBlockPos(), width, height, chunkIndex, chunkCount, data);
+        if (completed != null) {
+            applyClientFrame(completed.width(), completed.height(), completed.data());
+        }
     }
 
     public void applyClientFrame(final int width, final int height, final byte[] data) {
