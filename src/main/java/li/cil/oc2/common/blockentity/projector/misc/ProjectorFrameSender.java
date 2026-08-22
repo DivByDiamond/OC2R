@@ -27,6 +27,7 @@ public final class ProjectorFrameSender {
     private final Map<ServerPlayer, Long> watchers =
             Collections.synchronizedMap(new WeakHashMap<>());
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+    private final byte[] frameBuffer = new byte[WIDTH * HEIGHT * 2];
 
     @Nullable private FrameConsumer frameConsumer;
     private long lastKeepAliveSentAt;
@@ -46,15 +47,14 @@ public final class ProjectorFrameSender {
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
         if (!evictWatchers(now)) return;
 
-        final byte[] frame = new byte[WIDTH * HEIGHT * 2];
-        if (!device.copyFrame(ByteBuffer.wrap(frame))) return;
+        if (!device.copyFrame(ByteBuffer.wrap(frameBuffer))) return;
         lastSentAt = now;
 
         final BlockPos pos = projector.getBlockPos();
-        final int count = FrameChunker.chunkCount(frame.length);
+        final int count = FrameChunker.chunkCount(frameBuffer.length);
         for (int i = 0; i < count; i++) {
             final var message = new ProjectorFramebufferMessage(
-                    pos, WIDTH, HEIGHT, i, count, FrameChunker.slice(frame, i));
+                    pos, WIDTH, HEIGHT, i, count, FrameChunker.slice(frameBuffer, i));
             for (final ServerPlayer player : watchers.keySet()) {
                 NetworkMessages.sendToClient(message, player);
             }

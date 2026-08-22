@@ -27,6 +27,7 @@ public final class MonitorVideoController {
     private final Map<ServerPlayer, Long> watchers =
             Collections.synchronizedMap(new WeakHashMap<>());
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+    private final byte[] frameBuffer = new byte[WIDTH * HEIGHT * 2];
 
     @Nullable FrameConsumer frameConsumer;
     private long lastKeepAliveSentAt;
@@ -46,9 +47,8 @@ public final class MonitorVideoController {
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
         if (!evictWatchers(now)) return;
 
-        final byte[] frame = new byte[WIDTH * HEIGHT * 2];
-        final ByteBuffer buffer = ByteBuffer.wrap(frame);
-        if (!device.copyFrame(buffer)) return;
+        final byte[] frame = frameBuffer;
+        if (!device.copyFrame(ByteBuffer.wrap(frame))) return;
         lastSentAt = now;
 
         final var pos = monitor.getBlockPos();
