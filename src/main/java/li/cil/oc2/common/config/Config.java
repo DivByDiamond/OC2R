@@ -31,6 +31,7 @@ public final class Config {
     public static int monitorEnergyPerTick = 15;
     public static int monitorEnergyStorage = 2000;
     public static int monitorMaxWidth = 5;
+    public static int monitorFps = 20;
     public static int monitorMaxHeight = 5;
     public static int cardCageEnergyPerTick = 20;
     public static int cardCageEnergyStorage = 2000;

@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.vm.block.misc;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
@@ -49,9 +50,9 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         return framebufferDevice != null && framebufferDevice.hasChanges();
     }
 
-    public boolean applyChanges(final Picture picture) {
+    public boolean copyFrame(final ByteBuffer dst) {
         final SimpleFramebufferDevice framebufferDevice = device;
-        return framebufferDevice != null && framebufferDevice.applyChanges(picture);
+        return framebufferDevice != null && framebufferDevice.copyFrame(dst);
     }
 
     @Override
