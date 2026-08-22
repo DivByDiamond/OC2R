@@ -33,6 +33,7 @@ public final class Config {
     public static int monitorMaxWidth = 5;
     public static int monitorFps = 20;
     public static int monitorMaxHeight = 5;
+    public static int videoCodec = 0;
     public static int cardCageEnergyPerTick = 20;
     public static int cardCageEnergyStorage = 2000;
     public static int gatewayEnergyPerPacket = 20;

@@ -27,9 +27,10 @@ public final class FrameChunker {
     }
 
     public static final class Reassembler {
-        public record CompletedFrame(int width, int height, byte[] data) {}
+        public record CompletedFrame(int codec, int width, int height, byte[] data) {}
 
         private static final class Partial {
+            final int codec;
             final int width;
             final int height;
             final int chunkCount;
@@ -37,11 +38,17 @@ public final class FrameChunker {
             final BitSet received;
             final long createdAt;
 
-            Partial(final int width, final int height, final int chunkCount) {
+            Partial(
+                    final int codec,
+                    final int width,
+                    final int height,
+                    final int frameSize,
+                    final int chunkCount) {
+                this.codec = codec;
                 this.width = width;
                 this.height = height;
                 this.chunkCount = chunkCount;
-                this.data = new byte[width * height * 2];
+                this.data = new byte[frameSize];
                 this.received = new BitSet(chunkCount);
                 this.createdAt = System.currentTimeMillis();
             }
@@ -53,16 +60,18 @@ public final class FrameChunker {
         @Nullable
         public synchronized CompletedFrame offer(
                 final BlockPos pos,
+                final int codec,
                 final int width,
                 final int height,
+                final int frameSize,
                 final int chunkIndex,
                 final int chunkCount,
                 final byte[] data) {
-            if (!isValid(width, height, chunkIndex, chunkCount)) {
+            if (!isValid(codec, width, height, frameSize, chunkIndex, chunkCount)) {
                 return null;
             }
 
-            final Partial partial = acquirePartial(pos, width, height, chunkCount);
+            final Partial partial = acquirePartial(pos, codec, width, height, frameSize, chunkCount);
 
             if (!partial.received.get(chunkIndex)) {
                 final int from = chunkIndex * MAX_CHUNK_SIZE;
@@ -77,22 +86,37 @@ public final class FrameChunker {
             }
 
             partials.remove(pos);
-            return new CompletedFrame(width, height, partial.data);
+            return new CompletedFrame(partial.codec, partial.width, partial.height, partial.data);
         }
 
         private boolean isValid(
-                final int width, final int height, final int chunkIndex, final int chunkCount) {
-            return width > 0 && height > 0 && chunkCount > 0 && chunkIndex < chunkCount;
+                final int codec,
+                final int width,
+                final int height,
+                final int frameSize,
+                final int chunkIndex,
+                final int chunkCount) {
+            return codec >= 0
+                    && width > 0
+                    && height > 0
+                    && frameSize > 0
+                    && chunkCount > 0
+                    && chunkIndex < chunkCount;
         }
 
         private Partial acquirePartial(
-                final BlockPos pos, final int width, final int height, final int chunkCount) {
-            final int expectedSize = width * height * 2;
+                final BlockPos pos,
+                final int codec,
+                final int width,
+                final int height,
+                final int frameSize,
+                final int chunkCount) {
             final Partial partial = partials.get(pos);
             if (partial == null
-                    || partial.data.length != expectedSize
+                    || partial.codec != codec
+                    || partial.data.length != frameSize
                     || partial.chunkCount != chunkCount) {
-                final Partial fresh = new Partial(width, height, chunkCount);
+                final Partial fresh = new Partial(codec, width, height, frameSize, chunkCount);
                 partials.put(pos, fresh);
                 return fresh;
             }

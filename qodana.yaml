@@ -5,3 +5,4 @@ exclude:
     paths:
       - build
       - bin
+      - src/main/java/li/cil/oc2/jcodec

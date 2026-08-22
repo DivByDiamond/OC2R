@@ -402,7 +402,7 @@ checkstyle {
 
 tasks.withType<Checkstyle>().configureEach {
     isEnabled = true
-    exclude("**/generated/**")
+    exclude("**/jcodec/**", "**/generated/**")
 }
 
 pmd {
@@ -414,7 +414,7 @@ pmd {
 
 tasks.withType<Pmd>().configureEach {
     isEnabled = true
-    exclude("**/generated/**")
+    exclude("**/jcodec/**", "**/generated/**")
 }
 
 /* ── Static analysis: SpotBugs (§169) ─────────────────────────────────────── */

@@ -5,13 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Added
+
+- **Video**: configurable codec for monitor/projector frames — `videoCodec` config option (`raw` default for local/LAN, `h264` for multiplayer over the internet/VPN). H.264 + deflate compresses frames dramatically; the client decodes both codecs and falls back to raw frames if encoding/decoding fails
+
 ### Changed
 
-- **Video**: monitor/projector frames are transferred as raw RGB565 in 256 KB chunks instead of H.264+Deflate — no encode/decode thread pools, no byte budgets; frame rate configurable via `monitorFps` (1–60, default 20)
-
-### Removed
-
-- **Video**: vendored jcodec library (86 files, H.264/YUV420) — the pipeline sends raw framebuffer data directly
+- **Video**: monitor/projector frames are transferred as raw RGB565 in 256 KB chunks — no encode/decode thread pools, no byte budgets; frame rate configurable via `monitorFps` (1–60, default 20). Vendored jcodec (H.264/YUV420) is restored from repo history (with attribution) and used only when `videoCodec=h264`
 
 ### Fixed
 
