@@ -3,10 +3,10 @@ package li.cil.oc2.common.vm.video;
 import java.io.ByteArrayOutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
-import javax.annotation.Nullable;
 import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
 import li.cil.oc2.jcodec.codecs.h264.H264Encoder;
 import li.cil.oc2.jcodec.codecs.h264.encode.CQPRateControl;
@@ -19,6 +19,8 @@ public final class FrameCodec {
     private static final int KEY_INTERVAL = 100;
     private static final int ENCODER_BUFFER_SIZE = 4 * 1024 * 1024;
 
+    public record EncodedFrame(VideoCodec codec, byte[] data) {}
+
     private final H264Encoder h264Encoder = new H264Encoder(new CQPRateControl(12));
     private final H264Decoder h264Decoder = new H264Decoder();
     private final ByteBuffer encoderBuffer = ByteBuffer.allocateDirect(ENCODER_BUFFER_SIZE);
@@ -29,12 +31,10 @@ public final class FrameCodec {
         h264Encoder.setKeyInterval(KEY_INTERVAL);
     }
 
-    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-    @Nullable
-    public byte[] encode(
+    public EncodedFrame encode(
             final VideoCodec codec, final byte[] rgb565, final int width, final int height) {
         if (codec != VideoCodec.H264) {
-            return rgb565;
+            return new EncodedFrame(VideoCodec.RAW, rgb565);
         }
 
         encoderPicture = ensurePicture(encoderPicture, width, height);
@@ -50,31 +50,29 @@ public final class FrameCodec {
                 frameData = h264Encoder.encodeFrame(encoderPicture, encoderBuffer).data();
             }
         } catch (final BufferOverflowException ignored) {
-            return null;
+            return new EncodedFrame(VideoCodec.RAW, rgb565);
         }
 
-        return deflate(frameData);
+        return new EncodedFrame(VideoCodec.H264, deflate(frameData));
     }
 
-    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-    @Nullable
-    public byte[] decode(
+    public Optional<byte[]> decode(
             final VideoCodec codec, final byte[] data, final int width, final int height) {
         if (codec != VideoCodec.H264) {
-            return data;
+            return Optional.of(data);
         }
 
         try {
-            final ByteBuffer inflated = inflate(data);
-            if (inflated == null) {
-                return null;
+            final Optional<ByteBuffer> inflated = inflate(data);
+            if (inflated.isEmpty()) {
+                return Optional.empty();
             }
 
             final Picture yuv = Picture.create(width, height, ColorSpace.YUV420J);
-            h264Decoder.decodeFrame(inflated, yuv.getData());
-            return convertYuvToRgb565(yuv, width, height);
+            h264Decoder.decodeFrame(inflated.get(), yuv.getData());
+            return Optional.of(convertYuvToRgb565(yuv, width, height));
         } catch (final Exception ignored) {
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -100,8 +98,7 @@ public final class FrameCodec {
         return out.toByteArray();
     }
 
-    @Nullable
-    private static ByteBuffer inflate(final byte[] data) {
+    private static Optional<ByteBuffer> inflate(final byte[] data) {
         final Inflater inflater = new Inflater();
         inflater.setInput(data);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -115,9 +112,9 @@ public final class FrameCodec {
                 out.write(buffer, 0, length);
             }
             inflater.end();
-            return ByteBuffer.wrap(out.toByteArray());
+            return Optional.of(ByteBuffer.wrap(out.toByteArray()));
         } catch (final DataFormatException e) {
-            return null;
+            return Optional.empty();
         }
     }
 

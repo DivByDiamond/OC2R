@@ -54,14 +54,9 @@ public final class ProjectorFrameSender {
         lastSentAt = now;
 
         final VideoCodec configured = VideoCodec.fromId(Config.videoCodec);
-        byte[] encoded = codec.encode(configured, frameBuffer, WIDTH, HEIGHT);
-        VideoCodec codecType = configured;
-        if (encoded == null) {
-            encoded = frameBuffer;
-            codecType = VideoCodec.RAW;
-        }
-
-        final int codecId = codecType.id;
+        final FrameCodec.EncodedFrame result = codec.encode(configured, frameBuffer, WIDTH, HEIGHT);
+        final int codecId = result.codec().id;
+        final byte[] encoded = result.data();
         final int frameSize = encoded.length;
         final BlockPos pos = projector.getBlockPos();
         final int count = FrameChunker.chunkCount(frameSize);
@@ -103,10 +98,8 @@ public final class ProjectorFrameSender {
         if (frameConsumer == null) {
             return;
         }
-        final byte[] decoded = codec.decode(codecType, data, width, height);
-        if (decoded != null) {
-            frameConsumer.processFrame(width, height, ByteBuffer.wrap(decoded));
-        }
+        codec.decode(codecType, data, width, height)
+                .ifPresent(decoded -> frameConsumer.processFrame(width, height, ByteBuffer.wrap(decoded)));
     }
 
     public void onRendering() {
