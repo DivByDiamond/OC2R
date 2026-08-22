@@ -12,6 +12,10 @@
     <property name="fileNamePattern" value="module\-info\.java$"/>
   </module>
 
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]jcodec[/\\].*"/>
+  </module>
+
   <module name="SuppressWarningsFilter"/>
 
   <module name="SuppressionSingleFilter">
