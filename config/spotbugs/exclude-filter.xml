@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- Vendored third-party code (jcodec), kept out of analysis like PMD/checkstyle do. -->
-    <Match>
-        <Source name="~.*[/\\]jcodec[/\\].*" />
-    </Match>
-    <Match>
-        <Class name="~li\.cil\.oc2\.jcodec\..*" />
-    </Match>
     <!-- Generated sources. -->
     <Match>
         <Source name="~.*[/\\]generated[/\\].*" />

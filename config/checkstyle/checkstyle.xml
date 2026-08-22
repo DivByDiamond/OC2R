@@ -12,15 +12,8 @@
     <property name="fileNamePattern" value="module\-info\.java$"/>
   </module>
 
-  <module name="BeforeExecutionExclusionFileFilter">
-    <property name="fileNamePattern" value=".*[/\\]jcodec[/\\].*"/>
-  </module>
-
   <module name="SuppressWarningsFilter"/>
 
-  <module name="SuppressionSingleFilter">
-    <property name="files" value=".*[/\\]jcodec[/\\].*"/>
-  </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="MissingJavadocMethod"/>
     <property name="files" value="(?!.*[/\\]api[/\\]).*"/>

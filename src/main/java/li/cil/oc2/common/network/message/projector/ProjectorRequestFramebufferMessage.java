@@ -3,7 +3,6 @@ package li.cil.oc2.common.network.message.projector;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
-import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.core.BlockPos;
@@ -39,6 +38,6 @@ public record ProjectorRequestFramebufferMessage(BlockPos pos) implements Abstra
                 context,
                 pos,
                 ProjectorBlockEntity.class,
-                (player, projector) -> ProjectorLoadBalancer.updateWatcher(projector, player));
+                (player, projector) -> projector.handleWatchedBy(player));
     }
 }

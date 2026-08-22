@@ -402,7 +402,7 @@ checkstyle {
 
 tasks.withType<Checkstyle>().configureEach {
     isEnabled = true
-    exclude("**/jcodec/**", "**/generated/**")
+    exclude("**/generated/**")
 }
 
 pmd {
@@ -414,7 +414,7 @@ pmd {
 
 tasks.withType<Pmd>().configureEach {
     isEnabled = true
-    exclude("**/jcodec/**", "**/generated/**")
+    exclude("**/generated/**")
 }
 
 /* ── Static analysis: SpotBugs (§169) ─────────────────────────────────────── */
@@ -465,7 +465,6 @@ tasks.withType<JavaCompile>().configureEach {
         if (enableErrorProne) {
             allErrorsAsWarnings.set(true)
             disableWarningsInGeneratedCode.set(true)
-            excludedPaths.set(".*[/\\\\]jcodec[/\\\\].*")
         }
     }
     if (enableErrorProne) {

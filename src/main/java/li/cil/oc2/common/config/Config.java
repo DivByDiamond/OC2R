@@ -31,6 +31,7 @@ public final class Config {
     public static int monitorEnergyPerTick = 15;
     public static int monitorEnergyStorage = 2000;
     public static int monitorMaxWidth = 5;
+    public static int monitorFps = 20;
     public static int monitorMaxHeight = 5;
     public static int cardCageEnergyPerTick = 20;
     public static int cardCageEnergyStorage = 2000;
@@ -64,7 +65,6 @@ public final class Config {
     public static int vmTimeQuotaMs = 25;
 
     public static UUID fakePlayerUUID = UUID.fromString("e39dd9a7-514f-4a2d-aa5e-b6030621416d");
-    public static int projectorAverageMaxBytesPerSecond = 160 * 1024;
     public static int ethernetFrameTimeToLive = 12;
     public static int hubEthernetFramesPerTick = 32;
 

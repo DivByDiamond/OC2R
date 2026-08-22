@@ -1,24 +1,24 @@
-package li.cil.oc2.common.blockentity.monitor.video;
+package li.cil.oc2.common.blockentity.projector.misc;
 
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
-import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
+import static li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice.HEIGHT;
+import static li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice.WIDTH;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
-import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
+import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
+import li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorFramebufferMessage;
-import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorRequestFramebufferMessage;
+import li.cil.oc2.common.network.message.projector.ProjectorFramebufferMessage;
+import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
 import li.cil.oc2.common.network.util.frame.FrameChunker;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 
-public final class MonitorVideoController {
+public final class ProjectorFrameSender {
 
     private static final long WATCHER_TIMEOUT_MS = 2000;
     private static final long KEEP_ALIVE_INTERVAL_MS = 1000;
@@ -28,13 +28,13 @@ public final class MonitorVideoController {
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
     private final byte[] frameBuffer = new byte[WIDTH * HEIGHT * 2];
 
-    @Nullable FrameConsumer frameConsumer;
+    @Nullable private FrameConsumer frameConsumer;
     private long lastKeepAliveSentAt;
     private long lastSentAt;
-    private final MonitorBlockEntity monitor;
+    private final ProjectorBlockEntity projector;
 
-    public MonitorVideoController(final MonitorBlockEntity monitor) {
-        this.monitor = monitor;
+    public ProjectorFrameSender(final ProjectorBlockEntity projector) {
+        this.projector = projector;
     }
 
     public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
@@ -42,20 +42,19 @@ public final class MonitorVideoController {
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public void sendFrame(final MonitorDevice device) {
+    public void sendFrame(final ProjectorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
         if (!evictWatchers(now)) return;
 
-        final byte[] frame = frameBuffer;
-        if (!device.copyFrame(ByteBuffer.wrap(frame))) return;
+        if (!device.copyFrame(ByteBuffer.wrap(frameBuffer))) return;
         lastSentAt = now;
 
-        final var pos = monitor.getBlockPos();
-        final int count = FrameChunker.chunkCount(frame.length);
+        final BlockPos pos = projector.getBlockPos();
+        final int count = FrameChunker.chunkCount(frameBuffer.length);
         for (int i = 0; i < count; i++) {
-            final var message = new MonitorFramebufferMessage(
-                    pos, WIDTH, HEIGHT, i, count, FrameChunker.slice(frame, i));
+            final var message = new ProjectorFramebufferMessage(
+                    pos, WIDTH, HEIGHT, i, count, FrameChunker.slice(frameBuffer, i));
             for (final ServerPlayer player : watchers.keySet()) {
                 NetworkMessages.sendToClient(message, player);
             }
@@ -73,7 +72,7 @@ public final class MonitorVideoController {
             final int chunkCount,
             final byte[] data) {
         final FrameChunker.Reassembler.CompletedFrame completed =
-                reassembler.offer(monitor.getBlockPos(), width, height, chunkIndex, chunkCount, data);
+                reassembler.offer(projector.getBlockPos(), width, height, chunkIndex, chunkCount, data);
         if (completed != null) {
             applyClientFrame(completed.width(), completed.height(), completed.data());
         }
@@ -89,7 +88,7 @@ public final class MonitorVideoController {
         final long now = System.currentTimeMillis();
         if (now - lastKeepAliveSentAt > KEEP_ALIVE_INTERVAL_MS) {
             lastKeepAliveSentAt = now;
-            NetworkMessages.sendToServer(new MonitorRequestFramebufferMessage(monitor));
+            NetworkMessages.sendToServer(new ProjectorRequestFramebufferMessage(projector));
         }
     }
 

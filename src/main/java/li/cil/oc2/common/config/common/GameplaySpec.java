@@ -13,6 +13,7 @@ public class GameplaySpec {
     public final ModConfigSpec.IntValue cpuFrequencyTier4;
     public final ModConfigSpec.IntValue monitorMaxWidth;
     public final ModConfigSpec.IntValue monitorMaxHeight;
+    public final ModConfigSpec.IntValue monitorFps;
 
     GameplaySpec(ModConfigSpec.Builder builder) {
         blockOperationsModuleToolTier =
@@ -41,6 +42,12 @@ public class GameplaySpec {
                                         + " this configured limit can still be loaded from existing"
                                         + " saves.")
                         .defineInRange("monitorMaxHeight", 5, 1, 8);
+
+        monitorFps =
+                builder.comment(
+                                "Maximum rate at which monitor and projector frames are sent"
+                                        + " to clients, in frames per second.")
+                        .defineInRange("monitorFps", 20, 1, 60);
 
         cpuFrequencyTier1 =
                 builder.comment(
@@ -74,5 +81,6 @@ public class GameplaySpec {
         Config.cpuFrequencyTier4 = cpuFrequencyTier4.get() * 1_000_000;
         Config.monitorMaxWidth = monitorMaxWidth.get();
         Config.monitorMaxHeight = monitorMaxHeight.get();
+        Config.monitorFps = monitorFps.get();
     }
 }
