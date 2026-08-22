@@ -168,5 +168,6 @@
   "subtitles.oc2r.hdd": "Hard drive access",
   "subtitles.oc2r.post_beep": "Computer POST beep",
   "subtitles.oc2r.sound_card_beep": "Sound card beep",
-  "gui.oc2r.computer.error.not_connected": "No Computer Connected"
+  "gui.oc2r.computer.error.not_connected": "No Computer Connected",
+  "message.oc2r.connector.error.already_connected": "These connectors are already connected."
 }

@@ -149,5 +149,6 @@
   "subtitles.oc2r.hdd": "ハードドライブへのアクセス",
   "subtitles.oc2r.post_beep": "コンピューターのPOSTビープ音",
   "subtitles.oc2r.sound_card_beep": "サウンドカードのビープ音",
-  "gui.oc2r.computer.error.not_connected": "コンピューターが接続されていません"
+  "gui.oc2r.computer.error.not_connected": "コンピューターが接続されていません",
+  "message.oc2r.connector.error.already_connected": "これらのコネクタは既に接続されています"
 }

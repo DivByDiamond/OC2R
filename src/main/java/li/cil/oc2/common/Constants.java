@@ -71,4 +71,6 @@ public final class Constants {
             key("message.{mod}.connector.error.too_far");
     public static final String CONNECTOR_ERROR_OBSTRUCTED =
             key("message.{mod}.connector.error.obstructed");
+    public static final String CONNECTOR_ERROR_ALREADY_CONNECTED =
+            key("message.{mod}.connector.error.already_connected");
 }

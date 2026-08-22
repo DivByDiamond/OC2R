@@ -123,7 +123,13 @@ public final class NetworkCableItem extends ModItem {
                 break;
 
             case FAILURE:
+            case ALREADY_CONNECTED:
                 persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
+                if (connectionResult == ConnectionResult.ALREADY_CONNECTED) {
+                    player.displayClientMessage(
+                            Component.translatable(Constants.CONNECTOR_ERROR_ALREADY_CONNECTED),
+                            true);
+                }
                 break;
             case FAILURE_FULL:
                 persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));

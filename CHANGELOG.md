@@ -3,6 +3,12 @@
 All notable changes to OC2R are documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **Network**: server crash (`AssertionError`) when using a Network Cable on two connectors that are already linked — now shows an "already connected" message instead (issue #18)
+
 ## [0.1.1-beta.1] — 2026-08-21
 
 ### Added
