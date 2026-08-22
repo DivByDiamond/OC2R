@@ -5,17 +5,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Random;
+import li.cil.oc2.common.vm.video.VideoCodec;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
 class FrameChunkerTest {
+    private static final int CODEC = VideoCodec.RAW.id;
+
     @Test
     void roundTripSingleChunk() {
         final byte[] frame = new byte[1024];
         new Random(1).nextBytes(frame);
         final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
         final FrameChunker.Reassembler.CompletedFrame completed =
-                reassembler.offer(new BlockPos(0, 0, 0), 32, 16, 0, 1, FrameChunker.slice(frame, 0));
+                reassembler.offer(
+                        new BlockPos(0, 0, 0), CODEC, 32, 16, frame.length, 0, 1,
+                        FrameChunker.slice(frame, 0));
+        assertEquals(CODEC, completed.codec());
         assertEquals(32, completed.width());
         assertEquals(16, completed.height());
         assertArrayEquals(frame, completed.data());
@@ -31,7 +37,9 @@ class FrameChunkerTest {
         assertEquals(3, count);
         for (int i = 0; i < count; i++) {
             final FrameChunker.Reassembler.CompletedFrame completed =
-                    reassembler.offer(pos, 640, 480, i, count, FrameChunker.slice(frame, i));
+                    reassembler.offer(
+                            pos, CODEC, 640, 480, frame.length, i, count,
+                            FrameChunker.slice(frame, i));
             if (i < count - 1) {
                 assertNull(completed);
             } else {
@@ -50,7 +58,28 @@ class FrameChunkerTest {
         final BlockPos pos = new BlockPos(0, 0, 0);
         assertEquals(1, FrameChunker.chunkCount(frame.length));
         final FrameChunker.Reassembler.CompletedFrame completed =
-                reassembler.offer(pos, 512, 256, 0, 1, FrameChunker.slice(frame, 0));
+                reassembler.offer(
+                        pos, CODEC, 512, 256, frame.length, 0, 1,
+                        FrameChunker.slice(frame, 0));
         assertArrayEquals(frame, completed.data());
+    }
+
+    @Test
+    void variableSizeFrame() {
+        final byte[] frame = new byte[4096];
+        new Random(3).nextBytes(frame);
+        final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+        final BlockPos pos = new BlockPos(5, 5, 5);
+        final int count = FrameChunker.chunkCount(frame.length);
+        for (int i = 0; i < count; i++) {
+            final FrameChunker.Reassembler.CompletedFrame completed =
+                    reassembler.offer(
+                            pos, CODEC, 640, 480, frame.length, i, count,
+                            FrameChunker.slice(frame, i));
+            if (i == count - 1) {
+                assertEquals(frame.length, completed.data().length);
+                assertArrayEquals(frame, completed.data());
+            }
+        }
     }
 }
