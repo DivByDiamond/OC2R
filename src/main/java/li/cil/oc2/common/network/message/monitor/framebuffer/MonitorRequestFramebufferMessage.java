@@ -3,7 +3,6 @@ package li.cil.oc2.common.network.message.monitor.framebuffer;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.network.loadbalancer.MonitorLoadBalancer;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.core.BlockPos;
@@ -39,6 +38,6 @@ public record MonitorRequestFramebufferMessage(BlockPos pos) implements Abstract
                 context,
                 pos,
                 MonitorBlockEntity.class,
-                (player, monitor) -> MonitorLoadBalancer.updateWatcher(monitor, player));
+                (player, monitor) -> monitor.video.handleWatchedBy(player));
     }
 }

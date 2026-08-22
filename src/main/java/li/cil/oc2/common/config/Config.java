@@ -65,7 +65,6 @@ public final class Config {
     public static int vmTimeQuotaMs = 25;
 
     public static UUID fakePlayerUUID = UUID.fromString("e39dd9a7-514f-4a2d-aa5e-b6030621416d");
-    public static int projectorAverageMaxBytesPerSecond = 160 * 1024;
     public static int ethernetFrameTimeToLive = 12;
     public static int hubEthernetFramesPerTick = 32;
 

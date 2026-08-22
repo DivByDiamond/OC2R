@@ -3,7 +3,6 @@ package li.cil.oc2.common.blockentity.monitor;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.loadbalancer.MonitorLoadBalancer;
 import li.cil.oc2.common.network.message.monitor.MonitorStateMessage;
 import net.minecraft.world.level.block.Block;
 
@@ -23,8 +22,7 @@ final class MonitorTickHandler {
         final boolean hasPowered = updateEnergy();
         updateMonitorState(blockEntity.stateManager.isMounted, hasPowered);
         if (shouldOfferFrame()) {
-            MonitorLoadBalancer.offerFrame(
-                    blockEntity, () -> blockEntity.video.encodeFrame(blockEntity.stateManager.monitorDevice));
+            blockEntity.video.sendFrame(blockEntity.stateManager.monitorDevice);
         }
     }
 
@@ -44,8 +42,7 @@ final class MonitorTickHandler {
     private boolean shouldOfferFrame() {
         return blockEntity.stateManager.hasEnergy
                 && blockEntity.stateManager.isPowered
-                && (blockEntity.stateManager.monitorDevice.hasChanges()
-                        || blockEntity.video.isKeyframeRequired());
+                && blockEntity.stateManager.monitorDevice.hasChanges();
     }
 
     void updateMonitorState(final boolean newIsMounted, final boolean newHasEnergy) {
@@ -57,9 +54,6 @@ final class MonitorTickHandler {
         }
         if (!shouldApplyState()) {
             return;
-        }
-        if (state.isMounted && !newIsMounted) {
-            blockEntity.video.clearPicture();
         }
         state.isMounted = newIsMounted;
         state.hasEnergy = newHasEnergy;

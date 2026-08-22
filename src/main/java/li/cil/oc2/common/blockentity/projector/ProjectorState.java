@@ -1,10 +1,8 @@
 package li.cil.oc2.common.blockentity.projector;
 
-import java.util.Arrays;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.projector.ProjectorStateMessage;
-import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -37,7 +35,6 @@ final class ProjectorState {
             final Level level,
             final BlockPos pos,
             final BlockState state,
-            final Picture picture,
             final boolean newIsMounted,
             final boolean newHasEnergy,
             final boolean isValid,
@@ -47,12 +44,6 @@ final class ProjectorState {
         }
 
         if (level != null && !level.isClientSide() && level.isLoaded(pos)) {
-            if (isMounted && !newIsMounted) {
-                Arrays.fill(picture.getPlaneData(0), (byte) -128);
-                Arrays.fill(picture.getPlaneData(1), (byte) 0);
-                Arrays.fill(picture.getPlaneData(2), (byte) 0);
-            }
-
             isMounted = newIsMounted;
             hasEnergy = newHasEnergy;
 

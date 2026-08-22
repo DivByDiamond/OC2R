@@ -17,7 +17,6 @@ import li.cil.oc2.common.bus.device.util.optional.OptionalAddress;
 import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
-import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
