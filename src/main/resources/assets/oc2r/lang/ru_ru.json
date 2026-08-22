@@ -162,5 +162,6 @@
   "tooltip.oc2r.hard_drive_missing": "Большинству ОС для загрузки необходима файловая система.",
   "tooltip.oc2r.memory_missing": "Оперативная память требуется для загрузки прошивки из карты памяти и последующей работы.",
   "tooltip.oc2r.network_tunnel_id": "Туннель: %s",
-  "gui.oc2r.computer.error.not_connected": "Компьютер не подключён"
+  "gui.oc2r.computer.error.not_connected": "Компьютер не подключён",
+  "message.oc2r.connector.error.already_connected": "Эти разъемы уже соединены."
 }

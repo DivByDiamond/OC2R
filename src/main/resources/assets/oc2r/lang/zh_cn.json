@@ -149,5 +149,6 @@
   "subtitles.oc2r.hdd": "读写硬盘",
   "subtitles.oc2r.post_beep": "电脑 POST 蜂鸣",
   "subtitles.oc2r.sound_card_beep": "声卡蜂鸣",
-  "gui.oc2r.computer.error.not_connected": "未连接电脑"
+  "gui.oc2r.computer.error.not_connected": "未连接电脑",
+  "message.oc2r.connector.error.already_connected": "这些连接器已连接。"
 }
