@@ -39,3 +39,6 @@ ref/
 # Generated data
 src/generated/
 src/main/resources/generated/
+
+# runtime logs
+logs/
