@@ -5,7 +5,6 @@ import static li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice.WIDTH;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
@@ -42,6 +41,7 @@ public final class ProjectorFrameSender {
         this.frameConsumer = consumer;
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void sendFrame(final ProjectorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
@@ -92,15 +92,10 @@ public final class ProjectorFrameSender {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement")
     private boolean evictWatchers(final long now) {
         synchronized (watchers) {
-            final Iterator<Map.Entry<ServerPlayer, Long>> iterator =
-                    watchers.entrySet().iterator();
-            while (iterator.hasNext()) {
-                if (now - iterator.next().getValue() > WATCHER_TIMEOUT_MS) {
-                    iterator.remove();
-                }
-            }
+            watchers.entrySet().removeIf(entry -> now - entry.getValue() > WATCHER_TIMEOUT_MS);
             return !watchers.isEmpty();
         }
     }

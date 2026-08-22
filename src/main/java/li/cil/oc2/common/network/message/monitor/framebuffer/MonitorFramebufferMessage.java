@@ -4,7 +4,6 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
-import li.cil.oc2.common.network.util.frame.FrameChunker;
 import li.cil.oc2.common.util.nbt.Oc2rStreamCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

@@ -12,8 +12,6 @@ import li.cil.oc2.common.blockentity.projector.misc.ProjectorRenderBounds;
 import li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

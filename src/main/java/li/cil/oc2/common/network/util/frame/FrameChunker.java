@@ -1,10 +1,9 @@
 package li.cil.oc2.common.network.util.frame;
 
-import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 
@@ -48,6 +47,7 @@ public final class FrameChunker {
             }
         }
 
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
         private final Map<BlockPos, Partial> partials = new HashMap<>();
 
         @Nullable
@@ -58,18 +58,11 @@ public final class FrameChunker {
                 final int chunkIndex,
                 final int chunkCount,
                 final byte[] data) {
-            if (width <= 0 || height <= 0 || chunkCount <= 0 || chunkIndex >= chunkCount) {
+            if (!isValid(width, height, chunkIndex, chunkCount)) {
                 return null;
             }
-            final int expectedSize = width * height * 2;
 
-            Partial partial = partials.get(pos);
-            if (partial == null
-                    || partial.data.length != expectedSize
-                    || partial.chunkCount != chunkCount) {
-                partial = new Partial(width, height, chunkCount);
-                partials.put(pos, partial);
-            }
+            final Partial partial = acquirePartial(pos, width, height, chunkCount);
 
             if (!partial.received.get(chunkIndex)) {
                 final int from = chunkIndex * MAX_CHUNK_SIZE;
@@ -85,6 +78,25 @@ public final class FrameChunker {
 
             partials.remove(pos);
             return new CompletedFrame(width, height, partial.data);
+        }
+
+        private boolean isValid(
+                final int width, final int height, final int chunkIndex, final int chunkCount) {
+            return width > 0 && height > 0 && chunkCount > 0 && chunkIndex < chunkCount;
+        }
+
+        private Partial acquirePartial(
+                final BlockPos pos, final int width, final int height, final int chunkCount) {
+            final int expectedSize = width * height * 2;
+            final Partial partial = partials.get(pos);
+            if (partial == null
+                    || partial.data.length != expectedSize
+                    || partial.chunkCount != chunkCount) {
+                final Partial fresh = new Partial(width, height, chunkCount);
+                partials.put(pos, fresh);
+                return fresh;
+            }
+            return partial;
         }
 
         private void evictExpired() {
