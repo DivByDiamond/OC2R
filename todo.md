@@ -186,13 +186,9 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ---
 
-## 11. jcodec → Maven dependency
+## 11. ~~jcodec → Maven dependency~~ — отменена
 
-**Опционально**: заменить встроенный `common/jcodec/` на Maven dependency `org.jcodec:jcodec`.
-
-- [ ] Проверить что org.jcodec:jcodec API совместим с нашим usage
-- [ ] Если совместим — удалить встроенный jcodec/ и добавить dependency в build.gradle.kts
-- [ ] Если не совместим — оставить встроенный (не трогать)
+Делаем задачу 18 (полное удаление jcodec, видеопайплайн на raw RGB) — Maven-зависимость не нужна.
 
 ---
 
