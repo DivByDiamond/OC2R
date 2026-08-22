@@ -115,6 +115,15 @@ public final class NetworkCableItem extends ModItem {
 
         final ConnectionResult connectionResult =
                 NetworkConnectorBlockEntity.connect(startConnector, currentConnector);
+        return handleConnectionResult(connectionResult, startPos, player, stack, persistentData);
+    }
+
+    private boolean handleConnectionResult(
+            final ConnectionResult connectionResult,
+            final BlockPos startPos,
+            final Player player,
+            final ItemStack stack,
+            final CompoundTag persistentData) {
         switch (connectionResult) {
             case SUCCESS:
                 if (!player.isCreative()) {
@@ -123,26 +132,26 @@ public final class NetworkCableItem extends ModItem {
                 break;
 
             case FAILURE:
+                keepLinkStart(persistentData, startPos);
+                break;
             case ALREADY_CONNECTED:
-                persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
-                if (connectionResult == ConnectionResult.ALREADY_CONNECTED) {
-                    player.displayClientMessage(
-                            Component.translatable(Constants.CONNECTOR_ERROR_ALREADY_CONNECTED),
-                            true);
-                }
+                keepLinkStart(persistentData, startPos);
+                player.displayClientMessage(
+                        Component.translatable(Constants.CONNECTOR_ERROR_ALREADY_CONNECTED),
+                        true);
                 break;
             case FAILURE_FULL:
-                persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
+                keepLinkStart(persistentData, startPos);
                 player.displayClientMessage(
                         Component.translatable(Constants.CONNECTOR_ERROR_FULL), true);
                 break;
             case FAILURE_TOO_FAR:
-                persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
+                keepLinkStart(persistentData, startPos);
                 player.displayClientMessage(
                         Component.translatable(Constants.CONNECTOR_ERROR_TOO_FAR), true);
                 break;
             case FAILURE_OBSTRUCTED:
-                persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
+                keepLinkStart(persistentData, startPos);
                 player.displayClientMessage(
                         Component.translatable(Constants.CONNECTOR_ERROR_OBSTRUCTED), true);
                 break;
@@ -150,5 +159,10 @@ public final class NetworkCableItem extends ModItem {
                 throw new AssertionError(connectionResult);
         }
         return false;
+    }
+
+    private static void keepLinkStart(
+            final CompoundTag persistentData, final BlockPos startPos) {
+        persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(startPos));
     }
 }
