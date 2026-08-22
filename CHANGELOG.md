@@ -5,6 +5,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Changed
+
+- **Video**: monitor/projector frames are transferred as raw RGB565 in 256 KB chunks instead of H.264+Deflate — no encode/decode thread pools, no byte budgets; frame rate configurable via `monitorFps` (1–60, default 20)
+
+### Removed
+
+- **Video**: vendored jcodec library (86 files, H.264/YUV420) — the pipeline sends raw framebuffer data directly
+
 ### Fixed
 
 - **Network**: server crash (`AssertionError`) when using a Network Cable on two connectors that are already linked — now shows an "already connected" message instead (issue #18)
