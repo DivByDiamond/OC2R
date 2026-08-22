@@ -145,6 +145,23 @@ public class Terminal {
         return HEIGHT * CHAR_HEIGHT;
     }
 
+    /**
+     * Reset the current rendition to defaults — SGR attributes, color modes, and the active
+     * color palette — as DECCOLM (VT100–VT420) does. Does not touch saved DECSC/DECRC state
+     * (that's RIS/DECSC's domain). Must run before setWidth so the buffer erase fills with
+     * the default background, not whatever SGR background was active when the mode change hit.
+     */
+    public void resetRendition() {
+        currentForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
+        currentBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
+        sixteenColor = TerminalColors.DEFAULT_COLORS.copy();
+        sixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
+        backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
+        foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
+        twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
+        style = TerminalColors.DEFAULT_STYLE;
+    }
+
     public int getTerminalWidth() {
         return width;
     }

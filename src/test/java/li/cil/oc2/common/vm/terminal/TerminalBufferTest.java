@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * All sequences below are fed through the real {@link TerminalIO}/{@link TerminalOutput}
  * state machine (the same path the VM firmware uses) via {@code putOutput}.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity") // class-aggregate complexity is high because this is a growing
+// suite of many small @Test methods — that's the point of a test class
 public class TerminalBufferTest {
     private Terminal terminal;
     private TerminalBuffer buffer;
@@ -839,6 +841,31 @@ public class TerminalBufferTest {
             "RIS must reset the column width to the 80-column default, not leave it at 132");
     }
 
+    @Test
+    void deccolmResetsSgrAttributesAndErasesToDefaultBackground() {
+        // DECCOLM (VT100–VT420) is a destructive reset: it clears SGR attributes and erases the
+        // screen to the DEFAULT background, not the SGR background that was active. Contrast with
+        // ECH (echErasedCellsTakeDefaultForegroundAndCurrentBackground), which keeps current bg.
+        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
+        write(terminal, SAMPLE_LINE);
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentBackgroundColorMode,
+            "precondition: SGR bg is set");
+
+        write(terminal, CSI + "?3h");    // DECCOLM -> 132 columns, destructive reset
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode,
+            "DECCOLM resets the background color mode to default");
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "DECCOLM resets the foreground color mode to default");
+        assertEquals(TerminalColors.DEFAULT_STYLE, terminal.style,
+            "DECCOLM resets SGR attributes (style)");
+
+        final int idx = cellIndex(0, 0);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.colorsBackground[idx].Mode,
+            "cleared cell background must be the DEFAULT background, not the prior SGR red");
+        assertEquals(' ', (char) terminal.buffer[idx],
+            "cleared cell must be a space");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -856,7 +883,7 @@ public class TerminalBufferTest {
 
     private int cellIndex(final int x, final int y) {
         final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
-        return x + row * Terminal.WIDTH;
+        return x + row * terminal.width;
     }
 
     private char altCharAt(final int x, final int y) {
