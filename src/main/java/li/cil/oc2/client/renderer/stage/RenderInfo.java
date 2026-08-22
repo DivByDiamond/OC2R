@@ -2,18 +2,15 @@ package li.cil.oc2.client.renderer.stage;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
-import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
-import li.cil.oc2.jcodec.common.model.Picture;
-import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public final class RenderInfo implements FrameConsumer {
-    private static final ThreadLocal<byte[]> RGB = ThreadLocal.withInitial(() -> new byte[3]);
-
     private static final int[] GAMMA_LUT = new int[256];
 
     static {
@@ -41,7 +38,8 @@ public final class RenderInfo implements FrameConsumer {
     }
 
     @Override
-    public synchronized void processFrame(final Picture picture) {
+    public synchronized void processFrame(
+            final int width, final int height, final ByteBuffer rgb565) {
         if (closed) return;
 
         final NativeImage image = texture.getPixels();
@@ -49,43 +47,24 @@ public final class RenderInfo implements FrameConsumer {
             return;
         }
 
-        final byte[] y = picture.getPlaneData(0);
-        final byte[] u = picture.getPlaneData(1);
-        final byte[] v = picture.getPlaneData(2);
-
-        int lumaIndex = 0;
-        int chromaIndex = 0;
-        for (int halfRow = 0;
-                halfRow < MonitorDevice.HEIGHT / 2;
-                halfRow++, lumaIndex += MonitorDevice.WIDTH * 2) {
-            final int row = halfRow * 2;
-            for (int halfCol = 0; halfCol < MonitorDevice.WIDTH / 2; halfCol++, chromaIndex++) {
-                final int col = halfCol * 2;
-                final int yIndex = lumaIndex + col;
-                final byte cb = u[chromaIndex];
-                final byte cr = v[chromaIndex];
-                setFromYUV420(image, col, row, y[yIndex], cb, cr);
-                setFromYUV420(image, col + 1, row, y[yIndex + 1], cb, cr);
-                setFromYUV420(image, col, row + 1, y[yIndex + MonitorDevice.WIDTH], cb, cr);
-                setFromYUV420(image, col + 1, row + 1, y[yIndex + MonitorDevice.WIDTH + 1], cb, cr);
+        rgb565.order(ByteOrder.LITTLE_ENDIAN);
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                final int pixel = rgb565.getShort() & 0xFFFF;
+                image.setPixelRGBA(col, row, toAbgr(pixel));
             }
         }
 
         texture.upload();
     }
 
-    private static void setFromYUV420(
-            final NativeImage image,
-            final int col,
-            final int row,
-            final byte y,
-            final byte cb,
-            final byte cr) {
-        final byte[] bytes = RGB.get();
-        Yuv420jToRgb.YUVJtoRGB(y, cb, cr, bytes, 0);
-        final int r = GAMMA_LUT[bytes[0] + 128];
-        final int g = GAMMA_LUT[bytes[1] + 128];
-        final int b = GAMMA_LUT[bytes[2] + 128];
-        image.setPixelRGBA(col, row, r | (g << 8) | (b << 16) | (0xFF << 24));
+    private static int toAbgr(final int pixel) {
+        final int r5 = (pixel >>> 11) & 0x1F;
+        final int g6 = (pixel >>> 5) & 0x3F;
+        final int b5 = pixel & 0x1F;
+        final int r = GAMMA_LUT[(r5 << 3) | (r5 >> 2)];
+        final int g = GAMMA_LUT[(g6 << 2) | (g6 >> 4)];
+        final int b = GAMMA_LUT[(b5 << 3) | (b5 >> 2)];
+        return r | (g << 8) | (b << 16) | (0xFF << 24);
     }
 }

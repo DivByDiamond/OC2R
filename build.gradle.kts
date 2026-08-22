@@ -465,7 +465,6 @@ tasks.withType<JavaCompile>().configureEach {
         if (enableErrorProne) {
             allErrorsAsWarnings.set(true)
             disableWarningsInGeneratedCode.set(true)
-            excludedPaths.set(".*[/\\\\]jcodec[/\\\\].*")
         }
     }
     if (enableErrorProne) {

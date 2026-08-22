@@ -19,9 +19,6 @@
   <module name="SuppressWarningsFilter"/>
 
   <module name="SuppressionSingleFilter">
-    <property name="files" value=".*[/\\]jcodec[/\\].*"/>
-  </module>
-  <module name="SuppressionSingleFilter">
     <property name="checks" value="MissingJavadocMethod"/>
     <property name="files" value="(?!.*[/\\]api[/\\]).*"/>
   </module>

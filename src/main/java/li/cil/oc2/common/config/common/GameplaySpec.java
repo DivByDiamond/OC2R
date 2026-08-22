@@ -1,6 +1,8 @@
 package li.cil.oc2.common.config.common;
 
+import java.util.Locale;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.vm.video.VideoCodec;
 import net.minecraft.world.item.Tiers;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -13,6 +15,8 @@ public class GameplaySpec {
     public final ModConfigSpec.IntValue cpuFrequencyTier4;
     public final ModConfigSpec.IntValue monitorMaxWidth;
     public final ModConfigSpec.IntValue monitorMaxHeight;
+    public final ModConfigSpec.IntValue monitorFps;
+    public final ModConfigSpec.ConfigValue<String> videoCodec;
 
     GameplaySpec(ModConfigSpec.Builder builder) {
         blockOperationsModuleToolTier =
@@ -41,6 +45,21 @@ public class GameplaySpec {
                                         + " this configured limit can still be loaded from existing"
                                         + " saves.")
                         .defineInRange("monitorMaxHeight", 5, 1, 8);
+
+        monitorFps =
+                builder.comment(
+                                "Maximum rate at which monitor and projector frames are sent"
+                                        + " to clients, in frames per second.")
+                        .defineInRange("monitorFps", 20, 1, 60);
+
+        videoCodec =
+                builder.comment(
+                                "Codec used to transmit monitor/projector frames.",
+                                "raw - full RGB565 framebuffer per frame (low CPU, high bandwidth,",
+                                "       best for local/LAN play).",
+                                "h264 - H.264 + deflate compression (higher CPU, low bandwidth,",
+                                "       best for multiplayer over the internet/VPN).")
+                        .define("videoCodec", "raw");
 
         cpuFrequencyTier1 =
                 builder.comment(
@@ -74,5 +93,15 @@ public class GameplaySpec {
         Config.cpuFrequencyTier4 = cpuFrequencyTier4.get() * 1_000_000;
         Config.monitorMaxWidth = monitorMaxWidth.get();
         Config.monitorMaxHeight = monitorMaxHeight.get();
+        Config.monitorFps = monitorFps.get();
+        Config.videoCodec = parseVideoCodec(videoCodec.get());
+    }
+
+    private static int parseVideoCodec(final String value) {
+        try {
+            return VideoCodec.valueOf(value.toUpperCase(Locale.ROOT)).id;
+        } catch (final IllegalArgumentException e) {
+            return VideoCodec.RAW.id;
+        }
     }
 }

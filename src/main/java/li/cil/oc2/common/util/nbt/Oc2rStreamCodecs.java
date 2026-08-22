@@ -23,4 +23,21 @@ public class Oc2rStreamCodecs {
                     data.position(0);
                 }
             };
+
+    public static final StreamCodec<FriendlyByteBuf, byte[]> BYTE_ARRAY =
+            new StreamCodec<>() {
+                @Override
+                public byte[] decode(FriendlyByteBuf buf) {
+                    var limit = buf.readVarInt();
+                    var result = new byte[limit];
+                    buf.readBytes(result);
+                    return result;
+                }
+
+                @Override
+                public void encode(FriendlyByteBuf buf, byte[] data) {
+                    buf.writeVarInt(data.length);
+                    buf.writeBytes(data);
+                }
+            };
 }

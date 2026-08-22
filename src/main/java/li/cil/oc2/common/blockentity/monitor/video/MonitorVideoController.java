@@ -4,27 +4,36 @@ import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.HEIGHT;
 import static li.cil.oc2.common.bus.device.vm.block.MonitorDevice.WIDTH;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorFramebufferMessage;
 import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorRequestFramebufferMessage;
-import li.cil.oc2.jcodec.common.model.ColorSpace;
-import li.cil.oc2.jcodec.common.model.Picture;
+import li.cil.oc2.common.network.util.frame.FrameChunker;
+import li.cil.oc2.common.vm.video.FrameCodec;
+import li.cil.oc2.common.vm.video.VideoCodec;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class MonitorVideoController {
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private static final long WATCHER_TIMEOUT_MS = 2000;
+    private static final long KEEP_ALIVE_INTERVAL_MS = 1000;
 
-    final Picture picture = Picture.create(WIDTH, HEIGHT, ColorSpace.YUV420J);
+    private final Map<ServerPlayer, Long> watchers =
+            Collections.synchronizedMap(new WeakHashMap<>());
+    private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+    private final FrameCodec codec = new FrameCodec();
+    private final byte[] frameBuffer = new byte[WIDTH * HEIGHT * 2];
+
     @Nullable FrameConsumer frameConsumer;
-    final MonitorVideoEncoder encoder = new MonitorVideoEncoder();
-    final MonitorVideoDecoder decoder = new MonitorVideoDecoder();
     private long lastKeepAliveSentAt;
+    private long lastSentAt;
     private final MonitorBlockEntity monitor;
 
     public MonitorVideoController(final MonitorBlockEntity monitor) {
@@ -32,44 +41,81 @@ public final class MonitorVideoController {
     }
 
     public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
-        if (Objects.equals(consumer, frameConsumer)) return;
-        lock.lock();
-        try {
+        this.frameConsumer = consumer;
+    }
 
-            this.frameConsumer = consumer;
-            if (frameConsumer != null) frameConsumer.processFrame(picture);
-        
-        } finally {
-            lock.unlock();
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public void sendFrame(final MonitorDevice device) {
+        final long now = System.currentTimeMillis();
+        if (now - lastSentAt < 1000 / Config.monitorFps) return;
+        if (!evictWatchers(now)) return;
+
+        final byte[] frame = frameBuffer;
+        if (!device.copyFrame(ByteBuffer.wrap(frame))) return;
+        lastSentAt = now;
+
+        final VideoCodec configured = VideoCodec.fromId(Config.videoCodec);
+        final FrameCodec.EncodedFrame result = codec.encode(configured, frame, WIDTH, HEIGHT);
+        final int codecId = result.codec().id;
+        final byte[] encoded = result.data();
+        final int frameSize = encoded.length;
+        final var pos = monitor.getBlockPos();
+        final int count = FrameChunker.chunkCount(frameSize);
+        for (int i = 0; i < count; i++) {
+            final var message = new MonitorFramebufferMessage(
+                    pos, codecId, WIDTH, HEIGHT, frameSize, i, count, FrameChunker.slice(encoded, i));
+            for (final ServerPlayer player : watchers.keySet()) {
+                NetworkMessages.sendToClient(message, player);
+            }
         }
     }
 
-    public void setRequiresKeyframe() {
-        encoder.setRequiresKeyframe();
+    public void handleWatchedBy(final ServerPlayer player) {
+        watchers.put(player, System.currentTimeMillis());
     }
 
-    public boolean isKeyframeRequired() {
-        return encoder.isKeyframeRequired();
+    public void applyChunk(
+            final int codec,
+            final int width,
+            final int height,
+            final int frameSize,
+            final int chunkIndex,
+            final int chunkCount,
+            final byte[] data) {
+        final FrameChunker.Reassembler.CompletedFrame completed =
+                reassembler.offer(
+                        monitor.getBlockPos(), codec, width, height, frameSize, chunkIndex, chunkCount, data);
+        if (completed != null) {
+            applyClientFrame(
+                    VideoCodec.fromId(completed.codec()),
+                    completed.width(),
+                    completed.height(),
+                    completed.data());
+        }
     }
 
-    public void applyNextFrameClient(final ByteBuffer frameData) {
-        decoder.applyNextFrameClient(frameData, picture, frameConsumer);
+    public void applyClientFrame(
+            final VideoCodec codecType, final int width, final int height, final byte[] data) {
+        if (frameConsumer == null) {
+            return;
+        }
+        codec.decode(codecType, data, width, height)
+                .ifPresent(decoded -> frameConsumer.processFrame(width, height, ByteBuffer.wrap(decoded)));
     }
 
     public void onRendering() {
         final long now = System.currentTimeMillis();
-        if (now - lastKeepAliveSentAt > 1000) {
+        if (now - lastKeepAliveSentAt > KEEP_ALIVE_INTERVAL_MS) {
             lastKeepAliveSentAt = now;
             NetworkMessages.sendToServer(new MonitorRequestFramebufferMessage(monitor));
         }
     }
 
-    public void clearPicture() {
-        Arrays.fill(picture.getPlaneData(0), (byte) -128);
-    }
-
-    @Nullable
-    public ByteBuffer encodeFrame(final MonitorDevice monitorDevice) {
-        return encoder.encodeFrame(picture, monitorDevice);
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement")
+    private boolean evictWatchers(final long now) {
+        synchronized (watchers) {
+            watchers.entrySet().removeIf(entry -> now - entry.getValue() > WATCHER_TIMEOUT_MS);
+            return !watchers.isEmpty();
+        }
     }
 }

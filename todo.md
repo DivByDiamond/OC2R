@@ -186,13 +186,9 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ---
 
-## 11. jcodec → Maven dependency
+## 11. ~~jcodec → Maven dependency~~ — отменена
 
-**Опционально**: заменить встроенный `common/jcodec/` на Maven dependency `org.jcodec:jcodec`.
-
-- [ ] Проверить что org.jcodec:jcodec API совместим с нашим usage
-- [ ] Если совместим — удалить встроенный jcodec/ и добавить dependency в build.gradle.kts
-- [ ] Если не совместим — оставить встроенный (не трогать)
+Делаем задачу 18 (полное удаление jcodec, видеопайплайн на raw RGB) — Maven-зависимость не нужна.
 
 ---
 
@@ -309,13 +305,28 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 **Целевое решение**: кадр = уже готовый RGB-буфер, передаётся как есть, клиент рендерит через DynamicTexture (NEAREST). Никакого jcodec, дефлейта, YUV.
 
-- [ ] **Протокол**: `MonitorFramebufferMessage` → `(pos, int width, int height, ByteBuffer rgb)` — raw RGB24. Размер кадра 640×400×3 = 768 KB
-- [ ] **Трафик**: 768 KB × 20 fps ≈ 15 MB/s — ок для локальной игры/LAN; для интернета — опционально понизить fps (10) или размер
-- [ ] **Сервер**: убрать `MonitorVideoController`/`ProjectorVideoController` encode-часть; отправка только если `device.hasChanges()` (diff), throttle 20 fps
-- [ ] **Клиент**: `MonitorFrameMessage.handleMessage()` → прямо в `NativeImage`/`DynamicTexture.upload()` (NEAREST), без decoder thread pool
-- [ ] **Удалить**: `jcodec/`, H264Encoder/H264Decoder, YUV420 conversion, `MonitorLoadBalancer`, `ProjectorLoadBalancer` (byte budget, skipCount, circular list), encoder/decoder worker pools
-- [ ] **Сохранить**: кеш последнего кадра на клиенте (пока активных кадров нет — показывать старый); упростить серверную отдачу, убрать byte budget/дроп кадров
-- [ ] Build + проверка в игре (несколько мониторов + проектор одновременно)
+- [x] **Протокол**: `MonitorFramebufferMessage`/`ProjectorFramebufferMessage` → `(pos, codec, width, height, frameSize, chunkIndex, chunkCount, byte[] data)` — raw RGB565 as-is или сжатый H.264 (см. задачу 26), чанки по 256 KB (`FrameChunker`, реассемблинг на клиенте по frameSize). Кадр 640×480×2 = 614 KB
+- [x] **Трафик**: ~614 KB × 20 fps ≈ 12 MB/s — ок для локальной игры/LAN; fps ограничивается конфигом `monitorFps` (1..60)
+- [x] **Сервер**: `MonitorVideoController.sendFrame`/`ProjectorFrameSender` — throttle `Config.monitorFps`, гейт на вотчеров (WeakHashMap, таймаут 2 с), `SimpleFramebufferDevice.copyFrame()` отдаёт кадр как есть; encode-часть, `MonitorLoadBalancer`/`ProjectorLoadBalancer`, byte budget, skipCount, encoder worker pools удалены
+- [x] **Клиент**: сообщение → `FrameChunker.Reassembler` → `RenderInfo`/`ProjectorDepthRenderInfo.processFrame(w,h,rgb565)` → раскрытие R5G6B5→ABGR в `NativeImage` + `DynamicTexture.upload()`, без decoder thread pool; gamma LUT сохранён
+- [x] **Удалить**: `jcodec/` (86 файлов), H264Encoder/H264Decoder, YUV420 conversion, балансировщики, worker pools, мёртвый конфиг `projectorAverageMaxBytesPerSecond`
+- [x] **Сохранить**: кеш последнего кадра — DynamicTexture живёт между кадрами; дроп кадров больше не нужен
+- [ ] Build ✅ (compileJava + test зелёные) + проверка в игре (несколько мониторов + проектор одновременно)
+
+---
+
+## 26. Видеокодек: RAW/H.264 переключаемый ✅ — DONE
+
+**Мотивация**: raw RGB565 (12 MB/s на 20 fps) избыточен для мультиплеера по интернету/VPN; H.264 сжимает кадр в десятки раз. Добавлен конфиг `videoCodec` (`raw` по умолчанию / `h264`).
+
+- [x] **Конфиг**: `Config.videoCodec` + `videoCodec` в `GameplaySpec` (string `raw`/`h264`, невалидное значение → `raw`)
+- [x] **Вендоренный jcodec восстановлен** из git-истории (86 файлов, `li.cil.oc2.jcodec.*`) с атрибуцией «Vendored from JCodec 0.2.5» в каждом файле; lint-exclude вернуты в checkstyle/PMD/SpotBugs/ErrorProne/qodana; оригинал-референс в `ref/jcodec/` (клон)
+- [x] **`FrameCodec`** (`common/vm/video/`): stateful энкодер/декодер на `H264Encoder(CQPRateControl(12))`/`H264Decoder`, YUV420↔RGB565 конверсия, deflate/inflate
+- [x] **Протокол**: сообщения `MonitorFramebufferMessage`/`ProjectorFramebufferMessage` → `(pos, codec, width, height, frameSize, chunkIndex, chunkCount, data)`; ручной `StreamCodec` (8 компонентов — `composite` не поддерживает >6)
+- [x] **Reassembler**: сборка по явному `frameSize` (сжатые кадры переменного размера)
+- [x] **Фолбэк**: если H.264-энкодер переполнил внутренний буфер (BufferOverflow на высокодетальных кадрах — ограничение jcodec 0.2.5) или декодер упал — кадр шлётся/показывается как RAW, контент не теряется
+- [x] Тесты: `FrameCodecTest` (raw passthrough, solid/сплошной цвет compress+decode, sparse-текст) + `FrameChunkerTest` (одно-/многочанковый, граница, переменный размер)
+- [ ] **Проверка в игре**: монитор + проектор на `videoCodec=raw` (дефолт) и `videoCodec=h264`; замер трафика (h264 должен быть в разы меньше)
 
 ---
 

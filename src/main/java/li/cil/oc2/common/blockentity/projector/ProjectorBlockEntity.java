@@ -1,6 +1,5 @@
 package li.cil.oc2.common.blockentity.projector;
 
-import java.nio.ByteBuffer;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -8,20 +7,15 @@ import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.projector.misc.FrameConsumer;
 import li.cil.oc2.common.blockentity.projector.misc.ProjectorContraptionHelper;
+import li.cil.oc2.common.blockentity.projector.misc.ProjectorFrameSender;
 import li.cil.oc2.common.blockentity.projector.misc.ProjectorRenderBounds;
-import li.cil.oc2.common.blockentity.projector.video.ProjectorVideoDecoder;
-import li.cil.oc2.common.blockentity.projector.video.ProjectorVideoEncoder;
 import li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.loadbalancer.ProjectorLoadBalancer;
-import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
-import li.cil.oc2.jcodec.common.model.ColorSpace;
-import li.cil.oc2.jcodec.common.model.Picture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -37,16 +31,12 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
 
     public final ProjectorDevice projectorDevice =
             new ProjectorDevice(this, this::handleMountedChanged);
+    public final ProjectorFrameSender frameSender = new ProjectorFrameSender(this);
     public final FixedEnergyStorage energy = new FixedEnergyStorage(Config.projectorEnergyStorage);
-    private final Picture picture =
-            Picture.create(ProjectorDevice.WIDTH, ProjectorDevice.HEIGHT, ColorSpace.YUV420J);
-    private final ProjectorVideoEncoder videoEncoder = new ProjectorVideoEncoder();
-    private final ProjectorVideoDecoder videoDecoder = new ProjectorVideoDecoder();
     private final ProjectorState projectorState = new ProjectorState();
     private final ProjectorRenderBounds renderBounds = new ProjectorRenderBounds();
 
     public UUID deviceId = UUID.randomUUID();
-    private long lastKeepAliveSentAt;
 
     public ProjectorBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.PROJECTOR.get(), pos, state);
@@ -69,20 +59,16 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         return ProjectorContraptionHelper.getPrimaryForContraptionRendering(this);
     }
 
-    public void setRequiresKeyframe() {
-        videoEncoder.setRequiresKeyframe();
+    public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
+        frameSender.setFrameConsumer(consumer);
     }
 
-    public void setFrameConsumer(@Nullable final FrameConsumer consumer) {
-        videoDecoder.setFrameConsumer(picture, consumer);
+    public void handleWatchedBy(final ServerPlayer player) {
+        frameSender.handleWatchedBy(player);
     }
 
     public void onRendering() {
-        final long now = System.currentTimeMillis();
-        if (now - lastKeepAliveSentAt > 1000) {
-            lastKeepAliveSentAt = now;
-            NetworkMessages.sendToServer(new ProjectorRequestFramebufferMessage(this));
-        }
+        frameSender.onRendering();
     }
 
     @Override
@@ -111,15 +97,12 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
                 level,
                 getBlockPos(),
                 getBlockState(),
-                picture,
                 projectorState.isMounted,
                 isPowered,
                 isValid(),
                 this);
-        if (!projectorState.hasEnergy || !videoEncoder.hasChangesOrNeedsIDR(projectorDevice))
-            return;
-        ProjectorLoadBalancer.offerFrame(
-                this, () -> videoEncoder.encodeFrame(projectorDevice, picture));
+        if (!projectorState.hasEnergy || !projectorDevice.hasChanges()) return;
+        frameSender.sendFrame(projectorDevice);
     }
 
     @Override
@@ -175,9 +158,16 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         projectorState.applyClient(isProjecting, hasEnergy);
     }
 
-    public void applyNextFrameClient(final ByteBuffer frameData) {
+    public void applyChunk(
+            final int codec,
+            final int width,
+            final int height,
+            final int frameSize,
+            final int chunkIndex,
+            final int chunkCount,
+            final byte[] data) {
         if (level == null || !level.isClientSide()) return;
-        videoDecoder.applyNextFrameClient(picture, frameData);
+        frameSender.applyChunk(codec, width, height, frameSize, chunkIndex, chunkCount, data);
     }
 
     private void handleMountedChanged(final boolean value) {
@@ -185,7 +175,6 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
                 level,
                 getBlockPos(),
                 getBlockState(),
-                picture,
                 value,
                 projectorState.hasEnergy,
                 isValid(),
