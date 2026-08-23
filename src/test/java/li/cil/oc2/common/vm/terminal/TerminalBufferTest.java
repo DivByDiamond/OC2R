@@ -416,6 +416,37 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void autowrapPendingFlagLifecycle() {
+        // Directly tests the autowrapPending flag's set/clear transitions rather than
+        // inferring them from cell contents (the companion test above does the latter).
+        // This is the state vttest's DECCIR report exposes as the aw_pending bit; the
+        // flag is queried directly here instead of via a terminal-state-report escape.
+
+        // (1) Writing the last column arms pending; the cursor stays at width-1.
+        write(terminal, "A".repeat(Terminal.WIDTH));
+        assertTrue(terminal.autowrapPending, "filling the last column must arm autowrap-pending");
+        assertEquals(Terminal.WIDTH - 1, terminal.x,
+            "cursor must stay at width-1 while pending, not advance to a phantom width");
+
+        // (2) BS clears pending (BS is a cursor move).
+        write(terminal, "\b");
+        assertFalse(terminal.autowrapPending, "BS must clear autowrap-pending");
+
+        // (3) Re-arming pending, then the next printable fires the wrap and clears pending.
+        write(terminal, CSI + "1;1H" + "A".repeat(Terminal.WIDTH)); // home + re-fill row 0
+        assertTrue(terminal.autowrapPending, "re-filling the last column re-arms pending");
+        write(terminal, "B");                                       // fires the deferred wrap
+        assertFalse(terminal.autowrapPending, "the wrap fired by the next printable must clear pending");
+        assertEquals(1, terminal.x, "after the wrap the cursor sits at column 1 (post-write on row 1)");
+
+        // (4) With DECAWM off, filling the last column must NOT arm pending (overwrite, not wrap).
+        write(terminal, CSI + "?7l");
+        write(terminal, CSI + "1;1H" + "A".repeat(Terminal.WIDTH));
+        assertFalse(terminal.autowrapPending,
+            "filling the last column with DECAWM off must not arm pending");
+    }
+
+    @Test
     void dirtyMaskMarksScreenOnScroll() {
         resetDirty();
         write(terminal, CSI + "2S");
