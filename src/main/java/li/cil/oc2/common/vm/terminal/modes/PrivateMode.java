@@ -78,4 +78,10 @@ public final class PrivateMode {
     public static final int ENABLE_READLINE_NEWLINE_PASTE = 2006; // Enable readline newline pasting
     public static final int APPLICATION_SYNC = 2026; // Wait to render until application is ready
     public static final int APPLICATION_ESC_MODE = 7727; // Send escape key as ^[0[
+    // OC2R extension (no DEC/xterm standard): raw passthrough / "print controls". While ON every
+    // received byte is written to the screen literally as a visible glyph and NO byte is
+    // interpreted as an escape or control — a built-in byte-capture debugger. There is no real-VT
+    // escape for this (real terminals expose "Display Controls" only via the Set-Up menu), so the
+    // number is XT-private in the 7000s range beside APPLICATION_ESC_MODE.
+    public static final int XT_RAW_PASSTHROUGH = 7777; // Raw passthrough (print, don't interpret)
 }

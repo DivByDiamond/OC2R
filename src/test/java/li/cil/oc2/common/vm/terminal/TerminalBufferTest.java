@@ -844,6 +844,43 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void xtRawPassthroughRendersEscapesAsGlyphsNotInterpreted() {
+        // CSI ?7777h turns on raw passthrough (the built-in byte-capture debugger): every byte
+        // is written to the screen literally and NO byte is interpreted — not even ESC. So an
+        // SGR color sequence must appear on screen as its raw bytes, not change any color state.
+        write(terminal, CSI + "?7777h");
+        assertTrue(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH, "mode is on");
+        write(terminal, ESC + "[31m");    // would set fg=red if interpreted
+
+        // The 5 bytes ESC [ 3 1 m render as glyphs: ESC->^[ (cols 0,1), then [ 3 1 m (cols 2-4).
+        assertEquals('^', charAt(0, 0), "ESC renders as ^ (caret notation)");
+        assertEquals('[', charAt(1, 0), "...then the [ half of ^[");
+        assertEquals('[', charAt(2, 0), "the literal [ byte of the SGR renders next");
+        assertEquals('3', charAt(3, 0));
+        assertEquals('1', charAt(4, 0));
+        assertEquals('m', charAt(5, 0));
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "the SGR sequence must NOT have been interpreted — color mode unchanged");
+    }
+
+    @Test
+    void xtRawPassthroughToggleOffResumesInterpretation() {
+        // The toggle-off CSI ?7777l is matched literally while passthrough is on (the one sequence
+        // interpreted in the mode) so the debugger can always be exited. After it, escapes are
+        // honored again. 'XY' renders first; the exit sequence is consumed (not rendered); then
+        // an SGR is interpreted normally.
+        write(terminal, CSI + "?7777h");
+        assertTrue(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH);
+        write(terminal, "XY");             // renders literally at cols 0,1
+        write(terminal, CSI + "?7777l");    // the exit sequence — matched, mode turns off
+        assertFalse(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH, "mode is off");
+        write(terminal, ESC + "[31m");      // now interpreted: sets fg = red
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
+            "after toggling off, SGR is interpreted again");
+        assertEquals('X', charAt(0, 0), "the 'XY' rendered before the exit sequence survives");
+    }
+
+    @Test
     void deccolmSwitchesColumnWidthAndClearsScreen() {
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
 

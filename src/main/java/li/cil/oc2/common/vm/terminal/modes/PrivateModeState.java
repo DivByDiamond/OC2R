@@ -82,6 +82,7 @@ public class PrivateModeState {
     public boolean ENABLE_READLINE_NEWLINE_PASTE = false;
     public boolean APPLICATION_SYNC = false;
     public boolean APPLICATION_ESC_MODE = false;
+    public boolean XT_RAW_PASSTHROUGH = false;
 
     public int getModeForRequest(int mode) {
         Boolean modeState = getMode(mode);
