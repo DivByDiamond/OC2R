@@ -62,6 +62,14 @@ public class Terminal {
     public int scrollLast = HEIGHT - 1;
     public int x;
     public int y;
+    /**
+     * Autowrap-pending flag (DEC autowrap; xterm's {@code do_wrap}): set when a printable
+     * fills the last column — the cursor stays at {@code width-1} and the wrap (NEL) fires
+     * on the <em>next</em> printable, not the current one. Every cursor repositioning clears
+     * it (matching xterm's {@code ResetWrap}), so the cursor never sits at a phantom
+     * column {@code width}. Transient: a restored cursor must not carry a pending wrap.
+     */
+    public transient boolean autowrapPending;
     public int savedX;
     public int savedY;
     public byte savedStyle;
@@ -217,6 +225,7 @@ public class Terminal {
     }
 
     public void setCursorPos(final int x, final int y) {
+        autowrapPending = false; // any explicit cursor move clears the pending wrap (xterm ResetWrap)
         this.x = Math.clamp(x, 0, width - 1);
         this.y = Math.clamp(y, 0, HEIGHT - 1);
     }

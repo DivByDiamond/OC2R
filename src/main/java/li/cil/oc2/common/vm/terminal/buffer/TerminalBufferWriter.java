@@ -14,11 +14,15 @@ public class TerminalBufferWriter {
     public void putChar(final int ch) {
         if (Character.isISOControl(ch)) return;
 
-        if (terminal.x >= terminal.width) {
+        // Deferred autowrap: if the previous printable filled the last column it left the
+        // cursor at width-1 with autowrapPending set. Fire the wrap now, on THIS printable,
+        // not the one that filled the margin — so the margin char survives and any control
+        // char (BS/CR/Tab) between the two prints can clear the pending wrap instead.
+        if (terminal.autowrapPending) {
             if (terminal.currentPrivateModeState.DECAWM) {
-                NEL.execute(terminal);
+                NEL.execute(terminal); // moves to (0, y+1) and clears pending via setCursorPos
             } else {
-                terminal.setCursorPos(terminal.width - 1, terminal.y);
+                terminal.autowrapPending = false; // DECAWM off: overwrite the last column
             }
         }
 
@@ -28,7 +32,15 @@ public class TerminalBufferWriter {
         }
 
         setChar(terminal.x, terminal.y, ch);
-        terminal.x++;
+        // Fill the last column: arm the pending wrap and hold the cursor at width-1
+        // (never advance to a phantom width). Otherwise advance normally.
+        if (terminal.x == terminal.width - 1) {
+            if (terminal.currentPrivateModeState.DECAWM) {
+                terminal.autowrapPending = true;
+            }
+        } else {
+            terminal.x++;
+        }
     }
 
     public void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches

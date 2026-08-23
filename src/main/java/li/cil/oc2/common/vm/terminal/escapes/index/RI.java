@@ -6,6 +6,7 @@ public class RI {
     public static void execute(Terminal terminal) {
         if (terminal.y == terminal.scrollFirst) {
             terminal.bufferManager.shiftDownOne();
+            terminal.autowrapPending = false; // RI is a cursor move — clears pending (xterm ResetWrap)
         } else {
             terminal.setCursorPos(terminal.x, Math.max(terminal.y - 1, 0));
         }

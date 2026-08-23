@@ -4,6 +4,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class DECRC {
     public static void execute(Terminal terminal) {
+        terminal.autowrapPending = false; // restoring the cursor clears any pending wrap
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             terminal.x = terminal.altSavedX;
             terminal.y = terminal.altSavedY;
