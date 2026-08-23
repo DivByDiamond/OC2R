@@ -35,6 +35,7 @@ public class CSIManager {
         sequences.put('B', new CUD(terminal));
         sequences.put('C', new CUF(terminal));
         sequences.put('D', new CUB(terminal));
+        sequences.put('Z', new CBT(terminal));
         sequences.put('G', new CHA(terminal));
         sequences.put('H', new CUP(terminal));
         sequences.put('J', new ED(terminal));

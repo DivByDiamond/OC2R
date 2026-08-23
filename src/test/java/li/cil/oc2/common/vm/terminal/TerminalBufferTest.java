@@ -881,6 +881,42 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void cbtMovesCursorToPreviousTabStop() {
+        // CSI Z (CBT, Cursor Backward Tabulation) moves left to the previous tab stop, repeated
+        // Ps times (default 1), clamping at column 0. Default tab stops are every 8 columns.
+        write(terminal, CSI + "1;25H");   // col 25 (x=24)
+        write(terminal, CSI + "Z");        // CBT 1 -> back to tab stop at col 17 (x=16)
+        assertEquals(16, terminal.x, "CBT from col 24 lands on the tab stop at col 16");
+
+        write(terminal, CSI + "1;1H" + CSI + "30G");  // col 30 (x=29)
+        write(terminal, CSI + "3Z");      // CBT 3 -> back 3 tab stops: 24 -> 16 -> 8 (x=8)
+        assertEquals(8, terminal.x, "CBT 3 from col 29 lands on the tab stop at col 8");
+    }
+
+    @Test
+    void cbtClampsToColumnZero() {
+        write(terminal, CSI + "1;3H");     // col 3 (x=2)
+        write(terminal, CSI + "5Z");      // CBT 5 — past the left edge
+        assertEquals(0, terminal.x, "CBT clamps to column 0, never off-screen left");
+    }
+
+    @Test
+    void cbtLetsNanosBacktabOverwriteDeleteAcrossColumns() {
+        // The nano repro: after positioning at end of a line, nano sends CBT then a space to
+        // delete-by-overwriting, expecting each CBT to move left so each space hits a new column.
+        // Pre-fix CBT was a no-op, so every space overwrote the SAME column -> "fewer chars
+        // deleted than expected". With CBT working, the cursor moves and each space deletes a
+        // distinct char.
+        write(terminal, "ABCDEFGHI");     // 9 chars, cols 0..8
+        write(terminal, CSI + "1;10H");    // cursor to col 10 (one past end, x=9)
+        // Simulate nano: CBT to the previous tab stop (col 9 -> col 8, x=8), write a space to
+        // delete 'I'; CBT again is col 8 -> col 0 (next prev stop below 8 is 0), write space.
+        write(terminal, CSI + "Z ");      // CBT to x=8, space overwrites 'I' at col 8
+        assertEquals(' ', charAt(8, 0), "first CBT+space deletes the char at col 8");
+        assertEquals(9, terminal.x, "after the space the cursor advanced past col 8 (x=8->9)");
+    }
+
+    @Test
     void deccolmSwitchesColumnWidthAndClearsScreen() {
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
 
