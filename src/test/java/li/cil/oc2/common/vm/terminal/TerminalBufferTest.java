@@ -901,6 +901,26 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void chtMovesCursorToNextTabStop() {
+        // CSI I (CHT, Cursor Forward Tabulation) moves right to the next tab stop, repeated Ps
+        // times (default 1), clamping at the last column. Mirror of CBT. Default stops every 8.
+        write(terminal, CSI + "1;3H");     // col 3 (x=2)
+        write(terminal, CSI + "I");        // CHT 1 -> next tab stop at col 9 (x=8)
+        assertEquals(8, terminal.x, "CHT from col 2 lands on the tab stop at col 8");
+
+        write(terminal, CSI + "1;1H" + CSI + "3G");  // col 3 (x=2)
+        write(terminal, CSI + "3I");      // CHT 3 -> 8 -> 16 -> 24 (x=24)
+        assertEquals(24, terminal.x, "CHT 3 from col 2 lands on the tab stop at col 24");
+    }
+
+    @Test
+    void chtClampsToLastColumn() {
+        write(terminal, CSI + "1;78H");    // near the right edge (x=77)
+        write(terminal, CSI + "9I");      // CHT 9 — past the right edge
+        assertEquals(Terminal.WIDTH - 1, terminal.x, "CHT clamps to the last column, never off-screen right");
+    }
+
+    @Test
     void cbtLetsNanosBacktabOverwriteDeleteAcrossColumns() {
         // The nano repro: after positioning at end of a line, nano sends CBT then a space to
         // delete-by-overwriting, expecting each CBT to move left so each space hits a new column.
