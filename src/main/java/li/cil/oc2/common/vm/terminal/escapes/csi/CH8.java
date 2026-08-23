@@ -27,7 +27,10 @@ public class CH8
         } else if (state.hash) { // XTTITLEPOS
             LOGGER.warn("XTTITLEPOS not implemented");
         } else { // SU
-            for (int i = 0; i < args[0]; i++) {
+            // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
+            // shifting more than the screen height has no additional effect.
+            final int n = Math.min(args[0], Terminal.HEIGHT);
+            for (int i = 0; i < n; i++) {
                 if (terminal.lastRowToDisplay
                         < Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) {
                     terminal.bufferManager.incrementLastLineToDisplay();

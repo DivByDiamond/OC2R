@@ -107,6 +107,11 @@ public class Terminal {
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    // Network diff sink: absolute buffer rows changed since the last consume. The server
+    // serializes these rows into TerminalDiff messages; the client never parses VT100.
+    private final transient BitSet networkDirtyRows = new BitSet(HEIGHT * SCROLL_BACK_COUNT);
+    private final transient ReentrantLock networkDirtyLock = new ReentrantLock();
+    private transient boolean networkNeedsFullRefresh;
     public transient boolean displayOnly;
     public transient boolean hasPendingBell;
     public boolean useG0 = true;
@@ -257,6 +262,7 @@ public class Terminal {
     }
 
     public void markDirty(final int mask) {
+        recordNetworkDirtyScreenRows(mask);
         renderers.forEach(
                 model ->
                         model.getDirtyMask()
@@ -264,7 +270,51 @@ public class Terminal {
     }
 
     public void markAllDirty() {
+        networkDirtyLock.lock();
+        try {
+            networkNeedsFullRefresh = true;
+        } finally {
+            networkDirtyLock.unlock();
+        }
         renderers.forEach(model -> model.getDirtyMask().set(-1));
+    }
+
+    /**
+     * Converts a screen-row dirty bit mask into absolute buffer rows for the network diff
+     * sink. Alt-buffer rows are indexed by screen row directly; main-buffer screen row
+     {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - HEIGHT}.
+     */
+    private void recordNetworkDirtyScreenRows(final int mask) {
+        if (mask == 0) return;
+        final boolean alt = currentPrivateModeState.isAltBufferEnabled();
+        networkDirtyLock.lock();
+        try {
+            for (int s = 0; s < HEIGHT; s++) {
+                if ((mask & (1 << s)) == 0) continue;
+                final int row = alt ? s : s + lastRowToDisplay - HEIGHT;
+                if (row >= 0 && row < networkDirtyRows.size()) {
+                    networkDirtyRows.set(row);
+                }
+            }
+        } finally {
+            networkDirtyLock.unlock();
+        }
+    }
+
+    /** Dirty state since the last consume: full-refresh request plus changed buffer rows. */
+    public record NetworkDirty(boolean fullRefresh, int[] rows) {}
+
+    public NetworkDirty consumeNetworkDirty() {
+        networkDirtyLock.lock();
+        try {
+            final boolean full = networkNeedsFullRefresh;
+            final int[] rows = networkDirtyRows.stream().toArray();
+            networkNeedsFullRefresh = false;
+            networkDirtyRows.clear();
+            return new NetworkDirty(full, rows);
+        } finally {
+            networkDirtyLock.unlock();
+        }
     }
 
     @OnlyIn(Dist.CLIENT)

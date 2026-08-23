@@ -6,7 +6,6 @@ import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.client.renderer.blockentity.RendererQuadHelper;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
-import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.config.Config;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -45,8 +44,13 @@ final class MonitorTextRenderer {
 
         final MonitorGUIRenderer terminal = monitor.getMonitor();
 
-        final float scaleX = visibleX / MonitorDevice.WIDTH;
-        final float scaleY = visibleY / MonitorDevice.HEIGHT;
+        // Resolution of the last frame received from the server (falls back to the legacy
+        // default before the first frame); keeps scale and quad in sync with the texture.
+        final int framebufferWidth = monitor.video.getClientFrameWidth();
+        final int framebufferHeight = monitor.video.getClientFrameHeight();
+
+        final float scaleX = visibleX / framebufferWidth;
+        final float scaleY = visibleY / framebufferHeight;
         stack.translate(borderX, borderY, 0.7f);
         stack.scale(scaleX, scaleY, 1f);
 
@@ -58,8 +62,8 @@ final class MonitorTextRenderer {
                 .render(
                         stack,
                         RenderSystem.getProjectionMatrix(),
-                        MonitorDevice.WIDTH,
-                        MonitorDevice.HEIGHT,
+                        framebufferWidth,
+                        framebufferHeight,
                         true);
 
         stack.popPose();

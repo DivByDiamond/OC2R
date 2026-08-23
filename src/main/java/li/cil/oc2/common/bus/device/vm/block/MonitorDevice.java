@@ -30,6 +30,11 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     private final BooleanConsumer onMountedChanged;
 
     @Nullable private SimpleFramebufferDevice device;
+    // Resolution of the GPU installed in the hosting computer; 0 means "no GPU on the bus".
+    // Updated from CommonDeviceBusController after-device-scan listeners (MonitorGpuLink)
+    // before the VM mounts devices, so mount() always sees fresh values.
+    private int gpuWidth;
+    private int gpuHeight;
 
     private final OptionalAddress address = new OptionalAddress();
     @Nullable private UUID blobHandle;
@@ -37,6 +42,28 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     public MonitorDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
         super(identity);
         this.onMountedChanged = onMountedChanged;
+    }
+
+    public void setGpuResolution(final int width, final int height) {
+        this.gpuWidth = width;
+        this.gpuHeight = height;
+    }
+
+    public void clearGpuResolution() {
+        this.gpuWidth = 0;
+        this.gpuHeight = 0;
+    }
+
+    /** Framebuffer dimensions once mounted; falls back to the legacy default resolution. */
+    public int getWidth() {
+        final SimpleFramebufferDevice framebufferDevice = device;
+        return framebufferDevice != null ? framebufferDevice.getWidth() : WIDTH;
+    }
+
+    /** @see #getWidth() */
+    public int getHeight() {
+        final SimpleFramebufferDevice framebufferDevice = device;
+        return framebufferDevice != null ? framebufferDevice.getHeight() : HEIGHT;
     }
 
     public boolean hasChanges() {
@@ -51,6 +78,12 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
+        if (gpuWidth <= 0 || gpuHeight <= 0) {
+            // No GPU on the bus: the monitor mounts without a framebuffer and stays
+            // dark. The rest of the device set (keyboard, ...) is unaffected.
+            return VMDeviceLoadResult.success();
+        }
+
         if (!allocateDevice(context)) {
             return VMDeviceLoadResult.fail();
         }
@@ -129,13 +162,17 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     }
 
     private SimpleFramebufferDevice createFrameBufferDevice() throws IOException {
+        final long required = (long) gpuWidth * gpuHeight * SimpleFramebufferDevice.STRIDE;
         blobHandle = BlobStorage.validateHandle(blobHandle);
-        final FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
-        final MappedByteBuffer buffer =
-                channel.map(
-                        FileChannel.MapMode.READ_WRITE,
-                        0,
-                        WIDTH * HEIGHT * SimpleFramebufferDevice.STRIDE);
-        return new SimpleFramebufferDevice(WIDTH, HEIGHT, buffer);
+        FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
+        if (channel.size() != required) {
+            // GPU (or its resolution) changed since the last mount: the stored framebuffer
+            // has the wrong size for the new mode, discard it and start with a fresh blob.
+            BlobStorage.deleteAsync(blobHandle);
+            blobHandle = BlobStorage.validateHandle(null);
+            channel = BlobStorage.getOrOpenAsync(blobHandle).join();
+        }
+        final MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, required);
+        return new SimpleFramebufferDevice(gpuWidth, gpuHeight, buffer);
     }
 }

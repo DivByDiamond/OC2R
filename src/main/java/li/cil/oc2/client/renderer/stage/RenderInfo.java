@@ -19,11 +19,17 @@ public final class RenderInfo implements FrameConsumer {
         }
     }
 
-    private final DynamicTexture texture;
+    // Read on the render thread, replaced from processFrame (main thread); volatile so a
+    // frame rendered between recreation steps never observes a closed texture.
+    private volatile DynamicTexture texture;
+    private volatile int textureWidth;
+    private volatile int textureHeight;
     private volatile boolean closed = false;
 
-    public RenderInfo(final DynamicTexture texture) {
-        this.texture = texture;
+    public RenderInfo(final int width, final int height) {
+        this.texture = createTexture(width, height);
+        this.textureWidth = width;
+        this.textureHeight = height;
     }
 
     public DynamicTexture getTexture() {
@@ -31,16 +37,22 @@ public final class RenderInfo implements FrameConsumer {
     }
 
     public synchronized void close() {
+        if (closed) return;
         closed = true;
         // Schedule texture close on the render thread to avoid closing the
         // NativeImage while a queued upload is still pending in RenderSystem.
-        RenderSystem.recordRenderCall(texture::close);
+        final DynamicTexture current = texture;
+        RenderSystem.recordRenderCall(current::close);
     }
 
     @Override
     public synchronized void processFrame(
             final int width, final int height, final ByteBuffer rgb565) {
         if (closed) return;
+
+        if (width != textureWidth || height != textureHeight) {
+            recreateTexture(width, height);
+        }
 
         final NativeImage image = texture.getPixels();
         if (image == null) {
@@ -56,6 +68,24 @@ public final class RenderInfo implements FrameConsumer {
         }
 
         texture.upload();
+    }
+
+    private void recreateTexture(final int width, final int height) {
+        // GPU resolution changed: the old texture has the wrong size, swap in a new one
+        // and release the old on the render thread (same reasoning as close()).
+        final DynamicTexture old = texture;
+        if (old != null) {
+            RenderSystem.recordRenderCall(old::close);
+        }
+        texture = createTexture(width, height);
+        textureWidth = width;
+        textureHeight = height;
+    }
+
+    private static DynamicTexture createTexture(final int width, final int height) {
+        final DynamicTexture created = new DynamicTexture(width, height, false);
+        created.upload();
+        return created;
     }
 
     private static int toAbgr(final int pixel) {

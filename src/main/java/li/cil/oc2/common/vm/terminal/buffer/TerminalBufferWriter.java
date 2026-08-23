@@ -94,9 +94,7 @@ public class TerminalBufferWriter {
         final int dirtyLine = altBuffer
                 ? y
                 : Terminal.HEIGHT + terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask().accumulateAndGet(1 << dirtyLine, (prev, next) -> prev | next));
+        terminal.markDirty(1 << dirtyLine);
     }
 
     public static int getDirtyRow(final Terminal terminal, final int y) {

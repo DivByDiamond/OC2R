@@ -86,13 +86,12 @@ public class MonitorGUIRenderer {
                         .get(
                                 monitor,
                                 () -> {
-                                    final DynamicTexture texture =
-                                            new DynamicTexture(
-                                                    MonitorDevice.WIDTH,
-                                                    MonitorDevice.HEIGHT,
-                                                    false);
-                                    texture.upload();
-                                    final RenderInfo renderInfo = new RenderInfo(texture);
+                                    // Initial size is the legacy default; RenderInfo recreates
+                                    // the texture as soon as the first frame with the actual
+                                    // GPU resolution arrives.
+                                    final RenderInfo renderInfo =
+                                            new RenderInfo(
+                                                    MonitorDevice.WIDTH, MonitorDevice.HEIGHT);
                                     monitor.video.setFrameConsumer(renderInfo);
                                     return renderInfo;
                                 })

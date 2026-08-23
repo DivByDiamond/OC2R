@@ -1,122 +1,15 @@
 # TODO
 
-## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅ — ~98%
+## 0. Рефакторинг: структура и SOLID/KISS/DRY ✅ — DONE
 
-**Правило**: ≤200 строк на файл, ≤4 файлов на папку.
+**Правило**: ≤200 строк на файл, ≤4 файлов на папку. Выполнено полностью (~50 вынесений:
+Terminal → buffer/writer/scrolling/shifter/IO/output/render/colors, Network, ComputerBlockEntity,
+Robot, MonitorBlockEntity, BusCableBlockEntity и т.д.; раскладка всех больших папок по подпапкам).
+Детали — в git-истории до 2026-08.
 
-### Выполнено
-- [x] Terminal.java (1263→420) → Terminal, TerminalBuffer, TerminalRenderer, TerminalColors
-- [x] ComputerVMRunner из ComputerBlockEntity
-- [x] Robot.java (964→181) → RobotInventory, RobotMovementController, AbstractRobotEntity
-- [x] blockentity/ по подпапкам
-- [x] publish.gradle из build.gradle
-- [x] bus/ → adapter/, controller/, element/
-- [x] gui/ → screen/, widget/
-- [x] OldTerminal.java удалён
-- [x] DefaultTransportLayer.java (520→170)
-- [x] NetworkSwitchBlockEntity (511→164) → SwitchPacketForwarder, HostEntry, etc.
-- [x] ProjectorBlockEntity (479→194) → ProjectorCapabilities
-- [x] BusCableBlockEntity (477→188) → BusCableCapabilities
-- [x] AbstractBlockStorageDevice (414→169) → BlobStorageCloseHelper
-- [x] ComputerRenderer (367→152) → ComputerRendererDebug
-- [x] StreamSessionImpl (353→114)
-- [x] CommonDeviceBusController (332→140)
-- [x] BlobStorage (306→112)
-- [x] MachineTerminalWidget (313→198)
-- [x] NetworkInterfaceCardScreen (302→180)
-- [x] DefaultSessionLayer (277→193)
-- [x] fix: energyInfo.getCount() → getIntCount() (upstream)
-- [x] fix: Terminal fields → transient (upstream)
-- [x] **Network.java (294→125) → NetworkMessages.java (102)** — sendTo* utility methods extracted
-- [x] **ComputerBlockEntity (259→169) → ComputerTerminalManager (105)** — terminal/IO layer extracted
-- [x] **Terminal.java (244→156)** — I/O delegation removed, callers use .io and .bufferManager
-- [x] **TerminalIO.java (224→102) → TerminalOutput.java (144)** — VT100 state machine extracted
-- [x] **MonitorBlockEntity (240→170) → MonitorVideoController (64), MonitorCapabilities (41)** — video/caps extracted
-- [x] **TerminalBuffer (238→151) → TerminalBufferWriter (97)** — char writing extracted
-- [x] **BusCableInteractionHandler (236→179) → BusCableItemHelper (77)** — item/drop logic extracted
-- [x] **MonitorTextRenderer (218→104) → MonitorRendererCache (41), RendererQuadHelper (91)** — cache+quad extracted
-- [x] **TerminalTextureRenderer → TerminalTextureRenderer (106) + TerminalTextureBuilder (150)** — DynamicTexture rendering
-- [x] **ComputerBlock (212→186) → ComputerBlockInteraction (84)** — interaction logic
-- [x] **NetworkConnectorBlockEntity (222→158) → NetworkConnectorLifecycle (91)** — lifecycle/caps
-- [x] **RPCDeviceBusAdapter (219→169) → RPCMessageProcessor (71)** — message dispatch
-- [x] **AbstractVirtualMachine (204→187) → VMErrorCalculator (28)** — error computation
-- [x] **TerminalBufferScrolling (208→110) → TerminalLineShifter (135)** — line shift logic
-- [x] **ModBlockStateProvider (225→164) → CableItemTransforms (76)** — model transforms
-- [x] **BusCableBakedModel (209→176) → BusCableModelTypes (49)** — model properties
-- [x] **EnergySpec (207→179) → EnergySpecValues (37)** — loadValues
-- [x] **RedstoneInterfaceBlockEntity (206→176) → BundledRedstoneCallbacks (53)** — bundled callbacks
-- [x] **AbstractVMItemStackHandlers (202→180) → VMItemStackHandlerSerialization (80)** — serialization
-
-### Раскладка по подпапкам (≤4 файлов на папку) — ✅ DONE
-
-- [x] `common/inet/` (53) → layer/, tcp/, tcp/state/, session/, session/manager/, session/echo/, session/datagram/, session/stream/, protocol/, internet/, internet/connection/, util/, util/checksum/
-- [x] `common/network/message/` (43) → computer/, robot/, monitor/, projector/, disk/, network/, file/, misc/
-- [x] `common/network/` root (8) → Network.java в корне, util/, loadbalancer/, info/
-- [x] `common/util/` (38) → scheduler/, nbt/, item/, world/, text/, block/, sound/, async/, event/, tick/, misc/
-- [x] `common/block/` (27) → computer/, cable/, monitor/, projector/, network/, disk/, keyboard/, energy/, misc/, common/, types/
-- [x] `client/gui/screen/` (25) → computer/, robot/, monitor/, network/, keyboard/, common/, widget/, file/, misc/
+### Остатки
 - `common/vm/terminal/escapes/csi/` (31) — не трогать, каждый CSI handler свой файл по дизайну
-- `common/blockentity/network/` (25) → ✅ разбито: cable/ (4), cable/facade/ (4), connector/ (4), connector/interfaces/ (4), switches/ (4), switches/host/ (2), switches/port/ (3), hub/ (1), vxlan/ (2)
-
-**Примечание**: Package-private классы, перемещённые в подпапки, стали public для cross-package доступа.
-
-### Файлы ≤200 строк — ✅ ALL DONE (except jcodec/, api/, CSI CH1/CH6/CH2)
-
-### Следующая волна (план) — TODO
-
-**Файлы >200 строк:**
-- [x] `entity/robot/RobotActionProcessor` (297→194) → `RobotActionProcessorSerialization` (serialize/deserialize) + lock-helper `withLock`
-- [x] `blockentity/monitor/MonitorBlockEntity` (239→199) → `MonitorTickHandler` (serverTick + updateMonitorState)
-- [x] `vm/AbstractVirtualMachine` (218→181) → `VirtualMachineTicker` (tick + restart-логика)
-
-**Папки >4 файлов:**
-- [x] `common/item` (25) → storage/, storage/flash/, network/, network/cable/, computer/, block/, tool/, root ≤4
-- [x] `common/container` (23) → base/, computer/, robot/, monitor/, slot/, handler/, network/, data/, root ≤4
-- [x] `common/entity/robot` (25) → action/, action/processor/, movement/, rotation/, state/, misc/, root ≤4
-- [x] `common/bus/device/provider/item` (22) → storage/, storage/disk/, network/, energy/, module/, module/card/, root ≤4
-- [x] `common/bus/device/rpc/item` (20) → module/, util/, card/, file/, file/request/, root ≤4
-- [x] `client/renderer` (15) → stage/ (ColorCompositingStage, DepthBufferStage, DepthOnlyRenderTarget, RenderInfo), stage/shader/ (ModRenderType, ModShaders), projector/ (ProjectorCameraEntity, ProjectorDepthRenderer, ProjectorDepthRenderInfo), cable/ (CableRenderUtils, NetworkCableConnection, NetworkCablePoint, NetworkCableRenderer), root (BusInterfaceNameRenderer, MonitorGUIRenderer, package-info)
-- [x] `client/renderer/blockentity` (13) → computer/, monitor/, projector/, charger/, network/, root (OverlayRenderer, RendererQuadHelper, package-info)
-- [x] `data` (15) → recipe/, recipe/peripheral/, model/, tag/, loot/, root (DataGenerators, package-info)
-- [x] `common/vm` (15) → runner/, handler/, memory/, misc/, root ≤4 (VirtualMachine, VMRunner, VMErrorCalculator, VMRunState, package-info)
-- [x] `common/bus/device/vm/item` (14) → storage/, storage/misc/, network/, misc/, root ≤4
-- [x] `common/network/message/robot` (11) → terminal/, inventory/, state/, root ≤4
-- [x] `common/blockentity/misc` (11) → gateway/, redstone/, redstone/state/, flash/, misc/ (PciCardCageBlockEntity)
-- [x] `common/serialization/gson` (10) → rpc/, rpc/invocation/, root ≤4
-- [x] `common/bus/adapter` (10) → rpc/, rpc/method/, root (RPCDeviceBusAdapter, DeviceRegistry, EmptyMethodGroup, RPCDeviceWithIdentifier)
-- [x] `common/vm/context/global` (9) → memory/, interrupt/, root (GlobalVMContext, GlobalEventBus, package-info)
-- [x] `common/bus/element` (9) → group/, group/query/, root (Abstract*BusElement)
-- [x] `common/bus/device/vm/block` (9) → disk/, flash/, misc/, root (KeyboardDevice, MonitorDevice, package-info)
-- [x] `common/bus/device/util` (9) → info/, optional/, root (Devices, IdentityProxy, package-info)
-- [x] `common/bus/device/rpc` (9) → filter/, adapter/, root ≤4
-- [x] `common/bus/device/data` (9) → firmware/, block/, root ≤4
-- [x] `common/blockentity/projector` (9) → video/, misc/, root (ProjectorBlockEntity, ProjectorCapabilities, ProjectorState)
-- [x] `common/blockentity/monitor` (10) → video/, misc/, root (MonitorBlockEntity, MonitorStateManager, MonitorTickHandler)
-- [x] `common/network/message/computer` (10) → terminal/, misc/ (FirmwareFlasherMessage), root ≤4
-- [x] `client/gui/widget` (9) → terminal/, misc/, root (Sprite, Texture, package-info)
-- [x] `common/network/message/monitor` (8) → input/, framebuffer/, root (MonitorStateMessage, package-info)
-- [x] `common/vm/terminal` (16) → buffer/, buffer/utf8/, render/, render/overlay/, color/, root (Terminal, TerminalIO, TerminalOutput, TerminalClient)
-- [x] `common/vm/terminal/escapes` (8) → index/ (IND, NEL, RI, RIS), root (EscapeUtilities, DECSC, DECRC, HTS); apc/dcs/osc/csi не тронуты
-- [x] `common/vm/terminal/modes` (6) → impl/ (ImplementedPrivateModes, MouseMode), root (Mode, ModeState, PrivateMode, PrivateModeState)
-- [x] `common/vm/context/managed` (8) → memory/, interrupt/, root (ManagedVMContext, ManagedEventBus, package-info)
-- [x] `common/serialization` корень (6) → nbt/util/, root (BlobStorage, BlobChannelManager, BlobStorageEvents, package-info)
-- [x] `common/serialization/nbt` (5) → reference/, root ≤4
-- [x] `common/serialization/ceres` (8) → color/, json/, memory/, text/, root (Serializers, package-info)
-- [x] `common/config/common` (8) → energy/, network/, root ≤4
-- [x] `common/inet/layer` (8) → impl/, link/, root (SendHandler, LayerParametersImpl, NullLayer, package-info)
-- [x] `common/inet/tcp/state` (6) → finish/, root (AcceptState, ConnectState, EstablishedState, package-info)
-- [x] `common/inet/session/manager` (5) → ready/, root ≤4
-- [x] `common/network/message/network` (6) → connector/, root ≤4
-- [x] `common/network/message/file` (6) → cancel/, root ≤4
-- [x] `common/bus/controller` (6) → event/, root ≤4
-- [x] `common/bus/device/rpc/block` (6) → adapter/, root ≤4
-- [x] `common/block/computer` (6) → interaction/, factory/, root (ComputerBlock, ComputerBlockShapes, package-info)
-- [x] `common/block/cable` (6) → interaction/, item/, shape/, root ≤4
-- [x] `common/util/world` (6) → chunk/, level/, blockentity/, root (BlockLocation, ChunkLocation, package-info)
-- [x] `common/util/scheduler` (6) → runnable/, root ≤4
-- [x] `common/vm/context` корень (5) → event/, interrupt/, memory/, root (VMContextManagerCollection, package-info)
-- [x] `client/gui/screen/common` (6) → machine/, monitor/, root ≤4
-- [x] `common` корень (6) → setup/ (CommonSetup, NativeLoader), config/ (ConfigManager), root (Main, Constants, package-info)
+- `common/blockentity/network/` (25) → ✅ разбито: cable/, connector/, switches/, hub/, vxlan/
 
 ### Deferred
 - jcodec/ — **попытаться заменить на Maven dependency org.jcodec:jcodec**
@@ -126,10 +19,7 @@
 
 ## 6. Terminal DynamicTexture rendering ✅ — DONE
 
-- [x] `TerminalTextureRenderer` + `TerminalTextureBuilder` — рендерит TerminalBuffer в NativeImage/DynamicTexture (640×384)
-- [x] `MonitorTextRenderer` — использует DynamicTexture при всех дистанциях (не иконку)
-- [x] NEAREST filtering (не linear) — текст не прыгает
-- [x] LOD: одна текстура, масштабируется перспективой на всех расстояниях
+- [x] `TerminalTextureRenderer` + `TerminalTextureBuilder` + NEAREST filtering + LOD (одна текстура на всех дистанциях)
 - [ ] Увеличить область на блоке с 12×7 до 14×10 или 16×9 px
 
 ---
@@ -144,45 +34,28 @@
 
 ## 8. Screen↔Container auto-регистрация ✅ — DONE
 
-**Опционально**: вместо ручного `event.register(CONTAINER.get(), Screen::new)` для каждого —
-DSL через ScreenRegistry:
-```java
-ScreenRegistry.register(event, COMPUTER, ComputerContainerScreen::new);
-ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
-```
-
 - [x] Создан `ScreenRegistry` (DSL поверх `RegisterMenuScreensEvent`), `Containers.registerScreens` переведён на него
 
 ---
 
-## 9. Lint и статический анализ
+## 9. Lint и статический анализ ✅ — настроен
 
-- [x] **PMD: multithreading.xml** — добавлено с исключениями для NeoForge thread model
-- [x] **@SuppressWarnings("deprecation") удалены** — заменены на новые API:
-  - CustomItemColors → `RegisterColorHandlersEvent.Item`
-  - BusCableBakedModel → `getParticleIcon(ModelData)` (остался узкий suppression на абстрактном deprecated `getParticleIcon()`)
-  - ProjectorBlockEntity/PciCardCageBlockEntity → override `setBlockState` убран (renderBounds лениво, пустой override удалён)
-  - ChargerBlock → `Mirror.mirror(Direction)` вместо `state.rotate(Rotation)`
-  - InternetCardSpec → `defineList(..., String::new, ...)`
-  - RobotSlot → `stack.canFitInsideContainerItems()`, RobotItem → `canFitInsideContainerItems(ItemStack)`
-- [x] **PMD: codestyle.xml + design.xml** — добавлены rulesets с исключениями; итого **422 нарушения** (в отчёте, билд не падает): UselessParentheses 74, AvoidInstantiatingObjectsInLoops 58, CyclomaticComplexity 56, CognitiveComplexity 41, GenericsNaming 27, CollapsibleIfStatements 24, NPathComplexity 23, CallSuperInConstructor 19, AvoidDeeplyNestedIfStmts 16, UnnecessaryModifier 14, UnnecessaryCast 12, остальное <10. Исключены (конфликт со стилем/Checkstyle): ControlStatementBraces, FieldNamingConventions, UseUtilityClass
-- [x] **SpotBugs** — плагин `com.github.spotbugs` **6.5.10** (Gradle 9+), движок `toolVersion` **4.10.3**; `ignoreFailures=true`, отчёты html+xml в `build/reports/spotbugs/`; **453 бага** main (52 priority-1: EI_EXPOSE_REP2 99, MS_CANNOT_BE_FINAL 71, EI_EXPOSE_REP 61, ST_WRITE_TO_STATIC 49, PA_PUBLIC_PRIMITIVE_ATTRIBUTE 47, ...) + 1 в test. Фиксы: `reports.create("html")/("xml")` (6.x не регистрирует отчёты по умолчанию), исключение `package-info.class` из анализа (SpotBugs падает с ResourceNotFoundException), exclude-фильтр на jcodec/generated
-- [x] **Error Prone** — плагин `net.ltgt.errorprone` **5.1.0** + `error_prone_core` **2.50.0**; включён **выборочно**: `./gradlew compileJava -PenableErrorProne`; все диагностики — warnings (билд не падает); **100 предупреждений** (EffectivelyPrivate 21, MutablePublicArray/InconsistentCapitalization/EnumOrdinal/EmptyCatch по 7, ...). Воркэраунды: mixin-процессор шейдит Guava 21.0 → современный Guava подмешивается в начало processorpath (иначе NoSuchMethodError buildOrThrow); `-PenableErrorProne` без `=true` даёт пустую строку свойства → парсинг флага по presence
-- [x] **AvoidDuplicateLiterals** — включено: `maxDuplicateLiterals=8`, `minimumLength=6`, `skipAnnotations=true`; в отчёте 2 нарушения
-- [x] **AvoidInstantiatingObjectsInLoops** — правило включено (было исключено); **58 нарушений** в отчёте (33 файла, топ: ComputerBlockItemRenderer 6, AbstractContainer/RobotInventoryContainer 4) — билд не падает; точечные `@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")` — при рефакторинге
-- [x] **Qodana** — плагин `org.jetbrains.qodana` **2026.2.0** (таск `qodanaScan` в Docker), алиас `./gradlew qodana`, конфиг `qodana.yaml` (jetbrains/qodana-jvm:latest, exclude jcodec/build)
+- [x] PMD (multithreading/codestyle/design, обнулён), Checkstyle 0, SpotBugs 6.5.10/4.10.3
+  (html+xml отчёты), Error Prone 5.1.0 + error_prone_core 2.50.0 (выборочно,
+  `-PenableErrorProne`, warnings-only; Guava-шейдинг против mixin-процессора),
+  AvoidDuplicateLiterals, AvoidInstantiatingObjectsInLoops, Qodana 2026.2.0 (`./gradlew qodana`)
+- [ ] Остаточные вёрдлы в отчётах (`build/reports/*`): SpotBugs ~453 main (EI_EXPOSE_REP2 99,
+  MS_CANNOT_BE_FINAL 71, ...), Error Prone ~100 — разбирать точечно при рефакторинге
 
 ---
 
 ## 10. Тесты — ✅ расширены
 
-- [x] `Ipv4SpaceTest` — расширен + `Ipv4SpaceExtendedTest` (8 новых тестов: empty, single, subnet, range, denylist, overlap, DNS, CIDR30)
-- [x] `IntegerSpaceTest` — расширен + `IntegerSpaceExtendedTest` (8 новых тестов: empty, duplicate, merge, gap, range, overlap, fill)
-- [x] `TcpHeaderTest` (5 тестов) — read/write round trip, connection init, accept, reject, min size
-- [x] `InetUtilsTest` (6 тестов) — parse IPv4 valid/invalid, loopback, toString, ICMP body
-- [x] `Rfc1071ChecksumTest` (3 тестов) — zero, known data, empty range
-- [x] `ArpProtocolTest` (3 тестов) — ARP protocol, MacAddress, prefix
-- [x] `TerminalBufferTest` (5 тестов) — initial state, clearLine, shiftUp, shiftDown, clearAll
+- [x] inet/: Ipv4Space(+Extended), IntegerSpace(+Extended), TcpHeader, InetUtils,
+  Rfc1071Checksum, ArpProtocol, DefaultNetworkLayer(12), MacAddressUtils(7),
+  IcmpHandler(4), SessionManager(6); FrameChunkerTest, FrameCodecTest
+- [x] terminal/: TerminalBufferTest (62), SGRTest (17), SGRColorParserTest (8)
+- [ ] Пробелы терминала — см. §36 «Тесты»
 
 ---
 
@@ -192,36 +65,23 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ---
 
-## 12. Мультимонитор: фрагментная модель (как в OpenComputers)
+## 12. Мультимонитор: фрагментная модель (как в OpenComputers) — код готов
 
-**Цель**: заменить OBJ-модель монитора на фрагментные JSON-модели + кастомную BakedModel по позиции блока в мультиблоке. Референс: `ref/` (CaitlynMainer/OpenComputers), файл `ScreenModel.scala`, текстуры `textures/block/screen/`.
+**Цель**: заменить OBJ-модель монитора на фрагментные JSON-модели + кастомную BakedModel.
+Выполнено: 48 фрагментных текстур, config monitorMaxWidth/Height, ModelProperty,
+`MonitorBakedModel`, `MonitorMerge`/`MonitorBreak`/`MonitorRepartition`
+(сборка полного прямоугольника в любом порядке, ломание одного блока → переразметка).
 
-- [x] Скопировать 48 фрагментных текстур (f*/b*) из ref в `assets/oc2r/textures/block/monitor/`, оставить overlay
-- [x] Config: `monitorMaxWidth`/`monitorMaxHeight` (по умолчанию 5), читать в `MonitorMultiblock` вместо захардкоженных MAX
-- [x] ModelData: `MonitorBlockEntity` отдаёт width/height/offset/facing через ModelProperty
-- [x] `MonitorBakedModel` (аналог `ScreenModel`): выбор фрагмента рамки по позиции блока
-- [x] Заменить JSON blockstate/models: фрагментная модель вместо monotonic OBJ
-- [x] Удалить `monitor.obj`/`monitor.mtl`, синхронизировать item-модель
-- [x] Item-модель: `getQuads(side=null)` отдаёт все 6 граней (иначе предмет не рендерился); datagen MONITOR убран из `ModBlockStateProvider` (blockstate теперь ручной, избегаем регенерации)
-- [x] **Сборка мультиблока → полный прямоугольник** (любой порядок): `MonitorMerge` (BFS по 4-соседству всех same-facing мониторов, развёртка в footprint; объединение только если bounding box полностью заполнен и ≤ конфиг-лимита; иначе новый блок остаётся 1×1). `MonitorRepartition` — общая переразметка (W/H/offset + перенос живого состояния на новый origin). Исправляет «дырявый 2×2» (раньше extend DOWN расширял H без проверки полноты строки).
-- [x] **Ломание одного блока** вместо всего мультиблока: `MonitorBreak` — рушится только кликнутый блок; остальные делятся на связные компоненты и переразмечаются в один/несколько полных прямоугольников (жадное извлечение максимального полного прямоугольника); состояние следует за origin (или на ближайший к нему блок). Убран `IS_BREAKING_MULTIBLOCK` и drop W×H-1 предметов (ванильная loot-table даёт 1 предмет).
-- [x] `MonitorMultiblock` сокращён до координатных хелперов (139 строк), логика вынесена в `MonitorMerge`/`MonitorBreak`/`MonitorRepartition`
 - [ ] Build + проверка в игре мультимонитора разных размеров (сборка 2×2/3×3 в любом порядке, ломание одного блока → переразметка)
 
 ---
 
 ## 13. Переписывание проводов (энергия FE+EU + починка коннекции) ✅ — DONE
 
-**Решение**: кабель становится энергопроводником с универсальной энергией. **FE/RF** — через `IEnergyStorage` (родной), **EU (IC2)** — через EnergyNet adapter. Передача с буфером и лимитом на тик из конфига. Коннекция чинится.
-
-- [x] Config: `cableEnergyCapacity` (3000 FE буфер) + `cableEnergyTransferPerTick` (512 FE/тик на соседа)
-- [x] Создать `CableEnergyStorage` (FixedEnergyStorage-подобный буфер) + зарегистрировать `Capabilities.EnergyStorage.BLOCK` в `BusCableCapabilities`
-- [x] `EnergyTransferManager`: сетевое распределение раз в тик — `collectNetwork` BFS по сети, пул из чистых источников, равномерное перераспределение буферов по сети, пуш в приёмники с лимитом на тик (чинит «пинг-понг» энергии между кабелями, из-за которого энергия не шла дальше 1-го кабеля)
-- [x] Творческий энергоблок = бесконечный источник: `InfiniteEnergyStorage` (extract-only) + регистрация capability
-- [x] **EU (IC2) через adapter**: мост `Ic2EuBridge`/`EuEnergyAdapter` (опциональная зависимость, без жёсткой привязки, 4 FE = 1 EU)
-- [x] Автоконнект: кабель соединяется с соседями с `IEnergyStorage`, `DeviceBusElement` и любыми блоками с RPC-методами (динамик, редстоун-интерфейс) — без ручного INTERFACE
-- [x] Реконфигурация: единая `recomputeConnections()` вместо размазанного `updateShape`/`canHaveCableTo`
-- [x] Build + проверка в игре (творческий блок → кабель → комп; скорость 512/t против потребления 258/t)
+Кабель = энергопроводник: FE через `IEnergyStorage`, EU (IC2) через `Ic2EuBridge`/`EuEnergyAdapter`
+(4 FE = 1 EU). Config `cableEnergyCapacity`/`cableEnergyTransferPerTick`.
+`EnergyTransferManager` — сетевое распределение раз в тик (чинит «пинг-понг»).
+Творческий блок = `InfiniteEnergyStorage`. Автоконнект + единая `recomputeConnections()`.
 
 ---
 
@@ -252,14 +112,10 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ## 14. Переписывание корпуса ПК (Block) ✅ — DONE
 
-**Механика корпуса ПК (Block):**
-
-**Лицевая сторона** — сторона, куда блок смотрит при установке (направление блока, как у печки/рабочего стола).
-
-- [x] **ПКМ по любой стороне, кроме лицевой** — открываем GUI инвентаря компонентов (слоты для GPU, CPU, RAM и т.д.) (`ComputerBlockInteraction.useWithoutItem`: `hit.getDirection() != FACING` → `openInventoryScreen`)
-- [x] **ПКМ строго по лицевой стороне** — открываем терминал (`hit.getDirection() == FACING` → `openTerminalScreen`)
-- [x] **Запуск**: shift+ПКМ или кнопка питания в GUI (уже была — `PowerButton` в терминале и инвентаре)
-- [x] **POST-бипы при ошибках запуска**: нет энергии/фirmware/CPU/памяти → 5 разных бипов (`ComputerPost`, `POST_BEEP_*`): 1 бип firmware, 2 — энергия, 3 — CPU, 4 — память, long — unknown. Хук: `ComputerVirtualMachine.handleBootErrorChanged`
+Лицевая сторона = направление блока при установке. ПКМ по не-лицевой → GUI инвентаря
+компонентов (`ComputerBlockInteraction.useWithoutItem`); ПКМ по лицевой → терминал;
+запуск shift+ПКМ или `PowerButton`; POST-бипы при ошибках запуска
+(`ComputerPost`, 5 сигналов: firmware/энергия/CPU/память/unknown, хук `ComputerVirtualMachine.handleBootErrorChanged`).
 
 ---
 
@@ -285,64 +141,55 @@ ScreenRegistry.register(event, COMPUTER_TERMINAL, ComputerTerminalScreen::new);
 
 ## 17. Автоматическая перезагрузка VM при изменении состава устройств ✅ — DONE
 
-**Проблема**: подключение/отключение блочных устройств (монитор, проектор, клавиатура) к *работающему* компу игнорировалось гостем — устройства появлялись только после ручного рестарта.
-
-**Решение (вариант A) — мягкий рестарт через существующий путь `stop(); start();`:**
-
-- [x] `AbstractVirtualMachine`: добавлены `AtomicBoolean devicesChangedWhileRunning` + `deviceChangeRestartDelay` (тесно связанный с `tick()`); метод `markDevicesChanged()`
-- [x] `AbstractVirtualMachine.tick()`: если флаг выставлен и `runState == RUNNING` и `state.board.isRunning()` — отложенный `stop(); start();` с задержкой 2 тика (пакетирование серийных подключений в один рестарт)
-- [x] `VMLifecycle.handleDevicesAdded/Removed`: только `addDevices/removeDevices` + `vm.markDevicesChanged()` (deferred mount)
-- [x] `VMLifecycle.handleBeforeDeviceScan`: убран переход `RUNNING → LOADING_DEVICES` (источник гонок горячего монтирования)
-- [x] RPC-устройства продолжают хот-плажиться живым адаптером и до рестарта не доводят
-- [x] Импорт `VMRunState` в `VMLifecycle` оставлен (используется в `load()`/`stopRunnerAndReset()`)
-- [x] Проверка: `./gradlew compileJava` BUILD SUCCESSFUL, checkstyle/PMD без новых нарушений
+Мягкий рестарт через `stop(); start();`: `AbstractVirtualMachine` —
+`AtomicBoolean devicesChangedWhileRunning` + `deviceChangeRestartDelay` + `markDevicesChanged()`;
+`tick()` откладывает рестарт на 2 тика (пакетирование серийных подключений).
+`VMLifecycle.handleDevicesAdded/Removed` — только add/remove + mark; из `handleBeforeDeviceScan`
+убран переход `RUNNING → LOADING_DEVICES`. RPC-устройства хот-плажатся живым адаптером без рестарта.
 
 ---
 
 ## 18. Убрать jcodec → прямой RGB-буфер монитора/проектора
 
-**Проблема**: каждый кадр монитора проходит `RGB→YUV420 → H.264 (jcodec) → Deflate → сеть → Inflate → H.264 decode → YUV→RGB` на клиенте. Два thread pool (encoder + decoder), byte budget с дропом кадров (SkipCount, круговой список) — всё ради сжатия, которое для LAN избыточно.
+Кадр = готовый RGB565-буфер as-is, клиент рендерит через DynamicTexture (NEAREST).
+Протокол: `(pos, codec, width, height, frameSize, chunkIndex, chunkCount, data)`,
+чанки по 256 KB (`FrameChunker`). Сервер: throttle `Config.monitorFps`, гейт на вотчеров.
+Клиент: Reassembler → R5G6B5→ABGR → `DynamicTexture.upload()`, без decoder pool.
+jcodec/балансировщики/worker pools удалены. Build зелёный (compileJava + test).
 
-**Целевое решение**: кадр = уже готовый RGB-буфер, передаётся как есть, клиент рендерит через DynamicTexture (NEAREST). Никакого jcodec, дефлейта, YUV.
-
-- [x] **Протокол**: `MonitorFramebufferMessage`/`ProjectorFramebufferMessage` → `(pos, codec, width, height, frameSize, chunkIndex, chunkCount, byte[] data)` — raw RGB565 as-is или сжатый H.264 (см. задачу 26), чанки по 256 KB (`FrameChunker`, реассемблинг на клиенте по frameSize). Кадр 640×480×2 = 614 KB
-- [x] **Трафик**: ~614 KB × 20 fps ≈ 12 MB/s — ок для локальной игры/LAN; fps ограничивается конфигом `monitorFps` (1..60)
-- [x] **Сервер**: `MonitorVideoController.sendFrame`/`ProjectorFrameSender` — throttle `Config.monitorFps`, гейт на вотчеров (WeakHashMap, таймаут 2 с), `SimpleFramebufferDevice.copyFrame()` отдаёт кадр как есть; encode-часть, `MonitorLoadBalancer`/`ProjectorLoadBalancer`, byte budget, skipCount, encoder worker pools удалены
-- [x] **Клиент**: сообщение → `FrameChunker.Reassembler` → `RenderInfo`/`ProjectorDepthRenderInfo.processFrame(w,h,rgb565)` → раскрытие R5G6B5→ABGR в `NativeImage` + `DynamicTexture.upload()`, без decoder thread pool; gamma LUT сохранён
-- [x] **Удалить**: `jcodec/` (86 файлов), H264Encoder/H264Decoder, YUV420 conversion, балансировщики, worker pools, мёртвый конфиг `projectorAverageMaxBytesPerSecond`
-- [x] **Сохранить**: кеш последнего кадра — DynamicTexture живёт между кадрами; дроп кадров больше не нужен
-- [ ] Build ✅ (compileJava + test зелёные) + проверка в игре (несколько мониторов + проектор одновременно)
+- [ ] Проверка в игре (несколько мониторов + проектор одновременно)
 
 ---
 
 ## 26. Видеокодек: RAW/H.264 переключаемый ✅ — DONE
 
-**Мотивация**: raw RGB565 (12 MB/s на 20 fps) избыточен для мультиплеера по интернету/VPN; H.264 сжимает кадр в десятки раз. Добавлен конфиг `videoCodec` (`raw` по умолчанию / `h264`).
+Конфиг `videoCodec` (`raw` по умолчанию / `h264`) в `GameplaySpec`. Вендоренный jcodec
+восстановлен (`li.cil.oc2.jcodec.*`, «Vendored from JCodec 0.2.5», lint-exclude вернуты,
+референс в `ref/jcodec/`). `FrameCodec` (`common/vm/video/`): stateful энкодер/декодер,
+YUV420↔RGB565, deflate/inflate; ручной StreamCodec (8 компонентов); Reassembler по явному
+frameSize; фолбэк на RAW при BufferOverflow декодера. Тесты: FrameCodecTest + FrameChunkerTest.
 
-- [x] **Конфиг**: `Config.videoCodec` + `videoCodec` в `GameplaySpec` (string `raw`/`h264`, невалидное значение → `raw`)
-- [x] **Вендоренный jcodec восстановлен** из git-истории (86 файлов, `li.cil.oc2.jcodec.*`) с атрибуцией «Vendored from JCodec 0.2.5» в каждом файле; lint-exclude вернуты в checkstyle/PMD/SpotBugs/ErrorProne/qodana; оригинал-референс в `ref/jcodec/` (клон)
-- [x] **`FrameCodec`** (`common/vm/video/`): stateful энкодер/декодер на `H264Encoder(CQPRateControl(12))`/`H264Decoder`, YUV420↔RGB565 конверсия, deflate/inflate
-- [x] **Протокол**: сообщения `MonitorFramebufferMessage`/`ProjectorFramebufferMessage` → `(pos, codec, width, height, frameSize, chunkIndex, chunkCount, data)`; ручной `StreamCodec` (8 компонентов — `composite` не поддерживает >6)
-- [x] **Reassembler**: сборка по явному `frameSize` (сжатые кадры переменного размера)
-- [x] **Фолбэк**: если H.264-энкодер переполнил внутренний буфер (BufferOverflow на высокодетальных кадрах — ограничение jcodec 0.2.5) или декодер упал — кадр шлётся/показывается как RAW, контент не теряется
-- [x] Тесты: `FrameCodecTest` (raw passthrough, solid/сплошной цвет compress+decode, sparse-текст) + `FrameChunkerTest` (одно-/многочанковый, граница, переменный размер)
 - [ ] **Проверка в игре**: монитор + проектор на `videoCodec=raw` (дефолт) и `videoCodec=h264`; замер трафика (h264 должен быть в разы меньше)
 
 ---
 
-## 19. Terminal: diff вместо сырого UART на клиенте
+## 19. Terminal: diff вместо сырого UART на клиенте — код готов
 
 **Проблема**: сервер гонит на клиент *сырой байтовый поток* UART (эскейп-последовательности), и клиента парсит VT100 заново. Term-инстанс общий на сервер+клиент; при перезагрузке VM не очищается; каждый тик шлются байты.
 
-**Целевое решение — разделение сервер/клиент + отправка diff:**
+**Реализовано (2026-08-23):**
+- Сервер — единственный владелец состояния: VT-парсинг остался только на сервере (`TerminalOutput`).
+- Dirty-синк: `Terminal.networkDirtyRows` (BitSet абсолютных buffer-row + флаг full-refresh) заполняется из `markDirty`/`markAllDirty`; `setChar`/шифтеры/`TerminalBuffer` роутед через `terminal.markDirty` (были прямые вызовы renderers).
+- `TerminalDiff` (`common/vm/terminal/TerminalDiff.java`): снапшот = reset-флаг + width + alt-buffer + изменённые строки (ячейка = codepoint + 2×ColorData(R,G,B,mode) + style, палитрные режимы не сплющены) + курсор + окно scrollback + cursorMode/DECTCEM/bell + битмаска 14 input/render-режимов (DECSCNM, APPLICATION_SYNC, DECCKM, mouse*, bracketed paste, focus, application ESC). Ручной StreamCodec.
+- Сообщения: `ComputerTerminalDiffMessage` / `RobotTerminalDiffMessage`, старые `*TerminalOutputMessage` удалены вместе с регистрацией; клиентский `io.putOutput(UART)` больше не существует.
+- Сброс при рестарте VM: `TerminalUtils.resetTerminal` = `RIS.execute` + `captureFull` (заодно убран мёртвый литеральный `'J'` и статический буфер — фикс m8 из §36).
+- Клиент (`TerminalDiff.apply`): пишет строки в локальный буфер, синкает alt-buffer/cursor/modes, `markAllDirty()`; рендер перестраивает только dirty-строки как раньше. Ввод не тронут (клавиатура → putInput → poll → C2S message).
 
-- [ ] **Сервер (единственный владелец состояния)**: `Terminal`/`TerminalBuffer` + парсинг VT-escape (как сейчас в `TerminalOutput`), но на сервере
-- [ ] **Событие `TerminalChanged`**: при изменении строк помечается список dirty-строк
-- [ ] **`TerminalDiffMessage`** (`pos, int[] dirtyLines, byte[][] lineData, int cursorLine, int cursorCol`) — шлётся только при изменении
-- [ ] **Клиент**: хранит локальную `TerminalBuffer`-копию, применяет diff, рендерит dirty-строки (без повторного VT-парсинга)
-- [ ] **Сброс терминала**: при перезагрузке VM сервер шлёт «clear» + полный снапшот
-- [ ] **Рендеринг**: `TerminalRenderer` переиспользует VBO, rebuild только dirty-строк (отдельная под-задача)
-- [ ] Убрать отправку сырого UART-потока клиенту (`ComputerTerminalOutputMessage`) и клиентский `TerminalOutput`
+**Совместимость**: серверный VT100-парсинг не менялся ни на символ — поведение терминала (vttest) сохранено by construction; дифф только переносит уже распарсенное состояние.
+
+### Осталось проверить
+- [ ] Проверка в игре: GUI компа + робота, два клиента рядом с одним ПК (tracking-chunk рассылка), скроллбек мышью, alt-screen приложения (vim/less), мышь в mc/midnight, bell.
+- [ ] Прогнать vttest внутри гостя (серверный парсер не трогали, но убедиться после рефакторинга dirty-роутинга).
 
 ---
 
@@ -409,14 +256,9 @@ DeviceBusElement (каждый блок/элемент)
 
 ## 21. Звук: тональный генератор, PCM-стриминг, Speaker-блок ✅ — DONE
 
-**Решение**: звуковая карта (`SoundCardItemDevice`) и блок-динамик (`speaker`) с RPC-методами `beep`/`playTone`/`write`. Клиентский синтез тона + PCM-стриминг через `AudioStream`.
-
-- [x] **Тональный генератор**: RPC `beep(frequency, duration)` / `playTone` — клиентский синтез синуса (44.1 кГц, 16-bit mono, fade in/out против кликов). `ToneAudioStream` + `ToneSoundInstance`; `SoundEvent`-заглушка `sound_card_beep` (stream) + `sounds.json`
-- [x] **PCM-стриминг**: RPC `write(byte[] pcm)` (чанки ≤4096) → `SoundCardPcmMessage` → клиентский ring buffer (`PcmSoundBuffer` + `PcmAudioStream`) → looping `StreamingPcmSoundInstance`, stop по 2 с тишины. Сообщения `SoundCardBeepMessage`/`SoundCardPcmMessage` через tracking chunk
-- [x] **Кулдаун 2 с** — уже настраиваемый в конфиге (`Config.soundCardCoolDownSeconds`); beep/playTone/write не ограничены кулдауном
-- [x] **Блок «Speaker»/динамик**: `SpeakerBlock` + `SpeakerBlockEntity` (NamedDevice, тип `speaker`, RPC beep/playTone/write, звук из позиции блока), регистрация, креативная вкладка, модели/lang ×4. Автоконнект к кабелю (см. задачу 13)
-- [x] POST-бипы при ошибках запуска (задача 14): 5 `.ogg` (`post_beep_*`), звук `computer_running` со `stream: true`
-- [x] Build + проверка в игре (мелодия из Lua/Python через beep)
+Готово: RPC `beep`/`playTone` (клиентский синтез синуса, `ToneAudioStream`),
+PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`, stop по тишине),
+блок Speaker (RPC, автоконнект к кабелю), POST-бипы запуска, конфиг кулдауна.
 
 ### Проверка в игре — открыто (v0.1.0+383c4ec)
 - [ ] **Спикер молчит**: `lua -e 'local d=require("devices"); d:find("speaker"):beep(880,500)'` — RPC без ошибок, но звука нет. Цепочка целая: callback → `SoundClientMessages.sendBeep` → `SoundCardBeepMessage` → `SoundClientManager.playTone` → `ToneSoundInstance` (stream `sound_card_beep`). POST-бипы (та же регистрация звука) играют → реестр/резолв в порядке. Что проверять: (1) лог клиента на `Unable to play unknown soundEvent`/исключения в `enqueueWork`; (2) расстояние — `Attenuation.LINEAR` с дальностью 16 блоков, отойди/подойди к динамику; (3) молчаливый сбой в streaming-пути `SoundEngine` (исключение в `CompletableFuture.thenAccept` не логируется) — при необходимости играть не через `stream=true`, а вернуть звук из `SoundBufferLibrary` (запасной `.ogg`).
@@ -443,11 +285,9 @@ DeviceBusElement (каждый блок/элемент)
 
 **⚠ Merge-blocker для `work` → `1.21.1`**: GPU-предметы сейчас бесполезны (монитор игнорирует тир/разрешение и mount'ится без GPU). Пока не доделана интеграция GPU↔монитор, ветки не сливать.
 
-**Проблема**: GPU отсутствует полностью. Монитор сам предоставляет `SimpleFramebufferDevice` 640×480 RGB565 — разрешение захардкожено, тиров нет. Без ощущения «собираешь компьютер из компонентов».
-
-**Решение**: добавить предмет GPU, который **управляет разрешением** framebuffer. `SimpleFramebufferDevice` уже поддерживает произвольные `WIDTH/HEIGHT` — параметризовать из GPU-предмета при mount. **GPU — обязательное условие для монитора** (без GPU → чёрный экран, только UART-терминал).
-
-- [ ] **Тиры GPU и разрешения:**
+**Готово**: `GPUItem`/`GPUDevice`/`GPUItemDeviceProvider` (4 тира, слот, крафты, модели, lang),
+конфиг `gpuEnergyPerTickTier1..4`. Провайдер framebuffer уже размерно-независим
+(`fb.getWidth()/getHeight()`, stride = width × 2).
 
 | Тир | Разрешение | Текстовый режим | Описание |
 |---|---|---|---|
@@ -456,38 +296,19 @@ DeviceBusElement (каждый блок/элемент)
 | GPU T3 | 1024×768 | 256×96 | Продвинутый, алмазы |
 | GPU T4 | 1920×1080 | 320×135 | Эндгейм, незерит/эмеральды |
 
-- [x] **Предмет GPU**: `GPUItem` (width/height/tier) + регистрация в `Items.java` (4 тира), тег `devices/gpu`, тег `device_needs_reboot`, слот GPU в компьютере (`GPU_SLOTS = 1`, `DeviceType GPU`), крафты, модели, lang
-- [x] **GPU-устройство**: `GPUDevice` (VMDevice) — хранит `width`/`height`/`tier` из предмета, mount без MMIO
-- [x] **Провайдер**: `GPUItemDeviceProvider` — создаёт `GPUDevice` из предмета, энергопотребление по тиру (`gpuEnergyPerTickTier1..4` = 2/3/5/8)
-- [ ] **Интеграция с монитором**: `MonitorDevice` должен использовать разрешение из GPU и не монтировать framebuffer без GPU — отложено, видеопайплайн жёстко захардкожен на 640×480 (пересекается с задачей 18 «убрать jcodec»; `SimpleFramebufferDevice`/провайдер уже размерно-независимы)
-- [ ] **Интеграция с монитором**: `MonitorDevice` спрашивает у bus-контроллера есть ли GPU → если нет, framebuffer не монтируется (чёрный экран). Если есть — `SimpleFramebufferDevice(width, height)` из GPU
-- [ ] **Убрать хардкод 640×480 в encode-пайплайне**: `MonitorVideoController` создаёт `Picture.create(WIDTH, HEIGHT, YUV420J)` со статическими `MonitorDevice.WIDTH/HEIGHT` — параметризовать от фактического разрешения framebuffer'а (GPU)
-- [ ] **Device-tree**: `SimpleFramebufferDeviceProvider` — width/height/stride из GPU, а не захардкоженные 640×480
-  - **Уточнение (2026-08-21)**: провайдер уже размерно-независим (`fb.getWidth()/getHeight()`, `stride = width × 2`). Реальный хардкод — только `MonitorDevice.WIDTH/HEIGHT` + `Picture` в `MonitorVideoController` и клиентский рендер (задача 6: зона 12×7 px на блоке, кадр 640×384 DynamicTexture).
-- [ ] **Без GPU → UART-терминал**: монитор не показывает framebuffer, но текстовый терминал (UART) работает
-- [x] Конфиг: `gpuEnergyPerTickTier1..4` в `EnergySpec`
+- [x] **Интеграция с монитором**: `MonitorDevice` спрашивает у bus-контроллера есть ли GPU → если нет, framebuffer не монтируется (чёрный экран). Если есть — `SimpleFramebufferDevice(width, height)` из GPU (`MonitorGpuLink` + afterDeviceScan-листенер в `ComputerBlockEntity`; blob пересоздаётся при смене разрешения)
+- [x] **Убрать хардкод 640×480**: сервер (`MonitorVideoController`) и клиент (`RenderInfo` пересоздаёт DynamicTexture по размеру кадра, `MonitorTextRenderer`/`MonitorDisplayWidget` берут разрешение последнего кадра) — размеро-независимо
+- [x] **Без GPU → UART-терминал**: монитор не показывает framebuffer, но текстовый терминал (UART) работает
 - [ ] Build + проверка в игре (монитор с GPU T1/T2/T3/T4, без GPU — чёрный)
 
 ---
 
-## 24. CPU: конфиг частот, новые тиры, губернаторы
+## 24. CPU: конфиг частот, новые тиры, губернаторы — код готов
 
-**Проблема**: частоты захардкожены в `Items.java` (25/50/100/200/1000 MHz), конфиг не реализован (`Config.java:12` — TODO). `timeQuota` 25 ms захардкожен. На T_INF cycleLimit копится бесконечно.
+Готово: новые тиры CPU (50/100/200/400/1000 MHz), конфиг `cpuFrequencyTier1/2/3/4`
+в `GameplaySpec` (TODO из `Config.java:12` убран), `Config.vmTimeQuotaMs` вместо
+захардкоженных 25 ms, cap `cycleLimit` (≤ 2 тиков вперёд), крафты обновлены.
 
-- [x] **Новые тиры CPU** (минимальный не 25, а 50 MHz):
-
-| Тир | Частота | Описание |
-|---|---|---|
-| CPU T1 | 50 MHz | Базовый (было 25) |
-| CPU T2 | 100 MHz | Средний (было 50) |
-| CPU T3 | 200 MHz | Продвинутый (было 100) |
-| CPU T4 | 400 MHz | Эндгейм (было 200) |
-| CPU T_INF | 1000 MHz | Creative (без изменений) |
-
-- [x] **Конфиг частот**: реализовать `cpuFrequencyTier1/2/3/4` в `GameplaySpec` (убрать TODO из `Config.java:12`). `Items.java` читает из конфига, а не захардкоженные константы
-- [x] **`timeQuota` в конфиг**: вынести `TIMESLICE_IN_MS = 25` из `VMRunner.java` в `Config.vmTimeQuotaMs`. На слабых серверах — снизить, на мощных — поднять
-- [x] **Cap на накопление `cycleLimit`**: сейчас `cycleLimit` растёт без ограничений → на T_INF копится «долг» циклов. Добавить cap: `cycleLimit = min(cycleLimit + getCyclesPerTick(), 2 × getCyclesPerTick())` — не больше 2 тиков вперёд
-- [x] Обновить крафты `recipe/cpu_tier_1..4.json` под новые частоты
 - [ ] Build + проверка в игре (разные CPU, баланс энергии/производительности)
 
 ---
@@ -535,9 +356,25 @@ DeviceBusElement (каждый блок/элемент)
 - После boot: `kmain` монтирует **OnyxFS** и грузит `/bin/init`; встроенные rootfs OC2R (cramfs/squashfs) он не читает. Сеть захардкожена `[10,0,2,15]` (QEMU user-net).
 
 ### ОнyxKernel (репо)
+- [x] **Login incorrect при входе root** — исправлено в OnyxKernel/init/src/login/mod.rs (2026-08-23):
+  терминал OC2R шлёт Enter как `'\r'` (TerminalInput.java:15), а login в raw-режиме (TIOCSRAW)
+  обрезал только `'\n'` → пароль уходил на хэш с хвостовым CR. Теперь стрипаются оба
+  (username + password); su.rs/passwd.rs уже умели. Дополнительно (2026-08-23): root сеется
+  с ПУСТЫМ паролем (`seed.rs`), login принимает голый Enter как пустой пароль (`pn==0`
+  больше не отклоняется) — вход как в Minux. Пересобрать образ: `cargo ibuild` +
+  OnyxOS `scripts/mk-onyxfs-disk.sh`; на существующем диске с неизвестным паролем —
+  перезалить свежий образ (first-boot пересеет root).
 - [ ] **`boot_smode.rs`** (cfg-гейт, как `boot_32.rs`): вход из OpenSBI в S-mode — принять `a0`/`a1`, пропустить PMP/medeleg/mideleg (OpenSBI уже сделал), `stvec`/`sepc`/`sstatus.SPIE`, `sret` → `kmain`. ~50 строк asm
 - [ ] **Сеть**: убрать хардкод `[10,0,2,15]`; DHCP или адрес из FDT/конфига
 - [ ] Проверить: UART NS16550A (совместим с sedna), virtio_net, virtio-blk, libfdt — что FDT от sedna парсится `early_init`
+
+### ОнyxKernel — вывод на монитор (сделано 2026-08-23)
+- [x] **Поддержка мониторов OC2R**: ядро раньше рисовало в приватную RAM (fallback) — хосту не видно.
+  Добавлено: `libfdt/fdt/framebuffer.rs` ищет `/chosen/simple-framebuffer` (compatible/reg/width/height/stride,
+  MMIO ниже 0x80000000); `fb::init_device()` принимает MMIO-геометрию; `put_pixel` умеет r5g6b5 (16bpp LE);
+  `draw`/`writer`/devfs переведены с констант FB_* на динамические размеры; `srv/main/display.rs`
+  пробует FDT-fb первым, RAM-fallback остался для QEMU. Пересобран `onyx-kernel.bin`
+  (`--features smode` + objcopy), заменён в ресурсах мода.
 
 ### Мод (oc2r) — доставка OnyxOS-образа
 - [ ] **OnyxFS-диск**: образ rootfs (собранный `mkimage` из `tools/` OnyxKernel, содержит `/bin/init`, `/bin/osh`, userland) подаётся как виртуальный HDD/floppy через существующий blob-механизм, а НЕ как встроенный rootfs
@@ -708,8 +545,8 @@ DeviceBusElement (каждый блок/элемент)
 - [x] **TBC очищает только main tabs, HTS пишет в altTabs**
   `[escapes/csi/TBC.java:13-21]`, `[escapes/HTS.java:8-10]` — согласовать.
 
-- [ ] **getInput() щёлкает вид вниз без пометки dirty**
-  `[TerminalIO.java:42-43]` — после прокрутки вверх + нажатия клавиши экран остаётся старым.
+- [x] **getInput() щёлкает вид вниз без пометки dirty** — закрыто аудитом №2 (2026-08-23):
+  реализовано в `[TerminalIO.java:43-49]` — `lastRowToDisplay` + `markDirty` всех строк.
 
 - [x] **Dirty-маска сырым `y` при прокрутке**
   `[CH10.java:104]`, `[CH11.java:91,162]`, `[ECH.java:52]`, `[TerminalBuffer.java:120]`
@@ -883,3 +720,189 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 - [ ] **DECSLRM + DECSTR** (средний)
   - `DECSLRM` (left/right margins, `CSI Pl;Pr s` — в `CH6.java:24` стоит `LOGGER.warn("DECSLRM not implemented")`) — нужен tmux / вертикальные сплиты vim. Пересечение с `DECOM` и `DECLRMM`/`DECRLM`.
   - `DECSTR` (soft reset, `CSI ! p` — `CH5.java:21` warn) — сброс таблиц режимов без полного RIS (курсор/тэбы/скролл-маргины сохраняются).
+
+## 36. Аудит VT100-терминала №2 — 6 суб-агентов (2026-08-23, ветка 1.21.1)
+
+Повторный аудит `common/vm/terminal/**` (74 файла): архитектура, логика VT100/xterm, потокобезопасность, стиль/сборка, тесты, межмодульные контракты. Все находки верифицированы по исходникам; блокер Б1 подтверждён трассировкой вручную. Формат: `[файл:строка]`.
+
+### Блокеры
+
+- [x] **Б1 — AIOOBE при SD/RI на заполненном scrollback**
+  `[buffer/TerminalBufferScrolling.java:77-81]` + `[buffer/TerminalLineShifter.java:101]`
+  Ветка `shiftDown` при полных маргинах использует `lastRowToDisplay` (не Max!):
+  `firstLine = L−24, lastLine = L−1`; при `L == HEIGHT*SCROLL_BACK_COUNT == 480`:
+  `srcIndex = 456w, charCount = 24w, dstIndex = 457w` → arraycopy пишет до `481w−1`
+  при длине массива `480w`. Гарантированный ArrayIndexOutOfBoundsException под lock
+  в `TerminalOutput.putOutput` → терминал навсегда перестаёт обрабатывать вывод.
+  **Репро** (только вывод гостя): `\n` × ~470 (scrollback до 480 через
+  `incrementLastLineToDisplay`, cap `TerminalBufferScrolling.java:20-23`), затем `ESC[2T`
+  или `ESC M` при курсоре в верхней строке (RI).
+  Попутно: та же ветка семантически неверна при прокрученном назад view — сдвигает
+  не окно рендера (`lastRowToDisplay` вместо `lastRowToDisplayMax`, как во всех остальных путях).
+  Фикс: клампить как остальные пути (`lastRowToDisplayMax − HEIGHT .. lastRowToDisplayMax − max(count,1)`)
+  + тест: полный scrollback → `CSI 2 T`.
+
+- [x] **Б2 — Freeze/DoS терминала через SU/SD с большим счётчиком**
+  `[escapes/csi/CH8.java:36-43]`, `[escapes/csi/CH9.java:33-40]`
+  `for (int i = 0; i < args[0]; i++) shiftUpOne();` — `EscapeUtilities.parseArgument`
+  сатурирует на `Integer.MAX_VALUE` → `\033[2147483647S` из гостя = 2³¹−1 итераций
+  по 4 arraycopy каждая, всё под lock внутри `putOutput` → поток VM-вывода заморожен
+  на минуты, lock удержан. Остальные хендлеры аргументы клампят — проблема локализована.
+  Фикс: `int n = Math.min(args[0], Terminal.HEIGHT);` перед циклом.
+  Тест: `\033[999999999S` завершается мгновенно.
+
+### Major
+
+- [ ] **M1 — `ESC ) Ps` (designate G1) пишет в G0; G1 недостижим**
+  `[TerminalIO.java:121-122,156-167]` — оба состояния `'('` и `')'` попадают в один
+  handler, всегда модифицирующий `drawingModeG0`; `drawingModeG1` пишется только
+  в RIS/DECSC/DECRC. Репро: `\033)0` + SO → ASCII вместо псевдографики.
+  Заодно: `A`/`1`/`2` молча игнорируются (`TerminalOutput.java:159,164-166`);
+  `useG0`/`drawingModeG1` — состояние без эффекта (рендер читает сырой кодпоинт,
+  см. §35 DEC Special Graphics).
+
+- [ ] **M2 — обрезанный true-color SGR превращается в стили**
+  `[escapes/csi/SGR.java:41-49]` — malformed-ветка пропускает только селектор+mode-byte:
+  `\033[38;2;1m` → остаток `1` применяется как bold;
+  `\033[48;2;10;20m` → смена foreground кодом 10. Ожидание (xterm): неполная цветовая
+  группа игнорируется целиком. Для обрезанного `38;5` recovery корректен (проверено).
+  Фикс: пропускать селектор + все аргументы до следующего селектора.
+
+- [ ] **M3 — overflow `1 << dirtyLine` при выводе в свёрнутый scrollback**
+  `[buffer/TerminalBufferWriter.java:82-87]`, `[TerminalBuffer.java:236]` —
+  `dirtyLine = offset + y` достигает 479 → int-сдвиг mod 32 → нужная видимая строка
+  не помечается (рендер сканирует биты 0..23, `[TerminalRenderer.java:158-159]`),
+  случайные биты мусорят. Эффект: при скролле вверх свежий вывод не перерисовывается
+  до следующего full-redraw. Фикс: AtomicLong + `1L <<`, либо clamp + `markAllDirty()`
+  при offset > 0. Безопасны: alt-buffer (y ≤ 23) и режим «внизу» (offset = 0).
+
+- [x] **M4 — рендер читает буфер без лока, Netty пишет под `io.lock`** — закрыто задачей 19
+  (2026-08-23): клиент больше не парсит UART, дифф применяется на main-thread;
+  `[TerminalCharRenderer.java:26-27,47]`, `[TerminalBackgroundRenderer.java:26,60-62]`
+  vs бывший писатель `[ComputerTerminalOutputMessage.java:45 → putOutput]` (удалён).
+  `setChar` = 4 отдельных store (char/color/bg/style, `[TerminalBufferWriter.java:42-79]`),
+  прокрутка = 4 несмежных arraycopy (`[TerminalLineShifter.java:101-109]`) — рендер между
+  шагами видит смесь. Эффект: «цветной шлейф» за текстом, атрибуты с опозданием,
+  полусдвинутые строки; само сходится после burst. Отдельный тяжёлый случай:
+  DECCOLM `setWidth` перевыделяет массивы (`[Terminal.java:173-176]`) на Netty-потоке —
+  возможен AIOOBE прямо в кадре рендера (устаревшая ссылка + новый width).
+  Фикс-варианты: снапшот под лок / версия-счётник + retry кадра / enqueueWork для putOutput.
+
+- [ ] **M5 — `fonts/FontHandling`/`UnicodeFontRenderer` без `@OnlyIn(CLIENT)`**
+  `[FontHandling.java:10]` — статическая инициализация → `new FontAtlas(1024,1024,...)`
+  → `Minecraft.getInstance().getTextureManager().register(...)` (`[FontAtlas.java:35]`).
+  Сейчас безопасно случайно: единственные потребители — `@OnlyIn(CLIENT)`-рендереры.
+  Любой случайный импорт из common-кода уронит dedicated server при загрузке класса.
+  Фикс: аннотировать оба класса (или вынести загрузку из static-init).
+
+- [ ] **M6 — `SCROLL_BACK_COUNT` — public mutable поле в UPPER_CASE**
+  `[Terminal.java:48]` `public int SCROLL_BACK_COUNT = 20;` — читается в индексной
+  арифметике (`setWidth:172`, `TerminalBufferScrolling:23,56,68`, `CH8:32`); любое внешнее
+  изменение после аллокации буферов → рассогласование размеров → AIOOBE.
+  Фикс: `public static final` (или private+getter, если нужна конфигурация — тогда через пересоздание буферов).
+
+### Minor
+
+- [ ] **m1 — DECRC/restoreSavedCursor не клампят координаты после смены ширины**
+  `[escapes/DECRC.java:11-12]`, `[escapes/csi/CH3.java:73-79]` — ESC7 в 132 колонках
+  на колонке 100 → `?3l` (setWidth делает home, но не сбрасывает savedX) → ESC8 даёт
+  `x=100 > 79` → ложный перенос на следующем символе. Фикс: clamp при restore.
+
+- [ ] **m2 — CPR сообщает колонку width+1 (нет pending-wrap флага)**
+  `[escapes/csi/DSR.java:22-31]` — `x+1` без clamp; состояние `x == width` легально
+  (`putChar:31`). Системный артефакт модели немедленного переноса: ECH/DCH/ICH при
+  `x==width` no-op, HTS молча теряет tab stop последней колонки. Полноценное решение —
+  pending-wrap флаг вместо `x == width`.
+
+- [ ] **m3 — `CSI 3 J` (erase scrollback, xterm E3) молча игнорируется** `[escapes/csi/ED.java:26-39]`
+
+- [ ] **m4 — `CSI n` без параметра не отвечает** `[escapes/csi/DSR.java:17]` —
+  ECMA-48: отсутствующий Ps = 5; гостевое приложение может зависнуть в ожидании `\033[0n`.
+
+- [ ] **m5 — режим 1048 сохраняет только x/y, restore идёт полным DECRC**
+  `[escapes/csi/CH2.java:110-113]` — восстановление перезапишет стиль/цвета/charset
+  init-дефолтами. Смежное: SCOSC (`CH6 's'`) в alt-буфере пишет в main-слоты savedX/savedY,
+  а DECRC в alt-буфере читает altSaved* — сохранение «в никуда».
+
+- [ ] **m6 — клавиатура ставит байты в очередь при выключенном capture**
+  `[TerminalKeyboardHandler.java:29-41]` — проверка только для ESC; нажатия утекают в VM
+  вне фокуса терминала (`MachineTerminalWidget.tick` отправляет безусловно).
+
+- [ ] **m7 — палитра xterm-256 вне канона**
+  `[color/TerminalColors.java:46,49-52]` — компонента `df` вне набора {00,5f,87,af,d7,ff}
+  (`0xdfaf*`, `0xff**df`) — похоже на опечатку `d7→df`. Сверить с эталоном xterm-256.
+
+- [x] **m8 — `TerminalUtils.resetTerminal`: статический мутабельный ByteBuffer + голый 'J'**
+  `[util/tick/TerminalUtils.java]` — переписан задачей 19 (2026-08-23): RIS + full snapshot,
+  без статического буфера и литерального `'J'`.
+
+- [ ] **m9 — DCL без volatile в `Terminal.client()`**
+  `[Terminal.java:131-132,266-281]` — формально data race по JMM; спасает final-поле
+  `TerminalClient.terminal`. Станет багом при добавлении любого нефинального поля.
+  Фикс: `private transient volatile TerminalClient clientInstance;`
+
+- [ ] **m10 — `lastRowToDisplay/Max` — plain int-пара с тремя писателями без синхронизации**
+  Netty (IND/NEL) / main (mouseScrolled, getInput) → редкие «прыжки» окна просмотра истории.
+  Плюс `hasPendingBell` — plain boolean (Netty пишет, main читает) → потеря звонка.
+
+- [ ] **m11 — dead code**: `Utf8Decoder.hasActiveSequence()` (0 ссылок),
+  `TerminalIO.putOutput(byte)` (все вызовы через ByteBuffer),
+  `Terminal.getTerminalWidth()` (только тесты — закрепить API или убрать),
+  `incrementLastLineToDisplay(true)` (ветка никем не вызывается);
+  `TerminalRenderer.findLineIndex` / `TerminalCharRenderer.isPrintableCharacter` → private;
+  `ImplementedPrivateModes.modeStatus` public static mutable → private.
+
+- [ ] **m12 — дубли магических чисел**: цикл `i <= 23` ×3 (`TerminalBufferScrolling:36,46`,
+  `TerminalIO:46`) → константа `FULL_DIRTY_MASK = (1 << HEIGHT) - 1`;
+  blink `1000/500` ×4 (`TerminalRenderer:42,74`, `TerminalCharRenderer:36`,
+  `TerminalBackgroundRenderer:35`) → именованные константы фазы;
+  `% 8` вместо `TerminalColors.TAB_WIDTH` (`CSIManager.java:94`);
+  номера mouse-режимов числами при существующих `PrivateMode.*` (`PrivateModeState:105-113`).
+
+### Nit
+
+- [ ] HT внутри CSI игнорирует tabs[] (`CSIManager.java:93-95` — фиксированные `% 8`)
+- [ ] `ESC # 8` (DECALN) не сбрасывает маргины и не делает home (`TerminalIO.java:170-186`)
+- [ ] DL предочистка `clearLine(y+i)` избыточна (перезаписывается сдвигом) `[DL.java:29-32]`
+- [ ] `putResponse(String)` — N полных lock/unlock на байт; ответ не атомарен относительно readInput
+- [ ] reentrant-запахи: вложенный lock в `putInput(String)/putInput(char)` (`TerminalIO:63-71,95-104`)
+- [ ] разнобой `//` vs `/* */` (DSR/SGR/SGRColorParser/CH1/CSIManager/DA vs остальное); 7 строк >120 (LineLength подавлен)
+- [ ] устаревший чекбокс выше (§31 «getInput без dirty») — уже реализовано в `TerminalIO.getInput():43-49`, закрыть
+- [ ] XTVERSION-версия захардкожена `oc2rvt(1.0.0)` (`CH7.java:21`)
+- [ ] RIS не сбрасывает transient `hasPendingBell` (остальное сверено — RIS полон)
+
+### Потокобезопасность (сводка)
+
+Write-path НЕ однопоточный: сервер — VM Runner (output) + Netty (input); клиент — Netty
+(мутирует экран) vs Render/main (читают/скроллят без лока). Input-очередь защищена
+корректно (единый `io.lock` на все offer/dequeue). `renderers` — synchronizedSet + AtomicInteger,
+корректно. Основные риски — M3/M4/m9/m10 выше.
+
+### Архитектура
+
+- [ ] Циклы пакетов (5): terminal↔buffer↔escapes (полный треугольник — нельзя вынести ни один пакет), terminal↔modes, terminal↔render
+- [ ] `Terminal` god-объект: ~60 публичных mutable-полей, вся логика модуля мутирует напрямую (вне модуля мутаций нет — потребители ходят через io/bufferManager)
+- [ ] Dirty-логика размазана по 6+ местам data-слоя (Terminal.markDirty, TerminalBuffer.markDirty, TerminalBufferWriter.setChar, TerminalLineShifter ×2, TerminalIO.getInput, TerminalBufferScrolling ×2) — единая точка расчёта screen-row ↔ buffer-row
+- [ ] 22 поля saved*/altSaved* копируются вручную в DECSC/DECRC/RIS → объект-снимок CursorSnapshot
+- [ ] `Terminal` содержит @OnlyIn(CLIENT)-методы + ленивый TerminalClient — state знает про клиент
+
+### Тесты (пробелы)
+
+Текущее покрытие плотное: 87 тестов / ~367 assertions (SGRTest 17, SGRColorParserTest 8,
+TerminalBufferTest 62 — интеграционные через реальный Terminal + полный escape-путь).
+Не покрыто:
+
+- [ ] `Utf8Decoder` — 0% (единственный файл без тестов): мультибайт, обрыв sequence между чанками, invalid continuation, 4-байтовые
+- [ ] CSIManager на мусорном входе: >10 аргументов, CAN/SUB abort, control chars внутри CSI
+- [ ] CUU/CUD/CUF/CUB — ноль тестов (самые частые последовательности ncurses!)
+- [ ] Ответные DSR/DA (формат ответа в input-очереди) + табуляции HTS/TBC + интеракция tabs с DECCOLM
+- [ ] OSC/DCS/APC менеджеры (терминация ST/BEL) + семантика выхода ?1047l
+- [ ] Регрессии на Б1/Б2 (см. выше) — закрываются одним параметризованным тестом
+
+### Опровергнутые гипотезы (проверено — корректно, не чинить)
+
+Stale-args между CSI (reset на `[` и CAN/SUB); null-чтение ColorData до SGR (RIS в конструкторе);
+OOB в clearChars/deleteChars/insertChars (clamp доказан); Math.clamp min>max (guard setWidth);
+DECSTBM/CUP/HVP/DECOM; SGR 38/48 consumption на валидных входах; shiftLines при count>1 из IL/DL
+(кламп к региону); dirty-mask формулы записи/чтения взаимно обратны; input-очередь (единый лок);
+displayOnly соблюдается всеми производителями ответов; IRM ?4h реализован; RIS полон по сериализуемым полям.

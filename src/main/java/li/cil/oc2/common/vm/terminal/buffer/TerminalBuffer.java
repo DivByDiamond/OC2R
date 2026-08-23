@@ -37,7 +37,7 @@ public class TerminalBuffer {
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
         }
-        terminal.renderers.forEach(model -> model.getDirtyMask().set(-1));
+        terminal.markAllDirty();
     }
 
     public void clearAlt() {
@@ -233,11 +233,7 @@ public class TerminalBuffer {
         // op on row y marks the screen row where that buffer row currently renders — including
         // the scrollback offset (lastRowToDisplayMax - lastRowToDisplay). Plain 1 << y would
         // mark the wrong visible row when the view is scrolled back into scrollback.
-        final int dirtyBit = 1 << TerminalBufferWriter.getDirtyRow(terminal, y);
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(dirtyBit, (left, right) -> left | right));
+        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, y));
     }
 
     public void incrementLastLineToDisplay() {

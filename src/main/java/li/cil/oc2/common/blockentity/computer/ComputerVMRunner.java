@@ -1,10 +1,10 @@
 package li.cil.oc2.common.blockentity.computer;
 
-import java.nio.ByteBuffer;
-import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutputMessage;
+import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalDiffMessage;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalDiff;
 
 public class ComputerVMRunner extends AbstractTerminalVMRunner {
     private final ComputerBlockEntity blockEntity;
@@ -18,8 +18,8 @@ public class ComputerVMRunner extends AbstractTerminalVMRunner {
     }
 
     @Override
-    protected void sendTerminalUpdateToClient(final ByteBuffer output) {
+    protected void sendTerminalDiffToClient(final TerminalDiff.Snapshot snapshot) {
         blockEntity.terminalManager.sendToClientsTrackingComputer(
-                new ComputerTerminalOutputMessage(blockEntity, output));
+                new ComputerTerminalDiffMessage(blockEntity, snapshot));
     }
 }

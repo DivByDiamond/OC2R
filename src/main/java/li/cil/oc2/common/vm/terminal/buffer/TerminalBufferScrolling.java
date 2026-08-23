@@ -71,13 +71,21 @@ class TerminalBufferScrolling {
         }
     }
 
-    public void shiftDown(int count) {
+    public void shiftDown(int countParam) {
+        // Shifting more than the visible height blanks the whole window either way;
+        // clamping keeps the index arithmetic below in valid range.
+        final int count = Math.min(countParam, Terminal.HEIGHT);
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shiftLines(terminal.scrollFirst, terminal.scrollLast - 1, count);
         } else if (terminal.scrollFirst == 0 && terminal.scrollLast == Terminal.HEIGHT - 1) {
+            // Shift within the physical window at the bottom of the scrollback
+            // (lastRowToDisplayMax, like every other main-buffer path): lines pushed off
+            // the bottom are discarded, top lines become blank. Passing lastLine reduced
+            // by count shrinks the copied region so arraycopy never writes past the
+            // buffer end when the window sits at the absolute buffer bottom.
             shiftLines(
-                    terminal.lastRowToDisplay - Terminal.HEIGHT,
-                    terminal.lastRowToDisplay - 1,
+                    terminal.lastRowToDisplayMax - Terminal.HEIGHT,
+                    terminal.lastRowToDisplayMax - 1 - count,
                     count);
         } else {
             shiftLines(

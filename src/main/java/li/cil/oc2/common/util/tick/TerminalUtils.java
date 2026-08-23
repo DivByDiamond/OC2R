@@ -1,26 +1,18 @@
 package li.cil.oc2.common.util.tick;
 
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalDiff;
+import li.cil.oc2.common.vm.terminal.escapes.index.RIS;
 
 public final class TerminalUtils {
-    private static final ByteBuffer TERMINAL_RESET_SEQUENCE =
-            ByteBuffer.wrap(
-                    new byte[] {
-                        // Make sure we're in normal mode.
-                        'J',
-                        // Reset.
-                        '\033',
-                        'c',
-                    });
-
+    /**
+     * Resets the server-side terminal (RIS) and ships a full-screen snapshot flagged as
+     * reset to clients, so their local display copies start from a clean, consistent state.
+     */
     public static void resetTerminal(
-            final Terminal terminal, final Consumer<ByteBuffer> packetSender) {
-        TERMINAL_RESET_SEQUENCE.clear();
-        terminal.io.putOutput(TERMINAL_RESET_SEQUENCE);
-
-        TERMINAL_RESET_SEQUENCE.flip();
-        packetSender.accept(TERMINAL_RESET_SEQUENCE);
+            final Terminal terminal, final Consumer<TerminalDiff.Snapshot> packetSender) {
+        RIS.execute(terminal);
+        packetSender.accept(TerminalDiff.captureFull(terminal));
     }
 }

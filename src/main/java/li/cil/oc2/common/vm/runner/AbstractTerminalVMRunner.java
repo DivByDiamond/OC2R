@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
 import java.nio.ByteBuffer;
 import li.cil.oc2.common.vm.VMRunner;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalDiff;
 import li.cil.sedna.device.serial.UART16550A;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +26,8 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
         uart = virtualMachine.state.builtinDevices.uart;
     }
 
-    protected abstract void sendTerminalUpdateToClient(final ByteBuffer output);
+    /** Ships a screen diff/full snapshot to clients; the client never sees raw UART bytes. */
+    protected abstract void sendTerminalDiffToClient(TerminalDiff.Snapshot snapshot);
 
     @Override
     protected void handleBeforeRun() {
@@ -66,37 +68,28 @@ public abstract class AbstractTerminalVMRunner extends VMRunner {
         while (!outputBuffer.isEmpty()) {
             output.put(outputBuffer.dequeueByte());
         }
-
         output.flip();
-        putTerminalOutput(output);
-    }
 
-    private void putTerminalOutput(final ByteBuffer output) {
-        if (!output.hasRemaining()) {
-            return;
-        }
-
-        // Always update the server-side terminal first — even if the network
-        // send below fails (e.g. on a Valkyrien Skies ship world where the
-        // chunk's level is not a ServerLevel and PacketDistributor rejects
-        // it), the server-side terminal state stays correct so a future
-        // re-render / re-open of the GUI still shows the buffered output.
+        // Always update the server-side terminal first: it owns VT100 parsing and
+        // accumulates the dirty rows the diff below ships to clients. Even if the
+        // send fails (VS ship world, disconnected client), server state stays correct.
         try {
             terminal.io.putOutput(output);
         } catch (final Exception t) {
             LOGGER.error("Failed to update server-side terminal", t);
         }
 
-        output.flip();
+        sendDiffToClient();
+    }
 
+    private void sendDiffToClient() {
         try {
-            sendTerminalUpdateToClient(output);
+            sendTerminalDiffToClient(TerminalDiff.capture(terminal));
         } catch (final Exception t) {
-            // Don't let a network-layer failure (ClassCastException on a
-            // non-ServerLevel, disconnected client, etc.) kill the runner
-            // thread — that would freeze the VM in an "appears on, no UART
-            // output" state.
-            LOGGER.error("Failed to forward terminal output to clients", t);
+            // Don't let a network-layer failure (disconnected client, etc.) kill
+            // the runner thread — that would freeze the VM in an "appears on, no
+            // terminal output" state.
+            LOGGER.error("Failed to forward terminal diff to clients", t);
         }
     }
 }

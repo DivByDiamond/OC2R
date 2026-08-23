@@ -1,6 +1,5 @@
 package li.cil.oc2.common.entity.robot;
 
-import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
@@ -11,12 +10,13 @@ import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.robot.RobotBootErrorMessage;
 import li.cil.oc2.common.network.message.robot.RobotBusStateMessage;
 import li.cil.oc2.common.network.message.robot.state.RobotRunStateMessage;
-import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalOutputMessage;
+import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.TerminalDiff;
 import net.minecraft.network.chat.Component;
 
 public final class RobotVirtualMachine extends AbstractVirtualMachine {
@@ -57,9 +57,9 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
 
         TerminalUtils.resetTerminal(
                 terminal,
-                output ->
+                snapshot ->
                         NetworkMessages.sendToClientsTrackingEntity(
-                                new RobotTerminalOutputMessage(robot, output), robot));
+                                new RobotTerminalDiffMessage(robot, snapshot), robot));
 
         movementController.clear();
     }
@@ -91,9 +91,9 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
         }
 
         @Override
-        protected void sendTerminalUpdateToClient(final ByteBuffer output) {
+        protected void sendTerminalDiffToClient(final TerminalDiff.Snapshot snapshot) {
             NetworkMessages.sendToClientsTrackingEntity(
-                    new RobotTerminalOutputMessage(RobotVirtualMachine.this.robot, output),
+                    new RobotTerminalDiffMessage(RobotVirtualMachine.this.robot, snapshot),
                     RobotVirtualMachine.this.robot);
         }
     }

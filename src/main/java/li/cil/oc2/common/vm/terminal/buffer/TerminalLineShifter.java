@@ -80,12 +80,7 @@ final class TerminalLineShifter {
                 dirtyLinesMask |= 1 << i;
             }
         }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
+        terminal.markDirty(dirtyLinesMask);
     }
 
     private static void shiftMainBuffer(
@@ -135,11 +130,6 @@ final class TerminalLineShifter {
                 dirtyLinesMask |= 1 << row;
             }
         }
-        final int finalDirtyLinesMask = dirtyLinesMask;
-        terminal.renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(
-                                        finalDirtyLinesMask, (left, right) -> left | right));
+        terminal.markDirty(dirtyLinesMask);
     }
 }

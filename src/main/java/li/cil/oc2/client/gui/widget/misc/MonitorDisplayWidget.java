@@ -6,7 +6,6 @@ import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.monitor.AbstractMonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
-import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.container.monitor.AbstractMonitorContainer;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.monitor.input.MonitorInputMessage;
@@ -58,9 +57,13 @@ public final class MonitorDisplayWidget {
         if (container.getPowerState() && container.isMounted() && container.hasPower()) {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);
+            // Resolution of the last frame received from the server (legacy default before
+            // the first frame); keeps scale and quad in sync with the texture.
+            final int framebufferWidth = container.getMonitor().video.getClientFrameWidth();
+            final int framebufferHeight = container.getMonitor().video.getClientFrameHeight();
             terminalStack.scale(
-                    (Sprites.MONITOR_SCREEN.width - 16f) / MonitorDevice.WIDTH,
-                    (Sprites.MONITOR_SCREEN.height - 16f) / MonitorDevice.HEIGHT,
+                    (Sprites.MONITOR_SCREEN.width - 16f) / framebufferWidth,
+                    (Sprites.MONITOR_SCREEN.height - 16f) / framebufferHeight,
                     1f);
 
             if (rendererView == null) {
@@ -73,8 +76,8 @@ public final class MonitorDisplayWidget {
             rendererView.render(
                     terminalStack,
                     projectionMatrix,
-                    MonitorDevice.WIDTH,
-                    MonitorDevice.HEIGHT,
+                    framebufferWidth,
+                    framebufferHeight,
                     false);
         } else if (container.getPowerState()) {
             final Font font = getClient().font;

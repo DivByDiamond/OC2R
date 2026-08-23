@@ -7,14 +7,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
-- **Video**: configurable codec for monitor/projector frames — `videoCodec` config option (`raw` default for local/LAN, `h264` for multiplayer over the internet/VPN). H.264 + deflate compresses frames dramatically; the client decodes both codecs and falls back to raw frames if encoding/decoding fails
+- **GPU**: graphics card items (4 tiers: 320×200 / 640×400 / 1024×768 / 1920×1080) are now required for a monitor to show a framebuffer. Without a GPU the monitor stays dark but the computer, keyboard and UART terminal keep working; swapping a GPU re-creates the framebuffer at the new resolution (stale framebuffer contents are discarded)
+- **Terminal**: server-authoritative screen sync — the client no longer receives raw UART bytes and re-parses VT100; the server ships only changed screen rows as diffs (full snapshot on VM restart), so several players watching one computer see a consistent screen and new viewers start from the current content
+- **OnyxOS**: updated kernel + root filesystem — monitors show the OnyxOS console (framebuffer via FDT `simple-framebuffer`, RGB565), login accepts the in-game terminal's Enter key, root logs in with an empty password on first boot
 
 ### Changed
 
 - **Video**: monitor/projector frames are transferred as raw RGB565 in 256 KB chunks — no encode/decode thread pools, no byte budgets; frame rate configurable via `monitorFps` (1–60, default 20). Vendored jcodec (H.264/YUV420) is restored from repo history (with attribution) and used only when `videoCodec=h264`
+- **Monitor**: client-side texture is created at the resolution of the incoming frame instead of a fixed 640×480; text/GUI rendering scales with the actual GPU resolution
+- **Terminal**: terminal state is owned by the server; keyboard/mouse mode flags (application cursor keys, mouse reporting, bracketed paste, focus events) travel with every diff, keeping input forwarding intact without client-side VT parsing
 
 ### Fixed
 
+- **Terminal**: crash (AIOOBE) that permanently froze terminal output when scrolling down/reverse-indexing with a full scrollback buffer
+- **Terminal**: freeze/DoS — `CSI S`/`CSI T` with a huge counter saturated the parser into minutes of locked work; counters are clamped to the screen height
+- **Computer**: terminal output stopped entirely after the diff-sync refactor (UART bytes were dropped before reaching the server-side parser)
 - **Network**: server crash (`AssertionError`) when using a Network Cable on two connectors that are already linked — now shows an "already connected" message instead (issue #18)
 
 ## [0.1.1-beta.1] — 2026-08-21

@@ -11,7 +11,7 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
-import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutputMessage;
+import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalDiffMessage;
 import li.cil.oc2.common.util.sound.ComputerPost;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.tick.TerminalUtils;
@@ -88,9 +88,9 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
         TerminalUtils.resetTerminal(
                 owner.terminalManager.terminal,
-                output ->
+                snapshot ->
                         owner.terminalManager.sendToClientsTrackingComputer(
-                                new ComputerTerminalOutputMessage(owner, output)));
+                                new ComputerTerminalDiffMessage(owner, snapshot)));
     }
 
     @Override

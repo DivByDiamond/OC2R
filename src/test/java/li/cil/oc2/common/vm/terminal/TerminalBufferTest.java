@@ -968,4 +968,54 @@ public class TerminalBufferTest {
         assertEquals(expected, renderer.dirtyMask.get() & 0xFF,
             "Margin scroll after scrollback growth must mark the margin rows, not stale buffer rows");
     }
+
+    @Test
+    void scrollDownAtFullScrollbackDoesNotOverflow() {
+        // Blocker B1: fill scrollback to the cap (lastRowToDisplayMax == 480), then
+        // SD (CSI T) / RI used to arraycopy past the physical buffer end
+        // (AIOOBE under lock in putOutput -> terminal dead forever).
+        writeMarkers();
+        assertEquals(Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+            "precondition: scrollback filled to cap");
+        // Marker two rows above the discarded pair: survives the shift onto the last row.
+        final int bottomMarkerRow = Terminal.HEIGHT - 3;
+        write(terminal, CSI + (bottomMarkerRow + 1) + ";1HZ");
+
+        assertDoesNotThrow(() -> write(terminal, CSI + "2T"));
+        // Lines pushed off the bottom are discarded, the two top rows are blank.
+        assertEquals(' ', charAt(0, 0));
+        assertEquals(' ', charAt(0, 1));
+        // The marker sat directly above the discarded rows: shifted down onto the last row.
+        assertEquals('Z', charAt(0, Terminal.HEIGHT - 1));
+    }
+
+    @Test
+    void reverseIndexAtFullScrollbackDoesNotOverflow() {
+        // Same B1 path via RI (ESC M), the second trigger named in the audit repro.
+        writeMarkers();
+        assertDoesNotThrow(() -> write(terminal, ESC + "M"));
+    }
+
+    @Test
+    void scrollUpDownWithHugeCountTerminates() {
+        // Blocker B2: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
+        // SU/SD loops must clamp instead of freezing the VM output thread.
+        writeMarkers();
+        long start = System.nanoTime();
+        assertDoesNotThrow(() -> write(terminal, CSI + "2147483647S"));
+        assertDoesNotThrow(() -> write(terminal, CSI + "999999999T"));
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+        assertTrue(elapsedMs < 5000, "SU/SD with saturated count took " + elapsedMs + "ms");
+        // Everything scrolled out; the whole visible window must be blank.
+        for (int y = 0; y < Terminal.HEIGHT; y++) {
+            assertEquals(' ', charAt(0, y), "row " + y + " should be blank after huge SU");
+        }
+    }
+
+    private void writeMarkers() {
+        // Grow the scrollback window to its hard cap (HEIGHT * SCROLL_BACK_COUNT rows).
+        final StringBuilder feed = new StringBuilder();
+        feed.append("\n".repeat(Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT));
+        write(terminal, feed.toString());
+    }
 }

@@ -8,8 +8,8 @@ import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
 import li.cil.oc2.common.network.message.computer.SoundCardBeepMessage;
 import li.cil.oc2.common.network.message.computer.SoundCardPcmMessage;
 import li.cil.oc2.common.network.message.computer.misc.FirmwareFlasherMessage;
+import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalDiffMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalInputMessage;
-import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalOutputMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerTerminalMessage;
 import li.cil.oc2.common.network.message.disk.DiskDriveFloppyMessage;
@@ -42,8 +42,8 @@ import li.cil.oc2.common.network.message.robot.state.RobotInitializationMessage;
 import li.cil.oc2.common.network.message.robot.state.RobotPowerMessage;
 import li.cil.oc2.common.network.message.robot.state.RobotRunStateMessage;
 import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage;
+import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalInputMessage;
-import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalOutputMessage;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -59,7 +59,7 @@ public final class Network {
         final PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
 
         // Computer
-        registrar.playToClient(ComputerTerminalOutputMessage.TYPE, ComputerTerminalOutputMessage.STREAM_CODEC, ComputerTerminalOutputMessage::handleMessage);
+        registrar.playToClient(ComputerTerminalDiffMessage.TYPE, ComputerTerminalDiffMessage.STREAM_CODEC, ComputerTerminalDiffMessage::handleMessage);
         registrar.playToServer(ComputerTerminalInputMessage.TYPE, ComputerTerminalInputMessage.STREAM_CODEC, ComputerTerminalInputMessage::handleMessage);
         registrar.playToClient(ComputerRunStateMessage.TYPE, ComputerRunStateMessage.STREAM_CODEC, ComputerRunStateMessage::handleMessage);
         registrar.playToClient(ComputerBusStateMessage.TYPE, ComputerBusStateMessage.STREAM_CODEC, ComputerBusStateMessage::handleMessage);
@@ -76,7 +76,7 @@ public final class Network {
         registrar.playToClient(NetworkConnectorConnectionsMessage.TYPE, NetworkConnectorConnectionsMessage.STREAM_CODEC, NetworkConnectorConnectionsMessage::handleMessage);
 
         // Robot
-        registrar.playToClient(RobotTerminalOutputMessage.TYPE, RobotTerminalOutputMessage.STREAM_CODEC, RobotTerminalOutputMessage::handleMessage);
+        registrar.playToClient(RobotTerminalDiffMessage.TYPE, RobotTerminalDiffMessage.STREAM_CODEC, RobotTerminalDiffMessage::handleMessage);
         registrar.playToServer(RobotTerminalInputMessage.TYPE, RobotTerminalInputMessage.STREAM_CODEC, RobotTerminalInputMessage::handleMessage);
         registrar.playToClient(RobotRunStateMessage.TYPE, RobotRunStateMessage.STREAM_CODEC, RobotRunStateMessage::handleMessage);
         registrar.playToClient(RobotBusStateMessage.TYPE, RobotBusStateMessage.STREAM_CODEC, RobotBusStateMessage::handleMessage);

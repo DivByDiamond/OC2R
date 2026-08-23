@@ -10,6 +10,7 @@ import li.cil.oc2.common.blockentity.computer.persistence.ComputerBlockEntityPer
 import li.cil.oc2.common.blockentity.computer.terminal.ComputerTerminalManager;
 import li.cil.oc2.common.blockentity.computer.vm.ComputerVirtualMachine;
 import li.cil.oc2.common.bus.controller.BlockDeviceBusController;
+import li.cil.oc2.common.bus.device.vm.block.MonitorGpuLink;
 import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
@@ -48,6 +49,11 @@ public final class ComputerBlockEntity extends ModBlockEntity
         super(BlockEntities.COMPUTER.get(), pos, state);
         setNeedsLevelUnloadEvent();
         virtualMachine.busController.afterDeviceScanListeners.add(terminalManager::onAfterDeviceScan);
+        // Push GPU resolution into monitors before the VM mounts devices.
+        virtualMachine.busController.afterDeviceScanListeners.add(
+                event ->
+                        MonitorGpuLink.updateMonitors(
+                                virtualMachine.busController.getDevices()));
     }
 
     public VirtualMachine getVirtualMachine() {
