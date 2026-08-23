@@ -84,13 +84,16 @@ public class CSIManager {
     private void handleControlChar(final char ch) { // NOPMD 10-case VT100 control-char dispatch
         switch (ch) {
             case 0x08 -> { /* BS */
+                terminal.autowrapPending = false; // cursor move clears pending (xterm ResetWrap)
                 if (terminal.x > 0) terminal.x--;
             }
             case 0x0D -> { /* CR */
+                terminal.autowrapPending = false; // cursor move clears pending (xterm ResetWrap)
                 terminal.x = 0;
             }
             case 0x0A, 0x0B -> handleControlLineFeed(); /* LF / VT — respect LNM like normal path */
             case 0x09 -> { /* HT */
+                terminal.autowrapPending = false; // cursor move clears pending (xterm ResetWrap)
                 terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), terminal.width - 1);
             }
             case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */

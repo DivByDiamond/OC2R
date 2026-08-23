@@ -69,6 +69,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
     }
 
     private void restoreSavedCursor() {
+        terminal.autowrapPending = false; // restoring the cursor clears any pending wrap
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             terminal.x = terminal.altSavedX;
             terminal.y = terminal.altSavedY;

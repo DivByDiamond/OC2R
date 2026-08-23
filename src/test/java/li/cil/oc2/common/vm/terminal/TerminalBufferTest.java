@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * All sequences below are fed through the real {@link TerminalIO}/{@link TerminalOutput}
  * state machine (the same path the VM firmware uses) via {@code putOutput}.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity") // class-aggregate complexity is high because this is a growing
+// suite of many small @Test methods — that's the point of a test class
 public class TerminalBufferTest {
     private Terminal terminal;
     private TerminalBuffer buffer;
@@ -391,6 +393,57 @@ public class TerminalBufferTest {
         assertEquals('B', charAt(Terminal.WIDTH - 1, 0));
         assertEquals(' ', charAt(0, 1));
         assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void backspaceFromAutowrapPendingMovesToWidthMinusTwo() {
+        // vttest suite 1, "autowrap, mixing control and print characters" case 1:
+        // fill a row to the right margin (cursor enters autowrap-pending), then BS.
+        // BS must clear pending and move to column width-2 so the next printable
+        // lands one column left of the margin and the just-written margin char
+        // survives; the cursor must not rest at a phantom column width either.
+        // Regressed in 1b978ad, which dropped the pending-aware clamp and made BS
+        // land back on width-1, letting the next printable overwrite the margin.
+        write(terminal, "A".repeat(Terminal.WIDTH)); // fill row 0 to the right margin
+        write(terminal, "\b");                       // BS from autowrap-pending
+        write(terminal, "B");
+        assertEquals('A', charAt(Terminal.WIDTH - 1, 0),
+            "last-column 'A' must survive BS from autowrap-pending");
+        assertEquals('B', charAt(Terminal.WIDTH - 2, 0),
+            "post-BS printable must land at column width-2, not overwrite the margin");
+        assertEquals(Terminal.WIDTH - 1, terminal.x,
+            "cursor must rest at width-1 after the non-margin write, not a phantom width");
+    }
+
+    @Test
+    void autowrapPendingFlagLifecycle() {
+        // Directly tests the autowrapPending flag's set/clear transitions rather than
+        // inferring them from cell contents (the companion test above does the latter).
+        // This is the state vttest's DECCIR report exposes as the aw_pending bit; the
+        // flag is queried directly here instead of via a terminal-state-report escape.
+
+        // (1) Writing the last column arms pending; the cursor stays at width-1.
+        write(terminal, "A".repeat(Terminal.WIDTH));
+        assertTrue(terminal.autowrapPending, "filling the last column must arm autowrap-pending");
+        assertEquals(Terminal.WIDTH - 1, terminal.x,
+            "cursor must stay at width-1 while pending, not advance to a phantom width");
+
+        // (2) BS clears pending (BS is a cursor move).
+        write(terminal, "\b");
+        assertFalse(terminal.autowrapPending, "BS must clear autowrap-pending");
+
+        // (3) Re-arming pending, then the next printable fires the wrap and clears pending.
+        write(terminal, CSI + "1;1H" + "A".repeat(Terminal.WIDTH)); // home + re-fill row 0
+        assertTrue(terminal.autowrapPending, "re-filling the last column re-arms pending");
+        write(terminal, "B");                                       // fires the deferred wrap
+        assertFalse(terminal.autowrapPending, "the wrap fired by the next printable must clear pending");
+        assertEquals(1, terminal.x, "after the wrap the cursor sits at column 1 (post-write on row 1)");
+
+        // (4) With DECAWM off, filling the last column must NOT arm pending (overwrite, not wrap).
+        write(terminal, CSI + "?7l");
+        write(terminal, CSI + "1;1H" + "A".repeat(Terminal.WIDTH));
+        assertFalse(terminal.autowrapPending,
+            "filling the last column with DECAWM off must not arm pending");
     }
 
     @Test

@@ -102,6 +102,7 @@ class TerminalOutput {
     }
 
     private void handleTab() {
+        terminal.autowrapPending = false; // Tab is a cursor move — clears the pending wrap (xterm ResetWrap)
         if (terminal.x < terminal.width - 1) {
             do {
                 terminal.x++;
