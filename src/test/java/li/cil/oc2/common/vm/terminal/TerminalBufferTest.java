@@ -937,6 +937,86 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void cnlMovesDownAndToColumnZero() {
+        // CSI E (CNL, Cursor Next Line) moves down Ps lines and to column 0.
+        write(terminal, CSI + "5;10H");   // row 5, col 10 (x=9, y=4)
+        write(terminal, CSI + "3E");      // CNL 3 -> row 8, col 0
+        assertEquals(0, terminal.x, "CNL moves to column 0");
+        assertEquals(7, terminal.y, "CNL 3 from row 4 lands on row 7");
+    }
+
+    @Test
+    void cplMovesUpAndToColumnZero() {
+        // CSI F (CPL, Cursor Previous Line) moves up Ps lines and to column 0.
+        write(terminal, CSI + "10;15H");  // row 10, col 15 (x=14, y=9)
+        write(terminal, CSI + "4F");      // CPL 4 -> row 6, col 0
+        assertEquals(0, terminal.x, "CPL moves to column 0");
+        assertEquals(5, terminal.y, "CPL 4 from row 9 lands on row 5");
+    }
+
+    @Test
+    void vprMovesRowRelativeKeepingColumn() {
+        // CSI e (VPR, Vertical Position Relative) moves down Ps rows, keeping the column.
+        write(terminal, CSI + "3;12H");  // row 3, col 12 (x=11, y=2)
+        write(terminal, CSI + "5e");     // VPR 5 -> row 8, col 12
+        assertEquals(11, terminal.x, "VPR keeps the column");
+        assertEquals(7, terminal.y, "VPR 5 from row 2 lands on row 7");
+    }
+
+    @Test
+    void hpaMovesColumnAbsoluteKeepingRow() {
+        // CSI ` (HPA, Horizontal Position Absolute) moves to column Ps (1-based), keeping row.
+        write(terminal, CSI + "4;20H");  // row 4, col 20 (x=19, y=3)
+        write(terminal, CSI + "8`");     // HPA 8 -> col 8 (x=7), row 4
+        assertEquals(7, terminal.x, "HPA moves to column Ps-1");
+        assertEquals(3, terminal.y, "HPA keeps the row");
+    }
+
+    @Test
+    void hprMovesColumnRelativeKeepingRow() {
+        // CSI a (HPR, Horizontal Position Relative) moves right Ps columns, keeping row.
+        write(terminal, CSI + "2;5H");   // row 2, col 5 (x=4, y=1)
+        write(terminal, CSI + "10a");    // HPR 10 -> col 15 (x=14), row 2
+        assertEquals(14, terminal.x, "HPR moves right Ps columns");
+        assertEquals(1, terminal.y, "HPR keeps the row");
+    }
+
+    @Test
+    void rcpRestoresCursorSavedByScp() {
+        // CSI u (RCP) restores the cursor saved by CSI s (SCOSC, handled in CH6). Save at one
+        // position, move elsewhere, RCP brings the cursor back.
+        write(terminal, CSI + "6;12H");  // row 6, col 12 (x=11, y=5)
+        write(terminal, CSI + "s");      // SCP — save cursor
+        write(terminal, CSI + "1;1H");   // move to home (x=0, y=0)
+        assertEquals(0, terminal.x);
+        write(terminal, CSI + "u");      // RCP — restore
+        assertEquals(11, terminal.x, "RCP restores the saved column");
+        assertEquals(5, terminal.y, "RCP restores the saved row");
+    }
+
+    @Test
+    void repRepeatsLastPrintedChar() {
+        // CSI b (REP) repeats the preceding printable char Ps times via putChar, so the repeats
+        // advance the cursor and wrap like real input.
+        write(terminal, "A");            // print 'A' at col 0 (x=1)
+        write(terminal, CSI + "4b");     // REP 4 -> four more 'A's (cols 1-4)
+        assertEquals('A', charAt(0, 0));
+        assertEquals('A', charAt(4, 0), "REP filled cols 1-4 with the repeated char");
+        assertEquals(5, terminal.x, "after 'A' + REP 4 the cursor is at col 5");
+    }
+
+    @Test
+    void repIsNoOpAfterCursorMove() {
+        // A cursor move clears the "last printed char" (xterm lastchar), so REP with nothing to
+        // repeat is a no-op.
+        write(terminal, "A");
+        write(terminal, CSI + "1;1H");   // home — clears lastPrintedChar
+        write(terminal, CSI + "3b");     // REP 3 — nothing to repeat
+        assertEquals('A', charAt(0, 0), "the original 'A' is untouched");
+        assertEquals(' ', charAt(1, 0), "REP after a cursor move writes nothing");
+    }
+
+    @Test
     void deccolmSwitchesColumnWidthAndClearsScreen() {
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
 

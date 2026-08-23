@@ -1,0 +1,23 @@
+package li.cil.oc2.common.vm.terminal.escapes.csi;
+
+import li.cil.oc2.common.vm.terminal.Terminal;
+
+/**
+ * VPR — Vertical Position Relative ({@code CSI Ps e}). Moves the cursor down {@code Ps} rows
+ * (default 1), keeping the column. The relative mirror of VPA.
+ */
+public class VPR extends CSISequenceHandler {
+    public VPR(final Terminal terminal) {
+        super(terminal);
+    }
+
+    @Override
+    public int[] defaultParameters(final CSIState state) {
+        return new int[] {1};
+    }
+
+    @Override
+    public void execute(final int[] args, final int argsCount, final CSIState state) {
+        terminal.setClampedCursorPos(terminal.x, terminal.y + args[0]);
+    }
+}

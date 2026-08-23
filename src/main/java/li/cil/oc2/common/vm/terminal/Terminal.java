@@ -70,6 +70,13 @@ public class Terminal {
      * column {@code width}. Transient: a restored cursor must not carry a pending wrap.
      */
     public transient boolean autowrapPending;
+    /**
+     * The last printable character written, for REP ({@code CSI Ps b}, repeat preceding char).
+     * Set by {@link li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter#putChar}; reset to
+     * a non-printable sentinel ({@code -1}) by cursor moves and resets, matching xterm's
+     * {@code lastchar}. Transient: not part of saved/restored state.
+     */
+    public transient int lastPrintedChar = -1;
     public int savedX;
     public int savedY;
     public byte savedStyle;
@@ -248,6 +255,7 @@ public class Terminal {
 
     public void setCursorPos(final int x, final int y) {
         autowrapPending = false; // any explicit cursor move clears the pending wrap (xterm ResetWrap)
+        lastPrintedChar = -1; // a cursor move means no preceding graphic char for REP (xterm lastchar)
         this.x = Math.clamp(x, 0, width - 1);
         this.y = Math.clamp(y, 0, HEIGHT - 1);
     }
