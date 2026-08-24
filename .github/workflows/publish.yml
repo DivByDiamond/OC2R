@@ -32,17 +32,28 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
-      - name: Publish to Curseforge, Modrinth & GitHub Packages
-        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} publish publishGprPublicationToGitHubPackagesRepository
+      - name: Build artifacts
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' build
         env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
-          CHANGELOG: ${{ github.event.release.body }}
           GITHUB_TOKEN: ${{ github.token }}
-        # Modrinth version_number regex allows only [a-zA-Z0-9._-]:
-        # strip the leading 'v' from the tag name and never append '+git' (build.gradle.kts).
-        # Tag your releases WITHOUT the 'v' prefix, e.g. 0.1.0, and this stays clean.
+
+      # Legacy: publish the maven artifact to GitHub Packages. Kept non-blocking —
+      # a failure here must not prevent the CurseForge upload below.
+      - name: Publish to GitHub Packages
+        continue-on-error: true
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} publishGprPublicationToGitHubPackagesRepository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # Modrinth version_number regex allows only [a-zA-Z0-9._-]:
+      # strip the leading 'v' from the tag name and never append '+git' (build.gradle.kts).
+      # Tag your releases WITHOUT the 'v' prefix, e.g. 0.1.0, and this stays clean.
+      - name: Resolve artifact path
+        id: artifact
+        run: |
+          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-"${GITHUB_REF_NAME#v}"*.jar | head -n1)
+          echo "path=$FILE" >> "$GITHUB_OUTPUT"
 
       - name: Add Artifacts to Github Release
         uses: alexellis/upload-assets@0.4.1
@@ -51,18 +62,13 @@ jobs:
         with:
           asset_paths: '["./build/libs/*.jar"]'
 
-      - name: Resolve artifact path
-        run: |
-          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-"${GITHUB_REF_NAME#v}"*.jar | head -n1)
-          echo "CF_FILE=$FILE" >> "$GITHUB_ENV"
-
       - name: Upload to CurseForge
         uses: itsmeow/curseforge-upload@v3
         with:
           token: ${{ secrets.CURSEFORGE_API_KEY }}
           project_id: '1657848'
           game_endpoint: 'minecraft'
-          file_path: ${{ env.CF_FILE }}
+          file_path: ${{ steps.artifact.outputs.path }}
           display_name: 'OC2R ${{ github.event.release.tag_name }} for Minecraft 1.21.1 (NeoForge)'
           release_type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
           changelog: ${{ github.event.release.body }}
