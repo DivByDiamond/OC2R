@@ -50,3 +50,23 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           asset_paths: '["./build/libs/*.jar"]'
+
+      - name: Resolve artifact path
+        run: |
+          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-"${GITHUB_REF_NAME#v}"*.jar | head -n1)
+          echo "CF_FILE=$FILE" >> "$GITHUB_ENV"
+
+      - name: Upload to CurseForge
+        uses: itsmeow/curseforge-upload@v3
+        with:
+          token: ${{ secrets.CURSEFORGE_API_KEY }}
+          project_id: '1657848'
+          game_endpoint: 'minecraft'
+          file_path: ${{ env.CF_FILE }}
+          display_name: 'OC2R ${{ github.event.release.tag_name }} for Minecraft 1.21.1 (NeoForge)'
+          release_type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          changelog: ${{ github.event.release.body }}
+          changelog_type: 'markdown'
+          game_versions: '1.21.1'
+          java_version: '21'
+          loaders: 'neoforge'
