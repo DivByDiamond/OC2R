@@ -5,6 +5,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+## [0.1.1-beta.2] — 2026-08-24
+
 ### Added
 
 - **GPU**: graphics card items (4 tiers: 320×200 / 640×400 / 1024×768 / 1920×1080) are now required for a monitor to show a framebuffer. Without a GPU the monitor stays dark but the computer, keyboard and UART terminal keep working; swapping a GPU re-creates the framebuffer at the new resolution (stale framebuffer contents are discarded)
@@ -23,6 +25,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Terminal**: freeze/DoS — `CSI S`/`CSI T` with a huge counter saturated the parser into minutes of locked work; counters are clamped to the screen height
 - **Computer**: terminal output stopped entirely after the diff-sync refactor (UART bytes were dropped before reaching the server-side parser)
 - **Network**: server crash (`AssertionError`) when using a Network Cable on two connectors that are already linked — now shows an "already connected" message instead (issue #18)
+- **Sound**: incompatibility with C2ME — `ThrottledSoundEmitter` used the level-owned random source from the VM runner thread, tripping C2ME's thread-ownership check and halting the boot process; it now uses a dedicated `RandomSource` (issue #22)
+- **Terminal**: the bell sound replayed on every keystroke after firing once — the pending-bell flag is now consumed when capturing each terminal diff snapshot and is delivered exactly once (issue #23)
+
+### CI/CD
+
+- Releases are automatically uploaded to CurseForge ([OpenComputers II: Modern](https://www.curseforge.com/minecraft/mc-mods/opencomputers-ii-modern)) on publish
 
 ## [0.1.1-beta.1] — 2026-08-21
 
