@@ -117,6 +117,10 @@ public final class TerminalDiff {
 
     private static Snapshot build(final Terminal terminal, final boolean reset, final int... rows) {
         final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
+        // Consume the bell flag: it must fire exactly once per emitted diff, otherwise
+        // every subsequent diff would replay the bell until the next one arrives.
+        final boolean bell = terminal.hasPendingBell;
+        terminal.hasPendingBell = false;
         return new Snapshot(
                 reset,
                 terminal.width,
@@ -129,7 +133,7 @@ public final class TerminalDiff {
                 terminal.lastRowToDisplayMax,
                 terminal.cursorMode,
                 terminal.currentPrivateModeState.DECTCEM,
-                terminal.hasPendingBell,
+                bell,
                 packInputModes(terminal.currentPrivateModeState));
     }
 

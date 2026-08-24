@@ -22,6 +22,11 @@ public final class ThrottledSoundEmitter {
 
     private long lastEmittedTime;
 
+    // Own random source instead of Level#getRandom(): this emitter can be played back
+    // from the VM runner thread, where touching the level-owned random source trips
+    // thread-ownership checks (e.g. C2ME's CheckedThreadLocalRandom).
+    private final RandomSource random = RandomSource.create();
+
     public ThrottledSoundEmitter(
             final Supplier<Optional<BlockLocation>> location, final SoundEvent sound) {
         this.location = location;
@@ -41,10 +46,8 @@ public final class ThrottledSoundEmitter {
                                     location.tryGetLevel()
                                             .ifPresent(
                                                     level -> {
-                                                        final float volume =
-                                                                sampleVolume(level.getRandom());
-                                                        final float pitch =
-                                                                samplePitch(level.getRandom());
+                                                        final float volume = sampleVolume(random);
+                                                        final float pitch = samplePitch(random);
                                                         LevelUtils.playSound(
                                                                 level,
                                                                 location.blockPos(),

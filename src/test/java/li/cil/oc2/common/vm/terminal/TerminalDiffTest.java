@@ -87,6 +87,23 @@ public class TerminalDiffTest {
         assertFalse(client.currentPrivateModeState.DECCKM);
     }
 
+    @Test
+    void bellFlagIsConsumedByCapture() {
+        write(server, "\u0007");
+        assertTrue(TerminalDiff.capture(server).bell());
+
+        // The flag must not leak into every subsequent diff (issue #23).
+        write(server, "a");
+        assertFalse(TerminalDiff.capture(server).bell());
+        write(server, "b");
+        assertFalse(TerminalDiff.capture(server).bell());
+
+        // A new bell is delivered exactly once.
+        write(server, "\u0007");
+        assertTrue(TerminalDiff.capture(server).bell());
+        assertFalse(TerminalDiff.capture(server).bell());
+    }
+
     private static void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
