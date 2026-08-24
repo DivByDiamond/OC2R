@@ -52,7 +52,7 @@ jobs:
       - name: Resolve artifact path
         id: artifact
         run: |
-          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-"${GITHUB_REF_NAME#v}"*.jar | head -n1)
+          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-*.jar | grep -v -- '-api\.jar' | head -n1)
           echo "path=$FILE" >> "$GITHUB_OUTPUT"
 
       - name: Add Artifacts to Github Release
@@ -63,16 +63,15 @@ jobs:
           asset_paths: '["./build/libs/*.jar"]'
 
       - name: Upload to CurseForge
-        uses: itsmeow/curseforge-upload@v3
+        uses: Kir-Antipov/mc-publish@v3.3
         with:
-          token: ${{ secrets.CURSEFORGE_API_KEY }}
-          project_id: '1657848'
-          game_endpoint: 'minecraft'
-          file_path: ${{ steps.artifact.outputs.path }}
-          display_name: 'OC2R ${{ github.event.release.tag_name }} for Minecraft 1.21.1 (NeoForge)'
-          release_type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          curseforge-id: 1657848
+          curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
+          files: ${{ steps.artifact.outputs.path }}
+          name: OC2R ${{ github.event.release.tag_name }} for Minecraft 1.21.1 (NeoForge)
+          version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          version: ${{ github.event.release.tag_name }}
           changelog: ${{ github.event.release.body }}
-          changelog_type: 'markdown'
-          game_versions: '1.21.1'
-          java_version: '21'
-          loaders: 'neoforge'
+          loaders: neoforge
+          game-versions: 1.21.1
+          java: 21
