@@ -11,19 +11,16 @@ jobs:
     permissions:
       contents: write
       packages: write
-    strategy:
-      matrix:
-        java: [ 21 ]
-        os: [ ubuntu-24.04 ]
-    runs-on: ${{ matrix.os }}
+    # Self-hosted runner pool (see test/actions-runner for the original experiment).
+    runs-on: pocketprobe-kube
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -40,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TYPE: ${{ startsWith(github.ref, 'refs/tags/') && 'release' || '' }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: oc2r-artifacts
           path: build/libs/*.jar
