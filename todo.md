@@ -1031,14 +1031,18 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
 
 ### Монитор/видео (CPU server thread + bandwidth)
 
-- [ ] **В1 — deflate(BEST_COMPRESSION=9) поверх уже сжатого H264** `FrameCodec.java:56,87-99` —
-  выигрыш ~0%, десятки мс CPU server-thread на кадр/монитор. ГЛАВНЫЙ CPU-killer. Фикс: убрать deflate.
+- [x] **В1 — deflate(BEST_COMPRESSION=9) поверх уже сжатого H264** (DONE da56987):
+  deflate/inflate удалены, H264-payload теперь сырой Annex-B; guard на start code
+  сохраняет контракт «мусор → empty» (тест h264PayloadIsRawAnnexBNotZlib).
+  Попутно ушла часть В9 (per-кадровые Deflater/Inflater/BAOS).
 - [ ] **В2 — весь энкод-путь на server thread**: RGB→YUV + software H264 в MonitorTickHandler.tick
   (`MonitorBlockEntity.java:23`, `MonitorTickHandler.java:25`, `ProjectorBlockEntity.serverTick:105`);
   throttle 1000/fps при fps=20 = 50 мс = каждый тик — не работает. Фикс: async-энкодер last-frame-wins.
-- [ ] **В3 — 4MB direct buffer + энкодер на КАЖДЫЙ BlockEntity** `FrameCodec.java:20,26`,
-  `MonitorVideoController.java:29`, `ProjectorFrameSender.java:31` — 20 мониторов = 80+ MB direct
-  на сторону. Фикс: общий/ленивый энкодер.
+- [x] **В3 — 4MB direct buffer + энкодер на КАЖДЫЙ BlockEntity** (DONE ed9e195):
+  ленивая аллокация encoder/decoder/buffer/picture при первом реальном использовании;
+  idle BE и RAW-конфиг не выделяют ничего. Шаринг одного энкодера между активными BE
+  отклонён сознательно: чередование BE каждый тик вынудило бы IDR на каждом кадре
+  (смерть inter-frame сжатия).
 - [ ] **В4 — RAW-режим = 600KB/кадр × 20fps ≈ 12 МБ/с/watcher** (`FrameChunker.MAX_CHUNK_SIZE=256KB`,
   дефолт videoCodec="raw" `GameplaySpec.java:62`). Фикс: H264 дефолтом.
 - [ ] **В5 — RAW-fallback внутри H264-потока ломает декодер до IDR (5 сек артефактов)**:
