@@ -1,6 +1,7 @@
 package li.cil.oc2.common.blockentity.network.vxlan;
 
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
@@ -42,8 +43,18 @@ public final class VxlanBlockEntity extends ModBlockEntity
     /** Per-hop cost subtracted from the time-to-live when flooding frames to neighbors. */
     private static final int TTL_COST = 1;
 
-    /** Virtual tunnel identifier; selects the inbound VXLAN frames addressed to this hub. */
-    private int vti = 1000;
+    /** The VXLAN header carries a 24-bit VNI; identifiers must stay inside that range. */
+    private static final int VNI_LIMIT = 1 << 24;
+
+    private static final Random VTI_RANDOM = new Random();
+
+    /**
+     * Virtual tunnel identifier; selects the inbound VXLAN frames addressed to this hub.
+     * Randomized per placed hub instead of a shared constant so two hubs cannot silently
+     * steal each other's tunnel registration ({@code tunnels} maps VNI to one interface);
+     * values restored from NBT are range-validated (todo.md §39 С2).
+     */
+    private int vti = VTI_RANDOM.nextInt(VNI_LIMIT);
     private int frameCount;
     private long lastGameTime;
 
@@ -136,7 +147,10 @@ public final class VxlanBlockEntity extends ModBlockEntity
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (level != null && !level.isClientSide() && tag.contains("vti")) {
-            vti = tag.getInt("vti");
+            final int loaded = tag.getInt("vti");
+            // NBT is player-writable (creative pick-block exports etc.): an out-of-range
+            // or hostile value falls back to a fresh random identifier.
+            vti = loaded >= 0 && loaded < VNI_LIMIT ? loaded : VTI_RANDOM.nextInt(VNI_LIMIT);
         }
     }
 

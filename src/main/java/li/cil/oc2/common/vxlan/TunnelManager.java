@@ -120,6 +120,11 @@ public class TunnelManager {
         // block on the selector below instead of the channel itself.
         datagramChannel.configureBlocking(false);
         datagramChannel.bind(new InetSocketAddress(bindHost, bindPort));
+        // Connected channel = kernel-level source filtering: datagrams from any address
+        // other than the configured remote endpoint are dropped before we ever see them,
+        // so arbitrary internet hosts cannot inject frames into the virtual network
+        // (todo.md §39 С1).
+        datagramChannel.connect(new InetSocketAddress(remoteHost, remotePort));
         final Selector datagramSelector = Selector.open();
         datagramChannel.register(datagramSelector, SelectionKey.OP_READ);
         channel = datagramChannel;
