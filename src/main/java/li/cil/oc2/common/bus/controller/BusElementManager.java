@@ -17,6 +17,12 @@ final class BusElementManager {
     private final int baseEnergyConsumption;
 
     private final Set<DeviceBusElement> elements = new HashSet<>();
+    // Scratch collections reused across scans; scans run on the server thread only.
+    private final Set<DeviceBusElement> bfsClosed = new HashSet<>();
+    private final Deque<DeviceBusElement> bfsOpen = new ArrayDeque<>();
+    private final Set<DeviceBusElement> collectedElements = new HashSet<>();
+    private final List<DeviceBusElement> removedElements = new ArrayList<>();
+    private final Set<DeviceBusController> otherControllers = new HashSet<>();
     private BusState state = BusState.SCAN_PENDING;
     private int scanDelay;
     private int energyConsumption;
@@ -69,20 +75,18 @@ final class BusElementManager {
         if (delay > 0) {
             return;
         }
-        collectBusElements()
-                .ifPresent(
-                        optionals -> {
-                            final Set<DeviceBusElement> addedElements =
-                                    updateElements(optionals.keySet());
-                            if (checkOtherBusControllers()) {
-                                return;
-                            }
-                            addedElements.remove(root);
-                            controller.scanDevices();
-                            updateEnergyConsumption();
-                            state = BusState.READY;
-                            controller.onAfterBusScan();
-                        });
+        if (!collectBusElements()) {
+            return;
+        }
+        final Set<DeviceBusElement> addedElements = updateElements(collectedElements);
+        if (checkOtherBusControllers()) {
+            return;
+        }
+        addedElements.remove(root);
+        controller.scanDevices();
+        updateEnergyConsumption();
+        state = BusState.READY;
+        controller.onAfterBusScan();
     }
 
     private void clearElements() {
@@ -93,49 +97,51 @@ final class BusElementManager {
         controller.scanDevices();
     }
 
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
-    private Optional<Map<DeviceBusElement, DeviceBusElement>> collectBusElements() {
-        final Set<DeviceBusElement> closed = new HashSet<>();
-        final Deque<DeviceBusElement> open = new ArrayDeque<>();
-        final Map<DeviceBusElement, DeviceBusElement> optionals = new HashMap<>();
+    private boolean collectBusElements() {
+        bfsClosed.clear();
+        bfsOpen.clear();
+        collectedElements.clear();
 
-        closed.add(root);
-        open.add(root);
-        optionals.put(root, null);
+        bfsClosed.add(root);
+        bfsOpen.add(root);
+        collectedElements.add(root);
 
-        while (!open.isEmpty()) {
-            final DeviceBusElement element = open.pop();
+        while (!bfsOpen.isEmpty()) {
+            final DeviceBusElement element = bfsOpen.pop();
 
             final Optional<Collection<DeviceBusElement>> elementNeighbors = element.getNeighbors();
             if (elementNeighbors.isEmpty()) {
                 scanDelay = INCOMPLETE_RETRY_INTERVAL;
                 state = BusState.INCOMPLETE;
                 clearElements();
-                return Optional.empty();
+                return false;
             }
 
             for (final DeviceBusElement neighborElement : elementNeighbors.get()) {
-                if (neighborElement != null && closed.add(neighborElement)) {
-                    open.add(neighborElement);
-                    optionals.put(neighborElement, neighborElement);
+                if (neighborElement != null && bfsClosed.add(neighborElement)) {
+                    bfsOpen.add(neighborElement);
+                    collectedElements.add(neighborElement);
                 }
             }
 
-            if (closed.size() > MAX_BUS_ELEMENT_COUNT) {
+            if (bfsClosed.size() > MAX_BUS_ELEMENT_COUNT) {
                 scanDelay = BAD_CONFIGURATION_RETRY_INTERVAL;
                 state = BusState.TOO_COMPLEX;
                 clearElements();
-                return Optional.empty();
+                return false;
             }
         }
 
-        return Optional.of(optionals);
+        return true;
     }
 
     private Set<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {
-        final Set<DeviceBusElement> removedElements = new HashSet<>(elements);
-        removedElements.removeAll(newElements);
-
+        removedElements.clear();
+        for (final DeviceBusElement element : elements) {
+            if (!newElements.contains(element)) {
+                removedElements.add(element);
+            }
+        }
         elements.removeAll(removedElements);
 
         for (final DeviceBusElement removedElement : removedElements) {
@@ -145,10 +151,12 @@ final class BusElementManager {
             }
         }
 
-        final Set<DeviceBusElement> addedElements = new HashSet<>(newElements);
-        addedElements.removeAll(elements);
-
-        elements.addAll(addedElements);
+        final Set<DeviceBusElement> addedElements = new HashSet<>();
+        for (final DeviceBusElement element : newElements) {
+            if (elements.add(element)) {
+                addedElements.add(element);
+            }
+        }
 
         for (final DeviceBusElement element : addedElements) {
             element.addController(controller);
@@ -157,18 +165,18 @@ final class BusElementManager {
     }
 
     private boolean checkOtherBusControllers() {
-        final Set<DeviceBusController> controllers = new HashSet<>();
+        otherControllers.clear();
         for (final DeviceBusElement element : elements) {
-            controllers.addAll(element.getControllers());
+            otherControllers.addAll(element.getControllers());
         }
 
-        controllers.remove(controller);
+        otherControllers.remove(controller);
 
-        if (controllers.isEmpty()) {
+        if (otherControllers.isEmpty()) {
             return false;
         }
 
-        for (final DeviceBusController otherController : controllers) {
+        for (final DeviceBusController otherController : otherControllers) {
             otherController.scheduleBusScan(DeviceBusController.ScanReason.BUS_ERROR);
         }
 
