@@ -29,8 +29,10 @@ public final class SavedCursor {
     public static void reset(final Terminal terminal) {
         terminal.savedX = 0;
         terminal.savedY = 0;
+        terminal.savedAutowrapPending = false;
         terminal.altSavedX = 0;
         terminal.altSavedY = 0;
+        terminal.altSavedAutowrapPending = false;
         terminal.savedStyle = TerminalColors.DEFAULT_STYLE;
         terminal.savedUseG0 = true;
         terminal.savedDrawingModeG0 = TerminalColors.DrawingMode.ASCII;
@@ -63,6 +65,7 @@ public final class SavedCursor {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             terminal.altSavedX = terminal.x;
             terminal.altSavedY = terminal.y;
+            terminal.altSavedAutowrapPending = terminal.autowrapPending;
             terminal.altSavedStyle = terminal.style;
             terminal.altSavedUseG0 = terminal.useG0;
             terminal.altSavedDrawingModeG0 = terminal.drawingModeG0;
@@ -77,6 +80,7 @@ public final class SavedCursor {
         } else {
             terminal.savedX = terminal.x;
             terminal.savedY = terminal.y;
+            terminal.savedAutowrapPending = terminal.autowrapPending;
             terminal.savedStyle = terminal.style;
             terminal.savedUseG0 = terminal.useG0;
             terminal.savedDrawingModeG0 = terminal.drawingModeG0;
@@ -93,12 +97,16 @@ public final class SavedCursor {
 
     /**
      * Restores the cursor position and rendition from the saved-state fields for the active
-     * buffer, clearing {@code autowrapPending}. Used by DECRC (ESC 8), SCORC (CSI u), and
-     * SAVE_CURSOR / SAVE_CLEAR_AND_SWITCH (DECRST ?1047/?1049). Restores the full saved state
-     * (matching xterm's DECSC_FLAGS scope), not position-only.
+     * buffer. Used by DECRC (ESC 8), SCORC (CSI u), and SAVE_CURSOR / SAVE_CLEAR_AND_SWITCH
+     * (DECRST ?1047/?1049). Restores the full saved state (matching xterm's DECSC_FLAGS scope),
+     * not position-only. The saved {@code autowrapPending} is restored AFTER the cursor move
+     * (via {@code setCursorPos}), mirroring xterm's {@code CursorRestoreFlags} which sets
+     * {@code do_wrap = sc->wrap_flag} after {@code CursorSet}/ResetWrap — so a cursor that was
+     * saved mid-pending-wrap restores still pending. {@code lastPrintedChar} is intentionally
+     * not saved (xterm's {@code lastchar} is not part of {@code CursorSave2}); the
+     * {@code setCursorPos} clears it, as a restored cursor has no preceding graphic char.
      */
     public static void restore(final Terminal terminal) {
-        terminal.autowrapPending = false; // a cursor move clears the pending wrap (xterm ResetWrap)
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             terminal.setCursorPos(terminal.altSavedX, terminal.altSavedY);
             terminal.style = terminal.altSavedStyle;
@@ -112,6 +120,7 @@ public final class SavedCursor {
             terminal.twoFiftySixColor = terminal.altSavedTwoFiftySixColor.copy();
             terminal.foregroundColor = terminal.altSavedForegroundColor.copy();
             terminal.backgroundColor = terminal.altSavedBackgroundColor.copy();
+            terminal.autowrapPending = terminal.altSavedAutowrapPending;
         } else {
             terminal.setCursorPos(terminal.savedX, terminal.savedY);
             terminal.style = terminal.savedStyle;
@@ -125,6 +134,7 @@ public final class SavedCursor {
             terminal.twoFiftySixColor = terminal.savedTwoFiftySixColor.copy();
             terminal.foregroundColor = terminal.savedForegroundColor.copy();
             terminal.backgroundColor = terminal.savedBackgroundColor.copy();
+            terminal.autowrapPending = terminal.savedAutowrapPending;
         }
     }
 }

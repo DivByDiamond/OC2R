@@ -1016,6 +1016,27 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void decscDecrcPreservesAutowrapPendingAcrossSaveRestore() {
+        // xterm saves/restores do_wrap as part of the cursor (CursorSave2 stores wrap_flag;
+        // CursorRestoreFlags sets do_wrap = sc->wrap_flag AFTER CursorSet/ResetWrap). So a cursor
+        // saved mid-pending-wrap must restore still pending. Pre-fix, restore cleared the
+        // pending flag (via setCursorPos) and never restored it.
+        write(terminal, "A".repeat(Terminal.WIDTH));  // fill row 0 -> autowrapPending armed
+        assertTrue(terminal.autowrapPending, "precondition: pending is armed at the last column");
+        write(terminal, ESC + "7");                  // DECSC — save (captures pending=true)
+        // Move the cursor (clears pending) to prove the restore brings pending back, not the
+        // ambient state.
+        write(terminal, CSI + "1;1H");
+        assertFalse(terminal.autowrapPending, "a cursor move clears pending before the restore");
+        write(terminal, ESC + "8");                  // DECRC — restore
+        assertTrue(terminal.autowrapPending,
+            "DECRC must restore the saved autowrap-pending flag (xterm do_wrap), not clear it");
+        // The cursor position is restored too — and pending means the cursor sits at width-1.
+        assertEquals(Terminal.WIDTH - 1, terminal.x,
+            "the restored cursor sits at the last column (pending), not the home we moved to");
+    }
+
+    @Test
     void repRepeatsLastPrintedChar() {
         // CSI b (REP) repeats the preceding printable char Ps times via putChar, so the repeats
         // advance the cursor and wrap like real input.

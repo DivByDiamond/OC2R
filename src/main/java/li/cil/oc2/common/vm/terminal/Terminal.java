@@ -79,6 +79,12 @@ public class Terminal {
     public transient int lastPrintedChar = -1;
     public int savedX;
     public int savedY;
+    /**
+     * Saved autowrap-pending flag (xterm's {@code sc->wrap_flag}), saved/restored by DECSC/DECRC
+     * and the SCOSC/SCORC pair as part of the cursor state. Restored AFTER the cursor move in
+     * {@link SavedCursor#restore}, mirroring xterm's "after CursorSet/ResetWrap" ordering.
+     */
+    public boolean savedAutowrapPending;
     public byte savedStyle;
     public boolean savedUseG0 = true;
     public int savedDrawingModeG0;
@@ -92,6 +98,7 @@ public class Terminal {
     public ColorData savedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
     public int altSavedX;
     public int altSavedY;
+    public boolean altSavedAutowrapPending;
     public byte altSavedStyle;
     public boolean altSavedUseG0 = true;
     public int altSavedDrawingModeG0;
