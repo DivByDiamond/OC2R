@@ -89,13 +89,16 @@ public final class InternetManagerImpl implements InternetManager {
 
     private void processInternetAdapter(final InternetConnectionImpl connection) {
         final InternetAdapter adapter = connection.adapter;
-        final byte[] received = connection.incoming.get();
-        if (received != null) {
+        byte[] received;
+        while ((received = connection.incoming.poll()) != null) {
             adapter.sendEthernetFrame(received);
         }
-        final byte[] sending = adapter.receiveEthernetFrame();
-        if (sending != null) {
-            connection.outcoming.put(sending);
+        byte[] sending;
+        while ((sending = adapter.receiveEthernetFrame()) != null) {
+            if (!connection.outcoming.offer(sending)) {
+                LOGGER.trace("Outcoming frame queue is full, dropping frame");
+                break;
+            }
         }
     }
 

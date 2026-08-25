@@ -2,6 +2,7 @@ package li.cil.oc2.common.inet.internet.connection;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
@@ -14,8 +15,13 @@ import org.apache.logging.log4j.Logger;
 public final class InternetConnectionImpl implements InternetConnection {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public final PendingFrame incoming = new PendingFrame();
-    public final PendingFrame outcoming = new PendingFrame();
+    /** Number of ethernet frames buffered per direction between server and internet threads. */
+    public static final int FRAME_QUEUE_CAPACITY = 64;
+
+    public final ArrayBlockingQueue<byte[]> incoming =
+            new ArrayBlockingQueue<>(FRAME_QUEUE_CAPACITY);
+    public final ArrayBlockingQueue<byte[]> outcoming =
+            new ArrayBlockingQueue<>(FRAME_QUEUE_CAPACITY);
 
     private final ExecutorService executor;
     private final ByteBuffer receiveBuffer = ByteBuffer.allocate(LinkLocalLayer.FRAME_SIZE);
@@ -44,15 +50,18 @@ public final class InternetConnectionImpl implements InternetConnection {
 
     public void process() {
         try {
-            final byte[] outFrame = outcoming.get();
-            if (outFrame != null) {
+            byte[] outFrame;
+            while ((outFrame = outcoming.poll()) != null) {
                 ethernet.sendEthernetFrame(ByteBuffer.wrap(outFrame));
             }
-            receiveBuffer.clear();
-            if (ethernet.receiveEthernetFrame(receiveBuffer)) {
+            while (!isStopped && incoming.remainingCapacity() > 0) {
+                receiveBuffer.clear();
+                if (!ethernet.receiveEthernetFrame(receiveBuffer)) {
+                    break;
+                }
                 final byte[] inFrame = new byte[receiveBuffer.remaining()];
                 receiveBuffer.get(inFrame);
-                incoming.put(inFrame);
+                incoming.add(inFrame);
             }
         } catch (final Exception e) {
             LOGGER.error("Uncaught exception", e);
