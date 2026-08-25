@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.network.vxlan;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
@@ -40,8 +39,6 @@ public final class VxlanBlockEntity extends ModBlockEntity
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final ReentrantLock lock = new ReentrantLock();
-
     /** Per-hop cost subtracted from the time-to-live when flooding frames to neighbors. */
     private static final int TTL_COST = 1;
 
@@ -50,8 +47,13 @@ public final class VxlanBlockEntity extends ModBlockEntity
     private int frameCount;
     private long lastGameTime;
 
-    /** Inbound frames delivered by the tunnel socket thread; bounded to cap memory between ticks. */
-    private final Queue<byte[]> packetQueue = new ArrayBlockingQueue<>(32);
+    /**
+     * Inbound frames delivered by the tunnel socket thread; capacity is configurable
+     * ({@code vxlanPacketQueueCapacity}) and frames beyond it are dropped by the producer.
+     * {@link ArrayBlockingQueue} is thread-safe, so no external lock is needed (todo.md §38 Ш5).
+     */
+    private final Queue<byte[]> packetQueue =
+            new ArrayBlockingQueue<>(Config.vxlanPacketQueueCapacity);
 
     private final AdjacentBlockInterfaces adjacentInterfaces = new AdjacentBlockInterfaces(this);
 
@@ -111,14 +113,19 @@ public final class VxlanBlockEntity extends ModBlockEntity
         if (tunnelInterface != null) {
             // Drain frames received over the tunnel since the last tick and inject them
             // into the local network, flooding to every neighbor except the tunnel itself.
-            lock.lock();
-            try {
-
-                packetQueue.forEach(packet -> writeEthernetFrame(tunnelInterface, packet, 255));
-                packetQueue.clear();
-            
-            } finally {
-                lock.unlock();
+            // poll-drain instead of forEach+clear: a frame arriving mid-drain would
+            // otherwise be cleared without ever being processed.
+            byte[] packet;
+            while ((packet = packetQueue.poll()) != null) {
+                writeEthernetFrame(tunnelInterface, packet, 255);
+            }
+            if (tunnelInterface instanceof TunnelManager.TunnelInterface tunnel
+                    && tunnel.droppedFrames.get() > 0) {
+                LOGGER.warn(
+                        "VXLAN hub dropped {} inbound frames (queue capacity {}, consider"
+                                + " raising vxlanPacketQueueCapacity)",
+                        tunnel.droppedFrames.getAndSet(0),
+                        Config.vxlanPacketQueueCapacity);
             }
         } else {
             LOGGER.warn("VXLAN block is unregistered upstream: VTI={}", vti);

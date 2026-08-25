@@ -11,6 +11,7 @@ public class VXLANSpec {
     public final ModConfigSpec.IntValue remotePort;
     public final ModConfigSpec.ConfigValue<String> bindHost;
     public final ModConfigSpec.IntValue bindPort;
+    public final ModConfigSpec.IntValue packetQueueCapacity;
 
     public VXLANSpec(ModConfigSpec.Builder builder) {
         enable =
@@ -32,6 +33,12 @@ public class VXLANSpec {
         bindPort =
                 builder.comment("The port to bind VXLAN to")
                         .defineInRange("bindPort", 4789, 1, 65535);
+
+        packetQueueCapacity =
+                builder.comment(
+                                "How many inbound frames are buffered per VXLAN hub between game"
+                                        + " ticks; frames arriving beyond this are dropped")
+                        .defineInRange("packetQueueCapacity", 32, 8, 4096);
     }
 
     public void loadValues() {
@@ -40,5 +47,6 @@ public class VXLANSpec {
         Config.remotePort = remotePort.get();
         Config.bindHost = bindHost.get();
         Config.bindPort = bindPort.get();
+        Config.vxlanPacketQueueCapacity = packetQueueCapacity.get();
     }
 }

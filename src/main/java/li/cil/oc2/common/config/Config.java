@@ -75,6 +75,7 @@ public final class Config {
     public static boolean enable = false;
     public static String remoteHost = DEFAULT_VXLAN_HOST;
     public static int remotePort = 4789;
+    public static int vxlanPacketQueueCapacity = 32;
     public static String bindHost = DEFAULT_VXLAN_HOST;
     public static int bindPort = 4789;
     public static boolean internetCardEnabled = false;
