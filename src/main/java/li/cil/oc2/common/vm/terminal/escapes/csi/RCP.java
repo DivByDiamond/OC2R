@@ -1,12 +1,14 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.SavedCursor;
 
 /**
- * RCP — Restore Cursor Position ({@code CSI Ps u}), the ANSI alias of DECRC's cursor restore.
- * Restores the cursor column/row saved by SCP ({@code CSI s} / SCOSC, handled in CH6) or DECSC.
- * Per xterm's SCORC this restores the cursor position only (not the rendition that DECRC also
- * restores); the saved coordinates are shared with DECSC/DECRC.
+ * RCP — Restore Cursor Position ({@code CSI Ps u}), the ANSI alias of DECRC. Restores the full
+ * saved cursor state (position + rendition) saved by SCP ({@code CSI s} / SCOSC) or DECSC — the
+ * same scope as DECRC, matching xterm-410 where SCORC and DECRC both use the {@code DECSC_FLAGS}
+ * restore (not position-only). Routes through {@link SavedCursor#restore} so SCORC and DECRC
+ * cannot diverge.
  */
 public class RCP extends CSISequenceHandler {
     public RCP(final Terminal terminal) {
@@ -20,11 +22,6 @@ public class RCP extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.autowrapPending = false; // restoring the cursor clears any pending wrap
-        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            terminal.setCursorPos(terminal.altSavedX, terminal.altSavedY);
-        } else {
-            terminal.setCursorPos(terminal.savedX, terminal.savedY);
-        }
+        SavedCursor.restore(terminal);
     }
 }

@@ -983,15 +983,36 @@ public class TerminalBufferTest {
 
     @Test
     void rcpRestoresCursorSavedByScp() {
-        // CSI u (RCP) restores the cursor saved by CSI s (SCOSC, handled in CH6). Save at one
-        // position, move elsewhere, RCP brings the cursor back.
+        // CSI u (RCP) restores the full saved state (position + rendition) saved by CSI s
+        // (SCOSC) — the same scope as DECRC, matching xterm-410 (SCORC uses DECSC_FLAGS, not
+        // position-only). Save position AND a color, change both, RCP brings both back.
         write(terminal, CSI + "6;12H");  // row 6, col 12 (x=11, y=5)
-        write(terminal, CSI + "s");      // SCP — save cursor
+        write(terminal, CSI + "31m");    // fg = red
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        write(terminal, CSI + "s");      // SCOSC — save cursor (full state)
         write(terminal, CSI + "1;1H");   // move to home (x=0, y=0)
-        assertEquals(0, terminal.x);
-        write(terminal, CSI + "u");      // RCP — restore
+        write(terminal, CSI + "32m");    // change fg to green
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        write(terminal, CSI + "u");      // SCORC — restore
         assertEquals(11, terminal.x, "RCP restores the saved column");
         assertEquals(5, terminal.y, "RCP restores the saved row");
+        // The saved rendition must round-trip, not just position: after setting green post-save,
+        // RCP restores the saved SIXTEEN_COLOR mode (and its palette copy). Foreground color
+        // mode is the field that actually changes across SGR 31/32 and round-trips through
+        // SavedCursor, so it's the meaningful check that RCP restores rendition, not position-only.
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
+            "RCP restores the saved foreground color mode (rendition), not just position");
+    }
+
+    @Test
+    void scpAndDecscShareSavedStateSoRcpRestoresEither() {
+        // SCP (CSI s) and DECSC (ESC 7) save to the same state via the unified SavedCursor, so
+        // a save by one and a restore by the other's alias must work.
+        write(terminal, CSI + "4;8H" + ESC + "7");   // DECSC at row 4 col 8
+        write(terminal, CSI + "1;1H");
+        write(terminal, CSI + "u");                   // RCP (the SCORC alias) restores it
+        assertEquals(7, terminal.x, "DECSC save + RCP restore: column");
+        assertEquals(3, terminal.y, "DECSC save + RCP restore: row");
     }
 
     @Test

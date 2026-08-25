@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.SavedCursor;
 import li.cil.oc2.common.vm.terminal.modes.ModeTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,8 +24,7 @@ public class CH6
         } else if (argsCount == 2) { // DECSLRM
             LOGGER.warn("DECSLRM not implemented");
         } else if (argsCount == 0 && !terminal.currentPrivateModeState.DECLRMM) { // SCOSC
-            terminal.savedX = terminal.x;
-            terminal.savedY = terminal.y;
+            SavedCursor.save(terminal);
         }
     }
 

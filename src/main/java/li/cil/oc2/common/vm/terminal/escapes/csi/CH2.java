@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.SavedCursor;
 import li.cil.oc2.common.vm.terminal.modes.ModeTable;
 import li.cil.oc2.common.vm.terminal.modes.impl.ImplementedPrivateModes;
 
@@ -153,12 +154,6 @@ public class CH2 extends CSISequenceHandler {
     }
 
     private static void saveCursorPosition(final Terminal terminal) {
-        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            terminal.altSavedX = terminal.x;
-            terminal.altSavedY = terminal.y;
-        } else {
-            terminal.savedX = terminal.x;
-            terminal.savedY = terminal.y;
-        }
+        SavedCursor.save(terminal);
     }
 }
