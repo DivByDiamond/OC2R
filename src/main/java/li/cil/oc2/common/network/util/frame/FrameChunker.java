@@ -9,6 +9,8 @@ import net.minecraft.core.BlockPos;
 
 public final class FrameChunker {
     public static final int MAX_CHUNK_SIZE = 256 * 1024;
+    /** Upper bound for a reassembled frame; largest real frame is 4K x 2K x 2 bytes. */
+    public static final int MAX_FRAME_SIZE = 32 * 1024 * 1024;
     private static final long PARTIAL_TIMEOUT_MS = 5_000;
 
     private FrameChunker() {}
@@ -75,6 +77,12 @@ public final class FrameChunker {
 
             if (!partial.received.get(chunkIndex)) {
                 final int from = chunkIndex * MAX_CHUNK_SIZE;
+                // Chunk payloads come from the network; anything but the exact
+                // expected size would corrupt the frame or throw here.
+                final int expectedSize = Math.min(MAX_CHUNK_SIZE, frameSize - from);
+                if (data.length != expectedSize) {
+                    return null;
+                }
                 System.arraycopy(data, 0, partial.data, from, data.length);
                 partial.received.set(chunkIndex);
             }
@@ -100,7 +108,10 @@ public final class FrameChunker {
                     && width > 0
                     && height > 0
                     && frameSize > 0
+                    && frameSize <= MAX_FRAME_SIZE
                     && chunkCount > 0
+                    && chunkCount == FrameChunker.chunkCount(frameSize)
+                    && chunkIndex >= 0
                     && chunkIndex < chunkCount;
         }
 

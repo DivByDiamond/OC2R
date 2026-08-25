@@ -82,4 +82,48 @@ class FrameChunkerTest {
             }
         }
     }
+
+    @Test
+    void negativeChunkIndexIsRejected() {
+        final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+        assertNull(
+                reassembler.offer(
+                        new BlockPos(0, 0, 0), CODEC, 32, 16, 1024, -1, 1,
+                        new byte[1024]));
+    }
+
+    @Test
+    void wrongChunkCountIsRejected() {
+        final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+        assertNull(
+                reassembler.offer(
+                        new BlockPos(0, 0, 0), CODEC, 32, 16, 1024, 0, 2,
+                        new byte[1024]));
+    }
+
+    @Test
+    void wrongChunkPayloadSizeIsRejected() {
+        final byte[] frame = new byte[640 * 480 * 2];
+        final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+        final BlockPos pos = new BlockPos(1, 2, 3);
+        final int count = FrameChunker.chunkCount(frame.length);
+        assertNull(
+                reassembler.offer(
+                        pos, CODEC, 640, 480, frame.length, 0, count,
+                        new byte[FrameChunker.MAX_CHUNK_SIZE + 1]));
+        assertNull(
+                reassembler.offer(
+                        pos, CODEC, 640, 480, frame.length, 0, count,
+                        new byte[FrameChunker.MAX_CHUNK_SIZE - 1]));
+    }
+
+    @Test
+    void oversizedFrameIsRejected() {
+        final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
+        assertNull(
+                reassembler.offer(
+                        new BlockPos(0, 0, 0), CODEC, 32, 16, Integer.MAX_VALUE, 0,
+                        FrameChunker.chunkCount(Integer.MAX_VALUE),
+                        new byte[FrameChunker.MAX_CHUNK_SIZE]));
+    }
 }
