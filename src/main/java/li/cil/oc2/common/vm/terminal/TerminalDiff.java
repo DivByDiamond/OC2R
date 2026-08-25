@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal;
 
 import io.netty.buffer.ByteBuf;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -21,13 +22,32 @@ import net.minecraft.network.codec.StreamCodec;
  * only the changed buffer rows to clients ({@link Snapshot}). The client applies rows into
  * its local {@link Terminal} copy and re-renders; it never parses UART bytes itself.
  *
- * <p>Row payload (per cell, little-endian): int codepoint, int R, int G, int B, int mode
- * ordinal, byte style — 17 bytes per cell. Color channels keep their palette-index meaning
- * for non-truecolor modes (the renderer resolves them against its palettes).
+ * <p>Row payload is a sequence of runs of identical cells. Each run is an unsigned varint
+ * run length followed by one cell: varint codepoint (masked to 21 bits, full Unicode),
+ * attribute byte, then optional fields selected by attribute bits. Colors are packed into
+ * 27 bits (3-bit mode ordinal low, then 8-bit R/G/B — matching the palette-index meaning
+ * for non-truecolor modes that {@link ColorData#toInt()} resolves against) and emitted as
+ * varints only when they differ from the defaults; a zero style is implied. A typical
+ * single-character echo therefore costs a handful of bytes per changed row instead of the
+ * former fixed 37 bytes per cell.
  */
 public final class TerminalDiff {
-    // int codepoint + 2 × ColorData (R,G,B,mode) + byte style.
-    private static final int CELL_BYTES = 37;
+    // Attribute byte: which non-default fields follow the codepoint.
+    private static final int ATTR_FG_EXPLICIT = 1;
+    private static final int ATTR_BG_EXPLICIT = 1 << 1;
+    private static final int ATTR_STYLE_EXPLICIT = 1 << 2;
+
+    // Codepoints are Unicode (21 bits); higher bits cannot occur and are masked out.
+    private static final int CODEPOINT_MASK = 0x1FFFFF;
+
+    // 3-byte codepoint varint + attribute byte + two 4-byte color varints + style byte.
+    private static final int MAX_CELL_BYTES = 13;
+    // Varint run length for the widest supported row.
+    private static final int MAX_RUN_HEADER_BYTES = 5;
+
+    private static final int DEFAULT_FOREGROUND_PACKED = packColor(TerminalColors.DEFAULT_FOREGROUND_COLOR);
+    private static final int DEFAULT_BACKGROUND_PACKED = packColor(TerminalColors.DEFAULT_BACKGROUND_COLOR);
+
     private static final ColorMode MODE_ORDINAL_FALLBACK = ColorMode.TRUE_COLOR;
 
     /**
@@ -164,28 +184,106 @@ public final class TerminalDiff {
     }
 
     private static byte[] serializeRow(final Terminal terminal, final boolean alt, final int row) {
-        final ByteBuffer buf = ByteBuffer.allocate(terminal.width * CELL_BYTES).order(ByteOrder.LITTLE_ENDIAN);
+        final ByteBuffer buf = ByteBuffer.allocate(
+                        terminal.width * (MAX_CELL_BYTES + MAX_RUN_HEADER_BYTES))
+                .order(ByteOrder.LITTLE_ENDIAN);
         final int base = row * terminal.width;
-        for (int x = 0; x < terminal.width; x++) {
+        final int cells = Math.max(0, Math.min(terminal.width, terminal.buffer.length - base));
+        int x = 0;
+        while (x < cells) {
             final int index = base + x;
-            if (index >= terminal.buffer.length) break; // width race guard
-            final int ch = alt ? terminal.altBuffer[index] : terminal.buffer[index];
-            final ColorData fg = alt ? terminal.altColors[index] : terminal.colors[index];
-            final ColorData bg = alt ? terminal.altColorsBackground[index] : terminal.colorsBackground[index];
-            final byte style = alt ? terminal.altStyles[index] : terminal.styles[index];
-            buf.putInt(ch);
-            putColor(buf, fg);
-            putColor(buf, bg);
-            buf.put(style);
+            final Cell cell =
+                    readCell(terminal, alt, index); // NOPMD: per-cell state
+            int run = 1;
+            while (x + run < cells && cell.equals(readCell(terminal, alt, base + x + run))) {
+                run++;
+            }
+            putVarInt(buf, run);
+            writeCell(buf, cell);
+            x += run;
         }
-        return buf.array();
+        return Arrays.copyOf(buf.array(), buf.position());
     }
 
-    private static void putColor(final ByteBuffer buf, final ColorData color) {
-        buf.putInt(color.R);
-        buf.putInt(color.G);
-        buf.putInt(color.B);
-        buf.putInt(color.Mode.ordinal());
+    private static Cell readCell(final Terminal terminal, final boolean alt, final int index) {
+        if (alt) {
+            return new Cell(
+                    terminal.altBuffer[index],
+                    terminal.altColors[index],
+                    terminal.altColorsBackground[index],
+                    terminal.altStyles[index]);
+        }
+        return new Cell(
+                terminal.buffer[index], terminal.colors[index], terminal.colorsBackground[index], terminal.styles[index]);
+    }
+
+    private static void writeCell(final ByteBuffer buf, final Cell cell) {
+        putVarInt(buf, cell.codepoint() & CODEPOINT_MASK);
+        final int fgPacked = packColor(cell.foreground());
+        final int bgPacked = packColor(cell.background());
+        int attr = 0;
+        if (fgPacked != DEFAULT_FOREGROUND_PACKED) attr |= ATTR_FG_EXPLICIT;
+        if (bgPacked != DEFAULT_BACKGROUND_PACKED) attr |= ATTR_BG_EXPLICIT;
+        if (cell.style() != TerminalColors.DEFAULT_STYLE) attr |= ATTR_STYLE_EXPLICIT;
+        buf.put((byte) attr);
+        if ((attr & ATTR_FG_EXPLICIT) != 0) putVarInt(buf, fgPacked);
+        if ((attr & ATTR_BG_EXPLICIT) != 0) putVarInt(buf, bgPacked);
+        if ((attr & ATTR_STYLE_EXPLICIT) != 0) buf.put(cell.style());
+    }
+
+    /** Packs mode ordinal (3 bits) plus 8-bit R/G/B into a single varint-friendly value. */
+    private static int packColor(final ColorData color) {
+        return (color.Mode.ordinal() & 0x7)
+                | (color.R & 0xFF) << 3
+                | (color.G & 0xFF) << 11
+                | (color.B & 0xFF) << 19;
+    }
+
+    private static ColorData unpackColor(final int packed) {
+        final ColorMode[] modes = ColorMode.values();
+        final int ordinal = packed & 0x7;
+        final ColorMode mode = ordinal < modes.length ? modes[ordinal] : MODE_ORDINAL_FALLBACK;
+        return new ColorData((packed >>> 3) & 0xFF, (packed >>> 11) & 0xFF, (packed >>> 19) & 0xFF, mode);
+    }
+
+    private static void putVarInt(final ByteBuffer buf, int value) {
+        while ((value & ~0x7F) != 0) {
+            buf.put((byte) ((value & 0x7F) | 0x80));
+            value >>>= 7;
+        }
+        buf.put((byte) value);
+    }
+
+    private static int getVarInt(final ByteBuffer buf) {
+        int value = 0;
+        for (int shift = 0; shift <= 28; shift += 7) {
+            final byte b = buf.get();
+            value |= (b & 0x7F) << shift;
+            if ((b & 0x80) == 0) {
+                return value;
+            }
+        }
+        throw new BufferUnderflowException();
+    }
+
+    /** Immutable snapshot of one screen cell used for run detection and serialization. */
+    private record Cell(int codepoint, ColorData foreground, ColorData background, byte style) {
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (!(obj instanceof final Cell other)) {
+                return false;
+            }
+            return codepoint == other.codepoint
+                    && style == other.style
+                    && packColor(foreground) == packColor(other.foreground)
+                    && packColor(background) == packColor(other.background);
+        }
+
+        @Override
+        public int hashCode() {
+            return codepoint ^ (packColor(foreground) * 31) ^ (packColor(background) * 961) ^ style;
+        }
     }
 
     /** Applies a snapshot to a local (client-side) terminal copy and marks everything dirty. */
@@ -251,19 +349,40 @@ public final class TerminalDiff {
         }
         final ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         final int base = row * terminal.width;
-        for (int x = 0; x < terminal.width && buf.remaining() >= CELL_BYTES; x++) {
-            final int index = base + x;
-            if (index >= terminal.buffer.length) break;
-            deserializeCell(terminal, alt, index, buf);
+        try {
+            int x = 0;
+            while (x < terminal.width && buf.hasRemaining()) {
+                final int run = getVarInt(buf);
+                if (run < 1) {
+                    return; // malformed run length: stop rather than desync
+                }
+                final int ch = getVarInt(buf);
+                final int attr = buf.get() & 0xFF;
+                final ColorData fg =
+                        (attr & ATTR_FG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_FOREGROUND_COLOR.copy();
+                final ColorData bg =
+                        (attr & ATTR_BG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+                final byte style =
+                        (attr & ATTR_STYLE_EXPLICIT) != 0 ? buf.get() : TerminalColors.DEFAULT_STYLE;
+                for (int i = 0; i < run && x < terminal.width; i++, x++) {
+                    final int index = base + x;
+                    if (index >= terminal.buffer.length) return; // width race guard
+                    storeCell(terminal, alt, index, ch, fg, bg, style);
+                }
+            }
+        } catch (final BufferUnderflowException e) {
+            // Truncated row payload: keep whatever cells were decoded.
         }
     }
 
-    private static void deserializeCell(
-            final Terminal terminal, final boolean alt, final int index, final ByteBuffer buf) {
-        final int ch = buf.getInt();
-        final ColorData fg = readColor(buf); // NOPMD: per-cell state
-        final ColorData bg = readColor(buf); // NOPMD: per-cell state
-        final byte style = buf.get();
+    private static void storeCell(
+            final Terminal terminal,
+            final boolean alt,
+            final int index,
+            final int ch,
+            final ColorData fg,
+            final ColorData bg,
+            final byte style) {
         if (alt) {
             terminal.altBuffer[index] = ch;
             terminal.altColors[index] = fg;
@@ -275,17 +394,6 @@ public final class TerminalDiff {
             terminal.colorsBackground[index] = bg;
             terminal.styles[index] = style;
         }
-    }
-
-    private static ColorData readColor(final ByteBuffer buf) {
-        final int r = buf.getInt();
-        final int g = buf.getInt();
-        final int b = buf.getInt();
-        final int ordinal = buf.getInt();
-        final ColorMode[] modes = ColorMode.values();
-        final ColorMode mode =
-                ordinal >= 0 && ordinal < modes.length ? modes[ordinal] : MODE_ORDINAL_FALLBACK;
-        return new ColorData(r, g, b, mode); // NOPMD: per-cell state
     }
 
     public static final StreamCodec<ByteBuf, Snapshot> STREAM_CODEC =

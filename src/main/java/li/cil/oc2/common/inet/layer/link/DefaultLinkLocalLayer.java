@@ -22,7 +22,10 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private static final short MAC_PREFIX = 0x5ed1;
 
+    private static final int IP_VER4 = 4;
     private static final int IP_VER6 = 6;
+    // Offset of the source address field inside a fixed-header IPv4 packet.
+    private static final int IPv4_SOURCE_OFFSET = 12;
 
     private static final String MAC_ADDRESS_TAG = "MACAddress";
     private static final String IPv4_ADDRESS_TAG = "IPv4Address";
@@ -166,7 +169,35 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             }
         } else {
             LOGGER.trace("Network message received");
+            // Anti-spoofing (todo.md §39 С3): the guest may put any address into the IPv4
+            // source field, so outbound packets are only forwarded when the source matches
+            // the address the card itself claimed during ARP; anything else is dropped
+            // silently to prevent impersonating other hosts out of the tunnel.
+            if (protocol == NetworkLayer.PROTOCOL_IPv4 && hasSpoofedSource(frame)) {
+                LOGGER.warn("Dropped outbound IPv4 packet with spoofed source address");
+                return;
+            }
             networkLayer.sendPacket(protocol, frame);
         }
+    }
+
+    /**
+     * Checks the IPv4 header's source address (offset 12..16) against {@link #cardIpAddress}.
+     * Packets sent before any ARP exchange are dropped as well: without a claimed address
+     * there is nothing to verify the source against.
+     */
+    private boolean hasSpoofedSource(final ByteBuffer frame) {
+        if (cardIpAddress == -1) {
+            return true;
+        }
+        final int position = frame.position();
+        final boolean ipv4 = Byte.toUnsignedInt(frame.get(position)) >>> 4 == IP_VER4;
+        if (!ipv4) {
+            // Malformed or non-IPv4 payload inside an IPv4 ethertype: let the network
+            // layer's own validation deal with it.
+            return false;
+        }
+        final int sourceAddress = frame.getInt(position + IPv4_SOURCE_OFFSET);
+        return sourceAddress != cardIpAddress;
     }
 }

@@ -1079,9 +1079,10 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
   (`DiskDriveBlockEntity.getUpdateTag:133-136`), VS2-fallback шлёт ВСЕМ игрокам во всех
   измерениях (`NetworkMessages.java:39-63`), chunk==null теряет сообщение (`ComputerTerminalManager.java:102-104`),
   handleUpdateTag без requestModelDataUpdate (`BusCableBlockEntity.java:117-128`).
-- [ ] **Т1 — TerminalDiff CELL_BYTES=37** (`TerminalDiff.java:30`, javadoc «17 bytes» врёт):
-  эхо одного символа ≈ вся строка 80×37 ≈ 2990 Б, до 20/с → ~60 КБ/с на активный терминал.
-  Фикс: упаковка ячейки до 4–6 Б (varint codepoint, палитра/RGB15, style битфлагами) или span-дельты → <10 КБ/с.
+- [x] **- [x] **Т1 — TerminalDiff упаковка ячеек** (уже реализовано в коде, помечено при
+  верификации): формат переписан — varint-кодпойнт + attr-байт с опциональными полями
+  цветов/style + RLE-раны одинаковых ячеек; одиночное эхо ≈ несколько байт на строку
+  вместо фиксированных 37Б на ячейку (javadoc TerminalDiff, TerminalDiffTest).
 - MultipartMessage: ключ починен; MAX_PAYLOAD_SIZE=8КБ при лимите NeoForge 1МБ — импорт 512КБ = 64 пакета;
   оверхед заголовков <1% (ок). enqueueWork в SoundCardBeep/Pcm — избыточен, но не баг.
 
