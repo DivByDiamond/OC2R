@@ -93,7 +93,7 @@ public final class Config {
     public static List<String> allowedHosts = List.of();
     public static String defaultNameServer = DEFAULT_NAME_SERVER;
     public static boolean useSynchronisedNAT = false;
-    public static int streamBufferSize = 2000;
+    public static int streamBufferSize = 32 * 1024;
     public static int tcpRetransmissionTimeoutMs = 2 * 1000;
 
     public static GUISpec.CaptureInputMode captureInputMode = GUISpec.CaptureInputMode.PER_BLOCK;

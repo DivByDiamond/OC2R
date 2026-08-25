@@ -86,7 +86,11 @@ public class InternetCardSpec {
 
         useSynchronisedNAT = builder.define("useSynchronisedNAT", false);
 
-        streamBufferSize = builder.defineInRange("streamBufferSize", 2000, 1, Integer.MAX_VALUE);
+        streamBufferSize =
+                builder.comment(
+                                "Size of the TCP stream send/receive buffers in bytes",
+                                "Larger buffers allow higher throughput at the cost of memory")
+                        .defineInRange("streamBufferSize", 32 * 1024, 1, Integer.MAX_VALUE);
 
         tcpRetransmissionTimeoutMs =
                 builder.defineInRange("tcpRetransmissionTimeoutMs", 2000, 1, Integer.MAX_VALUE);
