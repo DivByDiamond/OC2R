@@ -53,19 +53,30 @@ public class InternetCardSpec {
         deniedHosts =
                 builder.comment(
                                 "A list of hosts (IPs) that VMs are not allowed to access",
-                                "By default all local network address are disallowed, we recommend"
-                                        + " leaving it this way",
+                                "By default all local, link-local and reserved address ranges are"
+                                        + " disallowed; we recommend leaving it this way",
+                                "169.254.0.0/16 also blocks cloud-metadata services (e.g."
+                                        + " 169.254.169.254) reachable from publicly hosted servers",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
-                                        + " will occur")
+                                        + " will occur",
+                                "Note: hostnames are resolved once when the config loads and are"
+                                        + " therefore vulnerable to DNS rebinding; CIDR ranges are"
+                                        + " recommended over names")
                         .defineList(
                                 "deniedHosts",
                                 Arrays.asList(
+                                        "0.0.0.0/8",
                                         "127.0.0.0/8",
                                         "10.0.0.0/8",
                                         "100.64.0.0/10",
+                                        "169.254.0.0/16",
                                         "172.16.0.0/12",
                                         "192.168.0.0/16",
-                                        "224.0.0.0/4"),
+                                        "224.0.0.0/4",
+                                        "255.255.255.255/32",
+                                        "192.0.2.0/24",
+                                        "198.51.100.0/24",
+                                        "203.0.113.0/24"),
                                 String::new,
                                 obj -> obj instanceof String && !((String) obj).isBlank());
 
