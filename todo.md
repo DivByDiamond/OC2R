@@ -1178,16 +1178,12 @@ SpotBugs exclude-filter чистый (только jcodec+generated) — наш�
 IL_INFINITE_LOOP поймал бы TCP-парсер, RANGE_ARRAY_* — FrameChunker/IRM; единственная слепая зона —
 vendored jcodec (допустимо). Qodana excludes согласованы с остальными конфигами.
 
-- [ ] **Ступень A (сейчас, ~15 строк фиксов кода):**
-  1. ByteBufferFlashStorageDevice.java:110-112 — LOGGER.warn("...{}", identity, e) вместо
-     println(e.getMessage()) (сейчас теряется stack trace);
-  2. заменить 13× System.out → SLF4J LOGGER (список в §37);
-  3. PMD: удалить exclude AvoidPrintStackTrace (0 нарушений сразу) и SystemPrintln;
-     опционально GuardLogStatement + ImplicitSwitchFallThrough (предварительно прогнать ./gradlew pmdMain);
-  4. Checkstyle: снять глобальные подавления MissingSwitchDefault (:47-49) и FallThrough (:140-142)
-     с точечными // CHECKSTYLE.OFF при единичных нарушениях;
-  5. стражи рецидива в Checker: RegexpSinglelineJava id=SystemOut (`^\s*System\.(out|err)\.`)
-     и id=PrintStackTrace (`.printStackTrace\(\s*\)`).
+- [x] **Ступень A** (DONE 00a7aa7): все 5 подпунктов выполнены — 13× System.out → Log4j
+  (Log4j2, не SLF4J — по конвенции кодовой базы), ByteBufferFlashStorageDevice снова
+  логирует полный stack trace, PMD excludes AvoidPrintStackTrace/SystemPrintln удалены
+  (0 нарушений), подавления MissingSwitchDefault/FallThrough сняты (1 нарушение в
+  TerminalOutput исправлено default-веткой, FallThrough — 0), стражи RegexpSinglelineJava
+  id=SystemOut/PrintStackTrace добавлены в TreeWalker.
 - [ ] **Ступень B (failBuild для новых violations):**
   - build.gradle.kts:400,411,425 — все три isIgnoreFailures=false;
   - checkstyle.xml:8 severity=error (обязательно, иначе п.1 бессмысленен);
