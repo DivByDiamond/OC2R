@@ -14,7 +14,7 @@ public class REP extends CSISequenceHandler {
     }
 
     @Override
-    public int[] defaultParameters(final CSIState state) {
+    public int[] defaultParameters(CSIState state) {
         return new int[] {1};
     }
 
@@ -24,8 +24,7 @@ public class REP extends CSISequenceHandler {
         if (ch < 0) {
             return; // no preceding graphic char to repeat (xterm: lastchar == -1)
         }
-        final int count = args[0] <= 0 ? 1 : args[0];
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < args[0]; i++) {
             terminal.bufferWriter.putChar(ch);
         }
     }

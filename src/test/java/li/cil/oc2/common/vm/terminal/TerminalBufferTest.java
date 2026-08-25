@@ -901,6 +901,20 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void cursorMovesTreatExplicitZeroParamAsDefaultOne() {
+        // CSI 0Z (explicit 0) must behave as CBT 1, not CBT 0 — the CSIManager default-applies
+        // 0 -> 1 before the handler runs, so handlers can trust args[0] >= 1 and don't re-guard.
+        // Covers CBT/CHT/REP/CNL/CPL/VPR/HPA/HPR (all default to 1); spot-checked with CBT + CHT.
+        write(terminal, CSI + "1;25H");   // col 25 (x=24)
+        write(terminal, CSI + "0Z");      // explicit 0 -> default 1 -> CBT to col 17 (x=16)
+        assertEquals(16, terminal.x, "CSI 0Z (explicit 0) defaults to CBT 1");
+
+        write(terminal, CSI + "1;1H" + CSI + "3G");  // col 3 (x=2)
+        write(terminal, CSI + "0I");      // explicit 0 -> default 1 -> CHT to col 9 (x=8)
+        assertEquals(8, terminal.x, "CSI 0I (explicit 0) defaults to CHT 1");
+    }
+
+    @Test
     void chtMovesCursorToNextTabStop() {
         // CSI I (CHT, Cursor Forward Tabulation) moves right to the next tab stop, repeated Ps
         // times (default 1), clamping at the last column. Mirror of CBT. Default stops every 8.

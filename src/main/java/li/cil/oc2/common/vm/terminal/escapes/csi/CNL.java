@@ -12,7 +12,7 @@ public class CNL extends CSISequenceHandler {
     }
 
     @Override
-    public int[] defaultParameters(final CSIState state) {
+    public int[] defaultParameters(CSIState state) {
         return new int[] {1};
     }
 

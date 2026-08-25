@@ -12,7 +12,7 @@ public class VPR extends CSISequenceHandler {
     }
 
     @Override
-    public int[] defaultParameters(final CSIState state) {
+    public int[] defaultParameters(CSIState state) {
         return new int[] {1};
     }
 
