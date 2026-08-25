@@ -77,6 +77,19 @@ class FrameCodecTest {
         assertFalse(decoded.isPresent());
     }
 
+    @Test
+    void h264PayloadIsRawAnnexBNotZlib() {
+        final byte[] frame = solidFrame(0xF800);
+        final FrameCodec.EncodedFrame encoded = codec.encode(VideoCodec.H264, frame, 640, 480);
+        // Annex-B start code of an IDR frame, not a zlib stream header.
+        assertEquals(0, encoded.data()[0] & 0xFF);
+        assertEquals(0, encoded.data()[1] & 0xFF);
+        assertEquals(0, encoded.data()[2] & 0xFF);
+        assertEquals(1, encoded.data()[3] & 0xFF);
+        final var decoded = codec.decode(VideoCodec.H264, encoded.data(), 640, 480);
+        assertTrue(decoded.isPresent());
+    }
+
     private static byte[] solidFrame(final int pixel) {
         final byte[] frame = new byte[640 * 480 * 2];
         for (int i = 0; i < frame.length; i += 2) {

@@ -1,12 +1,8 @@
 package li.cil.oc2.common.vm.video;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Optional;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
 import li.cil.oc2.jcodec.codecs.h264.H264Encoder;
 import li.cil.oc2.jcodec.codecs.h264.encode.CQPRateControl;
@@ -53,7 +49,7 @@ public final class FrameCodec {
             return new EncodedFrame(VideoCodec.RAW, rgb565);
         }
 
-        return new EncodedFrame(VideoCodec.H264, deflate(frameData));
+        return new EncodedFrame(VideoCodec.H264, toArray(frameData));
     }
 
     public Optional<byte[]> decode(
@@ -63,17 +59,29 @@ public final class FrameCodec {
         }
 
         try {
-            final Optional<ByteBuffer> inflated = inflate(data);
-            if (inflated.isEmpty()) {
+            if (!hasAnnexBStartCode(data)) {
                 return Optional.empty();
             }
-
             final Picture yuv = Picture.create(width, height, ColorSpace.YUV420J);
-            h264Decoder.decodeFrame(inflated.get(), yuv.getData());
+            h264Decoder.decodeFrame(ByteBuffer.wrap(data), yuv.getData());
             return Optional.of(convertYuvToRgb565(yuv, width, height));
         } catch (final Exception ignored) {
             return Optional.empty();
         }
+    }
+
+    private static boolean hasAnnexBStartCode(final byte[] data) {
+        if (data.length < 4) {
+            return false;
+        }
+        return (data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 1)
+                || (data[0] == 0 && data[1] == 0 && data[2] == 1);
+    }
+
+    private static byte[] toArray(final ByteBuffer buffer) {
+        final byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return bytes;
     }
 
     private static Picture ensurePicture(
@@ -82,40 +90,6 @@ public final class FrameCodec {
             return Picture.create(width, height, ColorSpace.YUV420J);
         }
         return current;
-    }
-
-    private static byte[] deflate(final ByteBuffer input) {
-        final Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
-        deflater.setInput(input);
-        deflater.finish();
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final byte[] buffer = new byte[8192];
-        while (!deflater.finished()) {
-            final int length = deflater.deflate(buffer);
-            out.write(buffer, 0, length);
-        }
-        deflater.end();
-        return out.toByteArray();
-    }
-
-    private static Optional<ByteBuffer> inflate(final byte[] data) {
-        final Inflater inflater = new Inflater();
-        inflater.setInput(data);
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final byte[] buffer = new byte[8192];
-        try {
-            while (!inflater.finished()) {
-                final int length = inflater.inflate(buffer);
-                if (length == 0) {
-                    break;
-                }
-                out.write(buffer, 0, length);
-            }
-            inflater.end();
-            return Optional.of(ByteBuffer.wrap(out.toByteArray()));
-        } catch (final DataFormatException e) {
-            return Optional.empty();
-        }
     }
 
     private static byte[] convertYuvToRgb565(
