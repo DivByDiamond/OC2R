@@ -109,8 +109,12 @@ public final class DefaultSessionLayer implements SessionLayer {
             try {
                 final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
                 assert stream != null;
-                final int read = channel.read(stream);
-                LOGGER.trace("Read from real world: {}", read);
+                // Non-blocking channel: read until EAGAIN (0), end of stream (-1)
+                // or the session buffer is full to make use of the whole window.
+                int read;
+                while ((read = channel.read(stream)) > 0) {
+                    LOGGER.trace("Read from real world: {}", read);
+                }
                 if (read == -1) {
                     SessionChannelHelper.closeSession(session);
                 }
@@ -179,7 +183,12 @@ public final class DefaultSessionLayer implements SessionLayer {
                 case ESTABLISHED -> {
                     final SocketChannel channel = SessionChannelHelper.getChannel(session);
                     assert data != null;
-                    channel.write(data);
+                    // Non-blocking channel: write until the buffer is drained or EAGAIN (0).
+                    while (data.hasRemaining()) {
+                        if (channel.write(data) == 0) {
+                            break;
+                        }
+                    }
                 }
                 case FINISH, EXPIRED -> {
                     SessionChannelHelper.closeSession(session);
