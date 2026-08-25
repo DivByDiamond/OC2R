@@ -918,29 +918,40 @@ Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в �
 
 ### Блокеры
 
-- [ ] **Б1 — MessageUtils.withNearbyServerBlockEntity: нет проверки дистанции** `[network/util/MessageUtils.java:31-46]`
+- [x] **Б1 — MessageUtils.withNearbyServerBlockEntity: нет проверки дистанции** (DONE f5ccb2d):
+   добавлен guard `pos.closerToCenterThan(player.position(), 8)` (консистентно с entity-check);
   Проверяется только существование чанка; ни `distanceToSqr`, ни прав на блок (сравни:
   `withNearbyServerEntity` честно делает `entity.closerThan(player, 8)`).
   Клиент шлёт `OpenComputerTerminalMessage`/`ComputerPowerMessage`/`KeyboardInputMessage`
   с любым BlockPos загруженного чанка → открытие терминала/выключение/ввод клавиатуры
   ЧУЖОГО компьютера на дистанции. Фикс: `pos.closerToCenterThan(player.position(), LIMIT)`.
-- [ ] **Б2 — Инъекция файлов между игроками через импорт**
+- [x] **Б2 — Инъекция файлов между игроками через импорт** (DONE 6df1e09):
+   авторизация по request.PendingPlayers (чужой message больше не потребляет запрос),
+   nextImportId++ под локом, серверный лимит MAX_TRANSFERRED_FILE_SIZE, санитизация
+   имени (path-компоненты/управляющие символы/>255 — отбрасываются) + тесты;
   `[network/message/file/ImportedFileMessage.java:35-37]` — handler не сверяет отправителя с
   `request.PendingPlayers`, без лимита размера, без санитизации имени; id последовательные
   (угадываемые). Плюс гонка: `[ImportFileRequestManager.java:22-24]` — `nextImportId++`
   ВНЕ lock (registerRequest = server thread, setImportedFile = Netty) → коллизии id,
   потеря импорта. Фикс: авторизация по PendingPlayers + AtomicInteger/lock + лимит + sanitize.
-- [ ] **Б3 — TcpHeader.read: бесконечный цикл / отмотка позиции → DoS сетевого потока**
+- [x] **Б3 — TcpHeader.read: бесконечный цикл / отмотка позиции** (DONE abd739e):
+   dataOffset ограничен снизу (position + MIN_HEADER_SIZE_NO_PORTS), опции длиной <2
+   или пересекающие dataOffset отклоняются с сбросом позиции; фузз-тест;
   `[inet/tcp/TcpHeader.java:33-36,70-73]` — нижней границы dataOffset нет (`> limit` только
   сверху); неизвестная опция с length 0/1 → `position += -2/-1` → вечный цикл чтения тех же
   байт (данные из РЕАЛЬНОГО интернета). Фикс: `if (size < 2) return false;` +
   `dataOffset >= position + MIN_HEADER_SIZE_NO_PORTS`.
-- [ ] **Б4 — FrameChunker.Reassembler: нет chunkIndex >= 0 и проверки data.length**
+- [x] **Б4 — FrameChunker.Reassembler: нет chunkIndex >= 0 и проверки data.length**
+   (DONE bd9711d): chunkIndex >= 0, chunkCount == chunkCount(frameSize),
+   frameSize <= 32MB (MAX_FRAME_SIZE), точная длина payload чанка + тесты;
   `[network/util/frame/FrameChunker.java:88-105]` — `chunkIndex=-1` → BitSet.get(-1);
   переполненный чанк → AIOOBE в arraycopy; `frameSize=Integer.MAX_VALUE` → OOM клиента.
   Данные приходят по сети (MonitorFramebufferMessage). Фикс: `chunkIndex >= 0`;
   `data.length == min(MAX_CHUNK_SIZE, frameSize - from)`; верхний предел frameSize.
-- [ ] **Б5 — IntegerSpace.put оставляет перекрывающиеся диапазоны** `[util/misc/IntegerSpace.java:21-23]`
+- [x] **Б5 — IntegerSpace.put оставляет перекрывающиеся диапазоны** (DONE 082bc4c):
+   put переписан однопроходным мерджем floor + всех смежных последователей (long-
+   арифметика на границах int); кейс put(5,15);put(0,10) покрыт тестом + рандомизированный
+   кросс-чек против TreeSet;
   Строгое `value < end` + эксклюзивный subMap: вложенный диапазон до `end` не удаляется и
   не мерджится. Проверено исполнением: put(5,15); put(0,10) → [0-10, 5-15], count()=22
   вместо 16; contains(12)=false при покрытом элементе. Через Ipv4Space ломает allow/deny
