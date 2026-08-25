@@ -1247,14 +1247,15 @@ CABAC/CAVLC, MBWriter*, DeblockingFilter...), декодер (SliceReader, Block
 MBlockDecoder*...), инфраструктуру (BitReader/BitWriter, VLC, IntObjectMap, Picture/Size).
 **Полная замена = переписать ФУНКЦИОНАЛЬНЫЙ контракт этих 7 классов**, не их протокол:
 
-- [ ] **К1 — свой дельта-кодек DELTA вместо H264** (см. §39 «Библиотеки», вариант B):
-  тайлы 32×16, dirty-трекинг, RLE/zlib изменённых тайлов; энкодер+декодер+сетка 300–500 строк.
-  Контракт: byte[] encode(int[] rgb565, w, h) / Optional<int[]> decode(byte[], w, h).
-- [ ] **К2 — заменить Picture/ColorSpace/RgbToYuv420j/Yuv420jToRgb**: при DELTA-кодеке YUV-конверсия
-  НЕ НУЖНА вообще (кодируем RGB565 напрямую) → 4 класса просто исчезают. Для RAW-режима тоже.
-- [ ] **К3 — VideoCodec.DELTA(2)** в enum + выбор в FrameCodec; H264 оставить как legacy-опцию?
-  РЕШИТЬ: если jcodec удаляем — H264-режим выпиливается из enum и конфига (GameplaySpec.videoCodec),
-  миграция старых конфигов: videoCodec=h264 → delta с WARN в лог.
+- [x] **К1 — свой дельта-кодек DELTA** (DONE 2d77dd6): `DeltaFrameCodec` — тайлы 32×16,
+  dirty-трекинг, per-tile лучший из RLE/zlib/raw, zlib-ключевой кадр на старте и смене
+  разрешения; в пейлоаде передаются размеры (stale-стрим отвергается), декодирование
+  идёт на копии кадра (битый дельта-блок не портит референс).
+- [x] **К2 — YUV не нужен на DELTA-пути** (DONE 2d77dd6): DELTA кодирует RGB565 напрямую,
+  jcodec-классы остались только на legacy-H264 пути (исчезнут вместе с К4).
+- [x] **К3 — VideoCodec.DELTA(2)** в enum + выбор в FrameCodec (DONE 2d77dd6).
+  РЕШЕНИЕ: H264 остаётся legacy-опцией до К4 (неделя обкатки DELTA дефолтом:
+  GameplaySpec videoCodec raw→delta); при К4 h264 выпиливается из enum/конфига с WARN-миграцией.
 - [ ] **К4 — удалить src/main/java/li/cil/oc2/jcodec/** (−86 файлов), убрать exclude'ы из
   build.gradle.kts (:405, :417), checkstyle/pmd/spotbugs/qodana конфигов и docs/jcodec-analysis.md
   (заменить на заметку о DELTA-кодеке).
