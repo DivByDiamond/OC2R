@@ -18,14 +18,8 @@ public class IntegerSpace {
             return put(end, begin);
         }
 
-        ranges.subMap(begin, false, end, false)
-                .entrySet()
-                .removeIf(range -> range.getKey() > begin && range.getValue() < end);
-
-        final Map.Entry<Integer, Integer> floorBegin = ranges.floorEntry(begin);
-        final Map.Entry<Integer, Integer> higherEnd = ranges.ceilingEntry(end);
-
-        if (isAlreadyPresent(floorBegin, begin, end)) {
+        final Map.Entry<Integer, Integer> floor = ranges.floorEntry(begin);
+        if (floor != null && floor.getKey() <= begin && floor.getValue() >= end) {
             // Already exists in the space
             // [---------]
             // [---------]
@@ -33,73 +27,36 @@ public class IntegerSpace {
             // [---------]
             return false;
         }
-        if (canMergeBridgingRanges(floorBegin, higherEnd, begin, end)) {
-            // Remove whitespace between 2 ranges
-            // [---------]      [----------]
-            //           [------]
-            //        [------------]
-            //        [---------]
-            //           [---------]
-            ranges.entrySet().remove(higherEnd);
-            ranges.put(floorBegin.getKey(), higherEnd.getValue());
-            return true;
+
+        int mergedBegin = begin;
+        int mergedEnd = end;
+
+        // Absorb the range below begin if it touches or overlaps the new one,
+        // including ranges that start below and extend past end (the old strict
+        // comparisons left such overlapping ranges behind forever).
+        if (floor != null && (long) floor.getValue() + 1 >= begin) {
+            mergedBegin = floor.getKey();
+            mergedEnd = Math.max(mergedEnd, floor.getValue());
+            ranges.remove(floor.getKey());
         }
-        if (canExtendHigherRange(higherEnd, end)) {
-            // Change higher range start position
-            // [---------]       [---------]
-            //              [----]
-            //              [---------]
-            ranges.entrySet().remove(higherEnd);
-            ranges.put(begin, higherEnd.getValue());
-            return true;
+
+        // Absorb all following ranges that touch or overlap the merged one.
+        final Iterator<Map.Entry<Integer, Integer>> iterator =
+                ranges.tailMap(mergedBegin, false).entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<Integer, Integer> range = iterator.next();
+            if ((long) range.getKey() - 1 > mergedEnd) {
+                break;
+            }
+            mergedEnd = Math.max(mergedEnd, range.getValue());
+            iterator.remove();
         }
-        if (canExtendLowerRange(floorBegin, begin)) {
-            // New range after some other range
-            // [---------]
-            //           [--]
-            //        [------]
-            ranges.put(floorBegin.getKey(), end);
-            return true;
-        }
-        // New range in empty space or new range before all others
+
+        // New range in empty space, extended or merged with existing ones
         //          [---------]
-        // [-----]
-        ranges.put(begin, end);
+        // [-----]      [------]
+        ranges.put(mergedBegin, mergedEnd);
         return true;
-    }
-
-    private static boolean isAlreadyPresent(
-            final Map.Entry<Integer, Integer> floorBegin, final int begin, final int end) {
-        return floorBegin != null
-                && floorBegin.getKey() <= begin
-                && floorBegin.getValue() >= end;
-    }
-
-    private static boolean canMergeBridgingRanges(
-            final Map.Entry<Integer, Integer> floorBegin,
-            final Map.Entry<Integer, Integer> higherEnd,
-            final int begin,
-            final int end) {
-        return floorBegin != null
-                && higherEnd != null
-                && floorBegin.getKey() <= begin
-                && floorBegin.getValue() + 1 >= begin
-                && higherEnd.getKey() - 1 <= end
-                && higherEnd.getValue() >= end;
-    }
-
-    private static boolean canExtendHigherRange(
-            final Map.Entry<Integer, Integer> higherEnd, final int end) {
-        return higherEnd != null
-                && higherEnd.getKey() - 1 <= end
-                && higherEnd.getValue() >= end;
-    }
-
-    private static boolean canExtendLowerRange(
-            final Map.Entry<Integer, Integer> floorBegin, final int begin) {
-        return floorBegin != null
-                && floorBegin.getKey() <= begin
-                && floorBegin.getValue() + 1 >= begin;
     }
 
     public final boolean contains(final int element) {
