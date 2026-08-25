@@ -906,3 +906,353 @@ OOB в clearChars/deleteChars/insertChars (clamp доказан); Math.clamp min
 DECSTBM/CUP/HVP/DECOM; SGR 38/48 consumption на валидных входах; shiftLines при count>1 из IL/DL
 (кламп к региону); dirty-mask формулы записи/чтения взаимно обратны; input-очередь (единый лок);
 displayOnly соблюдается всеми производителями ответов; IRM ?4h реализован; RIS полон по сериализуемым полям.
+
+---
+
+## 37. Комплексный аудит — 6 суб-агентов (2026-08-25, ветка master, HEAD 2a6b185)
+
+Аудит всего мода (не только терминала): структура/архитектура, логика, потокобезопасность,
+стиль/сборка, тесты, контракты/безопасность. Все блокеры верифицированы чтением исходников.
+Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в образе 0.0.72-oc2r1 задокументирован
+в docs/BUILDROOT.md.
+
+### Блокеры
+
+- [ ] **Б1 — MessageUtils.withNearbyServerBlockEntity: нет проверки дистанции** `[network/util/MessageUtils.java:31-46]`
+  Проверяется только существование чанка; ни `distanceToSqr`, ни прав на блок (сравни:
+  `withNearbyServerEntity` честно делает `entity.closerThan(player, 8)`).
+  Клиент шлёт `OpenComputerTerminalMessage`/`ComputerPowerMessage`/`KeyboardInputMessage`
+  с любым BlockPos загруженного чанка → открытие терминала/выключение/ввод клавиатуры
+  ЧУЖОГО компьютера на дистанции. Фикс: `pos.closerToCenterThan(player.position(), LIMIT)`.
+- [ ] **Б2 — Инъекция файлов между игроками через импорт**
+  `[network/message/file/ImportedFileMessage.java:35-37]` — handler не сверяет отправителя с
+  `request.PendingPlayers`, без лимита размера, без санитизации имени; id последовательные
+  (угадываемые). Плюс гонка: `[ImportFileRequestManager.java:22-24]` — `nextImportId++`
+  ВНЕ lock (registerRequest = server thread, setImportedFile = Netty) → коллизии id,
+  потеря импорта. Фикс: авторизация по PendingPlayers + AtomicInteger/lock + лимит + sanitize.
+- [ ] **Б3 — TcpHeader.read: бесконечный цикл / отмотка позиции → DoS сетевого потока**
+  `[inet/tcp/TcpHeader.java:33-36,70-73]` — нижней границы dataOffset нет (`> limit` только
+  сверху); неизвестная опция с length 0/1 → `position += -2/-1` → вечный цикл чтения тех же
+  байт (данные из РЕАЛЬНОГО интернета). Фикс: `if (size < 2) return false;` +
+  `dataOffset >= position + MIN_HEADER_SIZE_NO_PORTS`.
+- [ ] **Б4 — FrameChunker.Reassembler: нет chunkIndex >= 0 и проверки data.length**
+  `[network/util/frame/FrameChunker.java:88-105]` — `chunkIndex=-1` → BitSet.get(-1);
+  переполненный чанк → AIOOBE в arraycopy; `frameSize=Integer.MAX_VALUE` → OOM клиента.
+  Данные приходят по сети (MonitorFramebufferMessage). Фикс: `chunkIndex >= 0`;
+  `data.length == min(MAX_CHUNK_SIZE, frameSize - from)`; верхний предел frameSize.
+- [ ] **Б5 — IntegerSpace.put оставляет перекрывающиеся диапазоны** `[util/misc/IntegerSpace.java:21-23]`
+  Строгое `value < end` + эксклюзивный subMap: вложенный диапазон до `end` не удаляется и
+  не мерджится. Проверено исполнением: put(5,15); put(0,10) → [0-10, 5-15], count()=22
+  вместо 16; contains(12)=false при покрытом элементе. Через Ipv4Space ломает allow/deny
+  интернет-карты. Фикс: удалять `key >= begin && value <= end`; мерджить с floorEntry(end).
+- [ ] **Б6 — DECRC/restoreSavedCursor после смены ширины → AIOOBE** (апгрейд m1 из §36 до краша)
+  `[escapes/DECRC.java:11-12]`, `[escapes/csi/CH3.java:76-81]` — ESC7 в 132 колонках на x=131 →
+  `?3l` (setWidth(80)) → ESC8 → x=131 → index 1971 ≥ 1920 → AIOOBE под lock → терминал умирает.
+  Фикс: setCursorPos/clamp по текущему width.
+
+### Major
+
+- [ ] RPCDeviceBusAdapter: handoff `synchronizedInvocation` VM thread ↔ server thread без
+  volatile/атомарности (`bus/adapter/RPCDeviceBusAdapter.java:49,117-121`) + TOCTOU
+  pause/resume↔step (:101-133) → rebuild реестра параллельно с диспетчеризацией RPC.
+- [ ] InternetConnectionImpl.saveAdapterState: `.get()` на server thread при автосейве
+  (`inet/internet/connection/InternetConnectionImpl.java:38`) — фриз тика + дедлок-риск.
+- [ ] TerminalDiff.apply: равенство rows.length == rowData.length не проверяется нигде
+  (`vm/terminal/TerminalDiff.java:205-207,313`) → AIOOBE/дисконнект клиента; clamp ширины.
+- [ ] CUD/CUF int overflow при аргументе MAX_VALUE (`csi/CUD.java:17`, `CUF.java:17`) —
+  курсор прыгает вверх; клампить как CH8/CH9.
+- [ ] Дубликат RegistryUtils: `common/util/RegistryUtils.java` ≡ `common/util/item/RegistryUtils.java`,
+  обе живые, раздельная статика → оставить одну.
+- [ ] System.out в проде (~14 мест): ConfigManager.java:21, VxlanBlockEntity.java:102,
+  SwitchLog.java:28-51, TerminalMouseHandler.java:82,146, ByteBufferFlashStorageDevice.java:111,
+  PciRootPortDevice.java:54-78 → SLF4J.
+- [ ] Сборка: ContainedDeps ссылается на несуществующий commons-collections4 (build.gradle.kts:331);
+  дрейф sedna-buildroot 0.0.70 vs 0.0.72-oc2r1 (gradle.properties:20 vs settings.gradle.kts:30);
+  architectury/markdownmanual дважды на classpath (fileTree libs + maven).
+
+### Minor / потокобезопасность (кратко)
+
+AsyncExecutorHelper.shutdownNow прерывает чужие ForkJoinPool-потоки (:88-104); GlobalInterruptController
+неатомарный RMW маски прерываний; Terminal DCL без volatile (= m9 §36); TaskImpl.closed/SocketManager
+refcount без атомарности; MultipartMessage: нет лимита параллельных потоков на соединение;
+ExportedFileMessage: имя из гостя попадает в путь клиентского диалога; NativeLoader пишет native lib
+в предсказуемый путь (user.dir) вместо temp-dir; скачивание natives без SHA-256; все линтеры advisory-only
+(ignoreFailures=true); CSIManager:97 табуляция игнорирует tab stops; OSC/DCS/APC не прерываются CAN/SUB;
+dead code: ColorUtils, RunnableUtils.doNothing, SessionOperator; api→common инверсия (6 файлов api/inet/**);
+common→client перекрёстные импорты (27 файлов); God-класс Terminal.java (358 строк/32 метода).
+
+### Тесты
+
+18 файлов / ~150 методов / ~660 assertions, пустых нет. НЕ покрыто (high): tcp/state/* (машина состояний!),
+serialization/*, InternetConnectionImpl/StreamSessionImpl/TunnelManager, robot/*, Utf8Decoder,
+csi-handlers кроме SGR. GameTest'ов нет.
+
+### Опровергнутые гипотезы аудита (не чинить)
+
+RPC Gson → произвольный вызов невозможен (MethodInvoker только зарегистрированные группы);
+BlobStorage path traversal исключён (UUID-пути); Utf8Decoder/Rfc1071Checksum/TerminalLineShifter/
+BlockOperationCooldown — корректно; секретов/ProcessBuilder/eval нет; CH1..CH11/NullLayer/ICMPReply — живые.
+RobotActionProcessor из §28, похоже, уже залочен (проверить и закрыть пункт §28).
+
+
+---
+
+## 38. Перф-аудит сети/мониторов/шины — 4 суб-агента (2026-08-25)
+
+Симптом от игрока: «Network performance is really bad still». Найдена комбинация из 8 узких мест.
+Суммарный потолок интернет-карты сейчас ≈ 13–30 КБ/с с коллапсом при потерях; после фиксов 1–3
+достижимы сотни КБ/с — МБ/с.
+
+### Интернет-карта (главный ограничитель throughput)
+
+- [x] **П1 — один кадр на тик в каждую сторону** (DONE 2280692): PendingFrame →
+  ArrayBlockingQueue(64) в обе стороны, drain-циклы в process() и processInternetAdapter.
+- [x] **П2 — PendingFrame хранит ОДИН кадр** (DONE 2280692): класс удалён, тихая потеря
+  устранена; тест InternetConnectionImplTest (drain без потерь, стоп при полной очереди).
+- [x] **П3 (частично) — буфер ≥32К** (DONE 61fd98d): streamBufferSize дефолт 2000→32768
+  (`InternetCardSpec.java` + `Config.java`). Осталось: скользящее окно + cumulative ACK
+  в `EstablishedState` (один сегмент в полёте, точный ACK) — отдельный пункт ниже.
+- [ ] **П3.1 — скользящее окно TCP**: `EstablishedState.java:20-24` один сегмент в полёте,
+  точный ACK required (:104). Заменить nextSegmentMark на окно с несколькими сегментами
+  и cumulative ACK; нужны тесты на tcp/state/* (сейчас не покрыты).
+- [x] **П4 (частично) — read/write до EAGAIN** (DONE 91a4f07): цикл channel.read до EAGAIN/
+  EOF/полного буфера в readSession; write докручивает sendBuffer до конца в sendStream.
+  processQueue early-exit оставлен НАМЕРЕННО: Receiver несёт ровно одну сессию/буфер на
+  вызов receiveSession, кадр = один сегмент — drain нескольких сессий терял бы данные.
+  Дальнейший выигрыш только через мультибуферный receiver (отдельный пункт).
+- [ ] **П5 — OP_WRITE копится, toWrite никогда не потребляется**: `SocketManager.java:47-49` —
+  неограниченный рост ArrayDeque (утечка) + бесполезный selector-work. Фикс: убрать OP_WRITE
+  из interest или потреблять очередь.
+- [ ] **П6 — ping-pong серверный↔Internet-поток**: минимум 2 тика на кадр; 2 аллокации списков
+  каждый тик даже при пустом списке соединений (`InternetManagerImpl.java:141-148,158`).
+- [ ] П7 — per-packet/per-frame аллокации (низкий приоритет): `InternetConnectionImpl.java:53`
+  new byte[] на кадр; `SendHandler.java:53-95` новые Discriminator'ы; `DefaultTransportLayer.java:60,84`
+  TreeMap-lookup per-packet; `processSessionExpirationQueue` на каждое сообщение.
+
+### Монитор/видео (CPU server thread + bandwidth)
+
+- [ ] **В1 — deflate(BEST_COMPRESSION=9) поверх уже сжатого H264** `FrameCodec.java:56,87-99` —
+  выигрыш ~0%, десятки мс CPU server-thread на кадр/монитор. ГЛАВНЫЙ CPU-killer. Фикс: убрать deflate.
+- [ ] **В2 — весь энкод-путь на server thread**: RGB→YUV + software H264 в MonitorTickHandler.tick
+  (`MonitorBlockEntity.java:23`, `MonitorTickHandler.java:25`, `ProjectorBlockEntity.serverTick:105`);
+  throttle 1000/fps при fps=20 = 50 мс = каждый тик — не работает. Фикс: async-энкодер last-frame-wins.
+- [ ] **В3 — 4MB direct buffer + энкодер на КАЖДЫЙ BlockEntity** `FrameCodec.java:20,26`,
+  `MonitorVideoController.java:29`, `ProjectorFrameSender.java:31` — 20 мониторов = 80+ MB direct
+  на сторону. Фикс: общий/ленивый энкодер.
+- [ ] **В4 — RAW-режим = 600KB/кадр × 20fps ≈ 12 МБ/с/watcher** (`FrameChunker.MAX_CHUNK_SIZE=256KB`,
+  дефолт videoCodec="raw" `GameplaySpec.java:62`). Фикс: H264 дефолтом.
+- [ ] **В5 — RAW-fallback внутри H264-потока ломает декодер до IDR (5 сек артефактов)**:
+  `FrameCodec.java:52-53` BufferOverflow → RAW-байты как «H264» → DataFormatException →
+  референсная цепочка битая до KEY_INTERVAL=100 кадров. Фикс: сброс decoder / форс-IDR после fallback.
+- [ ] **В6 — dirty-lines игнорируются**: `SimpleFramebufferDevice.copyFrame:62-83` копирует весь
+  буфер и чистит все dirty — полный энкод даже при изменении одной строки. Фикс: кодировать dirty-регион.
+- [ ] В7 — QP 12 vs 24: `FrameCodec.java:24` CQPRateControl(12) vs фабричный QP 24 (`H264Encoder.java:39`)
+  — завышенный битрейт ×2–4. Унифицировать QP ≥ 24.
+- [ ] В8 — клиентский decode на main thread: `MonitorFramebufferMessage.handleMessage:66` →
+  inflate+H264+YUV→RGB+full texture upload 1.2MB (`RenderInfo.java:49-71`) — хитчи рендера.
+  Фикс: decode вне render thread.
+- [ ] В9 — аллокации per-кадр на клиенте: new Picture 460KB (:71), new byte[600KB] (:126),
+  новый Deflater/Inflater + ByteArrayOutputStream (:87-119). Пулинг буферов.
+- [ ] В10 — ProjectorFrameSender — дословный дубль MonitorVideoController: фиксы нужно вносить дважды.
+  Выделить общую абстракцию.
+
+### Синхронизация мира / трафик
+
+- [ ] Подтверждены НЕисправленные дубли синка из §29: фасад ×3 (`FacadeManager.java:47-111`),
+  коннекторы ×2 (`NetworkConnectorBlockEntity.getUpdateTag:81-86` + message :220-227),
+  имена интерфейсов ×2 (`InterfaceNameManager.setInterfaceName:41-47`), флоппи/флеш ×2
+  (`DiskDriveBlockEntity.getUpdateTag:133-136`), VS2-fallback шлёт ВСЕМ игрокам во всех
+  измерениях (`NetworkMessages.java:39-63`), chunk==null теряет сообщение (`ComputerTerminalManager.java:102-104`),
+  handleUpdateTag без requestModelDataUpdate (`BusCableBlockEntity.java:117-128`).
+- [ ] **Т1 — TerminalDiff CELL_BYTES=37** (`TerminalDiff.java:30`, javadoc «17 bytes» врёт):
+  эхо одного символа ≈ вся строка 80×37 ≈ 2990 Б, до 20/с → ~60 КБ/с на активный терминал.
+  Фикс: упаковка ячейки до 4–6 Б (varint codepoint, палитра/RGB15, style битфлагами) или span-дельты → <10 КБ/с.
+- MultipartMessage: ключ починен; MAX_PAYLOAD_SIZE=8КБ при лимите NeoForge 1МБ — импорт 512КБ = 64 пакета;
+  оверхед заголовков <1% (ок). enqueueWork в SoundCardBeep/Pcm — избыточен, но не баг.
+
+### VXLAN / шина / энергия
+
+- [ ] **Ш1 — scan() шины каждый тик каждого компьютера**: `VirtualMachineTicker.java:23` →
+  BFS до 128 элементов с новыми HashSet/HashMap (`BusElementManager.java:97-133`); scanDevices строит
+  новые коллекции + два set-diff даже без изменений (`CommonDeviceBusController.java:57-58`).
+  Реализовать push-based из §20 (dirty-флаг топологии) + early-exit по size.
+- [ ] **Ш2 — энергосеть: BFS flood-fill + O(n²) redistribute каждый тик**:
+  `EnergyTransferManager.collectNetwork:86-103` (~3000 getBlockState/тик для 500 кабелей),
+  второй проход collectNetworkCables (:105-114), `redistributeDeficits:275-296` O(n²),
+  getExternalEnergy capability-lookup на каждую сторону каждого кабеля каждый тик (:298-304).
+  Фикс: кэш топологии с инвалидацией по neighbor-changed, redistribute раз в 20 тиков.
+- [ ] **Ш3 — блокирующий UDP send в тик-треде**: `VxlanBlockEntity.serverTick:92-99` →
+  `TunnelManager.java:144 socket.send(packet)` — до 32 блокирующих send/тик/хаб
+  (hubEthernetFramesPerTick). Фикс: очередь отправки + sender-тред / DatagramChannel non-blocking.
+- [ ] **Ш4 — System.out.printf КАЖДЫЙ тик** пока у хаба нет соседа: `VxlanBlockEntity.java:102`
+  (= дубль замечания о System.out из §37, тут перф-эффект: synchronized println 20/с убивает TPS).
+- [ ] Ш5 — лишние локи VXLAN: комментарий про «not thread-safe» устарел — очередь уже
+  ArrayBlockingQueue(32) (`VxlanBlockEntity.java:36`); ReentrantLock менеджера сериализует все туннели
+  (`TunnelManager.java:111-119,18`). Убрать оба лока.
+- [ ] Ш6 — потеря пакетов при очереди 32: `TunnelManager.java:115 offer()` молча роняет при burst >32.
+  Ёмкость конфигурируемой + drop-статистика.
+- [ ] Ш7 — перф-мелочи: eager-конкатенация в LOGGER.debug per-packet (`TunnelManager.java:102`),
+  новые DatagramPacket/header-buffer на каждый send (:131,140); TODO shutdown bg-треда (:83) — утечка порта.
+- [ ] Ш8 — SessionManager per-packet: Instant.now() + TreeMap remove/put на каждый пакет
+  (`SessionManager.java:56-63`); линейный проход ретрансмиттеров (:97-114). Monotonic clock + бакеты.
+- ARP/ICMP/checksum/утилиты адресов — НЕ горячие (ARP-кэш на 1 запись приемлем; ICMP single-slot
+  только error-path; checksum можно ускорить getLong-проходом — низкий приоритет).
+
+### Приоритет внедрения
+
+1. П1+П2+П3 (интернет ×10–50 суммарно) → 2. В1+В2 (CPU сервера) → 3. Ш1+Ш2 (TPS ферм) →
+4. Т1+дубли синка (трафик) → 5. Ш3–Ш7, В4–В9 → 6. П4–П7, В10, Ш8.
+
+
+---
+
+## 39. Security-hardening inet + конфиги линтеров + библиотеки (2026-08-25)
+
+### Security: строгая валидация для майнкрафт-мода (дополнение к Б1–Б4)
+
+- [ ] **С1 — VXLAN: входящие UDP без аутентификации → инъекция кадров в мир**
+  `[vxlan/TunnelManager.java:85-121]` — сокет не подключён к remoteHost, источник не проверяется;
+  порт 4789 стандартный VXLAN. Любой, кто может послать UDP на порт сервера (bind 0.0.0.0 = интернет),
+  инжектирует произвольные Ethernet-кадры в виртуальную сеть любого компьютера.
+  Фикс: socket.connect() + проверка packet.getAddress() + pre-shared key/HMAC; VNI не единственный id.
+- [ ] **С2 — VXLAN: vti=1000 захардкожен у всех блоков + грузится из NBT без проверок**
+  `[VxlanBlockEntity.java:32,109-111]` — все хабы сервера регистрируют один VNI, tunnels.put()
+  перезатирает чужой туннель (нарушена изоляция игроков); подделка NBT → попадание в чужую сеть.
+  Фикс: случайный vti при создании (из UUID предмета), валидация диапазона при load.
+- [ ] **С3 — Спуфинг srcIpAddress гостем**: `[DefaultNetworkLayer.java:117-137]`,
+  `SendHandler.java:69-105` — проверяется только dst; гость назначает себе любой IP
+  (`DefaultLinkLocalLayer.java:162 myIpV4Address = arpData.targetIpAddress()`).
+  Через реальный интернет хоста — спуфинг-атаки/подстава IP сервера.
+  Фикс: сверять src с выученным по ARP адресом карты, несовпадение — молча дропать.
+- [ ] **С4 — deniedHosts без 169.254.0.0/16** (`InternetCardSpec.java:62-68`) — на публичном
+  VPS гость читает cloud-metadata (IAM-токены) через 169.254.169.254. Добавить также 0.0.0.0/8,
+  255.255.255.255/32, TEST-NET диапазоны. Hostname-записи резолвятся один раз при старте
+  (`Ipv4Space.java:131-146`) — DNS rebinding конфигурации; документировать, рекомендовать CIDR.
+- [ ] **С5 — PCM-флуд**: `SoundCardItemDevice.write:157-177` без rate-limit шлёт SoundCardPcmMessage
+  всем трекерам чанка; клиентский PcmSoundBuffer — неограниченная очередь chunks. Гость циклит
+  sound.write(huge) → флуд сети + heap клиентов. Фикс: bytes/tick бюджет + cap ~256КБ с вытеснением.
+- [ ] **С6 — нет rate limit на MonitorRequestFramebufferMessage (:36-42)** (каждый запрос =
+  сериализация+рассылка фреймбуфера) и KeyboardInputMessage (:42-48). Фикс: per-player cooldown.
+- [ ] С7 — ICMP echo блокирует единственный internet-поток: `EchoHandler.java:56-67` sync sendICMP
+  с таймаутом; ping «чёрных» адресов замирает весь интернет для всех карт. Лимит параллельных echo.
+- [ ] С8 — NBT интернет-карты: MAC/IP восстанавливаются как есть (`DefaultLinkLocalLayer.java:60-81`)
+  → impersonation другой карты в мировом LAN. Привязать MAC к UUID предмета детерминированно.
+- [ ] С9 — TunnelManager надёжность: bind-fail → managerInstance==null, но поток стартует (NPE в фоне);
+  while(true) без shutdown; DEFAULT_VXLAN_HOST="::1" (`Config.java:72`) — похоже на баг вместо 0.0.0.0.
+- Resource-limits сводка: лимитированы VM-память/сессии/размер дисков/экспорт ≤1МБ;
+  ОТСУТСТВУЮТ: bandwidth per card/tick, число карт на игрока (InternetManagerImpl.connect:76),
+  rate-limit ICMP/PCM/framebuffer.
+
+### Конфиги линтеров: план ужесточения (полный аудит)
+
+Ключевой факт: **checkstyle `severity=warning` (checkstyle.xml:8)** — сборка не упадёт ДАЖЕ при
+isIgnoreFailures=false; падают только error-нарушения. Чинить это первым.
+CI (ci-work.yml:40 ./gradlew build) гоняет линтеры, но ignoreFailures=true ×3 + severity=warning =
+двойная страховка от красной сборки; шаг Upload reports с `if: failure()` — при зелёном билде отчёты
+никуда не грузятся. Error Prone в CI не включается. **Qodana: qodana.yaml + gradle-задача есть,
+но ни один workflow его не вызывает — мёртвая настройка.**
+
+Checkstyle «включено, но задавлено»: MissingSwitchDefault (:324 объявлен, подавлен фильтром :47-49),
+FallThrough, IllegalCatch, EmptyCatchBlock, ReturnCount, CyclomaticComplexity, NestedIfDepth,
+IllegalThrows, NeedBraces, весь naming/formatting блок, MethodLength/FileLength, MissingJavadocMethod,
+все проверки в тестах. У большинства SuppressionSingleFilter НЕТ атрибута files → глушат глобально.
+PMD исключил: SystemPrintln/AvoidPrintStackTrace (ruleset.xml:14-15 — при 14 живых System.out),
+GuardLogStatement (:10), ImplicitSwitchFallThrough (:32), CloseResource, UnusedPrivateMethod,
+GodClass/NcssCount/MutableStaticState и др. MagicNumber в PMD АКТИВЕН (не трогать).
+SpotBugs exclude-filter чистый (только jcodec+generated) — наши классы багов НЕ маскируются:
+IL_INFINITE_LOOP поймал бы TCP-парсер, RANGE_ARRAY_* — FrameChunker/IRM; единственная слепая зона —
+vendored jcodec (допустимо). Qodana excludes согласованы с остальными конфигами.
+
+- [ ] **Ступень A (сейчас, ~15 строк фиксов кода):**
+  1. ByteBufferFlashStorageDevice.java:110-112 — LOGGER.warn("...{}", identity, e) вместо
+     println(e.getMessage()) (сейчас теряется stack trace);
+  2. заменить 13× System.out → SLF4J LOGGER (список в §37);
+  3. PMD: удалить exclude AvoidPrintStackTrace (0 нарушений сразу) и SystemPrintln;
+     опционально GuardLogStatement + ImplicitSwitchFallThrough (предварительно прогнать ./gradlew pmdMain);
+  4. Checkstyle: снять глобальные подавления MissingSwitchDefault (:47-49) и FallThrough (:140-142)
+     с точечными // CHECKSTYLE.OFF при единичных нарушениях;
+  5. стражи рецидива в Checker: RegexpSinglelineJava id=SystemOut (`^\s*System\.(out|err)\.`)
+     и id=PrintStackTrace (`.printStackTrace\(\s*\)`).
+- [ ] **Ступень B (failBuild для новых violations):**
+  - build.gradle.kts:400,411,425 — все три isIgnoreFailures=false;
+  - checkstyle.xml:8 severity=error (обязательно, иначе п.1 бессмысленен);
+  - SpotBugs: baselineFile.set(config/spotbugs/baseline.xml) — штатный ratchet;
+  - PMD 7 встроенного baseline НЕТ; для checkstyle+pmd — задача lintRatchet: считать нарушения из
+    XML-отчётов, падать при росте сверх config/lint-baseline.properties (готовый дифф у автора аудита);
+  - порядок: сначала ступень A, потом ratchet — иначе зашить в baseline мусор форматирования.
+- [ ] **Ступень C (Error Prone always-on):**
+  - дефолт enableErrorProne=true (build.gradle.kts:447-451), allErrorsAsWarnings=false (:466);
+  - критичный набор -Xep:*:ERROR: ArrayToString, UnusedVariable, Finally (наш класс проглоченных
+    исключений), DeadException, LoopConditionChecker (класс бага бесконечного цикла TCP-парсера),
+    EqualsIncompatibleType, BoxedPrimitiveEquality, CompareToZero, FormatString;
+  - шумные OFF: UnusedMethod (mixin/callback-магия), StrictUsedInaccurately, StringSplitter;
+  - Guava-shadow workaround (:470-478) оставить обязателен;
+  - внедрение: неделю с allErrorsAsWarnings=true в CI (-PenableErrorProne), собрать фактические
+    срабатывания, точечно пофиксить/выключить, потом дефолт true.
+- [ ] CI: шаг upload-artifact переключить на `if: always()` (отчёты линтеров всегда), опционально
+  включить Qodana или удалить мёртвую задачу qodana из build.gradle.kts:488-492.
+
+Итоговая приоритизация: (1) сейчас — AvoidPrintStackTrace + фикс ByteBufferFlashStorageDevice;
+(2) неделя — 13× System.out→LOGGER, MissingSwitchDefault/FallThrough, SpotBugs failBuild+baseline;
+(3) месяц — severity=error + ratchet, Error Prone default-on, CI if:always().
+
+### Библиотеки: что переписывать
+
+- ceres/sedna/sedna-buildroot/markdownmanual(+architectury) — ОСТАВИТЬ (используются глубоко:
+  sedna 54 файла импортов, ceres 20, markdownmanual = вся внутригровая документация client/manual/).
+- **jcodec (86 файлов, ~16K строк): рекомендация — свой дельта-кодек (вариант B)**.
+  Контент монитора — mostly-static text UI: тайлы 32×16 + dirty-трекинг + RLE/zlib изменённых тайлов.
+  Типичный кадр терминала — единицы КБ против десятков КБ H264+deflate, CPU на порядки ниже.
+  VideoCodec уже расширяем (RAW(0), H264(1) → DELTA(2)), точка интеграции одна — FrameCodec.
+  Объём 300–500 строк, 2–4 дня с тестами. После этого jcodec удалить целиком (−16K строк).
+  Промежуточный вариант A (точечные патчи vendored jcodec: переиспользование EncodingContext/Picture/
+  MBDeblocker, убрать deflate, QP tuning) — 1–2 дня, выигрыш всего 2–4×.
+- Нативная oc2rnet: исходников в репо нет (скачиваются бинарники, 112КБ×8 платформ); нужна ровно
+  для одного метода sendICMP (TCP/UDP уже чистая Java NIO!), fallback isReachable существует.
+  Оставить; опционально убрать за ~1 день если цель — репо без бинарников.
+- Подтверждён баг версии: gradle.properties sedna_buildroot_version=0.0.70 vs download-libs.sh
+  качает 0.0.72-oc2r1 (нужен для CONFIG_9P_FS / issue #17) — поднять property (5 минут).
+
+
+---
+
+## 40. Удаление jcodec: полный список используемого (переписать целиком)
+
+Точка входа единственная: `common/vm/video/FrameCodec.java` — импортирует из jcodec ровно 7 классов
+(проверено grep по всему src, других потребителей нет):
+
+```java
+import li.cil.oc2.jcodec.codecs.h264.H264Decoder;
+import li.cil.oc2.jcodec.codecs.h264.H264Encoder;
+import li.cil.oc2.jcodec.codecs.h264.encode.CQPRateControl;
+import li.cil.oc2.jcodec.common.model.ColorSpace;
+import li.cil.oc2.jcodec.common.model.Picture;
+import li.cil.oc2.jcodec.scale.RgbToYuv420j;
+import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
+```
+
+НО: эти 7 классов транзитивно тянут ~86 файлов (~16K строк) — энкодер (MotionEstimator,
+CABAC/CAVLC, MBWriter*, DeblockingFilter...), декодер (SliceReader, BlockInterpolator,
+MBlockDecoder*...), инфраструктуру (BitReader/BitWriter, VLC, IntObjectMap, Picture/Size).
+**Полная замена = переписать ФУНКЦИОНАЛЬНЫЙ контракт этих 7 классов**, не их протокол:
+
+- [ ] **К1 — свой дельта-кодек DELTA вместо H264** (см. §39 «Библиотеки», вариант B):
+  тайлы 32×16, dirty-трекинг, RLE/zlib изменённых тайлов; энкодер+декодер+сетка 300–500 строк.
+  Контракт: byte[] encode(int[] rgb565, w, h) / Optional<int[]> decode(byte[], w, h).
+- [ ] **К2 — заменить Picture/ColorSpace/RgbToYuv420j/Yuv420jToRgb**: при DELTA-кодеке YUV-конверсия
+  НЕ НУЖНА вообще (кодируем RGB565 напрямую) → 4 класса просто исчезают. Для RAW-режима тоже.
+- [ ] **К3 — VideoCodec.DELTA(2)** в enum + выбор в FrameCodec; H264 оставить как legacy-опцию?
+  РЕШИТЬ: если jcodec удаляем — H264-режим выпиливается из enum и конфига (GameplaySpec.videoCodec),
+  миграция старых конфигов: videoCodec=h264 → delta с WARN в лог.
+- [ ] **К4 — удалить src/main/java/li/cil/oc2/jcodec/** (−86 файлов), убрать exclude'ы из
+  build.gradle.kts (:405, :417), checkstyle/pmd/spotbugs/qodana конфигов и docs/jcodec-analysis.md
+  (заменить на заметку о DELTA-кодеке).
+- [ ] **К5 — тесты**: FrameCodecTest расширить на DELTA: статичный кадр (почти пустой поток),
+  полный шум (worst case ≤ RAW), roundtrip RGB565 бит-в-бит, BufferOverflow→RAW-fallback
+  (заодно закрывает В5 — RAW внутри DELTA-потока недопустим так же, как в H264).
+- [ ] **К6 — порядок работ**: (1) DELTA-кодек как новый класс рядом со FrameCodec + тесты;
+  (2) переключить дефолт videoCodec на DELTA; (3) неделя обкатки; (4) удалить jcodec + H264.
+
+Порядок относительно §38: К1–К3 можно делать ВЗАМЕН В1/В4/В5/В7 (deflate, RAW-bandwidth,
+RAW-in-H264 fallback, QP — всё это проблемы H264-пути и уходят вместе с ним). Это меняет приоритеты:
+DELTA-кодек решает сразу 4 перф-находки одним ходом.
