@@ -41,8 +41,9 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
 
     /**
      * Number of leading {@link #receiveBuffer} bytes already sent to the VM but not yet
-     * acknowledged. Zero means everything delivered so far has been acknowledged; while non-zero,
-     * no new data may be appended to an outbound segment.
+     * cumulatively acknowledged — the in-flight window. Unlike stop-and-wait, later segments
+     * extend this range instead of waiting for a full ACK round ({@code EstablishedState});
+     * a cumulative ACK compacts the acknowledged prefix out of the buffer.
      */
     public int nextSegmentMark = 0;
 

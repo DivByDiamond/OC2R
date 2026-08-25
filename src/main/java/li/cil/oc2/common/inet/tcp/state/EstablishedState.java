@@ -14,20 +14,22 @@ import org.apache.logging.log4j.Logger;
  * Data transfer state, entered after the three-way handshake completed.
  *
  * <ul>
- *   <li>{@code receive}: builds an ACK (or PSH+ACK) segment towards the VM carrying up to
- *       {@code nextSegmentMark} bytes from {@code receiveBuffer}, bounded by the VM's advertised
- *       {@code vmWindow}. If there is no unacknowledged data and the session is not finishing,
- *       nothing is emitted (IGNORE).
+ *   <li>{@code receive}: builds an ACK (or PSH+ACK) segment towards the VM carrying the next
+ *       contiguous chunk of {@code receiveBuffer}, bounded by the VM's advertised {@code vmWindow}
+ *       minus what is already in flight (sliding window, todo.md §38 П3.1). If there is no new
+ *       data and the session is not finishing, a bare ACK is emitted.
  *   <li>{@code send}: validates an inbound segment (sequence number must equal
- *       {@code vmSequence}, payload must fit the advertised window, ACK number must equal
- *       {@code mySequence + nextSegmentMark}), appends PSH payloads to {@code sendBuffer},
- *       advances sequence numbers, and moves to FINISH on a FIN from the VM.
+ *       {@code vmSequence}, payload must fit the advertised window), accepts cumulative ACKs for
+ *       any part of the in-flight window, appends PSH payloads to {@code sendBuffer}, advances
+ *       sequence numbers, and moves to FINISH on a FIN from the VM.
  * </ul>
  *
- * <p>Sequence bookkeeping: {@code mySequence} is our own sequence number for data sent to the VM;
- * it only advances when the VM acknowledges exactly {@code mySequence + nextSegmentMark} bytes,
- * at which point those bytes are compacted out of {@code receiveBuffer}. {@code vmSequence} is
- * the next byte number expected from the VM.
+ * <p>Sequence bookkeeping: {@code mySequence} is our own sequence number of the first byte still
+ * buffered in {@code receiveBuffer}; it advances by the acknowledged amount when the VM sends a
+ * cumulative ACK ({@code acknowledgmentNumber - mySequence} must land inside the in-flight
+ * window). {@code nextSegmentMark} counts the sent-but-unacknowledged prefix of that buffer;
+ * unlike classic stop-and-wait, later segments extend it instead of waiting for a full ACK round.
+ * {@code vmSequence} is the next byte number expected from the VM.
  */
 public final class EstablishedState extends TcpState {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -36,37 +38,38 @@ public final class EstablishedState extends TcpState {
     public SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {
         final TcpHeader header = session.header;
         final ByteBuffer receiveBuffer = session.receiveBuffer;
-        if (session.nextSegmentMark == 0) {
-            session.nextSegmentMark =
-                    Math.min(
-                            Math.min(session.vmWindow, receiveBuffer.position()),
-                            segment.remaining() - TcpHeader.MIN_HEADER_SIZE_NO_PORTS);
-            LOGGER.trace("Next segment mark: {}", session.nextSegmentMark);
+
+        // How much unacknowledged data the VM is still willing to accept, and how much
+        // unsent data we have; the segment carries the next contiguous piece starting at
+        // sequence number mySequence + nextSegmentMark.
+        final int unsentBytes = receiveBuffer.position() - session.nextSegmentMark;
+        final int maxPayload = segment.remaining() - TcpHeader.MIN_HEADER_SIZE_NO_PORTS;
+        final int windowLeft = session.vmWindow - session.nextSegmentMark;
+        final int chunk = Math.min(Math.min(unsentBytes, Math.max(0, windowLeft)), maxPayload);
+        if (chunk > 0) {
+            LOGGER.trace("Sliding window segment: {} bytes", chunk);
+            session.nextSegmentMark += chunk;
         }
+
         header.urg = false;
         header.syn = false;
         header.rst = false;
         header.ack = true;
-        header.sequenceNumber = session.mySequence;
+        header.sequenceNumber = session.mySequence + session.nextSegmentMark - chunk;
         header.acknowledgmentNumber = session.vmSequence;
         header.maxSegmentSize = -1;
         header.urgentPointer = 0;
-        header.psh = session.nextSegmentMark != 0;
+        header.psh = chunk > 0;
         header.window = session.computeWindow();
-        // header.ack is always true at this point, so this fires exactly when there is no
-        // unacknowledged data to (re)send and no FIN pending: emit nothing.
-        if (!header.ack && !header.psh && session.state != TcpStates.FINISH) {
-            LOGGER.trace("Established session nothing to send");
-            return SessionActions.IGNORE;
-        }
+        // No new data: emit a bare ACK (plus FIN when finishing).
         if (header.psh) {
             header.fin = false;
             header.write(segment);
 
             final int recvPos = receiveBuffer.position();
             final int recvLim = receiveBuffer.limit();
-            receiveBuffer.limit(session.nextSegmentMark);
-            receiveBuffer.position(0);
+            receiveBuffer.limit(receiveBuffer.position() - unsentBytes + chunk);
+            receiveBuffer.position(session.nextSegmentMark - chunk);
             segment.put(receiveBuffer);
             receiveBuffer.limit(recvLim);
             receiveBuffer.position(recvPos);
@@ -121,22 +124,34 @@ public final class EstablishedState extends TcpState {
         return !header.ack || handleAcknowledgment(session, header);
     }
 
+    /**
+     * Processes a cumulative ACK: any value covering part of (or all of) the in-flight window
+     * compacts that much data out of {@code receiveBuffer}. Duplicate ACKs (zero coverage) are
+     * valid and change nothing; ACKs beyond the in-flight window are protocol errors.
+     */
     private boolean handleAcknowledgment(final StreamSessionImpl session, final TcpHeader header) {
-        if (header.acknowledgmentNumber != (session.mySequence + session.nextSegmentMark)) {
+        // Subtraction is wrap-safe: both values live on the same mod-2^32 sequence line.
+        final int acknowledgedBytes = header.acknowledgmentNumber - session.mySequence;
+        if (acknowledgedBytes < 0 || acknowledgedBytes > session.nextSegmentMark) {
             LOGGER.trace(
-                    "VM acked wrong number (expected {}, got {})",
+                    "VM acked outside the in-flight window (base {}, ack {}, in flight {})",
                     session.mySequence,
-                    header.acknowledgmentNumber);
+                    header.acknowledgmentNumber,
+                    session.nextSegmentMark);
             return false;
         }
+        if (acknowledgedBytes == 0) {
+            return true;
+        }
         final ByteBuffer receiveBuffer = session.receiveBuffer;
-        final int newPosition = receiveBuffer.position() - session.nextSegmentMark;
-        receiveBuffer.position(session.nextSegmentMark);
+        final int remainingBytes = receiveBuffer.position() - acknowledgedBytes;
+        receiveBuffer.position(acknowledgedBytes);
         receiveBuffer.compact();
-        receiveBuffer.position(newPosition);
-        receiveBuffer.limit(receiveBuffer.capacity());
-        session.mySequence += session.nextSegmentMark;
-        session.nextSegmentMark = 0;
+        // compact() leaves position at the amount of data moved, which includes stale
+        // bytes beyond the valid prefix when the limit is at capacity.
+        receiveBuffer.position(remainingBytes);
+        session.mySequence += acknowledgedBytes;
+        session.nextSegmentMark -= acknowledgedBytes;
         return true;
     }
 
