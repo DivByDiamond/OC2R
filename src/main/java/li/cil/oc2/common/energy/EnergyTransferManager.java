@@ -1,25 +1,22 @@
 package li.cil.oc2.common.energy;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.integration.ic2.Ic2EuBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class EnergyTransferManager {
+    /** How often stored energy is re-balanced across the cables of a network. */
+    private static final int REDISTRIBUTE_INTERVAL_TICKS = 20;
+
     private EnergyTransferManager() {}
 
     public static void distribute(final BusCableBlockEntity cable) {
@@ -33,7 +30,8 @@ public final class EnergyTransferManager {
             return;
         }
 
-        final List<BusCableBlockEntity> cables = collectNetworkCables(level, cable.getBlockPos());
+        final List<BusCableBlockEntity> cables =
+                EnergyNetworkCache.getCables((ServerLevel) level, cable.getBlockPos());
         if (cables.isEmpty()) {
             return;
         }
@@ -49,7 +47,13 @@ public final class EnergyTransferManager {
         pullFromAllSources(level, cables, networkRate, sourcesPulled);
 
         // Spread stored energy evenly across the network so it is reachable from any sink.
-        redistribute(cables);
+        // Re-balancing every tick is not worth the O(n^2) cost; once a second is plenty.
+        if (gameTime - cable.energyRedistributeTick >= REDISTRIBUTE_INTERVAL_TICKS) {
+            redistribute(cables);
+            for (final BusCableBlockEntity networkCable : cables) {
+                networkCable.energyRedistributeTick = gameTime;
+            }
+        }
 
         // Push to sinks adjacent to the network.
         pushToAllSinks(level, cables, networkRate, sourcesPulled);
@@ -81,36 +85,6 @@ public final class EnergyTransferManager {
             }
             pushed += pushToSinks(level, networkCable, networkRate - pushed, sourcesPulled);
         }
-    }
-
-    public static Set<BlockPos> collectNetwork(final Level level, final BlockPos origin) {
-        final Set<BlockPos> visited = new LinkedHashSet<>();
-        final Queue<BlockPos> queue = new ArrayDeque<>();
-        queue.add(origin);
-        while (!queue.isEmpty()) {
-            final BlockPos pos = queue.poll();
-            if (!visited.add(pos)) {
-                continue;
-            }
-            for (final Direction side : Direction.values()) {
-                final BlockPos neighborPos = pos.relative(side);
-                if (isCable(level, neighborPos, side.getOpposite())) {
-                    queue.add(neighborPos);
-                }
-            }
-        }
-        return visited;
-    }
-
-    private static List<BusCableBlockEntity> collectNetworkCables(
-            final Level level, final BlockPos origin) {
-        final List<BusCableBlockEntity> cables = new ArrayList<>();
-        for (final BlockPos pos : collectNetwork(level, origin)) {
-            if (level.getBlockEntity(pos) instanceof final BusCableBlockEntity cable) {
-                cables.add(cable);
-            }
-        }
-        return cables;
     }
 
     private static int pullFromSources(
@@ -301,17 +275,5 @@ public final class EnergyTransferManager {
             return null;
         }
         return level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
-    }
-
-    private static boolean isCable(
-            final Level level, final BlockPos pos, final Direction facing) {
-        final BlockState state = level.getBlockState(pos);
-        if (!state.getBlock().equals(Blocks.BUS_CABLE.get())
-                || !state.getValue(BusCableStateProperties.HAS_CABLE)) {
-            return false;
-        }
-        final ConnectionType connectionType =
-                BusCableStateProperties.getConnectionType(state, facing);
-        return connectionType == ConnectionType.CABLE || connectionType == ConnectionType.INTERFACE;
     }
 }

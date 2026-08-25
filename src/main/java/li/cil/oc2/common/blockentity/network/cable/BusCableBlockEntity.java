@@ -14,6 +14,7 @@ import li.cil.oc2.common.blockentity.network.cable.facade.NeighborListener;
 import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.energy.CableEnergyStorage;
+import li.cil.oc2.common.energy.EnergyNetworkCache;
 import li.cil.oc2.common.energy.EnergyTransferManager;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
@@ -38,6 +39,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     public final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
     public final CableEnergyStorage energy = new CableEnergyStorage();
     public long energyDistributionTick = -1;
+    public long energyRedistributeTick = -1;
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
@@ -90,7 +92,12 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             setInterfaceName(side, "");
             if (level != null) level.invalidateCapabilities(getBlockPos());
         }
-        if (neighborConnectivityChanged) busElement.scheduleScan();
+        if (neighborConnectivityChanged) {
+            busElement.scheduleScan();
+            if (level instanceof final ServerLevel serverLevel) {
+                EnergyNetworkCache.invalidate();
+            }
+        }
     }
 
     @Override
@@ -159,6 +166,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     protected void loadServer() {
         super.loadServer();
         assert level != null;
+        EnergyNetworkCache.invalidate();
         final ServerLevel serverLevel = (ServerLevel) level;
         for (final var side : Direction.values()) {
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
@@ -173,6 +181,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     @Override
     protected void unloadServer(final boolean isRemove) {
         super.unloadServer(isRemove);
+        EnergyNetworkCache.invalidate();
         if (isRemove) busElement.setRemoved();
     }
 
