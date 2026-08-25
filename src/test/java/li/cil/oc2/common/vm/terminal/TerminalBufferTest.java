@@ -921,18 +921,17 @@ public class TerminalBufferTest {
     }
 
     @Test
-    void cbtLetsNanosBacktabOverwriteDeleteAcrossColumns() {
-        // The nano repro: after positioning at end of a line, nano sends CBT then a space to
-        // delete-by-overwriting, expecting each CBT to move left so each space hits a new column.
-        // Pre-fix CBT was a no-op, so every space overwrote the SAME column -> "fewer chars
-        // deleted than expected". With CBT working, the cursor moves and each space deletes a
-        // distinct char.
+    void cbtMovesCursorSoFollowingOverwriteHitsADistinctColumn() {
+        // After positioning past the end of a line, a program may delete-by-overwriting: send CBT
+        // to step the cursor back a tab stop, then a space to blank that cell, expecting each CBT
+        // to land on a new column. Pre-fix CBT was a no-op, so the cursor never moved and every
+        // space overwrote the SAME column — fewer characters were deleted than the program
+        // expected. With CBT working, the cursor moves back and the overwrite hits a distinct cell.
         write(terminal, "ABCDEFGHI");     // 9 chars, cols 0..8
         write(terminal, CSI + "1;10H");    // cursor to col 10 (one past end, x=9)
-        // Simulate nano: CBT to the previous tab stop (col 9 -> col 8, x=8), write a space to
-        // delete 'I'; CBT again is col 8 -> col 0 (next prev stop below 8 is 0), write space.
+        // CBT to the previous tab stop (col 9 -> col 8, x=8), then a space overwrites 'I'.
         write(terminal, CSI + "Z ");      // CBT to x=8, space overwrites 'I' at col 8
-        assertEquals(' ', charAt(8, 0), "first CBT+space deletes the char at col 8");
+        assertEquals(' ', charAt(8, 0), "CBT+space deletes the char at the tab stop, not the cell the cursor was on");
         assertEquals(9, terminal.x, "after the space the cursor advanced past col 8 (x=8->9)");
     }
 
