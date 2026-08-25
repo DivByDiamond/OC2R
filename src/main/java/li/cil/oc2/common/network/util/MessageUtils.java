@@ -13,6 +13,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public final class MessageUtils {
+    /** Maximum distance for client-requested block interactions, consistent with entity checks. */
+    private static final double MAX_BLOCK_INTERACTION_DISTANCE = 8;
 
     public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(
             final IPayloadContext context,
@@ -35,6 +37,12 @@ public final class MessageUtils {
             final BiConsumer<ServerPlayer, T> callback) {
         final ServerPlayer player = (ServerPlayer) context.player();
         if (player == null) {
+            return;
+        }
+
+        // The position comes from the network; never touch block entities the
+        // player could not physically reach.
+        if (!pos.closerToCenterThan(player.position(), MAX_BLOCK_INTERACTION_DISTANCE)) {
             return;
         }
 
