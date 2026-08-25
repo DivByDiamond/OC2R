@@ -28,6 +28,15 @@ public final class FrameChunker {
         return chunk;
     }
 
+    /**
+     * Reassembles chunked frames arriving over the network, keyed by block position.
+     *
+     * <p>Every chunk is validated (dimensions, frame size cap, chunk count derived
+     * from frame size, chunk index bounds, exact expected payload length) before it
+     * is copied into the partial buffer, so malformed traffic can never corrupt
+     * state beyond discarding the offending chunk. A partial whose parameters do
+     * not match an incoming chunk is silently replaced with a fresh one.
+     */
     public static final class Reassembler {
         public record CompletedFrame(int codec, int width, int height, byte[] data) {}
 
@@ -134,6 +143,10 @@ public final class FrameChunker {
             return partial;
         }
 
+        // Drops partials that have been incomplete for longer than
+        // PARTIAL_TIMEOUT_MS, so abandoned transfers cannot accumulate forever.
+        // Invoked from offer() because there is no tick or other hook to run
+        // cleanup from; an active transfer resumed after a gap simply restarts.
         private void evictExpired() {
             final long now = System.currentTimeMillis();
             final Iterator<Partial> iterator = partials.values().iterator();

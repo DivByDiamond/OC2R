@@ -10,6 +10,25 @@ import li.cil.oc2.common.inet.tcp.TcpStates;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Data transfer state, entered after the three-way handshake completed.
+ *
+ * <ul>
+ *   <li>{@code receive}: builds an ACK (or PSH+ACK) segment towards the VM carrying up to
+ *       {@code nextSegmentMark} bytes from {@code receiveBuffer}, bounded by the VM's advertised
+ *       {@code vmWindow}. If there is no unacknowledged data and the session is not finishing,
+ *       nothing is emitted (IGNORE).
+ *   <li>{@code send}: validates an inbound segment (sequence number must equal
+ *       {@code vmSequence}, payload must fit the advertised window, ACK number must equal
+ *       {@code mySequence + nextSegmentMark}), appends PSH payloads to {@code sendBuffer},
+ *       advances sequence numbers, and moves to FINISH on a FIN from the VM.
+ * </ul>
+ *
+ * <p>Sequence bookkeeping: {@code mySequence} is our own sequence number for data sent to the VM;
+ * it only advances when the VM acknowledges exactly {@code mySequence + nextSegmentMark} bytes,
+ * at which point those bytes are compacted out of {@code receiveBuffer}. {@code vmSequence} is
+ * the next byte number expected from the VM.
+ */
 public final class EstablishedState extends TcpState {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -34,6 +53,8 @@ public final class EstablishedState extends TcpState {
         header.urgentPointer = 0;
         header.psh = session.nextSegmentMark != 0;
         header.window = session.computeWindow();
+        // header.ack is always true at this point, so this fires exactly when there is no
+        // unacknowledged data to (re)send and no FIN pending: emit nothing.
         if (!header.ack && !header.psh && session.state != TcpStates.FINISH) {
             LOGGER.trace("Established session nothing to send");
             return SessionActions.IGNORE;

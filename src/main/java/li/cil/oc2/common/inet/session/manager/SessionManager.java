@@ -14,11 +14,22 @@ import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Per-card session registry for one transport layer. Sessions are indexed by their
+ * discriminator for lookup, and by last-update time in an ordered expiration queue:
+ * sessions idle for longer than the configured lifetime are expired and closed.
+ * Creation is capped both per card and globally across all cards.
+ */
 public final class SessionManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static int allSessionCount = 0;
 
     private final SessionLayer sessionLayer;
+    /**
+     * Sessions ordered by last-update time. The head of the map is the oldest entry,
+     * so expiration and retransmission scans only need to walk from the front until
+     * the first entry younger than the respective cutoff.
+     */
     private final NavigableMap<Instant, SessionBase> expirationQueue = new TreeMap<>();
     private final Map<SessionDiscriminator<?>, SessionBase> sessions = new ConcurrentHashMap<>();
 
@@ -30,6 +41,12 @@ public final class SessionManager {
         return sessions;
     }
 
+    /**
+     * Expires every session whose last update is older than the configured lifetime.
+     * Expired sessions are removed from the registry, notified via {@code expire()},
+     * and closed towards the peer. Because keys are ordered by time, this stops at
+     * the first entry that is still young enough.
+     */
     public void processSessionExpirationQueue() {
         if (expirationQueue.isEmpty()) {
             return;
@@ -53,6 +70,10 @@ public final class SessionManager {
         }
     }
 
+    /**
+     * Refreshes a session's position in the expiration queue after activity, so its
+     * lifetime restarts from now.
+     */
     public void updateSession(final SessionBase session) {
         final Instant oldKey = session.getLastUpdateTime();
         expirationQueue.remove(oldKey);
@@ -69,6 +90,11 @@ public final class SessionManager {
         --allSessionCount;
     }
 
+    /**
+     * Returns the session matching the discriminator, creating it via the factory if
+     * absent. Creation fails (returns {@code null}) when either the per-card or the
+     * global session limit has been reached.
+     */
     @SuppressWarnings("unchecked")
     @Nullable
     public <S extends SessionBase, D extends SessionDiscriminator<S>> S getOrCreateSession(
@@ -93,6 +119,10 @@ public final class SessionManager {
         return newSession;
     }
 
+    /**
+     * Scans the expiration queue for the oldest stream session that has unacknowledged
+     * data older than the TCP retransmission timeout, for the caller to retransmit.
+     */
     @Nullable
     StreamSessionImpl getNextStreamForRetransmission() {
         if (expirationQueue.isEmpty()) {

@@ -99,6 +99,14 @@ public class ImportFileRequestManager {
         }
     }
 
+    /**
+     * Reduces a client-supplied file name to a safe bare base name: strips any path
+     * components (for both separator styles), trims surrounding whitespace, and
+     * rejects empty names, names longer than 255 characters, and names containing
+     * control characters.
+     *
+     * @return the sanitized name, or {@code null} if the name must be rejected.
+     */
     @Nullable
     static String sanitizeFileName(final String name) {
         if (name == null || name.isEmpty()) {

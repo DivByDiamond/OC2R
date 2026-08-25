@@ -13,6 +13,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Manages VXLAN tunnels between the game server and an external tunnel endpoint.
+ * The manager owns a single UDP socket bound to {@code bindHost:bindPort}; all
+ * tunnels share it and send their traffic to {@code remoteHost:remotePort}.
+ *
+ * <p>Each datagram carries an eight-byte VXLAN header (flag byte with the
+ * VNI-present bit set, reserved bytes, then a 24-bit VNI) followed by the inner
+ * Ethernet frame. Inbound frames are demultiplexed by VNI to the
+ * {@link TunnelInterface} registered under that VTI and appended to its packet
+ * queue; the queue is owned by the registering block entity, which drains it on
+ * the server thread. Frames for unknown VNIs are dropped.
+ *
+ * <p>Outbound frames written to a {@link TunnelInterface} get the same header
+ * prepended and are sent as a single datagram to the remote endpoint.
+ */
 public class TunnelManager {
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -64,6 +79,11 @@ public class TunnelManager {
         }
     }
 
+    /**
+     * Receive loop for the background socket thread. Reads datagrams, validates and
+     * strips the eight-byte VXLAN header, and enqueues the remaining Ethernet frame
+     * into the packet queue of the tunnel interface registered for the extracted VNI.
+     */
     public void listen() throws IOException {
         LOGGER.printf(Level.INFO, "Binding %s:%s\n", bindHost, bindPort);
 
@@ -80,15 +100,18 @@ public class TunnelManager {
 
         byte[] buffer = new byte[65535];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        // TODO shut this thread down more cleanly on server shutdown?
+        // The loop lives as long as the server process; there is no graceful shutdown.
         //noinspection InfiniteLoopStatement
         while (true) {
             socket.receive(packet);
 
+            // A VXLAN header is eight bytes; anything shorter cannot carry a frame.
             if (packet.getLength() < 8) {
                 continue;
             }
 
+            // The flag byte must have bit 0x08 set ("VNI present"); the VNI itself is
+            // stored big-endian in bytes 4..6 of the header.
             byte flags = packet.getData()[0];
             int vni =
                     (packet.getData()[6] & 0xFF)
@@ -108,7 +131,9 @@ public class TunnelManager {
                 byte[] inner = new byte[packet.getLength() - 8]; // NOPMD allocation depends on loop iteration / per-item state
                 System.arraycopy(packet.getData(), 8, inner, 0, packet.getLength() - 8);
 
-                // CircularFifoQueue isn't thread-safe, so we have to synchronize on it.
+                // Queues are bounded blocking queues owned by the registering block
+                // entities, so offers are already thread-safe; the lock merely
+                // serializes producers on this socket thread.
                 lock.lock();
                 try {
 
@@ -125,6 +150,10 @@ public class TunnelManager {
         return managerInstance;
     }
 
+    /**
+     * Sends an Ethernet frame through the tunnel, prepending an eight-byte VXLAN
+     * header that carries the given VTI as the VNI.
+     */
     public void sendToOuternet(int vti, byte[] payload) {
         if (socket != null) {
 
@@ -150,6 +179,10 @@ public class TunnelManager {
         }
     }
 
+    /**
+     * Registers a tunnel interface for the given VTI. Frames received with this VNI
+     * are appended to {@code packetQueue}, which the owner drains on the server thread.
+     */
     public NetworkInterface registerVti(int vti, Queue<byte[]> packetQueue) {
         TunnelInterface tuniface = new TunnelInterface(vti, packetQueue);
         tunnels.put(vti, tuniface);
@@ -160,6 +193,11 @@ public class TunnelManager {
         tunnels.remove(vti);
     }
 
+    /**
+     * One end of a VXLAN tunnel as seen from the local network bus. Frames written
+     * to it are forwarded to the remote tunnel endpoint; reading always yields no
+     * frame, because inbound frames are delivered through the external packet queue.
+     */
     public class TunnelInterface implements NetworkInterface {
         final Queue<byte[]> packetQueue;
         private final int vti;

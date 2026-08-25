@@ -20,9 +20,17 @@ import net.minecraft.server.level.ServerPlayer;
 
 public final class MonitorVideoController {
 
+    // A watcher stops counting as watching if it does not re-register within this
+    // window; the server then skips encoding/sending entirely, so monitors nobody
+    // is looking at cost nothing.
     private static final long WATCHER_TIMEOUT_MS = 2000;
+    // Client-side keep-alive throttle: while the monitor is on screen, the client
+    // re-requests the framebuffer at most once per interval, which also refreshes
+    // its watcher timestamp on the server.
     private static final long KEEP_ALIVE_INTERVAL_MS = 1000;
 
+    // Weakly keyed so players disconnecting without a goodbye are still collected
+    // by the GC; values are last-seen timestamps checked against WATCHER_TIMEOUT_MS.
     private final Map<ServerPlayer, Long> watchers =
             Collections.synchronizedMap(new WeakHashMap<>());
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();

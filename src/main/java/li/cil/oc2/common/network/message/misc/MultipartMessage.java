@@ -132,6 +132,9 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         final int messageId = entry.id();
         final int multipartMessageId = ++lastAssignedMultipartMessageId;
 
+        // A part shorter than a full payload marks the end of the message. If the total
+        // size is an exact multiple of the payload size, the loop sends one additional
+        // empty part so the receiver still sees a short "last" part.
         boolean lastPacketFullLength = true;
 
         while (buffer.readableBytes() > 0 || lastPacketFullLength) {
@@ -157,10 +160,15 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
 
     public void handleMessage(IPayloadContext context) {
         try {
+            // The final part is detected by being shorter than a full payload; this
+            // mirrors the sender, which appends an empty part when the message size
+            // is an exact multiple of the payload size.
             final boolean isFinalPart = data.length < MAX_PAYLOAD_SIZE - HEADER_SIZE;
 
             final Object key = new MultipartKey(context.connection(), multipartMessageId);
 
+            // A zero-capacity buffer is a poisoned entry marking the message as
+            // rejected (over-sized); further parts for that key are dropped.
             final ByteBuf buffer = MULTIPART_MESSAGE_BUFFER_CACHE.get(key, Unpooled::buffer);
             if (buffer.capacity() == 0) {
                 return; // Invalidated entry due to being over-sized.

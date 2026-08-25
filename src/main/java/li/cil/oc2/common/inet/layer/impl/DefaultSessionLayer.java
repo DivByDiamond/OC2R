@@ -21,6 +21,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Session layer bridging OC sessions to real JDK socket channels ({@link SocketChannel} and
+ * {@link DatagramChannel}) managed by a {@link SocketManager}.
+ *
+ * <p>All methods are invoked from the internet thread while the TCP/IP stack processes frames.
+ * The layer is pull-based: {@link #receiveSession(Receiver)} is asked for one ready session at a
+ * time and must hand over at most one piece of work per call, so readiness queues filled by the
+ * socket selector are drained step by step.
+ */
 public final class DefaultSessionLayer implements SessionLayer {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -57,6 +66,12 @@ public final class DefaultSessionLayer implements SessionLayer {
                 readySessions.getToRead(), session -> readSession(receiver, session));
     }
 
+    /**
+     * Completes the pending non-blocking {@code connect()} of a stream session. The session is
+     * first handed to the receiver (which registers it with the transport layer), then the
+     * connection attempt is finished and the session enters its handshake state; on failure the
+     * session is closed, which makes the transport layer emit a RST towards the VM.
+     */
     private boolean connectStream(final Receiver receiver, final Session session) {
         if (!(session instanceof StreamSession streamSession)) {
             return false;
@@ -95,6 +110,8 @@ public final class DefaultSessionLayer implements SessionLayer {
                 }
                 if (Config.useSynchronisedNAT
                         && !address.equals(datagramSession.getDestination())) {
+                    // With synchronised NAT the socket is bound to a wildcard address, so drop
+                    // datagrams that did not come from the session's expected destination.
                     return false;
                 }
                 datagram.flip();

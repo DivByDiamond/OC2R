@@ -13,7 +13,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public final class MessageUtils {
-    /** Maximum distance for client-requested block interactions, consistent with entity checks. */
+    /**
+     * Maximum distance between a client-requested block position and the player.
+     * Matches the nearby-entity check below and is deliberately more lenient than the
+     * vanilla interaction range to tolerate latency, while still rejecting positions
+     * a player cannot plausibly reach.
+     */
     private static final double MAX_BLOCK_INTERACTION_DISTANCE = 8;
 
     public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(

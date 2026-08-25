@@ -13,19 +13,44 @@ import org.jetbrains.annotations.Nullable;
  * Tile-based delta codec for RGB565 frames.
  *
  * <p>The frame is split into {@link #TILE_WIDTH}x{@link #TILE_HEIGHT} tiles. Only
- * tiles that changed since the previously encoded frame are transmitted, compressed
- * with the smallest of three schemes: RLE for runs of identical pixels, zlib for
- * structured data, raw otherwise. The first encoded frame and every resolution
- * change produce a keyframe holding a zlib-compressed full framebuffer.
+ * tiles that changed since the previously encoded frame are transmitted. Each dirty
+ * tile is stored in the cheapest applicable scheme: RLE when the tile contains runs
+ * of identical pixels, zlib as a fallback for other compressible data, raw bytes
+ * otherwise; a candidate replaces raw only if it is strictly smaller. The first
+ * encoded frame and every resolution change produce a keyframe holding a
+ * zlib-compressed full framebuffer.
  *
  * <p>Encoding is lossless: decode(encode(frame)) is bit-exact.
+ *
+ * <p>Wire format (all multi-byte integers are LEB128-style varints):
+ * <pre>
+ * byte   flags       bit 0 set for keyframes, remaining bits reserved
+ * varint width       must match what the decoder passes in
+ * varint height
+ * </pre>
+ * Followed by either:
+ * <ul>
+ *   <li>keyframe: a single zlib stream inflating to exactly width*height*2 bytes</li>
+ *   <li>delta frame:
+ *   <pre>
+ *   varint dirtyTileCount
+ *   dirtyTileCount times:
+ *       varint tileIndex      row-major index into the tile grid
+ *       byte   mode           one of MODE_RAW / MODE_ZLIB / MODE_RLE
+ *       varint payloadLength
+ *       byte[] payload        mode-specific compressed tile data
+ *   </pre></li>
+ * </ul>
  */
 public final class DeltaFrameCodec {
     public static final int TILE_WIDTH = 32;
     public static final int TILE_HEIGHT = 16;
 
+    /** Tile stored verbatim as little-endian RGB565; length must match the tile exactly. */
     private static final byte MODE_RAW = 0;
+    /** Tile stored as a zlib stream inflating to exactly the tile's RGB565 size. */
     private static final byte MODE_ZLIB = 1;
+    /** Tile stored as an RLE stream (see {@link #rleDecode}) expanding to the tile's RGB565 size. */
     private static final byte MODE_RLE = 2;
 
     private static final int FLAG_KEYFRAME = 1;
@@ -252,6 +277,8 @@ public final class DeltaFrameCodec {
             written += tw * 2;
         }
 
+        // zlib is only worth trying when nothing beat raw yet; each candidate must
+        // be strictly smaller than the current best to be emitted.
         byte[] best = tile;
         byte bestMode = MODE_RAW;
         if (hasRuns(tile)) {
@@ -286,6 +313,14 @@ public final class DeltaFrameCodec {
         return false;
     }
 
+    /**
+     * Encodes a tile as run-length sequences of identical RGB565 pixels.
+     *
+     * <p>RLE stream format: repeated {@code [varint runLength][pixel]} groups, where
+     * the pixel is 2 bytes of little-endian RGB565 and {@code runLength} counts
+     * pixels, not bytes. Groups cover the whole tile with no header or terminator,
+     * so the decoded size always equals the input size.
+     */
     private static ByteArrayOutputStream rleEncode(final byte[] tile) {
         final ByteArrayOutputStream out = new ByteArrayOutputStream(tile.length / 4);
         int i = 0;
@@ -306,6 +341,14 @@ public final class DeltaFrameCodec {
         return out;
     }
 
+    /**
+     * Decodes an RLE stream produced by {@link #rleEncode} into {@code out}.
+     *
+     * @return number of bytes written; callers must treat anything but the expected
+     *         tile size as corruption
+     * @throws IOException if a run has a non-positive length, would overflow
+     *                     {@code out}, or the stream is truncated mid-pixel
+     */
     private static int rleDecode(final byte[] data, final byte[] out, final int expectedSize)
             throws IOException {
         final ByteBuffer in = ByteBuffer.wrap(data);
@@ -386,6 +429,10 @@ public final class DeltaFrameCodec {
         return result;
     }
 
+    /**
+     * Writes a LEB128-style varint: 7 payload bits per byte, little-endian order,
+     * high bit set on every byte except the last.
+     */
     private static void writeVarint(final ByteArrayOutputStream out, int value) {
         assert value >= 0;
         while ((value & ~0x7F) != 0) {
@@ -395,6 +442,7 @@ public final class DeltaFrameCodec {
         out.write(value);
     }
 
+    /** Inverse of {@link #writeVarint}; rejects truncated or overlong (5+ byte) values. */
     private static int readVarint(final ByteBuffer in) throws IOException {
         int result = 0;
         int shift = 0;

@@ -164,14 +164,14 @@
 
   <module name="TreeWalker">
 
-    <!-- СТРУКТУРА -->
+    <!-- STRUCTURE -->
     <module name="OuterTypeFilename"/>
     <module name="OneTopLevelClass"/>
     <module name="NoLineWrap">
       <property name="tokens" value="PACKAGE_DEF, IMPORT, STATIC_IMPORT"/>
     </module>
 
-    <!-- ИМЕНОВАНИЕ -->
+    <!-- NAMING -->
     <module name="PackageName">
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
     </module>
@@ -206,7 +206,7 @@
       <property name="allowedAbbreviationLength" value="2"/>
     </module>
 
-    <!-- ИМПОРТЫ -->
+    <!-- IMPORTS -->
     <module name="AvoidStarImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
@@ -217,7 +217,7 @@
       <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>
     </module>
 
-    <!-- СКОБКИ -->
+    <!-- BRACES -->
     <module name="NeedBraces">
       <property name="tokens"
                 value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
@@ -236,7 +236,7 @@
                        STATIC_INIT, INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF"/>
     </module>
 
-    <!-- ПРОБЕЛЫ -->
+    <!-- WHITESPACE -->
     <module name="WhitespaceAfter">
       <property name="tokens" value="COMMA, SEMI, TYPECAST, ELLIPSIS"/>
     </module>
@@ -264,7 +264,7 @@
       <property name="allowMultipleEmptyLines" value="false"/>
     </module>
 
-    <!-- ПЕРЕНОС СТРОК -->
+    <!-- LINE WRAPPING -->
     <module name="SeparatorWrap">
       <property name="id" value="SeparatorWrapDot"/>
       <property name="tokens" value="DOT"/>
@@ -283,7 +283,7 @@
                        PLUS, QUESTION, SL, SR, STAR, METHOD_REF, TYPE_EXTENSION_AND"/>
     </module>
 
-    <!-- ОТСТУПЫ -->
+    <!-- INDENTATION -->
     <module name="Indentation">
       <property name="basicOffset" value="4"/>
       <property name="braceAdjustment" value="0"/>
@@ -293,11 +293,11 @@
       <property name="arrayInitIndent" value="4"/>
     </module>
 
-    <!-- МОДИФИКАТОРЫ -->
+    <!-- MODIFIERS -->
     <module name="ModifierOrder"/>
     <module name="RedundantModifier"/>
 
-    <!-- АННОТАЦИИ -->
+    <!-- ANNOTATIONS -->
     <module name="AnnotationLocation">
       <property name="tokens"
                 value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, PACKAGE_DEF"/>
@@ -307,11 +307,11 @@
       <property name="tokens" value="METHOD_DEF, CTOR_DEF"/>
     </module>
 
-    <!-- ПОРЯДОК ОБЪЯВЛЕНИЙ -->
+    <!-- DECLARATION ORDER -->
     <module name="OverloadMethodsDeclarationOrder"/>
     <module name="VariableDeclarationUsageDistance"/>
 
-    <!-- КАЧЕСТВО КОДА -->
+    <!-- CODE QUALITY -->
     <module name="OneStatementPerLine"/>
     <module name="MultipleVariableDeclarations"/>
     <module name="ArrayTypeStyle"/>
@@ -341,7 +341,7 @@
     <module name="IllegalThrows"/>
     <module name="IllegalCatch"/>
 
-    <!-- СЛОЖНОСТЬ -->
+    <!-- COMPLEXITY -->
     <module name="MethodLength">
       <property name="max" value="60"/>
     </module>
@@ -367,12 +367,12 @@
       <property name="max" value="3"/>
     </module>
 
-    <!-- ПЛОХИЕ ПРАКТИКИ -->
+    <!-- BAD PRACTICES -->
     <module name="EmptyCatchBlock">
       <property name="exceptionVariableName" value="expected|ignore|ignored"/>
     </module>
 
-    <!-- КОММЕНТАРИИ -->
+    <!-- COMMENTS -->
     <module name="CommentsIndentation">
       <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>
     </module>
@@ -399,7 +399,7 @@
       <property name="allowedAnnotations" value="Override, Test"/>
     </module>
 
-    <!-- ПОДАВЛЕНИЕ -->
+    <!-- SUPPRESSION -->
     <module name="SuppressWarningsHolder"/>
     <module name="SuppressionCommentFilter">
       <property name="offCommentFormat" value="CHECKSTYLE.OFF\: ([\w\|]+)"/>

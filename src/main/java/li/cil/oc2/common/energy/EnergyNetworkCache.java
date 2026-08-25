@@ -18,9 +18,12 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Caches the cable topology of energy networks so that the flood-fill does not run
- * every tick. The whole cache is invalidated whenever any cable topology changes
- * (connection change, block placed/broken, chunk unload); events are rare compared
- * to ticks, and cached entries are additionally validated against removed BEs.
+ * every tick. The whole cache is invalidated via {@link #invalidate()}, which is called
+ * from {@code BusCableBlockEntity} whenever a cable loads ({@code loadServer}), unloads
+ * ({@code unloadServer}, incl. chunk unloads) or changes its neighbor connectivity
+ * ({@code handleConfigurationChanged}, i.e. cables/blocks placed or broken next to a
+ * cable). Events are rare compared to ticks; cached entries are additionally validated
+ * against removed block entities on each access as a safety net.
  */
 public final class EnergyNetworkCache {
     private static final Map<ServerLevel, Map<BlockPos, List<BusCableBlockEntity>>> CACHE =

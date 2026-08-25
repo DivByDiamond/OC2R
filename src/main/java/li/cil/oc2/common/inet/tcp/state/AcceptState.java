@@ -8,6 +8,17 @@ import li.cil.oc2.common.inet.tcp.TcpHeader;
 import li.cil.oc2.common.inet.tcp.TcpState;
 import li.cil.oc2.common.inet.tcp.TcpStates;
 
+/**
+ * Handshake state: the VM's SYN has been seen and the real socket is (being) connected.
+ *
+ * <ul>
+ *   <li>{@code receive}: emits the SYN-ACK ({@code acceptConnection()}) acknowledging
+ *       {@code vmSequence + 1}; retransmitted on every pass until the VM completes the handshake.
+ *   <li>{@code send}: waits for a bare ACK ({@code isAcceptanceOrRejectionAcknowledged()}),
+ *       consumes the sequence numbers occupied by the exchanged SYNs, latches {@code vmWindow}
+ *       and moves to {@link EstablishedState}. Returns IGNORE since an ACK needs no answer.
+ * </ul>
+ */
 public final class AcceptState extends TcpState {
     @Override
     public SessionActions receive(final StreamSessionImpl session, final ByteBuffer segment) {

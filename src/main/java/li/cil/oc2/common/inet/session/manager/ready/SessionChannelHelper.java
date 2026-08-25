@@ -12,9 +12,19 @@ import li.cil.oc2.api.inet.session.StreamSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Static helpers tying sessions to the NIO channels stored in their {@code attachment}, plus
+ * draining of the {@link ReadySessions} readiness queues.
+ */
 public final class SessionChannelHelper {
     private static final Logger LOGGER = LogManager.getLogger();
 
+    /**
+     * Drains the given readiness queue, skipping closed sessions, until {@code action} succeeds
+     * for one session or the queue is exhausted. Returns whether an action was applied. This
+     * limits the layer to one I/O-ready session per pass, since a single message buffer can only
+     * serve one of them.
+     */
     public static boolean processQueue(
             final Queue<Session> queue, final Function<Session, Boolean> action) {
         while (true) {
@@ -31,6 +41,10 @@ public final class SessionChannelHelper {
         }
     }
 
+    /**
+     * Closes the session's channel and marks the session closed (unless already closed), which
+     * makes the transport layer discard it and emit any pending RST/FIN towards the VM.
+     */
     public static void closeSession(final Session session) {
         try {
             getChannel(session).close();

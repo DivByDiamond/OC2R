@@ -22,6 +22,15 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Central manager handing out internet access to internet card devices.
+ *
+ * <p>Threading model: the server thread only shuffles ethernet frames between each card's
+ * {@link InternetAdapter} and its connection's frame queues (see
+ * {@code InternetConnectionImpl}) on every server tick, while the entire TCP/IP stack of every
+ * connection — including the session layer, the shared socket selector and tasks scheduled via
+ * {@link #runOnInternetThreadTick} — runs on a single dedicated {@code Internet} executor thread.
+ */
 public final class InternetManagerImpl implements InternetManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -73,6 +82,12 @@ public final class InternetManagerImpl implements InternetManager {
         return task;
     }
 
+    /**
+     * Creates a connection for the given adapter, wiring the adapter to a freshly built TCP/IP
+     * stack obtained from the {@link InternetProvider}. Called from the server thread when an
+     * internet card is mounted; the returned connection must be released via
+     * {@code InternetConnection.stop()}.
+     */
     public InternetConnection connect(
             final InternetAdapter internetAdapter, @Nullable final Tag savedState) {
         final LayerParameters layerParameters =
@@ -87,6 +102,12 @@ public final class InternetManagerImpl implements InternetManager {
         return internetConnection;
     }
 
+    /**
+     * Moves frames between the VM-side adapter and the connection's frame queues. Runs on the
+     * server thread: frames received by the stack (queued on the internet thread in
+     * {@code incoming}) are written to the adapter, and frames read from the adapter are queued
+     * in {@code outcoming} for the internet thread; excess frames are dropped when full.
+     */
     private void processInternetAdapter(final InternetConnectionImpl connection) {
         final InternetAdapter adapter = connection.adapter;
         byte[] received;
@@ -139,6 +160,11 @@ public final class InternetManagerImpl implements InternetManager {
         connectionsToProcess.forEach(InternetConnectionImpl::process);
     }
 
+    /**
+     * Per-tick driver, runs on the server thread. Connections flagged as stopped are torn down
+     * ({@code ethernet.onStop()}) and removed; all others first exchange frames with their
+     * adapters here, then have their TCP/IP stacks processed by the internet thread.
+     */
     @SubscribeEvent
     public void onTick(final ServerTickEvent.Pre event) {
         final List<InternetConnectionImpl> connectionsToStop =

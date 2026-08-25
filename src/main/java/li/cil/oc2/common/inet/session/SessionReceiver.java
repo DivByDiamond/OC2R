@@ -9,6 +9,19 @@ import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.api.inet.session.StreamSession;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 
+/**
+ * The {@link SessionLayer.Receiver} used by the transport layer when interrogating the session
+ * layer. It doubles as the result carrier: after {@link #receive} has been called by the session
+ * layer, {@link #session} holds the accepted session and {@link #getBuffer()} rewinds the message
+ * buffer to the payload start so the transport layer can write protocol headers over it.
+ *
+ * <p>Contract of {@link #receive(Session)}: it resets the buffer to the remembered
+ * position/limit of the current transport message, records the given session, and returns the
+ * buffer in which the session layer must place the incoming payload — or {@code null} when there
+ * is nothing to hand over (sessions in NEW/FINISH/REJECT states). For echo and datagram sessions
+ * eight bytes are reserved as scratch space for the ICMP/UDP header that the transport layer
+ * writes afterwards; for stream sessions the session's own receive buffer is returned instead.
+ */
 public final class SessionReceiver implements SessionLayer.Receiver {
     public SessionBase session = null;
     ByteBuffer buffer = null;

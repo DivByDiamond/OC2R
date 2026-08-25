@@ -101,6 +101,9 @@ public final class FrameCodec {
         }
     }
 
+    // Encoded H264 payloads are always Annex-B byte streams; rejecting anything
+    // else up front avoids spinning up a decoder (and swallowing its exceptions)
+    // for garbage or truncated input.
     private static boolean hasAnnexBStartCode(final byte[] data) {
         if (data.length < 4) {
             return false;
@@ -123,6 +126,15 @@ public final class FrameCodec {
         return current;
     }
 
+    /**
+     * Converts a YUV420J picture back to little-endian RGB565.
+     *
+     * <p>{@code Yuv420jToRgb.YUVJtoRGB} works with samples centered at zero and
+     * returns them as signed bytes, so "+128" restores the unsigned 0..255 range
+     * before each channel is truncated to its 5/6-bit RGB565 width. Chroma is
+     * shared by all pixels of a 2x2 block (4:2:0 subsampling), hence the halved
+     * chroma plane indexing.
+     */
     private static byte[] convertYuvToRgb565(
             final Picture yuv, final int width, final int height) {
         final byte[] y = yuv.getPlaneData(0);
@@ -149,6 +161,15 @@ public final class FrameCodec {
         return rgb;
     }
 
+    /**
+     * Packs a little-endian RGB565 framebuffer into jcodec's YUV420J picture.
+     *
+     * <p>The 5/6-bit channels are scaled up to the full 0..255 range, then biased
+     * by -128 because {@code RgbToYuv420j.rgb2yuv} expects samples centered at
+     * zero (it re-adds 128 internally). Chroma is written once per 2x2 block
+     * (4:2:0 subsampling), sampled from the block's top-left pixel rather than
+     * averaged — cheap and good enough for H264's own chroma smoothing.
+     */
     private static void convertRgb565ToYuv(
             final byte[] rgb565, final int width, final int height, final Picture yuv) {
         final byte[] y = yuv.getPlaneData(0);

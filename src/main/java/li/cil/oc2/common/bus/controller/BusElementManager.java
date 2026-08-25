@@ -8,7 +8,12 @@ import li.cil.oc2.common.util.tick.TickUtils;
 
 final class BusElementManager {
     private static final int MAX_BUS_ELEMENT_COUNT = 128;
+    /** Delay before re-scanning after an incomplete bus (a neighbor returned no neighbors yet). */
     private static final int INCOMPLETE_RETRY_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(10));
+    /**
+     * Delay before re-scanning after a configuration the player must fix (bus too complex,
+     * or multiple controllers fighting over the same bus).
+     */
     private static final int BAD_CONFIGURATION_RETRY_INTERVAL =
             TickUtils.toTicks(Duration.ofSeconds(5));
 
@@ -23,6 +28,13 @@ final class BusElementManager {
     private final Set<DeviceBusElement> collectedElements = new HashSet<>();
     private final List<DeviceBusElement> removedElements = new ArrayList<>();
     private final Set<DeviceBusController> otherControllers = new HashSet<>();
+    /**
+     * Current state of the bus state machine ({@link BusState}). Only ever changed on the
+     * server thread by this class: {@link #scheduleBusScan} resets to {@code SCAN_PENDING};
+     * {@link #scan} transitions to {@code INCOMPLETE}/{@code TOO_COMPLEX} while collecting
+     * elements, to {@code MULTIPLE_CONTROLLERS} when another controller is detected, and
+     * to {@code READY} on a successful scan.
+     */
     private BusState state = BusState.SCAN_PENDING;
     private int scanDelay;
     private int energyConsumption;
@@ -58,6 +70,14 @@ final class BusElementManager {
         return elements;
     }
 
+    /**
+     * Schedules a bus scan for the next update.
+     *
+     * <p>{@code BUS_ERROR} reports are ignored while this controller is not {@code READY}:
+     * they typically come from other controllers that also see this bus as broken, and
+     * acting on them would make the controllers re-scan each other in a loop. Only a
+     * controller that believed the bus was fine reacts to an error report.
+     */
     void scheduleBusScan(final DeviceBusController.ScanReason reason) {
         if (reason == DeviceBusController.ScanReason.BUS_ERROR
                 && state.ordinal() < BusState.READY.ordinal()) {
@@ -135,6 +155,15 @@ final class BusElementManager {
         return true;
     }
 
+    /**
+     * Diffs the currently attached elements against the elements found by the last scan.
+     *
+     * <p>Removed elements are detached from this controller and, importantly, all their
+     * <em>remaining</em> controllers are asked to re-scan ({@code BUS_CHANGE}): the element
+     * may have been the bridge that connected those controllers' buses, so their topology
+     * may have changed too. Returns the set of newly added elements (still including the
+     * root; callers remove it if they do not want it scanned for devices).
+     */
     private Set<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {
         removedElements.clear();
         for (final DeviceBusElement element : elements) {

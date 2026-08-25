@@ -24,6 +24,16 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * A network hub that bridges the local block-entity bus to a VXLAN tunnel.
+ *
+ * <p>Outbound frames written by adjacent devices are flooded to all neighboring
+ * interfaces (except the origin), including the tunnel interface registered with
+ * {@link TunnelManager}, which encapsulates and sends them over UDP. Inbound
+ * frames arrive asynchronously on the tunnel socket thread into
+ * {@link #packetQueue} and are injected into the local network during
+ * {@link #serverTick()}, once per game tick.
+ */
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class VxlanBlockEntity extends ModBlockEntity
         implements NetworkInterface, TickableBlockEntity {
@@ -32,11 +42,15 @@ public final class VxlanBlockEntity extends ModBlockEntity
 
     private final ReentrantLock lock = new ReentrantLock();
 
+    /** Per-hop cost subtracted from the time-to-live when flooding frames to neighbors. */
     private static final int TTL_COST = 1;
+
+    /** Virtual tunnel identifier; selects the inbound VXLAN frames addressed to this hub. */
     private int vti = 1000;
     private int frameCount;
     private long lastGameTime;
 
+    /** Inbound frames delivered by the tunnel socket thread; bounded to cap memory between ticks. */
     private final Queue<byte[]> packetQueue = new ArrayBlockingQueue<>(32);
 
     private final AdjacentBlockInterfaces adjacentInterfaces = new AdjacentBlockInterfaces(this);
@@ -64,6 +78,8 @@ public final class VxlanBlockEntity extends ModBlockEntity
             return;
         }
 
+        // Per-tick flood limiter: only the first hubEthernetFramesPerTick frames of a
+        // tick are forwarded, so a flooded external network cannot stall the server.
         final long gameTime = level.getGameTime();
         if (gameTime > lastGameTime) {
             lastGameTime = gameTime;
@@ -93,6 +109,8 @@ public final class VxlanBlockEntity extends ModBlockEntity
 
         final NetworkInterface tunnelInterface = adjacentInterfaces.getTunnelInterface();
         if (tunnelInterface != null) {
+            // Drain frames received over the tunnel since the last tick and inject them
+            // into the local network, flooding to every neighbor except the tunnel itself.
             lock.lock();
             try {
 

@@ -13,12 +13,39 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
+/**
+ * Moves energy between external blocks and the internal buffers of bus cables.
+ *
+ * <p>The network operates on a pull/push model: every tick one pass pulls energy from
+ * adjacent blocks into the cables' buffers, then pushes energy from those buffers back
+ * out to adjacent consumers. Neighbors are classified purely by their capability flags:
+ * <ul>
+ *     <li><em>Pure source</em>: can extract but not receive &mdash; only pulled from.</li>
+ *     <li><em>Sink</em>: can receive &mdash; pushed to (a sink that can also extract would
+ *     be both pushed to and, since it cannot receive, never pulled from).</li>
+ *     <li><em>Buffer</em> (can both extract and receive): deliberately ignored, otherwise
+ *     networks would drain each other's storage indefinitely.</li>
+ * </ul>
+ */
 public final class EnergyTransferManager {
-    /** How often stored energy is re-balanced across the cables of a network. */
+    /**
+     * How often stored energy is re-balanced across the cables of a network. Re-balancing
+     * every tick is not worth the quadratic cost; once a second is plenty.
+     */
     private static final int REDISTRIBUTE_INTERVAL_TICKS = 20;
 
     private EnergyTransferManager() {}
 
+    /**
+     * Performs one distribution pass for the network the given cable belongs to.
+     *
+     * <p>Although every cable ticks, only the first cable to tick in a given game tick
+     * actually runs a pass: it stamps {@code energyDistributionTick} on every cable of
+     * the network up front, so all other cables bail out immediately afterwards.
+     *
+     * <p>The pass itself is pull &rarr; redistribute &rarr; push. The total amount moved
+     * per pass is capped by the network transfer rate.
+     */
     public static void distribute(final BusCableBlockEntity cable) {
         final Level level = cable.getLevel();
         if (level == null || level.isClientSide()) {
@@ -42,12 +69,11 @@ public final class EnergyTransferManager {
         final int networkRate = cables.get(0).energy.getTransferPerTick();
 
         // Pull from pure sources adjacent to the network, remembering where we pulled from
-        // so we don't immediately push the energy back.
+        // so we don't immediately push the energy back (ping-pong protection).
         final Set<BlockPos> sourcesPulled = new HashSet<>();
         pullFromAllSources(level, cables, networkRate, sourcesPulled);
 
         // Spread stored energy evenly across the network so it is reachable from any sink.
-        // Re-balancing every tick is not worth the O(n^2) cost; once a second is plenty.
         if (gameTime - cable.energyRedistributeTick >= REDISTRIBUTE_INTERVAL_TICKS) {
             redistribute(cables);
             for (final BusCableBlockEntity networkCable : cables) {
@@ -222,6 +248,11 @@ public final class EnergyTransferManager {
         return total;
     }
 
+    /**
+     * Computes a fair-share target for every cable, proportional to its capacity, then
+     * moves energy so each cable holds its target. The last cable absorbs the rounding
+     * remainder so the total amount of energy is conserved exactly.
+     */
     private static void redistribute(final List<BusCableBlockEntity> cables) {
         if (cables.size() < 2) {
             return;
@@ -246,6 +277,16 @@ public final class EnergyTransferManager {
         redistributeDeficits(cables, target);
     }
 
+    /**
+     * Moves energy between cables until each holds at least {@code target[i]}.
+     *
+     * <p>{@code target[i]} is the desired amount of stored energy for cable {@code i};
+     * cables above their target have a surplus, those below a deficit. For every deficit
+     * cable the method walks all other cables and transfers {@code min(deficit, surplus)}
+     * from each surplus cable. This is quadratic in network size, which is acceptable
+     * because it only runs once per {@link #REDISTRIBUTE_INTERVAL_TICKS}. Transfers are
+     * clamped by the storages themselves, so overshooting targets cannot overfill a cable.
+     */
     private static void redistributeDeficits(
             final List<BusCableBlockEntity> cables, final long... target) {
         for (int i = 0; i < cables.size(); i++) {

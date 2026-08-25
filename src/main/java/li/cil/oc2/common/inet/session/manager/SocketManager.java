@@ -13,12 +13,27 @@ import li.cil.oc2.common.inet.session.manager.ready.ReadySessions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Reference-counted holder of the single NIO {@link Selector} shared by all session layers
+ * (one per mounted internet card). Each layer must {@link #attach} on construction and
+ * {@link #detach} on teardown; the selector and its internet-thread tick task live until the last
+ * user detaches.
+ *
+ * <p>Every internet-thread tick, {@code selectNow()} scans the registered channels and enqueues
+ * ready sessions into the owning layer's {@link ReadySessions} queues, which the session layer
+ * then drains one session per pass from {@code receiveSession(Receiver)}.
+ */
 public final class SocketManager {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static int socketManagerUsesCount = 0;
     private static SocketManager managerInstance = null;
 
+    /**
+     * Registers a user of the shared selector. The first call creates the manager (and schedules
+     * its selection task); subsequent calls only bump the use count. Must be paired with exactly
+     * one {@link #detach()} call.
+     */
     public static SocketManager attach(final InternetManager internetManager) {
         final int oldCount = socketManagerUsesCount;
         socketManagerUsesCount++;
@@ -33,6 +48,7 @@ public final class SocketManager {
     private final Selector selector;
     private final InternetManager.Task selectionTask;
 
+    /** Runs once per internet-thread tick: collects currently ready sessions into queues. */
     private void selectionTaskFunction() {
         try {
             selector.selectNow(
@@ -66,8 +82,10 @@ public final class SocketManager {
         LOGGER.info("Started socket manager");
     }
 
+    /** Links a registered channel back to its session and the layer's readiness queues. */
     private record ChannelAttachment(Session session, ReadySessions readySessions) {}
 
+    /** Opens a non-blocking datagram channel registered for read and write readiness. */
     public DatagramChannel createDatagramChannel(
             final DatagramSession session, final ReadySessions readySessions) throws IOException {
         final DatagramChannel datagramChannel = DatagramChannel.open();
@@ -78,6 +96,7 @@ public final class SocketManager {
         return datagramChannel;
     }
 
+    /** Opens a non-blocking socket channel registered for read, write and connect readiness. */
     public SocketChannel createStreamChannel(
             final StreamSession session, final ReadySessions readySessions) throws IOException {
         final SocketChannel socketChannel = SocketChannel.open();

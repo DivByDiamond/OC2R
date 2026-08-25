@@ -20,6 +20,10 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
+    /**
+     * Connection leased from {@link InternetManagerImpl} while the card is mounted; released
+     * (via {@code stop()}) on unmount so the manager can tear down the TCP/IP stack.
+     */
     private InternetConnection internetConnection = null;
 
     public InternetCardDevice(final ItemStack identity) {
@@ -38,6 +42,7 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
                                                 internetAdapter, internetAdapterState));
     }
 
+    /** Stops and releases the connection; idempotent, safe to call before any connect. */
     private void closeInternetAccess() {
         if (internetConnection != null) {
             LOGGER.debug("Disconnect internet card");
@@ -46,6 +51,11 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
         }
     }
 
+    /**
+     * Adapter state captured at deserialization time and refreshed on each save, so that a
+     * remount (which calls {@link #openInternetAccess()} again) restores the latest stack state
+     * even if the device was never re-deserialized from NBT.
+     */
     private Tag internetAdapterState = null;
 
     @Override
@@ -64,7 +74,6 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
                     .ifPresent(
                             adapterState -> {
                                 tag.put(Constants.INTERNET_ADAPTER_TAG_NAME, adapterState);
-                                // TODO: not sure, if this is meaningful
                                 internetAdapterState = adapterState;
                             });
         }

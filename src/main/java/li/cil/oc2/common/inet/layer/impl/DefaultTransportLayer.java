@@ -26,6 +26,16 @@ import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Transport layer of the TCP/IP stack: dispatches segments between the network layer below and
+ * the session layer above, keyed by protocol (ICMP, UDP, TCP). Like all layers it runs exclusively
+ * on the internet thread.
+ *
+ * <p>Outbound traffic from the VM is demultiplexed by {@link SendHandler}, which may record
+ * deferred follow-up work (see {@link #handleQueuedMessages}). Inbound traffic is turned around
+ * here: responses are built by rewriting the inbound packet buffer in place (ports swapped,
+ * checksum recomputed) before it is sent back down.
+ */
 public final class DefaultTransportLayer implements TransportLayer {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -41,6 +51,13 @@ public final class DefaultTransportLayer implements TransportLayer {
         this.sendHandler = new SendHandler(sessionLayer, sessionManager, icmpHandler);
     }
 
+    /**
+     * Pumps the stack: repeatedly asks the session layer for ready sessions and converts each of
+     * them into an outbound transport message until nothing is left to send. Between iterations,
+     * deferred work recorded by {@link SendHandler} during earlier sends is flushed first (see
+     * {@link #handleQueuedMessages}). Returns the protocol of the last message it prepared, or
+     * {@code PROTOCOL_NONE} if there is nothing to transmit.
+     */
     @Override
     public byte receiveTransportMessage(final TransportMessage message) {
         sessionManager.processSessionExpirationQueue();
@@ -65,6 +82,24 @@ public final class DefaultTransportLayer implements TransportLayer {
         }
     }
 
+    /**
+     * Handles follow-up work deferred from {@link SendHandler} while it processed outbound VM
+     * traffic, in strict priority order:
+     *
+     * <ul>
+     *   <li>{@code rejectedStream}: a stream that must be refused (connection refused by the real
+     *       host or closed before the handshake completed). A single RST segment is prepared and
+     *       the session is discarded; the RST takes precedence so the VM never retransmits into a
+     *       dead connection.
+     *   <li>pending ICMP replies accumulated by {@link IcmpHandler#consume}.
+     *   <li>{@code streamToAck}: a stream whose data was accepted from the VM but not yet
+     *       acknowledged. Its session state is refreshed and an ACK (or FIN-carrying) segment is
+     *       prepared for retransmission.
+     * </ul>
+     *
+     * <p>Only one of these actions is performed per call, since a single message buffer can hold
+     * one segment; remaining work is picked up on subsequent calls.
+     */
     private byte handleQueuedMessages(final TransportMessage message) {
         if (sendHandler.rejectedStream != null) {
             LOGGER.trace("Rejecting stream {}", sendHandler.rejectedStream.getDiscriminator());
@@ -122,6 +157,11 @@ public final class DefaultTransportLayer implements TransportLayer {
         return PROTOCOL_NONE;
     }
 
+    /**
+     * Builds an ICMP echo reply from the request still sitting in the message buffer: identity
+     * and sequence are copied from the echo session, an ICMP header is written over the reserved
+     * eight-byte prefix, and source/destination addresses are swapped.
+     */
     private byte handleEchoSession(
             final EchoSessionImpl echoSession, final TransportMessage message) {
         switch (echoSession.getState()) {
@@ -143,6 +183,11 @@ public final class DefaultTransportLayer implements TransportLayer {
         }
     }
 
+    /**
+     * Prepends a UDP header (ports swapped, length, checksum over the pseudo-header) to the
+     * datagram payload in the reserved eight-byte prefix of the message buffer, then swaps the
+     * IP addresses so the network layer routes the datagram back to the VM.
+     */
     private byte handleDatagramSession(
             final DatagramSessionImpl datagramSession, final TransportMessage message) {
         switch (datagramSession.getState()) {

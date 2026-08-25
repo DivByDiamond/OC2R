@@ -2,6 +2,14 @@ package li.cil.oc2.common.inet.tcp;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Parsed or pre-built TCP header, excluding the ports: callers write the port pair into the
+ * segment buffer before {@link #write(ByteBuffer)} / after reading a fixed 4 bytes themselves,
+ * hence the fixed part measures {@link #MIN_HEADER_SIZE_NO_PORTS} = 16 bytes.
+ *
+ * <p>The checksum is written as zero by {@link #write(ByteBuffer)}; the actual value is filled in
+ * later at offset 16 of the finished segment (see {@code TcpUtils}).
+ */
 public class TcpHeader {
     public static final int MIN_HEADER_SIZE_NO_PORTS = 16;
 
@@ -115,10 +123,12 @@ public class TcpHeader {
         }
     }
 
+    /** Whether the flags describe a bare SYN (connection initiation) with no other flag set. */
     public boolean isConnectionInitiation() {
         return syn && !urg && !ack && !psh && !rst && !fin;
     }
 
+    /** Rewrites the header in place into a SYN-ACK with the given sequence/window values. */
     public void acceptConnection(final int sequence, final int acknowledgment, final int window) {
         sequenceNumber = sequence;
         acknowledgmentNumber = acknowledgment;
@@ -133,10 +143,12 @@ public class TcpHeader {
         maxSegmentSize = -1;
     }
 
+    /** Whether the flags describe a bare ACK, i.e. the final segment of the 3-way handshake. */
     public boolean isAcceptanceOrRejectionAcknowledged() {
         return !syn && !urg && ack && !psh && !rst && !fin;
     }
 
+    /** Rewrites the header in place into a RST with the given sequence/window values. */
     public void rejectConnection(final int sequence, final int acknowledgment) {
         sequenceNumber = sequence;
         acknowledgmentNumber = acknowledgment;
