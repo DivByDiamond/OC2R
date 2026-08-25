@@ -31,7 +31,9 @@ public class TcpHeader {
         sequenceNumber = data.getInt();
         acknowledgmentNumber = data.getInt();
         final int dataOffset = position + ((data.get() >>> 2) & 0x3C) - 4;
-        if (dataOffset > data.limit()) {
+        // The offset must cover at least the fixed header and never exceed the buffer,
+        // otherwise parsing below rewinds the position of a live network stream.
+        if (dataOffset < position + MIN_HEADER_SIZE_NO_PORTS || dataOffset > data.limit()) {
             return false;
         }
         final int flags = Byte.toUnsignedInt(data.get());
@@ -60,6 +62,13 @@ public class TcpHeader {
                     break;
             }
             final int size = Byte.toUnsignedInt(data.get());
+            // A length below 2 would rewind the position and loop forever on
+            // attacker-controlled data; an option must also not cross dataOffset.
+            if (size < 2 || data.position() + size - 2 > dataOffset) {
+                data.position(position);
+                maxSegmentSize = mss;
+                return false;
+            }
             if (type == OPTION_MAX_SEGMENT_SIZE) {
                 if (size != 4) {
                     data.position(position);
