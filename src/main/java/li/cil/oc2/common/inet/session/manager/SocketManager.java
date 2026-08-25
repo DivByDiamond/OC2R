@@ -60,9 +60,6 @@ public final class SocketManager {
                         if (selectionKey.isReadable()) {
                             readySessions.getToRead().add(session);
                         }
-                        if (selectionKey.isWritable()) {
-                            readySessions.getToWrite().add(session);
-                        }
                         if (selectionKey.isConnectable()) {
                             readySessions.getToConnect().add(session);
                         }
@@ -85,24 +82,32 @@ public final class SocketManager {
     /** Links a registered channel back to its session and the layer's readiness queues. */
     private record ChannelAttachment(Session session, ReadySessions readySessions) {}
 
-    /** Opens a non-blocking datagram channel registered for read and write readiness. */
+    /**
+     * Opens a non-blocking datagram channel registered for read readiness only. Writes are
+     * performed synchronously from {@code sendSession}; registering {@code OP_WRITE} here
+     * would enqueue every always-writable channel into the readiness queues on every tick.
+     */
     public DatagramChannel createDatagramChannel(
             final DatagramSession session, final ReadySessions readySessions) throws IOException {
         final DatagramChannel datagramChannel = DatagramChannel.open();
         datagramChannel.configureBlocking(false);
         final ChannelAttachment attachment = new ChannelAttachment(session, readySessions);
-        final int ops = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
-        datagramChannel.register(selector, ops, attachment);
+        datagramChannel.register(selector, SelectionKey.OP_READ, attachment);
         return datagramChannel;
     }
 
-    /** Opens a non-blocking socket channel registered for read, write and connect readiness. */
+    /**
+     * Opens a non-blocking socket channel registered for read and connect readiness.
+     * {@code OP_WRITE} is deliberately not registered: writes go out synchronously from
+     * {@code sendSession}, and since TCP sockets are almost always writable the queue of
+     * write-ready sessions would grow without bound (and is not consumed anywhere).
+     */
     public SocketChannel createStreamChannel(
             final StreamSession session, final ReadySessions readySessions) throws IOException {
         final SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
         final ChannelAttachment attachment = new ChannelAttachment(session, readySessions);
-        final int ops = SelectionKey.OP_READ | SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT;
+        final int ops = SelectionKey.OP_READ | SelectionKey.OP_CONNECT;
         socketChannel.register(selector, ops, attachment);
         return socketChannel;
     }

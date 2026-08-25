@@ -6,15 +6,10 @@ import li.cil.oc2.api.inet.session.Session;
 
 public final class ReadySessions {
     private final Queue<Session> toRead = new ArrayDeque<>();
-    private final Queue<Session> toWrite = new ArrayDeque<>();
     private final Queue<Session> toConnect = new ArrayDeque<>();
 
     public Queue<Session> getToRead() {
         return toRead;
-    }
-
-    public Queue<Session> getToWrite() {
-        return toWrite;
     }
 
     public Queue<Session> getToConnect() {
