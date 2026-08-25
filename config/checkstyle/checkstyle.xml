@@ -45,9 +45,6 @@
     <property name="checks" value="ReturnCount"/>
   </module>
   <module name="SuppressionSingleFilter">
-    <property name="checks" value="MissingSwitchDefault"/>
-  </module>
-  <module name="SuppressionSingleFilter">
     <property name="checks" value="IllegalCatch"/>
   </module>
   <module name="SuppressionSingleFilter">
@@ -136,9 +133,6 @@
   </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="JavadocTagContinuationIndentation"/>
-  </module>
-  <module name="SuppressionSingleFilter">
-    <property name="checks" value="FallThrough"/>
   </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="CommentsIndentation"/>
@@ -324,6 +318,14 @@
     <module name="MissingSwitchDefault"/>
     <module name="DefaultComesLast"/>
     <module name="FallThrough"/>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="SystemOut"/>
+      <property name="format" value="^\s*System\.(out|err)\."/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="PrintStackTrace"/>
+      <property name="format" value="\.printStackTrace\(\s*\)"/>
+    </module>
     <module name="UpperEll"/>
     <module name="NoFinalizer"/>
     <module name="EqualsHashCode"/>

@@ -11,8 +11,6 @@
 
         <exclude name="AbstractClassWithoutAbstractMethod"/>
         <exclude name="AccessorMethodGeneration"/>
-        <exclude name="AvoidPrintStackTrace"/>
-        <exclude name="SystemPrintln"/>
         <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
         <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="UnitTestContainsTooManyAsserts"/>

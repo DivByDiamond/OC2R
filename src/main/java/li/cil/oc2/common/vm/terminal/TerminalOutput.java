@@ -66,6 +66,9 @@ class TerminalOutput {
             case DCS -> terminal.dcsManager.handle(ch);
             case OSC -> terminal.oscManager.handle(ch);
             case APC -> terminal.apcManager.handle(ch);
+            default -> {
+                // Exhaustive over the known states; guards against future additions.
+            }
         }
     }
 

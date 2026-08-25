@@ -6,8 +6,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class PciRootPortDevice implements MemoryMappedDevice {
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -51,12 +55,12 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
     @Override
     public long load(final int offset, final int sizeLog2) throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-            System.out.printf("PCI config read: %x %x%n", offset, sizeLog2);
+            LOGGER.debug("PCI config read: {} {}", Integer.toHexString(offset), sizeLog2);
             if (offset == 0x10) {
                 long res = buffer.getInt(offset);
-                System.out.printf("        00:00.0 BAR0 read    %x%n", res);
+                LOGGER.debug("        00:00.0 BAR0 read    {}", Long.toHexString(res));
                 res = res & 0xFFFFF000L;
-                System.out.printf("Clipped 00:00.0 BAR0 read to %x%n", res);
+                LOGGER.debug("Clipped 00:00.0 BAR0 read to {}", Long.toHexString(res));
                 return res;
             }
             return switch (sizeLog2) {
@@ -75,7 +79,11 @@ public final class PciRootPortDevice implements MemoryMappedDevice {
     public void store(final int offset, final long value, final int sizeLog2)
             throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-            System.out.printf("PCI config write: %x %x %x%n", offset, value, sizeLog2);
+            LOGGER.debug(
+                    "PCI config write: {} {} {}",
+                    Integer.toHexString(offset),
+                    Long.toHexString(value),
+                    sizeLog2);
             switch (sizeLog2) {
                 case 0 -> buffer.put(offset, (byte) value);
                 case 1 -> buffer.putShort(offset, (short) value);

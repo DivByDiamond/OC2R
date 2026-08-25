@@ -5,9 +5,13 @@ import java.nio.charset.StandardCharsets;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.modes.PrivateMode;
 import li.cil.oc2.common.vm.terminal.modes.impl.MouseMode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector2i;
 
 final class TerminalMouseHandler {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private final Terminal terminal;
 
     TerminalMouseHandler(final Terminal terminal) {
@@ -79,7 +83,7 @@ final class TerminalMouseHandler {
                     return true;
                 }
             } else {
-                System.out.println("ERR: Unsupported primary mode");
+                LOGGER.warn("Unsupported primary mouse mode");
             }
         }
         return false;
@@ -143,7 +147,7 @@ final class TerminalMouseHandler {
                     return true;
                 }
             } else {
-                System.out.println("ERR: Unsupported primary mode");
+                LOGGER.warn("Unsupported primary mouse mode");
             }
         }
         return false;

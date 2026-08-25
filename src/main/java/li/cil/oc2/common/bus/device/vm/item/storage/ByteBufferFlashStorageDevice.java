@@ -23,9 +23,13 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
         implements ItemDevice, FirmwareLoader {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private final int size;
     private MemoryMap memoryMap;
     private ByteBuffer data;
@@ -108,7 +112,7 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
                     BlobStorage.getOrOpenAsync(tag.getUUID("blob")).join().read(data, 0);
                 }
             } catch (Exception e) {
-                System.out.println("Error message: " + e.getMessage());
+                LOGGER.warn("Failed to load flash storage data", e);
             }
         }
 

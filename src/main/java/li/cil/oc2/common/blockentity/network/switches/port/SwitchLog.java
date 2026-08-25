@@ -1,6 +1,11 @@
 package li.cil.oc2.common.blockentity.network.switches.port;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public final class SwitchLog {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private static final boolean ENABLED = true;
     short ingressVlan;
     public short egressVlan;
@@ -25,12 +30,12 @@ public final class SwitchLog {
         String inMac = PacketProcessor.macLongToString(srcMac);
         String outMac = PacketProcessor.macLongToString(destMac);
         if (egressSide == null) {
-            System.out.printf(
-                    "Switch Packet %s (Port %s, VLAN %s) -> %s drop (%s)\n",
+            LOGGER.debug(
+                    "Switch Packet {} (Port {}, VLAN {}) -> {} drop ({})",
                     inMac, ingressSide, ingressVlan, outMac, reason);
         } else {
-            System.out.printf(
-                    "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s) drop (%s)\n",
+            LOGGER.debug(
+                    "Switch Packet {} (Port {}, VLAN {}) -> {} (Port {}) drop ({})",
                     inMac, ingressSide, ingressVlan, outMac, egressSide, reason);
         }
     }
@@ -39,8 +44,8 @@ public final class SwitchLog {
         if (!ENABLED) return;
         String inMac = PacketProcessor.macLongToString(srcMac);
         String outMac = PacketProcessor.macLongToString(destMac);
-        System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s (Port %s, VLAN %s)\n",
+        LOGGER.debug(
+                "Switch Packet {} (Port {}, VLAN {}) -> {} (Port {}, VLAN {})",
                 inMac, ingressSide, ingressVlan, outMac, egressSide, egressVlan);
     }
 
@@ -48,8 +53,8 @@ public final class SwitchLog {
         if (!ENABLED) return;
         String inMac = PacketProcessor.macLongToString(srcMac);
         String outMac = PacketProcessor.macLongToString(destMac);
-        System.out.printf(
-                "Switch Packet %s (Port %s, VLAN %s) -> %s flood\n",
+        LOGGER.debug(
+                "Switch Packet {} (Port {}, VLAN {}) -> {} flood",
                 inMac, ingressSide, ingressVlan, outMac);
     }
 }

@@ -21,10 +21,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class VxlanBlockEntity extends ModBlockEntity
         implements NetworkInterface, TickableBlockEntity {
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -99,7 +103,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
                 lock.unlock();
             }
         } else {
-            System.out.printf("VXLAN block is unregistered upstream: VTI=%d\n", vti);
+            LOGGER.warn("VXLAN block is unregistered upstream: VTI={}", vti);
         }
     }
 
