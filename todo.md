@@ -1076,15 +1076,15 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
 
 ### VXLAN / шина / энергия
 
-- [ ] **Ш1 — scan() шины каждый тик каждого компьютера**: `VirtualMachineTicker.java:23` →
-  BFS до 128 элементов с новыми HashSet/HashMap (`BusElementManager.java:97-133`); scanDevices строит
-  новые коллекции + два set-diff даже без изменений (`CommonDeviceBusController.java:57-58`).
-  Реализовать push-based из §20 (dirty-флаг топологии) + early-exit по size.
-- [ ] **Ш2 — энергосеть: BFS flood-fill + O(n²) redistribute каждый тик**:
-  `EnergyTransferManager.collectNetwork:86-103` (~3000 getBlockState/тик для 500 кабелей),
-  второй проход collectNetworkCables (:105-114), `redistributeDeficits:275-296` O(n²),
-  getExternalEnergy capability-lookup на каждую сторону каждого кабеля каждый тик (:298-304).
-  Фикс: кэш топологии с инвалидацией по neighbor-changed, redistribute раз в 20 тиков.
+- [x] **Ш1 — scan() шины каждый тик** (DONE 53b50d2, частично устарел): при верификации
+  выяснено — event-driven скан с dirty-флагом `scheduleBusScan` + O(1) ранний выход уже
+  существуют (BFS НЕ каждый тик). Доделано: переиспользование BFS/diff-коллекций в
+  `BusElementManager`, один проход вместо двух diff-HashSet. Полный push-based граф §20
+  не требуется (событийная модель покрывает).
+- [x] **Ш2 — энергосеть: BFS flood-fill + O(n²) redistribute каждый тик** (DONE d553911):
+  `EnergyNetworkCache` (per-level/per-origin кэш, инвалидация на config change/load/unload
+  кабеля + валидация isRemoved), redistribute раз в 20 тиков; pull/push ежетиковые.
+  Capability-lookup'ы оставлены свежими (кэшировать чужие capability небезопасно).
 - [ ] **Ш3 — блокирующий UDP send в тик-треде**: `VxlanBlockEntity.serverTick:92-99` →
   `TunnelManager.java:144 socket.send(packet)` — до 32 блокирующих send/тик/хаб
   (hubEthernetFramesPerTick). Фикс: очередь отправки + sender-тред / DatagramChannel non-blocking.
