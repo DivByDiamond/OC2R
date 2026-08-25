@@ -90,6 +90,36 @@ class FrameCodecTest {
         assertTrue(decoded.isPresent());
     }
 
+    @Test
+    void deltaCodecRoundtripIsBitExact() {
+        final int width = 320;
+        final int height = 240;
+        final byte[] first = new byte[width * height * 2];
+        for (int i = 0; i < width * height; i++) {
+            first[i * 2] = (byte) 0xE0;
+            first[i * 2 + 1] = 0x07;
+        }
+        final var encodedFirst = codec.encode(VideoCodec.DELTA, first, width, height);
+        assertEquals(VideoCodec.DELTA, encodedFirst.codec());
+
+        final byte[] second = first.clone();
+        for (int i = 0; i < 100; i++) {
+            second[i * 2 + 1] = 0x1F;
+        }
+        final var encodedSecond = codec.encode(VideoCodec.DELTA, second, width, height);
+
+        assertArrayEquals(first, codec.decode(VideoCodec.DELTA, encodedFirst.data(), width, height).orElseThrow());
+        assertArrayEquals(second, codec.decode(VideoCodec.DELTA, encodedSecond.data(), width, height).orElseThrow());
+    }
+
+    @Test
+    void videoCodecIdsAreStable() {
+        assertEquals(VideoCodec.RAW, VideoCodec.fromId(0));
+        assertEquals(VideoCodec.H264, VideoCodec.fromId(1));
+        assertEquals(VideoCodec.DELTA, VideoCodec.fromId(2));
+        assertEquals(VideoCodec.RAW, VideoCodec.fromId(3));
+    }
+
     private static byte[] solidFrame(final int pixel) {
         final byte[] frame = new byte[640 * 480 * 2];
         for (int i = 0; i < frame.length; i += 2) {

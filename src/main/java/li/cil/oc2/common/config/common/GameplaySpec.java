@@ -55,11 +55,12 @@ public class GameplaySpec {
         videoCodec =
                 builder.comment(
                                 "Codec used to transmit monitor/projector frames.",
-                                "raw - full RGB565 framebuffer per frame (low CPU, high bandwidth,",
-                                "       best for local/LAN play).",
-                                "h264 - H.264 + deflate compression (higher CPU, low bandwidth,",
-                                "       best for multiplayer over the internet/VPN).")
-                        .define("videoCodec", "raw");
+                                "delta - lossless tile-based delta compression of RGB565"
+                                        + " (low CPU, low bandwidth; recommended).",
+                                "raw - full RGB565 framebuffer per frame (lowest CPU, highest",
+                                "       bandwidth, best for local/LAN play).",
+                                "h264 - legacy H.264 via bundled jcodec (highest CPU).")
+                        .define("videoCodec", "delta");
 
         cpuFrequencyTier1 =
                 builder.comment(

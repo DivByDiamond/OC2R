@@ -27,10 +27,22 @@ public final class FrameCodec {
     @Nullable private Picture encoderPicture;
     private boolean needsIDR = true;
 
+    @Nullable private DeltaFrameCodec deltaCodec;
+
     public EncodedFrame encode(
             final VideoCodec codec, final byte[] rgb565, final int width, final int height) {
-        if (codec != VideoCodec.H264) {
-            return new EncodedFrame(VideoCodec.RAW, rgb565);
+        switch (codec) {
+            case RAW -> {
+                return new EncodedFrame(VideoCodec.RAW, rgb565);
+            }
+            case DELTA -> {
+                if (deltaCodec == null) {
+                    deltaCodec = new DeltaFrameCodec();
+                }
+                return new EncodedFrame(VideoCodec.DELTA, deltaCodec.encode(rgb565, width,
+                        height));
+            }
+            default -> {}
         }
 
         if (h264Encoder == null) {
@@ -64,8 +76,14 @@ public final class FrameCodec {
 
     public Optional<byte[]> decode(
             final VideoCodec codec, final byte[] data, final int width, final int height) {
-        if (codec != VideoCodec.H264) {
+        if (codec == VideoCodec.RAW) {
             return Optional.of(data);
+        }
+        if (codec == VideoCodec.DELTA) {
+            if (deltaCodec == null) {
+                deltaCodec = new DeltaFrameCodec();
+            }
+            return deltaCodec.decode(data, width, height);
         }
 
         try {

@@ -2,7 +2,8 @@ package li.cil.oc2.common.vm.video;
 
 public enum VideoCodec {
     RAW(0),
-    H264(1);
+    H264(1),
+    DELTA(2);
 
     public final int id;
 
@@ -14,6 +15,7 @@ public enum VideoCodec {
         return switch (id) {
             case 0 -> RAW;
             case 1 -> H264;
+            case 2 -> DELTA;
             default -> RAW;
         };
     }
