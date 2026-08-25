@@ -57,6 +57,8 @@ public class InternetCardSpec {
                                         + " disallowed; we recommend leaving it this way",
                                 "169.254.0.0/16 also blocks cloud-metadata services (e.g."
                                         + " 169.254.169.254) reachable from publicly hosted servers",
+                                "The limited broadcast address 255.255.255.255 is deliberately NOT"
+                                        + " denied: DHCP relies on it",
                                 "Only denied hosts or allowed hosts may have a value, or an error"
                                         + " will occur",
                                 "Note: hostnames are resolved once when the config loads and are"
@@ -73,7 +75,6 @@ public class InternetCardSpec {
                                         "172.16.0.0/12",
                                         "192.168.0.0/16",
                                         "224.0.0.0/4",
-                                        "255.255.255.255/32",
                                         "192.0.2.0/24",
                                         "198.51.100.0/24",
                                         "203.0.113.0/24"),

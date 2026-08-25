@@ -30,6 +30,15 @@ public abstract class SessionBase implements Session {
         lastUpdateTime = Instant.now();
     }
 
+    /**
+     * Forces the last-update timestamp. Used by {@code SessionManager} to de-conflict
+     * expiration-queue keys when {@code Instant.now()} returns the same value for two
+     * different sessions.
+     */
+    public void setLastUpdateTime(final Instant time) {
+        lastUpdateTime = time;
+    }
+
     @Override
     public Instant getLastUpdateTime() {
         return lastUpdateTime;

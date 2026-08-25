@@ -41,6 +41,11 @@ public final class SessionManager {
         return sessions;
     }
 
+    /** Number of sessions tracked for expiration; exposed for tests. */
+    int getQueueSize() {
+        return expirationQueue.size();
+    }
+
     /**
      * Expires every session whose last update is older than the configured lifetime.
      * Expired sessions are removed from the registry, notified via {@code expire()},
@@ -59,7 +64,7 @@ public final class SessionManager {
             if (time.compareTo(expireTime) < 0) {
                 final SessionBase session = expirationQueue.get(time);
                 iterator.remove();
-                sessions.remove(session.getDiscriminator());
+                removeRegistered(session);
                 --allSessionCount;
                 LOGGER.trace("Expired session {}", session.getDiscriminator());
                 session.expire();
@@ -75,19 +80,44 @@ public final class SessionManager {
      * lifetime restarts from now.
      */
     public void updateSession(final SessionBase session) {
-        final Instant oldKey = session.getLastUpdateTime();
-        expirationQueue.remove(oldKey);
+        expirationQueue.remove(session.getLastUpdateTime());
         session.update();
-        final Instant newLastUpdateTime = session.getLastUpdateTime();
-        final SessionBase previous = expirationQueue.put(newLastUpdateTime, session);
+        enqueue(session);
+    }
+
+    /**
+     * Inserts an updated session under a unique expiration-queue key.
+     *
+     * <p>{@code Instant.now()} has finite resolution and can hand the same timestamp to
+     * two different sessions. A plain put would silently evict the earlier session from
+     * this queue while leaving it registered in {@code sessions}: never expired again,
+     * its slot never released. Enough such leaks exhaust the session limits and all
+     * networking dies (observed as "network gets slower until it stops" with chatty
+     * protocols like DHCP).
+     */
+    void enqueue(final SessionBase session) {
+        Instant key = session.getLastUpdateTime();
+        while (expirationQueue.containsKey(key)) {
+            key = key.plusNanos(1);
+        }
+        session.setLastUpdateTime(key);
+        final SessionBase previous = expirationQueue.put(key, session);
         assert previous == null;
     }
 
     public void closeSession(final SessionBase session) {
         LOGGER.trace("Close session {}", session.getDiscriminator());
-        sessions.remove(session.getDiscriminator());
+        removeRegistered(session);
         expirationQueue.remove(session.getLastUpdateTime());
         --allSessionCount;
+    }
+
+    private void removeRegistered(final SessionBase session) {
+        // Discriminator may be absent on synthetic/test sessions.
+        final SessionDiscriminator<?> discriminator = session.getDiscriminator();
+        if (discriminator != null) {
+            sessions.remove(discriminator);
+        }
     }
 
     /**
