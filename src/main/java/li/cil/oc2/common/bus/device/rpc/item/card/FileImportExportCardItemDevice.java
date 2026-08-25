@@ -51,8 +51,9 @@ public final class FileImportExportCardItemDevice extends AbstractItemRPCDevice
         this.userProvider = userProvider;
     }
 
-    public static void setImportedFile(final int id, final String name, final byte[] data) {
-        ImportFileRequestManager.setImportedFile(id, name, data);
+    public static void setImportedFile(
+            final ServerPlayer sender, final int id, final String name, final byte[] data) {
+        ImportFileRequestManager.setImportedFile(sender, id, name, data);
     }
 
     public static void cancelImport(final ServerPlayer player, final int id) {
