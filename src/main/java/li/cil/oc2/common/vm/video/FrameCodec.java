@@ -10,6 +10,7 @@ import li.cil.oc2.jcodec.common.model.ColorSpace;
 import li.cil.oc2.jcodec.common.model.Picture;
 import li.cil.oc2.jcodec.scale.RgbToYuv420j;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
+import org.jetbrains.annotations.Nullable;
 
 public final class FrameCodec {
     private static final int KEY_INTERVAL = 100;
@@ -17,15 +18,14 @@ public final class FrameCodec {
 
     public record EncodedFrame(VideoCodec codec, byte[] data) {}
 
-    private final H264Encoder h264Encoder = new H264Encoder(new CQPRateControl(12));
-    private final H264Decoder h264Decoder = new H264Decoder();
-    private final ByteBuffer encoderBuffer = ByteBuffer.allocateDirect(ENCODER_BUFFER_SIZE);
-    private Picture encoderPicture = Picture.create(0, 0, ColorSpace.YUV420J);
+    // Encoder/decoder state is allocated lazily: most BlockEntities never send
+    // or receive an H264 frame (RAW is the default codec), so they should not
+    // pay the 4MB direct buffer plus jcodec structures up front.
+    @Nullable private H264Encoder h264Encoder;
+    @Nullable private H264Decoder h264Decoder;
+    @Nullable private ByteBuffer encoderBuffer;
+    @Nullable private Picture encoderPicture;
     private boolean needsIDR = true;
-
-    public FrameCodec() {
-        h264Encoder.setKeyInterval(KEY_INTERVAL);
-    }
 
     public EncodedFrame encode(
             final VideoCodec codec, final byte[] rgb565, final int width, final int height) {
@@ -33,17 +33,27 @@ public final class FrameCodec {
             return new EncodedFrame(VideoCodec.RAW, rgb565);
         }
 
+        if (h264Encoder == null) {
+            h264Encoder = new H264Encoder(new CQPRateControl(12));
+            h264Encoder.setKeyInterval(KEY_INTERVAL);
+        }
         encoderPicture = ensurePicture(encoderPicture, width, height);
         convertRgb565ToYuv(rgb565, width, height, encoderPicture);
 
-        encoderBuffer.clear();
+        if (encoderBuffer == null) {
+            encoderBuffer = ByteBuffer.allocateDirect(ENCODER_BUFFER_SIZE);
+        }
+        final ByteBuffer buffer = encoderBuffer;
+        buffer.clear();
         final ByteBuffer frameData;
         try {
+            // SPS/PPS are only emitted in IDR frames, so the first encoded frame
+            // must be an IDR for clients to pick up the stream parameters.
             if (needsIDR) {
-                frameData = h264Encoder.encodeIDRFrame(encoderPicture, encoderBuffer);
+                frameData = h264Encoder.encodeIDRFrame(encoderPicture, buffer);
                 needsIDR = false;
             } else {
-                frameData = h264Encoder.encodeFrame(encoderPicture, encoderBuffer).data();
+                frameData = h264Encoder.encodeFrame(encoderPicture, buffer).data();
             }
         } catch (final BufferOverflowException ignored) {
             return new EncodedFrame(VideoCodec.RAW, rgb565);
@@ -61,6 +71,9 @@ public final class FrameCodec {
         try {
             if (!hasAnnexBStartCode(data)) {
                 return Optional.empty();
+            }
+            if (h264Decoder == null) {
+                h264Decoder = new H264Decoder();
             }
             final Picture yuv = Picture.create(width, height, ColorSpace.YUV420J);
             h264Decoder.decodeFrame(ByteBuffer.wrap(data), yuv.getData());
@@ -85,8 +98,8 @@ public final class FrameCodec {
     }
 
     private static Picture ensurePicture(
-            final Picture current, final int width, final int height) {
-        if (current.getWidth() != width || current.getHeight() != height) {
+            @Nullable final Picture current, final int width, final int height) {
+        if (current == null || current.getWidth() != width || current.getHeight() != height) {
             return Picture.create(width, height, ColorSpace.YUV420J);
         }
         return current;
