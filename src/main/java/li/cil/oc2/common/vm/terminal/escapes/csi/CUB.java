@@ -14,6 +14,8 @@ public class CUB extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argsCount, CSIState state) {
-        terminal.setClampedCursorPos(terminal.x - args[0], terminal.y);
+        // Left by Ps columns. Subtraction can't overflow, but all four cardinal directions share
+        // the bounded relative-move primitive (see Terminal.moveCursorBy).
+        terminal.moveCursorBy(-args[0], 0);
     }
 }

@@ -275,9 +275,26 @@ public class Terminal {
         }
     }
 
+    /**
+     * Move the cursor by a relative delta, clamping the delta to the screen extent before the add.
+     * CSI argument parsing saturates at {@link Integer#MAX_VALUE}, so {@code terminal.x + dx} would
+     * overflow to a negative int and {@link #setClampedCursorPos} would then clamp that wrapped value
+     * to 0 (the near edge) instead of the far edge. Bounding the delta first keeps the sum in range;
+     * {@code setClampedCursorPos} still applies the screen and scroll-region clamp to the result.
+     * Negative deltas (up/left) are bounded symmetrically.
+     */
+    public void moveCursorBy(final int dx, final int dy) {
+        setClampedCursorPos(x + Math.clamp(dx, -width, width),
+                y + Math.clamp(dy, -Terminal.HEIGHT, Terminal.HEIGHT));
+    }
+
     public void setRelativeCursorPos(final int x, final int y) {
         if (currentPrivateModeState.DECOM) {
-            setCursorPos(x, Math.max(scrollFirst, Math.min(scrollFirst + y, scrollLast)));
+            // Clamp y into the scroll region (origin-relative under DECOM) BEFORE adding
+            // scrollFirst: parseArgument saturates at Integer.MAX_VALUE, so scrollFirst + y
+            // would overflow negative and clamp to scrollFirst (top) instead of scrollLast
+            // (bottom). Bounding y to the region keeps the sum in range; row 1 = scrollFirst.
+            setCursorPos(x, scrollFirst + Math.clamp(y, 0, scrollLast - scrollFirst));
         } else {
             setCursorPos(x, y);
         }
