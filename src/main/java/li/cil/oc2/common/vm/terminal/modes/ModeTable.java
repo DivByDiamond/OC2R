@@ -25,7 +25,7 @@ public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number l
     // --- DEC private modes (DECSET/DECRST, '?' modifier) ---
     DECCKM(PrivateMode.DECCKM, Kind.PRIVATE, true),
     DECANM(PrivateMode.DECANM, Kind.PRIVATE, false),
-    DECCOLM(PrivateMode.DECCOLM, Kind.PRIVATE, false),
+    DECCOLM(PrivateMode.DECCOLM, Kind.PRIVATE, true),
     DECSCLM(PrivateMode.DECSCLM, Kind.PRIVATE, true),
     DECSCNM(PrivateMode.DECSCNM, Kind.PRIVATE, true),
     DECOM(PrivateMode.DECOM, Kind.PRIVATE, true),
