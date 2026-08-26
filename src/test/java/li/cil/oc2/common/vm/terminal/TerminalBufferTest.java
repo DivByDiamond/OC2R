@@ -220,6 +220,22 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void moveCursorBySaturatedDownInScrollRegionClampsToScrollLast() {
+        // moveCursorBy bounds the delta to +/- HEIGHT before the add, then setClampedCursorPos
+        // applies the scroll-region clamp. From inside a region [5..10] (0-indexed 4..9) at y=6,
+        // a saturated CUD (down) must land on scrollLast (9) — not overflow the int sum to a
+        // negative value that clamps to scrollFirst (4), and not escape the region to HEIGHT-1.
+        write(terminal, CSI + "5;10r");     // scroll region rows 5-10 (0-indexed 4..9)
+        assertEquals(4, terminal.scrollFirst);
+        assertEquals(9, terminal.scrollLast);
+        write(terminal, CSI + "7;1H");      // row 7 (y=6), inside the region
+        assertEquals(6, terminal.y);
+        write(terminal, CSI + "2147483647B"); // saturated down
+        assertEquals(9, terminal.y, "saturated CUD inside a scroll region lands on scrollLast, not scrollFirst or HEIGHT-1");
+        assertEquals(0, terminal.x);
+    }
+
+    @Test
     void edClearsFromCursorToEndOfScreen() {
         write(terminal, SAMPLE_LINE + CSI + "3G" + CSI + "J");
         assertEquals('A', charAt(0, 0));
