@@ -9,6 +9,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class GameplaySpec {
     public final ModConfigSpec.EnumValue<Tiers> blockOperationsModuleToolTier;
     public final ModConfigSpec.LongValue soundCardCoolDownSeconds;
+    public final ModConfigSpec.IntValue soundCardPcmBytesPerSecond;
     public final ModConfigSpec.IntValue cpuFrequencyTier1;
     public final ModConfigSpec.IntValue cpuFrequencyTier2;
     public final ModConfigSpec.IntValue cpuFrequencyTier3;
@@ -28,6 +29,17 @@ public class GameplaySpec {
                                 "The number of seconds between sound card uses, to prevent"
                                         + " spam/abuse")
                         .defineInRange("soundCardCoolDownSeconds", 2, 1, Long.MAX_VALUE);
+
+        soundCardPcmBytesPerSecond =
+                builder.comment(
+                                "Maximum number of PCM bytes per second a single sound card"
+                                        + " may stream to clients. Exceeding the budget throws"
+                                        + " an exception back to the guest.")
+                        .defineInRange(
+                                "soundCardPcmBytesPerSecond",
+                                128 * 1024,
+                                4096,
+                                16 * 1024 * 1024);
 
         monitorMaxWidth =
                 builder.comment(
@@ -88,6 +100,7 @@ public class GameplaySpec {
     public void loadValues() {
         Config.blockOperationsModuleToolTier = blockOperationsModuleToolTier.get().name();
         Config.soundCardCoolDownSeconds = soundCardCoolDownSeconds.get();
+        Config.soundCardPcmBytesPerSecond = soundCardPcmBytesPerSecond.get();
         Config.cpuFrequencyTier1 = cpuFrequencyTier1.get() * 1_000_000;
         Config.cpuFrequencyTier2 = cpuFrequencyTier2.get() * 1_000_000;
         Config.cpuFrequencyTier3 = cpuFrequencyTier3.get() * 1_000_000;

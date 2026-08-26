@@ -5,6 +5,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.network.util.PlayerRateLimits;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -38,6 +39,12 @@ public record MonitorRequestFramebufferMessage(BlockPos pos) implements Abstract
                 context,
                 pos,
                 MonitorBlockEntity.class,
-                (player, monitor) -> monitor.video.handleWatchedBy(player));
+                (player, monitor) -> {
+                    // Legitimate clients re-request at most once per second (keep-alive
+                    // interval); anything faster is spam that keeps watcher entries alive
+                    // and forces the server to keep encoding for nobody.
+                    if (!PlayerRateLimits.allowThrottled(player, 250)) return;
+                    monitor.video.handleWatchedBy(player);
+                });
     }
 }

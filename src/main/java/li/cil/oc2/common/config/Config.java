@@ -63,6 +63,7 @@ public final class Config {
 
     public static String blockOperationsModuleToolTier = Tiers.DIAMOND.name();
     public static long soundCardCoolDownSeconds = 2;
+    public static int soundCardPcmBytesPerSecond = 128 * 1024;
     public static int vmTimeQuotaMs = 25;
 
     public static UUID fakePlayerUUID = UUID.fromString("e39dd9a7-514f-4a2d-aa5e-b6030621416d");

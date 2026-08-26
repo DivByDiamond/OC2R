@@ -5,6 +5,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.network.util.PlayerRateLimits;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -44,6 +45,12 @@ public record KeyboardInputMessage(BlockPos pos, int keycode, boolean isDown)
                 context,
                 pos,
                 KeyboardBlockEntity.class,
-                (player, keyboard) -> keyboard.handleInput(keycode, isDown));
+                (player, keyboard) -> {
+                    // Every accepted event is injected into the VM and raises a guest
+                    // interrupt; without a cap a spamming client can burn VM CPU time.
+                    // Human typing plus key repeat stays well below this limit.
+                    if (!PlayerRateLimits.allowEvents(player, 64)) return;
+                    keyboard.handleInput(keycode, isDown);
+                });
     }
 }

@@ -1151,13 +1151,23 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
   VPS гость читает cloud-metadata (IAM-токены) через 169.254.169.254. Добавить также 0.0.0.0/8,
   255.255.255.255/32, TEST-NET диапазоны. Hostname-записи резолвятся один раз при старте
   (`Ipv4Space.java:131-146`) — DNS rebinding конфигурации; документировать, рекомендовать CIDR.
-- [ ] **С5 — PCM-флуд**: `SoundCardItemDevice.write:157-177` без rate-limit шлёт SoundCardPcmMessage
-  всем трекерам чанка; клиентский PcmSoundBuffer — неограниченная очередь chunks. Гость циклит
-  sound.write(huge) → флуд сети + heap клиентов. Фикс: bytes/tick бюджет + cap ~256КБ с вытеснением.
-- [ ] **С6 — нет rate limit на MonitorRequestFramebufferMessage (:36-42)** (каждый запрос =
-  сериализация+рассылка фреймбуфера) и KeyboardInputMessage (:42-48). Фикс: per-player cooldown.
-- [ ] С7 — ICMP echo блокирует единственный internet-поток: `EchoHandler.java:56-67` sync sendICMP
-  с таймаутом; ping «чёрных» адресов замирает весь интернет для всех карт. Лимит параллельных echo.
+- [x] **С5 — PCM-флуд** (DONE 2026-08-26): `SoundCardItemDevice.write` — token bucket
+  `soundCardPcmBytesPerSecond` (конфиг GameplaySpec, default 128 КиБ/с, 4КиБ–16МБ/с), refill
+  непрерывный по nanoTime, превышение → IllegalArgumentException гостю. Короткие burst'ы после
+  маунта работают (бакет стартует полным).
+- [x] **С6 — rate limit на C2S-сообщения** (DONE 2026-08-26): новый
+  `common/network/util/PlayerRateLimits` (per-player throttle + event-window, WeakHashMap,
+  потокобезопасно) + тест PlayerRateLimitsTest(4, поймал off-by-one первого ивента окна);
+  MonitorRequestFramebufferMessage / ProjectorRequestFramebufferMessage — throttle 250 мс/игрок
+  (легитимный клиент шлёт раз в секунду, спам держал watchers живыми → принудительный энкод в пустоту);
+  KeyboardInputMessage — 64 события/с/игрок (каждое событие = прерывание гостю → жгла CPU ВМ).
+- [x] **С7 — ICMP echo блокировал internet-поток** (DONE 2026-08-26): нативная ветка
+  `EchoHandler.handleEchoSession` (sync `DefaultSessionLayer.sendICMP`, до 1 с на пинг «чёрного»
+  адреса — стопорила ВСЕ интернет-карты сервера: кадры, TCP/UDP, задачи тика; saveAdapterState
+  с серверного потока тоже вис на submit().get()) переведена на тот же executor
+  «internet/blocking-session», что и fallback; ответ доставляется асинхронно как раньше.
+  Попутно фикс бага: `size = data.remaining()` считался ПОСЛЕ `data.get(payload)` → всегда 0,
+  нативный sendICMP звался с пустым payload.
 - [ ] С8 — NBT интернет-карты: MAC/IP восстанавливаются как есть (`DefaultLinkLocalLayer.java:60-81`)
   → impersonation другой карты в мировом LAN. Привязать MAC к UUID предмета детерминированно.
 - [ ] С9 — TunnelManager надёжность: bind-fail → managerInstance==null, но поток стартует (NPE в фоне);

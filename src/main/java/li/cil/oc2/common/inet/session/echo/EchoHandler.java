@@ -50,24 +50,28 @@ public final class EchoHandler {
             return true;
         }
         final InetAddress address = session.getDestination().getAddress();
-        byte[] payload = new byte[data.remaining()];
+        final int size = data.remaining();
+        final byte[] payload = new byte[size];
         data.get(payload);
-        int size = data.remaining();
-        if (Main.LoadedLibrary) {
-            byte[] responseData =
-                    DefaultSessionLayer.sendICMP(
-                            address.getAddress(),
-                            payload,
-                            size,
-                            Config.defaultEchoRequestTimeoutMs);
-            if (responseData != null) {
-                final EchoResponse response =
-                        new EchoResponse(ByteBuffer.wrap(responseData), echoSession);
-                echoResponse.set(response);
-            }
-        } else {
-            executor.execute(
-                    () -> {
+        // Both paths perform blocking syscalls (native sendICMP or isReachable), so
+        // they must run on the dedicated blocking executor: the single "Internet"
+        // thread drives all network cards and TCP/UDP sessions of the server, and a
+        // ping to an unreachable host would otherwise stall it for the whole timeout.
+        // Responses are delivered asynchronously via deliverPendingResponse either way.
+        executor.execute(
+                () -> {
+                    if (Main.LoadedLibrary) {
+                        final byte[] responseData =
+                                DefaultSessionLayer.sendICMP(
+                                        address.getAddress(),
+                                        payload,
+                                        size,
+                                        Config.defaultEchoRequestTimeoutMs);
+                        if (responseData != null) {
+                            echoResponse.set(
+                                    new EchoResponse(ByteBuffer.wrap(responseData), echoSession));
+                        }
+                    } else {
                         try {
                             final EchoResponse response = new EchoResponse(data, echoSession);
                             if (address.isReachable(
@@ -82,8 +86,8 @@ public final class EchoHandler {
                             warnAboutIcmpFallbackOnce(e);
                             LOGGER.error("Failed to get echo response", e);
                         }
-                    });
-        }
+                    }
+                });
         return true;
     }
 

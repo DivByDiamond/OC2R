@@ -5,6 +5,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.network.util.PlayerRateLimits;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -38,6 +39,11 @@ public record ProjectorRequestFramebufferMessage(BlockPos pos) implements Abstra
                 context,
                 pos,
                 ProjectorBlockEntity.class,
-                (player, projector) -> projector.handleWatchedBy(player));
+                (player, projector) -> {
+                    // Same rationale as MonitorRequestFramebufferMessage: legitimate
+                    // clients re-request at most once per second.
+                    if (!PlayerRateLimits.allowThrottled(player, 250)) return;
+                    projector.handleWatchedBy(player);
+                });
     }
 }

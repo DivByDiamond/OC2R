@@ -37,6 +37,9 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
 
     private final Supplier<Optional<BlockLocation>> location;
     private long gameTimeCooldownExpiresAt;
+    // PCM token bucket; starts full so short bursts right after mounting work.
+    private long pcmBudgetBytes = Config.soundCardPcmBytesPerSecond;
+    private long pcmBudgetRefillAtNanos = System.nanoTime();
 
     public SoundCardItemDevice(
             final ItemStack identity, final Supplier<Optional<BlockLocation>> location) {
@@ -149,6 +152,12 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     @Callback
     public void write(@Parameter("data") final byte[] data) {
         if (data == null || data.length == 0) throw new IllegalArgumentException();
+        refillPcmBudget();
+        if (data.length > pcmBudgetBytes) {
+            throw new IllegalArgumentException(
+                    "PCM byte rate limit exceeded, slow down or write less per call");
+        }
+        pcmBudgetBytes -= data.length;
         location.get()
                 .ifPresent(
                         loc -> {
@@ -174,6 +183,23 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
                                                 }
                                             });
                         });
+    }
+
+    /**
+     * Token bucket limiting PCM streaming to {@code Config.soundCardPcmBytesPerSecond}
+     * bytes per second per device, refilled continuously. Prevents a guest from
+     * flooding all clients tracking the chunk with network messages.
+     */
+    private void refillPcmBudget() {
+        final long now = System.nanoTime();
+        final long elapsed = now - pcmBudgetRefillAtNanos;
+        if (elapsed > 0) {
+            pcmBudgetBytes =
+                    Math.min(
+                            Config.soundCardPcmBytesPerSecond,
+                            pcmBudgetBytes + elapsed / 1_000_000L * Config.soundCardPcmBytesPerSecond / 1000);
+            pcmBudgetRefillAtNanos = now;
+        }
     }
 
     private void sendTone(final float frequency, final int durationMs) {
