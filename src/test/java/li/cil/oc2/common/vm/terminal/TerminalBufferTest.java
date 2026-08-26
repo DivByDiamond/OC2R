@@ -131,6 +131,95 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void cudMovesCursorDownAndClampsSaturatedCount() {
+        // parseArgument saturates at Integer.MAX_VALUE; terminal.y + args[0] must not overflow to a
+        // negative int (which would clamp to row 0) — a huge down-move lands on the bottom row.
+        write(terminal, CSI + "6;1H");          // row 6 (y=5)
+        write(terminal, CSI + "3B");            // down 3 -> y=8
+        assertEquals(0, terminal.x);
+        assertEquals(8, terminal.y);
+        write(terminal, CSI + "2147483647B");   // saturated down -> bottom
+        assertEquals(Terminal.HEIGHT - 1, terminal.y, "saturated CUD lands on the bottom row, not 0");
+        assertEquals(0, terminal.x);
+    }
+
+    @Test
+    void cufMovesCursorRightAndClampsSaturatedCount() {
+        // Mirror of CUD: terminal.x + args[0] must not overflow to column 0; a huge right-move
+        // lands on the right edge.
+        write(terminal, CSI + "1;6H");          // col 6 (x=5)
+        write(terminal, CSI + "3C");            // right 3 -> x=8
+        assertEquals(8, terminal.x);
+        assertEquals(0, terminal.y);
+        write(terminal, CSI + "2147483647C");   // saturated right -> right edge
+        assertEquals(Terminal.WIDTH - 1, terminal.x, "saturated CUF lands on the right edge, not 0");
+        assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void cuuMovesCursorUpAndClampsSaturatedCount() {
+        // CUU subtracts (no overflow), but shares the bounded moveCursorBy primitive; a huge
+        // up-move lands on the top row.
+        write(terminal, CSI + "6;1H");          // row 6 (y=5)
+        write(terminal, CSI + "3A");            // up 3 -> y=2
+        assertEquals(0, terminal.x);
+        assertEquals(2, terminal.y);
+        write(terminal, CSI + "2147483647A");   // saturated up -> top
+        assertEquals(0, terminal.y, "saturated CUU lands on the top row");
+        assertEquals(0, terminal.x);
+    }
+
+    @Test
+    void cubMovesCursorLeftAndClampsSaturatedCount() {
+        // CUB subtracts (no overflow), but shares the bounded moveCursorBy primitive; a huge
+        // left-move lands on column 0.
+        write(terminal, CSI + "1;6H");          // col 6 (x=5)
+        write(terminal, CSI + "3D");            // left 3 -> x=2
+        assertEquals(2, terminal.x);
+        assertEquals(0, terminal.y);
+        write(terminal, CSI + "2147483647D");   // saturated left -> col 0
+        assertEquals(0, terminal.x, "saturated CUB lands on column 0");
+        assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void vprMovesCursorDownAndClampsSaturatedCount() {
+        // VPR (CSI Ps e) is the relative mirror of VPA; same overflow class as CUD.
+        write(terminal, CSI + "6;1H");          // row 6 (y=5)
+        write(terminal, CSI + "3e");            // down 3 -> y=8
+        assertEquals(0, terminal.x);
+        assertEquals(8, terminal.y);
+        write(terminal, CSI + "2147483647e");   // saturated -> bottom
+        assertEquals(Terminal.HEIGHT - 1, terminal.y, "saturated VPR lands on the bottom row, not 0");
+        assertEquals(0, terminal.x);
+    }
+
+    @Test
+    void hprMovesCursorRightAndClampsSaturatedCount() {
+        // HPR (CSI Ps a) is the relative mirror of HPA; same overflow class as CUF.
+        write(terminal, CSI + "1;6H");          // col 6 (x=5)
+        write(terminal, CSI + "3a");            // right 3 -> x=8
+        assertEquals(8, terminal.x);
+        assertEquals(0, terminal.y);
+        write(terminal, CSI + "2147483647a");   // saturated -> right edge
+        assertEquals(Terminal.WIDTH - 1, terminal.x, "saturated HPR lands on the right edge, not 0");
+        assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void cnlMovesToNextLineAndClampsSaturatedCount() {
+        // CNL (CSI Ps E) moves down Ps lines and to column 0. Same overflow class as CUD on the
+        // row; the column reset is why it can't share moveCursorBy (which preserves the column).
+        write(terminal, CSI + "1;6H");          // col 6 (x=5), row 1 (y=0)
+        write(terminal, CSI + "3E");            // down 3, col 0 -> y=3, x=0
+        assertEquals(0, terminal.x);
+        assertEquals(3, terminal.y);
+        write(terminal, CSI + "2147483647E");   // saturated -> bottom, col 0
+        assertEquals(0, terminal.x);
+        assertEquals(Terminal.HEIGHT - 1, terminal.y, "saturated CNL lands on the bottom row, not 0");
+    }
+
+    @Test
     void edClearsFromCursorToEndOfScreen() {
         write(terminal, SAMPLE_LINE + CSI + "3G" + CSI + "J");
         assertEquals('A', charAt(0, 0));
@@ -225,6 +314,19 @@ public class TerminalBufferTest {
         assertFalse(terminal.currentPrivateModeState.DECOM);
         assertEquals(0, terminal.x);
         assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void decomSaturatedRowClampsToScrollLastNotOverflow() {
+        // Under DECOM, CUP's row is origin-relative: absolute = scrollFirst + (row-1). With a
+        // saturated row, scrollFirst + (MAX_VALUE-1) overflows negative and clamps to scrollFirst
+        // (top) instead of scrollLast (bottom). The fix bounds the row to the region first.
+        write(terminal, CSI + "3;8r" + CSI + "?6h");  // scroll region rows 3-8 (0-indexed 2..7), DECOM on
+        assertEquals(2, terminal.scrollFirst);
+        assertEquals(7, terminal.scrollLast);
+        write(terminal, CSI + "2147483647;1H");       // CUP row MAX, col 1 -> bottom of region
+        assertEquals(7, terminal.y, "saturated DECOM row lands on scrollLast (bottom), not scrollFirst");
+        assertEquals(0, terminal.x);
     }
 
     @Test

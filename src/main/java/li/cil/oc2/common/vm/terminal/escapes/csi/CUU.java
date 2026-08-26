@@ -14,6 +14,8 @@ public class CUU extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argsCount, CSIState state) {
-        terminal.setClampedCursorPos(terminal.x, terminal.y - args[0]);
+        // Up by Ps rows. Subtraction can't overflow, but all four cardinal directions share the
+        // bounded relative-move primitive (see Terminal.moveCursorBy).
+        terminal.moveCursorBy(0, -args[0]);
     }
 }

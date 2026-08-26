@@ -18,6 +18,10 @@ public class CNL extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.setClampedCursorPos(0, terminal.y + args[0]);
+        // Down by Ps lines and to column 0 (the CSI E form of NEL). moveCursorBy preserves the
+        // column, so this resets it explicitly and clamps the delta inline: parseArgument saturates
+        // at Integer.MAX_VALUE, so terminal.y + args[0] would overflow negative to row 0 (top)
+        // instead of the bottom row.
+        terminal.setClampedCursorPos(0, terminal.y + Math.clamp(args[0], 0, Terminal.HEIGHT));
     }
 }

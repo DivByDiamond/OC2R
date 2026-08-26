@@ -18,6 +18,8 @@ public class VPR extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.setClampedCursorPos(terminal.x, terminal.y + args[0]);
+        // Down by Ps rows (relative). Bounded relative move (see Terminal.moveCursorBy): a
+        // saturated CSI count can't overflow the int sum before setClampedCursorPos clamps.
+        terminal.moveCursorBy(0, args[0]);
     }
 }

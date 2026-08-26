@@ -14,6 +14,8 @@ public class CUF extends CSISequenceHandler {
 
     @Override
     public void execute(int[] args, int argsCount, CSIState state) {
-        terminal.setClampedCursorPos(terminal.x + args[0], terminal.y);
+        // Right by Ps columns. Bounded relative move (see Terminal.moveCursorBy): a saturated
+        // CSI count can't overflow the int sum before setClampedCursorPos clamps.
+        terminal.moveCursorBy(args[0], 0);
     }
 }
