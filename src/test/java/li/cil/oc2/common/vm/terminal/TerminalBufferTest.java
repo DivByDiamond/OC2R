@@ -1050,6 +1050,28 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void decrcClampsSavedCursorAfterWidthShrink() {
+        // §36 m1: DECRC/restoreSavedCursor didn't clamp after a width change — ESC7 in 132 cols
+        // at col 100 → ?3l (setWidth homes but doesn't reset savedX) → ESC8 gave x=100 > 79 →
+        // OOB → false wrap on the next char. Fix: clamp at restore. Our SavedCursor.restore
+        // routes through setCursorPos (Math.clamp), so the saved 132-space coordinate clamps to
+        // the 80-space last column and the next char does NOT false-wrap.
+        write(terminal, CSI + "?3h");           // DECCOLM 132
+        assertEquals(132, terminal.getTerminalWidth());
+        write(terminal, CSI + "1;100H");        // CUP to column 100 (x=99), valid in 132
+        write(terminal, ESC + "7");             // DECSC — save savedX=99
+        write(terminal, CSI + "?3l");            // DECCOLM 80 — setWidth(80), homes cursor
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth());
+        assertEquals(0, terminal.x, "setWidth homes the cursor");
+        write(terminal, ESC + "8");             // DECRC — restore
+        assertTrue(terminal.x <= Terminal.WIDTH - 1,
+            "restored x must clamp to the 80-col last column (79), not the saved 132-col 99");
+        assertEquals(79, terminal.x, "clamps to width-1");
+        write(terminal, "X");                   // next char — must NOT false-wrap
+        assertEquals(0, terminal.y, "no false wrap to the next row");
+    }
+
+    @Test
     void repRepeatsLastPrintedChar() {
         // CSI b (REP) repeats the preceding printable char Ps times via putChar, so the repeats
         // advance the cursor and wrap like real input.
