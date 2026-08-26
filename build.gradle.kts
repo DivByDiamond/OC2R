@@ -324,7 +324,7 @@ tasks.jar {
                 "Specification-Vendor" to "North Western Development (Originally by Sangar)",
                 "Specification-Version" to "1",
                 "Implementation-Title" to project.name,
-                "Implementation-Version" to semver,
+                "Implementation-Version" to semver.trimStart('v'),
                 "Implementation-Vendor" to "North Western Development (Originally by Sangar)",
                 "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
                 "MixinConfigs" to "mixins.oc2r.json",
