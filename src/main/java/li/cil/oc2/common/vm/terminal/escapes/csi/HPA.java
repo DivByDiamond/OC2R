@@ -19,6 +19,9 @@ public class HPA extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.setRelativeCursorPos(args[0] - 1, terminal.y);
+        // Use setClampedCursorPos (like the sibling CHA), not setRelativeCursorPos: under DECOM
+        // setRelativeCursorPos adds scrollFirst to the (absolute) terminal.y, shifting the row.
+        // HPA keeps the row; only the column changes.
+        terminal.setClampedCursorPos(args[0] - 1, terminal.y);
     }
 }

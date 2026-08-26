@@ -1094,6 +1094,67 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void repClampsHugeCountToOneScreen() {
+        // parseArgument saturates at Integer.MAX_VALUE, so CSI 2147483647b would loop ~2^31 times
+        // (each a full putChar inside the IO lock) and freeze the VM. REP must clamp: capping at
+        // one screen (width * HEIGHT) means the repeats fill the screen and scroll, but return.
+        write(terminal, "X");
+        final long start = System.nanoTime();
+        write(terminal, CSI + "2147483647b");
+        final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+        assertTrue(elapsedMs < 5000, "REP MAX_VALUE must not freeze — clamped to one screen");
+        // The screen is full of 'X' (clamped count fills exactly width*HEIGHT cells, scrolling
+        // the original; the visible window is all 'X').
+        assertEquals('X', charAt(0, 0), "the clamped REP fills the visible screen with the char");
+    }
+
+    @Test
+    void hpaKeepsRowUnderDecomOriginMode() {
+        // §36 review: HPA used setRelativeCursorPos, which under DECOM adds scrollFirst to the
+        // (absolute) terminal.y — shifting the row. HPA keeps the row; only the column changes.
+        // Fix: use setClampedCursorPos like the sibling CHA.
+        write(terminal, CSI + "3;8r");        // scroll region rows 3-8 (0-indexed 2..7)
+        write(terminal, CSI + "?6h");         // DECOM on (origin mode)
+        write(terminal, CSI + "5;3H");        // CUP row 5 col 3 -> under DECOM, y = scrollFirst+4 = 6
+        assertEquals(6, terminal.y, "precondition: DECOM puts row 5 at absolute y=6");
+        write(terminal, CSI + "20`");         // HPA 20 -> column 19, row must STAY at 6
+        assertEquals(19, terminal.x, "HPA sets the column");
+        assertEquals(6, terminal.y, "HPA must not shift the row under DECOM");
+    }
+
+    @Test
+    void xtrestoreQuestionMarkURestoresSavedPrivateMode() {
+        // CSI ?Ps u is XTRESTORE — the mirror of CH6's ?s XTSAVE. It restores private mode Ps
+        // from savePrivateModeState into currentPrivateModeState. CH12 groups u = SCORC (plain)
+        // + ?u (XTRESTORE) like CH6 groups s = SCOSC + ?s (XTSAVE). This replaces the earlier
+        // "?u doesn't hijack RCP" guard: the ?u branch is now a real handler, not a no-op.
+        // Use DECCOLM (?3) as the mode: XTSAVE it while on, turn it off, XTRESTORE brings it back.
+        write(terminal, CSI + "?3h");            // DECCOLM on
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "precondition: DECCOLM on");
+        write(terminal, CSI + "?3s");            // XTSAVE mode 3 -> save DECCOLM=true
+        write(terminal, CSI + "?3l");            // turn DECCOLM off
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "DECCOLM off before restore");
+        write(terminal, CSI + "?3u");            // XTRESTORE mode 3 -> restore DECCOLM=true
+        assertTrue(terminal.currentPrivateModeState.DECCOLM,
+            "XTRESTORE (?u) restores the saved private mode (mirror of ?s XTSAVE)");
+    }
+
+    @Test
+    void scorcPlainUDoesNotTouchSavedPrivateModes() {
+        // Plain CSI u (SCORC) restores the cursor only — it must not touch the private modes
+        // (that's ?u / XTRESTORE). And ?u must not restore the cursor (that's plain u / SCORC).
+        // The two branches of CH12 are cleanly separated by the questionMark.
+        write(terminal, CSI + "?3h");            // DECCOLM on
+        write(terminal, CSI + "1;10H");          // cursor at col 10
+        write(terminal, ESC + "7");              // DECSC — save cursor
+        write(terminal, CSI + "1;1H");            // move to home
+        write(terminal, CSI + "u");               // SCORC (plain u) — restore cursor only
+        assertEquals(9, terminal.x, "plain u (SCORC) restores the cursor");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM,
+            "plain u (SCORC) does not touch private modes — DECCOLM stays on");
+    }
+
+    @Test
     void deccolmSwitchesColumnWidthAndClearsScreen() {
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
 
