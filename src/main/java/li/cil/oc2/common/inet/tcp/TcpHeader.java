@@ -44,6 +44,11 @@ public class TcpHeader {
         if (dataOffset < position + MIN_HEADER_SIZE_NO_PORTS || dataOffset > data.limit()) {
             return false;
         }
+        readFixedHeader(data);
+        return parseOptions(data, position, dataOffset);
+    }
+
+    private void readFixedHeader(final ByteBuffer data) {
         final int flags = Byte.toUnsignedInt(data.get());
         urg = ((flags >>> 5) & 1) == 1;
         ack = ((flags >>> 4) & 1) == 1;
@@ -54,7 +59,14 @@ public class TcpHeader {
         window = Short.toUnsignedInt(data.getShort());
         data.getShort(); // checksum
         urgentPointer = Short.toUnsignedInt(data.getShort());
+    }
 
+    /**
+     * Parses TCP options up to {@code dataOffset}. Returns false on malformed input,
+     * rewinding {@code data} to its original position; {@code maxSegmentSize} carries
+     * whatever MSS option was seen before the failure, mirroring the old behavior.
+     */
+    private boolean parseOptions(final ByteBuffer data, final int position, final int dataOffset) {
         int mss = -1;
 
         while (dataOffset > data.position()) {

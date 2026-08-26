@@ -58,37 +58,57 @@ public final class EchoHandler {
         // thread drives all network cards and TCP/UDP sessions of the server, and a
         // ping to an unreachable host would otherwise stall it for the whole timeout.
         // Responses are delivered asynchronously via deliverPendingResponse either way.
-        executor.execute(
-                () -> {
-                    if (Main.LoadedLibrary) {
-                        final byte[] responseData =
-                                DefaultSessionLayer.sendICMP(
-                                        address.getAddress(),
-                                        payload,
-                                        size,
-                                        Config.defaultEchoRequestTimeoutMs);
-                        if (responseData != null) {
-                            echoResponse.set(
-                                    new EchoResponse(ByteBuffer.wrap(responseData), echoSession));
-                        }
-                    } else {
-                        try {
-                            final EchoResponse response = new EchoResponse(data, echoSession);
-                            if (address.isReachable(
-                                    null,
-                                    echoSession.getTtl(),
-                                    Config.defaultEchoRequestTimeoutMs)) {
-                                echoResponse.set(response);
-                            } else {
-                                warnAboutIcmpFallbackOnce(null);
-                            }
-                        } catch (IOException e) {
-                            warnAboutIcmpFallbackOnce(e);
-                            LOGGER.error("Failed to get echo response", e);
-                        }
-                    }
-                });
+        executor.execute(() -> processEcho(echoSession, address, data, payload, size, echoResponse));
         return true;
+    }
+
+    private static void processEcho(
+            final EchoSession session,
+            final InetAddress address,
+            final ByteBuffer fallbackData,
+            final byte[] payload,
+            final int size,
+            final AtomicReference<EchoResponse> echoResponse) {
+        if (Main.LoadedLibrary) {
+            handleIcmpNative(session, address, payload, size, echoResponse);
+        } else {
+            handleIcmpFallback(session, address, fallbackData, echoResponse);
+        }
+    }
+
+    private static void handleIcmpNative(
+            final EchoSession session,
+            final InetAddress address,
+            final byte[] payload,
+            final int size,
+            final AtomicReference<EchoResponse> echoResponse) {
+        final byte[] responseData =
+                DefaultSessionLayer.sendICMP(
+                        address.getAddress(),
+                        payload,
+                        size,
+                        Config.defaultEchoRequestTimeoutMs);
+        if (responseData != null) {
+            echoResponse.set(new EchoResponse(ByteBuffer.wrap(responseData), session));
+        }
+    }
+
+    private static void handleIcmpFallback(
+            final EchoSession session,
+            final InetAddress address,
+            final ByteBuffer data,
+            final AtomicReference<EchoResponse> echoResponse) {
+        try {
+            final EchoResponse response = new EchoResponse(data, session);
+            if (address.isReachable(null, session.getTtl(), Config.defaultEchoRequestTimeoutMs)) {
+                echoResponse.set(response);
+            } else {
+                warnAboutIcmpFallbackOnce(null);
+            }
+        } catch (IOException e) {
+            warnAboutIcmpFallbackOnce(e);
+            LOGGER.error("Failed to get echo response", e);
+        }
     }
 
     private static void warnAboutIcmpFallbackOnce(@Nullable final IOException e) {

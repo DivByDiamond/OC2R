@@ -2,11 +2,11 @@ package li.cil.oc2.common.energy;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public final class EnergyNetworkCache {
     private static final Map<ServerLevel, Map<BlockPos, List<BusCableBlockEntity>>> CACHE =
-            new HashMap<>();
+            new ConcurrentHashMap<>();
 
     private EnergyNetworkCache() {}
 
@@ -38,7 +38,7 @@ public final class EnergyNetworkCache {
     public static List<BusCableBlockEntity> getCables(
             final ServerLevel level, final BlockPos origin) {
         final Map<BlockPos, List<BusCableBlockEntity>> networks =
-                CACHE.computeIfAbsent(level, it -> new HashMap<>());
+                CACHE.computeIfAbsent(level, it -> new ConcurrentHashMap<>());
         final List<BusCableBlockEntity> cached = networks.get(origin);
         if (cached != null && isValid(cached)) {
             return cached;

@@ -1023,22 +1023,17 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
 - [x] **П3 (частично) — буфер ≥32К** (DONE 61fd98d): streamBufferSize дефолт 2000→32768
   (`InternetCardSpec.java` + `Config.java`). Осталось: скользящее окно + cumulative ACK
   в `EstablishedState` (один сегмент в полёте, точный ACK) — отдельный пункт ниже.
-- [ ] **П3.1 — скользящее окно TCP**: `EstablishedState.java:20-24` один сегмент в полёте,
-  точный ACK required (:104). Заменить nextSegmentMark на окно с несколькими сегментами
-  и cumulative ACK; нужны тесты на tcp/state/* (сейчас не покрыты).
+- [x] **П3.1 — скользящее окно TCP** (закрыт 80a66b1, подтверждено верификацией 2026-08-26):
+  окно с несколькими сегментами в полёте + cumulative ACK; тесты EstablishedStateTest.
 - [x] **П4 (частично) — read/write до EAGAIN** (DONE 91a4f07): цикл channel.read до EAGAIN/
   EOF/полного буфера в readSession; write докручивает sendBuffer до конца в sendStream.
   processQueue early-exit оставлен НАМЕРЕННО: Receiver несёт ровно одну сессию/буфер на
   вызов receiveSession, кадр = один сегмент — drain нескольких сессий терял бы данные.
   Дальнейший выигрыш только через мультибуферный receiver (отдельный пункт).
-- [ ] **П5 — OP_WRITE копится, toWrite никогда не потребляется**: `SocketManager.java:47-49` —
-  неограниченный рост ArrayDeque (утечка) + бесполезный selector-work. Фикс: убрать OP_WRITE
-  из interest или потреблять очередь.
-- [ ] **П6 — ping-pong серверный↔Internet-поток**: минимум 2 тика на кадр; 2 аллокации списков
-  каждый тик даже при пустом списке соединений (`InternetManagerImpl.java:141-148,158`).
-- [ ] П7 — per-packet/per-frame аллокации (низкий приоритет): `InternetConnectionImpl.java:53`
-  new byte[] на кадр; `SendHandler.java:53-95` новые Discriminator'ы; `DefaultTransportLayer.java:60,84`
-  TreeMap-lookup per-packet; `processSessionExpirationQueue` на каждое сообщение.
+- [x] **П5 — OP_WRITE копится, toWrite никогда не потребляется** (закрыт 797dbc1, см. VXLAN-секцию).
+- [x] **П6 — ping-pong серверный↔Internet-поток** (DONE 2026-08-26, см. VXLAN-секцию).
+- [x] П7 — per-packet/per-frame аллокации (см. VXLAN-секцию: пул кадров + Ш8; дискриминаторы
+  SendHandler осознанно оставлены).
 
 ### Монитор/видео (CPU server thread + bandwidth)
 
@@ -1080,12 +1075,28 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
 
 ### Синхронизация мира / трафик
 
-- [ ] Подтверждены НЕисправленные дубли синка из §29: фасад ×3 (`FacadeManager.java:47-111`),
-  коннекторы ×2 (`NetworkConnectorBlockEntity.getUpdateTag:81-86` + message :220-227),
-  имена интерфейсов ×2 (`InterfaceNameManager.setInterfaceName:41-47`), флоппи/флеш ×2
-  (`DiskDriveBlockEntity.getUpdateTag:133-136`), VS2-fallback шлёт ВСЕМ игрокам во всех
-  измерениях (`NetworkMessages.java:39-63`), chunk==null теряет сообщение (`ComputerTerminalManager.java:102-104`),
-  handleUpdateTag без requestModelDataUpdate (`BusCableBlockEntity.java:117-128`).
+- [x] **Дубли синка из §29 — закрыты (2026-08-26), три группы**:
+  - **Фасад ×3 → ×1 + handleUpdateTag-фикс (атомарно)**: `BusCableBlockEntity.handleUpdateTag`
+    дополнен `requestModelDataUpdate()` (модель строится из фасада; раньше маскировалось дублем);
+    после этого из `FacadeManager.setFacade/removeFacade` удалены явный
+    `sendBlockUpdated(UPDATE_ALL)` (vanilla уже шлёт BE-data packet из setHasFacade) и
+    `BusCableFacadeMessage` целиком (класс, регистрация).
+  - **Коннекторы ×2 → ×1**: `NetworkConnectorConnectionsMessage` удалён;
+    `onConnectedPositionsChanged` → `sendBlockUpdated(UPDATE_CLIENTS)` (update-tag несёт
+    позиции); в `handleUpdateTag` коннектора добавлена `NetworkCableRenderer.invalidateConnections()`
+    (кэш рендера, прецедент common→client вызова уже был). Убран @OnlyIn shim.
+  - **Имена интерфейсов ×2 → tag-only S→C**: рассылка заменена на `sendBlockUpdated`
+    (getUpdateTag несёт ВСЕ имена); `BusInterfaceNameMessage` остался только как C→S input
+    от GUI (playBidirectional → playToServer, клиентская ветка вычищена).
+  - **Флоппи/флеш ×2 → ×1**: `DiskDriveFloppyMessage`/`FirmwareFlasherMessage` удалены,
+    `onContentsChanged` → `sendBlockUpdated` (содержимое слота в update-tag'е BE).
+  - **chunk==null**: `ComputerTerminalManager.sendToClientsTrackingComputer` теперь лениво
+    резолвит чанк до первого serverTick'а — run/boot-error сообщения больше не теряются.
+  - **Осталось осознанно**: (a) монитор/проектор — hasEnergy живёт ТОЛЬКО в *StateMessage
+    (isMounted дублируется LIT+tag, но чистка потребует трогать рендер/контейнер),
+    низкий приоритет; (b) VS2-fallback рассылает всем во всех измерениях — НАИВНЫЙ фильтр
+    по dimension НЕЛЬЗЯ (игроки физически не в ship-world → 0 получателей); нужен маппинг
+    ship-chunk → parent-level через VS2 API или радиусная эвристика — отдельное решение.
 - [x] **- [x] **Т1 — TerminalDiff упаковка ячеек** (уже реализовано в коде, помечено при
   верификации): формат переписан — varint-кодпойнт + attr-байт с опциональными полями
   цветов/style + RLE-раны одинаковых ячеек; одиночное эхо ≈ несколько байт на строку
@@ -1104,20 +1115,42 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
   `EnergyNetworkCache` (per-level/per-origin кэш, инвалидация на config change/load/unload
   кабеля + валидация isRemoved), redistribute раз в 20 тиков; pull/push ежетиковые.
   Capability-lookup'ы оставлены свежими (кэшировать чужие capability небезопасно).
-- [ ] **Ш3 — блокирующий UDP send в тик-треде**: `VxlanBlockEntity.serverTick:92-99` →
-  `TunnelManager.java:144 socket.send(packet)` — до 32 блокирующих send/тик/хаб
-  (hubEthernetFramesPerTick). Фикс: очередь отправки + sender-тред / DatagramChannel non-blocking.
-- [ ] **Ш4 — System.out.printf КАЖДЫЙ тик** пока у хаба нет соседа: `VxlanBlockEntity.java:102`
-  (= дубль замечания о System.out из §37, тут перф-эффект: synchronized println 20/с убивает TPS).
-- [ ] Ш5 — лишние локи VXLAN: комментарий про «not thread-safe» устарел — очередь уже
-  ArrayBlockingQueue(32) (`VxlanBlockEntity.java:36`); ReentrantLock менеджера сериализует все туннели
-  (`TunnelManager.java:111-119,18`). Убрать оба лока.
-- [ ] Ш6 — потеря пакетов при очереди 32: `TunnelManager.java:115 offer()` молча роняет при burst >32.
-  Ёмкость конфигурируемой + drop-статистика.
-- [ ] Ш7 — перф-мелочи: eager-конкатенация в LOGGER.debug per-packet (`TunnelManager.java:102`),
-  новые DatagramPacket/header-buffer на каждый send (:131,140); TODO shutdown bg-треда (:83) — утечка порта.
-- [ ] Ш8 — SessionManager per-packet: Instant.now() + TreeMap remove/put на каждый пакет
-  (`SessionManager.java:56-63`); линейный проход ретрансмиттеров (:97-114). Monotonic clock + бакеты.
+- [x] **Ш3 — блокирующий UDP send** (закрыт 5c11f5d, подтверждено верификацией 2026-08-26):
+  `DatagramChannel.configureBlocking(false)` (TunnelManager.java:123), send non-blocking,
+  приём на daemon-thread с селектором.
+- [x] **Ш4 — System.out.printf каждый тик** (закрыт ранее, доведён до конца 2026-08-26):
+  System.out давно заменён на LOGGER; остаточный warn-спам «unregistered upstream» каждый тик
+  (VxlanBlockEntity.java:142) переведён на report-once до восстановления регистрации
+  (warnedUnregisteredUpstream + сброс в loadServer).
+- [x] **Ш5 — лишние локи VXLAN** (закрыт 5c11f5d): ReentrantLock удалён, ConcurrentHashMap +
+  thread-safe offer (комментарий в TunnelManager.java:193).
+- [x] **Ш6 — молчаливая потеря пакетов** (закрыт 5c11f5d): drop-статистика
+  `TunnelInterface.droppedFrames` (:194-196,:281) + WARN владельца очереди раз в тик
+  (VxlanBlockEntity.java:133-140) + конфиг vxlanPacketQueueCapacity.
+- [x] **Ш7 — per-send аллокации в TunnelManager.sendToOuternet** (DONE 2026-08-26):
+  InetSocketAddress кешируется в конструкторе (`cachedRemoteAddress`), заголовочный буфер
+  стал grow-only полем `sendBuffer` (reuse безопасен: send() копирует в ядро синхронно);
+  ByteBuffer.wrap(buffer, 0, total) без выделения массива на кадр.
+- [x] **Ш8 — SessionManager per-packet** (смягчено и закрыто 2026-08-26): coarse shared clock
+  (кэш Instant обновляется не чаще раза в 200 мкc через nanoTime — Instant.now() больше не
+  на каждый пакет); expiration/retransmission сканы переведены с keySet+`get(time)` на
+  итерацию Map.Entry с iterator.remove() (минус O(log n) на кандидата). updateSession
+  remove+put оставлен: lastUpdateTime это Instant из api/ (не трогаем), TreeMap на long
+  потребовал бы правки api. Коллизионный цикл enqueue оставлен — редкий случай.
+- [x] **П5 — OP_WRITE/toWrite** (закрыт 797dbc1, подтверждено верификацией 2026-08-26):
+  OP_WRITE не регистрируется (SocketManager.java:105-113, javadoc :100-104), очередь удалена.
+- [x] **П6 — ping-pong серверный↔Internet-поток** (DONE 2026-08-26):
+  `InternetManagerImpl.onTick` при пустых `connections && tasks` выходит без submit'а на
+  executor (раньше — два стрима с аллокациями + безусловный round-trip каждый тик даже без карт).
+  «Минимум 2 тика на кадр» — by design, не тронут.
+- [x] **П7 — per-packet аллокации** (частично закрыто 2026-08-26, остальное осознанно):
+  InternetConnectionImpl.java:101 → пул кадров `framePool` (obtain/recycle) + контракт
+  «адаптеру кадр передаётся заимствованным»: gateway единственный удерживал ссылку
+  (inboundQueue.addLast) → добавлена защитная копия frame.clone() у него; VirtIONetworkDevice
+  копирует байты в гостевую память внутри writeEthernetFrame (проверено javap'ом sedna 2.0.13).
+  Discriminator'ы SendHandler оставлены как есть: они выступают map-key (мутация кэша
+  сломала бы хеширование), а объект ~24Б на TLAB — цена ниже риска. DefaultTransportLayer/
+  SessionManager churn covered by Ш8.
 - ARP/ICMP/checksum/утилиты адресов — НЕ горячие (ARP-кэш на 1 запись приемлем; ICMP single-slot
   только error-path; checksum можно ускорить getLong-проходом — низкий приоритет).
 

@@ -88,8 +88,11 @@ public final class MonitorVideoController {
      * even when the image has gone static and no new frames are submitted.
      */
     public void flush() {
-        AsyncVideoEncoder.CompletedFrame completed;
-        while ((completed = encoder.poll()) != null) {
+        for (;;) {
+            final AsyncVideoEncoder.CompletedFrame completed = encoder.poll();
+            if (completed == null) {
+                break;
+            }
             final FrameCodec.EncodedFrame result = completed.frame();
             final byte[] encoded = result.data();
             final var pos = monitor.getBlockPos();

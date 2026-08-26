@@ -64,8 +64,11 @@ public final class AsyncVideoEncoder {
     public byte[] obtainBuffer(final int length) {
         final List<byte[]> mismatched = new ArrayList<>();
         byte[] match = null;
-        byte[] candidate;
-        while ((candidate = BUFFER_POOL.poll()) != null) {
+        for (;;) {
+            final byte[] candidate = BUFFER_POOL.poll();
+            if (candidate == null) {
+                break;
+            }
             if (match == null && candidate.length == length) {
                 match = candidate;
             } else {
@@ -108,13 +111,15 @@ public final class AsyncVideoEncoder {
 
     private static void ensureWorker() {
         if (worker != null) return;
-        synchronized (AsyncVideoEncoder.class) {
-            if (worker != null) return;
-            final Thread thread = new Thread(AsyncVideoEncoder::runWorker, "OC2R Video Encoder");
-            thread.setDaemon(true);
-            thread.start();
-            worker = thread;
-        }
+        startWorker();
+    }
+
+    private static synchronized void startWorker() {
+        if (worker != null) return;
+        final Thread thread = new Thread(AsyncVideoEncoder::runWorker, "OC2R Video Encoder");
+        thread.setDaemon(true);
+        thread.start();
+        worker = thread;
     }
 
     private static void runWorker() {
@@ -126,25 +131,32 @@ public final class AsyncVideoEncoder {
                 return;
             }
             if (job == null) continue;
+            encodeJob(job);
+        }
+    }
 
-            FrameCodec.EncodedFrame result = null;
-            try {
-                result = job.codec().encode(job.codecType(), job.rgb565(), job.width(), job.height());
-            } catch (final Exception e) {
-                LOGGER.warn("Video frame encoding failed", e);
-            }
-            if (result == null || result.data().length == 0) {
-                BUFFER_POOL.add(job.rgb565());
-                continue;
-            }
+    private static void encodeJob(final PendingFrame job) {
+        FrameCodec.EncodedFrame result = null;
+        try {
+            result = job.codec().encode(job.codecType(), job.rgb565(), job.width(), job.height());
+        } catch (final Exception e) {
+            LOGGER.warn("Video frame encoding failed", e);
+        }
+        if (result == null || result.data().length == 0) {
+            BUFFER_POOL.add(job.rgb565());
+            return;
+        }
 
-            final CompletedFrame completed =
-                    new CompletedFrame(result, job.rgb565(), job.width(), job.height());
-            while (!OUTBOX.offer(completed)) {
-                final CompletedFrame dropped = OUTBOX.poll();
-                if (dropped == null) continue;
-                BUFFER_POOL.add(dropped.buffer());
-            }
+        final CompletedFrame completed =
+                new CompletedFrame(result, job.rgb565(), job.width(), job.height());
+        publish(completed);
+    }
+
+    private static void publish(final CompletedFrame completed) {
+        while (!OUTBOX.offer(completed)) {
+            final CompletedFrame dropped = OUTBOX.poll();
+            if (dropped == null) continue;
+            BUFFER_POOL.add(dropped.buffer());
         }
     }
 }

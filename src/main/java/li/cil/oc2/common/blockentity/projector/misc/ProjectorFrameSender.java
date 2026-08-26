@@ -53,7 +53,6 @@ public final class ProjectorFrameSender {
         this.frameConsumer = consumer;
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void sendFrame(final ProjectorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
@@ -76,9 +75,13 @@ public final class ProjectorFrameSender {
      * every tick (outside the throttle/dirty gates) so completed frames are delivered
      * even when the image has gone static and no new frames are submitted.
      */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void flush() {
-        AsyncVideoEncoder.CompletedFrame completed;
-        while ((completed = encoder.poll()) != null) {
+        for (;;) {
+            final AsyncVideoEncoder.CompletedFrame completed = encoder.poll();
+            if (completed == null) {
+                break;
+            }
             final FrameCodec.EncodedFrame result = completed.frame();
             final byte[] encoded = result.data();
             final BlockPos pos = projector.getBlockPos();

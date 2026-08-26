@@ -87,8 +87,6 @@ public final class DeltaFrameCodec {
 
         assert previousFrame != null;
         final ByteArrayOutputStream out = new ByteArrayOutputStream(64);
-        final int tilesX = tileCountX(width);
-        final int tilesY = tileCountY(height);
 
         out.write(forceKeyframe ? FLAG_KEYFRAME : 0);
         writeVarint(out, width);
@@ -97,28 +95,44 @@ public final class DeltaFrameCodec {
             writeZlib(out, rgb565);
             forceKeyframe = false;
         } else {
-            int dirtyTiles = 0;
-            for (int ty = 0; ty < tilesY; ty++) {
-                for (int tx = 0; tx < tilesX; tx++) {
-                    if (isTileDirty(rgb565, width, previousFrame, tx, ty)) {
-                        dirtyTiles++;
-                    }
-                }
-            }
-
-            writeVarint(out, dirtyTiles);
-            for (int ty = 0; ty < tilesY; ty++) {
-                for (int tx = 0; tx < tilesX; tx++) {
-                    if (!isTileDirty(rgb565, width, previousFrame, tx, ty)) {
-                        continue;
-                    }
-                    encodeDirtyTile(out, rgb565, width, height, tilesX, tx, ty);
-                }
-            }
+            writeDeltaTiles(out, rgb565, width, height);
         }
 
         System.arraycopy(rgb565, 0, previousFrame, 0, rgb565.length);
         return out.toByteArray();
+    }
+
+    /** Appends the dirty-tile count followed by one record per dirty tile. */
+    private void writeDeltaTiles(
+            final ByteArrayOutputStream out,
+            final byte[] rgb565,
+            final int width,
+            final int height) {
+        assert previousFrame != null;
+        final int tilesX = RgbTiles.tileCountX(width);
+        final int tilesY = RgbTiles.tileCountY(height);
+
+        writeVarint(out, countDirtyTiles(rgb565, width, tilesX, tilesY));
+        for (int ty = 0; ty < tilesY; ty++) {
+            for (int tx = 0; tx < tilesX; tx++) {
+                if (RgbTiles.isTileDirty(rgb565, width, previousFrame, tx, ty, previousFrame.length / (width * 2))) {
+                    encodeDirtyTile(out, rgb565, width, height, tilesX, tx, ty);
+                }
+            }
+        }
+    }
+
+    private int countDirtyTiles(
+            final byte[] rgb565, final int width, final int tilesX, final int tilesY) {
+        int dirtyTiles = 0;
+        for (int ty = 0; ty < tilesY; ty++) {
+            for (int tx = 0; tx < tilesX; tx++) {
+                if (RgbTiles.isTileDirty(rgb565, width, previousFrame, tx, ty, previousFrame.length / (width * 2))) {
+                    dirtyTiles++;
+                }
+            }
+        }
+        return dirtyTiles;
     }
 
     /**
@@ -151,80 +165,66 @@ public final class DeltaFrameCodec {
             return Optional.empty();
         }
 
-        if (width != decodedWidth || height != decodedHeight || currentFrame == null) {
-            if (!keyframe) {
-                return Optional.empty();
-            }
-            currentFrame = new byte[width * height * 2];
-            decodedWidth = width;
-            decodedHeight = height;
+        if (!prepareFrameBuffer(width, height, keyframe)) {
+            return Optional.empty();
         }
 
         if (keyframe) {
-            final byte[] full = inflateExact(in, currentFrame.length);
-            if (full == null) {
-                currentFrame = null;
-                return Optional.empty();
-            }
-            System.arraycopy(full, 0, currentFrame, 0, full.length);
-            return Optional.of(currentFrame.clone());
+            return applyKeyframe(in);
         }
+        return applyDeltaTiles(in, width, height);
+    }
 
-        final int tilesX = tileCountX(width);
-        final int maxTiles = tilesX * tileCountY(height);
+    /**
+     * Allocates or validates the backing frame buffer for the incoming payload.
+     * A delta (non-keyframe) payload cannot bootstrap a buffer by itself.
+     */
+    private boolean prepareFrameBuffer(final int width, final int height, final boolean keyframe) {
+        if (width == decodedWidth && height == decodedHeight && currentFrame != null) {
+            return true;
+        }
+        if (!keyframe) {
+            return false;
+        }
+        currentFrame = new byte[width * height * 2];
+        decodedWidth = width;
+        decodedHeight = height;
+        return true;
+    }
+
+    /** Applies a keyframe payload wholesale; failure poisons the buffered frame. */
+    private Optional<byte[]> applyKeyframe(final ByteBuffer in) throws DataFormatException {
+        assert currentFrame != null;
+        final Optional<byte[]> full = inflateExact(in, currentFrame.length);
+        if (full.isEmpty()) {
+            currentFrame = null;
+            return Optional.empty();
+        }
+        System.arraycopy(full.get(), 0, currentFrame, 0, currentFrame.length);
+        return Optional.of(currentFrame.clone());
+    }
+
+    /**
+     * Applies dirty-tile deltas onto a scratch copy so a corrupt delta cannot leave
+     * a half-updated frame as the base for the next one; {@code currentFrame} is
+     * committed only after every tile decoded cleanly.
+     */
+    private Optional<byte[]> applyDeltaTiles(
+            final ByteBuffer in, final int width, final int height)
+            throws IOException, DataFormatException {
+        final int tilesX = RgbTiles.tileCountX(width);
+        final int maxTiles = tilesX * RgbTiles.tileCountY(height);
         final int dirtyTiles = readVarint(in);
         if (dirtyTiles > maxTiles) {
             return Optional.empty();
         }
 
-        // Apply on a scratch copy so a corrupt delta cannot leave a half-updated
-        // frame as the base for the next one; currentFrame stays untouched.
         assert currentFrame != null;
         final byte[] working = currentFrame.clone();
         final byte[] tileBuffer = new byte[MAX_TILE_BYTES];
         for (int i = 0; i < dirtyTiles; i++) {
-            final int tileIndex = readVarint(in);
-            final int tx = tileIndex % tilesX;
-            final int ty = tileIndex / tilesX;
-            if (tileIndex >= maxTiles) {
+            if (!applyOneTile(in, working, width, height, tilesX, maxTiles, tileBuffer)) {
                 return Optional.empty();
-            }
-            final int mode = in.get() & 0xFF;
-            final int length = readVarint(in);
-            if (length > in.remaining()) {
-                return Optional.empty();
-            }
-            final byte[] chunk = new byte[length];
-            in.get(chunk);
-
-            final int expectedSize =
-                    Math.min(TILE_WIDTH, width - tx * TILE_WIDTH)
-                            * Math.min(TILE_HEIGHT, height - ty * TILE_HEIGHT)
-                            * 2;
-            switch (mode) {
-                case MODE_RAW -> {
-                    if (length != expectedSize) {
-                        return Optional.empty();
-                    }
-                    copyTileInto(working, width, chunk, length, tx, ty);
-                }
-                case MODE_ZLIB -> {
-                    final byte[] inflated = inflateExact(ByteBuffer.wrap(chunk), expectedSize);
-                    if (inflated == null) {
-                        return Optional.empty();
-                    }
-                    copyTileInto(working, width, inflated, expectedSize, tx, ty);
-                }
-                case MODE_RLE -> {
-                    final int written = rleDecode(chunk, tileBuffer, expectedSize);
-                    if (written != expectedSize) {
-                        return Optional.empty();
-                    }
-                    copyTileInto(working, width, tileBuffer, expectedSize, tx, ty);
-                }
-                default -> {
-                    return Optional.empty();
-                }
             }
         }
 
@@ -232,30 +232,64 @@ public final class DeltaFrameCodec {
         return Optional.of(working);
     }
 
-    private static int tileCountX(final int width) {
-        return (width + TILE_WIDTH - 1) / TILE_WIDTH;
-    }
+    /**
+     * Decodes one dirty-tile record into {@code working}. Returns false when the
+     * record is corrupt — that aborts the whole payload without committing.
+     */
+    private boolean applyOneTile(
+            final ByteBuffer in,
+            final byte[] working,
+            final int width,
+            final int height,
+            final int tilesX,
+            final int maxTiles,
+            final byte[] tileBuffer)
+            throws IOException, DataFormatException {
+        final int tileIndex = readVarint(in);
+        final int tx = tileIndex % tilesX;
+        final int ty = tileIndex / tilesX;
+        if (tileIndex >= maxTiles) {
+            return false;
+        }
+        final int mode = in.get() & 0xFF;
+        final int length = readVarint(in);
+        if (length > in.remaining()) {
+            return false;
+        }
+        final byte[] chunk = new byte[length];
+        in.get(chunk);
 
-    private static int tileCountY(final int height) {
-        return (height + TILE_HEIGHT - 1) / TILE_HEIGHT;
-    }
-
-    private boolean isTileDirty(
-            final byte[] frame, final int width, final byte[] reference, final int tx,
-            final int ty) {
-        final int x0 = tx * TILE_WIDTH;
-        final int y0 = ty * TILE_HEIGHT;
-        final int tw = Math.min(TILE_WIDTH, width - x0);
-        final int th = Math.min(TILE_HEIGHT, reference.length / (width * 2) - y0);
-        for (int y = y0; y < y0 + th; y++) {
-            final int from = (y * width + x0) * 2;
-            for (int b = 0; b < tw * 2; b++) {
-                if (frame[from + b] != reference[from + b]) {
-                    return true;
+        final int expectedSize =
+                Math.min(TILE_WIDTH, width - tx * TILE_WIDTH)
+                        * Math.min(TILE_HEIGHT, height - ty * TILE_HEIGHT)
+                        * 2;
+        switch (mode) {
+            case MODE_RAW -> {
+                if (length != expectedSize) {
+                    return false;
                 }
+                RgbTiles.copyTileInto(working, width, chunk, length, tx, ty);
+            }
+            case MODE_ZLIB -> {
+                final Optional<byte[]> inflated =
+                        inflateExact(ByteBuffer.wrap(chunk), expectedSize);
+                if (inflated.isEmpty()) {
+                    return false;
+                }
+                RgbTiles.copyTileInto(working, width, inflated.get(), expectedSize, tx, ty);
+            }
+            case MODE_RLE -> {
+                final int written = TileRleCodec.decode(chunk, tileBuffer, expectedSize);
+                if (written != expectedSize) {
+                    return false;
+                }
+                RgbTiles.copyTileInto(working, width, tileBuffer, expectedSize, tx, ty);
+            }
+            default -> {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void encodeDirtyTile(
@@ -282,7 +316,7 @@ public final class DeltaFrameCodec {
         byte[] best = tile;
         byte bestMode = MODE_RAW;
         if (hasRuns(tile)) {
-            final ByteArrayOutputStream rle = rleEncode(tile);
+            final ByteArrayOutputStream rle = TileRleCodec.encode(tile);
             if (rle.size() < best.length) {
                 best = rle.toByteArray();
                 bestMode = MODE_RLE;
@@ -341,51 +375,6 @@ public final class DeltaFrameCodec {
         return out;
     }
 
-    /**
-     * Decodes an RLE stream produced by {@link #rleEncode} into {@code out}.
-     *
-     * @return number of bytes written; callers must treat anything but the expected
-     *         tile size as corruption
-     * @throws IOException if a run has a non-positive length, would overflow
-     *                     {@code out}, or the stream is truncated mid-pixel
-     */
-    private static int rleDecode(final byte[] data, final byte[] out, final int expectedSize)
-            throws IOException {
-        final ByteBuffer in = ByteBuffer.wrap(data);
-        int written = 0;
-        while (in.hasRemaining()) {
-            final int run = readVarint(in);
-            if (run <= 0 || written + run * 2 > expectedSize || in.remaining() < 2) {
-                throw new IOException("corrupt RLE stream");
-            }
-            final byte b0 = in.get();
-            final byte b1 = in.get();
-            for (int i = 0; i < run; i++) {
-                out[written++] = b0;
-                out[written++] = b1;
-            }
-        }
-        return written;
-    }
-
-    private static void copyTileInto(
-            final byte[] frame,
-            final int width,
-            final byte[] tile,
-            final int tileSize,
-            final int tx,
-            final int ty) {
-        final int x0 = tx * TILE_WIDTH;
-        final int y0 = ty * TILE_HEIGHT;
-        final int tw = Math.min(TILE_WIDTH, width - x0);
-        int read = 0;
-        for (int y = y0; y < y0 + TILE_HEIGHT && read < tileSize; y++) {
-            final int to = (y * width + x0) * 2;
-            final int rowBytes = Math.min(tw * 2, tileSize - read);
-            System.arraycopy(tile, read, frame, to, rowBytes);
-            read += rowBytes;
-        }
-    }
 
     private void writeZlib(final ByteArrayOutputStream out, final byte[] input) {
         deflater.reset();
@@ -398,48 +387,47 @@ public final class DeltaFrameCodec {
         }
     }
 
-    /** Inflates the rest of {@code input}; result must be exactly {@code size} bytes. */
-    @Nullable
-    private byte[] inflateExact(final ByteBuffer input, final int size)
+    /**
+     * Inflates the rest of {@code input}; result must be exactly {@code size} bytes.
+     * An empty optional means the payload was corrupt or truncated.
+     */
+    private Optional<byte[]> inflateExact(final ByteBuffer input, final int size)
             throws DataFormatException {
         inflater.reset();
         inflater.setInput(input.array(), input.position(), input.remaining());
         final byte[] result = new byte[size];
         int written = 0;
-        try {
-            while (!inflater.finished()) {
-                final int length = inflater.inflate(result, written, size - written);
-                if (length == 0) {
-                    if (inflater.needsInput() || inflater.needsDictionary()) {
-                        break;
-                    }
-                    continue;
+        while (!inflater.finished()) {
+            final int length = inflater.inflate(result, written, size - written);
+            if (length == 0) {
+                if (inflater.needsInput() || inflater.needsDictionary()) {
+                    break;
                 }
-                written += length;
-                if (written > size) {
-                    return null;
-                }
+                continue;
             }
-        } catch (final DataFormatException e) {
-            throw e;
+            written += length;
+            if (written > size) {
+                return Optional.empty();
+            }
         }
         if (written != size) {
-            return null;
+            return Optional.empty();
         }
-        return result;
+        return Optional.of(result);
     }
 
     /**
      * Writes a LEB128-style varint: 7 payload bits per byte, little-endian order,
      * high bit set on every byte except the last.
      */
-    private static void writeVarint(final ByteArrayOutputStream out, int value) {
+    private static void writeVarint(final ByteArrayOutputStream out, final int value) {
         assert value >= 0;
-        while ((value & ~0x7F) != 0) {
-            out.write((value & 0x7F) | 0x80);
-            value >>>= 7;
+        int v = value;
+        while ((v & ~0x7F) != 0) {
+            out.write((v & 0x7F) | 0x80);
+            v >>>= 7;
         }
-        out.write(value);
+        out.write(v);
     }
 
     /** Inverse of {@link #writeVarint}; rejects truncated or overlong (5+ byte) values. */

@@ -1,8 +1,8 @@
 package li.cil.oc2.common.bus.device.vm.item.network;
 
-import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.capabilities.NetworkInterface;

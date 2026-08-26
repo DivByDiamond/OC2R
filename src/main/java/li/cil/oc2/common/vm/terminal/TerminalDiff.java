@@ -246,12 +246,13 @@ public final class TerminalDiff {
         return new ColorData((packed >>> 3) & 0xFF, (packed >>> 11) & 0xFF, (packed >>> 19) & 0xFF, mode);
     }
 
-    private static void putVarInt(final ByteBuffer buf, int value) {
-        while ((value & ~0x7F) != 0) {
-            buf.put((byte) ((value & 0x7F) | 0x80));
-            value >>>= 7;
+    private static void putVarInt(final ByteBuffer buf, final int value) {
+        int v = value;
+        while ((v & ~0x7F) != 0) {
+            buf.put((byte) ((v & 0x7F) | 0x80));
+            v >>>= 7;
         }
-        buf.put((byte) value);
+        buf.put((byte) v);
     }
 
     private static int getVarInt(final ByteBuffer buf) {
@@ -350,29 +351,63 @@ public final class TerminalDiff {
         final ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         final int base = row * terminal.width;
         try {
-            int x = 0;
-            while (x < terminal.width && buf.hasRemaining()) {
-                final int run = getVarInt(buf);
-                if (run < 1) {
-                    return; // malformed run length: stop rather than desync
-                }
-                final int ch = getVarInt(buf);
-                final int attr = buf.get() & 0xFF;
-                final ColorData fg =
-                        (attr & ATTR_FG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_FOREGROUND_COLOR.copy();
-                final ColorData bg =
-                        (attr & ATTR_BG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
-                final byte style =
-                        (attr & ATTR_STYLE_EXPLICIT) != 0 ? buf.get() : TerminalColors.DEFAULT_STYLE;
-                for (int i = 0; i < run && x < terminal.width; i++, x++) {
-                    final int index = base + x;
-                    if (index >= terminal.buffer.length) return; // width race guard
-                    storeCell(terminal, alt, index, ch, fg, bg, style);
-                }
-            }
-        } catch (final BufferUnderflowException e) {
+            deserializeRowCells(terminal, alt, base, buf);
+        } catch (final BufferUnderflowException ignored) {
             // Truncated row payload: keep whatever cells were decoded.
         }
+    }
+
+    private static void deserializeRowCells(
+            final Terminal terminal, final boolean alt, final int base, final ByteBuffer buf) {
+        int x = 0;
+        while (x < terminal.width && buf.hasRemaining()) {
+            final int run = getVarInt(buf);
+            if (run < 1) {
+                return; // malformed run length: stop rather than desync
+            }
+            final DecodedCell cell = readCell(buf);
+            x = fillRun(terminal, alt, base, x, run, cell);
+            if (x < 0) {
+                return; // width race guard: abort decoding this snapshot entirely
+            }
+        }
+    }
+
+    /** Reads one decoded cell from the snapshot stream, expanding explicit-attribute bits. */
+    private static DecodedCell readCell(final ByteBuffer buf) {
+        final int ch = getVarInt(buf);
+        final int attr = buf.get() & 0xFF;
+        final ColorData fg =
+                (attr & ATTR_FG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_FOREGROUND_COLOR.copy();
+        final ColorData bg =
+                (attr & ATTR_BG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+        final byte style =
+                (attr & ATTR_STYLE_EXPLICIT) != 0 ? buf.get() : TerminalColors.DEFAULT_STYLE;
+        return new DecodedCell(ch, fg, bg, style);
+    }
+
+    private record DecodedCell(int ch, ColorData fg, ColorData bg, byte style) {}
+
+    /**
+     * Writes a cell run starting at column {@code x}. Returns the new column, or -1
+     * when the width race guard tripped (snapshot must not be decoded any further).
+     */
+    private static int fillRun(
+            final Terminal terminal,
+            final boolean alt,
+            final int base,
+            final int startX,
+            final int runLength,
+            final DecodedCell cell) {
+        int x = startX;
+        for (int i = 0; i < runLength && x < terminal.width; i++, x++) {
+            final int index = base + x;
+            if (index >= terminal.buffer.length) {
+                return -1;
+            }
+            storeCell(terminal, alt, index, cell.ch(), cell.fg(), cell.bg(), cell.style());
+        }
+        return x;
     }
 
     private static void storeCell(

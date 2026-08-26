@@ -18,9 +18,9 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.session.echo.EchoHandler;
 import li.cil.oc2.common.inet.session.echo.EchoResponse;
 import li.cil.oc2.common.inet.session.manager.SocketManager;
-import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import li.cil.oc2.common.inet.session.manager.ready.ReadySessions;
 import li.cil.oc2.common.inet.session.manager.ready.SessionChannelHelper;
+import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -118,46 +118,60 @@ public final class DefaultSessionLayer implements SessionLayer {
 
     private boolean readSession(final Receiver receiver, final Session session) {
         if (session instanceof DatagramSession datagramSession) {
-            LOGGER.trace("Datagram received");
-            final DatagramChannel channel = SessionChannelHelper.getChannel(datagramSession);
-            try {
-                final ByteBuffer datagram = receiver.receive(datagramSession);
-                assert datagram != null;
-                final SocketAddress address = channel.receive(datagram);
-                if (address == null) {
-                    return false;
-                }
-                if (Config.useSynchronisedNAT
-                        && !address.equals(datagramSession.getDestination())) {
-                    // With synchronised NAT the socket is bound to a wildcard address, so drop
-                    // datagrams that did not come from the session's expected destination.
-                    return false;
-                }
-                datagram.flip();
-                return true;
-            } catch (final IOException exception) {
-                LOGGER.error("Trying to read datagram socket", exception);
+            return readDatagram(receiver, datagramSession);
+        }
+        // Stream sessions are the only other session kind; anything else has no socket.
+        return session instanceof StreamSession streamSession
+                && readStream(receiver, streamSession);
+    }
+
+    private boolean readDatagram(
+            final Receiver receiver, final DatagramSession datagramSession) {
+        LOGGER.trace("Datagram received");
+        final DatagramChannel channel = SessionChannelHelper.getChannel(datagramSession);
+        try {
+            final ByteBuffer datagram = receiver.receive(datagramSession);
+            assert datagram != null;
+            final SocketAddress address = channel.receive(datagram);
+            if (address == null) {
+                return false;
             }
-            LOGGER.trace("Datagram received");
-        } else if (session instanceof StreamSession streamSession) {
-            LOGGER.trace("Stream received");
+            if (Config.useSynchronisedNAT
+                    && !address.equals(datagramSession.getDestination())) {
+                // With synchronised NAT the socket is bound to a wildcard address, so drop
+                // datagrams that did not come from the session's expected destination.
+                return false;
+            }
+            datagram.flip();
+            return true;
+        } catch (final IOException exception) {
+            LOGGER.error("Trying to read datagram socket", exception);
+        }
+        return false;
+    }
+
+    private boolean readStream(final Receiver receiver, final StreamSession streamSession) {
+        LOGGER.trace("Stream received");
+        try {
+            final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
             final ByteBuffer stream = receiver.receive(streamSession);
-            try {
-                final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
-                assert stream != null;
-                // Non-blocking channel: read until EAGAIN (0), end of stream (-1)
-                // or the session buffer is full to make use of the whole window.
-                int read;
-                while ((read = channel.read(stream)) > 0) {
-                    LOGGER.trace("Read from real world: {}", read);
+            assert stream != null;
+            // Non-blocking channel: read until EAGAIN (0), end of stream (-1)
+            // or the session buffer is full to make use of the whole window.
+            for (;;) {
+                final int read = channel.read(stream);
+                if (read <= 0) {
+                    if (read == -1) {
+                        SessionChannelHelper.closeSession(streamSession);
+                        break;
+                    }
+                    break;
                 }
-                if (read == -1) {
-                    SessionChannelHelper.closeSession(session);
-                }
-                return true;
-            } catch (final IOException exception) {
-                LOGGER.error("Trying to read stream socket", exception);
+                LOGGER.trace("Read from real world: {}", read);
             }
+            return true;
+        } catch (final IOException exception) {
+            LOGGER.error("Trying to read stream socket", exception);
         }
         return false;
     }
@@ -227,35 +241,42 @@ public final class DefaultSessionLayer implements SessionLayer {
     private void sendStream(final StreamSession session, @Nullable final ByteBuffer data) {
         try {
             switch (session.getState()) {
-                case NEW -> {
-                    final SocketChannel channel =
-                            socketManager.createStreamChannel(session, readySessions);
-                    session.setAttachment(channel);
-                    channel.connect(session.getDestination());
-                    if (session instanceof final StreamSessionImpl stream) {
-                        trackedStreams.add(stream);
-                    }
-                    LOGGER.trace("Open stream socket {}", session.getDestination());
-                }
-                case ESTABLISHED -> {
-                    final SocketChannel channel = SessionChannelHelper.getChannel(session);
-                    assert data != null;
-                    // Non-blocking channel: write until the buffer is drained or EAGAIN (0).
-                    while (data.hasRemaining()) {
-                        if (channel.write(data) == 0) {
-                            break;
-                        }
-                    }
-                }
-                case FINISH, EXPIRED -> {
-                    SessionChannelHelper.closeSession(session);
-                    LOGGER.trace("Close stream socket {}", session.getDestination());
-                }
+                case NEW -> openStreamSocket(session);
+                case ESTABLISHED -> writeEstablishedStream(session, data);
+                case FINISH, EXPIRED -> closeEndedStream(session);
                 default -> throw new AssertionError(session.getState());
             }
         } catch (IOException e) {
             LOGGER.error("Stream session failure", e);
             session.close();
         }
+    }
+
+    /** Opens a non-blocking socket for a brand new stream session. */
+    private void openStreamSocket(final StreamSession session) throws IOException {
+        final SocketChannel channel = socketManager.createStreamChannel(session, readySessions);
+        session.setAttachment(channel);
+        channel.connect(session.getDestination());
+        if (session instanceof final StreamSessionImpl stream) {
+            trackedStreams.add(stream);
+        }
+        LOGGER.trace("Open stream socket {}", session.getDestination());
+    }
+
+    /** Writes the payload to an established, non-blocking socket until EAGAIN or drained. */
+    private void writeEstablishedStream(final StreamSession session, final ByteBuffer data)
+            throws IOException {
+        final SocketChannel channel = SessionChannelHelper.getChannel(session);
+        assert data != null;
+        while (data.hasRemaining()) {
+            if (channel.write(data) == 0) {
+                break;
+            }
+        }
+    }
+
+    private static void closeEndedStream(final StreamSession session) {
+        SessionChannelHelper.closeSession(session);
+        LOGGER.trace("Close stream socket {}", session.getDestination());
     }
 }

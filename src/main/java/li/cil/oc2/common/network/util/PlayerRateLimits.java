@@ -1,6 +1,7 @@
 package li.cil.oc2.common.network.util;
 
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Per-player rate limits for client-to-server messages. Keys are weakly referenced so
@@ -9,7 +10,7 @@ import java.util.WeakHashMap;
  */
 public final class PlayerRateLimits {
     private static final long THROTTLE_WINDOW_MS = 1000;
-    private static final Object LOCK = new Object();
+    private static final ReentrantLock LOCK = new ReentrantLock();
     private static final WeakHashMap<Object, Long> LAST_ALLOWED_AT = new WeakHashMap<>();
     private static final WeakHashMap<Object, EventWindow> EVENT_WINDOWS = new WeakHashMap<>();
 
@@ -20,7 +21,8 @@ public final class PlayerRateLimits {
      * calls within the interval are dropped.
      */
     public static boolean allowThrottled(final Object key, final long minIntervalMs) {
-        synchronized (LOCK) {
+        LOCK.lock();
+        try {
             final long now = System.currentTimeMillis();
             final Long last = LAST_ALLOWED_AT.get(key);
             if (last != null && now - last < minIntervalMs) {
@@ -28,6 +30,8 @@ public final class PlayerRateLimits {
             }
             LAST_ALLOWED_AT.put(key, now);
             return true;
+        } finally {
+            LOCK.unlock();
         }
     }
 
@@ -36,7 +40,8 @@ public final class PlayerRateLimits {
      * rolling one-second window; excess events are dropped.
      */
     public static boolean allowEvents(final Object key, final int maxPerSecond) {
-        synchronized (LOCK) {
+        LOCK.lock();
+        try {
             final long now = System.currentTimeMillis();
             final EventWindow window = EVENT_WINDOWS.get(key);
             if (window == null || now - window.startMs >= THROTTLE_WINDOW_MS) {
@@ -46,6 +51,8 @@ public final class PlayerRateLimits {
                 return true;
             }
             return ++window.count <= maxPerSecond;
+        } finally {
+            LOCK.unlock();
         }
     }
 
