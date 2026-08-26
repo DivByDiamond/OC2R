@@ -131,6 +131,32 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void dsrBareCsiNRepliesStatus() {
+        // §36 m4: DSR (CSI Ps n) with no Ps defaults to Ps=5 (device status). CSIManager
+        // substitutes the handler's defaultParameters before execute, so a bare CSI n
+        // replies \033[0n instead of hanging a guest waiting for a status response.
+        write(terminal, CSI + "n");
+        final ByteBuffer reply = terminal.io.getInput();
+        assertNotNull(reply, "bare CSI n must produce a status-report reply");
+        final byte[] bytes = new byte[reply.remaining()];
+        reply.get(bytes);
+        assertEquals("\033[0n", new String(bytes, StandardCharsets.US_ASCII),
+                "bare CSI n replies operating-status (\\033[0n)");
+    }
+
+    @Test
+    void dsrExplicitFiveStillRepliesStatus() {
+        // Explicit Ps=5 is unchanged by the defaultParameters fix — still a status report.
+        write(terminal, CSI + "5n");
+        final ByteBuffer reply = terminal.io.getInput();
+        assertNotNull(reply, "CSI 5n must produce a status-report reply");
+        final byte[] bytes = new byte[reply.remaining()];
+        reply.get(bytes);
+        assertEquals("\033[0n", new String(bytes, StandardCharsets.US_ASCII),
+                "CSI 5n replies operating-status (\\033[0n)");
+    }
+
+    @Test
     void cudMovesCursorDownAndClampsSaturatedCount() {
         // parseArgument saturates at Integer.MAX_VALUE; terminal.y + args[0] must not overflow to a
         // negative int (which would clamp to row 0) — a huge down-move lands on the bottom row.

@@ -8,6 +8,14 @@ public class DSR extends CSISequenceHandler {
     }
 
     @Override
+    public int[] defaultParameters(CSIState state) {
+        // Ps omitted (or 0) defaults to 5 — device status report. CSIManager substitutes
+        // this before execute, so a bare CSI n replies \033[0n instead of hanging the guest
+        // waiting for a status response that never comes (§36 m4).
+        return new int[] {5};
+    }
+
+    @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (args[0] == 5) {
             if (state.questionMark) {
