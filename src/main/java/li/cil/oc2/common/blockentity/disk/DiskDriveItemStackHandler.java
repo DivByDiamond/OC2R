@@ -3,8 +3,6 @@ package li.cil.oc2.common.blockentity.disk;
 import javax.annotation.Nonnull;
 import li.cil.oc2.common.container.handler.TypedItemStackHandler;
 import li.cil.oc2.common.item.block.AbstractBlockDeviceItem;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.disk.DiskDriveFloppyMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.core.HolderLookup;
@@ -78,8 +76,13 @@ final class DiskDriveItemStackHandler extends TypedItemStackHandler {
                     });
         }
 
-        NetworkMessages.sendToClientsTrackingBlockEntity(
-                new DiskDriveFloppyMessage(blockEntity), blockEntity);
+        // The floppy contents are part of the drive's update tag, so forcing a
+        // BlockEntityDataPacket here syncs all tracking clients without a custom message.
+        level.sendBlockUpdated(
+                blockEntity.getBlockPos(),
+                blockEntity.getBlockState(),
+                blockEntity.getBlockState(),
+                net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
 
         blockEntity.setChanged();
     }

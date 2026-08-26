@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.network.BusInterfaceNameMessage;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -39,10 +37,14 @@ public final class InterfaceNameManager {
         owner.setChanged();
 
         if (!level.isClientSide()) {
-            final BusInterfaceNameMessage message =
-                    BusInterfaceNameMessage.toClient(
-                            owner, side, interfaceNames[side.get3DDataValue()]);
-            NetworkMessages.sendToClientsTrackingBlockEntity(message, owner);
+            // getUpdateTag carries every interface name, so forcing a BlockEntityDataPacket
+            // here updates all tracking clients at once; a per-face custom message would
+            // duplicate that payload.
+            level.sendBlockUpdated(
+                    owner.getBlockPos(),
+                    owner.getBlockState(),
+                    owner.getBlockState(),
+                    net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
             owner.busElement.updateDevicesForNeighbor(side);
         }
     }

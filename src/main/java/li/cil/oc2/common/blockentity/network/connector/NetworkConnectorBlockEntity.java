@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.NetworkInterface;
+import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -19,8 +20,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 
 public final class NetworkConnectorBlockEntity extends ModBlockEntity
@@ -93,6 +92,9 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 registries,
                 connectionManager.connectorPositions,
                 connectionManager.dirtyConnectors);
+        // Live updates arrive via this tag instead of a custom message; the cable
+        // renderer caches connections, so it must rebuild after positions change.
+        NetworkCableRenderer.invalidateConnections();
     }
 
     @Override
@@ -154,10 +156,5 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
 
     public Collection<BlockPos> getConnectedPositions() {
         return connectionManager.getConnectedPositions();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void setConnectedPositionsClient(final List<BlockPos> positions) {
-        connectionManager.setConnectedPositionsClient(positions);
     }
 }

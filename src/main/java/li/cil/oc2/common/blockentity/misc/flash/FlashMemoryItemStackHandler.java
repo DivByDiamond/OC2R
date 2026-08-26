@@ -4,8 +4,6 @@ import static li.cil.oc2.common.item.block.AbstractBlockDeviceItem.DATA_TAG_NAME
 
 import javax.annotation.Nonnull;
 import li.cil.oc2.common.container.handler.TypedItemStackHandler;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.computer.misc.FirmwareFlasherMessage;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.core.HolderLookup;
@@ -79,7 +77,13 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
                     });
         }
 
-        NetworkMessages.sendToClientsTrackingBlockEntity(new FirmwareFlasherMessage(owner), owner);
+        // The flash contents are part of the flasher's update tag, so forcing a
+        // BlockEntityDataPacket here syncs all tracking clients without a custom message.
+        level.sendBlockUpdated(
+                owner.getBlockPos(),
+                owner.getBlockState(),
+                owner.getBlockState(),
+                net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
 
         owner.setChanged();
     }

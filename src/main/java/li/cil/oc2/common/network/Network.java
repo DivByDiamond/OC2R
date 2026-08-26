@@ -7,12 +7,10 @@ import li.cil.oc2.common.network.message.computer.ComputerPowerMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
 import li.cil.oc2.common.network.message.computer.SoundCardBeepMessage;
 import li.cil.oc2.common.network.message.computer.SoundCardPcmMessage;
-import li.cil.oc2.common.network.message.computer.misc.FirmwareFlasherMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalDiffMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalInputMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerTerminalMessage;
-import li.cil.oc2.common.network.message.disk.DiskDriveFloppyMessage;
 import li.cil.oc2.common.network.message.file.ExportedFileMessage;
 import li.cil.oc2.common.network.message.file.ImportedFileMessage;
 import li.cil.oc2.common.network.message.file.RequestImportedFileMessage;
@@ -28,8 +26,6 @@ import li.cil.oc2.common.network.message.monitor.input.KeyboardInputMessage;
 import li.cil.oc2.common.network.message.monitor.input.MonitorInputMessage;
 import li.cil.oc2.common.network.message.network.BusInterfaceNameMessage;
 import li.cil.oc2.common.network.message.network.NetworkInterfaceCardConfigurationMessage;
-import li.cil.oc2.common.network.message.network.connector.BusCableFacadeMessage;
-import li.cil.oc2.common.network.message.network.connector.NetworkConnectorConnectionsMessage;
 import li.cil.oc2.common.network.message.network.connector.NetworkTunnelLinkMessage;
 import li.cil.oc2.common.network.message.projector.ProjectorFramebufferMessage;
 import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
@@ -73,7 +69,7 @@ public final class Network {
         registrar.playToServer(OpenComputerTerminalMessage.TYPE, OpenComputerTerminalMessage.STREAM_CODEC, OpenComputerTerminalMessage::handleMessage);
 
         // Network
-        registrar.playToClient(NetworkConnectorConnectionsMessage.TYPE, NetworkConnectorConnectionsMessage.STREAM_CODEC, NetworkConnectorConnectionsMessage::handleMessage);
+        registrar.playToServer(NetworkTunnelLinkMessage.TYPE, NetworkTunnelLinkMessage.STREAM_CODEC, NetworkTunnelLinkMessage::handleMessage);
 
         // Robot
         registrar.playToClient(RobotTerminalDiffMessage.TYPE, RobotTerminalDiffMessage.STREAM_CODEC, RobotTerminalDiffMessage::handleMessage);
@@ -88,13 +84,12 @@ public final class Network {
         registrar.playToServer(OpenRobotTerminalMessage.TYPE, OpenRobotTerminalMessage.STREAM_CODEC, OpenRobotTerminalMessage::handleMessage);
 
         // Disk / Firmware
-        registrar.playToClient(DiskDriveFloppyMessage.TYPE, DiskDriveFloppyMessage.STREAM_CODEC, DiskDriveFloppyMessage::handleMessage);
-        registrar.playToClient(FirmwareFlasherMessage.TYPE, FirmwareFlasherMessage.STREAM_CODEC, FirmwareFlasherMessage::handleMessage);
+        // (contents ride on the block entities' update tags via sendBlockUpdated)
 
-        // Bus interface (bidirectional)
-        registrar.playBidirectional(
+        // Bus interface (client-to-server input from the GUI)
+        registrar.playToServer(
                 BusInterfaceNameMessage.TYPE, BusInterfaceNameMessage.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(BusInterfaceNameMessage::handleClientMessage, BusInterfaceNameMessage::handleServerMessage));
+                BusInterfaceNameMessage::handleServerMessage);
 
         // File import/export
         registrar.playToClient(ExportedFileMessage.TYPE, ExportedFileMessage.STREAM_CODEC, ExportedFileMessage::handleMessage);
@@ -104,9 +99,7 @@ public final class Network {
         registrar.playToServer(ClientCanceledImportFileMessage.TYPE, ClientCanceledImportFileMessage.STREAM_CODEC, ClientCanceledImportFileMessage::handleMessage);
 
         // Bus cable / Network config
-        registrar.playToClient(BusCableFacadeMessage.TYPE, BusCableFacadeMessage.STREAM_CODEC, BusCableFacadeMessage::handleMessage);
         registrar.playToServer(NetworkInterfaceCardConfigurationMessage.TYPE, NetworkInterfaceCardConfigurationMessage.STREAM_CODEC, NetworkInterfaceCardConfigurationMessage::handleMessage);
-        registrar.playToServer(NetworkTunnelLinkMessage.TYPE, NetworkTunnelLinkMessage.STREAM_CODEC, NetworkTunnelLinkMessage::handleMessage);
 
         // Monitor framebuffer
         registrar.playToServer(MonitorRequestFramebufferMessage.TYPE, MonitorRequestFramebufferMessage.STREAM_CODEC, MonitorRequestFramebufferMessage::handleMessage);

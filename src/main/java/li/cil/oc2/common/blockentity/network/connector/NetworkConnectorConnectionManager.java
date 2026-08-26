@@ -3,15 +3,11 @@ package li.cil.oc2.common.blockentity.network.connector;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.network.NetworkMessages;
-import li.cil.oc2.common.network.message.network.connector.NetworkConnectorConnectionsMessage;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.tick.TickUtils;
@@ -21,8 +17,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public final class NetworkConnectorConnectionManager {
     private static final int RETRY_UNLOADED_CHUNK_INTERVAL =
@@ -167,13 +161,6 @@ public final class NetworkConnectorConnectionManager {
         return connectorPositions;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public void setConnectedPositionsClient(final List<BlockPos> positions) {
-        connectorPositions.clear();
-        connectorPositions.addAll(positions);
-        NetworkCableRenderer.invalidateConnections();
-    }
-
     public void resolveConnectedInterface(final BlockPos connectedPosition) {
         connectors.remove(connectedPosition);
 
@@ -220,9 +207,14 @@ public final class NetworkConnectorConnectionManager {
     private void onConnectedPositionsChanged() {
         final Level level = owner.getLevel();
         if (level != null && !level.isClientSide()) {
-            final NetworkConnectorConnectionsMessage message =
-                    new NetworkConnectorConnectionsMessage(owner);
-            NetworkMessages.sendToClientsTrackingBlockEntity(message, owner);
+            // The implicit BlockEntityDataPacket triggered here carries getUpdateTag,
+            // which already includes the connection positions; a separate custom
+            // message would duplicate that payload for every tracker.
+            level.sendBlockUpdated(
+                    owner.getBlockPos(),
+                    owner.getBlockState(),
+                    owner.getBlockState(),
+                    net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
     }
 }

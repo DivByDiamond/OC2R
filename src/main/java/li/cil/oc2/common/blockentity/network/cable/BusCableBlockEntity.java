@@ -132,6 +132,9 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         } else {
             facadeManager.setFacadeDirectly(ItemStack.EMPTY);
         }
+        // Model data is built from the facade; a client that starts tracking must
+        // rebuild it, otherwise the cable renders without the facade.
+        requestModelDataUpdate();
     }
 
     @Override

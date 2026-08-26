@@ -3,7 +3,6 @@ package li.cil.oc2.common.network.message.network;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
-import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import li.cil.oc2.common.network.util.MessageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,16 +35,9 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
         return TYPE;
     }
 
-    public static BusInterfaceNameMessage toClient(
-            final BusCableBlockEntity busCable, final Direction side, final String value) {
-        return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);
-    }
-
-    public void handleClientMessage(final IPayloadContext context) {
-        ClientBlockEntityLookup.withClientBlockEntityAt(
-                pos, BusCableBlockEntity.class, busCable -> busCable.setInterfaceName(side, value));
-    }
-
+    // Server-to-client name updates are carried by the cable block entity's update tag
+    // (forced via sendBlockUpdated); this message is only used for client-to-server input
+    // from the interface configuration GUI.
     public static BusInterfaceNameMessage toServer(
             final BusCableBlockEntity busCable, final Direction side, final String value) {
         return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);

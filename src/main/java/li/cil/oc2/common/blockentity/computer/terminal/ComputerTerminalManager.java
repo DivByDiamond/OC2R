@@ -12,7 +12,9 @@ import li.cil.oc2.common.container.computer.ComputerTerminalContainer;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -100,6 +102,23 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
     }
 
     public void sendToClientsTrackingComputer(final CustomPacketPayload message) {
+        // The chunk is normally cached by the computer's tick; resolving it lazily here
+        // avoids silently dropping state messages sent before the first serverTick
+        // (e.g. run state or boot errors during startup).
+        if (chunk == null) {
+            chunk = resolveChunk();
+        }
         if (chunk != null) NetworkMessages.sendToClientsTrackingChunk(message, chunk);
+    }
+
+    @Nullable
+    private LevelChunk resolveChunk() {
+        if (!(computer.getLevel() instanceof final ServerLevel serverLevel)) {
+            return null;
+        }
+        final BlockPos pos = computer.getBlockPos();
+        return serverLevel.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)
+                ? serverLevel.getChunkAt(pos)
+                : null;
     }
 }
