@@ -5,6 +5,9 @@ import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.SessionLayer;
@@ -15,6 +18,7 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.session.echo.EchoHandler;
 import li.cil.oc2.common.inet.session.echo.EchoResponse;
 import li.cil.oc2.common.inet.session.manager.SocketManager;
+import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import li.cil.oc2.common.inet.session.manager.ready.ReadySessions;
 import li.cil.oc2.common.inet.session.manager.ready.SessionChannelHelper;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +40,13 @@ public final class DefaultSessionLayer implements SessionLayer {
     private final AtomicReference<EchoResponse> echoResponse = new AtomicReference<>(null);
 
     private final ReadySessions readySessions = new ReadySessions();
+
+    /**
+     * Every stream session this layer opened a channel for. Used to opportunistically
+     * push buffered data towards the VM even when no socket is currently readable;
+     * entries whose session left the ESTABLISHED state are pruned lazily.
+     */
+    private final Set<StreamSessionImpl> trackedStreams = ConcurrentHashMap.newKeySet();
     private final SocketManager socketManager;
 
     public DefaultSessionLayer(final LayerParameters layerParameters) {
@@ -62,8 +73,16 @@ public final class DefaultSessionLayer implements SessionLayer {
             return;
         }
 
-        SessionChannelHelper.processQueue(
-                readySessions.getToRead(), session -> readSession(receiver, session));
+        if (SessionChannelHelper.processQueue(
+                readySessions.getToRead(), session -> readSession(receiver, session))) {
+            return;
+        }
+
+        // No I/O-ready sessions: opportunistically keep draining unsent receive-buffer
+        // data of established streams. Without this, exactly one ~MTU segment left per
+        // game tick (readiness is only enqueued once per tick), capping throughput at
+        // ~30 KB/s regardless of the sliding window size.
+        pollUnsentStream(receiver);
     }
 
     /**
@@ -143,6 +162,24 @@ public final class DefaultSessionLayer implements SessionLayer {
         return false;
     }
 
+    /**
+     * Offers the receiver the first established stream that still has unsent buffered
+     * data, so the transport layer builds another segment without waiting for inbound
+     * traffic. Returns false when every tracked stream is fully drained (or gone).
+     */
+    private void pollUnsentStream(final Receiver receiver) {
+        final Iterator<StreamSessionImpl> iterator = trackedStreams.iterator();
+        while (iterator.hasNext()) {
+            final StreamSessionImpl stream = iterator.next();
+            if (stream.isClosed() || !stream.getState().equals(Session.States.ESTABLISHED)) {
+                iterator.remove();
+            } else if (stream.receiveBuffer.position() > stream.nextSegmentMark) {
+                receiver.receive(stream);
+                return;
+            }
+        }
+    }
+
     public static native byte @Nullable [] sendICMP(byte[] ip, byte[] data, int size, int timeout);
 
     @Override
@@ -195,6 +232,9 @@ public final class DefaultSessionLayer implements SessionLayer {
                             socketManager.createStreamChannel(session, readySessions);
                     session.setAttachment(channel);
                     channel.connect(session.getDestination());
+                    if (session instanceof final StreamSessionImpl stream) {
+                        trackedStreams.add(stream);
+                    }
                     LOGGER.trace("Open stream socket {}", session.getDestination());
                 }
                 case ESTABLISHED -> {
