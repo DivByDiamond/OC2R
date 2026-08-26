@@ -29,6 +29,9 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
 
     private static final String MAC_ADDRESS_TAG = "MACAddress";
     private static final String IPv4_ADDRESS_TAG = "IPv4Address";
+    // Stable card identity written by InternetCardDevice; the MAC is derived from it
+    // instead of trusting the (player-editable) MACAddress field below.
+    private static final String DEVICE_ID_TAG = "DeviceId";
 
     private final NetworkLayer networkLayer;
 
@@ -71,7 +74,20 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
         }
     }
 
+    /**
+     * The MAC is derived deterministically from the card's stable identity UUID, never
+     * taken from the {@code MACAddress} NBT field: that field lives in player-writable
+     * item data, and trusting it would let any card impersonate another one in the LAN
+     * (todo.md §39 С8). The legacy parse path only remains for cards saved before the
+     * identity existed; their address changes once on the first save with an id.
+     */
     private void loadMacAddress(final CompoundTag layerState) {
+        if (layerState.hasUUID(DEVICE_ID_TAG)) {
+            myMacAddress =
+                    MacAddressUtils.macFromUuid(
+                            layerState.getUUID(DEVICE_ID_TAG), MAC_PREFIX);
+            return;
+        }
         final String macAddressString = layerState.getString(MAC_ADDRESS_TAG);
         if (!macAddressString.isEmpty()) {
             try {

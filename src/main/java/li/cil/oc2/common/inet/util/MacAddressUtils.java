@@ -1,8 +1,28 @@
 package li.cil.oc2.common.inet.util;
 
+import java.util.UUID;
 import li.cil.oc2.common.inet.util.checksum.AddressParseException;
 
 public final class MacAddressUtils {
+    /**
+     * Deterministically derives a MAC address from a stable per-device UUID.
+     *
+     * <p>The 64-bit UUID halves are folded together and run through the SplitMix64
+     * finalizer for good bit dispersion, then truncated to the 32-bit address part.
+     * Because the mapping is one-way and deterministic, a card's MAC cannot be chosen
+     * freely via item NBT: it is fixed by the card's identity, so impersonating another
+     * card requires duplicating its whole identity, not editing an address field.
+     */
+    public static MacAddress macFromUuid(final UUID uuid, final short prefix) {
+        long bits = uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits();
+        bits ^= bits >>> 30;
+        bits *= 0xbf58476d1ce4e5b9L;
+        bits ^= bits >>> 27;
+        bits *= 0x94d049bb133111ebL;
+        bits ^= bits >>> 31;
+        return new MacAddress(prefix, (int) bits);
+    }
+
     private static char hexCodeToChar(final int code) {
         if (code < 10) {
             return (char) ('0' + code);
