@@ -24,6 +24,23 @@ public final class SessionManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static int allSessionCount = 0;
 
+    // Coarse shared clock: both per-packet scans below reuse one cached instant instead
+    // of each fetching their own, refreshed at most once per interval. Expiration
+    // thresholds are seconds-scale, so microsecond staleness is irrelevant; everything
+    // here runs on the single "Internet" thread (todo.md §38 Ш8).
+    private static final long CLOCK_RESOLUTION_NANOS = 200_000;
+    private long clockNanos;
+    private Instant clock = Instant.now();
+
+    private Instant now() {
+        final long nanos = System.nanoTime();
+        if (nanos - clockNanos >= CLOCK_RESOLUTION_NANOS) {
+            clockNanos = nanos;
+            clock = Instant.now();
+        }
+        return clock;
+    }
+
     private final SessionLayer sessionLayer;
     /**
      * Sessions ordered by last-update time. The head of the map is the oldest entry,
@@ -57,12 +74,13 @@ public final class SessionManager {
             return;
         }
         final Instant expireTime =
-                Instant.now().minus(Config.defaultSessionLifetimeMs, ChronoUnit.MILLIS);
-        final Iterator<Instant> iterator = expirationQueue.navigableKeySet().iterator();
+                now().minus(Config.defaultSessionLifetimeMs, ChronoUnit.MILLIS);
+        final Iterator<Map.Entry<Instant, SessionBase>> iterator =
+                expirationQueue.entrySet().iterator();
         while (iterator.hasNext()) {
-            final Instant time = iterator.next();
-            if (time.compareTo(expireTime) < 0) {
-                final SessionBase session = expirationQueue.get(time);
+            final Map.Entry<Instant, SessionBase> entry = iterator.next();
+            if (entry.getKey().compareTo(expireTime) < 0) {
+                final SessionBase session = entry.getValue();
                 iterator.remove();
                 removeRegistered(session);
                 --allSessionCount;
@@ -159,15 +177,14 @@ public final class SessionManager {
             return null;
         }
         final Instant retransmissionTime =
-                Instant.now().minus(Config.tcpRetransmissionTimeoutMs, ChronoUnit.MILLIS);
-        for (final Instant time : expirationQueue.navigableKeySet()) {
-            if (time.compareTo(retransmissionTime) < 0) {
-                final SessionBase session = expirationQueue.get(time);
-                if (session instanceof StreamSessionImpl stream && stream.isNeedsAcknowledgment()) {
-                    return stream;
-                }
-            } else {
+                now().minus(Config.tcpRetransmissionTimeoutMs, ChronoUnit.MILLIS);
+        for (final Map.Entry<Instant, SessionBase> entry : expirationQueue.entrySet()) {
+            if (entry.getKey().compareTo(retransmissionTime) >= 0) {
                 break;
+            }
+            final SessionBase session = entry.getValue();
+            if (session instanceof StreamSessionImpl stream && stream.isNeedsAcknowledgment()) {
+                return stream;
             }
         }
         return null;

@@ -170,7 +170,9 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
         if (inboundQueue.size() < QUEUE_MAX && tryUseEnergy()) {
             animation.inboundCount += 1;
             notifyPlayers();
-            inboundQueue.addLast(frame);
+            // Frames handed to adapters are borrowed and may come from a recycled pool
+            // (the gateway retains this one until it is drained), hence the copy here.
+            inboundQueue.addLast(frame.clone());
         }
     }
 

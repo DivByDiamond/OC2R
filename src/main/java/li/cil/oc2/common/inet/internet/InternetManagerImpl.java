@@ -1,9 +1,13 @@
 package li.cil.oc2.common.inet.internet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.InternetManager;
 import li.cil.oc2.api.inet.LayerParameters;
@@ -110,12 +114,22 @@ public final class InternetManagerImpl implements InternetManager {
      */
     private void processInternetAdapter(final InternetConnectionImpl connection) {
         final InternetAdapter adapter = connection.adapter;
-        byte[] received;
-        while ((received = connection.incoming.poll()) != null) {
+        for (;;) {
+            final byte[] received = connection.incoming.poll();
+            if (received == null) {
+                break;
+            }
             adapter.sendEthernetFrame(received);
+            // Adapters that retain the frame copy it themselves (borrowed-array contract);
+            // once sendEthernetFrame returns, nobody holds a reference and the buffer can
+            // be recycled for the next receive cycle (todo.md §38 П7).
+            connection.recycleFrame(received);
         }
-        byte[] sending;
-        while ((sending = adapter.receiveEthernetFrame()) != null) {
+        for (;;) {
+            final byte[] sending = adapter.receiveEthernetFrame();
+            if (sending == null) {
+                break;
+            }
             if (!connection.outcoming.offer(sending)) {
                 LOGGER.trace("Outcoming frame queue is full, dropping frame");
                 break;
@@ -164,26 +178,31 @@ public final class InternetManagerImpl implements InternetManager {
      * Per-tick driver, runs on the server thread. Connections flagged as stopped are torn down
      * ({@code ethernet.onStop()}) and removed; all others first exchange frames with their
      * adapters here, then have their TCP/IP stacks processed by the internet thread.
+     *
+     * <p>When there is nothing to do — no connections and no scheduled tasks — the handoff to
+     * the internet thread is skipped entirely: a pointless cross-thread round trip with fresh
+     * list allocations every tick would otherwise run even on servers without any internet card.
      */
     @SubscribeEvent
     public void onTick(final ServerTickEvent.Pre event) {
-        final List<InternetConnectionImpl> connectionsToStop =
-                connections.stream()
-                        .filter(connection -> connection.isStopped)
-                        .collect(Collectors.toList());
-        final List<InternetConnectionImpl> connectionsToProcess =
-                connections.stream()
-                        .filter(connection -> !connection.isStopped)
-                        .collect(Collectors.toList());
-        connections.removeIf(
-                connection -> {
-                    if (connection.isStopped) {
-                        return true;
-                    } else {
-                        processInternetAdapter(connection);
-                        return false;
-                    }
-                });
+        if (connections.isEmpty() && tasks.isEmpty()) {
+            return;
+        }
+
+        final List<InternetConnectionImpl> connectionsToStop = new ArrayList<>();
+        for (final InternetConnectionImpl connection : connections) {
+            if (connection.isStopped) {
+                connectionsToStop.add(connection);
+            }
+        }
+        connections.removeIf(connection -> connection.isStopped);
+
+        final List<InternetConnectionImpl> connectionsToProcess = new ArrayList<>();
+        for (final InternetConnectionImpl connection : connections) {
+            processInternetAdapter(connection);
+            connectionsToProcess.add(connection);
+        }
+
         executor.execute(() -> runOnInternetThread(connectionsToStop, connectionsToProcess));
     }
 

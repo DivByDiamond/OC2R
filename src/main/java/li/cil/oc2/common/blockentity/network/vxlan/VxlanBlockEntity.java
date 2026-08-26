@@ -57,6 +57,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
     private int vti = VTI_RANDOM.nextInt(VNI_LIMIT);
     private int frameCount;
     private long lastGameTime;
+    private boolean warnedUnregisteredUpstream;
 
     /**
      * Inbound frames delivered by the tunnel socket thread; capacity is configurable
@@ -127,7 +128,11 @@ public final class VxlanBlockEntity extends ModBlockEntity
             // poll-drain instead of forEach+clear: a frame arriving mid-drain would
             // otherwise be cleared without ever being processed.
             byte[] packet;
-            while ((packet = packetQueue.poll()) != null) {
+            for (;;) {
+                packet = packetQueue.poll();
+                if (packet == null) {
+                    break;
+                }
                 writeEthernetFrame(tunnelInterface, packet, 255);
             }
             if (tunnelInterface instanceof TunnelManager.TunnelInterface tunnel
@@ -139,7 +144,12 @@ public final class VxlanBlockEntity extends ModBlockEntity
                         Config.vxlanPacketQueueCapacity);
             }
         } else {
-            LOGGER.warn("VXLAN block is unregistered upstream: VTI={}", vti);
+            // Normal while VXLAN is disabled; even when unexpected, logging every tick
+            // would spam the log 20 times per second, hence report-once until recovery.
+            if (!warnedUnregisteredUpstream) {
+                warnedUnregisteredUpstream = true;
+                LOGGER.warn("VXLAN block is unregistered upstream: VTI={}", vti);
+            }
         }
     }
 
@@ -180,6 +190,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
         final TunnelManager manager = TunnelManager.instance();
         if (manager != null) {
             adjacentInterfaces.setTunnelInterface(manager.registerVti(vti, packetQueue));
+            warnedUnregisteredUpstream = false;
         } else {
             LOGGER.warn("VXLAN tunnel manager unavailable: VTI={} stays unregistered", vti);
         }

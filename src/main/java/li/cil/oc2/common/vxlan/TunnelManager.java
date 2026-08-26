@@ -10,7 +10,6 @@ import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +63,8 @@ public class TunnelManager {
     private final short remotePort;
     private final InetAddress bindHost;
     private final short bindPort;
+    private final InetSocketAddress cachedRemoteAddress;
+    private byte[] sendBuffer = new byte[0];
 
     public TunnelManager(
             InetAddress bindHost, short bindPort, InetAddress remoteHost, short remotePort)
@@ -72,6 +73,9 @@ public class TunnelManager {
         this.remotePort = remotePort;
         this.bindHost = bindHost;
         this.bindPort = bindPort;
+        // The remote endpoint is a constant for the manager's lifetime; constructing the
+        // resolved address once keeps per-frame sends allocation-free (todo.md §38 Ш7).
+        this.cachedRemoteAddress = new InetSocketAddress(remoteHost, remotePort);
     }
 
     public static void initialize() {
@@ -175,7 +179,7 @@ public class TunnelManager {
             return;
         }
         final int vni =
-                ((datagram.get(6) & 0xFF))
+                (datagram.get(6) & 0xFF)
                         | ((datagram.get(5) & 0xFF) << 8)
                         | ((datagram.get(4) & 0xFF) << 16);
 
@@ -212,7 +216,14 @@ public class TunnelManager {
             return;
         }
 
-        final byte[] buffer = new byte[payload.length + HEADER_SIZE];
+        // Grow-only header+payload staging buffer: send() copies into the kernel on
+        // this thread before returning, so reuse between sends is safe (todo.md §38 Ш7).
+        final int total = HEADER_SIZE + payload.length;
+        if (sendBuffer.length < total) {
+            sendBuffer = new byte[Math.max(total, sendBuffer.length * 2)];
+        }
+        final byte[] buffer = sendBuffer;
+
         System.arraycopy(payload, 0, buffer, HEADER_SIZE, payload.length);
 
         buffer[0] = 0x08;
@@ -221,8 +232,8 @@ public class TunnelManager {
         buffer[6] = (byte) (vti & 0xff);
 
         try {
-            datagramChannel.send(ByteBuffer.wrap(buffer), new InetSocketAddress(remoteHost,
-                    remotePort));
+            datagramChannel.send(
+                    ByteBuffer.wrap(buffer, 0, total), cachedRemoteAddress);
         } catch (IOException e) {
             LOGGER.error("Failed to send VXLAN datagram", e);
         }

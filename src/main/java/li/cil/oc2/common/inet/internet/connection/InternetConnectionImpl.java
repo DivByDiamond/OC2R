@@ -2,7 +2,9 @@ package li.cil.oc2.common.inet.internet.connection;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import li.cil.oc2.api.inet.layer.LinkLocalLayer;
@@ -44,6 +46,25 @@ public final class InternetConnectionImpl implements InternetConnection {
      */
     public final ArrayBlockingQueue<byte[]> outcoming =
             new ArrayBlockingQueue<>(FRAME_QUEUE_CAPACITY);
+
+    /**
+     * Frames handed to the adapter must be treated as borrowed: adapters may keep the array
+     * around (e.g. the gateway queues it), so {@code sendEthernetFrame} implementations that
+     * retain a frame have to copy it. Buffers that are provably not retained can be returned
+     * via {@link #recycleFrame(byte[])} to avoid a fresh allocation per frame (todo.md §38 П7).
+     */
+    private final Queue<byte[]> framePool = new ConcurrentLinkedQueue<>();
+
+    /** Returns a recycled receive buffer of the exact length, allocating a fresh one if none matches. */
+    public byte[] obtainFrame(final int length) {
+        final byte[] pooled = framePool.poll();
+        return pooled != null && pooled.length == length ? pooled : new byte[length];
+    }
+
+    /** Returns a drained, no-longer-referenced buffer to the pool for reuse. */
+    public void recycleFrame(final byte[] buffer) {
+        framePool.add(buffer);
+    }
 
     private final ExecutorService executor;
     private final ByteBuffer receiveBuffer = ByteBuffer.allocate(LinkLocalLayer.FRAME_SIZE);
@@ -89,8 +110,11 @@ public final class InternetConnectionImpl implements InternetConnection {
      */
     public void process() {
         try {
-            byte[] outFrame;
-            while ((outFrame = outcoming.poll()) != null) {
+            for (;;) {
+                final byte[] outFrame = outcoming.poll();
+                if (outFrame == null) {
+                    break;
+                }
                 ethernet.sendEthernetFrame(ByteBuffer.wrap(outFrame));
             }
             while (!isStopped && incoming.remainingCapacity() > 0) {
@@ -98,7 +122,7 @@ public final class InternetConnectionImpl implements InternetConnection {
                 if (!ethernet.receiveEthernetFrame(receiveBuffer)) {
                     break;
                 }
-                final byte[] inFrame = new byte[receiveBuffer.remaining()];
+                final byte[] inFrame = obtainFrame(receiveBuffer.remaining());
                 receiveBuffer.get(inFrame);
                 incoming.add(inFrame);
             }
