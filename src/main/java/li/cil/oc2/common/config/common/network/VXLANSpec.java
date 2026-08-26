@@ -4,7 +4,12 @@ import li.cil.oc2.common.config.Config;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class VXLANSpec {
-    private static final String DEFAULT_VXLAN_HOST = String.format("::%d", 1);
+    // Distinct defaults: binding must cover all interfaces for inbound tunnels to work,
+    // while the remote endpoint defaults to loopback (local testing setup). The previous
+    // shared default "::1" silently bound to IPv6 loopback only, which made the tunnel
+    // unreachable on typical IPv4 hosts without any error.
+    private static final String DEFAULT_VXLAN_BIND_HOST = "0.0.0.0";
+    private static final String DEFAULT_VXLAN_REMOTE_HOST = "127.0.0.1";
 
     public final ModConfigSpec.BooleanValue enable;
     public final ModConfigSpec.ConfigValue<String> remoteHost;
@@ -22,13 +27,13 @@ public class VXLANSpec {
 
         remoteHost =
                 builder.comment("The remote host that the VXLAN protocol is running on")
-                        .define("remoteHost", DEFAULT_VXLAN_HOST);
+                        .define("remoteHost", DEFAULT_VXLAN_REMOTE_HOST);
 
         remotePort =
                 builder.comment("The remote port that the VXLAN protocol is exposed on")
                         .defineInRange("remotePort", 4789, 1, 65535);
 
-        bindHost = builder.comment("The address to bind VXLAN to").define("bindHost", DEFAULT_VXLAN_HOST);
+        bindHost = builder.comment("The address to bind VXLAN to").define("bindHost", DEFAULT_VXLAN_BIND_HOST);
 
         bindPort =
                 builder.comment("The port to bind VXLAN to")

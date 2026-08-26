@@ -70,14 +70,16 @@ public final class Config {
     public static int ethernetFrameTimeToLive = 12;
     public static int hubEthernetFramesPerTick = 32;
 
-    private static final String DEFAULT_VXLAN_HOST = String.format("::%d", 1);
+    // Distinct defaults: bind all interfaces, remote endpoint loopback (see VXLANSpec).
+    private static final String DEFAULT_VXLAN_BIND_HOST = "0.0.0.0";
+    private static final String DEFAULT_VXLAN_REMOTE_HOST = "127.0.0.1";
     private static final String DEFAULT_NAME_SERVER = String.format("%d.%d.%d.%d", 1, 1, 1, 1);
 
     public static boolean enable = false;
-    public static String remoteHost = DEFAULT_VXLAN_HOST;
+    public static String remoteHost = DEFAULT_VXLAN_REMOTE_HOST;
     public static int remotePort = 4789;
     public static int vxlanPacketQueueCapacity = 32;
-    public static String bindHost = DEFAULT_VXLAN_HOST;
+    public static String bindHost = DEFAULT_VXLAN_BIND_HOST;
     public static int bindPort = 4789;
     public static boolean internetCardEnabled = false;
     public static int defaultSessionLifetimeMs = 60 * 1000;

@@ -1168,10 +1168,21 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
   «internet/blocking-session», что и fallback; ответ доставляется асинхронно как раньше.
   Попутно фикс бага: `size = data.remaining()` считался ПОСЛЕ `data.get(payload)` → всегда 0,
   нативный sendICMP звался с пустым payload.
-- [ ] С8 — NBT интернет-карты: MAC/IP восстанавливаются как есть (`DefaultLinkLocalLayer.java:60-81`)
-  → impersonation другой карты в мировом LAN. Привязать MAC к UUID предмета детерминированно.
-- [ ] С9 — TunnelManager надёжность: bind-fail → managerInstance==null, но поток стартует (NPE в фоне);
-  while(true) без shutdown; DEFAULT_VXLAN_HOST="::1" (`Config.java:72`) — похоже на баг вместо 0.0.0.0.
+- [x] **С8 — NBT интернет-карты: MAC/IP восстанавливались как есть** (DONE 2026-08-26):
+  per-card UUID (`DeviceId` в adapter-state, генерится при первом использовании в
+  `InternetCardDevice`, переживает демонтирование) + `MacAddressUtils.macFromUuid`
+  (SplitMix64 finalizer, детерминированно); `DefaultLinkLocalLayer.loadMacAddress`
+  теперь ДЕРИВИРУЕТ MAC из UUID и игнорирует player-writable поле `MACAddress`
+  (legacy-путь оставлен для карт до обновления; их MAC сменится один раз). Тесты
+  MacAddressUtilsTest +2. IP остался гостевым (point-to-point, назначается ОС) —
+  спуфинг source закрыт С3-фильтром по ARP-claim.
+- [x] **С9 — TunnelManager надёжность** (частично устарел на момент работы): bind-fail guard
+  (`managerInstance != null` перед стартом потока) и shutdown (select-timeout checkpoint +
+  ServerStoppingEvent) уже были сделаны в 672e7a3/5c11f5d. Доделано здесь: DEFAULT_VXLAN_HOST
+  `"::1"` (IPv6 loopback — тихо нерабочий дефолт на IPv4-серверах) → раздельные дефолты
+  `bindHost="0.0.0.0"`, `remoteHost="127.0.0.1"` (Config + VXLANSpec); null-check
+  `TunnelManager.instance()` в VxlanBlockEntity.onUnload/loadServer (NPE после ServerStopping);
+  selector → volatile (симметрично channel).
 - Resource-limits сводка: лимитированы VM-память/сессии/размер дисков/экспорт ≤1МБ;
   ОТСУТСТВУЮТ: bandwidth per card/tick, число карт на игрока (InternetManagerImpl.connect:76),
   rate-limit ICMP/PCM/framebuffer.

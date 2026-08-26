@@ -56,7 +56,9 @@ public class TunnelManager {
     private final Map<Integer, TunnelInterface> tunnels = new ConcurrentHashMap<>();
 
     @Nullable private volatile DatagramChannel channel;
-    @Nullable private Selector selector;
+    // Volatile for symmetry with channel: shutdown() runs on the server thread while the
+    // receive loop uses it on the socket thread.
+    @Nullable private volatile Selector selector;
     private static TunnelManager managerInstance;
     private final InetAddress remoteHost;
     private final short remotePort;

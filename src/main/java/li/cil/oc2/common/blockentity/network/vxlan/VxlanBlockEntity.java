@@ -166,15 +166,23 @@ public final class VxlanBlockEntity extends ModBlockEntity
     protected void onUnload(final boolean isRemove) {
         if (level != null && !level.isClientSide()) {
             adjacentInterfaces.setTunnelInterface(null);
-            TunnelManager.instance().unregisterVti(vti);
+            final TunnelManager manager = TunnelManager.instance();
+            // The manager is gone after ServerStopping; unloading chunks then must not NPE.
+            if (manager != null) {
+                manager.unregisterVti(vti);
+            }
         }
         super.onUnload(isRemove);
     }
 
     @Override
     public void loadServer() {
-        adjacentInterfaces.setTunnelInterface(
-                TunnelManager.instance().registerVti(vti, packetQueue));
+        final TunnelManager manager = TunnelManager.instance();
+        if (manager != null) {
+            adjacentInterfaces.setTunnelInterface(manager.registerVti(vti, packetQueue));
+        } else {
+            LOGGER.warn("VXLAN tunnel manager unavailable: VTI={} stays unregistered", vti);
+        }
         final ServerLevel level = (ServerLevel) this.level;
         adjacentInterfaces.registerListeners(level, getBlockPos());
     }
