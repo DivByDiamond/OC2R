@@ -176,7 +176,7 @@ public final class TerminalDiff {
         }
         // Main buffer: the currently displayed scrollback window.
         final int first = Math.max(0, terminal.lastRowToDisplay - Terminal.HEIGHT);
-        final int count = Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT - first;
+        final int count = Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT - first;
         final int[] rows = new int[Math.min(Terminal.HEIGHT, count)];
         for (int i = 0; i < rows.length; i++) {
             rows[i] = first + i;
@@ -360,7 +360,7 @@ public final class TerminalDiff {
     private static void deserializeRow(
             final Terminal terminal, final boolean alt, final int row, final byte[] data) {
         if (row < 0
-                || (alt ? row >= Terminal.HEIGHT : row >= Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT)) {
+                || (alt ? row >= Terminal.HEIGHT : row >= Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT)) {
             return;
         }
         final ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);

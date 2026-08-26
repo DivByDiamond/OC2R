@@ -57,7 +57,7 @@ public class TerminalBufferTest {
         assertEquals(0, terminal.y);
         assertEquals(24, terminal.lastRowToDisplay);
         assertEquals(24, terminal.lastRowToDisplayMax);
-        assertEquals(Terminal.WIDTH * Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT, terminal.buffer.length);
+        assertEquals(Terminal.WIDTH * Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, terminal.buffer.length);
         assertEquals(' ', charAt(0, 0));
         assertEquals(' ', charAt(Terminal.WIDTH - 1, Terminal.HEIGHT - 1));
         assertFalse(terminal.currentPrivateModeState.isAltBufferEnabled());
@@ -1442,7 +1442,7 @@ public class TerminalBufferTest {
         write(terminal, CSI + "?3h");
         assertTrue(terminal.currentPrivateModeState.DECCOLM, "?3h enables DECCOLM");
         assertEquals(132, terminal.getTerminalWidth(), "DECCOLM switches to 132 columns");
-        final int expected132 = 132 * Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT;
+        final int expected132 = 132 * Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT;
         assertEquals(expected132, terminal.buffer.length, "buffers reallocate to 132 columns");
         assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
             "DECCOLM must redraw the whole screen");
@@ -1464,7 +1464,7 @@ public class TerminalBufferTest {
         write(terminal, CSI + "?3l");
         assertFalse(terminal.currentPrivateModeState.DECCOLM, "?3l disables DECCOLM");
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "reset returns to 80 columns");
-        final int expected80 = Terminal.WIDTH * Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT;
+        final int expected80 = Terminal.WIDTH * Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT;
         assertEquals(expected80, terminal.buffer.length, "buffers reallocate back to 80 columns");
     }
 
@@ -1590,7 +1590,7 @@ public class TerminalBufferTest {
         // SD (CSI T) / RI used to arraycopy past the physical buffer end
         // (AIOOBE under lock in putOutput -> terminal dead forever).
         writeMarkers();
-        assertEquals(Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+        assertEquals(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
             "precondition: scrollback filled to cap");
         // Marker two rows above the discarded pair: survives the shift onto the last row.
         final int bottomMarkerRow = Terminal.HEIGHT - 3;
@@ -1630,7 +1630,7 @@ public class TerminalBufferTest {
     private void writeMarkers() {
         // Grow the scrollback window to its hard cap (HEIGHT * SCROLL_BACK_COUNT rows).
         final StringBuilder feed = new StringBuilder();
-        feed.append("\n".repeat(Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT));
+        feed.append("\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
         write(terminal, feed.toString());
     }
 }
