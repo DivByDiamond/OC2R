@@ -1046,9 +1046,16 @@ RobotActionProcessor из §28, похоже, уже залочен (прове�
   deflate/inflate удалены, H264-payload теперь сырой Annex-B; guard на start code
   сохраняет контракт «мусор → empty» (тест h264PayloadIsRawAnnexBNotZlib).
   Попутно ушла часть В9 (per-кадровые Deflater/Inflater/BAOS).
-- [ ] **В2 — весь энкод-путь на server thread**: RGB→YUV + software H264 в MonitorTickHandler.tick
-  (`MonitorBlockEntity.java:23`, `MonitorTickHandler.java:25`, `ProjectorBlockEntity.serverTick:105`);
-  throttle 1000/fps при fps=20 = 50 мс = каждый тик — не работает. Фикс: async-энкодер last-frame-wins.
+- [x] **В2 — весь энкод-путь на server thread** (DONE 2026-08-26): новый
+  `common/vm/video/AsyncVideoEncoder` — общий для монитора и проектора, один shared daemon-worker,
+  inbox ёмкостью 1 с вытеснением (last-frame-wins), outbox(8), пул буферов с точным матчингом длины.
+  Серверный тик теперь только copyFrame + offer; готовые кадры уходят через flush() каждый тик
+  вне throttle/dirty-гейтов (`MonitorTickHandler.tick`, `ProjectorBlockEntity.serverTick`) — иначе
+  последний кадр анимации застревал в outbox при статичной картинке. Ownership буферов эксклюзивен:
+  RAW-passthrough/fallback возвращают входной массив как есть → recycle строго после слайсинга
+  (FrameChunker.slice копирует). FrameCodec остался потоконебезопасным по дизайну — thread confinement
+  через worker. Тесты AsyncVideoEncoderTest (4). В10-дубль структуры контроллера не тронут —
+  абстракция вынесена только для энкодера.
 - [x] **В3 — 4MB direct buffer + энкодер на КАЖДЫЙ BlockEntity** (DONE ed9e195):
   ленивая аллокация encoder/decoder/buffer/picture при первом реальном использовании;
   idle BE и RAW-конфиг не выделяют ничего. Шаринг одного энкодера между активными BE

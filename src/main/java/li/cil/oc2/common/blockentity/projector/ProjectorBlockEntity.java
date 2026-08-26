@@ -101,6 +101,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
                 isPowered,
                 isValid(),
                 this);
+        // Deliver frames finished by the async encoder even when nothing changed,
+        // otherwise the last frame of an animation could sit in the outbox forever.
+        frameSender.flush();
         if (!projectorState.hasEnergy || !projectorDevice.hasChanges()) return;
         frameSender.sendFrame(projectorDevice);
     }

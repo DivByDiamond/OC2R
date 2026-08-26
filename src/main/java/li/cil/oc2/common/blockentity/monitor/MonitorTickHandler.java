@@ -21,6 +21,9 @@ final class MonitorTickHandler {
         if (!blockEntity.isOrigin()) return;
         final boolean hasPowered = updateEnergy();
         updateMonitorState(blockEntity.stateManager.isMounted, hasPowered);
+        // Deliver frames finished by the async encoder even when nothing changed,
+        // otherwise the last frame of an animation could sit in the outbox forever.
+        blockEntity.video.flush();
         if (shouldOfferFrame()) {
             blockEntity.video.sendFrame(blockEntity.stateManager.monitorDevice);
         }

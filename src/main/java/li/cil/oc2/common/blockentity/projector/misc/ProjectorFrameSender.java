@@ -15,6 +15,7 @@ import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.projector.ProjectorFramebufferMessage;
 import li.cil.oc2.common.network.message.projector.ProjectorRequestFramebufferMessage;
 import li.cil.oc2.common.network.util.frame.FrameChunker;
+import li.cil.oc2.common.vm.video.AsyncVideoEncoder;
 import li.cil.oc2.common.vm.video.FrameCodec;
 import li.cil.oc2.common.vm.video.VideoCodec;
 import net.minecraft.core.BlockPos;
@@ -37,7 +38,7 @@ public final class ProjectorFrameSender {
             Collections.synchronizedMap(new WeakHashMap<>());
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
     private final FrameCodec codec = new FrameCodec();
-    private final byte[] frameBuffer = new byte[WIDTH * HEIGHT * 2];
+    private final AsyncVideoEncoder encoder = new AsyncVideoEncoder();
 
     @Nullable private FrameConsumer frameConsumer;
     private long lastKeepAliveSentAt;
@@ -58,22 +59,40 @@ public final class ProjectorFrameSender {
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
         if (!evictWatchers(now)) return;
 
-        if (!device.copyFrame(ByteBuffer.wrap(frameBuffer))) return;
+        // The buffer is handed off to the encoder worker after copying, so a fresh
+        // one is obtained from the pool every frame instead of being reused.
+        final byte[] frame = encoder.obtainBuffer(WIDTH * HEIGHT * 2);
+        if (!device.copyFrame(ByteBuffer.wrap(frame))) {
+            encoder.recycle(frame);
+            return;
+        }
         lastSentAt = now;
 
-        final VideoCodec configured = VideoCodec.fromId(Config.videoCodec);
-        final FrameCodec.EncodedFrame result = codec.encode(configured, frameBuffer, WIDTH, HEIGHT);
-        final int codecId = result.codec().id;
-        final byte[] encoded = result.data();
-        final int frameSize = encoded.length;
-        final BlockPos pos = projector.getBlockPos();
-        final int count = FrameChunker.chunkCount(frameSize);
-        for (int i = 0; i < count; i++) {
-            final var message = new ProjectorFramebufferMessage(
-                    pos, codecId, WIDTH, HEIGHT, frameSize, i, count, FrameChunker.slice(encoded, i));
-            for (final ServerPlayer player : watchers.keySet()) {
-                NetworkMessages.sendToClient(message, player);
+        encoder.offer(codec, VideoCodec.fromId(Config.videoCodec), frame, WIDTH, HEIGHT);
+    }
+
+    /**
+     * Sends out frames the encode worker has finished since the last tick. Must run
+     * every tick (outside the throttle/dirty gates) so completed frames are delivered
+     * even when the image has gone static and no new frames are submitted.
+     */
+    public void flush() {
+        AsyncVideoEncoder.CompletedFrame completed;
+        while ((completed = encoder.poll()) != null) {
+            final FrameCodec.EncodedFrame result = completed.frame();
+            final byte[] encoded = result.data();
+            final BlockPos pos = projector.getBlockPos();
+            final int codecId = result.codec().id;
+            final int frameSize = encoded.length;
+            final int count = FrameChunker.chunkCount(frameSize);
+            for (int i = 0; i < count; i++) {
+                final var message = new ProjectorFramebufferMessage(
+                        pos, codecId, WIDTH, HEIGHT, frameSize, i, count, FrameChunker.slice(encoded, i));
+                for (final ServerPlayer player : watchers.keySet()) {
+                    NetworkMessages.sendToClient(message, player);
+                }
             }
+            encoder.recycle(completed.buffer());
         }
     }
 
