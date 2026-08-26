@@ -844,6 +844,317 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void xtRawPassthroughRendersEscapesAsGlyphsNotInterpreted() {
+        // CSI ?7777h turns on raw passthrough (the built-in byte-capture debugger): every byte
+        // is written to the screen literally and NO byte is interpreted — not even ESC. So an
+        // SGR color sequence must appear on screen as its raw bytes, not change any color state.
+        write(terminal, CSI + "?7777h");
+        assertTrue(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH, "mode is on");
+        write(terminal, ESC + "[31m");    // would set fg=red if interpreted
+
+        // The 5 bytes ESC [ 3 1 m render as glyphs: ESC->^[ (cols 0,1), then [ 3 1 m (cols 2-4).
+        assertEquals('^', charAt(0, 0), "ESC renders as ^ (caret notation)");
+        assertEquals('[', charAt(1, 0), "...then the [ half of ^[");
+        assertEquals('[', charAt(2, 0), "the literal [ byte of the SGR renders next");
+        assertEquals('3', charAt(3, 0));
+        assertEquals('1', charAt(4, 0));
+        assertEquals('m', charAt(5, 0));
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "the SGR sequence must NOT have been interpreted — color mode unchanged");
+    }
+
+    @Test
+    void xtRawPassthroughToggleOffResumesInterpretation() {
+        // The toggle-off CSI ?7777l is matched literally while passthrough is on (the one sequence
+        // interpreted in the mode) so the debugger can always be exited. After it, escapes are
+        // honored again. 'XY' renders first; the exit sequence is consumed (not rendered); then
+        // an SGR is interpreted normally.
+        write(terminal, CSI + "?7777h");
+        assertTrue(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH);
+        write(terminal, "XY");             // renders literally at cols 0,1
+        write(terminal, CSI + "?7777l");    // the exit sequence — matched, mode turns off
+        assertFalse(terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH, "mode is off");
+        write(terminal, ESC + "[31m");      // now interpreted: sets fg = red
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
+            "after toggling off, SGR is interpreted again");
+        assertEquals('X', charAt(0, 0), "the 'XY' rendered before the exit sequence survives");
+    }
+
+    @Test
+    void cbtMovesCursorToPreviousTabStop() {
+        // CSI Z (CBT, Cursor Backward Tabulation) moves left to the previous tab stop, repeated
+        // Ps times (default 1), clamping at column 0. Default tab stops are every 8 columns.
+        write(terminal, CSI + "1;25H");   // col 25 (x=24)
+        write(terminal, CSI + "Z");        // CBT 1 -> back to tab stop at col 17 (x=16)
+        assertEquals(16, terminal.x, "CBT from col 24 lands on the tab stop at col 16");
+
+        write(terminal, CSI + "1;1H" + CSI + "30G");  // col 30 (x=29)
+        write(terminal, CSI + "3Z");      // CBT 3 -> back 3 tab stops: 24 -> 16 -> 8 (x=8)
+        assertEquals(8, terminal.x, "CBT 3 from col 29 lands on the tab stop at col 8");
+    }
+
+    @Test
+    void cbtClampsToColumnZero() {
+        write(terminal, CSI + "1;3H");     // col 3 (x=2)
+        write(terminal, CSI + "5Z");      // CBT 5 — past the left edge
+        assertEquals(0, terminal.x, "CBT clamps to column 0, never off-screen left");
+    }
+
+    @Test
+    void cursorMovesTreatExplicitZeroParamAsDefaultOne() {
+        // CSI 0Z (explicit 0) must behave as CBT 1, not CBT 0 — the CSIManager default-applies
+        // 0 -> 1 before the handler runs, so handlers can trust args[0] >= 1 and don't re-guard.
+        // Covers CBT/CHT/REP/CNL/CPL/VPR/HPA/HPR (all default to 1); spot-checked with CBT + CHT.
+        write(terminal, CSI + "1;25H");   // col 25 (x=24)
+        write(terminal, CSI + "0Z");      // explicit 0 -> default 1 -> CBT to col 17 (x=16)
+        assertEquals(16, terminal.x, "CSI 0Z (explicit 0) defaults to CBT 1");
+
+        write(terminal, CSI + "1;1H" + CSI + "3G");  // col 3 (x=2)
+        write(terminal, CSI + "0I");      // explicit 0 -> default 1 -> CHT to col 9 (x=8)
+        assertEquals(8, terminal.x, "CSI 0I (explicit 0) defaults to CHT 1");
+    }
+
+    @Test
+    void chtMovesCursorToNextTabStop() {
+        // CSI I (CHT, Cursor Forward Tabulation) moves right to the next tab stop, repeated Ps
+        // times (default 1), clamping at the last column. Mirror of CBT. Default stops every 8.
+        write(terminal, CSI + "1;3H");     // col 3 (x=2)
+        write(terminal, CSI + "I");        // CHT 1 -> next tab stop at col 9 (x=8)
+        assertEquals(8, terminal.x, "CHT from col 2 lands on the tab stop at col 8");
+
+        write(terminal, CSI + "1;1H" + CSI + "3G");  // col 3 (x=2)
+        write(terminal, CSI + "3I");      // CHT 3 -> 8 -> 16 -> 24 (x=24)
+        assertEquals(24, terminal.x, "CHT 3 from col 2 lands on the tab stop at col 24");
+    }
+
+    @Test
+    void chtClampsToLastColumn() {
+        write(terminal, CSI + "1;78H");    // near the right edge (x=77)
+        write(terminal, CSI + "9I");      // CHT 9 — past the right edge
+        assertEquals(Terminal.WIDTH - 1, terminal.x, "CHT clamps to the last column, never off-screen right");
+    }
+
+    @Test
+    void cbtMovesCursorSoFollowingOverwriteHitsADistinctColumn() {
+        // After positioning past the end of a line, a program may delete-by-overwriting: send CBT
+        // to step the cursor back a tab stop, then a space to blank that cell, expecting each CBT
+        // to land on a new column. Pre-fix CBT was a no-op, so the cursor never moved and every
+        // space overwrote the SAME column — fewer characters were deleted than the program
+        // expected. With CBT working, the cursor moves back and the overwrite hits a distinct cell.
+        write(terminal, "ABCDEFGHI");     // 9 chars, cols 0..8
+        write(terminal, CSI + "1;10H");    // cursor to col 10 (one past end, x=9)
+        // CBT to the previous tab stop (col 9 -> col 8, x=8), then a space overwrites 'I'.
+        write(terminal, CSI + "Z ");      // CBT to x=8, space overwrites 'I' at col 8
+        assertEquals(' ', charAt(8, 0), "CBT+space deletes the char at the tab stop, not the cell the cursor was on");
+        assertEquals(9, terminal.x, "after the space the cursor advanced past col 8 (x=8->9)");
+    }
+
+    @Test
+    void cnlMovesDownAndToColumnZero() {
+        // CSI E (CNL, Cursor Next Line) moves down Ps lines and to column 0.
+        write(terminal, CSI + "5;10H");   // row 5, col 10 (x=9, y=4)
+        write(terminal, CSI + "3E");      // CNL 3 -> row 8, col 0
+        assertEquals(0, terminal.x, "CNL moves to column 0");
+        assertEquals(7, terminal.y, "CNL 3 from row 4 lands on row 7");
+    }
+
+    @Test
+    void cplMovesUpAndToColumnZero() {
+        // CSI F (CPL, Cursor Previous Line) moves up Ps lines and to column 0.
+        write(terminal, CSI + "10;15H");  // row 10, col 15 (x=14, y=9)
+        write(terminal, CSI + "4F");      // CPL 4 -> row 6, col 0
+        assertEquals(0, terminal.x, "CPL moves to column 0");
+        assertEquals(5, terminal.y, "CPL 4 from row 9 lands on row 5");
+    }
+
+    @Test
+    void vprMovesRowRelativeKeepingColumn() {
+        // CSI e (VPR, Vertical Position Relative) moves down Ps rows, keeping the column.
+        write(terminal, CSI + "3;12H");  // row 3, col 12 (x=11, y=2)
+        write(terminal, CSI + "5e");     // VPR 5 -> row 8, col 12
+        assertEquals(11, terminal.x, "VPR keeps the column");
+        assertEquals(7, terminal.y, "VPR 5 from row 2 lands on row 7");
+    }
+
+    @Test
+    void hpaMovesColumnAbsoluteKeepingRow() {
+        // CSI ` (HPA, Horizontal Position Absolute) moves to column Ps (1-based), keeping row.
+        write(terminal, CSI + "4;20H");  // row 4, col 20 (x=19, y=3)
+        write(terminal, CSI + "8`");     // HPA 8 -> col 8 (x=7), row 4
+        assertEquals(7, terminal.x, "HPA moves to column Ps-1");
+        assertEquals(3, terminal.y, "HPA keeps the row");
+    }
+
+    @Test
+    void hprMovesColumnRelativeKeepingRow() {
+        // CSI a (HPR, Horizontal Position Relative) moves right Ps columns, keeping row.
+        write(terminal, CSI + "2;5H");   // row 2, col 5 (x=4, y=1)
+        write(terminal, CSI + "10a");    // HPR 10 -> col 15 (x=14), row 2
+        assertEquals(14, terminal.x, "HPR moves right Ps columns");
+        assertEquals(1, terminal.y, "HPR keeps the row");
+    }
+
+    @Test
+    void rcpRestoresCursorSavedByScp() {
+        // CSI u (RCP) restores the full saved state (position + rendition) saved by CSI s
+        // (SCOSC) — the same scope as DECRC, matching xterm-410 (SCORC uses DECSC_FLAGS, not
+        // position-only). Save position AND a color, change both, RCP brings both back.
+        write(terminal, CSI + "6;12H");  // row 6, col 12 (x=11, y=5)
+        write(terminal, CSI + "31m");    // fg = red
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        write(terminal, CSI + "s");      // SCOSC — save cursor (full state)
+        write(terminal, CSI + "1;1H");   // move to home (x=0, y=0)
+        write(terminal, CSI + "32m");    // change fg to green
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode);
+        write(terminal, CSI + "u");      // SCORC — restore
+        assertEquals(11, terminal.x, "RCP restores the saved column");
+        assertEquals(5, terminal.y, "RCP restores the saved row");
+        // The saved rendition must round-trip, not just position: after setting green post-save,
+        // RCP restores the saved SIXTEEN_COLOR mode (and its palette copy). Foreground color
+        // mode is the field that actually changes across SGR 31/32 and round-trips through
+        // SavedCursor, so it's the meaningful check that RCP restores rendition, not position-only.
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentForegroundColorMode,
+            "RCP restores the saved foreground color mode (rendition), not just position");
+    }
+
+    @Test
+    void scpAndDecscShareSavedStateSoRcpRestoresEither() {
+        // SCP (CSI s) and DECSC (ESC 7) save to the same state via the unified SavedCursor, so
+        // a save by one and a restore by the other's alias must work.
+        write(terminal, CSI + "4;8H" + ESC + "7");   // DECSC at row 4 col 8
+        write(terminal, CSI + "1;1H");
+        write(terminal, CSI + "u");                   // RCP (the SCORC alias) restores it
+        assertEquals(7, terminal.x, "DECSC save + RCP restore: column");
+        assertEquals(3, terminal.y, "DECSC save + RCP restore: row");
+    }
+
+    @Test
+    void decscDecrcPreservesAutowrapPendingAcrossSaveRestore() {
+        // xterm saves/restores do_wrap as part of the cursor (CursorSave2 stores wrap_flag;
+        // CursorRestoreFlags sets do_wrap = sc->wrap_flag AFTER CursorSet/ResetWrap). So a cursor
+        // saved mid-pending-wrap must restore still pending. Pre-fix, restore cleared the
+        // pending flag (via setCursorPos) and never restored it.
+        write(terminal, "A".repeat(Terminal.WIDTH));  // fill row 0 -> autowrapPending armed
+        assertTrue(terminal.autowrapPending, "precondition: pending is armed at the last column");
+        write(terminal, ESC + "7");                  // DECSC — save (captures pending=true)
+        // Move the cursor (clears pending) to prove the restore brings pending back, not the
+        // ambient state.
+        write(terminal, CSI + "1;1H");
+        assertFalse(terminal.autowrapPending, "a cursor move clears pending before the restore");
+        write(terminal, ESC + "8");                  // DECRC — restore
+        assertTrue(terminal.autowrapPending,
+            "DECRC must restore the saved autowrap-pending flag (xterm do_wrap), not clear it");
+        // The cursor position is restored too — and pending means the cursor sits at width-1.
+        assertEquals(Terminal.WIDTH - 1, terminal.x,
+            "the restored cursor sits at the last column (pending), not the home we moved to");
+    }
+
+    @Test
+    void decrcClampsSavedCursorAfterWidthShrink() {
+        // §36 m1: DECRC/restoreSavedCursor didn't clamp after a width change — ESC7 in 132 cols
+        // at col 100 → ?3l (setWidth homes but doesn't reset savedX) → ESC8 gave x=100 > 79 →
+        // OOB → false wrap on the next char. Fix: clamp at restore. Our SavedCursor.restore
+        // routes through setCursorPos (Math.clamp), so the saved 132-space coordinate clamps to
+        // the 80-space last column and the next char does NOT false-wrap.
+        write(terminal, CSI + "?3h");           // DECCOLM 132
+        assertEquals(132, terminal.getTerminalWidth());
+        write(terminal, CSI + "1;100H");        // CUP to column 100 (x=99), valid in 132
+        write(terminal, ESC + "7");             // DECSC — save savedX=99
+        write(terminal, CSI + "?3l");            // DECCOLM 80 — setWidth(80), homes cursor
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth());
+        assertEquals(0, terminal.x, "setWidth homes the cursor");
+        write(terminal, ESC + "8");             // DECRC — restore
+        assertTrue(terminal.x <= Terminal.WIDTH - 1,
+            "restored x must clamp to the 80-col last column (79), not the saved 132-col 99");
+        assertEquals(79, terminal.x, "clamps to width-1");
+        write(terminal, "X");                   // next char — must NOT false-wrap
+        assertEquals(0, terminal.y, "no false wrap to the next row");
+    }
+
+    @Test
+    void repRepeatsLastPrintedChar() {
+        // CSI b (REP) repeats the preceding printable char Ps times via putChar, so the repeats
+        // advance the cursor and wrap like real input.
+        write(terminal, "A");            // print 'A' at col 0 (x=1)
+        write(terminal, CSI + "4b");     // REP 4 -> four more 'A's (cols 1-4)
+        assertEquals('A', charAt(0, 0));
+        assertEquals('A', charAt(4, 0), "REP filled cols 1-4 with the repeated char");
+        assertEquals(5, terminal.x, "after 'A' + REP 4 the cursor is at col 5");
+    }
+
+    @Test
+    void repIsNoOpAfterCursorMove() {
+        // A cursor move clears the "last printed char" (xterm lastchar), so REP with nothing to
+        // repeat is a no-op.
+        write(terminal, "A");
+        write(terminal, CSI + "1;1H");   // home — clears lastPrintedChar
+        write(terminal, CSI + "3b");     // REP 3 — nothing to repeat
+        assertEquals('A', charAt(0, 0), "the original 'A' is untouched");
+        assertEquals(' ', charAt(1, 0), "REP after a cursor move writes nothing");
+    }
+
+    @Test
+    void repClampsHugeCountToOneScreen() {
+        // parseArgument saturates at Integer.MAX_VALUE, so CSI 2147483647b would loop ~2^31 times
+        // (each a full putChar inside the IO lock) and freeze the VM. REP must clamp: capping at
+        // one screen (width * HEIGHT) means the repeats fill the screen and scroll, but return.
+        write(terminal, "X");
+        final long start = System.nanoTime();
+        write(terminal, CSI + "2147483647b");
+        final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+        assertTrue(elapsedMs < 5000, "REP MAX_VALUE must not freeze — clamped to one screen");
+        // The screen is full of 'X' (clamped count fills exactly width*HEIGHT cells, scrolling
+        // the original; the visible window is all 'X').
+        assertEquals('X', charAt(0, 0), "the clamped REP fills the visible screen with the char");
+    }
+
+    @Test
+    void hpaKeepsRowUnderDecomOriginMode() {
+        // §36 review: HPA used setRelativeCursorPos, which under DECOM adds scrollFirst to the
+        // (absolute) terminal.y — shifting the row. HPA keeps the row; only the column changes.
+        // Fix: use setClampedCursorPos like the sibling CHA.
+        write(terminal, CSI + "3;8r");        // scroll region rows 3-8 (0-indexed 2..7)
+        write(terminal, CSI + "?6h");         // DECOM on (origin mode)
+        write(terminal, CSI + "5;3H");        // CUP row 5 col 3 -> under DECOM, y = scrollFirst+4 = 6
+        assertEquals(6, terminal.y, "precondition: DECOM puts row 5 at absolute y=6");
+        write(terminal, CSI + "20`");         // HPA 20 -> column 19, row must STAY at 6
+        assertEquals(19, terminal.x, "HPA sets the column");
+        assertEquals(6, terminal.y, "HPA must not shift the row under DECOM");
+    }
+
+    @Test
+    void xtrestoreQuestionMarkURestoresSavedPrivateMode() {
+        // CSI ?Ps u is XTRESTORE — the mirror of CH6's ?s XTSAVE. It restores private mode Ps
+        // from savePrivateModeState into currentPrivateModeState. CH12 groups u = SCORC (plain)
+        // + ?u (XTRESTORE) like CH6 groups s = SCOSC + ?s (XTSAVE). This replaces the earlier
+        // "?u doesn't hijack RCP" guard: the ?u branch is now a real handler, not a no-op.
+        // Use DECCOLM (?3) as the mode: XTSAVE it while on, turn it off, XTRESTORE brings it back.
+        write(terminal, CSI + "?3h");            // DECCOLM on
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "precondition: DECCOLM on");
+        write(terminal, CSI + "?3s");            // XTSAVE mode 3 -> save DECCOLM=true
+        write(terminal, CSI + "?3l");            // turn DECCOLM off
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "DECCOLM off before restore");
+        write(terminal, CSI + "?3u");            // XTRESTORE mode 3 -> restore DECCOLM=true
+        assertTrue(terminal.currentPrivateModeState.DECCOLM,
+            "XTRESTORE (?u) restores the saved private mode (mirror of ?s XTSAVE)");
+    }
+
+    @Test
+    void scorcPlainUDoesNotTouchSavedPrivateModes() {
+        // Plain CSI u (SCORC) restores the cursor only — it must not touch the private modes
+        // (that's ?u / XTRESTORE). And ?u must not restore the cursor (that's plain u / SCORC).
+        // The two branches of CH12 are cleanly separated by the questionMark.
+        write(terminal, CSI + "?3h");            // DECCOLM on
+        write(terminal, CSI + "1;10H");          // cursor at col 10
+        write(terminal, ESC + "7");              // DECSC — save cursor
+        write(terminal, CSI + "1;1H");            // move to home
+        write(terminal, CSI + "u");               // SCORC (plain u) — restore cursor only
+        assertEquals(9, terminal.x, "plain u (SCORC) restores the cursor");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM,
+            "plain u (SCORC) does not touch private modes — DECCOLM stays on");
+    }
+
+    @Test
     void deccolmSwitchesColumnWidthAndClearsScreen() {
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "default is 80 columns");
 

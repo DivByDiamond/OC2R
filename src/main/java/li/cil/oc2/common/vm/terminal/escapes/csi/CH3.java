@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.SavedCursor;
 import li.cil.oc2.common.vm.terminal.modes.ModeTable;
 import li.cil.oc2.common.vm.terminal.modes.impl.ImplementedPrivateModes;
 
@@ -71,14 +72,7 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
     }
 
     private void restoreSavedCursor() {
-        terminal.autowrapPending = false; // restoring the cursor clears any pending wrap
-        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            terminal.x = terminal.altSavedX;
-            terminal.y = terminal.altSavedY;
-        } else {
-            terminal.x = terminal.savedX;
-            terminal.y = terminal.savedY;
-        }
+        SavedCursor.restore(terminal);
     }
 
     private void handleRM(int[] args, int argCount) {

@@ -56,7 +56,21 @@ class TerminalOutput {
         }
     }
 
-    private void dispatch(final char ch) { // NOPMD 10-case VT100 dispatch; each branch is required
+    private void dispatch(final char ch) { // NOPMD 11-case VT100 dispatch; each branch is required
+        // XT_RAW_PASSTHROUGH (CSI ?7777h): built-in byte-capture debugger. While ON every byte
+        // is written to the screen as a visible glyph and NO byte is interpreted — not even ESC
+        // enters the state machine. Control bytes render as caret notation (^[, ^M, ^H, ...) so
+        // the raw stream is readable. Because passthrough swallows escapes too, the toggle-off
+        // (CSI ?7777l) is matched as a literal byte sequence here — the only sequence interpreted
+        // while the mode is on — so the debugger can always be exited. Any byte that isn't part of
+        // the in-progress exit sequence renders immediately; partial matches back out and render.
+        if (terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH) {
+            if (matchExitSequence((byte) ch)) {
+                return; // a complete (or partially-matched) exit sequence: don't render
+            }
+            renderRawByte((byte) ch);
+            return;
+        }
         switch (terminal.state) {
             case NORMAL -> handleNormal((byte) ch);
             case ESCAPE -> handleEscape(ch);
@@ -69,6 +83,62 @@ class TerminalOutput {
             default -> {
                 // Exhaustive over the known states; guards against future additions.
             }
+        }
+    }
+
+    // The exact toggle-off bytes: ESC [ ? 7 7 7 7 l  (CSI ? 7777 l). Matched byte-for-byte while
+    // passthrough is on so the mode can always be exited; the matched bytes are consumed (not
+    // rendered). A non-matching byte flushes any buffered partial match as rendered glyphs.
+    private static final byte[] EXIT_SEQUENCE = {
+            0x1B, '[', '?', '7', '7', '7', '7', 'l'};
+    private int exitMatchPos = 0;
+    private final byte[] exitMatchBuf = new byte[EXIT_SEQUENCE.length];
+
+    private boolean matchExitSequence(final byte value) {
+        if (value == EXIT_SEQUENCE[exitMatchPos]) {
+            exitMatchBuf[exitMatchPos] = value;
+            exitMatchPos++;
+            if (exitMatchPos == EXIT_SEQUENCE.length) {
+                // Complete match: clear the mode, discard the matched bytes.
+                terminal.currentPrivateModeState.XT_RAW_PASSTHROUGH = false;
+                exitMatchPos = 0;
+            }
+            return true;
+        }
+        // Mismatch. Flush any partial match we had buffered as rendered glyphs first, so those
+        // bytes still reach the screen; then re-check this byte against the sequence start (it
+        // may itself be the first byte of a new match, e.g. an ESC that ends one near-match and
+        // begins another).
+        final int flushed = exitMatchPos;
+        exitMatchPos = 0;
+        for (int i = 0; i < flushed; i++) {
+            renderRawByte(exitMatchBuf[i]);
+        }
+        if (value == EXIT_SEQUENCE[0]) {
+            exitMatchBuf[0] = value;
+            exitMatchPos = 1;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Writes a single raw byte to the screen as a visible glyph, bypassing the control-byte drop
+     * in {@link li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter#putChar}. Used only while
+     * XT_RAW_PASSTHROUGH is on. Control bytes (0x00–0x1F, 0x7F) become caret notation; printable
+     * bytes pass through as themselves. Bytes >= 0x80 (UTF-8 continuations / high bytes) render
+     * as a fixed placeholder so multi-byte sequences don't get half-decoded into glyphs.
+     */
+    private void renderRawByte(final byte value) {
+        final int ch = value & 0xFF;
+        if (ch < 0x20 || ch == 0x7F) {
+            // Caret notation: ESC (0x1B) -> ^[, CR (0x0D) -> ^M, etc. Write '^' then the byte ^ 0x40.
+            terminal.bufferWriter.putChar('^');
+            terminal.bufferWriter.putChar(ch ^ 0x40);
+        } else if (ch >= 0x80) {
+            terminal.bufferWriter.putChar('~'); // high-byte placeholder (don't half-decode UTF-8)
+        } else {
+            terminal.bufferWriter.putChar(ch);
         }
     }
 

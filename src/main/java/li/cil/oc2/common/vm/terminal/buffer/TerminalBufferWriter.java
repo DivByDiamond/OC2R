@@ -32,6 +32,7 @@ public class TerminalBufferWriter {
         }
 
         setChar(terminal.x, terminal.y, ch);
+        terminal.lastPrintedChar = ch; // remember for REP (CSI Ps b)
         // Fill the last column: arm the pending wrap and hold the cursor at width-1
         // (never advance to a phantom width). Otherwise advance normally.
         if (terminal.x == terminal.width - 1) {

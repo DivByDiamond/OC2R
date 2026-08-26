@@ -35,8 +35,11 @@ public class CSIManager {
         sequences.put('B', new CUD(terminal));
         sequences.put('C', new CUF(terminal));
         sequences.put('D', new CUB(terminal));
+        sequences.put('E', new CNL(terminal));
+        sequences.put('F', new CPL(terminal));
         sequences.put('G', new CHA(terminal));
         sequences.put('H', new CUP(terminal));
+        sequences.put('I', new CHT(terminal));
         sequences.put('J', new ED(terminal));
         sequences.put('K', new EL(terminal));
         sequences.put('L', new IL(terminal));
@@ -45,9 +48,14 @@ public class CSIManager {
         sequences.put('S', new CH8(terminal));
         sequences.put('T', new CH9(terminal));
         sequences.put('X', new ECH(terminal));
+        sequences.put('Z', new CBT(terminal));
 
+        sequences.put('`', new HPA(terminal));
+        sequences.put('a', new HPR(terminal));
+        sequences.put('b', new REP(terminal));
         sequences.put('c', new DA(terminal));
         sequences.put('d', new VPA(terminal));
+        sequences.put('e', new VPR(terminal));
         sequences.put('f', new HVP(terminal));
         sequences.put('g', new TBC(terminal));
         sequences.put('h', new CH2(terminal));
@@ -59,7 +67,7 @@ public class CSIManager {
         sequences.put('r', new CH1(terminal));
         sequences.put('s', new CH6(terminal));
         sequences.put('t', new CH4(terminal));
-
+        sequences.put('u', new CH12(terminal));
         sequences.put('x', new DECREQTPARM(terminal));
 
         sequences.put('@', new CH11(terminal));

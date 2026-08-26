@@ -96,7 +96,8 @@ public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number l
     ENABLE_READLINE_CHAR_QUOTE(PrivateMode.ENABLE_READLINE_CHAR_QUOTE, Kind.PRIVATE, false),
     ENABLE_READLINE_NEWLINE_PASTE(PrivateMode.ENABLE_READLINE_NEWLINE_PASTE, Kind.PRIVATE, false),
     APPLICATION_SYNC(PrivateMode.APPLICATION_SYNC, Kind.PRIVATE, true),
-    APPLICATION_ESC_MODE(PrivateMode.APPLICATION_ESC_MODE, Kind.PRIVATE, true);
+    APPLICATION_ESC_MODE(PrivateMode.APPLICATION_ESC_MODE, Kind.PRIVATE, true),
+    XT_RAW_PASSTHROUGH(PrivateMode.XT_RAW_PASSTHROUGH, Kind.PRIVATE, true);
 
     private static final Map<Integer, ModeTable> PRIVATE_BY_NUMBER = byNumber(Kind.PRIVATE);
 
@@ -237,6 +238,7 @@ public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number l
             case ENABLE_READLINE_NEWLINE_PASTE -> state.ENABLE_READLINE_NEWLINE_PASTE;
             case APPLICATION_SYNC -> state.APPLICATION_SYNC;
             case APPLICATION_ESC_MODE -> state.APPLICATION_ESC_MODE;
+            case XT_RAW_PASSTHROUGH -> state.XT_RAW_PASSTHROUGH;
             default -> throw new IllegalStateException("Not a private mode: " + this);
         };
     }
@@ -324,6 +326,7 @@ public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number l
             case ENABLE_READLINE_NEWLINE_PASTE -> state.ENABLE_READLINE_NEWLINE_PASTE = value;
             case APPLICATION_SYNC -> state.APPLICATION_SYNC = value;
             case APPLICATION_ESC_MODE -> state.APPLICATION_ESC_MODE = value;
+            case XT_RAW_PASSTHROUGH -> state.XT_RAW_PASSTHROUGH = value;
             default -> throw new IllegalStateException("Not a private mode: " + this);
         }
     }
