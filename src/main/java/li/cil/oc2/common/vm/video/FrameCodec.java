@@ -12,10 +12,11 @@ import li.cil.oc2.jcodec.scale.RgbToYuv420j;
 import li.cil.oc2.jcodec.scale.Yuv420jToRgb;
 import org.jetbrains.annotations.Nullable;
 
-public final class FrameCodec {
+public class FrameCodec {
     private static final int KEY_INTERVAL = 100;
     private static final int ENCODER_BUFFER_SIZE = 4 * 1024 * 1024;
 
+    @SuppressWarnings("ArrayRecordComponent")
     public record EncodedFrame(VideoCodec codec, byte[] data) {}
 
     // Encoder/decoder state is allocated lazily: most BlockEntities never send

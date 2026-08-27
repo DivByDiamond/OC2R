@@ -1,5 +1,3 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 /**
  * The device bus is the glue that connects devices and VMs.
  *
@@ -31,6 +29,8 @@
  *       Such devices will require drivers to be present inside the VM to work.
  * </ul>
  */
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 package li.cil.oc2.api.bus;
 
 import javax.annotation.ParametersAreNonnullByDefault;

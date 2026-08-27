@@ -62,7 +62,7 @@ public interface NetworkLayer extends InternetDeviceLifecycle {
      * Sends an IP packet extracted from an ethernet frame that sent virtual computer.
      *
      * @param protocol protocol number of arrived message; normally, should be either {@link
-     *     NetworkLayer::PROTOCOL_IPv4} or {@link NetworkLayer::PROTOCOL_IPv6}
+     *     NetworkLayer#PROTOCOL_IPv4} or {@link NetworkLayer#PROTOCOL_IPv6}
      * @param packet arrived data
      */
     default void sendPacket(final short protocol, final ByteBuffer packet) {}

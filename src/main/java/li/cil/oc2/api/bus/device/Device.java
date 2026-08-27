@@ -40,7 +40,7 @@ public interface Device extends INBTSerializable<CompoundTag> {
     /**
      * Called to deserialize this device from its items's persistent storage.
      *
-     * <p>The passed tag will be what was last returned by {@link #serializeNBT()}.
+     * <p>The passed tag will be what was last returned by {@link #serializeNBT(HolderLookup.Provider)}.
      *
      * @param tag the serialized state of this device.
      */

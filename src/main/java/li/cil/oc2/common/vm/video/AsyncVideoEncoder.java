@@ -44,9 +44,11 @@ public final class AsyncVideoEncoder {
     private static final long IDLE_POLL_MS = 500;
 
     /** A raw RGB565 frame waiting to be encoded. */
+    @SuppressWarnings("ArrayRecordComponent")
     public record PendingFrame(FrameCodec codec, VideoCodec codecType, byte[] rgb565, int width, int height) {}
 
     /** An encoded frame ready to be sent, plus the source buffer for pool recycling. */
+    @SuppressWarnings("ArrayRecordComponent")
     public record CompletedFrame(FrameCodec.EncodedFrame frame, byte[] buffer, int width, int height) {}
 
     // Static queues so every instance shares a single daemon worker regardless of how

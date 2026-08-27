@@ -71,6 +71,7 @@ public final class Callbacks {
         }
     }
 
+    @SuppressWarnings("ArrayRecordComponent")
     private record ConstructorData(
             String methodName,
             boolean synchronize,

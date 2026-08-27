@@ -38,6 +38,7 @@ public final class FrameChunker {
      * not match an incoming chunk is silently replaced with a fresh one.
      */
     public static final class Reassembler {
+        @SuppressWarnings("ArrayRecordComponent")
         public record CompletedFrame(int codec, int width, int height, byte[] data) {}
 
         private static final class Partial {

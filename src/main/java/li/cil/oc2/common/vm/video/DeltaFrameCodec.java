@@ -50,7 +50,7 @@ public final class DeltaFrameCodec {
     private static final byte MODE_RAW = 0;
     /** Tile stored as a zlib stream inflating to exactly the tile's RGB565 size. */
     private static final byte MODE_ZLIB = 1;
-    /** Tile stored as an RLE stream (see {@link #rleDecode}) expanding to the tile's RGB565 size. */
+    /** Tile stored as an RLE stream expanding to the tile's RGB565 size. */
     private static final byte MODE_RLE = 2;
 
     private static final int FLAG_KEYFRAME = 1;

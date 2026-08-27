@@ -47,6 +47,7 @@ public final class ClientSetup {
      * @param event the client setup event.
      */
     @SubscribeEvent
+    @SuppressWarnings("FutureReturnValueIgnored")
     public static void handleSetupEvent(final FMLClientSetupEvent event) {
         BusInterfaceNameRenderer.initialize();
 
