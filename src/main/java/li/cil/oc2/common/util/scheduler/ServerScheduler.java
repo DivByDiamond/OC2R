@@ -122,6 +122,7 @@ public final class ServerScheduler {
 
     private static final class EventHandler {
         @SubscribeEvent
+        @SuppressWarnings("UnusedVariable")
         public static void handleServerStoppedEvent(final ServerStoppedEvent event) {
             globalTickScheduler.clear();
             levelTickSchedulers.clear();
@@ -173,6 +174,7 @@ public final class ServerScheduler {
         }
 
         @SubscribeEvent
+        @SuppressWarnings("UnusedVariable")
         public static void handleServerTick(final ServerTickEvent.Pre event) {
             globalTickScheduler.tick();
 

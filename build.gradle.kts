@@ -1,6 +1,7 @@
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
 import org.apache.commons.io.IOUtils
 import net.ltgt.gradle.errorprone.errorprone
 
@@ -397,7 +398,7 @@ allprojects {
 checkstyle {
     toolVersion = "10.21.0"
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
-    isIgnoreFailures = true
+    isIgnoreFailures = false
 }
 
 tasks.withType<Checkstyle>().configureEach {
@@ -408,7 +409,7 @@ tasks.withType<Checkstyle>().configureEach {
 pmd {
     toolVersion = "7.7.0"
     ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))
-    isIgnoreFailures = true
+    isIgnoreFailures = false
     isConsoleOutput = true
 }
 
@@ -422,9 +423,10 @@ tasks.withType<Pmd>().configureEach {
 spotbugs {
     // §169: plugin 6.5.10 supports Gradle 9 (6.x line); toolVersion 4.10.3 bundles the analysis engine.
     toolVersion.set("4.10.3")
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
     showProgress.set(true)
     excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
+    baselineFile.set(rootProject.file("config/spotbugs/baseline.xml"))
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
@@ -440,12 +442,9 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
 
 /* ── Static analysis: Error Prone (§170) ─────────────────────────────────── */
 
-// Error Prone is wired but OFF by default so the regular build (incl. NeoForge
-// moddev compile) is unaffected. Enable per-invocation with: ./gradlew compileJava -PenableErrorProne
-// (bare flag or =true enables; =false disables). All diagnostics are demoted to
-// warnings, so it can never fail the build.
+// Error Prone is ON by default (todo.md §39 Ступень C). Override with -PenableErrorProne=false.
 val enableErrorProne = when (val v = project.findProperty("enableErrorProne")?.toString()) {
-    null -> false // property absent -> off by default
+    null -> true // property absent -> on by default
     "" -> true // -PenableErrorProne (bare flag)
     else -> v.toBoolean()
 }
@@ -463,8 +462,19 @@ tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         enabled.set(enableErrorProne)
         if (enableErrorProne) {
-            allErrorsAsWarnings.set(true)
+            allErrorsAsWarnings.set(false)
             disableWarningsInGeneratedCode.set(true)
+            // Critical checks enforced as errors (todo.md §39 Ступень C)
+            error(
+                "ArrayToString", "UnusedVariable", "Finally", "DeadException",
+                "LoopConditionChecker", "EqualsIncompatibleType", "BoxedPrimitiveEquality",
+                "CompareToZero", "FormatString",
+            )
+            // Noisy checks disabled: mixin/callback magic + intent (todo.md §39 Ступень C)
+            disable("UnusedMethod", "StringSplitter", "EffectivelyPrivate")
+            // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4) and generated code,
+            // consistent with checkstyle/pmd/spotbugs excludes.
+            excludedPaths.set(".*[/\\\\](jcodec|generated)[/\\\\].*")
         }
     }
     if (enableErrorProne) {
@@ -475,6 +485,50 @@ tasks.withType<JavaCompile>().configureEach {
         // error_prone_core resolves so it shadows the bundled copy.
         val epGuava = errorProneResolvable.filter { it.name.matches(Regex("guava-.*\\.jar")) }
         options.annotationProcessorPath = epGuava + (options.annotationProcessorPath ?: files())
+    }
+}
+
+/* ── Lint ratchet (todo.md §39 Ступень B) ──────────────────────────────────── */
+
+val lintBaselineFile = rootProject.file("config/lint-baseline.properties")
+
+tasks.register("lintRatchet") {
+    group = "verification"
+    description = "Fail if Checkstyle/PMD violation counts exceed config/lint-baseline.properties"
+    dependsOn("checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest")
+
+    val baseline = Properties()
+    doFirst {
+        if (lintBaselineFile.exists()) {
+            lintBaselineFile.inputStream().use { baseline.load(it) }
+        }
+    }
+
+    doLast {
+        fun count(file: java.io.File, tag: String): Int {
+            if (!file.exists()) return 0
+            val text = file.readText()
+            return Regex("<$tag ").findAll(text).count()
+        }
+
+        val checks = listOf(
+            "checkstyleMain" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("main.xml").asFile, "error"),
+            "checkstyleTest" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
+            "pmdMain" to count(layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
+            "pmdTest" to count(layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
+        )
+
+        var failed = false
+        for ((name, current) in checks) {
+            val base = (baseline.getProperty(name) ?: "0").toInt()
+            if (current > base) {
+                logger.error("$name: $current violations exceeds baseline $base")
+                failed = true
+            } else {
+                logger.lifecycle("$name: $current <= baseline $base")
+            }
+        }
+        if (failed) throw org.gradle.api.GradleException("Lint violations grew above baseline (see config/lint-baseline.properties)")
     }
 }
 
@@ -493,4 +547,9 @@ tasks.register("qodana") {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Wire lintRatchet into check (todo.md §39 Ступень B)
+tasks.named("check") {
+    dependsOn("lintRatchet")
 }

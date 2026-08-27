@@ -57,7 +57,7 @@ class FrameCodecTest {
         final byte[] frame = new byte[640 * 480 * 2];
         for (int y = 0; y < 480; y++) {
             for (int x = 0; x < 640; x++) {
-                final boolean glyph = ((y / 8) % 2 == 0) && ((x / 8) % 2 == 0);
+                final boolean glyph = (y / 8 & 1) == 0 && (x / 8 & 1) == 0;
                 final int pixel = glyph ? 0xFFFF : 0x0000;
                 frame[(y * 640 + x) * 2] = (byte) (pixel & 0xFF);
                 frame[(y * 640 + x) * 2 + 1] = (byte) (pixel >>> 8);

@@ -94,7 +94,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         }
         if (neighborConnectivityChanged) {
             busElement.scheduleScan();
-            if (level instanceof final ServerLevel serverLevel) {
+            if (level instanceof ServerLevel) {
                 EnergyNetworkCache.invalidate();
             }
         }

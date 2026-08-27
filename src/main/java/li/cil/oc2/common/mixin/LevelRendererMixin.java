@@ -56,6 +56,7 @@ public abstract class LevelRendererMixin {
 
     @Shadow(remap = false)
     @Nullable
+    @SuppressWarnings("UnusedVariable")
     private Frustum capturedFrustum;
 
     @Inject(method = "renderLevel", at = @At("HEAD"), remap = false)
@@ -94,7 +95,7 @@ public abstract class LevelRendererMixin {
             DeltaTracker deltaTracker,
             boolean ignored,
             Camera camera,
-            GameRenderer ignored2,
+            @SuppressWarnings("UnusedVariable") GameRenderer ignored2,
             LightTexture lightTexture,
             Matrix4f frustumMatrix,
             Matrix4f projectionMatrix,

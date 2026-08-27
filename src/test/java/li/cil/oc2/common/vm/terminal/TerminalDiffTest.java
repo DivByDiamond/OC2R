@@ -74,7 +74,6 @@ public class TerminalDiffTest {
         TerminalDiff.apply(client, reset);
         assertNotEquals('S', charAt(client, 0, 1));
         assertEquals(' ', charAt(client, 0, 1));
-        assertNotEquals(0, client.renderers.size() >= 0); // sanity: no throw
     }
 
     @Test
@@ -185,6 +184,7 @@ public class TerminalDiffTest {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
 
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     private static void assertRowsEqual(
             final Terminal expected, final Terminal actual, final int[] rows, final boolean alt) {
         for (final int row : rows) {

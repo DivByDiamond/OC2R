@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.video;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Random;
@@ -90,6 +91,7 @@ class DeltaFrameCodecTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void nonTileAlignedSizesRoundtrip() {
         for (final int[] size : new int[][] {{100, 50}, {33, 17}, {31, 15}, {32, 16}, {65, 33}}) {
             final int width = size[0];
@@ -121,7 +123,7 @@ class DeltaFrameCodecTest {
 
         final byte[] big = frame(640, 480, i -> (0xF800 >> 3) & 0xFFFF);
         final byte[] encodedBig = encoder.encode(big, 640, 480);
-        assertTrue((encodedBig[0] & Flag.KEYFRAME) != 0);
+        assertNotEquals(0, encodedBig[0] & Flag.KEYFRAME);
         assertArrayEquals(big, decoder.decode(encodedBig, 640, 480).orElseThrow());
 
         // A 320x240 delta stream (from an independent encoder) must be rejected
@@ -130,7 +132,7 @@ class DeltaFrameCodecTest {
         otherEncoder.encode(frame(320, 240, i -> 0x0000), 320, 240);
         final byte[] staleDelta =
                 otherEncoder.encode(frame(320, 240, i -> 0x0011), 320, 240);
-        assertTrue((staleDelta[0] & Flag.KEYFRAME) == 0);
+        assertEquals(0, staleDelta[0] & Flag.KEYFRAME);
         assertTrue(decoder.decode(staleDelta, 640, 480).isEmpty());
     }
 

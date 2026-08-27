@@ -375,7 +375,6 @@ public final class DeltaFrameCodec {
         return out;
     }
 
-
     private void writeZlib(final ByteArrayOutputStream out, final byte[] input) {
         deflater.reset();
         deflater.setInput(input);

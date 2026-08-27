@@ -58,11 +58,13 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         }
 
         @SubscribeEvent
+        @SuppressWarnings("UnusedVariable")
         public static void handleServerTick(final ServerTickEvent.Pre event) {
             pumpMessages();
         }
 
         @SubscribeEvent
+        @SuppressWarnings("UnusedVariable")
         public static void handleServerStopped(final ServerStoppedEvent event) {
             TUNNELS.clear();
         }

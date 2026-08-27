@@ -131,6 +131,7 @@ public class TcpHeaderTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void truncatedUnknownOptionDoesNotThrow() {
         for (int seed = 0; seed < 1000; seed++) {
             final java.util.Random random = new java.util.Random(seed);

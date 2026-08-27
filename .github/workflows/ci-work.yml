@@ -41,8 +41,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Upload reports on failure
-        if: failure()
+      - name: Upload verification reports
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: verification-reports
