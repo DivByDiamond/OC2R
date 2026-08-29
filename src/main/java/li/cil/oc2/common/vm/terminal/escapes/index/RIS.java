@@ -15,6 +15,8 @@ public class RIS {
         terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
         terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
         terminal.twoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
+        terminal.palette256 = TerminalColors.getDefaultPalette256();
+        terminal.markPaletteDirty();
         terminal.style = TerminalColors.DEFAULT_STYLE;
         terminal.currentModeState = new ModeState();
         terminal.currentPrivateModeState = new PrivateModeState();

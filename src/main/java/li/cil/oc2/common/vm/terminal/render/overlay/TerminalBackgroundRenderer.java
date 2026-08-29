@@ -34,7 +34,7 @@ public class TerminalBackgroundRenderer {
             final boolean blinkOff = isBlinking
                     && Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
             final ColorData color = resolveColor(terminal, useAltBuffer, index, invertBackground);
-            int background = resolveBackground(style, color, invertBackground, isBold, isBlinking, blinkOff);
+            int background = resolveBackground(terminal, color, invertBackground, isBold, isBlinking, blinkOff);
             // When the background blinks (inverted + blink), suppress it on the off phase
             // (non-bold only — bold blink alternates normal/bright instead).
             if (isBlinking && invertBackground && blinkOff && !isBold) {
@@ -62,28 +62,26 @@ public class TerminalBackgroundRenderer {
                 : useAltBuffer ? terminal.altColors[index] : terminal.colors[index];
     }
 
-    private static int resolveBackground(final byte style, // NOPMD: data-driven color-mode switch (bold-bright, blink)
+    private static int resolveBackground(final Terminal terminal, // NOPMD: data-driven color-mode switch (bold-bright, blink)
             final ColorData color,
             final boolean invertBackground,
             final boolean isBold, final boolean isBlinking, final boolean blinkOff) {
-        final int[] palette =
-                (style & Terminal.STYLE_DIM_MASK) != 0
-                        ? TerminalColors.DIM_COLORS
-                        : TerminalColors.COLORS;
         // Bold blink alternates normal/bright intensity instead of on/off.
         final boolean dimBoldForBlink = isBlinking && invertBackground && blinkOff && isBold;
+        final int channel = backgroundChannel(color, invertBackground);
+        // Note: SGR 2 (faint/dim) is NOT applied to the background — xterm's getXtermBackground
+        // (util.c) consumes ATR_FAINT only in the foreground path. The prior code dimmed the
+        // SIXTEEN_COLOR background, a divergence; dropped here to match xterm.
         return switch (color.Mode) {
-            case SIXTEEN_COLOR -> palette[backgroundChannel(color, invertBackground)];
-            case TWO_FIFTY_SIX_COLOR ->
-                    TerminalColors.COLORS_256[backgroundChannel(color, invertBackground)];
+            case SIXTEEN_COLOR -> terminal.palette256[channel];
+            case TWO_FIFTY_SIX_COLOR -> terminal.palette256[channel];
             case TRUE_COLOR -> color.toInt();
+            // Bright ANSI (8-15) live at palette256[8..15]; dimBoldForBlink drops back to normal.
             case SIXTEEN_COLOR_BRIGHT ->
-                    (dimBoldForBlink ? TerminalColors.COLORS : TerminalColors.BRIGHT_COLORS)
-                            [backgroundChannel(color, invertBackground)];
-            case DEFAULT_BACKGROUND -> 0x000000;
-            case DEFAULT_FOREGROUND ->
-                    ((isBold && !dimBoldForBlink) ? TerminalColors.BRIGHT_COLORS
-                            : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
+                    terminal.palette256[channel + (dimBoldForBlink ? 0 : 8)];
+            case DEFAULT_BACKGROUND -> TerminalColors.defaultBackgroundRgb();
+            // DEFAULT_FOREGROUND must not track OSC 4 (xterm reserves it for OSC 10/11).
+            case DEFAULT_FOREGROUND -> TerminalColors.defaultForegroundRgb(isBold && !dimBoldForBlink);
             default -> throw new AssertionError(color.Mode);
         };
     }

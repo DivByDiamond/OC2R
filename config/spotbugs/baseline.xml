@@ -28677,61 +28677,7 @@
   </BugInstance>
   
   
-  <BugInstance type="MS_MUTABLE_ARRAY" priority="2" rank="18" abbrev="MS" category="MALICIOUS_CODE" instanceHash="2a2c2ee6432cb465430b74ae7b4901a" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="493">
-    
-    
-    <ShortMessage>Field is a mutable array</ShortMessage>
-    
-    
-    <LongMessage>li.cil.oc2.common.vm.terminal.color.TerminalColors.DIM_COLORS is a mutable array</LongMessage>
-    
-    
-    <Class classname="li.cil.oc2.common.vm.terminal.color.TerminalColors" primary="true">
-      
-      
-      <SourceLine classname="li.cil.oc2.common.vm.terminal.color.TerminalColors" start="5" end="71" sourcefile="TerminalColors.java" sourcepath="li/cil/oc2/common/vm/terminal/color/TerminalColors.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/color/TerminalColors.java">
-        
-        
-        <Message>At TerminalColors.java:[lines 5-71]</Message>
-        
-      
-      </SourceLine>
-      
-      
-      <Message>In class li.cil.oc2.common.vm.terminal.color.TerminalColors</Message>
-      
-    
-    </Class>
-    
-    
-    <Field classname="li.cil.oc2.common.vm.terminal.color.TerminalColors" name="DIM_COLORS" signature="[I" isStatic="true" primary="true">
-      
-      
-      <SourceLine classname="li.cil.oc2.common.vm.terminal.color.TerminalColors" sourcefile="TerminalColors.java" sourcepath="li/cil/oc2/common/vm/terminal/color/TerminalColors.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/color/TerminalColors.java">
-        
-        
-        <Message>In TerminalColors.java</Message>
-        
-      
-      </SourceLine>
-      
-      
-      <Message>Field li.cil.oc2.common.vm.terminal.color.TerminalColors.DIM_COLORS</Message>
-      
-    
-    </Field>
-    
-    
-    <SourceLine classname="li.cil.oc2.common.vm.terminal.color.TerminalColors" primary="true" start="16" end="16" startBytecode="145" endBytecode="145" sourcefile="TerminalColors.java" sourcepath="li/cil/oc2/common/vm/terminal/color/TerminalColors.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/color/TerminalColors.java">
-      
-      
-      <Message>At TerminalColors.java:[line 16]</Message>
-      
-    
-    </SourceLine>
-    
   
-  </BugInstance>
   
   
   <BugInstance type="NM_FIELD_NAMING_CONVENTION" priority="2" rank="16" abbrev="Nm" category="BAD_PRACTICE" instanceHash="1cb21c33ceb0474c555b565c317f335" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
@@ -32964,6 +32910,143 @@
     </SourceLine>
     
   
+  </BugInstance>
+  
+  
+  <BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="f77cf9b84d27ed2c35cfd5ee70f62e7b" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler(Terminal) may expose internal representation by storing an externally mutable object into OSCHandler.terminal</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" start="13" end="15" sourcefile="OSCHandler.java" sourcepath="li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java">
+        <Message>At OSCHandler.java:[lines 13-15]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" name="&lt;init&gt;" signature="(Lli/cil/oc2/common/vm/terminal/Terminal;)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" start="13" end="15" startBytecode="0" endBytecode="69" sourcefile="OSCHandler.java" sourcepath="li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java"/>
+      <Message>In method new li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler(Terminal)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" name="terminal" signature="Lli/cil/oc2/common/vm/terminal/Terminal;" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" sourcefile="OSCHandler.java" sourcepath="li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java">
+        <Message>In OSCHandler.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler.terminal</Message>
+    </Field>
+    <LocalVariable name="terminal" register="1" pc="6" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named terminal</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.escapes.osc.OSCHandler" primary="true" start="14" end="14" startBytecode="6" endBytecode="6" sourcefile="OSCHandler.java" sourcepath="li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/escapes/osc/OSCHandler.java">
+      <Message>At OSCHandler.java:[line 14]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+  
+<BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE" instanceHash="d65f3b742c03f1368aa3047f2007db76" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by returning reference to mutable object</ShortMessage>
+    <LongMessage>li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.palette() may expose internal representation by returning TerminalDiff$Snapshot.palette</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 58]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="palette" signature="()[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" startBytecode="0" endBytecode="46" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java"/>
+      <Message>In method li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.palette()</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="palette" signature="[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.palette</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="58" end="58" startBytecode="4" endBytecode="4" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 58]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="53ecfb6d88afdad990d3425f0e3b56bb" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.palette</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 58]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" startBytecode="0" endBytecode="267" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java"/>
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="palette" signature="[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.palette</Message>
+    </Field>
+    <LocalVariable name="palette" register="15" pc="82" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named palette</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="58" end="58" startBytecode="82" endBytecode="82" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 58]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="f891c5ddd93f49dc6aefb87cac13ba45" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.rowData</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 58]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" startBytecode="0" endBytecode="267" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java"/>
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="rowData" signature="[[B" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.rowData</Message>
+    </Field>
+    <LocalVariable name="rowData" register="5" pc="28" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named rowData</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="58" end="58" startBytecode="28" endBytecode="28" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 58]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="b3d9e0833b0d40d44dad693254229340" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.rows</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 58]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="58" end="58" startBytecode="0" endBytecode="267" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java"/>
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="rows" signature="[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.rows</Message>
+    </Field>
+    <LocalVariable name="rows" register="4" pc="22" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named rows</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="58" end="58" startBytecode="22" endBytecode="22" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 58]</Message>
+    </SourceLine>
   </BugInstance>
   
   

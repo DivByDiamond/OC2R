@@ -59,22 +59,22 @@ public class TerminalCharRenderer {
         final boolean isDim = (style & Terminal.STYLE_DIM_MASK) != 0;
         // Bold blink alternates normal/bright intensity instead of on/off.
         final boolean dimBoldForBlink = isBlinking && !invertBackground && blinkOff && isBold;
-        final int[] palette = isDim ? TerminalColors.DIM_COLORS : TerminalColors.COLORS;
-        return switch (color.Mode) {
-            case DEFAULT_FOREGROUND ->
-                    (isDim ? TerminalColors.DIM_COLORS
-                            : (isBold && !dimBoldForBlink) ? TerminalColors.BRIGHT_COLORS
-                            : TerminalColors.COLORS)[TerminalColors.Color.WHITE];
-            case SIXTEEN_COLOR -> palette[foregroundChannel(color, invertBackground)];
-            case TWO_FIFTY_SIX_COLOR ->
-                    TerminalColors.COLORS_256[foregroundChannel(color, invertBackground)];
+        final int channel = foregroundChannel(color, invertBackground);
+        final int rgb = switch (color.Mode) {
+            // DEFAULT_FOREGROUND must not track OSC 4 (xterm reserves it for OSC 10/11).
+            case DEFAULT_FOREGROUND -> TerminalColors.defaultForegroundRgb(isBold && !dimBoldForBlink);
+            case SIXTEEN_COLOR -> terminal.palette256[channel];
+            case TWO_FIFTY_SIX_COLOR -> terminal.palette256[channel];
             case TRUE_COLOR -> color.toInt();
+            // Bright ANSI (8-15) live at palette256[8..15]; dimBoldForBlink drops back to normal.
             case SIXTEEN_COLOR_BRIGHT ->
-                    (dimBoldForBlink ? TerminalColors.COLORS : TerminalColors.BRIGHT_COLORS)
-                            [foregroundChannel(color, invertBackground)];
-            case DEFAULT_BACKGROUND -> 0x000000;
+                    terminal.palette256[channel + (dimBoldForBlink ? 0 : 8)];
+            case DEFAULT_BACKGROUND -> TerminalColors.defaultBackgroundRgb();
             default -> throw new AssertionError(color.Mode);
         };
+        // Dim (SGR 2) is a tail modifier on the resolved color — composes with bold/blink and
+        // now applies to every mode (the old fixed DIM_COLORS table only covered SIXTEEN_COLOR).
+        return isDim ? TerminalColors.computeFaint(rgb) : rgb;
     }
 
     private static ColorData selectColor(

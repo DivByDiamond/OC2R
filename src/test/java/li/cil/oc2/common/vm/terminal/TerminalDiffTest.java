@@ -3,6 +3,7 @@ package li.cil.oc2.common.vm.terminal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Round-trip tests for the server->client terminal screen diff (TerminalDiff). */
 public class TerminalDiffTest {
     private static final String ESC = "\u001b";
     private static final String CSI = ESC + "[";
+    private static final String BEL = "\u0007";
 
     private Terminal server;
 
@@ -175,9 +179,73 @@ public class TerminalDiffTest {
                         snapshot.cursorMode(),
                         snapshot.cursorVisible(),
                         snapshot.bell(),
-                        snapshot.inputModes());
+                        snapshot.inputModes(),
+                        snapshot.palette());
         final Terminal client = new Terminal();
         TerminalDiff.apply(client, broken); // must not throw
+    }
+
+    @Test
+    void osc4PaletteChangeSyncsToClientAcrossTheDiff() {
+        // The seam fix: a server-side OSC 4 redefines the palette, and the per-tick diff must
+        // carry it to the client so the render path (which reads the client's palette256) shows
+        // the redefined color. Without the Snapshot.palette field the client stays default.
+        write(server, ESC + "]4;16;rgb:ff/00/00" + BEL); // OSC 4 set index 16 -> red
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        assertEquals(0xff0000, client.palette256[16],
+                "the client must receive the server's OSC 4 palette redefinition");
+        assertNotEquals(TerminalColors.getDefaultPalette256()[16], client.palette256[16],
+                "the client entry must differ from the default (the redefinition landed)");
+    }
+
+    @Test
+    void unchangedPaletteIsNotSentOnIncrementalDiff() {
+        // Zero steady-state cost: once a palette change has been shipped, subsequent diffs that
+        // don't touch the palette must not carry it (Snapshot.palette == null).
+        write(server, ESC + "]4;16;rgb:ff/00/00" + BEL);
+        TerminalDiff.capture(server); // first capture ships the palette
+
+        write(server, "x"); // unrelated output, no palette change
+        final TerminalDiff.Snapshot second = TerminalDiff.capture(server);
+        assertNull(second.palette(),
+                "an incremental diff after the palette synced must not re-send the palette");
+    }
+
+    @Test
+    void osc104ResetSyncsToClientAcrossTheDiff() {
+        // OSC 104 reset-single: the reset must propagate so the client's entry returns to default.
+        write(server, ESC + "]4;16;rgb:ff/00/00" + BEL);
+        TerminalDiff.capture(server); // ship the redefinition
+
+        write(server, ESC + "]104;16" + BEL); // OSC 104 reset index 16
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        assertEquals(TerminalColors.getDefaultPalette256()[16], client.palette256[16],
+                "OSC 104 reset on the server must reset the client's entry to the default");
+    }
+
+    @Test
+    void risResetSnapshotCarriesTheDefaultPalette() {
+        // Kimi's reset-path warning: after RIS the server palette resets to default, and the
+        // captureFull reset snapshot MUST carry it — or a client holding a prior OSC 4 change
+        // keeps a stale palette across the reset. captureFull forces the palette even when the
+        // revision hasn't moved since the last (incremental) send.
+        write(server, ESC + "]4;1;rgb:12/34/56" + BEL);
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server)); // client now has 0x123456 at [1]
+        assertEquals(0x123456, client.palette256[1]);
+
+        // Server RIS resets its palette to default; captureFull must ship that to the client.
+        li.cil.oc2.common.vm.terminal.escapes.index.RIS.execute(server);
+        final TerminalDiff.Snapshot reset = TerminalDiff.captureFull(server);
+        assertNotNull(reset.palette(), "the reset snapshot must carry the palette");
+        TerminalDiff.apply(client, reset);
+
+        assertEquals(TerminalColors.getDefaultPalette256()[1], client.palette256[1],
+                "RIS reset must restore the client's palette to default, not leave it stale");
     }
 
     private static void write(final Terminal target, final String text) {
