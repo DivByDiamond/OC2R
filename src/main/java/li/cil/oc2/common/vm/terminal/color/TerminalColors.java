@@ -3,22 +3,46 @@ package li.cil.oc2.common.vm.terminal.color;
 import com.google.gson.annotations.SerializedName;
 
 public final class TerminalColors {
-    public static final int[] BRIGHT_COLORS = {
+    // The palette tables below are private immutable defaults: each Terminal holds its own
+    // per-instance copy (Terminal.palette256) so OSC 4/104 redefines a color for one terminal
+    // only. Kept private so external code can't mutate the shared default (SpotBugs
+    // MS_MUTABLE_ARRAY, resolved by design rather than suppression).
+    private static final int[] BRIGHT_COLORS = {
         0x555555, 0xFF5555, 0x55FF55, 0xFFFF55,
         0x5555FF, 0xFF55FF, 0x55FFFF, 0xFFFFFF,
     };
 
-    public static final int[] COLORS = {
+    private static final int[] COLORS = {
         0x000000, 0xAA0000, 0x00AA00, 0xAAAA00,
         0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
     };
 
-    public static final int[] DIM_COLORS = {
-        0x000000, 0x550000, 0x005500, 0x555500,
-        0x000055, 0x550055, 0x005555, 0x555555,
-    };
+    // Scale applied to a resolved foreground color when STYLE_DIM (SGR 2, faint) is set. This
+    // is a computed modifier layered on AFTER color resolution, matching xterm's computeFaint
+    // (util.c) in mechanism — xterm scales the resolved pixel rather than indexing a fixed dim
+    // table — so dim composes with bold/blink/256/truecolor instead of overriding them. The 1/2
+    // factor reproduces the prior DIM_COLORS table exactly for SIXTEEN_COLOR (0xAA0000 -> 0x550000
+    // etc.), so existing dim text is unchanged; what's new is dim now also applies to bright,
+    // 256-color, and truecolor cells, which the table silently ignored. DEC VTs (VT100-VT420)
+    // have no faint attribute at all — SGR 2 is an ISO/ECMA extension outside real-VT scope, so
+    // xterm (the de-facto reference for such extensions) is the guide; the 1/2 scale is a
+    // deliberate out-of-box choice, xterm's default is 2/3 (faintIsRelative=false).
+    private static final int DIM_FACTOR_NUMERATOR = 1;
+    private static final int DIM_FACTOR_DENOMINATOR = 2;
 
-    public static final int[] COLORS_256 = {
+    /**
+     * Scale a resolved 0xRRGGBB color for SGR 2 (faint/dim). Applied as a tail modifier in the
+     * render path, after the color mode and bold/blink resolution, so dim composes with every
+     * other attribute rather than replacing it.
+     */
+    public static int computeFaint(final int rgb) {
+        final int r = ((rgb >> 16) & 0xFF) * DIM_FACTOR_NUMERATOR / DIM_FACTOR_DENOMINATOR;
+        final int g = ((rgb >> 8) & 0xFF) * DIM_FACTOR_NUMERATOR / DIM_FACTOR_DENOMINATOR;
+        final int b = (rgb & 0xFF) * DIM_FACTOR_NUMERATOR / DIM_FACTOR_DENOMINATOR;
+        return (r << 16) | (g << 8) | b;
+    }
+
+    private static final int[] COLORS_256 = {
         // 0-7: Normal ANSI colors (must match COLORS)
         0x000000, 0xAA0000, 0x00AA00, 0xAAAA00, 0x0000AA, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
         // 8-15: Bright ANSI colors (must match BRIGHT_COLORS)
@@ -54,6 +78,36 @@ public final class TerminalColors {
         0x585858, 0x626262, 0x6c6c6c, 0x767676, 0x808080, 0x8a8a8a, 0x949494, 0x9e9e9e,
         0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee
     };
+
+    // Fresh copy of the default 256-color palette. Each Terminal initializes its own
+    // per-instance palette256 from this (so OSC 4 redefines a color for one terminal
+    // only) and resets it via OSC 104.
+    public static int[] getDefaultPalette256() {
+        return COLORS_256.clone();
+    }
+
+    // Fresh copies of the default ANSI-16 tables. The 256-color palette is canonical —
+    // COLORS_256[0..7] == COLORS, [8..15] == BRIGHT_COLORS — so these exist for tests that
+    // cross-check the 16 against the 256, and for any code reading the base-16 defaults
+    // without a Terminal instance. Each returns a defensive clone (the arrays are private).
+    public static int[] getDefaultColors16() {
+        return COLORS.clone();
+    }
+
+    public static int[] getDefaultBrightColors16() {
+        return BRIGHT_COLORS.clone();
+    }
+
+    // Fixed defaults for the DEFAULT_FOREGROUND/BACKGROUND render modes. These must NOT
+    // track OSC 4 — in xterm the default fg/bg are addressed by OSC 10/11, not OSC 4 — so
+    // they read the immutable defaults directly, never the instance palette.
+    public static int defaultForegroundRgb(final boolean bold) {
+        return bold ? BRIGHT_COLORS[Color.WHITE] : COLORS[Color.WHITE];
+    }
+
+    public static int defaultBackgroundRgb() {
+        return 0x000000;
+    }
 
     public static final ColorData DEFAULT_BACKGROUND_COLOR =
             new ColorData(Color.WHITE, Color.BLACK, 0, ColorMode.DEFAULT_BACKGROUND);

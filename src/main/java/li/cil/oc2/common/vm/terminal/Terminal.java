@@ -43,6 +43,18 @@ public class Terminal {
             twoFiftySixColor,
             backgroundColor,
             foregroundColor;
+    // Per-instance 256-color palette: OSC 4 redefines an entry, OSC 104 resets it. Each
+    // Terminal holds its own copy so a palette change never bleeds across terminals (the
+    // static defaults stay immutable). Transient — ceres re-inits via the no-arg
+    // constructor -> RIS -> getDefaultPalette256(), same lifecycle as the buffers.
+    public transient int[] palette256;
+    // Monotonic revision bumped on every palette256 write (RIS/OSC4/OSC104). The network diff
+    // ships the palette to clients only when this differs from lastSentPaletteRevision, so a
+    // server-side OSC 4 redefinition actually reaches the player's screen (the render path
+    // reads the client Terminal's palette256). Transient: a freshly-loaded terminal starts at
+    // revision 0 with the default palette; runtime mutations sync via the diff, not persistence.
+    private transient int paletteRevision = 0;
+    private transient int lastSentPaletteRevision = -1;
     public byte style;
 
     public int SCROLL_BACK_COUNT = 20;
@@ -361,6 +373,41 @@ public class Terminal {
             networkNeedsFullRefresh = false;
             networkDirtyRows.clear();
             return new NetworkDirty(full, rows);
+        } finally {
+            networkDirtyLock.unlock();
+        }
+    }
+
+    /**
+     * Bump the palette revision so the next network diff ships the palette to clients. Called
+     * wherever palette256 is written (RIS/OSC4/OSC104). Under networkDirtyLock to keep the
+     * revision check in consumePaletteDirty atomic with the bump.
+     */
+    public void markPaletteDirty() {
+        networkDirtyLock.lock();
+        try {
+            paletteRevision++;
+        } finally {
+            networkDirtyLock.unlock();
+        }
+    }
+
+    /**
+     * Returns a clone of palette256 to ship to clients if it changed since the last diff, or
+     * null if unchanged (zero steady-state cost). {@code force} is set by the reset path
+     * (captureFull) so a RIS reset snapshot always carries the palette even when the revision
+     * hasn't moved — otherwise a client that missed an earlier change would keep a stale one.
+     * Updates lastSentPaletteRevision atomically.
+     */
+    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // null is a load-bearing sentinel: the Snapshot record + stream codec use it to mean "palette unchanged this diff" (skip the ~1 KiB payload). An empty array can't express absence, and Optional<int[]> allocates on the hot path.
+    public int[] consumePaletteDirty(final boolean force) {
+        networkDirtyLock.lock();
+        try {
+            if (!force && paletteRevision == lastSentPaletteRevision) {
+                return null;
+            }
+            lastSentPaletteRevision = paletteRevision;
+            return palette256.clone();
         } finally {
             networkDirtyLock.unlock();
         }

@@ -31,6 +31,13 @@ public class TerminalBufferTest {
     // AvoidDuplicateLiterals threshold.
     private static final String ESC = "\u001b";
     private static final String CSI = ESC + "[";
+    private static final String OSC = ESC + "]";
+    private static final String BEL = "\u0007";
+    private static final String ST = ESC + "\\";
+    // A reusable OSC 4 set (entry 16 -> red, BEL-terminated) shared across the palette tests so
+    // the rgb spec literal stays below PMD's AvoidDuplicateLiterals threshold.
+    private static final String RED_RGB = "rgb:ff/00/00";
+    private static final String OSC4_SET_16_RED = OSC + "4;16;" + RED_RGB + BEL;
     private static final String SAMPLE_LINE = "ABCDEFGH";
     private static final String MARGIN_CONTENT = "ABCDEFG";
 
@@ -154,6 +161,134 @@ public class TerminalBufferTest {
         reply.get(bytes);
         assertEquals("\033[0n", new String(bytes, StandardCharsets.US_ASCII),
                 "CSI 5n replies operating-status (\\033[0n)");
+    }
+
+    @Test
+    void osc4SetChangesInstancePalette() {
+        // OSC 4;Ps;Pt redefines palette entry Ps. Setting index 16 (first cube color) to red
+        // must update the per-instance palette256, leaving the immutable default untouched.
+        write(terminal, OSC4_SET_16_RED);
+        assertEquals(0xff0000, terminal.palette256[16],
+                "OSC 4 set must change the per-instance palette entry");
+        assertNotEquals(TerminalColors.getDefaultPalette256()[16], terminal.palette256[16],
+                "the changed entry must differ from the immutable default");
+    }
+
+    @Test
+    void osc4SetStTerminatorWorks() {
+        // ST-terminated (ESC then backslash) instead of BEL — exercises the two-byte
+        // terminator: the ESC must arm lastChar without being buffered, then the backslash
+        // byte completes ST (the broken-ST-detection bug site called out in the plan).
+        write(terminal, OSC + "4;17;rgb:00/ff/00" + ST);
+        assertEquals(0x00ff00, terminal.palette256[17],
+                "OSC 4 set with the ST terminator must take effect");
+    }
+
+    @Test
+    void osc4QueryRepliesRgb() {
+        // OSC 4;Ps;? queries entry Ps. xterm replies 16-bit per channel (rgb:%04x) and reuses the
+        // query's own terminator (misc.c:2647,2655): a BEL-terminated query gets a BEL-terminated
+        // reply. Index 16 was set to 0xff0000 (red) -> r16=0xffff, g/b=0x0000.
+        write(terminal, OSC4_SET_16_RED);
+        write(terminal, OSC + "4;16;?" + BEL);
+        final ByteBuffer reply = terminal.io.getInput();
+        assertNotNull(reply, "OSC 4 query must produce a reply");
+        final byte[] bytes = new byte[reply.remaining()];
+        reply.get(bytes);
+        assertEquals(ESC + "]4;16;rgb:ffff/0000/0000" + BEL,
+                new String(bytes, StandardCharsets.US_ASCII),
+                "OSC 4 query replies 16-bit per channel, mirroring the BEL terminator");
+    }
+
+    @Test
+    void osc4QueryRepliesWithStTerminator() {
+        // The same query ST-terminated must reply ST-terminated (ESC \), not BEL — the reply
+        // mirrors the query's framing (F2: xterm unparseputc1(xw, final)).
+        write(terminal, OSC4_SET_16_RED);
+        write(terminal, OSC + "4;16;?" + ST);
+        final ByteBuffer reply = terminal.io.getInput();
+        assertNotNull(reply);
+        final byte[] bytes = new byte[reply.remaining()];
+        reply.get(bytes);
+        assertEquals(ESC + "]4;16;rgb:ffff/0000/0000" + ST,
+                new String(bytes, StandardCharsets.US_ASCII),
+                "an ST-terminated query replies ST-terminated");
+    }
+
+    @Test
+    void osc4BatchedSetsMultipleEntries() {
+        // A single OSC 4 may carry several index;spec pairs (c;spec;c;spec;...), as xterm's
+        // ChangeAnsiColorRequest (misc.c:2981) does. Both entries must be set, not just the first.
+        write(terminal, OSC + "4;16;rgb:ff/00/00;17;rgb:00/ff/00" + BEL);
+        assertEquals(0xff0000, terminal.palette256[16], "first pair (index 16) set");
+        assertEquals(0x00ff00, terminal.palette256[17], "second pair (index 17) set");
+    }
+
+    @Test
+    void osc4BatchedSetAndQueryInOneSequence() {
+        // The batched loop handles mixed set+query pairs: a query pair replies, then a set pair
+        // applies — both in one OSC 4.
+        write(terminal, OSC + "4;16;?;17;rgb:00/ff/00" + BEL);
+        assertEquals(0x00ff00, terminal.palette256[17], "the set pair applied");
+        final ByteBuffer reply = terminal.io.getInput();
+        assertNotNull(reply, "the query pair replied");
+        final byte[] bytes = new byte[reply.remaining()];
+        reply.get(bytes);
+        // Index 16 is still default (0x000000) at this point -> reply reports default 16-bit.
+        final int default16 = TerminalColors.getDefaultPalette256()[16];
+        final int r16 = ((default16 >> 16) & 0xFF) * 0x0101;
+        final int g16 = ((default16 >> 8) & 0xFF) * 0x0101;
+        final int b16 = (default16 & 0xFF) * 0x0101;
+        assertEquals(ESC + "]4;16;rgb:" + String.format("%04x/%04x/%04x", r16, g16, b16) + BEL,
+                new String(bytes, StandardCharsets.US_ASCII),
+                "the query pair replied with the (default) entry before the set pair applied");
+    }
+
+    @Test
+    void osc4DoesNotMutateStaticDefault() {
+        // SpotBugs MS_MUTABLE_ARRAY resolved by design: the static default is immutable. Setting
+        // an entry on one terminal must not mutate the shared default. Revert-and-fail — a
+        // shared static (palette256 aliased to COLORS_256) would change getDefaultPalette256()[1].
+        final int defaultAt1 = TerminalColors.getDefaultPalette256()[1];
+        write(terminal, OSC + "4;1;rgb:12/34/56" + BEL);
+        assertEquals(defaultAt1, TerminalColors.getDefaultPalette256()[1],
+                "OSC 4 set on an instance must not mutate the static default palette");
+        assertEquals(0x123456, terminal.palette256[1],
+                "the instance entry should reflect the OSC 4 set");
+    }
+
+    @Test
+    void osc4PerTerminalIsolation() {
+        // A real VT has a per-terminal palette: redefining a color on one terminal must not
+        // bleed into another terminal's palette.
+        final Terminal other = new Terminal();
+        final int default16 = TerminalColors.getDefaultPalette256()[16];
+        write(terminal, OSC4_SET_16_RED);
+        assertEquals(0xff0000, terminal.palette256[16], "the sender's entry is redefined");
+        assertEquals(default16, other.palette256[16],
+                "the other terminal's entry must stay at the default");
+    }
+
+    @Test
+    void osc104ResetsIndex() {
+        // OSC 104;Ps resets entry Ps to its default (set/reset, no reply).
+        write(terminal, OSC4_SET_16_RED);
+        assertEquals(0xff0000, terminal.palette256[16], "precondition: entry was redefined");
+        write(terminal, OSC + "104;16" + BEL);
+        assertEquals(TerminalColors.getDefaultPalette256()[16], terminal.palette256[16],
+                "OSC 104;Ps resets that entry to the default");
+    }
+
+    @Test
+    void osc104ResetsAll() {
+        // OSC 104 with no Ps resets the whole palette to defaults.
+        final int[] defaults = TerminalColors.getDefaultPalette256();
+        write(terminal, OSC4_SET_16_RED);
+        write(terminal, OSC + "4;200;rgb:aa/bb/cc" + BEL);
+        assertNotEquals(defaults[16], terminal.palette256[16], "precondition: entries were redefined");
+        write(terminal, OSC + "104" + BEL);
+        assertArrayEquals(defaults, terminal.palette256,
+                "OSC 104 with no Ps resets the whole palette to defaults");
     }
 
     @Test

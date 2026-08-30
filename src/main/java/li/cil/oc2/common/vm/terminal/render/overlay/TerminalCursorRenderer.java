@@ -44,9 +44,11 @@ public class TerminalCursorRenderer {
                 Tesselator.getInstance()
                         .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
+        // Cursor color is fixed — it does not track OSC 4 (xterm reserves cursor color for
+        // OSC 12): default foreground normally, default background (black) under DECSCNM.
         final int foreground = terminal.currentPrivateModeState.DECSCNM
-                ? TerminalColors.COLORS[TerminalColors.Color.BLACK]
-                : TerminalColors.COLORS[TerminalColors.Color.WHITE];
+                ? TerminalColors.defaultBackgroundRgb()
+                : TerminalColors.defaultForegroundRgb(false);
         final float r = ((foreground >> 16) & 0xFF) / 255f;
         final float g = ((foreground >> 8) & 0xFF) / 255f;
         final float b = (foreground & 0xFF) / 255f;

@@ -31,6 +31,7 @@ import net.minecraft.network.codec.StreamCodec;
  * single-character echo therefore costs a handful of bytes per changed row instead of the
  * former fixed 37 bytes per cell.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity") // class-aggregate complexity is high because the diff touches every facet of terminal state (rows, cursor, modes, bell, palette); each is a small focused method
 public final class TerminalDiff {
     // Attribute byte: which non-default fields follow the codepoint.
     private static final int ATTR_FG_EXPLICIT = 1;
@@ -67,7 +68,8 @@ public final class TerminalDiff {
             int cursorMode,
             boolean cursorVisible,
             boolean bell,
-            long inputModes) {}
+            long inputModes,
+            int[] palette) {}
 
     /**
      * Private-mode flags that affect client-side rendering or input handling beyond the
@@ -127,20 +129,25 @@ public final class TerminalDiff {
     public static Snapshot capture(final Terminal terminal) {
         final Terminal.NetworkDirty dirty = terminal.consumeNetworkDirty();
         final boolean full = dirty.fullRefresh();
-        return build(terminal, full, full ? visibleWindowRows(terminal) : dirty.rows());
+        return build(terminal, full, false, full ? visibleWindowRows(terminal) : dirty.rows());
     }
 
     /** Builds a full-screen snapshot flagged as reset (used after VM restarts / RIS). */
     public static Snapshot captureFull(final Terminal terminal) {
-        return build(terminal, true, visibleWindowRows(terminal));
+        return build(terminal, true, true, visibleWindowRows(terminal));
     }
 
-    private static Snapshot build(final Terminal terminal, final boolean reset, final int... rows) {
+    private static Snapshot build(final Terminal terminal, final boolean reset, final boolean forcePalette, final int... rows) {
         final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
         // Consume the bell flag: it must fire exactly once per emitted diff, otherwise
         // every subsequent diff would replay the bell until the next one arrives.
         final boolean bell = terminal.hasPendingBell;
         terminal.hasPendingBell = false;
+        // Ship the palette when it changed since the last diff, or always on a reset snapshot —
+        // captureFull after RIS, but ALSO any full-refresh capture (reset == full): a client
+        // that missed the original OSC 4 change (opened/tracked the computer later) rebuilds
+        // its screen from that snapshot and must not render a stale default palette.
+        final int[] palette = terminal.consumePaletteDirty(forcePalette || reset);
         return new Snapshot(
                 reset,
                 terminal.width,
@@ -154,7 +161,8 @@ public final class TerminalDiff {
                 terminal.cursorMode,
                 terminal.currentPrivateModeState.DECTCEM,
                 bell,
-                packInputModes(terminal.currentPrivateModeState));
+                packInputModes(terminal.currentPrivateModeState),
+                palette);
     }
 
     private static int[] visibleWindowRows(final Terminal terminal) {
@@ -314,6 +322,11 @@ public final class TerminalDiff {
         if (s.bell()) {
             terminal.hasPendingBell = true;
         }
+        // Apply a synced palette (clone so the client's array stays independent of the server's,
+        // matching the per-instance discipline). Null = unchanged this diff.
+        if (s.palette() != null) {
+            terminal.palette256 = s.palette().clone();
+        }
         terminal.markAllDirty();
     }
 
@@ -451,6 +464,11 @@ public final class TerminalDiff {
         buf.writeBoolean(s.cursorVisible());
         buf.writeBoolean(s.bell());
         ByteBufCodecs.VAR_LONG.encode(buf, s.inputModes());
+        final int[] palette = s.palette();
+        buf.writeBoolean(palette != null);
+        if (palette != null) {
+            writeByteArray(buf, encodeInts(palette));
+        }
     }
 
     private static Snapshot readSnapshot(final ByteBuf buf) {
@@ -463,20 +481,32 @@ public final class TerminalDiff {
         for (int i = 0; i < rowCount; i++) {
             rowData[i] = readByteArray(buf);
         }
+        final int cursorX = ByteBufCodecs.VAR_INT.decode(buf);
+        final int cursorY = ByteBufCodecs.VAR_INT.decode(buf);
+        final int lastRowToDisplay = ByteBufCodecs.VAR_INT.decode(buf);
+        final int lastRowToDisplayMax = ByteBufCodecs.VAR_INT.decode(buf);
+        final int cursorMode = ByteBufCodecs.VAR_INT.decode(buf);
+        final boolean cursorVisible = buf.readBoolean();
+        final boolean bell = buf.readBoolean();
+        final long inputModes = ByteBufCodecs.VAR_LONG.decode(buf);
+        // Palette is written LAST (after inputModes) — read it last or every field above
+        // decodes from the wrong offset. Repro: CodecRoundTripReproTest.
+        final int[] palette = buf.readBoolean() ? decodeInts(readByteArray(buf)) : null;
         return new Snapshot(
                 reset,
                 width,
                 altBuffer,
                 rows,
                 rowData,
-                ByteBufCodecs.VAR_INT.decode(buf),
-                ByteBufCodecs.VAR_INT.decode(buf),
-                ByteBufCodecs.VAR_INT.decode(buf),
-                ByteBufCodecs.VAR_INT.decode(buf),
-                ByteBufCodecs.VAR_INT.decode(buf),
-                buf.readBoolean(),
-                buf.readBoolean(),
-                ByteBufCodecs.VAR_LONG.decode(buf));
+                cursorX,
+                cursorY,
+                lastRowToDisplay,
+                lastRowToDisplayMax,
+                cursorMode,
+                cursorVisible,
+                bell,
+                inputModes,
+                palette);
     }
 
     private static void writeByteArray(final ByteBuf buf, final byte[] data) {
