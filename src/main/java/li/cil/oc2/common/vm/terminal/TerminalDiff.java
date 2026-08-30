@@ -50,6 +50,7 @@ public final class TerminalDiff {
     private static final int DEFAULT_BACKGROUND_PACKED = packColor(TerminalColors.DEFAULT_BACKGROUND_COLOR);
 
     private static final ColorMode MODE_ORDINAL_FALLBACK = ColorMode.TRUE_COLOR;
+    private static final int PALETTE_SIZE = 256;
 
     /**
      * @param rows    absolute buffer row indices (alt-buffer: screen rows 0..23)
@@ -241,10 +242,10 @@ public final class TerminalDiff {
 
     /** Packs mode ordinal (3 bits) plus 8-bit R/G/B into a single varint-friendly value. */
     private static int packColor(final ColorData color) {
-        return (color.Mode.ordinal() & 0x7)
-                | (color.R & 0xFF) << 3
-                | (color.G & 0xFF) << 11
-                | (color.B & 0xFF) << 19;
+        return (color.mode.ordinal() & 0x7)
+                | (color.r & 0xFF) << 3
+                | (color.g & 0xFF) << 11
+                | (color.b & 0xFF) << 19;
     }
 
     private static ColorData unpackColor(final int packed) {
@@ -323,8 +324,9 @@ public final class TerminalDiff {
             terminal.hasPendingBell = true;
         }
         // Apply a synced palette (clone so the client's array stays independent of the server's,
-        // matching the per-instance discipline). Null = unchanged this diff.
-        if (s.palette() != null) {
+        // matching the per-instance discipline). Null = unchanged this diff. Guarded to the
+        // canonical 256-entry xterm palette to avoid AIOOBE on malformed payloads.
+        if (s.palette() != null && s.palette().length == PALETTE_SIZE) {
             terminal.palette256 = s.palette().clone();
         }
         terminal.markAllDirty();

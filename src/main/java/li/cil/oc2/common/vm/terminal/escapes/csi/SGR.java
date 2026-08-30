@@ -49,7 +49,7 @@ public class SGR extends CSISequenceHandler {
             /* Foreground */
             terminal.currentForegroundColorMode = result.mode();
             if (result.mode() == TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR) {
-                terminal.twoFiftySixColor.R = result.color().R;
+                terminal.twoFiftySixColor.r = result.color().r;
             } else {
                 terminal.foregroundColor = result.color();
             }
@@ -57,7 +57,7 @@ public class SGR extends CSISequenceHandler {
             /* Background (48) */
             terminal.currentBackgroundColorMode = result.mode();
             if (result.mode() == TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR) {
-                terminal.twoFiftySixColor.G = result.color().R;
+                terminal.twoFiftySixColor.g = result.color().r;
             } else {
                 terminal.backgroundColor = result.color();
             }

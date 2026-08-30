@@ -1107,16 +1107,16 @@ public class TerminalBufferTest {
 
     @Test
     void echErasedCellsTakeDefaultForegroundAndCurrentBackground() {
-        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
+        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.g = 1)
         write(terminal, SAMPLE_LINE);
         write(terminal, CSI + "3G");     // x=2
         write(terminal, CSI + "2X");     // ECH 2
         final int idx = cellIndex(2, 0);
-        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.colors[idx].Mode,
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.colors[idx].mode,
             "erased cell foreground must be the DEFAULT_FOREGROUND marker");
-        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.colorsBackground[idx].Mode,
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.colorsBackground[idx].mode,
             "erased cell background must keep the current bg mode");
-        assertEquals(1, terminal.colorsBackground[idx].G,
+        assertEquals(1, terminal.colorsBackground[idx].g,
             "erased cell background must keep the current bg color (red)");
         assertEquals(TerminalColors.DEFAULT_STYLE, terminal.styles[idx],
             "erased cell style must reset to default");
@@ -1487,7 +1487,7 @@ public class TerminalBufferTest {
         // DECCOLM (VT100–VT420) is a destructive reset: it clears SGR attributes and erases the
         // screen to the DEFAULT background, not the SGR background that was active. Contrast with
         // ECH (echErasedCellsTakeDefaultForegroundAndCurrentBackground), which keeps current bg.
-        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.G = 1)
+        write(terminal, CSI + "41m");    // bg = SIXTEEN_COLOR red (sixteenColor.g = 1)
         write(terminal, SAMPLE_LINE);
         assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentBackgroundColorMode,
             "precondition: SGR bg is set");
@@ -1501,7 +1501,7 @@ public class TerminalBufferTest {
             "DECCOLM resets SGR attributes (style)");
 
         final int idx = cellIndex(0, 0);
-        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.colorsBackground[idx].Mode,
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.colorsBackground[idx].mode,
             "cleared cell background must be the DEFAULT background, not the prior SGR red");
         assertEquals(' ', (char) terminal.buffer[idx],
             "cleared cell must be a space");

@@ -30,8 +30,8 @@ final class TerminalMouseHandler {
         if (currentMouseMode.isMouseDisabled()) return false;
         final Vector2i position = getMousePosition(x, y, leftPos, topPos);
         if (overTerminal && shouldCapture) {
-            if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
-                    || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
+            if (currentMouseMode.primaryMode == PrivateMode.X11MM
+                    || currentMouseMode.primaryMode == PrivateMode.CELL_MOTION_MOUSE) {
                 if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
                     terminal.io.putInput(
                             "\033[<" + button + ";" + position.x + ";" + position.y + "M");
@@ -101,8 +101,8 @@ final class TerminalMouseHandler {
         if (currentMouseMode.isMouseDisabled()) return false;
         final Vector2i position = getMousePosition(x, y, leftPos, topPos);
         if (overTerminal && shouldCapture) {
-            if (currentMouseMode.PrimaryMode == PrivateMode.X11MM
-                    || currentMouseMode.PrimaryMode == PrivateMode.CELL_MOTION_MOUSE) {
+            if (currentMouseMode.primaryMode == PrivateMode.X11MM
+                    || currentMouseMode.primaryMode == PrivateMode.CELL_MOTION_MOUSE) {
                 if (currentMouseMode.isSecondaryModeEnabled(PrivateMode.SGR_MOUSE)) {
                     terminal.io.putInput(
                             "\033[<" + button + ";" + position.x + ";" + position.y + "m");

@@ -60,7 +60,7 @@ public class TerminalCharRenderer {
         // Bold blink alternates normal/bright intensity instead of on/off.
         final boolean dimBoldForBlink = isBlinking && !invertBackground && blinkOff && isBold;
         final int channel = foregroundChannel(color, invertBackground);
-        final int rgb = switch (color.Mode) {
+        final int rgb = switch (color.mode) {
             // DEFAULT_FOREGROUND must not track OSC 4 (xterm reserves it for OSC 10/11).
             case DEFAULT_FOREGROUND -> TerminalColors.defaultForegroundRgb(isBold && !dimBoldForBlink);
             case SIXTEEN_COLOR -> terminal.palette256[channel];
@@ -70,7 +70,7 @@ public class TerminalCharRenderer {
             case SIXTEEN_COLOR_BRIGHT ->
                     terminal.palette256[channel + (dimBoldForBlink ? 0 : 8)];
             case DEFAULT_BACKGROUND -> TerminalColors.defaultBackgroundRgb();
-            default -> throw new AssertionError(color.Mode);
+            default -> throw new AssertionError(color.mode);
         };
         // Dim (SGR 2) is a tail modifier on the resolved color — composes with bold/blink and
         // now applies to every mode (the old fixed DIM_COLORS table only covered SIXTEEN_COLOR).
@@ -90,7 +90,7 @@ public class TerminalCharRenderer {
     }
 
     private static int foregroundChannel(final ColorData color, final boolean invertBackground) {
-        return invertBackground ? color.G : color.R;
+        return invertBackground ? color.g : color.r;
     }
 
     static void renderForegroundChar(

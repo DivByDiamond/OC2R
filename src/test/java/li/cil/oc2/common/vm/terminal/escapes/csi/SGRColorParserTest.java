@@ -20,7 +20,7 @@ public class SGRColorParserTest {
         final SGRColorParser.SGRColorResult result = SGRColorParser.parse(new int[] {5, 196}, 0, 2);
         assertTrue(result.isValid());
         assertEquals(ColorMode.TWO_FIFTY_SIX_COLOR, result.mode());
-        assertEquals(196, result.color().R);
+        assertEquals(196, result.color().r);
         assertEquals(2, result.consumed());
     }
 
@@ -29,9 +29,9 @@ public class SGRColorParserTest {
         final SGRColorParser.SGRColorResult result = SGRColorParser.parse(new int[] {2, 10, 20, 30}, 0, 4);
         assertTrue(result.isValid());
         assertEquals(ColorMode.TRUE_COLOR, result.mode());
-        assertEquals(10, result.color().R);
-        assertEquals(20, result.color().G);
-        assertEquals(30, result.color().B);
+        assertEquals(10, result.color().r);
+        assertEquals(20, result.color().g);
+        assertEquals(30, result.color().b);
         assertEquals(4, result.consumed());
     }
 
@@ -40,7 +40,7 @@ public class SGRColorParserTest {
         // Out-of-range index must clamp, not produce an out-of-bounds palette lookup.
         final SGRColorParser.SGRColorResult result = SGRColorParser.parse(new int[] {5, 300}, 0, 2);
         assertTrue(result.isValid());
-        assertEquals(255, result.color().R);
+        assertEquals(255, result.color().r);
     }
 
     @Test
@@ -48,9 +48,9 @@ public class SGRColorParserTest {
         // Each component clamps independently to [0, 255]; negatives → 0, over-range → 255.
         final SGRColorParser.SGRColorResult result = SGRColorParser.parse(new int[] {2, 300, -1, 999}, 0, 4);
         assertTrue(result.isValid());
-        assertEquals(255, result.color().R);
-        assertEquals(0, result.color().G);
-        assertEquals(255, result.color().B);
+        assertEquals(255, result.color().r);
+        assertEquals(0, result.color().g);
+        assertEquals(255, result.color().b);
     }
 
     @Test

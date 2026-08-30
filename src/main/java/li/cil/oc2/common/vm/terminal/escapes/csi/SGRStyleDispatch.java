@@ -58,31 +58,31 @@ public final class SGRStyleDispatch {
                     terminal.style &= ~Terminal.STYLE_HIDDEN_MASK;
             case 30, 31, 32, 33, 34, 35, 36, 37 -> { // Set foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
-                terminal.sixteenColor.R = code - 30;
+                terminal.sixteenColor.r = code - 30;
             }
             case 39 -> { // Default foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.DEFAULT_FOREGROUND;
                 terminal.foregroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
-                terminal.sixteenColor.R = TerminalColors.Color.WHITE;
-                terminal.sixteenColorBright.R = TerminalColors.Color.WHITE;
+                terminal.sixteenColor.r = TerminalColors.Color.WHITE;
+                terminal.sixteenColorBright.r = TerminalColors.Color.WHITE;
             }
             case 40, 41, 42, 43, 44, 45, 46, 47 -> { // Set background color
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
-                terminal.sixteenColor.G = code - 40;
+                terminal.sixteenColor.g = code - 40;
             }
             case 49 -> { // Default background color
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.DEFAULT_BACKGROUND;
                 terminal.backgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-                terminal.sixteenColor.G = TerminalColors.Color.BLACK;
-                terminal.sixteenColorBright.G = TerminalColors.Color.BLACK;
+                terminal.sixteenColor.g = TerminalColors.Color.BLACK;
+                terminal.sixteenColorBright.g = TerminalColors.Color.BLACK;
             }
             case 90, 91, 92, 93, 94, 95, 96, 97 -> { // Set foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT;
-                terminal.sixteenColorBright.R = code - 90;
+                terminal.sixteenColorBright.r = code - 90;
             }
             case 100, 101, 102, 103, 104, 105, 106, 107 -> { // Set background color
                 terminal.currentBackgroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT;
-                terminal.sixteenColorBright.G = code - 100;
+                terminal.sixteenColorBright.g = code - 100;
             }
             default -> {}
         }

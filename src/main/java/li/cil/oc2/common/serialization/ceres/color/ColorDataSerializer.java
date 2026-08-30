@@ -12,8 +12,8 @@ public class ColorDataSerializer implements Serializer<ColorData> {
 
     public static int toInt(ColorData colorData) {
         var mode = ColorMode.SIXTEEN_COLOR;
-        if (colorData.Mode != null) mode = colorData.Mode;
-        return (mode.ordinal() << 24) | (colorData.R << 16) | (colorData.G << 8) | colorData.B;
+        if (colorData.mode != null) mode = colorData.mode;
+        return (mode.ordinal() << 24) | (colorData.r << 16) | (colorData.g << 8) | colorData.b;
     }
 
     public static ColorData toColorData(int value) {

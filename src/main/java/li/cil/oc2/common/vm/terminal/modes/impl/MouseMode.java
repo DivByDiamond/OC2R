@@ -1,16 +1,16 @@
 package li.cil.oc2.common.vm.terminal.modes.impl;
 
 public class MouseMode {
-    public int PrimaryMode;
-    public int[] SecondaryModes;
+    public int primaryMode;
+    public int[] secondaryModes;
 
     public MouseMode(int primaryMode, int... secondaryModes) {
-        PrimaryMode = primaryMode;
-        SecondaryModes = secondaryModes.clone();
+        this.primaryMode = primaryMode;
+        this.secondaryModes = secondaryModes.clone();
     }
 
     public boolean isSecondaryModeEnabled(int mode) {
-        for (int secondaryMode : SecondaryModes) {
+        for (int secondaryMode : secondaryModes) {
             if (secondaryMode == mode) return true;
         }
 
@@ -18,6 +18,6 @@ public class MouseMode {
     }
 
     public boolean isMouseDisabled() {
-        return PrimaryMode == 0;
+        return primaryMode == 0;
     }
 }

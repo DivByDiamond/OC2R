@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Locale;
 import li.cil.oc2.common.vm.terminal.Terminal;
 
 /**
@@ -17,6 +18,6 @@ public class DECREQTPARM extends CSISequenceHandler {
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
         int sol = (argCount > 0 && args[0] == 1) ? 3 : 2;
-        terminal.io.putResponse(String.format("\033[%d;1;1;112;112;1;0x", sol));
+        terminal.io.putResponse(String.format(Locale.ROOT, "\033[%d;1;1;112;112;1;0x", sol));
     }
 }

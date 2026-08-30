@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.osc;
 
+import java.util.Locale;
 import li.cil.oc2.common.vm.terminal.Terminal;
 
 // OSC 4;Ps;Pt — set (Pt = rgb:rr/gg/bb) or query (Pt = ?) palette entry Ps (0-255). The
@@ -46,7 +47,7 @@ class OSC4 extends OSCHandler {
         final int g16 = ((rgb >> 8) & 0xFF) * 0x0101;
         final int b16 = (rgb & 0xFF) * 0x0101;
         final String term = terminator == '\007' ? "\007" : "\033\\";
-        terminal.io.putResponse(String.format(
+        terminal.io.putResponse(String.format(Locale.ROOT, 
                 "\033]4;%d;rgb:%04x/%04x/%04x%s", ps, r16, g16, b16, term));
     }
 }

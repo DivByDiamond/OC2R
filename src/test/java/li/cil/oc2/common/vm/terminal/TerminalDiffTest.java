@@ -46,7 +46,7 @@ public class TerminalDiffTest {
         assertEquals(3, client.y);
         // Foreground of the first cell resolved as palette index 1 (red) in 16-color mode.
         final ColorData fg = client.colors[cellIndex(client, 0, 1)];
-        assertEquals(1, fg.R);
+        assertEquals(1, fg.r);
     }
 
     @Test
@@ -266,13 +266,13 @@ public class TerminalDiffTest {
                 final ColorData expectedFg = alt ? expected.altColors[index] : expected.colors[index];
                 final ColorData actualFg = alt ? actual.altColors[index] : actual.colors[index];
                 assertEquals(expectedFg.toInt(), actualFg.toInt());
-                assertEquals(expectedFg.Mode, actualFg.Mode);
+                assertEquals(expectedFg.mode, actualFg.mode);
                 final ColorData expectedBg =
                         alt ? expected.altColorsBackground[index] : expected.colorsBackground[index];
                 final ColorData actualBg =
                         alt ? actual.altColorsBackground[index] : actual.colorsBackground[index];
                 assertEquals(expectedBg.toInt(), actualBg.toInt());
-                assertEquals(expectedBg.Mode, actualBg.Mode);
+                assertEquals(expectedBg.mode, actualBg.mode);
                 assertEquals(
                         alt ? expected.altStyles[index] : expected.styles[index],
                         alt ? actual.altStyles[index] : actual.styles[index]);

@@ -30,9 +30,10 @@ final class OSCParse {
         }
     }
 
-    // Parse "rgb:rr/gg/bb" (2 hex digits per channel) into a packed 0xRRGGBB int; null if
-    // malformed. #rrggbb shorthand and 4-/16-bit rgb variants are out of scope (xterm extends
-    // to those; the palette is 8-bit per channel so 2 digits suffice).
+    // Parse "rgb:rr/gg/bb" (1+ hex digits per channel, each masked to 8 bits) into a
+    // packed 0xRRGGBB int; null if malformed. Leading/trailing digits beyond 8 bits are
+    // silently masked. #rrggbb shorthand and 4-/16-bit rgb variants are out of scope
+    // (xterm extends to those; the palette is 8-bit per channel so 1+ digits suffice).
     static Integer parseRgbSpec(final String pt) {
         if (!pt.startsWith("rgb:")) {
             return null;

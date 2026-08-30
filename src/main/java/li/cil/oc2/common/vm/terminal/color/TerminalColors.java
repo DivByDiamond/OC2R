@@ -169,32 +169,32 @@ public final class TerminalColors {
     }
 
     public static class ColorData {
-        public int R;
-        public int G;
-        public int B;
-        public ColorMode Mode;
+        public int r;
+        public int g;
+        public int b;
+        public ColorMode mode;
 
         @SuppressWarnings("unused")
         public ColorData() {
-            R = 0;
-            G = 0;
-            B = 0;
-            Mode = ColorMode.SIXTEEN_COLOR;
+            r = 0;
+            g = 0;
+            b = 0;
+            mode = ColorMode.SIXTEEN_COLOR;
         }
 
         public ColorData(final int r, final int g, final int b, final ColorMode mode) {
-            R = r;
-            G = g;
-            B = b;
-            Mode = mode;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.mode = mode;
         }
 
         public int toInt() {
-            return (R & 0b11111111) << 16 | (G & 0b11111111) << 8 | (B & 0b11111111);
+            return (r & 0b11111111) << 16 | (g & 0b11111111) << 8 | (b & 0b11111111);
         }
 
         public ColorData copy() {
-            return new ColorData(R, G, B, Mode);
+            return new ColorData(r, g, b, mode);
         }
     }
 }

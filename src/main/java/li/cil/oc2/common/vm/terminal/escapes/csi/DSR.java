@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Locale;
 import li.cil.oc2.common.vm.terminal.Terminal;
 
 public class DSR extends CSISequenceHandler {
@@ -29,11 +30,11 @@ public class DSR extends CSISequenceHandler {
             if (state.questionMark) {
                 /* DECXCPR — Extended Cursor Position Report (with page number) */
                 terminal.io.putResponse(
-                        String.format("\033[?%d;%d;1R", terminal.y + 1, terminal.x + 1));
+                        String.format(Locale.ROOT, "\033[?%d;%d;1R", terminal.y + 1, terminal.x + 1));
             } else {
                 /* DSR-CPR — Standard Cursor Position Report */
                 terminal.io.putResponse(
-                        String.format("\033[%d;%dR", terminal.y + 1, terminal.x + 1));
+                        String.format(Locale.ROOT, "\033[%d;%dR", terminal.y + 1, terminal.x + 1));
             }
         }
     }

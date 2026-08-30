@@ -36,35 +36,35 @@ public class SGRTest {
     void sgr256ColorForeground() {
         write(terminal, "\u001b[38;5;196mX");
         assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(196, terminal.twoFiftySixColor.R);
+        assertEquals(196, terminal.twoFiftySixColor.r);
         assertEquals('X', charAt(0, 0));
-        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.colors[0].Mode);
-        assertEquals(196, terminal.colors[0].R);
+        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.colors[0].mode);
+        assertEquals(196, terminal.colors[0].r);
     }
 
     @Test
     void sgrTrueColorForegroundAndBackground() {
         write(terminal, "\u001b[38;2;100;150;200;48;2;10;20;30mY");
         assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(100, terminal.foregroundColor.R);
-        assertEquals(150, terminal.foregroundColor.G);
-        assertEquals(200, terminal.foregroundColor.B);
+        assertEquals(100, terminal.foregroundColor.r);
+        assertEquals(150, terminal.foregroundColor.g);
+        assertEquals(200, terminal.foregroundColor.b);
         assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentBackgroundColorMode);
-        assertEquals(10, terminal.backgroundColor.R);
-        assertEquals(20, terminal.backgroundColor.G);
-        assertEquals(30, terminal.backgroundColor.B);
+        assertEquals(10, terminal.backgroundColor.r);
+        assertEquals(20, terminal.backgroundColor.g);
+        assertEquals(30, terminal.backgroundColor.b);
         assertEquals('Y', charAt(0, 0));
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colors[0].Mode);
-        assertEquals(100, terminal.colors[0].R);
-        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colorsBackground[0].Mode);
-        assertEquals(10, terminal.colorsBackground[0].R);
+        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colors[0].mode);
+        assertEquals(100, terminal.colors[0].r);
+        assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.colorsBackground[0].mode);
+        assertEquals(10, terminal.colorsBackground[0].r);
     }
 
     @Test
     void sgrTrueColorKeepsFollowingAttributes() {
         write(terminal, "\u001b[38;2;100;150;200;1mZ");
         assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(100, terminal.foregroundColor.R);
+        assertEquals(100, terminal.foregroundColor.r);
         assertEquals(Terminal.STYLE_BOLD_MASK, terminal.style & Terminal.STYLE_BOLD_MASK);
         assertEquals(Terminal.STYLE_BOLD_MASK, terminal.styles[0] & Terminal.STYLE_BOLD_MASK);
     }
@@ -129,7 +129,7 @@ public class SGRTest {
         // Out-of-range 256-color index must clamp to 255, not throw on palette access.
         write(terminal, "\u001b[38;5;300m");
         assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(255, terminal.twoFiftySixColor.R);
+        assertEquals(255, terminal.twoFiftySixColor.r);
     }
 
     @Test
@@ -137,9 +137,9 @@ public class SGRTest {
         // Out-of-range true-color components must clamp to 255, not wrap via & 0xFF.
         write(terminal, "\u001b[38;2;300;0;0m");
         assertEquals(TerminalColors.ColorMode.TRUE_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(255, terminal.foregroundColor.R);
-        assertEquals(0, terminal.foregroundColor.G);
-        assertEquals(0, terminal.foregroundColor.B);
+        assertEquals(255, terminal.foregroundColor.r);
+        assertEquals(0, terminal.foregroundColor.g);
+        assertEquals(0, terminal.foregroundColor.b);
     }
 
     // --- DECSC (ESC 7) / DECRC (ESC 8) save and restore SGR color + style state ---
@@ -149,10 +149,10 @@ public class SGRTest {
         write(terminal, "\u001b[38;5;196m");   // 256-color fg, index 196
         write(terminal, "\u001b7");             // DECSC: save
         write(terminal, "\u001b[38;5;21m");     // change fg to index 21
-        assertEquals(21, terminal.twoFiftySixColor.R);
+        assertEquals(21, terminal.twoFiftySixColor.r);
         write(terminal, "\u001b8");             // DECRC: restore
         assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(196, terminal.twoFiftySixColor.R, "DECRC must restore the saved foreground color");
+        assertEquals(196, terminal.twoFiftySixColor.r, "DECRC must restore the saved foreground color");
     }
 
     @Test
@@ -170,14 +170,14 @@ public class SGRTest {
     void decscDecrcUsesDefensiveCopy() {
         // Restoring a saved color must copy, so later mutating current state cannot corrupt saved.
         write(terminal, "\u001b[38;5;100m");
-        write(terminal, "\u001b7");             // save (savedTwoFiftySixColor.R = 100)
+        write(terminal, "\u001b7");             // save (savedTwoFiftySixColor.r = 100)
         write(terminal, "\u001b[38;5;200m");    // current = 200
         write(terminal, "\u001b8");             // restore → current = 100
-        assertEquals(100, terminal.twoFiftySixColor.R);
-        assertEquals(100, terminal.savedTwoFiftySixColor.R);
+        assertEquals(100, terminal.twoFiftySixColor.r);
+        assertEquals(100, terminal.savedTwoFiftySixColor.r);
         write(terminal, "\u001b[38;5;50m");     // mutate current again
-        assertEquals(50, terminal.twoFiftySixColor.R);
-        assertEquals(100, terminal.savedTwoFiftySixColor.R,
+        assertEquals(50, terminal.twoFiftySixColor.r);
+        assertEquals(100, terminal.savedTwoFiftySixColor.r,
             "saved color must not alias current color after restore");
     }
 
@@ -192,7 +192,7 @@ public class SGRTest {
         write(terminal, "\u001bc");             // RIS: reset current + saved state to defaults
         assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
         write(terminal, "\u001b8");             // DECRC: restore saved (now defaults) — no-op
-        assertNotEquals(196, terminal.twoFiftySixColor.R,
+        assertNotEquals(196, terminal.twoFiftySixColor.r,
             "RIS must have reset saved state so DECRC does not restore the stale color");
         assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
             "DECRC after RIS is a no-op: current stays at the DEFAULT_FOREGROUND default");
@@ -207,7 +207,7 @@ public class SGRTest {
         write(terminal, "\u001b[38;5;200m");    // change
         write(terminal, "\u001b8");             // DECRC (alt path)
         assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.currentForegroundColorMode);
-        assertEquals(160, terminal.twoFiftySixColor.R,
+        assertEquals(160, terminal.twoFiftySixColor.r,
             "DECRC in alt buffer must restore the saved color via altSaved*");
     }
 
@@ -215,25 +215,25 @@ public class SGRTest {
 
     @Test
     void sgr39DefaultForegroundResetsBrightChannel() {
-        write(terminal, "\u001b[91m");    // bright fg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.R = 1
+        write(terminal, "\u001b[91m");    // bright fg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.r = 1
         assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT, terminal.currentForegroundColorMode);
-        assertEquals(1, terminal.sixteenColorBright.R);
+        assertEquals(1, terminal.sixteenColorBright.r);
         write(terminal, "\u001b[39m");    // default fg
         assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
             "SGR 39 must select the default-foreground mode");
-        assertEquals(TerminalColors.Color.WHITE, terminal.sixteenColorBright.R,
+        assertEquals(TerminalColors.Color.WHITE, terminal.sixteenColorBright.r,
             "SGR 39 must reset the bright foreground channel to white");
     }
 
     @Test
     void sgr49DefaultBackgroundResetsBrightChannel() {
-        write(terminal, "\u001b[101m");   // bright bg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.G = 1
+        write(terminal, "\u001b[101m");   // bright bg: SIXTEEN_COLOR_BRIGHT, sixteenColorBright.g = 1
         assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR_BRIGHT, terminal.currentBackgroundColorMode);
-        assertEquals(1, terminal.sixteenColorBright.G);
+        assertEquals(1, terminal.sixteenColorBright.g);
         write(terminal, "\u001b[49m");    // default bg
         assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode,
             "SGR 49 must select the default-background mode");
-        assertEquals(TerminalColors.Color.BLACK, terminal.sixteenColorBright.G,
+        assertEquals(TerminalColors.Color.BLACK, terminal.sixteenColorBright.g,
             "SGR 49 must reset the bright background channel to black");
     }
 

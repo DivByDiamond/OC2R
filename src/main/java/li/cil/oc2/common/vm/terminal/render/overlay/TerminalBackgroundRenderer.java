@@ -72,7 +72,7 @@ public class TerminalBackgroundRenderer {
         // Note: SGR 2 (faint/dim) is NOT applied to the background — xterm's getXtermBackground
         // (util.c) consumes ATR_FAINT only in the foreground path. The prior code dimmed the
         // SIXTEEN_COLOR background, a divergence; dropped here to match xterm.
-        return switch (color.Mode) {
+        return switch (color.mode) {
             case SIXTEEN_COLOR -> terminal.palette256[channel];
             case TWO_FIFTY_SIX_COLOR -> terminal.palette256[channel];
             case TRUE_COLOR -> color.toInt();
@@ -82,12 +82,12 @@ public class TerminalBackgroundRenderer {
             case DEFAULT_BACKGROUND -> TerminalColors.defaultBackgroundRgb();
             // DEFAULT_FOREGROUND must not track OSC 4 (xterm reserves it for OSC 10/11).
             case DEFAULT_FOREGROUND -> TerminalColors.defaultForegroundRgb(isBold && !dimBoldForBlink);
-            default -> throw new AssertionError(color.Mode);
+            default -> throw new AssertionError(color.mode);
         };
     }
 
     private static int backgroundChannel(final ColorData color, final boolean invertBackground) {
-        return invertBackground ? color.R : color.G;
+        return invertBackground ? color.r : color.g;
     }
 
     static void renderBackgroundRect(
