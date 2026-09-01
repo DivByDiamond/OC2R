@@ -32,7 +32,7 @@ public class CH8
             final int n = Math.min(args[0], Terminal.HEIGHT);
             for (int i = 0; i < n; i++) {
                 if (terminal.lastRowToDisplay
-                        < Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) {
+                        < Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT) {
                     terminal.bufferManager.incrementLastLineToDisplay();
                 }
                 terminal.bufferManager.shiftUpOne();

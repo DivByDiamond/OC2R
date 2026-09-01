@@ -20,7 +20,7 @@ class TerminalBufferScrolling {
             terminal.lastRowToDisplayMax =
                     Math.min(
                             terminal.lastRowToDisplayMax + 1,
-                            Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT);
+                            Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT);
         } else if (terminal.lastRowToDisplay == terminal.lastRowToDisplayMax) {
             return;
         }
@@ -53,7 +53,7 @@ class TerminalBufferScrolling {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shiftLines(terminal.scrollFirst + 1, terminal.scrollLast, -count);
         } else {
-            if (terminal.lastRowToDisplay == Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT
+            if (terminal.lastRowToDisplay == Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT
                     || terminal.scrollLast != Terminal.HEIGHT - 1
                     || terminal.scrollFirst != 0) {
                 shiftLines(
@@ -65,7 +65,7 @@ class TerminalBufferScrolling {
                                 : 1,
                         terminal.scrollLast != Terminal.HEIGHT - 1
                                 ? terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT
-                                : (Terminal.HEIGHT * terminal.SCROLL_BACK_COUNT) - 1,
+                                : (Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT) - 1,
                         -count);
             }
         }
