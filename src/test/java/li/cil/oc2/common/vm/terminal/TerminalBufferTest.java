@@ -9,6 +9,7 @@ import li.cil.oc2.common.vm.terminal.render.RendererModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static li.cil.oc2.common.vm.terminal.EscapeLiterals.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -26,14 +27,9 @@ public class TerminalBufferTest {
     private Terminal terminal;
     private TerminalBuffer buffer;
     private DummyRenderer renderer;
-    // Shared test literals: keep these as constants so the many CSI sequences and sample
-    // lines read as composable pieces (CSI = ESC + "[") and stay below PMD's
-    // AvoidDuplicateLiterals threshold.
-    private static final String ESC = "\u001b";
-    private static final String CSI = ESC + "[";
-    private static final String OSC = ESC + "]";
-    private static final String BEL = "\u0007";
-    private static final String ST = ESC + "\\";
+    // Reusable test literals: the escape bytes (ESC/CSI/OSC/BEL/ST) come from the shared
+    // EscapeLiterals (imported statically) so every terminal test names the same bytes; the
+    // sample lines and OSC-4 fixtures below stay here as they are specific to this suite.
     // A reusable OSC 4 set (entry 16 -> red, BEL-terminated) shared across the palette tests so
     // the rgb spec literal stays below PMD's AvoidDuplicateLiterals threshold.
     private static final String RED_RGB = "rgb:ff/00/00";

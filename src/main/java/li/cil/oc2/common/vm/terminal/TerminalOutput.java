@@ -9,6 +9,7 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.escapes.DECRC;
 import li.cil.oc2.common.vm.terminal.escapes.DECSC;
 import li.cil.oc2.common.vm.terminal.escapes.HTS;
+import li.cil.oc2.common.vm.terminal.escapes.StringSequenceHandler;
 import li.cil.oc2.common.vm.terminal.escapes.index.IND;
 import li.cil.oc2.common.vm.terminal.escapes.index.NEL;
 import li.cil.oc2.common.vm.terminal.escapes.index.RI;
@@ -17,7 +18,7 @@ import li.cil.oc2.common.vm.terminal.modes.impl.KeypadMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class TerminalOutput {
+class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine dispatch
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -25,6 +26,11 @@ class TerminalOutput {
 
     private final Terminal terminal;
     private final Utf8Decoder decoder = new Utf8Decoder();
+
+    // True between an ESC seen mid-string (OSC/DCS/APC) and the next byte, while we wait to find
+    // out whether it is '\' (completing ST) or the start of a fresh escape. Owned here, not in the
+    // string managers, so termination is uniform across all three (xterm's single sos_table).
+    private boolean stringEscapePending = false;
 
     TerminalOutput(final Terminal terminal, final ReentrantLock lock) {
         this.terminal = terminal;
@@ -77,13 +83,93 @@ class TerminalOutput {
             case CONTROL_SEQUENCE -> terminal.csiManager.handle(ch);
             case SHIFT_IN_CHARACTER_SET, SHIFT_OUT_CHARACTER_SET -> handleShiftInShiftOut(ch);
             case HASH -> handleHash(ch);
-            case DCS -> terminal.dcsManager.handle(ch);
-            case OSC -> terminal.oscManager.handle(ch);
-            case APC -> terminal.apcManager.handle(ch);
+            case DCS -> handleStringByte(ch, terminal.dcsManager, false);
+            case OSC -> handleStringByte(ch, terminal.oscManager, true);
+            case APC -> handleStringByte(ch, terminal.apcManager, false);
             default -> {
                 // Exhaustive over the known states; guards against future additions.
             }
         }
+    }
+
+    // Drives an ST-terminated string state (OSC/DCS/APC). Termination is owned here, uniformly for
+    // all three, mirroring xterm's single sos_table (VTPrsTbl.c): ESC arms a potential ST, '\'
+    // completes it, BEL ends OSC only, CAN/SUB abort. Content bytes (including '\' not preceded by
+    // ESC) go to the handler's accumulate. On ESC + another byte, xterm leaves esc_table and the
+    // result depends on that byte: '\' completes ST; BEL (CASE_BELL), CAN/SUB (CASE_CAN/CASE_SUB)
+    // are handled above; a fresh escape introducer ([, P, ], _...) or escape final drops the held
+    // string and begins a new sequence (the parsestate != esc_table check at charproc.c:3478 clears
+    // string_used). OC2R's pending branch mirrors the drop-and-begin for those bytes; for the C0
+    // controls xterm would instead execute-and-hold (CASE_BS/TAB/VMOT/CR/SO/SI run the control and
+    // keep the string in esc_table), OC2R aborts-and-redispatches — a stricter, griefer-safe
+    // divergence (a control interleaved into an OSC payload is malformed; dropping it can't be
+    // abused). Re-dispatch is via handleEscape, so e.g. ESC [ mid-OSC starts a CSI rather than
+    // buffering '[' as payload. (For a nested string start ESC P/] xterm's BeginString appends to
+    // the old payload instead of clearing — OC2R's abort-and-start-fresh is the saner divergence.)
+    private void handleStringByte(final char ch, final StringSequenceHandler handler, // NOPMD VT100 string-state byte dispatch; each branch is required
+                                  final boolean belTerminates) {
+        if (stringEscapePending) {
+            if (ch == '\\') {
+                // ST: ESC \ completes the string terminator.
+                stringEscapePending = false;
+                handler.terminate('\\');
+                terminal.state = State.NORMAL;
+            } else if (ch == '\007') {
+                // ESC BEL: xterm CASE_BELL. The ESC moved to esc_table with the string held; for
+                // OSC BEL terminates and processes the payload (charproc.c:3687); for DCS/APC it
+                // rings and keeps the string held in esc_table (charproc.c:3697) — so stay pending:
+                // the ESC is still unresolved, the next byte resolves it.
+                if (belTerminates) {
+                    stringEscapePending = false;
+                    handler.terminate('\007');
+                    terminal.state = State.NORMAL;
+                } else {
+                    terminal.hasPendingBell = true;
+                }
+            } else if (ch == '\030' || ch == '\032') {
+                // ESC CAN / ESC SUB: xterm CASE_CAN/CASE_SUB abort to ground. CAN/SUB are cancel
+                // bytes, not escape introducers, so abort directly — no re-dispatch, which would
+                // otherwise log a spurious "Invalid escape" warning for a legitimate abort byte.
+                stringEscapePending = false;
+                handler.abort();
+                terminal.state = State.NORMAL;
+            } else if (ch != '\033') {
+                // ESC + an escape introducer/final or a C0 control: drop the held string and
+                // re-dispatch the byte through handleEscape (so e.g. ESC [ mid-OSC starts a CSI,
+                // not a buffered '['). For escape introducers/finals this matches xterm's
+                // drop-and-begin; for C0 controls (BS/CR/LF/...) xterm would execute-and-hold —
+                // OC2R aborts instead (stricter, griefer-safe; see method doc). ESC ENQ hits the
+                // "Invalid escape" warn here — pathological, accepted.
+                stringEscapePending = false;
+                handler.abort();
+                handleEscape(ch);
+            }
+            // else ESC ESC: xterm re-enters esc_table with the string held (charproc.c CASE_ESC).
+            // Re-arm (stringEscapePending stays true) and keep waiting — the payload is processed
+            // only if '\' next follows, dropped otherwise. ESCs themselves do not accumulate.
+            return;
+        }
+        if (ch == '\033') {
+            stringEscapePending = true;
+            return;
+        }
+        if (ch == '\007') {
+            if (belTerminates) {
+                handler.terminate('\007');
+                terminal.state = State.NORMAL;
+            } else {
+                // BEL in a non-OSC string rings the bell (xterm CASE_BELL, non-OSC path) without
+                // terminating — DCS/APC continue.
+                terminal.hasPendingBell = true;
+            }
+            return;
+        }
+        if (ch == '\030' || ch == '\032') { // CAN / SUB: abort the string, return to ground.
+            handler.abort();
+            terminal.state = State.NORMAL;
+            return;
+        }
+        handler.accumulate(ch);
     }
 
     // The exact toggle-off bytes: ESC [ ? 7 7 7 7 l  (CSI ? 7777 l). Matched byte-for-byte while
@@ -197,14 +283,17 @@ class TerminalOutput {
             case '#' -> terminal.state = State.HASH;
             case 'P' -> {
                 terminal.dcsManager.reset();
+                stringEscapePending = false;
                 terminal.state = State.DCS;
             }
             case ']' -> {
                 terminal.oscManager.reset();
+                stringEscapePending = false;
                 terminal.state = State.OSC;
             }
             case '_' -> {
                 terminal.apcManager.reset();
+                stringEscapePending = false;
                 terminal.state = State.APC;
             }
             default -> handleSingleCharEscape(ch);
