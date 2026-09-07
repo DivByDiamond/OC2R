@@ -60,7 +60,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         return framebufferDevice != null ? framebufferDevice.getWidth() : WIDTH;
     }
 
-    /** @see #getWidth() */
+    /** See {@link #getWidth()}. */
     public int getHeight() {
         final SimpleFramebufferDevice framebufferDevice = device;
         return framebufferDevice != null ? framebufferDevice.getHeight() : HEIGHT;
@@ -114,6 +114,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     }
 
     @Override
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void dispose() {
         if (blobHandle != null) {
             BlobStorage.deleteAsync(blobHandle);
@@ -168,7 +169,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         if (channel.size() != required) {
             // GPU (or its resolution) changed since the last mount: the stored framebuffer
             // has the wrong size for the new mode, discard it and start with a fresh blob.
-            BlobStorage.deleteAsync(blobHandle);
+            BlobStorage.deleteAsync(blobHandle).join();
             blobHandle = BlobStorage.validateHandle(null);
             channel = BlobStorage.getOrOpenAsync(blobHandle).join();
         }

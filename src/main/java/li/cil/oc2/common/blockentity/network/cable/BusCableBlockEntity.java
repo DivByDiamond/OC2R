@@ -174,7 +174,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         for (final var side : Direction.values()) {
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
             final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state
-            neighborListeners[side.ordinal()] = listener;
+            neighborListeners[side.get3DDataValue()] = listener;
             serverLevel.registerCapabilityListener(getBlockPos().relative(side), listener);
         }
         scheduleLateLoad();

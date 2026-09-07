@@ -53,6 +53,8 @@ public final class TerminalDiff {
     private static final int PALETTE_SIZE = 256;
 
     /**
+     * Terminal snapshot transferred from server to client.
+     *
      * @param rows    absolute buffer row indices (alt-buffer: screen rows 0..23)
      * @param rowData serialized cell data, one array per entry of {@code rows}
      */
@@ -240,19 +242,41 @@ public final class TerminalDiff {
         if ((attr & ATTR_STYLE_EXPLICIT) != 0) buf.put(cell.style());
     }
 
-    /** Packs mode ordinal (3 bits) plus 8-bit R/G/B into a single varint-friendly value. */
+    /** Packs stable mode id (3 bits) plus 8-bit R/G/B into a single varint-friendly value. */
     private static int packColor(final ColorData color) {
-        return (color.mode.ordinal() & 0x7)
+        return (modeToId(color.mode) & 0x7)
                 | (color.r & 0xFF) << 3
                 | (color.g & 0xFF) << 11
                 | (color.b & 0xFF) << 19;
     }
 
     private static ColorData unpackColor(final int packed) {
-        final ColorMode[] modes = ColorMode.values();
-        final int ordinal = packed & 0x7;
-        final ColorMode mode = ordinal < modes.length ? modes[ordinal] : MODE_ORDINAL_FALLBACK;
+        final int id = packed & 0x7;
+        final ColorMode mode = idToMode(id);
         return new ColorData((packed >>> 3) & 0xFF, (packed >>> 11) & 0xFF, (packed >>> 19) & 0xFF, mode);
+    }
+
+    private static int modeToId(final ColorMode mode) {
+        return switch (mode) {
+            case SIXTEEN_COLOR -> 0;
+            case TWO_FIFTY_SIX_COLOR -> 1;
+            case TRUE_COLOR -> 2;
+            case SIXTEEN_COLOR_BRIGHT -> 3;
+            case DEFAULT_BACKGROUND -> 4;
+            case DEFAULT_FOREGROUND -> 5;
+        };
+    }
+
+    private static ColorMode idToMode(final int id) {
+        return switch (id) {
+            case 0 -> ColorMode.SIXTEEN_COLOR;
+            case 1 -> ColorMode.TWO_FIFTY_SIX_COLOR;
+            case 2 -> ColorMode.TRUE_COLOR;
+            case 3 -> ColorMode.SIXTEEN_COLOR_BRIGHT;
+            case 4 -> ColorMode.DEFAULT_BACKGROUND;
+            case 5 -> ColorMode.DEFAULT_FOREGROUND;
+            default -> MODE_ORDINAL_FALLBACK;
+        };
     }
 
     private static void putVarInt(final ByteBuffer buf, final int value) {

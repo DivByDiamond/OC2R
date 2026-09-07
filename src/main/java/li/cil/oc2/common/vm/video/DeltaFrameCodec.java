@@ -393,7 +393,13 @@ public final class DeltaFrameCodec {
     private Optional<byte[]> inflateExact(final ByteBuffer input, final int size)
             throws DataFormatException {
         inflater.reset();
-        inflater.setInput(input.array(), input.position(), input.remaining());
+        if (input.hasArray()) {
+            inflater.setInput(input.array(), input.arrayOffset() + input.position(), input.remaining());
+        } else {
+            final byte[] copy = new byte[input.remaining()];
+            input.duplicate().get(copy);
+            inflater.setInput(copy);
+        }
         final byte[] result = new byte[size];
         int written = 0;
         while (!inflater.finished()) {

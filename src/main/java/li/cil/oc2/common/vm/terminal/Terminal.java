@@ -363,6 +363,9 @@ public class Terminal {
     }
 
     /** Dirty state since the last consume: full-refresh request plus changed buffer rows. */
+    // Array component is intentional: transient internal diff record, rows is a fresh copy from
+    // BitSet.stream().toArray() consumed immediately; List would add allocation overhead on hot path.
+    @SuppressWarnings("ArrayRecordComponent")
     public record NetworkDirty(boolean fullRefresh, int[] rows) {}
 
     public NetworkDirty consumeNetworkDirty() {

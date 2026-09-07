@@ -80,7 +80,7 @@ final class BusElementManager {
      */
     void scheduleBusScan(final DeviceBusController.ScanReason reason) {
         if (reason == DeviceBusController.ScanReason.BUS_ERROR
-                && state.ordinal() < BusState.READY.ordinal()) {
+                && state != BusState.READY) {
             return;
         }
         scanDelay = 0;

@@ -17,6 +17,10 @@ public abstract class AbstractDeviceInfo<P, D extends Device> {
         return 0;
     }
 
+    // getClass() check is intentional: subclasses BlockDeviceInfo and ItemDeviceInfo are final
+    // with different semantics (ItemDeviceInfo carries extra energyConsumption not in equality);
+    // using instanceof would allow cross-type equality between unrelated info kinds.
+    @SuppressWarnings("EqualsGetClass")
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

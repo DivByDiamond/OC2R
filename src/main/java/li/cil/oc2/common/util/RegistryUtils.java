@@ -61,7 +61,7 @@ public abstract class RegistryUtils {
         ENTRIES.clear();
     }
 
-    public static <T> String key(final DeviceType registryEntry) {
+    public static String key(final DeviceType registryEntry) {
         return Objects.requireNonNull(registryEntry.getName()).toString();
     }
 

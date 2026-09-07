@@ -31,7 +31,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
         setNeedsLevelUnloadEvent();
     }
 
-    /** @return {@code true} if this block entity is the master (origin) of its multiblock. */
+    /** Returns {@code true} if this block entity is the master (origin) of its multiblock. */
     public boolean isOrigin() {
         return MonitorMultiblock.isOrigin(getBlockState());
     }
