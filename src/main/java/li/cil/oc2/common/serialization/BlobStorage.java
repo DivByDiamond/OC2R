@@ -54,7 +54,7 @@ public final class BlobStorage {
         try {
             debug = AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get();
         } catch (IllegalStateException ignored) {
-            // expected: config not yet initialized
+            LOGGER.trace("config not yet initialized", ignored);
         }
 
         if (debug) {

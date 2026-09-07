@@ -40,11 +40,10 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase>
     }
 
     @Override
-    @SuppressWarnings("EqualsGetClass") // abstract class with subclasses; getClass() ensures type equality, instanceof would allow cross-type equality
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SocketSessionDiscriminator<?> that = (SocketSessionDiscriminator<?>) o;
+        if (!(o instanceof SocketSessionDiscriminator<?> that)) return false;
+        if (!that.canEqual(this)) return false;
         return srcIpAddress == that.srcIpAddress
                 && srcPort == that.srcPort
                 && dstIpAddress == that.dstIpAddress
@@ -54,6 +53,10 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase>
     @Override
     public int hashCode() {
         return Objects.hash(getClass(), srcIpAddress, srcPort, dstIpAddress, dstPort);
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof SocketSessionDiscriminator;
     }
 
     protected abstract String protocolName();

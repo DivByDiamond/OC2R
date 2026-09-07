@@ -10,6 +10,11 @@ public class StreamSessionDiscriminator extends SocketSessionDiscriminator<Strea
     }
 
     @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof StreamSessionDiscriminator;
+    }
+
+    @Override
     protected String protocolName() {
         return "TCP";
     }

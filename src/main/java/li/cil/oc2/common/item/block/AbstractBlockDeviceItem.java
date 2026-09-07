@@ -12,8 +12,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractBlockDeviceItem extends ModItem {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public static final String DATA_TAG_NAME = "data";
 
     private final ResourceLocation defaultData;
@@ -41,7 +45,7 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
             try {
                 location = ResourceLocation.parse(registryName);
             } catch (final ResourceLocationException ignored) {
-            // expected: registry name may be invalid, skip
+                LOGGER.trace("Invalid registry name: {}", registryName, ignored);
             }
         }
 

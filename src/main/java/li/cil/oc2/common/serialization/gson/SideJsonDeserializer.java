@@ -6,16 +6,21 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import li.cil.oc2.api.util.Side;
 
-@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class SideJsonDeserializer implements JsonDeserializer<Side> {
     @Override
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts") // legacy ordinal vs name fallback is inherently nested
     public Side deserialize(
             final JsonElement json, final Type typeOfT, final JsonDeserializationContext context)
             throws JsonParseException {
         if (json.isJsonPrimitive()) {
             final JsonPrimitive jsonPrimitive = json.getAsJsonPrimitive();
             if (jsonPrimitive.isNumber()) {
-                return Side.values()[jsonPrimitive.getAsNumber().intValue()];
+                final int ordinal = jsonPrimitive.getAsNumber().intValue();
+                final Side[] constants = Side.class.getEnumConstants();
+                if (ordinal >= 0 && ordinal < constants.length) {
+                    return constants[ordinal];
+                }
+                throw new JsonParseException("Unknown Side ordinal: " + ordinal);
             }
         }
 

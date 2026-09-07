@@ -8,13 +8,12 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format
 public class ColorDataSerializer implements Serializer<ColorData> {
 
     public static int toInt(ColorData colorData) {
         var mode = ColorMode.SIXTEEN_COLOR;
         if (colorData.mode != null) mode = colorData.mode;
-        return (mode.ordinal() << 24) | (colorData.r << 16) | (colorData.g << 8) | colorData.b;
+        return (mode.getId() << 24) | (colorData.r << 16) | (colorData.g << 8) | colorData.b;
     }
 
     public static ColorData toColorData(int value) {
@@ -23,7 +22,7 @@ public class ColorDataSerializer implements Serializer<ColorData> {
         final int green = (value >> 8) & 0xFF;
         final int blue = value & 0xFF;
 
-        return new ColorData(red, green, blue, ColorMode.values()[mode]);
+        return new ColorData(red, green, blue, ColorMode.fromId(mode));
     }
 
     @Override

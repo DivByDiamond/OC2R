@@ -14,8 +14,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class FlashMemoryWithExternalDataItem extends ModItem {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public static final String FIRMWARE_TAG_NAME = "firmware";
 
     private final ResourceLocation defaultData;
@@ -40,7 +44,7 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
             try {
                 location = ResourceLocation.parse(registryName);
             } catch (final ResourceLocationException ignored) {
-            // expected: registry name may be invalid, skip
+                LOGGER.trace("Invalid registry name: {}", registryName, ignored);
             }
         }
 

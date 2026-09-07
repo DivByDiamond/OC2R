@@ -10,32 +10,67 @@ import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import net.minecraft.nbt.*;
 
-@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class NBTReferenceArraySerializers {
     public static final class EnumArraySerializer implements NBTArraySerializer {
         @Override
         public Tag serialize(final Object value) {
             final Enum<?>[] data = (Enum<?>[]) value;
-            final int[] convertedData = new int[data.length];
-            for (int i = 0; i < data.length; i++) {
-                convertedData[i] = data[i].ordinal();
+            final ListTag list = new ListTag();
+            for (final Enum<?> e : data) {
+                if (e != null) {
+                    list.add(StringTag.valueOf(e.name()));
+                } else {
+                    list.add(StringTag.valueOf(""));
+                }
             }
-            return new IntArrayTag(convertedData);
+            return list;
         }
 
+        @SuppressWarnings({"unchecked", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.EmptyCatchBlock"}) // legacy ordinal + name fallback is inherently branching
         @Override
         public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
             final Class<?> componentType = type.getComponentType();
             final Object[] enumConstants = componentType.getEnumConstants();
 
             Enum<?>[] data = (Enum<?>[]) into;
-            if (tag instanceof IntArrayTag) {
-                final int[] serializedData = ((IntArrayTag) tag).getAsIntArray();
+            if (tag instanceof final IntArrayTag intArrayTag) {
+                // legacy ordinal storage
+                final int[] serializedData = intArrayTag.getAsIntArray();
                 if (data == null || data.length != serializedData.length) {
                     data = (Enum<?>[]) Array.newInstance(componentType, serializedData.length);
                 }
                 for (int i = 0; i < serializedData.length; i++) {
-                    data[i] = (Enum<?>) enumConstants[serializedData[i]];
+                    final int ordinal = serializedData[i];
+                    if (ordinal >= 0 && ordinal < enumConstants.length) {
+                        data[i] = (Enum<?>) enumConstants[ordinal];
+                    }
+                }
+            } else if (tag instanceof final ListTag listTag) {
+                if (!listTag.isEmpty() && listTag.getElementType() != NBTTagIds.TAG_STRING) {
+                    return data;
+                }
+                if (data == null || data.length != listTag.size()) {
+                    data = (Enum<?>[]) Array.newInstance(componentType, listTag.size());
+                }
+                for (int i = 0; i < listTag.size(); i++) {
+                    final String name = listTag.getString(i);
+                    if (name.isEmpty()) {
+                        data[i] = null;
+                        continue;
+                    }
+                    try {
+                        data[i] = Enum.valueOf((Class<Enum>) componentType, name);
+                    } catch (final IllegalArgumentException ignored) {
+                        // fallback: try legacy ordinal stored as string
+                        try {
+                            final int ordinal = Integer.parseInt(name);
+                            if (ordinal >= 0 && ordinal < enumConstants.length) {
+                                data[i] = (Enum<?>) enumConstants[ordinal];
+                            }
+                        } catch (final NumberFormatException ignored2) {
+                            // leave as null
+                        }
+                    }
                 }
             }
             return data;

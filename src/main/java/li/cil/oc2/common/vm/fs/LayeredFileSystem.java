@@ -8,8 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import li.cil.sedna.fs.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class LayeredFileSystem implements FileSystem {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private final List<FileSystem> fileSystems = new ArrayList<>();
 
     public void addLayer(final FileSystem fileSystem) {
@@ -163,7 +167,7 @@ public final class LayeredFileSystem implements FileSystem {
                         }
                     }
                 } catch (final IOException ignored) {
-            // expected: layer not accessible, skip
+                    LOGGER.trace("Layer not accessible, skipping", ignored);
                 }
             }
         }

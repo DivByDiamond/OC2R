@@ -11,28 +11,35 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class NBTUtils {
     public static <T extends Enum<T>> void putEnum(
             final CompoundTag compound, final String key, @Nullable final Enum<T> value) {
         if (value != null) {
-            compound.putInt(key, value.ordinal());
+            compound.putString(key, value.name());
         }
     }
 
     @Nullable
     public static <T extends Enum<T>> T getEnum(
             final CompoundTag compound, final String key, final Class<T> enumType) {
-        if (!compound.contains(key, NBTTagIds.TAG_INT)) {
-            return null;
+        if (compound.contains(key, net.minecraft.nbt.Tag.TAG_STRING)) {
+            final String name = compound.getString(key);
+            try {
+                return Enum.valueOf(enumType, name);
+            } catch (final IllegalArgumentException ignored) {
+                // fall back to legacy int ordinal
+            }
         }
 
-        final int ordinal = compound.getInt(key);
-        try {
-            return enumType.getEnumConstants()[ordinal];
-        } catch (final IndexOutOfBoundsException ignored) {
-            return null;
+        if (compound.contains(key, NBTTagIds.TAG_INT)) {
+            final int ordinal = compound.getInt(key);
+            final T[] constants = enumType.getEnumConstants();
+            if (ordinal >= 0 && ordinal < constants.length) {
+                return constants[ordinal];
+            }
         }
+
+        return null;
     }
 
     public static CompoundTag getChildTag(@Nullable final ItemStack stack, final String... path) {

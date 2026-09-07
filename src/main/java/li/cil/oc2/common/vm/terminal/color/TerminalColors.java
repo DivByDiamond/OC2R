@@ -128,17 +128,36 @@ public final class TerminalColors {
 
     public enum ColorMode {
         @SerializedName("0")
-        SIXTEEN_COLOR,
+        SIXTEEN_COLOR(0),
         @SerializedName("1")
-        TWO_FIFTY_SIX_COLOR,
+        TWO_FIFTY_SIX_COLOR(1),
         @SerializedName("2")
-        TRUE_COLOR,
+        TRUE_COLOR(2),
         @SerializedName("3")
-        SIXTEEN_COLOR_BRIGHT,
+        SIXTEEN_COLOR_BRIGHT(3),
         @SerializedName("4")
-        DEFAULT_BACKGROUND,
+        DEFAULT_BACKGROUND(4),
         @SerializedName("5")
-        DEFAULT_FOREGROUND,
+        DEFAULT_FOREGROUND(5);
+
+        private final int id;
+
+        ColorMode(final int id) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public static ColorMode fromId(final int id) {
+            for (final ColorMode mode : values()) {
+                if (mode.id == id) {
+                    return mode;
+                }
+            }
+            return SIXTEEN_COLOR;
+        }
     }
 
     public static final class CursorMode {

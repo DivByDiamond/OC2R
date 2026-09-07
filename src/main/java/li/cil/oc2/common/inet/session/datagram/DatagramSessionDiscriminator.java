@@ -12,6 +12,11 @@ public final class DatagramSessionDiscriminator extends SocketSessionDiscriminat
     }
 
     @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof DatagramSessionDiscriminator;
+    }
+
+    @Override
     protected String protocolName() {
         return "UDP";
     }
