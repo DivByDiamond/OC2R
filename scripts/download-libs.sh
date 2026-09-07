@@ -75,7 +75,7 @@ EOF
 }
 
 # Versions must match build.gradle / gradle.properties
-CERES_VERSION="0.0.6"
+CERES_VERSION="0.0.7"
 SEDNA_VERSION="3.1.0"
 # Custom build: minux 0.0.71 + kernel 6.12.104 with CONFIG_9P_FS=y (from minux
 # master, commit a49110a1). Hosted on the OC2R "bundled-deps" release until a

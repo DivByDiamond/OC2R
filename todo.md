@@ -1409,3 +1409,18 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 - Linux fdisk/swap (#47/#268), console keymaps (#147) — гостевой Linux-образ, не Java-код мода.
 - Block device data unification (#127, BREAKING) — датапак-формат образов
   (`data/oc2/block_devices/{hdd,floppy,flash}/`), требует отдельного решения по совместимости.
+
+### 41.4 Обновления зависимостей (проверено 2026-09-07)
+
+- [x] **ceres `0.0.6` → `0.0.7`** (2026-09-02): sanity-check на размер массивов при десериализации
+  (>64MB отклоняется). Безопасный апдейт — применён: `gradle.properties`, `download-libs.sh`, `libs/`.
+- [ ] **sedna `3.1.0` → `4.0.1`** (2026-09-04): **мажор с breaking changes, пока не обновлён.**
+  Релиз-ноуты: Board rework (device mapping → новый `DeviceBus`), `CPUDebugInterface` изменён
+  (поддержка разных архитектур, GDB для Z80), geometry для virtio-blk.
+  **Ошибка при попытке апдейта** (проверено `./gradlew compileJava` c `4.0.1`):
+  `GlobalMemoryRangeAllocator.java:42,49,59,70,88` — `Board` больше не имеет
+  `addDevice`/`removeDevice`/`getAllocationStrategy`/`addDevice(device)` — логика ушла в
+  `DeviceBus` (`src/main/java/li/cil/sedna/api/DeviceBus.java` — новый файл в 4.0).
+  Нужна миграция `GlobalMemoryRangeAllocator` + `GlobalVMContext` на `DeviceBus` API.
+  План: прочитать дифф `Board.java`/`DeviceBus.java` в sedna 4.0, переписать аллокатор,
+  прогнать `compileJava` + `build` + gametest.
