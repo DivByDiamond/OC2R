@@ -40,6 +40,7 @@ public abstract class SocketSessionDiscriminator<S extends SessionBase>
     }
 
     @Override
+    @SuppressWarnings("EqualsGetClass") // abstract class with subclasses; getClass() ensures type equality, instanceof would allow cross-type equality
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

@@ -478,9 +478,9 @@ tasks.withType<JavaCompile>().configureEach {
                 "ArrayRecordComponent", "HidingField", "ReferenceEquality",
                 "ClassCanBeStatic", "MixedMutabilityReturnType", "IntLiteralCast",
                 "MutablePublicArray", "UnnecessaryAsync", "PatternMatchingInstanceof",
-                "EmptyCatch", "JdkObsolete", "VariableNameSameAsType",
-                "InvalidParam", "InconsistentCapitalization", "EqualsGetClass",
-                "JavaDurationGetSecondsToToSeconds", "EnumOrdinal",
+                "JdkObsolete", "VariableNameSameAsType",
+                "InvalidParam", "InconsistentCapitalization",
+                "JavaDurationGetSecondsToToSeconds",
             )
             // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4), generated code,
             // and gametest infrastructure (tested via runGameTestServer, not ErrorProne-linted),

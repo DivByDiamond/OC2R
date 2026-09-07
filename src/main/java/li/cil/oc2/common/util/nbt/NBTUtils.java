@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class NBTUtils {
     public static <T extends Enum<T>> void putEnum(
             final CompoundTag compound, final String key, @Nullable final Enum<T> value) {

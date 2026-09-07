@@ -10,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 
+@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class ComputerBlockEntityPersistence {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
     private static final String DEVICES_TAG_NAME = "devices";

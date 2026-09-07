@@ -8,6 +8,7 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format
 public class ColorDataSerializer implements Serializer<ColorData> {
 
     public static int toInt(ColorData colorData) {

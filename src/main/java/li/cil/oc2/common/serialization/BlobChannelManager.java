@@ -66,6 +66,7 @@ final class BlobChannelManager {
         try {
             debug = AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get();
         } catch (IllegalStateException ignored) {
+            // expected: config not yet initialized
         }
 
         final boolean finalDebug = debug;
@@ -87,11 +88,13 @@ final class BlobChannelManager {
                 "Close blob " + handle);
     }
 
+    @SuppressWarnings("EmptyCatch") // config not yet initialized is expected during early startup
     static CompletableFuture<Void> deleteAsync(final UUID handle) {
         boolean debug = false;
         try {
             debug = AsyncConfig.SERVER != null && AsyncConfig.SERVER.enableSuperDebug.get();
         } catch (IllegalStateException ignored) {
+            // expected: config not yet initialized
         }
 
         final boolean finalDebug = debug;

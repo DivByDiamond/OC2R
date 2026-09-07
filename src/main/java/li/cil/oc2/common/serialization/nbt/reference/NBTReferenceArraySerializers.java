@@ -10,6 +10,7 @@ import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import net.minecraft.nbt.*;
 
+@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class NBTReferenceArraySerializers {
     public static final class EnumArraySerializer implements NBTArraySerializer {
         @Override

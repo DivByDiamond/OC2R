@@ -163,6 +163,7 @@ public final class LayeredFileSystem implements FileSystem {
                         }
                     }
                 } catch (final IOException ignored) {
+            // expected: layer not accessible, skip
                 }
             }
         }

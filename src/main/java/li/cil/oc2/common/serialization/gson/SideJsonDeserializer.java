@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import li.cil.oc2.api.util.Side;
 
+@SuppressWarnings("EnumOrdinal") // NBT persistence: ordinal is stable wire format for compact storage; enums are not reordered
 public final class SideJsonDeserializer implements JsonDeserializer<Side> {
     @Override
     public Side deserialize(

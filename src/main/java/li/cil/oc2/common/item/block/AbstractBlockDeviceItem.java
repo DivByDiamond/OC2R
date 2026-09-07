@@ -41,6 +41,7 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
             try {
                 location = ResourceLocation.parse(registryName);
             } catch (final ResourceLocationException ignored) {
+            // expected: registry name may be invalid, skip
             }
         }
 
