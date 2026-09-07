@@ -2,11 +2,11 @@
 
 package li.cil.oc2.gametest;
 
+import static li.cil.oc2.gametest.TestSupport.assertNotNull;
+
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-
-import static li.cil.oc2.gametest.TestSupport.assertNotNull;
 
 public final class RegistrationTests {
     @GameTest(template = TestSupport.TEMPLATE)

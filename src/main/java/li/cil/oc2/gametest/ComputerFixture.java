@@ -2,6 +2,12 @@
 
 package li.cil.oc2.gametest;
 
+import static li.cil.oc2.gametest.TestSupport.COMPUTER_POS;
+import static li.cil.oc2.gametest.TestSupport.fakePlayer;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
@@ -20,16 +26,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 
-import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-
-import static li.cil.oc2.gametest.TestSupport.COMPUTER_POS;
-import static li.cil.oc2.gametest.TestSupport.fakePlayer;
-
 public final class ComputerFixture {
     private final GameTestHelper helper;
-    private final BlockPos pos;
+    private final BlockPos position;
 
     // --------------------------------------------------------------------- //
 
@@ -41,13 +40,13 @@ public final class ComputerFixture {
         return place(helper, player, COMPUTER_POS);
     }
 
-    public static ComputerFixture place(final GameTestHelper helper, final Player player, final BlockPos pos) {
-        TestSupport.place(helper, player, new ItemStack(Items.COMPUTER.get()), pos);
-        return new ComputerFixture(helper, pos);
+    public static ComputerFixture place(final GameTestHelper helper, final Player player, final BlockPos position) {
+        TestSupport.place(helper, player, new ItemStack(Items.COMPUTER.get()), position);
+        return new ComputerFixture(helper, position);
     }
 
-    public static ComputerFixture at(final GameTestHelper helper, final BlockPos pos) {
-        return new ComputerFixture(helper, pos);
+    public static ComputerFixture at(final GameTestHelper helper, final BlockPos position) {
+        return new ComputerFixture(helper, position);
     }
 
     public static ComputerFixture at(final GameTestHelper helper) {
@@ -56,12 +55,12 @@ public final class ComputerFixture {
 
     // --------------------------------------------------------------------- //
 
-    public BlockPos pos() {
-        return pos;
+    public BlockPos position() {
+        return position;
     }
 
     public ComputerBlockEntity blockEntity() {
-        return helper.getBlockEntity(pos);
+        return helper.getBlockEntity(position);
     }
 
     public VirtualMachine virtualMachine() {
@@ -141,12 +140,12 @@ public final class ComputerFixture {
     @Nullable
     public Object networkInterface(final Direction side) {
         return helper.getLevel().getCapability(
-            Capabilities.NetworkInterface.BLOCK, helper.absolutePos(pos), side);
+            Capabilities.NetworkInterface.BLOCK, helper.absolutePos(position), side);
     }
 
     public long energy() {
         final var storage = helper.getLevel().getCapability(
-            Capabilities.EnergyStorage.BLOCK, helper.absolutePos(pos), null);
+            Capabilities.EnergyStorage.BLOCK, helper.absolutePos(position), null);
         if (storage == null) {
             throw new GameTestAssertException("computer exposes no energy storage capability");
         }
@@ -169,6 +168,7 @@ public final class ComputerFixture {
 
     // --------------------------------------------------------------------- //
 
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // terminal is a plain mutable object without a dedicated lock
     public String screen() {
         final Terminal terminal = blockEntity().terminalManager.getTerminal();
         final int width = terminal.width;
@@ -229,8 +229,8 @@ public final class ComputerFixture {
 
     // --------------------------------------------------------------------- //
 
-    private ComputerFixture(final GameTestHelper helper, final BlockPos pos) {
+    private ComputerFixture(final GameTestHelper helper, final BlockPos position) {
         this.helper = helper;
-        this.pos = pos;
+        this.position = position;
     }
 }

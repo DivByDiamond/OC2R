@@ -11,4 +11,11 @@
     <Match>
         <Source name="~.*[/\\]generated[/\\].*" />
     </Match>
+    <!-- GameTest infrastructure (runs via runGameTestServer, not SpotBugs-linted). -->
+    <Match>
+        <Source name="~.*[/\\]gametest[/\\].*" />
+    </Match>
+    <Match>
+        <Class name="~li\.cil\.oc2\.gametest\..*" />
+    </Match>
 </FindBugsFilter>

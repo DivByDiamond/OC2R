@@ -2,15 +2,14 @@
 
 package li.cil.oc2.gametest;
 
+import static li.cil.oc2.gametest.TestSupport.*;
+
 import li.cil.oc2.common.item.Items;
-import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
-import static li.cil.oc2.gametest.TestSupport.*;
 
 public final class DeviceBusTests {
     @GameTest(template = TestSupport.TEMPLATE)

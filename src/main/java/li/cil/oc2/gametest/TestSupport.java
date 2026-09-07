@@ -2,6 +2,7 @@
 
 package li.cil.oc2.gametest;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,8 +15,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import javax.annotation.Nullable;
 
 public final class TestSupport {
     public static final String MOD_ID = "oc2";

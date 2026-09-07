@@ -403,7 +403,7 @@ checkstyle {
 
 tasks.withType<Checkstyle>().configureEach {
     isEnabled = true
-    exclude("**/jcodec/**", "**/generated/**")
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
 }
 
 pmd {
@@ -415,7 +415,7 @@ pmd {
 
 tasks.withType<Pmd>().configureEach {
     isEnabled = true
-    exclude("**/jcodec/**", "**/generated/**")
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
 }
 
 /* ── Static analysis: SpotBugs (§169) ─────────────────────────────────────── */
@@ -472,9 +472,10 @@ tasks.withType<JavaCompile>().configureEach {
             )
             // Noisy checks disabled: mixin/callback magic + intent (todo.md §39 Ступень C)
             disable("UnusedMethod", "StringSplitter", "EffectivelyPrivate")
-            // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4) and generated code,
+            // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4), generated code,
+            // and gametest infrastructure (tested via runGameTestServer, not ErrorProne-linted),
             // consistent with checkstyle/pmd/spotbugs excludes.
-            excludedPaths.set(".*[/\\\\](jcodec|generated)[/\\\\].*")
+            excludedPaths.set(".*[/\\\\](jcodec|generated|gametest)[/\\\\].*")
         }
     }
     if (enableErrorProne) {

@@ -2,11 +2,14 @@
 
 package li.cil.oc2.gametest;
 
+import static li.cil.oc2.gametest.TestSupport.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import li.cil.oc2.api.API;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -17,11 +20,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.Blocks;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static li.cil.oc2.gametest.TestSupport.*;
 
 public final class RecipeTests {
     private static final BlockPos TABLE = new BlockPos(1, WORK_Y, 1);
@@ -132,6 +130,7 @@ public final class RecipeTests {
         assertEquals(helper, id + " result count", expected.getCount(), result.getCount());
     }
 
+    @SuppressWarnings("PMD.CognitiveComplexity") // grid layout logic is straightforward branching
     private static List<ItemStack> gridInputs(final GameTestHelper helper, final String id, final CraftingRecipe recipe) {
         final List<ItemStack> inputs = new ArrayList<>(GRID_WIDTH * GRID_HEIGHT);
         for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
