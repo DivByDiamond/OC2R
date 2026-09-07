@@ -5,7 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import li.cil.oc2.common.Main;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
+/**
+ * §36 M5: static initializers build a {@link FontAtlas} (registers a client texture) and
+ * {@link UnicodeFontRenderer}s (rasterize glyphs) — safe today only because every caller is
+ * itself client-only. Annotated so a future common-code import trips a dedicated-server class-
+ * loading error instead of crashing inside {@code Minecraft.getInstance()}.
+ */
+@OnlyIn(Dist.CLIENT)
 public class FontHandling {
     public static final FontAtlas FontAtlas = new FontAtlas(1024, 1024, "font_atlas");
     // Regular

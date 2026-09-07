@@ -5,6 +5,40 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Added
+
+- **Terminal**: per-instance color palette — OSC 4 (query/set an indexed color) and OSC 104 (reset one or all indexed colors to default) are implemented; "computed dim" derives SGR 2 (dim) from the palette instead of a fixed table (#31)
+- **Terminal**: CSI cursor-positioning coverage completed — CBT/CHT (backward/forward tabulation), CNL/CPL (cursor down/up + CR), VPR/HPA/HPR (vertical/horizontal position, absolute/relative), RCP and CSI ?u (XTRESTORE, save/restore private mode state), REP (repeat preceding char) (#24)
+- **Terminal**: `XT_RAW_PASSTHROUGH` mode (CSI ?7777h/l) — an in-band byte-capture debugger that renders every received byte as a visible glyph without interpreting it, for diagnosing what a guest program actually sends
+- CI: `lintRatchet` task (count-based ratchet for Checkstyle/PMD, baseline 0) and SpotBugs baseline file, so lint regressions fail the build going forward
+
+### Changed
+
+- **Terminal**: OSC/DCS/APC string-sequence termination (ST, BEL, CAN/SUB abort, `ESC` followed by a non-`\`) is now handled uniformly by a single `TerminalOutput.handleStringByte` state machine instead of divergent per-manager logic, mirroring xterm's dispatch and closing a stuck-DCS/APC griefer vector
+- **Terminal**: cursor save/restore (DECSC/DECRC, SCOSC/SCORC, `SAVE_CURSOR`/`SAVE_CLEAR_AND_SWITCH`) unified into a single `SavedCursor` helper — SCORC and DECRC can no longer silently diverge, and the pending-autowrap flag is now correctly saved and restored
+- **Terminal**: `Terminal.SCROLL_BACK_COUNT` is `static final` instead of a mutable public field, removing a source of buffer/index mismatches
+- Dead code removed and visibility tightened across the terminal module (unused `SessionOperator`/`ColorUtils`/`RunnableUtils`, unused `TerminalIO.putOutput(byte)`, `TerminalBuffer.shiftUp/shiftDown(int)`, `Utf8Decoder.hasActiveSequence()`, unused `Glyph` metrics fields; several render/mode methods made private)
+- Video encoding moved off the server thread onto an async last-frame-wins encoder; internet tick, frame buffers and the VXLAN send path optimized (idle-skip, pooling, caching, report-once warnings)
+- Block entity sync consolidated onto a single channel, dropping duplicate payload messages
+- Linting is stricter by default: Checkstyle/PMD/SpotBugs now fail the build instead of only reporting, and Error Prone runs on by default with a curated set of checks promoted to errors
+- Sedna updated to 3.1.0 (patched minux with working 9p support) (#29)
+
+### Fixed
+
+- **Terminal**: xterm-256 color cube used `0xdf` instead of `0xd7` for the 4th cube level — a typo that shifted several palette colors (#30)
+- **Terminal**: `DSR` (`CSI n`) with no parameter now replies with a status report (`\033[0n`) instead of hanging — ECMA-48 treats the omitted default as `Ps=5`
+- **Terminal**: CSI cursor-move argument saturation (`Integer.MAX_VALUE`) could overflow when added to the current position; counts are now clamped before the add (#27)
+- **Terminal**: `REP` (repeat preceding character) with a huge count could freeze the VM worker under the IO lock; clamped to one screen's worth of repeats
+- **Terminal**: `HPA` moved the cursor under DECOM origin mode instead of keeping the row fixed
+- **Terminal**: `DECRC` restored a saved cursor column beyond the current width after a `DECCOLM` shrink, causing a false line wrap on the next character; restore now clamps like every other cursor-move path
+- **Terminal**: `ESC )` (designate G1 charset) was writing into G0 instead of G1, making the G1 slot unreachable — both designators now route to their own charset field
+- **Terminal**: a truncated true-color/256-color SGR sequence (e.g. `38;2;1`, missing RGB components) leaked its leftover byte into being applied as an unrelated style attribute (e.g. bold); the whole incomplete color spec is now discarded instead
+- **Terminal**: the per-row dirty bitmask could silently wrap (`1 << dirtyLine` on a 32-bit int) when writing far back into scrollback, flipping an unrelated bit instead of the row that changed; out-of-range rows now force a full redraw instead
+- **Terminal**: `FontHandling`/`UnicodeFontRenderer` are now annotated `@OnlyIn(CLIENT)`, so an accidental import from common code fails fast at class-load instead of risking a dedicated-server crash inside `Minecraft.getInstance()`
+- Internet card MAC address is now derived from a stable per-card UUID instead of being read from NBT (also closes a spoofing/collision risk)
+- Rate limits added for PCM/keyboard/framebuffer network messages; ICMP echo handling made non-blocking
+- VXLAN manager could throw after shutdown in some races; default host settings sanitized
+
 ## [0.1.1-beta.2] — 2026-08-24
 
 ### Added

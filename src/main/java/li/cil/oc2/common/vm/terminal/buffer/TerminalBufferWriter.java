@@ -95,7 +95,22 @@ public class TerminalBufferWriter {
         final int dirtyLine = altBuffer
                 ? y
                 : Terminal.HEIGHT + terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay;
-        terminal.markDirty(1 << dirtyLine);
+        markDirtyLine(terminal, dirtyLine);
+    }
+
+    /**
+     * Sets the dirty bit for a single screen row, addressed by {@code dirtyLine} in
+     * {@code [0, HEIGHT-1]}. The dirty mask is a 32-bit {@code int}, but {@code dirtyLine} can
+     * exceed that range while the view is scrolled back into scrollback (§36 M3): the write
+     * lands off-screen, {@code 1 << dirtyLine} would silently wrap modulo 32 and flip an
+     * unrelated bit, so a row we can't address in the mask instead forces a full redraw.
+     */
+    static void markDirtyLine(final Terminal terminal, final int dirtyLine) {
+        if (dirtyLine >= 0 && dirtyLine < Terminal.HEIGHT) {
+            terminal.markDirty(1 << dirtyLine);
+        } else {
+            terminal.markAllDirty();
+        }
     }
 
     public static int getDirtyRow(final Terminal terminal, final int y) {

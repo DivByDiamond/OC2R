@@ -122,6 +122,27 @@ public class SGRTest {
             "trailing 1 must still apply bold");
     }
 
+    @Test
+    void sgrTruncatedTrueColorDoesNotMisapplyLeftoverAsStyle() {
+        // §36 M2: `38;2;1` is a truncated true-color spec (needs 3 more args after the mode
+        // byte, only 1 given). The leftover `1` belongs to the incomplete color spec, not to a
+        // fresh top-level SGR code — it must NOT be re-read as SGR 1 (bold).
+        write(terminal, "[38;2;1m");
+        assertEquals(0, terminal.style & Terminal.STYLE_BOLD_MASK,
+            "leftover byte from a truncated true-color spec must not apply as bold");
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode,
+            "truncated true-color spec must not change the foreground color mode");
+    }
+
+    @Test
+    void sgrTruncated256ColorBackgroundDoesNotMisapplyLeftoverArgs() {
+        // `48;2;10;20` is truncated (2 of 3 RGB components); the leftover `10;20` must not be
+        // re-read as independent SGR codes.
+        write(terminal, "[48;2;10;20m");
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode,
+            "truncated true-color background spec must not change the background color mode");
+    }
+
     // --- SGR extended color: out-of-range components are clamped, not wrapped/OOB ---
 
     @Test

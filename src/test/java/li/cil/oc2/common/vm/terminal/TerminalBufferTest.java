@@ -968,6 +968,25 @@ public class TerminalBufferTest {
         assertEquals('A', charAt(1, 0), "with IRM off, writes overwrite in place");
     }
 
+    // --- ESC ( / ESC ) charset designation must route to G0 / G1 respectively (§36 M1) ---
+
+    @Test
+    void escLeftParenDesignatesG0Only() {
+        write(terminal, ESC + "(0"); // ESC ( 0: designate DEC Special Graphics into G0
+        assertEquals(TerminalColors.DrawingMode.SPECIAL_GRAPHICS, terminal.drawingModeG0);
+        assertEquals(TerminalColors.DrawingMode.ASCII, terminal.drawingModeG1,
+            "ESC ( must not touch G1");
+    }
+
+    @Test
+    void escRightParenDesignatesG1Only() {
+        // Before the M1 fix, ESC ) always wrote to drawingModeG0 too, making G1 unreachable.
+        write(terminal, ESC + ")0"); // ESC ) 0: designate DEC Special Graphics into G1
+        assertEquals(TerminalColors.DrawingMode.SPECIAL_GRAPHICS, terminal.drawingModeG1);
+        assertEquals(TerminalColors.DrawingMode.ASCII, terminal.drawingModeG0,
+            "ESC ) must not touch G0");
+    }
+
     // --- Char ops while scrolled back must mark the rendered screen row (getDirtyRow) ---
 
     @Test
@@ -1578,6 +1597,24 @@ public class TerminalBufferTest {
         }
         assertEquals(expected, renderer.dirtyMask.get() & 0xFF,
             "Margin scroll after scrollback growth must mark the margin rows, not stale buffer rows");
+    }
+
+    @Test
+    void charWriteFarIntoScrollbackForcesFullRefreshInsteadOfWrongBit() {
+        // §36 M3: dirtyLine = y + (lastRowToDisplayMax - lastRowToDisplay) can exceed 31 once the
+        // view is scrolled far enough back into scrollback. The dirty mask is a 32-bit int, so
+        // `1 << dirtyLine` used to silently wrap modulo 32 and flip an unrelated bit instead of
+        // the row actually written to. Fill scrollback to the cap, then scroll the view back far
+        // enough that dirtyLine for the last row overflows 31.
+        writeMarkers();
+        for (int i = 0; i < 12; i++) buffer.decrementLastLineToDisplay();
+        final int scrollBack = terminal.lastRowToDisplayMax - terminal.lastRowToDisplay;
+        assertTrue(scrollBack + Terminal.HEIGHT - 1 >= 32,
+            "precondition: dirtyLine for the last row must overflow 31 (scrollBack=" + scrollBack + ")");
+        resetDirty();
+        assertDoesNotThrow(() -> write(terminal, CSI + Terminal.HEIGHT + ";1HQ"));
+        assertTrue(terminal.consumeNetworkDirty().fullRefresh(),
+            "an out-of-range dirtyLine must force a full refresh instead of flipping the wrong bit");
     }
 
     @Test

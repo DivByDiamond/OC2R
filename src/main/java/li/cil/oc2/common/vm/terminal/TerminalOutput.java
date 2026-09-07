@@ -81,7 +81,8 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
             case NORMAL -> handleNormal((byte) ch);
             case ESCAPE -> handleEscape(ch);
             case CONTROL_SEQUENCE -> terminal.csiManager.handle(ch);
-            case SHIFT_IN_CHARACTER_SET, SHIFT_OUT_CHARACTER_SET -> handleShiftInShiftOut(ch);
+            case SHIFT_IN_CHARACTER_SET -> handleCharsetDesignate(ch, true);
+            case SHIFT_OUT_CHARACTER_SET -> handleCharsetDesignate(ch, false);
             case HASH -> handleHash(ch);
             case DCS -> handleStringByte(ch, terminal.dcsManager, false);
             case OSC -> handleStringByte(ch, terminal.oscManager, true);
@@ -316,17 +317,25 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
         }
     }
 
-    private void handleShiftInShiftOut(final char ch) {
+    /**
+     * ESC ( Ps designates G0, ESC ) Ps designates G1 (VT100 §4.7.1). Both share this dispatch;
+     * {@code designateG0} picks which of {@link Terminal#drawingModeG0}/{@code drawingModeG1} the
+     * designated charset is written to, so {@code SI}/{@code SO} (\x0F/\x0E) can later select
+     * between them via {@link Terminal#useG0}.
+     */
+    private void handleCharsetDesignate(final char ch, final boolean designateG0) {
         terminal.state = State.NORMAL;
-        switch (ch) {
-            case 'A' -> {}
-            case 'B' -> terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
-            case '0' ->
-                    terminal.drawingModeG0 =
-                            TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
-            case '1' -> {}
-            case '2' -> {}
-            default -> {}
+        final int mode = switch (ch) {
+            case 'B' -> TerminalColors.DrawingMode.ASCII;
+            case '0' -> TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
+            case 'A', '1', '2' -> -1; // UK / alternate ROM: not implemented, no-op
+            default -> -1;
+        };
+        if (mode == -1) return;
+        if (designateG0) {
+            terminal.drawingModeG0 = mode;
+        } else {
+            terminal.drawingModeG1 = mode;
         }
     }
 

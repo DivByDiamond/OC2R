@@ -29,11 +29,7 @@ public class SGR extends CSISequenceHandler {
                     applyExtendedColor(terminal, code, result);
                     i += 1 + result.consumed();
                 } else {
-                    /* Malformed: skip the selector AND the following mode byte. The bytes after
-                       38/48 are arguments to that extended-color group, not independent SGR
-                       codes — re-reading them as SGR 5/2/7 would turn malformed color data into
-                       a style change. ECMA-48 leaves this recovery implementation-defined. */
-                    i += (i + 1 < count) ? 2 : 1;
+                    i = skipMalformedExtendedColor(args, i, count);
                 }
                 continue;
             }
@@ -41,6 +37,32 @@ public class SGR extends CSISequenceHandler {
             SGRStyleDispatch.apply(terminal, code);
             i++;
         }
+    }
+
+    /**
+     * Recovery for a malformed 38/48 extended-color group at {@code args[selectorIndex]} — two
+     * distinct cases:
+     * <ul>
+     *   <li>the mode byte isn't a recognized selector (not 5 or 2): the malformed group is
+     *       exactly {@code [selector, mode byte]}; skip just those two and keep reading the rest
+     *       of the argument list as independent top-level SGR codes (e.g. {@code 38;7;1} — 7
+     *       isn't a color mode, so 1 still applies as bold).
+     *   <li>the mode byte IS 5 or 2, but this CSI ran out of arguments before supplying the full
+     *       spec (5 needs 1 more, 2 needs 3 more): every remaining argument is part of that
+     *       truncated attempt — there's nothing left after it to be an independent code — so
+     *       skip to the end of the list instead of guessing a fixed count. Otherwise a leftover
+     *       byte from the incomplete color spec (e.g. the {@code 1} in {@code 38;2;1}) gets
+     *       misread as an unrelated style change.
+     * </ul>
+     */
+    private static int skipMalformedExtendedColor(final int[] args, final int selectorIndex, final int count) {
+        final boolean hasModeByte = selectorIndex + 1 < count;
+        final boolean recognizedMode =
+                hasModeByte && (args[selectorIndex + 1] == 5 || args[selectorIndex + 1] == 2);
+        if (recognizedMode) {
+            return count;
+        }
+        return selectorIndex + (hasModeByte ? 2 : 1);
     }
 
     private static void applyExtendedColor(final Terminal terminal, final int selector,

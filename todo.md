@@ -753,28 +753,36 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 
 ### Major
 
-- [ ] **M1 — `ESC ) Ps` (designate G1) пишет в G0; G1 недостижим**
-  `[TerminalIO.java:121-122,156-167]` — оба состояния `'('` и `')'` попадают в один
-  handler, всегда модифицирующий `drawingModeG0`; `drawingModeG1` пишется только
+- [x] **M1 — `ESC ) Ps` (designate G1) пишет в G0; G1 недостижим** — закрыто (2026-09-07):
+  `[TerminalIO.java:121-122,156-167]` — оба состояния `'('` и `')'` попадали в один
+  handler, всегда модифицирующий `drawingModeG0`; `drawingModeG1` писался только
   в RIS/DECSC/DECRC. Репро: `\033)0` + SO → ASCII вместо псевдографики.
-  Заодно: `A`/`1`/`2` молча игнорируются (`TerminalOutput.java:159,164-166`);
-  `useG0`/`drawingModeG1` — состояние без эффекта (рендер читает сырой кодпоинт,
-  см. §35 DEC Special Graphics).
+  Фикс: `TerminalOutput.handleEscape` теперь диспетчерит `SHIFT_IN_CHARACTER_SET`/
+  `SHIFT_OUT_CHARACTER_SET` в `handleCharsetDesignate(ch, designateG0)`, который пишет
+  в `drawingModeG0` только для `ESC (`, в `drawingModeG1` — только для `ESC )`.
+  Тесты: `escLeftParenDesignatesG0Only`, `escRightParenDesignatesG1Only`.
+  Не в рамках фикса (отдельная задача, §35): `A`/`1`/`2` по-прежнему молча игнорируются;
+  `useG0`/`drawingModeG1` всё ещё не влияют на рендер (см. §35 DEC Special Graphics) —
+  сам маршрутизирующий баг закрыт, но переключение набора символов пока не отрисовывается.
 
-- [ ] **M2 — обрезанный true-color SGR превращается в стили**
-  `[escapes/csi/SGR.java:41-49]` — malformed-ветка пропускает только селектор+mode-byte:
-  `\033[38;2;1m` → остаток `1` применяется как bold;
-  `\033[48;2;10;20m` → смена foreground кодом 10. Ожидание (xterm): неполная цветовая
-  группа игнорируется целиком. Для обрезанного `38;5` recovery корректен (проверено).
-  Фикс: пропускать селектор + все аргументы до следующего селектора.
+- [x] **M2 — обрезанный true-color SGR превращается в стили** — закрыто (2026-09-07):
+  `[escapes/csi/SGR.java]` — malformed-ветка пропускала только селектор+mode-byte:
+  `\033[38;2;1m` → остаток `1` применялся как bold; `\033[48;2;10;20m` → смена атрибута
+  кодом 10. Фикс: `skipMalformedExtendedColor` различает 2 случая — mode-байт не 5/2
+  (селектор невалиден) → пропустить ровно 2 (селектор+mode), остаток — независимые
+  SGR-коды (сохранено поведение `38;7;1` → `1` всё ещё bold); mode-байт 5 или 2, но не
+  хватает аргументов (обрезано) → пропустить весь остаток списка (нет точки ресинка).
+  Тесты: `sgrTruncatedTrueColorDoesNotMisapplyLeftoverAsStyle`,
+  `sgrTruncated256ColorBackgroundDoesNotMisapplyLeftoverArgs` (+ все старые malformed-тесты
+  зелёные).
 
-- [ ] **M3 — overflow `1 << dirtyLine` при выводе в свёрнутый scrollback**
-  `[buffer/TerminalBufferWriter.java:82-87]`, `[TerminalBuffer.java:236]` —
-  `dirtyLine = offset + y` достигает 479 → int-сдвиг mod 32 → нужная видимая строка
-  не помечается (рендер сканирует биты 0..23, `[TerminalRenderer.java:158-159]`),
-  случайные биты мусорят. Эффект: при скролле вверх свежий вывод не перерисовывается
-  до следующего full-redraw. Фикс: AtomicLong + `1L <<`, либо clamp + `markAllDirty()`
-  при offset > 0. Безопасны: alt-buffer (y ≤ 23) и режим «внизу» (offset = 0).
+- [x] **M3 — overflow `1 << dirtyLine` при выводе в свёрнутый scrollback** — закрыто
+  (2026-09-07): `[buffer/TerminalBufferWriter.java]`, `[TerminalBuffer.java]` —
+  `dirtyLine = offset + y` мог достигать 479 → int-сдвиг mod 32 → случайный бит вместо
+  нужной строки. Фикс: новый `TerminalBufferWriter.markDirtyLine(terminal, dirtyLine)`
+  клампит — при `dirtyLine` вне `[0, HEIGHT-1]` вызывает `terminal.markAllDirty()`
+  (полный редрою) вместо порчи произвольного бита; используется и в `setChar`, и в
+  `TerminalBuffer.markDirty(y)`. Тест: `charWriteFarIntoScrollbackForcesFullRefreshInsteadOfWrongBit`.
 
 - [x] **M4 — рендер читает буфер без лока, Netty пишет под `io.lock`** — закрыто задачей 19
   (2026-08-23): клиент больше не парсит UART, дифф применяется на main-thread;
@@ -788,25 +796,23 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   возможен AIOOBE прямо в кадре рендера (устаревшая ссылка + новый width).
   Фикс-варианты: снапшот под лок / версия-счётник + retry кадра / enqueueWork для putOutput.
 
-- [ ] **M5 — `fonts/FontHandling`/`UnicodeFontRenderer` без `@OnlyIn(CLIENT)`**
-  `[FontHandling.java:10]` — статическая инициализация → `new FontAtlas(1024,1024,...)`
-  → `Minecraft.getInstance().getTextureManager().register(...)` (`[FontAtlas.java:35]`).
-  Сейчас безопасно случайно: единственные потребители — `@OnlyIn(CLIENT)`-рендереры.
-  Любой случайный импорт из common-кода уронит dedicated server при загрузке класса.
-  Фикс: аннотировать оба класса (или вынести загрузку из static-init).
+- [x] **M5 — `fonts/FontHandling`/`UnicodeFontRenderer` без `@OnlyIn(CLIENT)`** — закрыто
+  (2026-09-07): статическая инициализация → `new FontAtlas(1024,1024,...)` →
+  `Minecraft.getInstance().getTextureManager().register(...)` (`[FontAtlas.java:35]`).
+  Было безопасно случайно: единственные потребители — `@OnlyIn(CLIENT)`-рендереры.
+  Фикс: оба класса аннотированы `@OnlyIn(Dist.CLIENT)`, так что случайный импорт из
+  common-кода теперь падает при загрузке класса вместо краша dedicated server внутри
+  `Minecraft.getInstance()`.
 
-- [ ] **M6 — `SCROLL_BACK_COUNT` — public mutable поле в UPPER_CASE**
-  `[Terminal.java:48]` `public int SCROLL_BACK_COUNT = 20;` — читается в индексной
-  арифметике (`setWidth:172`, `TerminalBufferScrolling:23,56,68`, `CH8:32`); любое внешнее
-  изменение после аллокации буферов → рассогласование размеров → AIOOBE.
-  Фикс: `public static final` (или private+getter, если нужна конфигурация — тогда через пересоздание буферов).
+- [x] **M6 — `SCROLL_BACK_COUNT` — public mutable поле в UPPER_CASE** — закрыто PR #34
+  (2026-08-25): `Terminal.SCROLL_BACK_COUNT` теперь `public static final int`, внешняя
+  мутация после аллокации буферов больше невозможна.
 
 ### Minor
 
-- [ ] **m1 — DECRC/restoreSavedCursor не клампят координаты после смены ширины**
-  `[escapes/DECRC.java:11-12]`, `[escapes/csi/CH3.java:73-79]` — ESC7 в 132 колонках
-  на колонке 100 → `?3l` (setWidth делает home, но не сбрасывает savedX) → ESC8 даёт
-  `x=100 > 79` → ложный перенос на следующем символе. Фикс: clamp при restore.
+- [x] **m1 — DECRC/restoreSavedCursor не клампят координаты после смены ширины** — закрыто
+  PR #24 (unify cursor save/restore into `SavedCursor`, 2026-08-25): restore идёт через
+  `setCursorPos` (clamp), репро-тест `decrcClampsSavedCursorAfterWidthShrink` добавлен.
 
 - [ ] **m2 — CPR сообщает колонку width+1 (нет pending-wrap флага)**
   `[escapes/csi/DSR.java:22-31]` — `x+1` без clamp; состояние `x == width` легально
@@ -816,8 +822,9 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 
 - [ ] **m3 — `CSI 3 J` (erase scrollback, xterm E3) молча игнорируется** `[escapes/csi/ED.java:26-39]`
 
-- [ ] **m4 — `CSI n` без параметра не отвечает** `[escapes/csi/DSR.java:17]` —
-  ECMA-48: отсутствующий Ps = 5; гостевое приложение может зависнуть в ожидании `\033[0n`.
+- [x] **m4 — `CSI n` без параметра не отвечает** — закрыто PR #28 (2026-08-25):
+  `DSR.defaultParameters()` теперь возвращает `{5}`, bare `CSI n` резолвится в
+  `Ps=5` → `\033[0n` по ECMA-48.
 
 - [ ] **m5 — режим 1048 сохраняет только x/y, restore идёт полным DECRC**
   `[escapes/csi/CH2.java:110-113]` — восстановление перезапишет стиль/цвета/charset
@@ -828,9 +835,9 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   `[TerminalKeyboardHandler.java:29-41]` — проверка только для ESC; нажатия утекают в VM
   вне фокуса терминала (`MachineTerminalWidget.tick` отправляет безусловно).
 
-- [ ] **m7 — палитра xterm-256 вне канона**
-  `[color/TerminalColors.java:46,49-52]` — компонента `df` вне набора {00,5f,87,af,d7,ff}
-  (`0xdfaf*`, `0xff**df`) — похоже на опечатку `d7→df`. Сверить с эталоном xterm-256.
+- [x] **m7 — палитра xterm-256 вне канона** — закрыто PR #30 (2026-08-25): `0xdf` был
+  опечаткой вместо `0xd7` для 4-го уровня куба; тест на полную каноническую палитру
+  xterm-256 добавлен (942e1f9).
 
 - [x] **m8 — `TerminalUtils.resetTerminal`: статический мутабельный ByteBuffer + голый 'J'**
   `[util/tick/TerminalUtils.java]` — переписан задачей 19 (2026-08-23): RIS + full snapshot,
@@ -845,12 +852,16 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   Netty (IND/NEL) / main (mouseScrolled, getInput) → редкие «прыжки» окна просмотра истории.
   Плюс `hasPendingBell` — plain boolean (Netty пишет, main читает) → потеря звонка.
 
-- [ ] **m11 — dead code**: `Utf8Decoder.hasActiveSequence()` (0 ссылок),
-  `TerminalIO.putOutput(byte)` (все вызовы через ByteBuffer),
-  `Terminal.getTerminalWidth()` (только тесты — закрепить API или убрать),
-  `incrementLastLineToDisplay(true)` (ветка никем не вызывается);
-  `TerminalRenderer.findLineIndex` / `TerminalCharRenderer.isPrintableCharacter` → private;
-  `ImplementedPrivateModes.modeStatus` public static mutable → private.
+- [x] **m11 — dead code** — в основном закрыто PR #36 (2026-08-25, refactor/terminal-dead-code-cleanup):
+  удалены `Utf8Decoder.hasActiveSequence()`, `TerminalIO.putOutput(byte)`,
+  `TerminalBuffer.shiftUp/shiftDown(int)`, `SessionOperator`/`ColorUtils`/`RunnableUtils`,
+  неиспользуемые поля `Glyph`; `TerminalRenderer.findLineIndex` / `TerminalCharRenderer.
+  isPrintableCharacter`/`renderForegroundChar` / `TerminalBufferWriter.setChar` → private;
+  `ImplementedPrivateModes.modeStatus` → `private static final`, `instance` → `public static final`.
+  Остаток (вне области PR #36, независимо перепроверено ревью — не трогать без причины):
+  - [ ] `Terminal.getTerminalWidth()` — используется только тестами, закрепить как публичный
+    тестовый API или убрать
+  - [ ] `incrementLastLineToDisplay(true)` — ветка никем не вызывается
 
 - [ ] **m12 — дубли магических чисел**: цикл `i <= 23` ×3 (`TerminalBufferScrolling:36,46`,
   `TerminalIO:46`) → константа `FULL_DIRTY_MASK = (1 << HEIGHT) - 1`;
@@ -896,7 +907,10 @@ TerminalBufferTest 62 — интеграционные через реальны
 - [ ] CSIManager на мусорном входе: >10 аргументов, CAN/SUB abort, control chars внутри CSI
 - [ ] CUU/CUD/CUF/CUB — ноль тестов (самые частые последовательности ncurses!)
 - [ ] Ответные DSR/DA (формат ответа в input-очереди) + табуляции HTS/TBC + интеракция tabs с DECCOLM
-- [ ] OSC/DCS/APC менеджеры (терминация ST/BEL) + семантика выхода ?1047l
+- [x] OSC/DCS/APC менеджеры (терминация ST/BEL) — закрыто PR #35 (2026-08-25,
+  `StringSequenceTest.java`, 17 тестов: ST/BEL termination, CAN/SUB abort, ESC+non-`\`
+  abort-and-redispatch, двойной ESC, nested string start)
+- [ ] Семантика выхода `?1047l` — ещё не покрыта
 - [ ] Регрессии на Б1/Б2 (см. выше) — закрываются одним параметризованным тестом
 
 ### Опровергнутые гипотезы (проверено — корректно, не чинить)

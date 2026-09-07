@@ -233,7 +233,7 @@ public class TerminalBuffer {
         // op on row y marks the screen row where that buffer row currently renders — including
         // the scrollback offset (lastRowToDisplayMax - lastRowToDisplay). Plain 1 << y would
         // mark the wrong visible row when the view is scrolled back into scrollback.
-        terminal.markDirty(1 << TerminalBufferWriter.getDirtyRow(terminal, y));
+        TerminalBufferWriter.markDirtyLine(terminal, TerminalBufferWriter.getDirtyRow(terminal, y));
     }
 
     public void incrementLastLineToDisplay() {
