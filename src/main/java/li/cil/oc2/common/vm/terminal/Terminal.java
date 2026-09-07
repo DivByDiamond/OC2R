@@ -164,8 +164,8 @@ public class Terminal {
     public transient TerminalBufferWriter bufferWriter;
     transient CSIManager csiManager = new CSIManager(this);
     transient OSCManager oscManager = new OSCManager(this);
-    transient DCSManager dcsManager = new DCSManager(this);
-    transient APCManager apcManager = new APCManager(this);
+    transient DCSManager dcsManager = new DCSManager();
+    transient APCManager apcManager = new APCManager();
     public transient TerminalIO io = new TerminalIO(this);
     private transient TerminalClient clientInstance;
     private final transient ReentrantLock clientLock = new ReentrantLock();
