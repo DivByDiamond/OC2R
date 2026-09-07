@@ -113,7 +113,10 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     @Callback(name = GET_REDSTONE_OUTPUT, synchronize = false)
     public int getRedstoneOutput(@Parameter(SIDE) @Nullable final Side side) {
         if (side == null) throw new IllegalArgumentException();
-        final int index = side.getDirection().get3DDataValue();
+        final Direction direction =
+                HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
+        assert direction != null;
+        final int index = direction.get3DDataValue();
 
         return output[index];
     }
@@ -122,7 +125,10 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
     public void setRedstoneOutput(
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUE) final int value) {
         if (side == null) throw new IllegalArgumentException();
-        final int index = side.getDirection().get3DDataValue();
+        final Direction direction =
+                HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
+        assert direction != null;
+        final int index = direction.get3DDataValue();
 
         final byte clampedValue = (byte) Mth.clamp(value, 0, 15);
         if (clampedValue == output[index]) {
@@ -131,11 +137,7 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
 
         output[index] = clampedValue;
 
-        final Direction direction =
-                HorizontalBlockUtils.toGlobal(blockEntity.getBlockState(), side);
-        if (direction != null) {
-            notifyNeighbor(direction);
-        }
+        notifyNeighbor(direction);
     }
 
     @Override

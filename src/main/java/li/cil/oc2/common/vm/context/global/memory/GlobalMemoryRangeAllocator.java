@@ -10,12 +10,14 @@ import java.util.OptionalLong;
 import li.cil.oc2.api.bus.device.vm.context.MemoryRangeAllocator;
 import li.cil.oc2.common.vm.context.memory.MemoryRangeManager;
 import li.cil.sedna.api.Board;
+import li.cil.sedna.api.DeviceBus;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryRange;
 import li.cil.sedna.api.memory.MemoryRangeAllocationStrategy;
 
 public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, MemoryRangeManager {
     private final Board board;
+    private final DeviceBus deviceBus;
     private final List<MemoryRange> reservedMemoryRanges;
     private final Object2LongMap<MemoryMappedDevice> claimedMemoryRanges =
             new Object2LongArrayMap<>();
@@ -23,6 +25,7 @@ public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, M
     public GlobalMemoryRangeAllocator(
             final Board board, final List<MemoryRange> reservedMemoryRanges) {
         this.board = board;
+        this.deviceBus = board.getDeviceBus();
         this.reservedMemoryRanges = reservedMemoryRanges;
     }
 
@@ -39,14 +42,14 @@ public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, M
 
     public void invalidate() {
         for (final MemoryMappedDevice device : claimedMemoryRanges.keySet()) {
-            board.removeDevice(device);
+            deviceBus.removeDevice(device);
         }
         claimedMemoryRanges.clear();
     }
 
     @Override
     public boolean claimMemoryRange(final long address, final MemoryMappedDevice device) {
-        if (board.addDevice(address, device)) {
+        if (deviceBus.addDevice(address, device)) {
             claimedMemoryRanges.put(device, address);
             return true;
         }
@@ -56,7 +59,7 @@ public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, M
 
     @Override
     public OptionalLong claimMemoryRange(final MemoryMappedDevice device) {
-        final OptionalLong address = board.addDevice(device);
+        final OptionalLong address = deviceBus.addDevice(device);
         if (address.isPresent()) {
             claimedMemoryRanges.put(device, address.getAsLong());
             return address;
@@ -67,7 +70,7 @@ public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, M
 
     @Override
     public OptionalLong findMemoryRange(final MemoryMappedDevice device, final long start) {
-        return board.getAllocationStrategy()
+        return deviceBus.getAllocationStrategy()
                 .findMemoryRange(
                         device,
                         range -> {
@@ -85,7 +88,7 @@ public final class GlobalMemoryRangeAllocator implements MemoryRangeAllocator, M
 
     @Override
     public void releaseMemoryRange(final MemoryMappedDevice device) {
-        board.removeDevice(device);
+        deviceBus.removeDevice(device);
         claimedMemoryRanges.removeLong(device);
     }
 }

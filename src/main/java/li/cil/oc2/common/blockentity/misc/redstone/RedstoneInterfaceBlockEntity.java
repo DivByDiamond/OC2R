@@ -83,20 +83,23 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Callback(name = GET_REDSTONE_OUTPUT, synchronize = false)
     public int getRedstoneOutput(@Parameter(SIDE) @Nullable final Side side) {
         if (side == null) throw new IllegalArgumentException();
-        return state.getOutput(side.getDirection().get3DDataValue());
+        final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
+        assert direction != null;
+        return state.getOutput(direction.get3DDataValue());
     }
 
     @Callback(name = SET_REDSTONE_OUTPUT)
     public void setRedstoneOutput(
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int value) {
         if (side == null) throw new IllegalArgumentException();
-        final int index = side.getDirection().get3DDataValue();
+        final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
+        assert direction != null;
+        final int index = direction.get3DDataValue();
         final byte clampedValue = (byte) Mth.clamp(value, 0, 15);
         if (clampedValue == state.getOutput(index)) return;
 
         state.setOutput(index, clampedValue);
-        final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
-        if (direction != null) notifyNeighbor(direction);
+        notifyNeighbor(direction);
         setChanged();
     }
 
