@@ -13,10 +13,11 @@ import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
  *
  * <p>Per DEC VT510-RM Table 5-9 and xterm-410 {@code VTReset(full=false)} (charproc.c,
  * {@code CASE_DECSTR}): DECSTR resets DECSTBM (margins to full page), DECOM (to absolute), DECAWM
- * (to default), IRM (to replace), DECTCEM (to visible), charsets (to ASCII), SGR rendition
- * (colors+style, not the OSC 4 palette), DECSCA, and the saved-cursor position (to home). It does
- * not clear the screen, reset tab stops, move the active cursor, change column width, drop the
- * input queue, or reset the OSC 4 palette — all of which RIS does.
+ * (to default), IRM (to replace), DECTCEM (to visible via fresh {@code PrivateModeState}),
+ * charsets (to ASCII), SGR rendition (colors+style, not the OSC 4 palette), DECSCA, and the
+ * saved-cursor position (to home). It does not clear the screen, reset tab stops, move the active
+ * cursor, change column width, drop the input queue, or reset the OSC 4 palette — all of which RIS
+ * does.
  *
  * <p>Mirrors {@link RIS}: a static reset command in {@code escapes.index} rather than a
  * {@link Terminal} method, so it writes Terminal's public fields from outside (as RIS does). Writing
@@ -41,6 +42,7 @@ public class DECSTR {
         // DECSTR preserves column width (unlike RIS), so re-apply DECCOLM to keep the flag and
         // the allocated width in agreement — the same invariant RIS documents.
         terminal.currentPrivateModeState.DECCOLM = (preservedWidth == 132);
+        // VT510-RM doesn't specify saved-state handling; mirror RIS.
         terminal.savePrivateModeState = new PrivateModeState();
         terminal.state = Terminal.State.NORMAL;
         // DECSTBM: scroll margins to full page. DEC VT510-RM Table 5-9 and xterm both reset this
