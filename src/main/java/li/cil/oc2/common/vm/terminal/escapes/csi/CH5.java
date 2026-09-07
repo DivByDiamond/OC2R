@@ -1,6 +1,7 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.escapes.index.DECSTR;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +19,7 @@ public class CH5
         if (state.greaterThan) { // XTSMPOINTER
             LOGGER.warn("XTSMPOINTER not implemented");
         } else if (state.exclamation) { // DECSTR
-            LOGGER.warn("DECSTR not implemented");
+            DECSTR.execute(terminal);
         } else if (state.quote) { // DECSCL
             LOGGER.warn("DECSCL not implemented");
         } else if (state.dollarSign) { // DECRQM
