@@ -9,9 +9,9 @@ import org.apache.logging.log4j.Logger;
 public class ImplementedPrivateModes {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public static Map<Integer, Boolean> modeStatus = new ConcurrentHashMap<>();
+    private static final Map<Integer, Boolean> modeStatus = new ConcurrentHashMap<>();
 
-    public static ImplementedPrivateModes instance = new ImplementedPrivateModes();
+    public static final ImplementedPrivateModes instance = new ImplementedPrivateModes();
 
     public ImplementedPrivateModes() {
         for (final ModeTable mode : ModeTable.values()) {

@@ -49,7 +49,7 @@ public class FontAtlas {
 
         g.dispose();
 
-        Glyph square = new Glyph(f, 16, 32, 0);
+        Glyph square = new Glyph(f);
 
         addGlyph(square);
     }

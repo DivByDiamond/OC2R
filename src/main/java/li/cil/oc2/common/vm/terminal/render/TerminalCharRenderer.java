@@ -93,7 +93,7 @@ public class TerminalCharRenderer {
         return invertBackground ? color.g : color.r;
     }
 
-    static void renderForegroundChar(
+    private static void renderForegroundChar(
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final float offset,
@@ -165,7 +165,7 @@ public class TerminalCharRenderer {
         return FontHandling.FontStyle.REGULAR;
     }
 
-    public static boolean isPrintableCharacter(final int ch) {
+    private static boolean isPrintableCharacter(final int ch) {
         return ch == 0 || (ch > ' ' && ch <= '~') || ch >= 177;
     }
 }
