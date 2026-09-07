@@ -136,7 +136,10 @@ public final class BlobStorage {
                     .forEach(
                             handle -> {
                                 LOGGER.info("Deleting orphaned blob: {}", handle);
-                                deleteAsync(handle);
+                                deleteAsync(handle).exceptionally(e -> {
+                                    LOGGER.warn("Failed to delete orphaned blob {}", handle, e);
+                                    return null;
+                                });
                             });
         } catch (final IOException e) {
             LOGGER.error("Failed to list blob storage directory: {}", dir, e);

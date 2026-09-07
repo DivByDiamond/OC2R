@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.adapter.rpc;
 import com.google.gson.Gson;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import li.cil.oc2.api.bus.device.rpc.RPCDevice;
 import li.cil.oc2.common.bus.adapter.DeviceRegistry;
@@ -16,9 +17,9 @@ public final class RPCMessageProcessor {
             final RPCDeviceBusAdapter adapter,
             final byte[] messageData,
             final GsonContext ctx) {
-        if (new String(messageData).isBlank()) return;
+        if (new String(messageData, StandardCharsets.UTF_8).isBlank()) return;
         try (InputStreamReader stream =
-                new InputStreamReader(new ByteArrayInputStream(messageData))) {
+                new InputStreamReader(new ByteArrayInputStream(messageData), StandardCharsets.UTF_8)) {
             final Message message = ctx.gson.fromJson(stream, Message.class);
             switch (message.type()) {
                 case Message.MESSAGE_TYPE_LIST ->

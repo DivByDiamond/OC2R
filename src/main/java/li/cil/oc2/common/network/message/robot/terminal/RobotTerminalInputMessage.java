@@ -32,7 +32,22 @@ public record RobotTerminalInputMessage(int entityId, byte[] data) implements Ab
     }
 
     public RobotTerminalInputMessage(final Robot robot, final ByteBuffer data) {
-        this(robot.getId(), data.array());
+        this(robot.getId(), copyRemaining(data));
+    }
+
+    private static byte[] copyRemaining(final ByteBuffer data) {
+        if (data.hasArray()) {
+            final int offset = data.arrayOffset() + data.position();
+            final int length = data.remaining();
+            final byte[] array = data.array();
+            if (offset == 0 && length == array.length) return array;
+            final byte[] copy = new byte[length];
+            System.arraycopy(array, offset, copy, 0, length);
+            return copy;
+        }
+        final byte[] copy = new byte[data.remaining()];
+        data.duplicate().get(copy);
+        return copy;
     }
 
     @Override

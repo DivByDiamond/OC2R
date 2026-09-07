@@ -33,7 +33,22 @@ public record ComputerTerminalInputMessage(BlockPos pos, byte[] data) implements
     }
 
     public ComputerTerminalInputMessage(final ComputerBlockEntity computer, final ByteBuffer data) {
-        this(computer.getBlockPos(), data.array());
+        this(computer.getBlockPos(), copyRemaining(data));
+    }
+
+    private static byte[] copyRemaining(final ByteBuffer data) {
+        if (data.hasArray()) {
+            final int offset = data.arrayOffset() + data.position();
+            final int length = data.remaining();
+            final byte[] array = data.array();
+            if (offset == 0 && length == array.length) return array;
+            final byte[] copy = new byte[length];
+            System.arraycopy(array, offset, copy, 0, length);
+            return copy;
+        }
+        final byte[] copy = new byte[data.remaining()];
+        data.duplicate().get(copy);
+        return copy;
     }
 
     @Override

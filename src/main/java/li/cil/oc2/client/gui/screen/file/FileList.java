@@ -51,8 +51,8 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
     }
 
     private void addDirectoryEntries(final Path directory) {
-        try {
-            final List<Path> files = Files.list(directory).sorted(FileList::compareEntries).toList();
+        try (var stream = Files.list(directory)) {
+            final List<Path> files = stream.sorted(FileList::compareEntries).toList();
             for (final Path path : files) {
                 try {
                     if (Files.isHidden(path)) continue;
@@ -62,6 +62,7 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
                         addEntry(createFileEntry(path));
                     }
                 } catch (final IOException | SecurityException ignored) {
+                    // per-entry hidden check may fail on race; skip entry
                 }
             }
         } catch (final IOException | SecurityException e) {

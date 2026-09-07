@@ -101,8 +101,11 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     public void pause() {
         if (isPaused) return;
         pauseLock.lock();
-        isPaused = true;
-        pauseLock.unlock();
+        try {
+            isPaused = true;
+        } finally {
+            pauseLock.unlock();
+        }
     }
 
     public void resume(final DeviceBusController controller, final boolean didDevicesChange) {

@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.adapter.rpc;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -13,8 +14,8 @@ import li.cil.oc2.common.bus.adapter.EmptyMethodGroup;
 import li.cil.oc2.common.bus.adapter.RPCDeviceWithIdentifier;
 
 public class MessageWriter {
-    private static final byte[] MESSAGE_DELIMITER = "\0".getBytes();
-    private static final byte[] MESSAGE_DELIMITER2 = "\r".getBytes();
+    private static final byte[] MESSAGE_DELIMITER = "\0".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] MESSAGE_DELIMITER2 = "\r".getBytes(StandardCharsets.UTF_8);
 
     private final Gson gson;
     private final BooleanSupplier crmode;
@@ -64,7 +65,7 @@ public class MessageWriter {
 
     private void writeMessage(final String type, @Nullable final Object data) {
         final String json = gson.toJson(new Message(type, data));
-        final byte[] bytes = json.getBytes();
+        final byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         final ByteBuffer buffer = ByteBuffer.allocate(bytes.length + MESSAGE_DELIMITER.length * 2);
 
         if (crmode.getAsBoolean()) {

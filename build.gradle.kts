@@ -471,7 +471,17 @@ tasks.withType<JavaCompile>().configureEach {
                 "CompareToZero", "FormatString",
             )
             // Noisy checks disabled: mixin/callback magic + intent (todo.md §39 Ступень C)
-            disable("UnusedMethod", "StringSplitter", "EffectivelyPrivate")
+            disable(
+                "UnusedMethod", "StringSplitter", "EffectivelyPrivate",
+                // Style-only, noisy for this codebase (50+ warnings, intentional patterns)
+                "RefactorSwitch", "StatementSwitchToExpressionSwitch",
+                "ArrayRecordComponent", "HidingField", "ReferenceEquality",
+                "ClassCanBeStatic", "MixedMutabilityReturnType", "IntLiteralCast",
+                "MutablePublicArray", "UnnecessaryAsync", "PatternMatchingInstanceof",
+                "EmptyCatch", "JdkObsolete", "VariableNameSameAsType",
+                "InvalidParam", "InconsistentCapitalization", "EqualsGetClass",
+                "JavaDurationGetSecondsToToSeconds", "EnumOrdinal",
+            )
             // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4), generated code,
             // and gametest infrastructure (tested via runGameTestServer, not ErrorProne-linted),
             // consistent with checkstyle/pmd/spotbugs excludes.

@@ -14,6 +14,7 @@ public final class PcmSoundBuffer {
     private byte[] currentChunk;
     private int currentChunkOffset;
 
+    @SuppressWarnings("NonAtomicVolatileUpdate") // single writer (audio thread), read is best-effort
     public void write(final byte[] data) {
         if (data == null || data.length == 0) {
             return;

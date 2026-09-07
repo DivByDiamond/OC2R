@@ -30,6 +30,7 @@ public record SoundCardPcmMessage(BlockPos pos, byte[] pcm) implements AbstractM
     }
 
     @Override
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void handleMessage(final IPayloadContext context) {
         context.enqueueWork(() -> SoundClientManager.streamPcm(pos, pcm));
     }

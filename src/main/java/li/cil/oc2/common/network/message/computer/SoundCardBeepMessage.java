@@ -33,6 +33,7 @@ public record SoundCardBeepMessage(BlockPos pos, float frequency, int durationMs
     }
 
     @Override
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void handleMessage(final IPayloadContext context) {
         context.enqueueWork(() -> SoundClientManager.playTone(pos, frequency, durationMs));
     }

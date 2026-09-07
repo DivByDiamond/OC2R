@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,7 +128,7 @@ public final class FileSystems {
                 resourceManager.getResource(fileSystemDescriptorLocation).get();
         final JsonObject json;
         try (InputStreamReader reader =
-                new InputStreamReader(fileSystemDescriptor.open())) {
+                new InputStreamReader(fileSystemDescriptor.open(), StandardCharsets.UTF_8)) {
             json = JsonParser.parseReader(reader).getAsJsonObject();
         }
         final String type = json.getAsJsonPrimitive("type").getAsString();
