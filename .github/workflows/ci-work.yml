@@ -41,6 +41,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Run game tests
+        run: ./gradlew gameTest
+
+      - name: Upload game test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametest-results
+          path: 'build/test-results/gameTest/*.xml'
+          if-no-files-found: ignore
+          retention-days: 1
+
       - name: Upload verification reports
         if: always()
         uses: actions/upload-artifact@v7

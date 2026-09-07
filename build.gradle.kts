@@ -549,6 +549,14 @@ tasks.test {
     useJUnitPlatform()
 }
 
+/* ── GameTest runner ─────────────────────────────────────────────────────── */
+
+tasks.register("gameTest") {
+    group = "verification"
+    description = "Runs NeoForge game tests."
+    dependsOn("runGameTestServer")
+}
+
 // Wire lintRatchet into check (todo.md §39 Ступень B)
 tasks.named("check") {
     dependsOn("lintRatchet")

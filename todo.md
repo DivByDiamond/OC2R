@@ -1344,3 +1344,68 @@ MBlockDecoder*...), инфраструктуру (BitReader/BitWriter, VLC, IntO
 Порядок относительно §38: К1–К3 можно делать ВЗАМЕН В1/В4/В5/В7 (deflate, RAW-bandwidth,
 RAW-in-H264 fallback, QP — всё это проблемы H264-пути и уходят вместе с ним). Это меняет приоритеты:
 DELTA-кодек решает сразу 4 перф-находки одним ходом.
+
+---
+
+## 41. Апстрим fnuecke/oc2 v0.3.0 (1.21.1/0.3.0) — сверка и портирование (2026-09-07)
+
+Мейнтейнер fnuecke вернулся к оригинальному моду, релиз v0.3.0. Наш форк — полный
+рефакторинг, независимый от их дерева (не git fork, свой git history). Часть терминальных
+фиксов у них пересекается с уже закрытым §36 (M1-M5) — считаем закрытым, не портировать.
+
+### 41.1 GameTest CI/CD (по образцу fnuecke/oc2, self-hosted раннеры общие — pocketprobe-kube)
+
+У нас уже есть `runs { register("gameTestServer") {...} }` в build.gradle.kts (:195-198),
+но никуда не подключён; своих `@GameTest`-классов нет вообще (только unit-тесты в src/test).
+У апстрима — отдельный gradle-подпроект `gametest` с ~20 классами (RegistrationTests,
+RecipeTests, DeviceBusTests, NetworkConnectorTests, RobotCrushTests, WrenchTests, GuestTests...),
+таск `gameTest` = `dependsOn(":neoforge:runGameTestServer")` (buildSrc/BuildUtils.kt:108-121),
+NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, buildSrc/GameTestReport.kt
+только нормализует корневой тег. CI: build.yml гоняет `./gradlew gameTest` после `build`,
+аплоадит артефакт `gametest-results-${os}`; отдельный test-report.yml (workflow_run от build)
+публикует JUnit-отчёт через `dorny/test-reporter`.
+
+- [x] Добавить таск `gameTest` в build.gradle.kts: `dependsOn("runGameTestServer")`
+  (аналог `registerGameTestTask()` из их buildSrc/BuildUtils.kt:108)
+- [x] Завести `src/main/java/li/cil/oc2/gametest/` и написать
+  3 стартовых smoke-тестов: RegistrationTests (DeviceTypes), RecipeTests (everyModItemIsCraftable,
+  everyRecipeCraftsInCraftingTable), DeviceBusTests (busTracksNeighborLifecycle,
+  computerStartsWithoutBootError) + хелперы TestSupport, ComputerFixture
+- [x] Дополнить `.github/workflows/ci-work.yml`: шаг `./gradlew gameTest` после build,
+  аплоад артефакта `gametest-results`
+- [x] Добавить `.github/workflows/test-report.yml` (workflow_run от `ci`), публикация через
+  `dorny/test-reporter@v3` (reporter `java-junit`)
+- [ ] Постепенно расширять набор тестов под наши модули (терминал, network connector,
+  redstone interface) по мере работы над 41.2
+
+### 41.2 Точечные фиксы из релиза (диф-план, без реализации)
+
+- [ ] **Redstone side mixed-up (issue #164)**: **Подтверждён в форке.** `getRedstoneInput`
+  корректно использует `HorizontalBlockUtils.toGlobal()` для поворота, но `getRedstoneOutput`
+  и `setRedstoneOutput` в `RedstoneInterfaceCardItemDevice` (:116,:125) и
+  `RedstoneInterfaceBlockEntity` (:86,:93) используют `side.getDirection().get3DDataValue()`
+  без учёта FACING → выходы не поворачиваются с блоком. Фикс: применить
+  `HorizontalBlockUtils.toGlobal()` в set/get output аналогично getRedstoneInput.
+- [ ] **Robot `detect(side)` API (issue #108)**: **Отсутствует.** Метода нет в
+  `api/capabilities/Robot.java` (только getInventory/getSelectedSlot/setSelectedSlot) и
+  в `common/entity/Robot.java`. Feature request, не баг — приоритет низкий.
+- [ ] **Network connector на заборах (issue #225)**: **Потенциальная проблема.**
+  `NetworkConnectorBlock` не переопределяет `canSurvive`/`getStateForPlacement`;
+  `FaceAttachedHorizontalDirectionalBlock` требует solid face, fences не проходят.
+  Нет `BlockTags.FENCES` в коде. Зависит от дизайна — если поддержка fence нужна,
+  добавить проверку тега.
+- [ ] **JEI computer recipe (issue #270)**: **Уже обработано.** `ExtraGuiAreasJEIPlugin`
+  удаляет preconfigured computer из JEI (осознанно); обычные рецепты компьютера видны.
+- [ ] **Keyboard as terminal user (issue #186)**: **Уже обработано.** `TerminalUserProvider`
+  реализован в `ComputerTerminalManager` и `Robot`; `TerminalKeyboardHandler` — GUI-level,
+  ввод идёт только при открытом терминале.
+
+### 41.3 Не относится / уже закрыто
+
+- Терминальные фиксы v0.3.0 — перекрыты §36 (M1-M5, коммит f6f9d09), у нас детальнее
+  (charset G0/G1, SGR recovery, dirty-mask overflow, ST-string ESC-abort parity).
+- NeoForge startup crash (#294), projector blank display (#230), sound attenuation (#288) —
+  надо проверить отдельно, не связаны с терминалом, не исследовано.
+- Linux fdisk/swap (#47/#268), console keymaps (#147) — гостевой Linux-образ, не Java-код мода.
+- Block device data unification (#127, BREAKING) — датапак-формат образов
+  (`data/oc2/block_devices/{hdd,floppy,flash}/`), требует отдельного решения по совместимости.
