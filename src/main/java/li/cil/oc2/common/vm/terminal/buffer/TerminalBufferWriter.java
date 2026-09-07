@@ -44,7 +44,7 @@ public class TerminalBufferWriter {
         }
     }
 
-    public void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches
+    private void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches
         final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         final int index = altBuffer
                 ? x + y * terminal.width

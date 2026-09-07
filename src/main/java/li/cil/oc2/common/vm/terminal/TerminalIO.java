@@ -88,10 +88,6 @@ public class TerminalIO {
         output.putOutput(values);
     }
 
-    public void putOutput(final byte value) {
-        output.putOutput(value);
-    }
-
     public void putInput(final char value) {
         lock.lock();
         try {

@@ -53,8 +53,7 @@ public class UnicodeFontRenderer {
         g.drawGlyphVector(gv, 0, ascent - 1);
         g.dispose();
 
-        Glyph glyph =
-                new Glyph(img, isItalic ? 44 : 20, 32, (int) gv.getGlyphMetrics(0).getAdvance());
+        Glyph glyph = new Glyph(img);
 
         FontHandling.FontAtlas.addGlyph(glyph);
         return glyph;

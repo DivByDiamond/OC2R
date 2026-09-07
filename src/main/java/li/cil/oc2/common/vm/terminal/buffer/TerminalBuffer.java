@@ -248,14 +248,6 @@ public class TerminalBuffer {
         scrolling.decrementLastLineToDisplay();
     }
 
-    public void shiftUp(int count) {
-        scrolling.shiftUp(count);
-    }
-
-    public void shiftDown(int count) {
-        scrolling.shiftDown(count);
-    }
-
     public void shiftUpOne() {
         scrolling.shiftUpOne();
     }

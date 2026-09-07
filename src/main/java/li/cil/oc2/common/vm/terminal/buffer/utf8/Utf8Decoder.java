@@ -6,10 +6,6 @@ public class Utf8Decoder {
     private int bytesRead;
     private int codepoint;
 
-    public boolean hasActiveSequence() {
-        return continuationByte;
-    }
-
     public int getCodepoint() {
         return codepoint;
     }

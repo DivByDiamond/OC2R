@@ -92,7 +92,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
         }
     }
 
-    public int findLineIndex(VertexBuffer[] vba, VertexBuffer vb) {
+    private int findLineIndex(VertexBuffer[] vba, VertexBuffer vb) {
         int i = 0;
         while (i < vba.length) {
             if (vba[i].equals(vb)) {
