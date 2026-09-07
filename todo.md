@@ -719,7 +719,7 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 
 - [ ] **DECSLRM + DECSTR** (средний)
   - `DECSLRM` (left/right margins, `CSI Pl;Pr s` — в `CH6.java:24` стоит `LOGGER.warn("DECSLRM not implemented")`) — нужен tmux / вертикальные сплиты vim. Пересечение с `DECOM` и `DECLRMM`/`DECRLM`.
-  - `DECSTR` (soft reset, `CSI ! p` — `CH5.java:21` warn) — сброс таблиц режимов без полного RIS (курсор/тэбы/скролл-маргины сохраняются).
+  - `DECSTR` (soft reset, `CSI ! p`) — **сделано** (`escapes/index/DECSTR.java`, тесты `DecstrTest`): сброс таблиц режимов без полного RIS. Курсор и тэбы сохраняются; скролл-маргины сбрасываются в полный экран (DEC VT510-RM Table 5-9 + xterm-410 `VTReset(full=false)` — прежняя заметка «маргины сохраняются» была неверной).
 
 ## 36. Аудит VT100-терминала №2 — 6 суб-агентов (2026-08-23, ветка 1.21.1)
 
