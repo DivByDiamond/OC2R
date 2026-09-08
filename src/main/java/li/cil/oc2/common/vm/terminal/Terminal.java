@@ -387,15 +387,15 @@ public class Terminal {
         }
 
         // Mark all rows dirty — BOTH sinks. The renderer mask drives local redraw; markAllDirty
-        // drives the network diff. The network mark is load-bearing (Kimi gate, PR-2 review):
-        // DECSCPP is the first width path where the server PRESERVES content while the client's
-        // TerminalDiff.apply responds to the width change with a destructive setWidth — so the
-        // snapshot must re-ship the visible window or the client blanks (screen + scrollback)
-        // while the server keeps everything, diverging until the next captureFull. setWidth
-        // (DECCOLM) gets away without it only because DECCOLM's escape paths (CH2/CH3) call
-        // markAllDirty themselves — the clear ships symmetrically.
+        // drives the network diff (it also sets the renderer mask internally). The network mark
+        // is load-bearing (Kimi gate, PR-2 review): DECSCPP is the first width path where the
+        // server PRESERVES content while the client's TerminalDiff.apply responds to the width
+        // change with a destructive setWidth — so the snapshot must re-ship the visible window
+        // or the client blanks (screen + scrollback) while the server keeps everything,
+        // diverging until the next captureFull. setWidth (DECCOLM) gets away without it only
+        // because DECCOLM's escape paths (CH2/CH3) call markAllDirty themselves — the clear
+        // ships symmetrically.
         markAllDirty();
-        this.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 
     @OnlyIn(Dist.CLIENT)

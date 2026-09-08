@@ -33,6 +33,11 @@ public class CH13
         if (state.questionMark || state.greaterThan) {
             return;
         }
+        // '$' (0x24) and '*' (0x2A) are mutually exclusive intermediates — a sequence with
+        // both (e.g. CSI *$|) is malformed and must be ignored as xterm does.
+        if (state.dollarSign && state.asterisk) {
+            return;
+        }
         if (state.dollarSign) { // DECSCPP — Select Columns Per Page (CSI Pn $ |)
             final int cols = args[0];
             if (cols == Terminal.WIDTH) {
