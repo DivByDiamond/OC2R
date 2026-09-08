@@ -1522,6 +1522,132 @@ public class TerminalBufferTest {
             "cleared cell must be a space");
     }
 
+    @Test
+    void decscppGrowsWidthPreservingContentMarginsCursorAndSgr() {
+        // Revert-and-fail: DECCOLM (?3h) clears the screen, homes the cursor, resets margins and
+        // SGR. DECSCPP (CSI 132$|) does none of that — it grows the width, preserving everything.
+        write(terminal, CSI + "41m");             // SGR: red background
+        write(terminal, SAMPLE_LINE);             // "ABCDEFGH" at row 0, cols 0-7
+        write(terminal, CSI + "5;10r");           // DECSTBM: top margin 5, bottom margin 10
+        write(terminal, CSI + "3;5H");            // cursor to row 3, col 5 (x=4, y=2)
+        // preconditions
+        assertEquals('A', charAt(0, 0), "precondition: content at (0,0)");
+        assertEquals('H', charAt(7, 0), "precondition: content at (7,0)");
+        assertEquals(4, terminal.x, "precondition: cursor x");
+        assertEquals(2, terminal.y, "precondition: cursor y");
+        assertEquals(4, terminal.scrollFirst, "precondition: top margin");
+        assertEquals(9, terminal.scrollLast, "precondition: bottom margin");
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentBackgroundColorMode,
+            "precondition: SGR bg set");
+
+        write(terminal, CSI + "132$|");           // DECSCPP -> 132 columns (non-destructive)
+
+        assertEquals(132, terminal.getTerminalWidth(), "DECSCPP switches to 132 columns");
+        assertEquals(132 * Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, terminal.buffer.length,
+            "buffers reallocate to 132 columns");
+        assertEquals('A', charAt(0, 0), "DECSCPP preserves content at (0,0)");
+        assertEquals('H', charAt(7, 0), "DECSCPP preserves content at (7,0)");
+        assertEquals(4, terminal.x, "DECSCPP preserves the cursor x (no home)");
+        assertEquals(2, terminal.y, "DECSCPP preserves the cursor y (no home)");
+        assertEquals(4, terminal.scrollFirst, "DECSCPP preserves the top margin");
+        assertEquals(9, terminal.scrollLast, "DECSCPP preserves the bottom margin");
+        assertEquals(TerminalColors.ColorMode.SIXTEEN_COLOR, terminal.currentBackgroundColorMode,
+            "DECSCPP preserves SGR (no rendition reset)");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM,
+            "DECSCPP sets the DECCOLM flag to match the 132-column width");
+        // New columns are default-initialized (blank, default bg) — DECSCPP is a resize, not a
+        // clear, so unlike DECCOLM (which fills with the current SGR erase background) the new
+        // cells get defaults, matching xterm's calloc-zero on Reallocate. Revert-and-fail: an
+        // erase-background fill would leave SIXTEEN_COLOR here instead of DEFAULT_BACKGROUND.
+        assertEquals(' ', charAt(80, 0), "new column 80 is blank");
+        final int newColIdx = cellIndex(80, 0);
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.colorsBackground[newColIdx].mode,
+            "new columns are default-initialized, not filled with the current SGR background");
+    }
+
+    @Test
+    void decscppShrinksWidthLosingColumnsAndClampingCursor() {
+        write(terminal, CSI + "132$|");           // grow to 132 (non-destructive)
+        write(terminal, CSI + "1;1H");            // home
+        write(terminal, "A".repeat(100));         // fill cols 0-99; cursor ends at x=100
+        assertEquals(100, terminal.x, "precondition: cursor at col 100 (within 132)");
+        assertEquals('A', charAt(99, 0), "precondition: col 99 filled");
+
+        write(terminal, CSI + "80$|");            // DECSCPP -> 80 columns (shrink)
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "DECSCPP shrinks to 80 columns");
+        assertEquals(Terminal.WIDTH * Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT,
+            terminal.buffer.length, "buffers reallocate to 80 columns");
+        assertEquals('A', charAt(79, 0), "DECSCPP preserves the first 80 columns of content");
+        assertEquals(79, terminal.x, "DECSCPP clamps the cursor to the new rightmost column");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM,
+            "DECSCPP clears the DECCOLM flag at 80 columns");
+    }
+
+    @Test
+    void decscppSetsDeccolmFlagToMatchWidth() {
+        write(terminal, CSI + "132$|");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "132 cols sets the DECCOLM flag");
+        assertEquals(132, terminal.getTerminalWidth());
+
+        write(terminal, CSI + "80$|");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "80 cols clears the DECCOLM flag");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth());
+    }
+
+    @Test
+    void decscppIgnoresIllegalParam() {
+        write(terminal, CSI + "132$|");           // 132
+        write(terminal, CSI + "100$|");           // 100 is neither 80 nor 132 -> ignored
+        assertEquals(132, terminal.getTerminalWidth(), "illegal DECSCPP param is a no-op");
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "DECCOLM flag unchanged on no-op");
+    }
+
+    @Test
+    void decscppBareParamDefaultsToEighty() {
+        write(terminal, CSI + "132$|");           // 132
+        write(terminal, CSI + "$|");              // bare -> default 80
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(),
+            "bare CSI $ | defaults to 80 columns");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "80 cols clears the DECCOLM flag");
+    }
+
+    @Test
+    void decscppIgnoresPrivateMarkerPrefixes() {
+        // F2 (Kimi gate, 2026-09-07): xterm-410 routes "CSI ? Pn $ |" to CASE_GROUND_STATE
+        // (VTPrsTbl.c csi_dec_dollar_table[0x7C]); only the plain csi_dollar_table[0x7C] is
+        // DECSCPP, and the "> Pn $" form has no DECSCPP mapping either. The prefixed forms
+        // must be ignored, not treated as DECSCPP — more-permissive-than-xterm hides app bugs.
+        write(terminal, CSI + "?132$|");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(),
+            "?-prefixed DECSCPP is ignored (xterm: ground state)");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "DECCOLM flag untouched by ?-form");
+
+        write(terminal, CSI + ">132$|");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(),
+            ">-prefixed DECSCPP is ignored");
+        assertFalse(terminal.currentPrivateModeState.DECCOLM, "DECCOLM flag untouched by >-form");
+
+        // The plain form still works after the ignored garbage.
+        write(terminal, CSI + "132$|");
+        assertEquals(132, terminal.getTerminalWidth(), "plain DECSCPP still applies");
+    }
+
+    @Test
+    void decscppPreservesTabStops() {
+        // Revert-and-fail: DECCOLM rebuilds default tab stops; DECSCPP preserves user-set stops
+        // in the surviving columns and default-fills only the new columns.
+        write(terminal, CSI + "4G");              // CHA: cursor to column 4 (x=3)
+        write(terminal, ESC + "H");               // HTS: set a tab stop at column 3
+        assertTrue(terminal.tabs[3], "precondition: custom tab stop at column 3");
+
+        write(terminal, CSI + "132$|");           // DECSCPP grow to 132
+
+        assertTrue(terminal.tabs[3], "DECSCPP preserves the user-set tab stop at column 3");
+        assertTrue(terminal.tabs[88], "new column 88 gets the default tab stop (88 % 8 == 0)");
+        assertFalse(terminal.tabs[85], "new column 85 has no tab stop (85 % 8 != 0)");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -1543,7 +1669,7 @@ public class TerminalBufferTest {
     }
 
     private char altCharAt(final int x, final int y) {
-        return (char) terminal.altBuffer[x + y * Terminal.WIDTH];
+        return (char) terminal.altBuffer[x + y * terminal.width];
     }
 
     private void resetDirty() {

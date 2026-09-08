@@ -9,6 +9,7 @@ public class CSIState {
     public boolean singleQuote;
     public boolean space;
     public boolean exclamation;
+    public boolean asterisk;
 
     public CSIState(
             boolean questionMark,
@@ -18,7 +19,8 @@ public class CSIState {
             boolean quote,
             boolean singleQuote,
             boolean space,
-            boolean exclamation) {
+            boolean exclamation,
+            boolean asterisk) {
         this.questionMark = questionMark;
         this.greaterThan = greaterThan;
         this.dollarSign = dollarSign;
@@ -27,5 +29,6 @@ public class CSIState {
         this.singleQuote = singleQuote;
         this.space = space;
         this.exclamation = exclamation;
+        this.asterisk = asterisk;
     }
 }

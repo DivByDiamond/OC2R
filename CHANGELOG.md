@@ -7,6 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Terminal**: non-destructive column change — DECSCPP (`CSI Pn $ |`) selects 80 or 132 columns via a new `resizeWidth` primitive that copies existing contents into the surviving columns instead of clearing: screen content, scroll margins, cursor position and tab stops are preserved (new columns are default-initialized, matching xterm's resize). Private-marker forms (`?`/`>` prefix) are ignored, as xterm does. DECCOLM (mode 3) remains the destructive reset (#38)
 - **Terminal**: per-instance color palette — OSC 4 (query/set an indexed color) and OSC 104 (reset one or all indexed colors to default) are implemented; "computed dim" derives SGR 2 (dim) from the palette instead of a fixed table (#31)
 - **Terminal**: CSI cursor-positioning coverage completed — CBT/CHT (backward/forward tabulation), CNL/CPL (cursor down/up + CR), VPR/HPA/HPR (vertical/horizontal position, absolute/relative), RCP and CSI ?u (XTRESTORE, save/restore private mode state), REP (repeat preceding char) (#24)
 - **Terminal**: `XT_RAW_PASSTHROUGH` mode (CSI ?7777h/l) — an in-band byte-capture debugger that renders every received byte as a visible glyph without interpreting it, for diagnosing what a guest program actually sends

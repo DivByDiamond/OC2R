@@ -248,6 +248,33 @@ public class TerminalDiffTest {
                 "RIS reset must restore the client's palette to default, not leave it stale");
     }
 
+    @Test
+    void decscppReshipsVisibleWindowSoClientSurvivesWidthChange() {
+        // F1 regression (Kimi gate, 2026-09-07): resizeWidth must mark the NETWORK sink, not
+        // just the renderer masks. DECSCPP is the first width path where the server PRESERVES
+        // content while the client's apply-side width change destructively reallocates
+        // (TerminalDiff.apply -> setWidth). If the snapshot ships width without rows, the
+        // client blanks (visible + scrollback) while the server keeps "HELLO" — divergence
+        // until the next captureFull. Revert-and-fail: drop markAllDirty() from resizeWidth
+        // and rows() comes back empty here, and the client's 'H' vanishes.
+        write(server, "HELLO");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server)); // drain: HELLO shipped + consumed
+        assertEquals('H', charAt(client, 0, 0), "precondition: client shows HELLO at 80 cols");
+        assertEquals(Terminal.WIDTH, client.getTerminalWidth(), "precondition: client at 80 cols");
+
+        write(server, CSI + "132$|"); // DECSCPP on the server (non-destructive there)
+        assertEquals(132, server.getTerminalWidth(), "precondition: server resized to 132");
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertTrue(snapshot.rows().length > 0,
+            "DECSCPP must re-ship the visible window — a width-only snapshot blanks the client");
+        TerminalDiff.apply(client, snapshot);
+        assertEquals('H', charAt(client, 0, 0),
+            "client keeps the server's content across the DECSCPP width change");
+        assertEquals(132, client.getTerminalWidth(), "client is resized to 132 columns");
+    }
+
     private static void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
