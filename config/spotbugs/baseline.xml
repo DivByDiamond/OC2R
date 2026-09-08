@@ -32936,4 +32936,28 @@
   </BugInstance>
   
   
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="4fd3b65bf2a020e7b9d161a00d1b569c" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "width" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="557" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-557]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="resizeWidth" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="302" end="387" startBytecode="0" endBytecode="1135" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.resizeWidth(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="width" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.width</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="306" end="306" startBytecode="21" endBytecode="21" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 306]</Message>
+    </SourceLine>
+  </BugInstance>
+  
 </BugCollection>

@@ -23,6 +23,7 @@ public class CSIManager {
     private boolean singleQuote = false;
     private boolean space = false;
     private boolean exclamation = false;
+    private boolean asterisk = false;
     private boolean hasArg = false;
 
     private final Terminal terminal;
@@ -71,6 +72,7 @@ public class CSIManager {
         sequences.put('x', new DECREQTPARM(terminal));
 
         sequences.put('@', new CH11(terminal));
+        sequences.put('|', new CH13(terminal));
     }
 
     public void handle(final char ch) {
@@ -131,7 +133,7 @@ public class CSIManager {
         executeHandler(ch);
     }
 
-    private boolean handleModifier(final char ch) { // NOPMD 10-case VT100 modifier dispatch
+    private boolean handleModifier(final char ch) { // NOPMD 11-case VT100 modifier dispatch
         switch (ch) {
             case ' ' -> {
                 space = true;
@@ -165,6 +167,10 @@ public class CSIManager {
                 exclamation = true;
                 return true;
             }
+            case '*' -> {
+                asterisk = true;
+                return true;
+            }
             case ';' -> {
                 argCount = Math.min(argCount + 1, args.length);
                 hasArg = true;
@@ -191,7 +197,8 @@ public class CSIManager {
                         quote,
                         singleQuote,
                         space,
-                        exclamation);
+                        exclamation,
+                        asterisk);
 
         if (handler != null) {
             int[] defaults = handler.defaultParameters(state);
@@ -218,6 +225,7 @@ public class CSIManager {
         singleQuote = false;
         space = false;
         exclamation = false;
+        asterisk = false;
         hasArg = false;
         argCount = 0;
         Arrays.fill(args, 0);

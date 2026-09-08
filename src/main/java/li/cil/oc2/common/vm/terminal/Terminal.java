@@ -201,6 +201,22 @@ public class Terminal {
         style = TerminalColors.DEFAULT_STYLE;
     }
 
+    /**
+     * Resolve the erase background color from the current SGR background mode — the VT510 erase
+     * character, used by {@link #setWidth} (DECCOLM's destructive clear) and matching the same
+     * resolution in {@link TerminalBuffer#clear}. (DECSCPP's {@link #resizeWidth} does NOT use
+     * this — it default-initializes new columns, since a resize is not a clear.)
+     */
+    private ColorData resolveEraseBackground() {
+        return switch (currentBackgroundColorMode) {
+            case SIXTEEN_COLOR -> sixteenColor;
+            case TWO_FIFTY_SIX_COLOR -> twoFiftySixColor;
+            case TRUE_COLOR -> backgroundColor;
+            case SIXTEEN_COLOR_BRIGHT -> sixteenColorBright;
+            default -> TerminalColors.DEFAULT_BACKGROUND_COLOR;
+        };
+    }
+
     public int getTerminalWidth() {
         return width;
     }
@@ -216,13 +232,7 @@ public class Terminal {
         // Erase color: DECCOLM clears with the current SGR background (VT510 erase
         // character), matching bufferManager.clear(). RIS resets the modes before
         // calling setWidth, so it still fills with defaults.
-        final ColorData background = switch (currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> twoFiftySixColor;
-            case TRUE_COLOR -> backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> sixteenColorBright;
-            default -> TerminalColors.DEFAULT_BACKGROUND_COLOR;
-        };
+        final ColorData background = resolveEraseBackground();
 
         // Reallocate main buffer arrays
         final int mainSize = newWidth * HEIGHT * SCROLL_BACK_COUNT;
@@ -264,6 +274,127 @@ public class Terminal {
         this.setCursorPos(0, 0);
 
         // Mark all rows dirty
+        this.renderers.forEach(model -> model.getDirtyMask().set(-1));
+    }
+
+    /**
+     * Non-destructive width change (DECSCPP, {@code CSI Pn $ |}): reallocates the width-dependent
+     * buffers at the new column count while COPYING existing contents into the surviving columns,
+     * instead of clearing them as {@link #setWidth} does. Per DEC VT510-RM and xterm-410
+     * {@code CASE_DECSCPP}: DECSCPP does not clear page memory, reset scrolling regions, reset
+     * SGR, or reset tab stops — it only changes the column count, clamping the cursor if it now
+     * sits beyond the new width. Columns beyond the new width are lost (132→80); new columns
+     * (80→132) are default-initialized (blank, default fg/bg, no style) — a resize, not a clear,
+     * so unlike {@link #setWidth} (DECCOLM's destructive clear, which fills with the current SGR
+     * erase background) the new cells get defaults, matching xterm's {@code calloc}-zero on
+     * {@code Reallocate}.
+     *
+     * <p>The caller (CH13) sets the DECCOLM flag to match — this method is flag-agnostic so it
+     * can be reused by a future DECNCSM-gated non-destructive DECCOLM path.
+     *
+     * <p>Layout: the buffers are flat row-major with {@code width} as the stride (no circular
+     * pointer — {@code lastRowToDisplay(Max)} are row-count windows, width-independent), so each
+     * row is copied with a stride-aware {@link System#arraycopy}. The shared default object used
+     * to fill new columns is safe because the write path ({@code TerminalBufferWriter.putChar})
+     * REPLACES the {@code colors[idx]} reference rather than mutating it in place — the same
+     * property {@link #setWidth} already relies on.
+     */
+    public void resizeWidth(final int newWidth) {
+        // Guard: degenerate widths would break Math.clamp; a no-op resize avoids a pointless
+        // reallocation (DECSCPP to the current width does nothing).
+        if (newWidth < 1 || newWidth == this.width) {
+            return;
+        }
+        final int oldWidth = this.width;
+        this.width = newWidth;
+        final int copyCols = Math.min(oldWidth, newWidth);
+
+        // New columns are default-initialized (blank, default fg/bg, no style) — DECSCPP is a
+        // resize, not a clear, so the new cells get defaults rather than the current SGR erase
+        // background that setWidth (DECCOLM's destructive clear) uses. Matches xterm's calloc-
+        // zero on Reallocate. Surviving columns keep their actual colors via the arraycopy below.
+        final ColorData defaultBackground = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+
+        // Main buffer (incl. scrollback): reallocate at the new stride, fill with defaults, then
+        // copy the surviving columns of every row. mainRows is width-independent, so the row
+        // count and the lastRowToDisplay(Max) window are preserved as-is.
+        final int mainRows = HEIGHT * SCROLL_BACK_COUNT;
+        final int[] newBuffer = new int[newWidth * mainRows];
+        final ColorData[] newColors = new ColorData[newWidth * mainRows];
+        final ColorData[] newColorsBackground = new ColorData[newWidth * mainRows];
+        final byte[] newStyles = new byte[newWidth * mainRows];
+        Arrays.fill(newBuffer, ' ');
+        Arrays.fill(newColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(newColorsBackground, defaultBackground);
+        Arrays.fill(newStyles, TerminalColors.DEFAULT_STYLE);
+        for (int r = 0; r < mainRows; r++) {
+            final int src = r * oldWidth;
+            final int dst = r * newWidth;
+            System.arraycopy(this.buffer, src, newBuffer, dst, copyCols);
+            System.arraycopy(this.colors, src, newColors, dst, copyCols);
+            System.arraycopy(this.colorsBackground, src, newColorsBackground, dst, copyCols);
+            System.arraycopy(this.styles, src, newStyles, dst, copyCols);
+        }
+        this.buffer = newBuffer;
+        this.colors = newColors;
+        this.colorsBackground = newColorsBackground;
+        this.styles = newStyles;
+
+        // Alt buffer (no scrollback): same per-row copy.
+        final ColorData[] newAltColors = new ColorData[newWidth * HEIGHT];
+        final ColorData[] newAltColorsBackground = new ColorData[newWidth * HEIGHT];
+        final int[] newAltBuffer = new int[newWidth * HEIGHT];
+        final byte[] newAltStyles = new byte[newWidth * HEIGHT];
+        Arrays.fill(newAltBuffer, ' ');
+        Arrays.fill(newAltColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(newAltColorsBackground, defaultBackground);
+        Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
+        for (int r = 0; r < HEIGHT; r++) {
+            final int src = r * oldWidth;
+            final int dst = r * newWidth;
+            System.arraycopy(this.altBuffer, src, newAltBuffer, dst, copyCols);
+            System.arraycopy(this.altColors, src, newAltColors, dst, copyCols);
+            System.arraycopy(this.altColorsBackground, src, newAltColorsBackground, dst, copyCols);
+            System.arraycopy(this.altStyles, src, newAltStyles, dst, copyCols);
+        }
+        this.altBuffer = newAltBuffer;
+        this.altColors = newAltColors;
+        this.altColorsBackground = newAltColorsBackground;
+        this.altStyles = newAltStyles;
+
+        // Tab stops: preserve existing stops in the surviving columns, default-fill new columns.
+        final boolean[] newTabs = new boolean[newWidth];
+        final boolean[] newAltTabs = new boolean[newWidth];
+        for (int i = 1; i < newWidth; i++) {
+            if (i < oldWidth) {
+                newTabs[i] = this.tabs[i];
+                newAltTabs[i] = this.altTabs[i];
+            } else if (i % TerminalColors.TAB_WIDTH == 0) {
+                newTabs[i] = true;
+                newAltTabs[i] = true;
+            }
+        }
+        this.tabs = newTabs;
+        this.altTabs = newAltTabs;
+
+        // Scroll margins + scrollback window are row-based (width-independent) — preserved per
+        // DECSCPP (does not reset DECSTBM). The active cursor is clamped only if it now sits
+        // beyond the new width (xterm CursorSet on cur_col + 1 > value); setCursorPos clamps x
+        // and clears the pending wrap + REP last-char, matching any cursor repositioning. The
+        // saved cursor is left as-is — restore routes through the clamping setCursorPos (§36 Б6).
+        if (this.x >= newWidth) {
+            setCursorPos(newWidth - 1, this.y);
+        }
+
+        // Mark all rows dirty — BOTH sinks. The renderer mask drives local redraw; markAllDirty
+        // drives the network diff. The network mark is load-bearing (Kimi gate, PR-2 review):
+        // DECSCPP is the first width path where the server PRESERVES content while the client's
+        // TerminalDiff.apply responds to the width change with a destructive setWidth — so the
+        // snapshot must re-ship the visible window or the client blanks (screen + scrollback)
+        // while the server keeps everything, diverging until the next captureFull. setWidth
+        // (DECCOLM) gets away without it only because DECCOLM's escape paths (CH2/CH3) call
+        // markAllDirty themselves — the clear ships symmetrically.
+        markAllDirty();
         this.renderers.forEach(model -> model.getDirtyMask().set(-1));
     }
 
