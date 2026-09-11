@@ -66,6 +66,16 @@ The default Linux image is bundled with the mod - no extra download needed.
 - **Required:** NeoForge 21.1.243+, Java 21+
 - **Optional:** JEI (recipe viewer)
 
+### Libraries
+
+OC2R builds on top of these libraries (links to their source):
+
+- [Sedna] - 64-bit RISC-V CPU emulator (NWD fork of [Sedna upstream])
+- [Ceres] - annotation-driven (de)serialization
+- [Minux] - buildroot-based Linux images for the VM (sedna-buildroot)
+- [OC2R Native Networking] - cross-platform native networking library
+- [jcodec] - H.264 video decoding (vendored in `li.cil.oc2.jcodec`)
+
 ### Installation
 
 1. Download the jar from [Releases](../../releases)
@@ -120,6 +130,16 @@ OC2R - мод для Minecraft, добавляющий полноценные в
 - **Обязательные:** NeoForge 21.1.243+, Java 21+
 - **Опциональные:** JEI (просмотр рецептов)
 
+### Библиотеки
+
+OC2R построен поверх этих библиотек (ссылки на их исходный код):
+
+- [Sedna] - 64-битный эмулятор RISC-V (форк NWD, оригинал - [Sedna upstream])
+- [Ceres] - аннотационная (де)сериализация
+- [Minux] - buildroot-образы Linux для ВМ (sedna-buildroot)
+- [OC2R Native Networking] - кроссплатформенная нативная сетевая библиотека
+- [jcodec] - декодирование H.264 видео (вендорится в `li.cil.oc2.jcodec`)
+
 ### Установка
 
 1. Скачайте jar из [Releases](../../releases)
@@ -148,4 +168,9 @@ GNU General Public License v3.0. See [LICENSE](LICENSE).
 
 [North-Western-Development/OC2R]: https://github.com/North-Western-Development/OC2R
 [OpenComputers 2]: https://github.com/fnuecke/oc2
-[Sedna]: https://github.com/fnuecke/sedna
+[Sedna]: https://github.com/North-Western-Development/sedna
+[Sedna upstream]: https://github.com/fnuecke/sedna
+[Ceres]: https://github.com/fnuecke/ceres
+[Minux]: https://github.com/North-Western-Development/minux
+[OC2R Native Networking]: https://github.com/North-Western-Development/oc2r-native-networking
+[jcodec]: https://github.com/jcodec/jcodec
