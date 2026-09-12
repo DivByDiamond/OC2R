@@ -42,3 +42,4 @@ src/main/resources/generated/
 
 # runtime logs
 logs/
+.claude/
