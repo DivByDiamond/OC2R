@@ -1,15 +1,17 @@
 name: ci
 
-# Continuous integration for the development branch: compile, tests and static
-# analysis on every push / PR. Releases are handled by build.yml (tags) and
-# publish.yml (releases) — this workflow never publishes anything.
-
+# Continuous integration for both the dev branch (work) and PRs into the
+# release branch (1.21.1): compile, tests and static analysis. Releases are
+# handled by build.yml (tags) and publish.yml (releases) -- this workflow
+# never publishes anything. `pull_request: [work, 1.21.1]` exists because
+# build.yml only triggers on `push` (post-merge) -- without this, a PR
+# targeting 1.21.1 got zero automated verification before merge.
 on:
   workflow_dispatch:
   push:
     branches: [ 'work' ]
   pull_request:
-    branches: [ 'work' ]
+    branches: [ 'work', '1.21.1' ]
 
 # A new push to the same PR/branch makes the previous run's result moot --
 # cancel it instead of letting stale runs pile up on the (limited) self-hosted pool.
