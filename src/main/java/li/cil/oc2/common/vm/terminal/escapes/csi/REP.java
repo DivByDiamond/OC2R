@@ -28,7 +28,7 @@ public class REP extends CSISequenceHandler {
         // e.g. `X ESC[2147483647b` would loop ~2^31 times — each a full putChar (with autowrap/
         // scroll) inside the IO lock, freezing the VM worker for minutes. Cap at one screen:
         // repeating more than terminal.width * HEIGHT just scrolls off (CH8 clamps the same way).
-        for (int i = 0; i < Math.min(args[0], terminal.width * Terminal.HEIGHT); i++) {
+        for (int i = 0; i < Math.min(args[0], terminal.width * terminal.height); i++) {
             terminal.bufferWriter.putChar(ch);
         }
     }

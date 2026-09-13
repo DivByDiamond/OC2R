@@ -29,8 +29,8 @@ public class TerminalBuffer {
             Arrays.fill(terminal.altColorsBackground, c.copy());
             Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
         } else {
-            int startIndex = (terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width;
-            int endIndex = startIndex + (Terminal.HEIGHT * terminal.width);
+            int startIndex = (terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
+            int endIndex = startIndex + (terminal.height * terminal.width);
             Arrays.fill(terminal.buffer, startIndex, endIndex, ' ');
             Arrays.fill(
                     terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
@@ -215,7 +215,7 @@ public class TerminalBuffer {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             return y * terminal.width + x;
         }
-        return (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width + x;
+        return (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width + x;
     }
 
     private ColorData getCurrentBackgroundColor() {

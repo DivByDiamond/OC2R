@@ -47,7 +47,7 @@ public class DECSTR {
         terminal.state = Terminal.State.NORMAL;
         // DECSTBM: scroll margins to full page. DEC VT510-RM Table 5-9 and xterm both reset this
         terminal.scrollFirst = 0;
-        terminal.scrollLast = Terminal.HEIGHT - 1;
+        terminal.scrollLast = terminal.height - 1;
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;

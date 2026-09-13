@@ -61,6 +61,8 @@ public class Terminal {
     public transient ByteArrayFIFOQueue input = new ByteArrayFIFOQueue(32);
     // DECCOLM dynamic width; setWidth reallocates buffers. Transient: re-inits to WIDTH on load.
     public transient int width = WIDTH;
+    // DECSLPP dynamic height; resizeHeight reallocates buffers. Transient: re-inits to HEIGHT on load.
+    public transient int height = HEIGHT;
     // Width-dependent buffers are allocated solely by setWidth (called from the constructor via
     // RIS, and on every DECCOLM/RIS width switch). No field initializer here — that would just be
     // allocated and immediately discarded by setWidth's reallocation.
@@ -122,8 +124,8 @@ public class Terminal {
     public ColorData altSavedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
     public ColorData altSavedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
     public ColorData altSavedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-    public int lastRowToDisplay = 24;
-    public int lastRowToDisplayMax = 24;
+    public int lastRowToDisplay = HEIGHT;
+    public int lastRowToDisplayMax = HEIGHT;
 
     public transient int[] altBuffer;
     public transient ColorData[] altColors;
@@ -135,7 +137,7 @@ public class Terminal {
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     // Network diff sink: absolute buffer rows changed since the last consume. The server
     // serializes these rows into TerminalDiff messages; the client never parses VT100.
-    private final transient BitSet networkDirtyRows = new BitSet(HEIGHT * SCROLL_BACK_COUNT);
+    private transient BitSet networkDirtyRows = new BitSet(HEIGHT * SCROLL_BACK_COUNT);
     private final transient ReentrantLock networkDirtyLock = new ReentrantLock();
     private transient boolean networkNeedsFullRefresh;
     public transient boolean displayOnly;
@@ -181,7 +183,7 @@ public class Terminal {
     }
 
     public int getHeight() {
-        return HEIGHT * CHAR_HEIGHT;
+        return height * CHAR_HEIGHT;
     }
 
     /**
@@ -221,6 +223,10 @@ public class Terminal {
         return width;
     }
 
+    public int getTerminalHeight() {
+        return height;
+    }
+
     public void setWidth(final int newWidth) {
         // Guard against degenerate widths: width-1 feeds Math.clamp as a max everywhere,
         // so a zero/negative width would throw IAE on the next cursor movement.
@@ -235,7 +241,7 @@ public class Terminal {
         final ColorData background = resolveEraseBackground();
 
         // Reallocate main buffer arrays
-        final int mainSize = newWidth * HEIGHT * SCROLL_BACK_COUNT;
+        final int mainSize = newWidth * height * SCROLL_BACK_COUNT;
         this.buffer = new int[mainSize];
         this.colors = new ColorData[mainSize];
         this.colorsBackground = new ColorData[mainSize];
@@ -246,7 +252,7 @@ public class Terminal {
         Arrays.fill(this.styles, TerminalColors.DEFAULT_STYLE);
 
         // Reallocate alt buffer arrays
-        final int altSize = newWidth * HEIGHT;
+        final int altSize = newWidth * height;
         this.altBuffer = new int[altSize];
         this.altColors = new ColorData[altSize];
         this.altColorsBackground = new ColorData[altSize];
@@ -268,13 +274,13 @@ public class Terminal {
 
         // DECCOLM spec: clear screen, reset margins, home cursor
         this.scrollFirst = 0;
-        this.scrollLast = HEIGHT - 1;
-        this.lastRowToDisplay = HEIGHT;
-        this.lastRowToDisplayMax = HEIGHT;
+        this.scrollLast = height - 1;
+        this.lastRowToDisplay = height;
+        this.lastRowToDisplayMax = height;
         this.setCursorPos(0, 0);
 
         // Mark all rows dirty
-        this.renderers.forEach(model -> model.getDirtyMask().set(-1));
+        this.renderers.forEach(model -> model.getDirtyMask().set(-1L));
     }
 
     /**
@@ -318,7 +324,7 @@ public class Terminal {
         // Main buffer (incl. scrollback): reallocate at the new stride, fill with defaults, then
         // copy the surviving columns of every row. mainRows is width-independent, so the row
         // count and the lastRowToDisplay(Max) window are preserved as-is.
-        final int mainRows = HEIGHT * SCROLL_BACK_COUNT;
+        final int mainRows = height * SCROLL_BACK_COUNT;
         final int[] newBuffer = new int[newWidth * mainRows];
         final ColorData[] newColors = new ColorData[newWidth * mainRows];
         final ColorData[] newColorsBackground = new ColorData[newWidth * mainRows];
@@ -341,15 +347,15 @@ public class Terminal {
         this.styles = newStyles;
 
         // Alt buffer (no scrollback): same per-row copy.
-        final ColorData[] newAltColors = new ColorData[newWidth * HEIGHT];
-        final ColorData[] newAltColorsBackground = new ColorData[newWidth * HEIGHT];
-        final int[] newAltBuffer = new int[newWidth * HEIGHT];
-        final byte[] newAltStyles = new byte[newWidth * HEIGHT];
+        final ColorData[] newAltColors = new ColorData[newWidth * height];
+        final ColorData[] newAltColorsBackground = new ColorData[newWidth * height];
+        final int[] newAltBuffer = new int[newWidth * height];
+        final byte[] newAltStyles = new byte[newWidth * height];
         Arrays.fill(newAltBuffer, ' ');
         Arrays.fill(newAltColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(newAltColorsBackground, defaultBackground);
         Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
-        for (int r = 0; r < HEIGHT; r++) {
+        for (int r = 0; r < height; r++) {
             final int src = r * oldWidth;
             final int dst = r * newWidth;
             System.arraycopy(this.altBuffer, src, newAltBuffer, dst, copyCols);
@@ -398,6 +404,118 @@ public class Terminal {
         markAllDirty();
     }
 
+    /**
+     * Non-destructive height change (DECSLPP, {@code CSI Pn * |}): reallocates the height-
+     * dependent buffers at the new row count while COPYING existing contents into the surviving
+     * rows, instead of clearing them. Per DEC VT510-RM and xterm-410: DECSLPP does not clear page
+     * memory, reset scrolling regions, reset SGR, or reset tab stops — it only changes the row
+     * count, clamping the cursor and margins if they now sit beyond the new height. Rows beyond
+     * the new height are lost (48→24); new rows (24→48) are default-initialized (blank, default
+     * fg/bg, no style) — a resize, not a clear, matching xterm's {@code Reallocate} behavior.
+     *
+     * <p>The caller (CH13) sets any mode flags — this method is flag-agnostic so it can be reused
+     * by XTWINOPS case-8 ({@code CSI 8;rows;cols t}) which sets both dimensions at once.
+     *
+     * <p>Scrollback window: growing extends {@code lastRowToDisplay(Max)} so the new blank rows
+     * appear at the bottom of the visible area; shrinking discards bottom rows and clamps the
+     * window. The scrollback history (rows above the visible window) is preserved up to the new
+     * buffer capacity.
+     */
+    public void resizeHeight(final int newHeight) { // NOPMD: NPath — row-copy + margin/window/cursor clamping mirrors resizeWidth's shape
+        if (newHeight < 1 || newHeight == this.height) {
+            return;
+        }
+        final int oldHeight = this.height;
+        this.height = newHeight;
+
+        final ColorData defaultBackground = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+
+        // Main buffer (incl. scrollback): reallocate at the new height, fill with defaults,
+        // then copy the surviving rows. Each row is width cells, stride unchanged.
+        final int newMainRows = newHeight * SCROLL_BACK_COUNT;
+        final int oldMainRows = oldHeight * SCROLL_BACK_COUNT;
+        final int copyMainRows = Math.min(oldMainRows, newMainRows);
+        final int[] newBuffer = new int[width * newMainRows];
+        final ColorData[] newColors = new ColorData[width * newMainRows];
+        final ColorData[] newColorsBackground = new ColorData[width * newMainRows];
+        final byte[] newStyles = new byte[width * newMainRows];
+        Arrays.fill(newBuffer, ' ');
+        Arrays.fill(newColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(newColorsBackground, defaultBackground);
+        Arrays.fill(newStyles, TerminalColors.DEFAULT_STYLE);
+        for (int r = 0; r < copyMainRows; r++) {
+            final int off = r * width;
+            System.arraycopy(this.buffer, off, newBuffer, off, width);
+            System.arraycopy(this.colors, off, newColors, off, width);
+            System.arraycopy(this.colorsBackground, off, newColorsBackground, off, width);
+            System.arraycopy(this.styles, off, newStyles, off, width);
+        }
+        this.buffer = newBuffer;
+        this.colors = newColors;
+        this.colorsBackground = newColorsBackground;
+        this.styles = newStyles;
+
+        // Alt buffer (no scrollback): same per-row copy.
+        final int copyAltRows = Math.min(oldHeight, newHeight);
+        final ColorData[] newAltColors = new ColorData[width * newHeight];
+        final ColorData[] newAltColorsBackground = new ColorData[width * newHeight];
+        final int[] newAltBuffer = new int[width * newHeight];
+        final byte[] newAltStyles = new byte[width * newHeight];
+        Arrays.fill(newAltBuffer, ' ');
+        Arrays.fill(newAltColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(newAltColorsBackground, defaultBackground);
+        Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
+        for (int r = 0; r < copyAltRows; r++) {
+            final int off = r * width;
+            System.arraycopy(this.altBuffer, off, newAltBuffer, off, width);
+            System.arraycopy(this.altColors, off, newAltColors, off, width);
+            System.arraycopy(this.altColorsBackground, off, newAltColorsBackground, off, width);
+            System.arraycopy(this.altStyles, off, newAltStyles, off, width);
+        }
+        this.altBuffer = newAltBuffer;
+        this.altColors = newAltColors;
+        this.altColorsBackground = newAltColorsBackground;
+        this.altStyles = newAltStyles;
+
+        // Scroll margins: clamp to new height (DECSLPP does not reset DECSTBM, but the bottom
+        // margin must not exceed the new page size).
+        if (this.scrollLast >= newHeight) {
+            this.scrollLast = newHeight - 1;
+        }
+        if (this.scrollFirst >= this.scrollLast) {
+            this.scrollFirst = 0;
+            this.scrollLast = newHeight - 1;
+        }
+
+        // Scrollback window: growing extends the window so new blank rows appear at the bottom;
+        // shrinking clamps. The delta is the row-count change; adding it to lastRowToDisplay(Max)
+        // keeps the same content visible and extends the view downward.
+        final int delta = newHeight - oldHeight;
+        if (delta > 0) {
+            this.lastRowToDisplay = Math.min(this.lastRowToDisplay + delta, newMainRows);
+            this.lastRowToDisplayMax = Math.min(this.lastRowToDisplayMax + delta, newMainRows);
+        } else {
+            this.lastRowToDisplay = Math.min(this.lastRowToDisplay, newMainRows);
+            this.lastRowToDisplayMax = Math.min(this.lastRowToDisplayMax, newMainRows);
+        }
+
+        // Clamp cursor if beyond new height.
+        if (this.y >= newHeight) {
+            setCursorPos(this.x, newHeight - 1);
+        }
+
+        // Reallocate the network dirty BitSet for the new capacity.
+        networkDirtyLock.lock();
+        try {
+            networkDirtyRows = new BitSet(newMainRows);
+        } finally {
+            networkDirtyLock.unlock();
+        }
+
+        // Mark all rows dirty — BOTH sinks (same rationale as resizeWidth).
+        markAllDirty();
+    }
+
     @OnlyIn(Dist.CLIENT)
     public RendererView getRenderer() {
         return client().getRenderer();
@@ -407,7 +525,7 @@ public class Terminal {
         autowrapPending = false; // any explicit cursor move clears the pending wrap (xterm ResetWrap)
         lastPrintedChar = -1; // a cursor move means no preceding graphic char for REP (xterm lastchar)
         this.x = Math.clamp(x, 0, width - 1);
-        this.y = Math.clamp(y, 0, HEIGHT - 1);
+        this.y = Math.clamp(y, 0, height - 1);
     }
 
     public void setClampedCursorPos(final int x, final int y) {
@@ -428,7 +546,7 @@ public class Terminal {
      */
     public void moveCursorBy(final int dx, final int dy) {
         setClampedCursorPos(x + Math.clamp(dx, -width, width),
-                y + Math.clamp(dy, -Terminal.HEIGHT, Terminal.HEIGHT));
+                y + Math.clamp(dy, -height, height));
     }
 
     public void setRelativeCursorPos(final int x, final int y) {
@@ -453,7 +571,7 @@ public class Terminal {
         client().releaseRenderer(renderer);
     }
 
-    public void markDirty(final int mask) {
+    public void markDirty(final long mask) {
         recordNetworkDirtyScreenRows(mask);
         renderers.forEach(
                 model ->
@@ -468,7 +586,7 @@ public class Terminal {
         } finally {
             networkDirtyLock.unlock();
         }
-        renderers.forEach(model -> model.getDirtyMask().set(-1));
+        renderers.forEach(model -> model.getDirtyMask().set(-1L));
     }
 
     /**
@@ -476,15 +594,15 @@ public class Terminal {
      * sink. Alt-buffer rows are indexed by screen row directly; main-buffer screen row
      {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - HEIGHT}.
      */
-    private void recordNetworkDirtyScreenRows(final int mask) {
+    private void recordNetworkDirtyScreenRows(final long mask) {
         if (mask == 0) return;
         final boolean alt = currentPrivateModeState.isAltBufferEnabled();
         networkDirtyLock.lock();
         try {
-            for (int s = 0; s < HEIGHT; s++) {
-                if ((mask & (1 << s)) == 0) continue;
-                final int row = alt ? s : s + lastRowToDisplay - HEIGHT;
-                if (row >= 0 && row < networkDirtyRows.size()) {
+            for (int s = 0; s < height; s++) {
+                if ((mask & (1L << s)) == 0) continue;
+                final int row = alt ? s : s + lastRowToDisplay - height;
+                if (row >= 0 && row < height * SCROLL_BACK_COUNT) {
                     networkDirtyRows.set(row);
                 }
             }

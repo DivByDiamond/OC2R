@@ -2,7 +2,7 @@ package li.cil.oc2.common.vm.terminal;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.render.RendererModel;
 import org.junit.jupiter.api.BeforeEach;
@@ -279,21 +279,21 @@ public class SGRTest {
     }
 
     private char charAt(final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return (char) terminal.buffer[x + row * Terminal.WIDTH];
     }
 
     private static final class DummyRenderer implements RendererModel {
-        private final AtomicInteger dirtyMask = new AtomicInteger();
+        private final AtomicLong dirtyMask = new AtomicLong();
 
         @Override
-        public AtomicInteger getDirtyMask() {
+        public AtomicLong getDirtyMask() {
             return dirtyMask;
         }
 
         @Override
         public void close() {
-            dirtyMask.set(0);
+            dirtyMask.set(0L);
         }
     }
 }

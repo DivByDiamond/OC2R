@@ -10,7 +10,7 @@ public class IND {
                 terminal.bufferManager.incrementLastLineToDisplay();
             terminal.autowrapPending = false; // IND is a cursor move — clears pending (xterm ResetWrap)
         } else {
-            terminal.setCursorPos(terminal.x, Math.min(terminal.y + 1, Terminal.HEIGHT - 1));
+            terminal.setCursorPos(terminal.x, Math.min(terminal.y + 1, terminal.height - 1));
         }
     }
 }

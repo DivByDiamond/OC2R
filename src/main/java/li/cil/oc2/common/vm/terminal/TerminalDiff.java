@@ -61,6 +61,7 @@ public final class TerminalDiff {
     public record Snapshot(
             boolean reset,
             int width,
+            int height,
             boolean altBuffer,
             int[] rows,
             byte[][] rowData,
@@ -154,6 +155,7 @@ public final class TerminalDiff {
         return new Snapshot(
                 reset,
                 terminal.width,
+                terminal.height,
                 alt,
                 rows,
                 serializeRows(terminal, alt, rows),
@@ -170,16 +172,16 @@ public final class TerminalDiff {
 
     private static int[] visibleWindowRows(final Terminal terminal) {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-            final int[] rows = new int[Terminal.HEIGHT];
+            final int[] rows = new int[terminal.height];
             for (int i = 0; i < rows.length; i++) {
                 rows[i] = i;
             }
             return rows;
         }
         // Main buffer: the currently displayed scrollback window.
-        final int first = Math.max(0, terminal.lastRowToDisplay - Terminal.HEIGHT);
-        final int count = Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT - first;
-        final int[] rows = new int[Math.min(Terminal.HEIGHT, count)];
+        final int first = Math.max(0, terminal.lastRowToDisplay - terminal.height);
+        final int count = terminal.height * Terminal.SCROLL_BACK_COUNT - first;
+        final int[] rows = new int[Math.min(terminal.height, count)];
         for (int i = 0; i < rows.length; i++) {
             rows[i] = first + i;
         }
@@ -325,12 +327,15 @@ public final class TerminalDiff {
         if (terminal.width != s.width()) {
             terminal.setWidth(s.width());
         }
+        if (terminal.height != s.height()) {
+            terminal.resizeHeight(s.height());
+        }
 
         final boolean alt = s.altBuffer();
         if (s.reset()) {
             clearBuffers(terminal);
             terminal.scrollFirst = 0;
-            terminal.scrollLast = Terminal.HEIGHT - 1;
+            terminal.scrollLast = terminal.height - 1;
         }
         setAltBufferEnabled(terminal, alt);
 
@@ -384,7 +389,7 @@ public final class TerminalDiff {
     private static void deserializeRow(
             final Terminal terminal, final boolean alt, final int row, final byte[] data) {
         if (row < 0
-                || (alt ? row >= Terminal.HEIGHT : row >= Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT)) {
+                || (alt ? row >= terminal.height : row >= terminal.height * Terminal.SCROLL_BACK_COUNT)) {
             return;
         }
         final ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -476,6 +481,7 @@ public final class TerminalDiff {
     private static void writeSnapshot(final Snapshot s, final ByteBuf buf) {
         buf.writeBoolean(s.reset());
         ByteBufCodecs.VAR_INT.encode(buf, s.width());
+        ByteBufCodecs.VAR_INT.encode(buf, s.height());
         buf.writeBoolean(s.altBuffer());
         writeByteArray(buf, encodeInts(s.rows()));
         ByteBufCodecs.VAR_INT.encode(buf, s.rowData().length);
@@ -500,6 +506,7 @@ public final class TerminalDiff {
     private static Snapshot readSnapshot(final ByteBuf buf) {
         final boolean reset = buf.readBoolean();
         final int width = ByteBufCodecs.VAR_INT.decode(buf);
+        final int height = ByteBufCodecs.VAR_INT.decode(buf);
         final boolean altBuffer = buf.readBoolean();
         final int[] rows = decodeInts(readByteArray(buf));
         final int rowCount = ByteBufCodecs.VAR_INT.decode(buf);
@@ -521,6 +528,7 @@ public final class TerminalDiff {
         return new Snapshot(
                 reset,
                 width,
+                height,
                 altBuffer,
                 rows,
                 rowData,

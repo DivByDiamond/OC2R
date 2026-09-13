@@ -14,13 +14,13 @@ class TerminalBufferScrolling {
     }
 
     public void incrementLastLineToDisplay(boolean scroll) {
-        if (terminal.scrollFirst != 0 || terminal.scrollLast != Terminal.HEIGHT - 1) return;
+        if (terminal.scrollFirst != 0 || terminal.scrollLast != terminal.height - 1) return;
         boolean originallyEqual = terminal.lastRowToDisplayMax == terminal.lastRowToDisplay;
         if (!scroll) {
             terminal.lastRowToDisplayMax =
                     Math.min(
                             terminal.lastRowToDisplayMax + 1,
-                            Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT);
+                            terminal.height * Terminal.SCROLL_BACK_COUNT);
         } else if (terminal.lastRowToDisplay == terminal.lastRowToDisplayMax) {
             return;
         }
@@ -32,19 +32,19 @@ class TerminalBufferScrolling {
                     Math.min(terminal.lastRowToDisplay + 1, terminal.lastRowToDisplayMax);
         }
 
-        int dirtyLinesMask = 0;
-        for (int i = 0; i <= 23; i++) {
-            dirtyLinesMask |= 1 << i;
+        long dirtyLinesMask = 0;
+        for (int i = 0; i < terminal.height; i++) {
+            dirtyLinesMask |= 1L << i;
         }
         terminal.markDirty(dirtyLinesMask);
     }
 
     public void decrementLastLineToDisplay() {
-        if (terminal.scrollFirst != 0 || terminal.scrollLast != Terminal.HEIGHT - 1) return;
-        terminal.lastRowToDisplay = Math.max(terminal.lastRowToDisplay - 1, 24);
-        int dirtyLinesMask = 0;
-        for (int i = 0; i <= 23; i++) {
-            dirtyLinesMask |= 1 << i;
+        if (terminal.scrollFirst != 0 || terminal.scrollLast != terminal.height - 1) return;
+        terminal.lastRowToDisplay = Math.max(terminal.lastRowToDisplay - 1, terminal.height);
+        long dirtyLinesMask = 0;
+        for (int i = 0; i < terminal.height; i++) {
+            dirtyLinesMask |= 1L << i;
         }
         terminal.markDirty(dirtyLinesMask);
     }
@@ -53,19 +53,19 @@ class TerminalBufferScrolling {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shiftLines(terminal.scrollFirst + 1, terminal.scrollLast, -count);
         } else {
-            if (terminal.lastRowToDisplay == Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT
-                    || terminal.scrollLast != Terminal.HEIGHT - 1
+            if (terminal.lastRowToDisplay == terminal.height * Terminal.SCROLL_BACK_COUNT
+                    || terminal.scrollLast != terminal.height - 1
                     || terminal.scrollFirst != 0) {
                 shiftLines(
                         terminal.scrollFirst != 0
                                 ? terminal.scrollFirst
                                         + terminal.lastRowToDisplayMax
-                                        - Terminal.HEIGHT
+                                        - terminal.height
                                         + 1
                                 : 1,
-                        terminal.scrollLast != Terminal.HEIGHT - 1
-                                ? terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT
-                                : (Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT) - 1,
+                        terminal.scrollLast != terminal.height - 1
+                                ? terminal.scrollLast + terminal.lastRowToDisplayMax - terminal.height
+                                : (terminal.height * Terminal.SCROLL_BACK_COUNT) - 1,
                         -count);
             }
         }
@@ -74,23 +74,23 @@ class TerminalBufferScrolling {
     public void shiftDown(int countParam) {
         // Shifting more than the visible height blanks the whole window either way;
         // clamping keeps the index arithmetic below in valid range.
-        final int count = Math.min(countParam, Terminal.HEIGHT);
+        final int count = Math.min(countParam, terminal.height);
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shiftLines(terminal.scrollFirst, terminal.scrollLast - 1, count);
-        } else if (terminal.scrollFirst == 0 && terminal.scrollLast == Terminal.HEIGHT - 1) {
+        } else if (terminal.scrollFirst == 0 && terminal.scrollLast == terminal.height - 1) {
             // Shift within the physical window at the bottom of the scrollback
             // (lastRowToDisplayMax, like every other main-buffer path): lines pushed off
             // the bottom are discarded, top lines become blank. Passing lastLine reduced
             // by count shrinks the copied region so arraycopy never writes past the
             // buffer end when the window sits at the absolute buffer bottom.
             shiftLines(
-                    terminal.lastRowToDisplayMax - Terminal.HEIGHT,
+                    terminal.lastRowToDisplayMax - terminal.height,
                     terminal.lastRowToDisplayMax - 1 - count,
                     count);
         } else {
             shiftLines(
-                    terminal.scrollFirst + terminal.lastRowToDisplayMax - Terminal.HEIGHT,
-                    terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT - 1,
+                    terminal.scrollFirst + terminal.lastRowToDisplayMax - terminal.height,
+                    terminal.scrollLast + terminal.lastRowToDisplayMax - terminal.height - 1,
                     count);
         }
     }

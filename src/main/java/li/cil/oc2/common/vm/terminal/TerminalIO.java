@@ -42,9 +42,9 @@ public class TerminalIO {
             } else {
                 if (!terminal.currentPrivateModeState.isAltBufferEnabled())
                     terminal.lastRowToDisplay = terminal.lastRowToDisplayMax;
-                int dirtyLinesMask = 0;
-                for (int i = 0; i <= 23; i++) {
-                    dirtyLinesMask |= 1 << i;
+                long dirtyLinesMask = 0;
+                for (int i = 0; i < terminal.height; i++) {
+                    dirtyLinesMask |= 1L << i;
                 }
                 terminal.markDirty(dirtyLinesMask);
                 final ByteBuffer buffer = ByteBuffer.allocate(terminal.input.size());

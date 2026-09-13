@@ -172,7 +172,7 @@ public final class ComputerFixture {
     public String screen() {
         final Terminal terminal = blockEntity().terminalManager.getTerminal();
         final int width = terminal.width;
-        final int height = Terminal.HEIGHT;
+        final int height = terminal.height;
         final StringBuilder text = new StringBuilder();
         synchronized (terminal) {
             for (int row = 0; row < height; row++) {

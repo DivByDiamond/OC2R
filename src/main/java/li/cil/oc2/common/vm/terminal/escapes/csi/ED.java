@@ -25,7 +25,7 @@ public class ED extends CSISequenceHandler {
             switch (args[0]) {
                 case 0 -> { // From cursor to end of screen
                     terminal.bufferManager.clearLine(terminal.y, x, terminal.width);
-                    for (int iy = terminal.y + 1; iy < Terminal.HEIGHT; iy++) {
+                    for (int iy = terminal.y + 1; iy < terminal.height; iy++) {
                         terminal.bufferManager.clearLine(iy);
                     }
                 }

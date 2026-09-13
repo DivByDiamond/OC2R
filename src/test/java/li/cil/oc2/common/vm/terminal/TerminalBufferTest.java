@@ -2,7 +2,7 @@ package li.cil.oc2.common.vm.terminal;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.render.RendererModel;
@@ -1648,6 +1648,63 @@ public class TerminalBufferTest {
         assertFalse(terminal.tabs[85], "new column 85 has no tab stop (85 % 8 != 0)");
     }
 
+    @Test
+    void decsnlsGrowsHeightPreservingContent() {
+        write(terminal, "HELLO");
+        assertEquals('H', charAt(0, 0), "precondition: content at (0,0)");
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+
+        write(terminal, CSI + "48*|"); // DECSNLS -> 48 rows
+
+        assertEquals(48, terminal.height, "DECSNLS grows to 48 rows");
+        assertEquals(48 * Terminal.SCROLL_BACK_COUNT, terminal.buffer.length / terminal.width,
+            "main buffer reallocated to 48 * SCROLL_BACK_COUNT rows");
+        assertEquals('H', charAt(0, 0), "content preserved at (0,0)");
+    }
+
+    @Test
+    void decsnlsShrinksHeightClampingCursor() {
+        write(terminal, CSI + "10;1H"); // cursor to row 10
+        assertEquals(9, terminal.y, "precondition: cursor at row 9");
+
+        write(terminal, CSI + "4*|"); // DECSNLS -> 4 rows
+
+        assertEquals(4, terminal.height, "DECSNLS shrinks to 4 rows");
+        assertEquals(3, terminal.y, "cursor clamped to new bottom row");
+    }
+
+    @Test
+    void decsnlsIgnoresOutOfRangeParam() {
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+
+        write(terminal, CSI + "0*|"); // 0 is out of range (xterm: value < 1 is ignored)
+
+        assertEquals(Terminal.HEIGHT, terminal.height, "0 is not a valid line count");
+    }
+
+    @Test
+    void xtwinopsCase8SetsRowsAndCols() {
+        write(terminal, "HELLO");
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "precondition: 80 cols");
+
+        write(terminal, CSI + "8;48;132t"); // XTWINOPS case 8: 48 rows, 132 cols
+
+        assertEquals(48, terminal.height, "rows resized to 48");
+        assertEquals(132, terminal.getTerminalWidth(), "cols resized to 132");
+        assertEquals('H', charAt(0, 0), "content preserved");
+    }
+
+    @Test
+    void xtwinopsCase8RowsOnlyWithZeroCols() {
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "precondition: 80 cols");
+
+        write(terminal, CSI + "8;48;0t"); // rows=48, cols=0 (no change)
+
+        assertEquals(48, terminal.height, "rows resized to 48");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "cols unchanged (0 = no change)");
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -1659,12 +1716,12 @@ public class TerminalBufferTest {
     }
 
     private char charAt(final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return (char) terminal.buffer[x + row * terminal.width];
     }
 
     private int cellIndex(final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return x + row * terminal.width;
     }
 
@@ -1677,16 +1734,16 @@ public class TerminalBufferTest {
     }
 
     private static final class DummyRenderer implements RendererModel {
-        private final AtomicInteger dirtyMask = new AtomicInteger();
+        private final AtomicLong dirtyMask = new AtomicLong();
 
         @Override
-        public AtomicInteger getDirtyMask() {
+        public AtomicLong getDirtyMask() {
             return dirtyMask;
         }
 
         @Override
         public void close() {
-            dirtyMask.set(0);
+            dirtyMask.set(0L);
         }
     }
 

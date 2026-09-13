@@ -30,8 +30,8 @@ public class DL extends CSISequenceHandler {
         if (useAltBuffer) {
             terminal.bufferManager.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
         } else {
-            int startRow = terminal.y + lines + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
-            int endRow = terminal.scrollLast + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+            int startRow = terminal.y + lines + terminal.lastRowToDisplayMax - terminal.height;
+            int endRow = terminal.scrollLast + terminal.lastRowToDisplayMax - terminal.height;
             terminal.bufferManager.shiftLines(startRow, endRow, -lines);
         }
     }

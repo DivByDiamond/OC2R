@@ -169,6 +169,7 @@ public class TerminalDiffTest {
                 new TerminalDiff.Snapshot(
                         snapshot.reset(),
                         snapshot.width(),
+                        snapshot.height(),
                         snapshot.altBuffer(),
                         snapshot.rows(),
                         truncated,
@@ -275,6 +276,30 @@ public class TerminalDiffTest {
         assertEquals(132, client.getTerminalWidth(), "client is resized to 132 columns");
     }
 
+    @Test
+    void resizeHeightShipsHeightAndRowsSoClientSurvives() {
+        // Same class of seam bug as DECSCPP (PR #38 F1): resizeHeight on the server preserves
+        // content, but the client's apply must see the new height in the snapshot or the client
+        // renders at the old height with truncated/missing rows. Revert-and-fail: drop height
+        // from the Snapshot record and the client stays at 24 while the server is at 48.
+        write(server, "HELLO");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server)); // drain: HELLO shipped + consumed
+        assertEquals('H', charAt(client, 0, 0), "precondition: client shows HELLO");
+        assertEquals(Terminal.HEIGHT, client.height, "precondition: client at 24 rows");
+
+        server.resizeHeight(48);
+        assertEquals(48, server.height, "precondition: server resized to 48 rows");
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertEquals(48, snapshot.height(), "snapshot carries the new height");
+        assertTrue(snapshot.rows().length > 0, "height resize must re-ship the visible window");
+        TerminalDiff.apply(client, snapshot);
+        assertEquals(48, client.height, "client is resized to 48 rows");
+        assertEquals('H', charAt(client, 0, 0),
+                "client keeps the server's content across the height change");
+    }
+
     private static void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -312,7 +337,7 @@ public class TerminalDiffTest {
     }
 
     private static int cellIndex(final Terminal terminal, final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return x + row * terminal.width;
     }
 }

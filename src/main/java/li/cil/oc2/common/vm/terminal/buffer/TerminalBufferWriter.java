@@ -48,7 +48,7 @@ public class TerminalBufferWriter {
         final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         final int index = altBuffer
                 ? x + y * terminal.width
-                : x + (y + terminal.lastRowToDisplayMax - Terminal.HEIGHT) * terminal.width;
+                : x + (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
 
         // Write the character
         if (altBuffer) {
@@ -94,20 +94,20 @@ public class TerminalBufferWriter {
         // Mark dirty — alt buffer uses y directly, main buffer needs scrollback offset
         final int dirtyLine = altBuffer
                 ? y
-                : Terminal.HEIGHT + terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y) - terminal.lastRowToDisplay;
+                : terminal.height + terminal.lastRowToDisplayMax - (terminal.height - y) - terminal.lastRowToDisplay;
         markDirtyLine(terminal, dirtyLine);
     }
 
     /**
      * Sets the dirty bit for a single screen row, addressed by {@code dirtyLine} in
-     * {@code [0, HEIGHT-1]}. The dirty mask is a 32-bit {@code int}, but {@code dirtyLine} can
+      * {@code [0, height-1]}. The dirty mask is a 64-bit {@code long}, but {@code dirtyLine} can
      * exceed that range while the view is scrolled back into scrollback (§36 M3): the write
-     * lands off-screen, {@code 1 << dirtyLine} would silently wrap modulo 32 and flip an
+     * lands off-screen, {@code 1L << dirtyLine} would silently wrap modulo 64 and flip an
      * unrelated bit, so a row we can't address in the mask instead forces a full redraw.
      */
     static void markDirtyLine(final Terminal terminal, final int dirtyLine) {
-        if (dirtyLine >= 0 && dirtyLine < Terminal.HEIGHT) {
-            terminal.markDirty(1 << dirtyLine);
+        if (dirtyLine >= 0 && dirtyLine < terminal.height) {
+            terminal.markDirty(1L << dirtyLine);
         } else {
             terminal.markAllDirty();
         }
@@ -117,7 +117,7 @@ public class TerminalBufferWriter {
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             return y;
         }
-        int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - y);
-        return Terminal.HEIGHT + globalY - terminal.lastRowToDisplay;
+        int globalY = terminal.lastRowToDisplayMax - (terminal.height - y);
+        return terminal.height + globalY - terminal.lastRowToDisplay;
     }
 }

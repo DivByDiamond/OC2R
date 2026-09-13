@@ -70,14 +70,14 @@ final class TerminalLineShifter {
                 shiftUpOrDown + clearCount,
                 TerminalColors.DEFAULT_STYLE);
 
-        int dirtyLinesMask = 0;
+        long dirtyLinesMask = 0;
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
             // Alt callers pass screen-row indices (terminal.y / scrollLast, no scrollback
             // offset), so the dirty row is i itself; guard the shift against out-of-range rows.
-            if (i >= 0 && i < Terminal.HEIGHT) {
-                dirtyLinesMask |= 1 << i;
+            if (i >= 0 && i < terminal.height) {
+                dirtyLinesMask |= 1L << i;
             }
         }
         terminal.markDirty(dirtyLinesMask);
@@ -118,16 +118,16 @@ final class TerminalLineShifter {
                 shiftUpOrDown + clearCount,
                 TerminalColors.DEFAULT_STYLE);
 
-        int dirtyLinesMask = 0;
+        long dirtyLinesMask = 0;
         final int dirtyStart = Math.min(firstLine, firstLine + count);
         final int dirtyEnd = Math.max(lastLine, lastLine + count);
         for (int i = dirtyStart; i <= dirtyEnd; i++) {
             // firstLine/lastLine are buffer-row indices on the main buffer (callers offset by
-            // lastRowToDisplayMax - HEIGHT); invert the renderer's screen->buffer map
-            // (bufferRow = screenRow + lastRowToDisplay - HEIGHT) to recover the screen row.
-            final int row = i + Terminal.HEIGHT - terminal.lastRowToDisplay;
-            if (row >= 0 && row < Terminal.HEIGHT) {
-                dirtyLinesMask |= 1 << row;
+            // lastRowToDisplayMax - height); invert the renderer's screen->buffer map
+            // (bufferRow = screenRow + lastRowToDisplay - height) to recover the screen row.
+            final int row = i + terminal.height - terminal.lastRowToDisplay;
+            if (row >= 0 && row < terminal.height) {
+                dirtyLinesMask |= 1L << row;
             }
         }
         terminal.markDirty(dirtyLinesMask);
