@@ -364,7 +364,8 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
   больше не отклоняется) — вход как в Minux. Пересобрать образ: `cargo ibuild` +
   OnyxOS `scripts/mk-onyxfs-disk.sh`; на существующем диске с неизвестным паролем —
   перезалить свежий образ (first-boot пересеет root).
-- [ ] **`boot_smode.rs`** (cfg-гейт, как `boot_32.rs`): вход из OpenSBI в S-mode — принять `a0`/`a1`, пропустить PMP/medeleg/mideleg (OpenSBI уже сделал), `stvec`/`sepc`/`sstatus.SPIE`, `sret` → `kmain`. ~50 строк asm
+- [x] **`boot_smode.rs`** — реализовано (см. «вывод на монитор» ниже, `--features smode`, 2026-08-23):
+  вход из OpenSBI в S-mode принят и работает, ядро успешно грузится и рисует в framebuffer.
 - [ ] **Сеть**: убрать хардкод `[10,0,2,15]`; DHCP или адрес из FDT/конфига
 - [ ] Проверить: UART NS16550A (совместим с sedna), virtio_net, virtio-blk, libfdt — что FDT от sedna парсится `early_init`
 
@@ -1380,20 +1381,19 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 
 ### 41.2 Точечные фиксы из релиза (диф-план, без реализации)
 
-- [ ] **Redstone side mixed-up (issue #164)**: **Подтверждён в форке.** `getRedstoneInput`
-  корректно использует `HorizontalBlockUtils.toGlobal()` для поворота, но `getRedstoneOutput`
-  и `setRedstoneOutput` в `RedstoneInterfaceCardItemDevice` (:116,:125) и
-  `RedstoneInterfaceBlockEntity` (:86,:93) используют `side.getDirection().get3DDataValue()`
-  без учёта FACING → выходы не поворачиваются с блоком. Фикс: применить
-  `HorizontalBlockUtils.toGlobal()` в set/get output аналогично getRedstoneInput.
+- [x] **Redstone side mixed-up (issue #164)** — исправлено (`ec49a41`, 2026-09-07):
+  `getRedstoneOutput`/`setRedstoneOutput` в `RedstoneInterfaceCardItemDevice` и
+  `RedstoneInterfaceBlockEntity` теперь используют `HorizontalBlockUtils.toGlobal()`
+  так же, как `getRedstoneInput` — выходы поворачиваются вместе с FACING блока.
 - [ ] **Robot `detect(side)` API (issue #108)**: **Отсутствует.** Метода нет в
   `api/capabilities/Robot.java` (только getInventory/getSelectedSlot/setSelectedSlot) и
   в `common/entity/Robot.java`. Feature request, не баг — приоритет низкий.
-- [ ] **Network connector на заборах (issue #225)**: **Потенциальная проблема.**
-  `NetworkConnectorBlock` не переопределяет `canSurvive`/`getStateForPlacement`;
-  `FaceAttachedHorizontalDirectionalBlock` требует solid face, fences не проходят.
-  Нет `BlockTags.FENCES` в коде. Зависит от дизайна — если поддержка fence нужна,
-  добавить проверку тега.
+- [x] **Network connector на заборах (issue #225)** — исправлено (2026-09-13):
+  `NetworkConnectorBlock.canSurvive()` теперь дополнительно разрешает крепление,
+  если блок с прикреплённой стороны помечен `BlockTags.FENCES` (базовая проверка
+  `FaceAttachedHorizontalDirectionalBlock.canSurvive` по-прежнему работает для
+  обычных solid-граней). `getStateForPlacement` не трогали — он уже вызывает
+  `canSurvive` через суперкласс, так что размещение на заборе заработало само.
 - [ ] **JEI computer recipe (issue #270)**: **Уже обработано.** `ExtraGuiAreasJEIPlugin`
   удаляет preconfigured computer из JEI (осознанно); обычные рецепты компьютера видны.
 - [ ] **Keyboard as terminal user (issue #186)**: **Уже обработано.** `TerminalUserProvider`
@@ -1414,13 +1414,11 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 
 - [x] **ceres `0.0.6` → `0.0.7`** (2026-09-02): sanity-check на размер массивов при десериализации
   (>64MB отклоняется). Безопасный апдейт — применён: `gradle.properties`, `download-libs.sh`, `libs/`.
-- [ ] **sedna `3.1.0` → `4.0.1`** (2026-09-04): **мажор с breaking changes, пока не обновлён.**
-  Релиз-ноуты: Board rework (device mapping → новый `DeviceBus`), `CPUDebugInterface` изменён
-  (поддержка разных архитектур, GDB для Z80), geometry для virtio-blk.
-  **Ошибка при попытке апдейта** (проверено `./gradlew compileJava` c `4.0.1`):
-  `GlobalMemoryRangeAllocator.java:42,49,59,70,88` — `Board` больше не имеет
-  `addDevice`/`removeDevice`/`getAllocationStrategy`/`addDevice(device)` — логика ушла в
-  `DeviceBus` (`src/main/java/li/cil/sedna/api/DeviceBus.java` — новый файл в 4.0).
-  Нужна миграция `GlobalMemoryRangeAllocator` + `GlobalVMContext` на `DeviceBus` API.
-  План: прочитать дифф `Board.java`/`DeviceBus.java` в sedna 4.0, переписать аллокатор,
-  прогнать `compileJava` + `build` + gametest.
+- [x] **sedna `3.1.0` → `4.0.1`** — обновлено (`ec49a41`, 2026-09-07): `gradle.properties`,
+  `scripts/download-libs.sh`; `GlobalMemoryRangeAllocator` мигрирован на `DeviceBus`
+  (`board.getDeviceBus().addDevice/removeDevice` вместо `board.addDevice/removeDevice`).
+  `compileJava` зелёный. Подтверждено (2026-09-13, релиз-ноуты sedna 4.0.0): апстрим
+  добавил `Z80Board` наравне с `R5Board` (Board rework специально «to bring Z80Board
+  closer to the R5Board», GDB debug support для Z80) — т.е. sedna 4.0 уже умеет и
+  RISC-V, и Z80 VM. Добавление Z80 как выбираемой архитектуры в oc2r — отдельная
+  большая фича, не входит в этот пункт (см. задачу за скоупом §41).

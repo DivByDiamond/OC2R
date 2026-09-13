@@ -7,8 +7,10 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
@@ -48,6 +50,20 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
 
     public static Direction getFacing(final BlockState state) {
         return FaceAttachedHorizontalDirectionalBlock.getConnectedDirection(state);
+    }
+
+    @Override
+    protected boolean canSurvive(
+            final BlockState state, final LevelReader level, final BlockPos pos) {
+        if (super.canSurvive(state, level, pos)) {
+            return true;
+        }
+
+        // Fences aren't sturdy on their side faces, but a connector clamped
+        // onto a fence post is a common and reasonable attachment (issue #225).
+        final Direction attachedDirection = getFacing(state).getOpposite();
+        final BlockPos attachedPos = pos.relative(attachedDirection);
+        return level.getBlockState(attachedPos).is(BlockTags.FENCES);
     }
 
     @Override
