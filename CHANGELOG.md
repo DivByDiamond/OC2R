@@ -5,13 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+## [0.1.1-beta.3] — 2026-09-13
+
 ### Added
 
 - **Terminal**: non-destructive column change — DECSCPP (`CSI Pn $ |`) selects 80 or 132 columns via a new `resizeWidth` primitive that copies existing contents into the surviving columns instead of clearing: screen content, scroll margins, cursor position and tab stops are preserved (new columns are default-initialized, matching xterm's resize). Private-marker forms (`?`/`>` prefix) are ignored, as xterm does. DECCOLM (mode 3) remains the destructive reset (#38)
 - **Terminal**: per-instance color palette — OSC 4 (query/set an indexed color) and OSC 104 (reset one or all indexed colors to default) are implemented; "computed dim" derives SGR 2 (dim) from the palette instead of a fixed table (#31)
 - **Terminal**: CSI cursor-positioning coverage completed — CBT/CHT (backward/forward tabulation), CNL/CPL (cursor down/up + CR), VPR/HPA/HPR (vertical/horizontal position, absolute/relative), RCP and CSI ?u (XTRESTORE, save/restore private mode state), REP (repeat preceding char) (#24)
 - **Terminal**: `XT_RAW_PASSTHROUGH` mode (CSI ?7777h/l) — an in-band byte-capture debugger that renders every received byte as a visible glyph without interpreting it, for diagnosing what a guest program actually sends
+- **Terminal**: DECSTR (`CSI ! p`, soft terminal reset) — resets mode tables, rendition, parser state, charsets, scroll margins and the saved cursor to power-on defaults without RIS's destructive geometry reset (no screen clear, no width change, no palette reset) (#35)
 - CI: `lintRatchet` task (count-based ratchet for Checkstyle/PMD, baseline 0) and SpotBugs baseline file, so lint regressions fail the build going forward
+- CI: GameTest scaffolding (`gameTest` Gradle task, smoke tests for registration/recipes/device-bus, JUnit report publishing) so in-game integration behavior gets covered going forward (#41)
 
 ### Changed
 
@@ -22,7 +26,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - Video encoding moved off the server thread onto an async last-frame-wins encoder; internet tick, frame buffers and the VXLAN send path optimized (idle-skip, pooling, caching, report-once warnings)
 - Block entity sync consolidated onto a single channel, dropping duplicate payload messages
 - Linting is stricter by default: Checkstyle/PMD/SpotBugs now fail the build instead of only reporting, and Error Prone runs on by default with a curated set of checks promoted to errors
-- Sedna updated to 3.1.0 (patched minux with working 9p support) (#29)
+- Sedna updated to 4.0.1 (from 3.1.0): `GlobalMemoryRangeAllocator` migrated to the new `DeviceBus` API (`Board.addDevice`/`removeDevice` moved off `Board` in this release); Ceres bumped to 0.0.7 (deserialization sanity-checks array sizes >64 MB)
 
 ### Fixed
 
@@ -36,9 +40,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Terminal**: a truncated true-color/256-color SGR sequence (e.g. `38;2;1`, missing RGB components) leaked its leftover byte into being applied as an unrelated style attribute (e.g. bold); the whole incomplete color spec is now discarded instead
 - **Terminal**: the per-row dirty bitmask could silently wrap (`1 << dirtyLine` on a 32-bit int) when writing far back into scrollback, flipping an unrelated bit instead of the row that changed; out-of-range rows now force a full redraw instead
 - **Terminal**: `FontHandling`/`UnicodeFontRenderer` are now annotated `@OnlyIn(CLIENT)`, so an accidental import from common code fails fast at class-load instead of risking a dedicated-server crash inside `Minecraft.getInstance()`
+- **Terminal**: `resizeWidth` marked every renderer dirty twice (once directly, once via `markAllDirty()`); the redundant pass is removed
+- **Terminal**: CSI intermediates `$` and `*` are mutually exclusive per xterm; a malformed combination (e.g. `CSI *$|`) is now ignored instead of misapplied
+- **Redstone Interface**: `getRedstoneOutput`/`setRedstoneOutput` used the raw block-space side instead of rotating it through the block's `FACING`, so outputs didn't turn with the block; now uses the same `HorizontalBlockUtils.toGlobal()` rotation already applied to inputs (upstream issue #164)
+- **Network Connector**: could not be attached to a fence post — `canSurvive` now also accepts `BlockTags.FENCES` on the attached side, in addition to the existing solid-face check (upstream issue #225)
 - Internet card MAC address is now derived from a stable per-card UUID instead of being read from NBT (also closes a spoofing/collision risk)
 - Rate limits added for PCM/keyboard/framebuffer network messages; ICMP echo handling made non-blocking
 - VXLAN manager could throw after shutdown in some races; default host settings sanitized
+- **OnyxOS**: bundled kernel/rootfs image updated (S-mode boot path from OpenSBI confirmed working; kernel now boots to a framebuffer console via the FDT `simple-framebuffer` path)
 
 ## [0.1.1-beta.2] — 2026-08-24
 
