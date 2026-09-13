@@ -493,10 +493,20 @@ public class Terminal {
         if (delta > 0) { // grow: keep every row; pull history down into the new top rows
             srcStart = 0;
             srcLen = oldMainRows;
-            final int take = Math.min(delta, Math.max(0, this.lastRowToDisplay - oldHeight));
+            // The pull comes from the WRITE window's scrollback (lrdMax-based), not the
+            // transient view. Both window fields gain +delta (the window is delta taller)
+            // and lose -take (the top reclaim): a bottom-anchored view stays glued to the
+            // content; a scrolled-back view keeps its rows. newLrdMax >= newHeight holds
+            // because take <= lrdMax - oldHeight; the lrd >= height invariant every
+            // renderer's (row + lrd - height) indexing relies on is enforced by the floor.
+            final int take = Math.min(delta, Math.max(0, this.lastRowToDisplayMax - oldHeight));
             newLrdMax = this.lastRowToDisplayMax - take + delta;
-            newLrd = this.lastRowToDisplay - take;
-            newY = this.y + take;
+            newLrd = this.lastRowToDisplay == this.lastRowToDisplayMax
+                    ? newLrdMax
+                    : Math.clamp(this.lastRowToDisplay, newHeight, newLrdMax);
+            // The cursor rides the pull on the main buffer; the alt buffer has no scrollback
+            // and its copy is top-anchored, so an alt-active grow leaves the cursor alone.
+            newY = this.currentPrivateModeState.isAltBufferEnabled() ? this.y : this.y + take;
         } else { // shrink: drop below-cursor rows first, then off the buffer top (xterm move_up)
             final int excess = -delta;
             final int rowsBelowCursor = oldHeight - 1 - this.y;

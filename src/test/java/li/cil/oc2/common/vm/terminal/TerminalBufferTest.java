@@ -1661,6 +1661,8 @@ public class TerminalBufferTest {
         assertEquals(48 * Terminal.SCROLL_BACK_COUNT, terminal.buffer.length / terminal.width,
             "main buffer reallocated to 48 * SCROLL_BACK_COUNT rows");
         assertEquals('H', charAt(0, 0), "content preserved at (0,0)");
+        assertEquals(48, terminal.lastRowToDisplay,
+                "view bottom-anchored on the new window (lrd >= height invariant; renderer row math)");
     }
 
     @Test
@@ -1794,6 +1796,45 @@ public class TerminalBufferTest {
         assertEquals(47, terminal.y, "cursor moves down by the pulled row count");
         assertEquals(24 * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
                 "content position is unchanged");
+        assertEquals(terminal.lastRowToDisplayMax, terminal.lastRowToDisplay,
+                "bottom-anchored view stays glued to the content");
+    }
+
+    @Test
+    void growWithPartialHistoryPullsWhatItCan() {
+        // 29 lines on a 24-row screen: the last 6 each scroll once, lrd = lrdMax = 30.
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 29; i++) {
+            sb.append("part").append(i).append("\r\n");
+        }
+        write(terminal, sb.toString());
+        assertEquals(30, terminal.lastRowToDisplayMax, "precondition: 6 history rows");
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        // Only 6 rows can be pulled (take = 6, not 24); the rest of the gain is blank below.
+        assertEquals('p', charAt(0, 0), "window extends to the very top of the content");
+        assertEquals(29, terminal.y, "cursor rides the 6-row pull");
+        assertEquals(48, terminal.lastRowToDisplayMax, "window spans history + screen + blanks");
+        assertEquals(terminal.lastRowToDisplayMax, terminal.lastRowToDisplay,
+                "bottom-anchored view stays glued (lrd >= height invariant)");
+    }
+
+    @Test
+    void growWithAltBufferDoesNotShiftCursor() {
+        saturateScrollback();
+        write(terminal, CSI + "?1049h"); // save + switch to alt buffer
+        write(terminal, "ALT\r\nmore");
+        final int yBefore = terminal.y;
+        assertTrue(terminal.currentPrivateModeState.isAltBufferEnabled(), "precondition: alt active");
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        assertEquals(yBefore, terminal.y,
+                "alt buffer has no scrollback to pull — the cursor must not ride the main-buffer shift");
+        assertEquals('A', (char) terminal.altBuffer[0], "alt content stays top-anchored");
     }
 
     @Test

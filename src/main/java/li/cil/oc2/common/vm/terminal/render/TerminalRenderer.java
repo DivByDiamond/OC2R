@@ -39,8 +39,9 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
         // Read the geometry once per frame: the resize paths mutate it lock-free from the VM/
         // network side, so repeated reads could mix geometries within one frame (the lines
-        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred;
-        // the per-row bounds skip below keeps a torn read from ever becoming an AIOOBE.
+        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred —
+        // the blink skip below and the row guards in the char/background renderers only bound
+        // the crash class (no AIOOBE), not the occasional torn frame.
         final int frameHeight = terminal.height;
         final int frameWidth = terminal.width;
         final byte[] frameStyles = terminal.styles;
