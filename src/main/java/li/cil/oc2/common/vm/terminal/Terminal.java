@@ -511,6 +511,9 @@ public class Terminal {
             srcStart = start;
             srcLen = len;
             newLrdMax = len;
+            // lrd - srcStart may go negative when the capacity trim ate rows the view was
+            // parked on (deep scrollback + aggressive shrink) — the floor at newHeight then
+            // parks the view on the full new screen, which is the only sane answer.
             newLrd = Math.clamp(this.lastRowToDisplay - srcStart, newHeight, len);
             newY = Math.clamp(this.y - fromTop, 0, newHeight - 1);
         }

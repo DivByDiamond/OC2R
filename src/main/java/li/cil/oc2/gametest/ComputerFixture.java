@@ -171,10 +171,13 @@ public final class ComputerFixture {
     @SuppressWarnings("PMD.AvoidSynchronizedStatement") // terminal is a plain mutable object without a dedicated lock
     public String screen() {
         final Terminal terminal = blockEntity().terminalManager.getTerminal();
-        final int width = terminal.width;
-        final int height = terminal.height;
         final StringBuilder text = new StringBuilder();
         synchronized (terminal) {
+            // Geometry reads live inside the monitor: a VM-thread resize between reading
+            // the dims and entering the sync would pair a stale (larger) height with the
+            // freshly shrunk buffer.
+            final int width = terminal.width;
+            final int height = terminal.height;
             for (int row = 0; row < height; row++) {
                 for (int col = 0; col < width; col++) {
                     final int index = row * width + col;

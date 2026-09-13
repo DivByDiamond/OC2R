@@ -92,6 +92,7 @@ public class TerminalBufferWriter {
         }
 
         // Mark dirty — alt buffer uses y directly, main buffer needs scrollback offset
+        // (= lastRowToDisplayMax + y - lastRowToDisplay; the heights cancel).
         final int dirtyLine = altBuffer
                 ? y
                 : terminal.height + terminal.lastRowToDisplayMax - (terminal.height - y) - terminal.lastRowToDisplay;
@@ -118,6 +119,6 @@ public class TerminalBufferWriter {
             return y;
         }
         int globalY = terminal.lastRowToDisplayMax - (terminal.height - y);
-        return terminal.height + globalY - terminal.lastRowToDisplay;
+        return terminal.height + globalY - terminal.lastRowToDisplay; // = lrdMax + y - lrd
     }
 }

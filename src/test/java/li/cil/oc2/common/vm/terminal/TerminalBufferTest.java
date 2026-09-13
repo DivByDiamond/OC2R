@@ -1835,6 +1835,16 @@ public class TerminalBufferTest {
         }
     }
 
+    @Test
+    void maxHeightFitsTheLongDirtyMask() {
+        // Structural guard (same genre as the transient guard above): every dirty mask in the
+        // engine is a long built as 1L << row, so a row count above 64 would wrap the shift
+        // (1L << 64 == 1L << 0) and silently dirty the wrong rows. If MAX_HEIGHT is ever
+        // raised, the masks must move to BitSet first.
+        assertTrue(Terminal.MAX_HEIGHT <= Long.SIZE,
+                "MAX_HEIGHT must not exceed Long.SIZE while dirty masks shift 1L << row");
+    }
+
     private void saturateScrollback() {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 600; i++) {
