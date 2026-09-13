@@ -280,7 +280,7 @@ public class SGRTest {
 
     private char charAt(final int x, final int y) {
         final int row = y + terminal.lastRowToDisplayMax - terminal.height;
-        return (char) terminal.buffer[x + row * Terminal.WIDTH];
+        return (char) terminal.buffer[x + row * terminal.width];
     }
 
     private static final class DummyRenderer implements RendererModel {

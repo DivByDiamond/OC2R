@@ -32,6 +32,8 @@ class TerminalBufferScrolling {
                     Math.min(terminal.lastRowToDisplay + 1, terminal.lastRowToDisplayMax);
         }
 
+        // Loop, not (1L << height) - 1: Java masks shift counts to 0..63, so at
+        // height 64 that idiom degenerates to 0 instead of all-ones.
         long dirtyLinesMask = 0;
         for (int i = 0; i < terminal.height; i++) {
             dirtyLinesMask |= 1L << i;
@@ -42,6 +44,8 @@ class TerminalBufferScrolling {
     public void decrementLastLineToDisplay() {
         if (terminal.scrollFirst != 0 || terminal.scrollLast != terminal.height - 1) return;
         terminal.lastRowToDisplay = Math.max(terminal.lastRowToDisplay - 1, terminal.height);
+        // Loop, not (1L << height) - 1: Java masks shift counts to 0..63, so at
+        // height 64 that idiom degenerates to 0 instead of all-ones.
         long dirtyLinesMask = 0;
         for (int i = 0; i < terminal.height; i++) {
             dirtyLinesMask |= 1L << i;

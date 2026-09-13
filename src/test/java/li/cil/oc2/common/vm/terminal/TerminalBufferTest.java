@@ -1716,6 +1716,21 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void xtwinopsCase8MissingParamsAreNoOps() {
+        write(terminal, "HI");
+
+        write(terminal, CSI + "8t"); // no rows/cols at all
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "bare CSI 8 t changes nothing");
+        assertEquals(Terminal.HEIGHT, terminal.height, "bare CSI 8 t changes nothing");
+
+        write(terminal, CSI + "8;;80t"); // empty rows, current cols
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "empty rows param changes nothing");
+        assertEquals(Terminal.HEIGHT, terminal.height, "empty rows param changes nothing");
+    }
+
+    @Test
     void xtwinopsCase8IgnoresOutOfRangeCols() {
         write(terminal, "HI");
         // 5000000 * rows overflows the int buffer stride; before the ceiling this threw

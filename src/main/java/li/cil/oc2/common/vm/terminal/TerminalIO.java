@@ -43,6 +43,8 @@ public class TerminalIO {
                 if (!terminal.currentPrivateModeState.isAltBufferEnabled())
                     terminal.lastRowToDisplay = terminal.lastRowToDisplayMax;
                 long dirtyLinesMask = 0;
+                // Loop, not (1L << height) - 1: Java masks shift counts to 0..63, so at
+                // height 64 that idiom degenerates to 0 instead of all-ones.
                 for (int i = 0; i < terminal.height; i++) {
                     dirtyLinesMask |= 1L << i;
                 }
