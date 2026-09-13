@@ -11,12 +11,21 @@ on:
   pull_request:
     branches: [ 'work' ]
 
+# A new push to the same PR/branch makes the previous run's result moot --
+# cancel it instead of letting stale runs pile up on the (limited) self-hosted pool.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     permissions:
       contents: read
     # Self-hosted runner pool.
     runs-on: pocketprobe-kube
+    # A wedged gradle/gametest run must not tie up the pool indefinitely --
+    # tuned above the slowest known-good run (game tests boot an MC server).
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v7

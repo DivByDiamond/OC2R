@@ -13,6 +13,7 @@ jobs:
       packages: write
     # Self-hosted runner pool.
     runs-on: pocketprobe-kube
+    timeout-minutes: 45
 
     steps:
       - name: Set release type to 'release'

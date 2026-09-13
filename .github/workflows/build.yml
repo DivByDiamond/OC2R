@@ -13,6 +13,11 @@ jobs:
       packages: write
     # Self-hosted runner pool (see test/actions-runner for the original experiment).
     runs-on: pocketprobe-kube
+    # No concurrency cancel-in-progress here (unlike ci-work.yml): this job
+    # can publish a release, and cancelling a release build mid-upload is
+    # worse than a queued duplicate. A timeout is still worth it in case the
+    # runner wedges.
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v7
