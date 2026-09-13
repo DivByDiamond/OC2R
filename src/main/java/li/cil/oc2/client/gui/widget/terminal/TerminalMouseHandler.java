@@ -155,11 +155,19 @@ final class TerminalMouseHandler {
 
     private Vector2i getMousePosition(
             final double x, final double y, final int leftPos, final int topPos) {
-        int tx = MachineTerminalWidget.getInnerWidth() / terminal.width;
-        int ty = MachineTerminalWidget.TERMINAL_HEIGHT / terminal.height;
-        int sx = (int) ((x - leftPos - MachineTerminalWidget.TERMINAL_X) / tx) + 1;
-        int sy = (int) ((y - topPos - MachineTerminalWidget.TERMINAL_Y) / ty) + 1;
-        return new Vector2i(sx, sy);
+        // Map pixels with the SAME scale the renderer applies (MachineTerminalWidget.render
+        // scales by innerPx / (float) terminalPx). The old per-cell integer division
+        // (192/height px per row) truncated: at a height that doesn't divide 192 the mapping
+        // drifted, and clicks in the bottom stretch resolved past the screen and reached the
+        // guest as out-of-range rows. Computing the scale directly also removes the tx/ty
+        // divisor, so an extreme width can never divide-by-zero here. Clamped to the screen —
+        // the guest must only ever receive rows/cols the screen actually has.
+        final int sx = (int) ((x - leftPos - MachineTerminalWidget.TERMINAL_X)
+                * terminal.width / MachineTerminalWidget.getInnerWidth()) + 1;
+        final int sy = (int) ((y - topPos - MachineTerminalWidget.TERMINAL_Y)
+                * terminal.height / MachineTerminalWidget.TERMINAL_HEIGHT) + 1;
+        return new Vector2i(
+                Math.clamp(sx, 1, terminal.width), Math.clamp(sy, 1, terminal.height));
     }
 
     private static byte[] utf8(int value) {

@@ -317,6 +317,28 @@ public class TerminalDiffTest {
         assertEquals(Terminal.HEIGHT, client.height, "oversized snapshot height refused");
     }
 
+    @Test
+    void applyClampsHostileScrollWindow() {
+        // The scroll-window indices are raw wire values like the palette — a hostile or
+        // corrupt snapshot must not park the client window outside the buffer. In particular
+        // lastRowToDisplayMax < height would break the client's own later resize relayout
+        // (the span drops below newHeight and Math.clamp throws min > max), and a huge
+        // lastRowToDisplay would send the renderer's row indexing past the buffer.
+        final Terminal client = new Terminal();
+        final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
+                false, Terminal.WIDTH, Terminal.HEIGHT, false, new int[0], new byte[0][],
+                0, 0, 200_000_000, 1, 0, true, false, 0L, null);
+
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
+        final int capacity = client.height * Terminal.SCROLL_BACK_COUNT;
+        assertTrue(client.lastRowToDisplayMax >= client.height
+                        && client.lastRowToDisplayMax <= capacity,
+                "lastRowToDisplayMax clamped into [height, capacity]");
+        assertTrue(client.lastRowToDisplay >= client.height
+                        && client.lastRowToDisplay <= client.lastRowToDisplayMax,
+                "lastRowToDisplay clamped into [height, lastRowToDisplayMax]");
+    }
+
     private static void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }

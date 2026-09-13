@@ -37,10 +37,14 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
 
-        // Read the height once per frame: resizeHeight mutates it lock-free from the VM/
+        // Read the geometry once per frame: the resize paths mutate it lock-free from the VM/
         // network side, so repeated reads could mix geometries within one frame (the lines
-        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred.
+        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred;
+        // the per-row bounds skip below keeps a torn read from ever becoming an AIOOBE.
         final int frameHeight = terminal.height;
+        final int frameWidth = terminal.width;
+        final byte[] frameStyles = terminal.styles;
+        final byte[] frameAltStyles = terminal.altStyles;
 
         // Dynamic height: reallocate the lines array if the terminal's height changed
         // (e.g. via TerminalDiff.apply calling resizeHeight). Close old buffers first.
@@ -59,16 +63,17 @@ public class TerminalRenderer implements RendererModel, RendererView {
             lastBlinkPhase = blinkPhase;
             final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
             final int baseRow = useAltBuffer ? 0 : terminal.lastRowToDisplay - frameHeight;
-            final byte[] styles = terminal.styles;
-            final byte[] altStyles = terminal.altStyles;
+            final byte[] activeStyles = useAltBuffer ? frameAltStyles : frameStyles;
             long mask = 0;
             for (int row = 0; row < frameHeight; row++) {
-                final int rowBase = (baseRow + row) * terminal.width;
-                for (int col = 0; col < terminal.width; col++) {
-                    final int index = rowBase + col;
-                    if ((useAltBuffer
-                            ? (altStyles[index] & Terminal.STYLE_BLINK_MASK)
-                            : (styles[index] & Terminal.STYLE_BLINK_MASK)) != 0) {
+                final int rowBase = (baseRow + row) * frameWidth;
+                // Torn mid-resize read (§36 M4): skip rows that don't fit the captured
+                // geometry instead of indexing out of bounds. Next frame repaints.
+                if (rowBase < 0 || rowBase + frameWidth > activeStyles.length) {
+                    continue;
+                }
+                for (int col = 0; col < frameWidth; col++) {
+                    if ((activeStyles[rowBase + col] & Terminal.STYLE_BLINK_MASK) != 0) {
                         mask |= (1L << row);
                         break;
                     }

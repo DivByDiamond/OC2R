@@ -1814,6 +1814,32 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void decsnlsMaxHeight64MaskBitsReachEveryRow() {
+        write(terminal, CSI + "64*|"); // exactly the long-mask ceiling
+        assertEquals(64, terminal.height, "precondition: at the mask ceiling");
+
+        // Input at height 64 must mark all 64 rows (1L << 0..63): the (1L << h) - 1 idiom
+        // would degenerate to 0 here (Java masks shift counts to 0..63).
+        terminal.io.putInput("k");
+        assertNotNull(terminal.io.getInput(), "precondition: input drains");
+        assertEquals(-1L, renderer.getDirtyMask().get(), "all 64 rows dirty after input");
+
+        // Row 63 is the far edge of 1L << row — a write there must reach the network sink.
+        renderer.getDirtyMask().set(0L);
+        TerminalDiff.capture(terminal); // drain any pending rows
+        write(terminal, CSI + "64;1H" + "X");
+        assertEquals('X', charAt(0, 63), "write reaches the last row");
+        final int absRow63 = 63 + terminal.lastRowToDisplayMax - terminal.height;
+        boolean shipped = false;
+        for (final int r : terminal.consumeNetworkDirty().rows()) {
+            if (r == absRow63) {
+                shipped = true;
+            }
+        }
+        assertTrue(shipped, "row 63 lands in the network dirty set (no 1L << 64-style wrap)");
+    }
+
+    @Test
     void oneRowTerminalKeepsWorking() {
         write(terminal, CSI + "1*|");
         assertEquals(1, terminal.height);

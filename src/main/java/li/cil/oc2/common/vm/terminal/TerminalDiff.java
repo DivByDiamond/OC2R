@@ -324,6 +324,15 @@ public final class TerminalDiff {
 
     /** Applies a snapshot to a local (client-side) terminal copy and marks everything dirty. */
     public static void apply(final Terminal terminal, final Snapshot s) {
+        // Geometry first, rows after — the deserialize guards evaluate against post-resize
+        // dims. Known bounded divergence: the client re-runs resizeHeight's relayout with its
+        // OWN (previous snapshot's) cursor, and the shrink anchor is cursor-relative. A remote
+        // shrink can therefore anchor the off-screen scrollback rows differently than the
+        // server. The visible window always re-ships at absolute row indices and the cursor is
+        // set authoritatively below, so display state is exact after this call; the mismatch
+        // lives only in scrollback above the window and self-heals as rows scroll into view.
+        // (Setting the SHIPPED cursor before the resize would be worse: that's the POST-resize
+        // row, and the anchor formula needs the pre-resize one, which isn't on the wire.)
         if (terminal.width != s.width()) {
             terminal.setWidth(s.width());
         }
@@ -343,8 +352,16 @@ public final class TerminalDiff {
             deserializeRow(terminal, alt, s.rows()[i], s.rowData()[i]);
         }
 
-        terminal.lastRowToDisplay = s.lastRowToDisplay();
-        terminal.lastRowToDisplayMax = s.lastRowToDisplayMax();
+        // Clamp the scroll-window indices into the (already-resized) geometry, mirroring the
+        // palette guard below: they're raw wire values. A malformed snapshot with
+        // lastRowToDisplayMax < height would leave the client with a broken window invariant —
+        // its own later resizeHeight would compute a relayout span below newHeight and
+        // Math.clamp would throw on the client network thread. Max clamps first so the view
+        // bottom never ends up above the view top.
+        terminal.lastRowToDisplayMax = Math.clamp(
+                s.lastRowToDisplayMax(), terminal.height, terminal.height * Terminal.SCROLL_BACK_COUNT);
+        terminal.lastRowToDisplay = Math.clamp(
+                s.lastRowToDisplay(), terminal.height, terminal.lastRowToDisplayMax);
         terminal.setCursorPos(s.cursorX(), s.cursorY());
         terminal.cursorMode = s.cursorMode();
         terminal.currentPrivateModeState.DECTCEM = s.cursorVisible();
