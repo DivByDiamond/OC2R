@@ -9,6 +9,7 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -298,6 +299,22 @@ public class TerminalDiffTest {
         assertEquals(48, client.height, "client is resized to 48 rows");
         assertEquals('H', charAt(client, 0, 0),
                 "client keeps the server's content across the height change");
+    }
+
+    @Test
+    void applyRefusesOversizedSnapshotGeometry() {
+        // The snapshot dimensions feed straight into setWidth/resizeHeight on the client. A
+        // malformed or hostile payload (5M cols, 200M rows) must not become an impossible
+        // allocation: width*rows overflows int and previously threw NegativeArraySizeException
+        // out of apply. The primitives refuse out-of-range geometry at their boundary.
+        final Terminal client = new Terminal();
+        final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
+                false, 5_000_000, 200_000_000, false, new int[0], new byte[0][],
+                0, 0, Terminal.HEIGHT, Terminal.HEIGHT, 0, true, false, 0L, null);
+
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
+        assertEquals(Terminal.WIDTH, client.getTerminalWidth(), "oversized snapshot width refused");
+        assertEquals(Terminal.HEIGHT, client.height, "oversized snapshot height refused");
     }
 
     private static void write(final Terminal target, final String text) {

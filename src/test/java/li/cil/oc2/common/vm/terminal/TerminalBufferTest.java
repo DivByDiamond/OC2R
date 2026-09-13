@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal;
 
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1703,6 +1704,128 @@ public class TerminalBufferTest {
 
         assertEquals(48, terminal.height, "rows resized to 48");
         assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "cols unchanged (0 = no change)");
+    }
+
+    // --- Dynamic-geometry resize semantics (xterm-410 Reallocate, SouthWest resizeGravity) ---
+
+    @Test
+    void decsnlsIgnoresHeightAboveMaxHeight() {
+        write(terminal, CSI + "65*|"); // 65 > MAX_HEIGHT (64, the long dirty-mask ceiling)
+
+        assertEquals(Terminal.HEIGHT, terminal.height, "65 rows exceeds the 64-row ceiling: ignored");
+    }
+
+    @Test
+    void xtwinopsCase8IgnoresOutOfRangeCols() {
+        write(terminal, "HI");
+        // 5000000 * rows overflows the int buffer stride; before the ceiling this threw
+        // NegativeArraySizeException out of putOutput and left width assigned over the old
+        // buffers, bricking the terminal.
+        write(terminal, CSI + "8;24;5000000t");
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "5000000 cols is refused");
+        write(terminal, "XY");
+        assertEquals('X', charAt(2, 0), "terminal still usable after a refused resize");
+    }
+
+    @Test
+    void shrinkAnchorsAtCursorWithFullScrollback() {
+        saturateScrollback();
+        write(terminal, "MARKER");
+        assertEquals('M', charAt(0, 23), "precondition: MARKER on the bottom row");
+
+        write(terminal, CSI + "12*|");
+
+        assertEquals(12, terminal.height);
+        // xterm-410 Reallocate SouthWest: the excess drops below the cursor first; the cursor
+        // sits on the bottom row, so the 12 oldest buffer rows scroll off and the window keeps
+        // the bottom 12 screen rows. The prefix-copy bug this guards replaced the live screen
+        // with scrollback rows from ~250 lines back (and destroyed the live rows entirely).
+        assertEquals('M', charAt(0, 11), "the cursor's row stays on screen (anchored at its content)");
+        assertEquals(12 * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+                "window sits at the bottom of the new buffer");
+    }
+
+    @Test
+    void shrinkDropsRowsBelowCursorFirst() {
+        saturateScrollback();
+        final char topLeft =
+                (char) terminal.buffer[(terminal.lastRowToDisplayMax - terminal.height) * terminal.width];
+        write(terminal, CSI + "1;1H"); // cursor to the top row: 23 screen rows sit below it
+
+        write(terminal, CSI + "12*|");
+
+        assertEquals(12, terminal.height);
+        assertEquals(topLeft, charAt(0, 0),
+                "rows below the cursor absorb the whole shrink; the screen top stays put");
+        assertEquals(0, terminal.y, "cursor stays on the top row");
+    }
+
+    @Test
+    void growPullsScrollbackBackOntoScreen() {
+        saturateScrollback();
+        write(terminal, "MARKER");
+        final char pulled = (char) terminal.buffer
+                [(terminal.lastRowToDisplayMax - terminal.height - 24) * terminal.width];
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        // xterm move_down: the grown rows pull scrollback history back onto the screen top
+        // instead of appearing as blank rows below the prompt, and the cursor rides its
+        // content down. Buffer content does not move — this is a pure window shift.
+        assertEquals(pulled, charAt(0, 0), "grown area shows the scrollback row above the old screen top");
+        assertEquals('M', charAt(0, 47), "live bottom row remains at the bottom");
+        assertEquals(47, terminal.y, "cursor moves down by the pulled row count");
+        assertEquals(24 * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+                "content position is unchanged");
+    }
+
+    @Test
+    void decsnlsResetsMarginsAndOrigin() {
+        write(terminal, CSI + "5;15r" + CSI + "?6h"); // DECSTBM [5,15], DECOM on
+        assertEquals(4, terminal.scrollFirst, "precondition: margins set");
+        assertTrue(terminal.currentPrivateModeState.DECOM, "precondition: origin mode set");
+
+        write(terminal, CSI + "48*|");
+
+        // xterm ScreenResize resetMargins + ORIGIN clear, on ANY resize. DEC VT510-RM says
+        // DECSLPP preserves DECSTBM — xterm is deliberately preferred: a residual margin band
+        // silently disables this engine's full-page-gated scroll-window machinery (the grown
+        // rows below the old margin would never scroll into view).
+        assertEquals(0, terminal.scrollFirst, "resize resets the top margin");
+        assertEquals(47, terminal.scrollLast, "resize resets the bottom margin to the new page");
+        assertFalse(terminal.currentPrivateModeState.DECOM, "resize clears origin mode");
+    }
+
+    @Test
+    void oneRowTerminalKeepsWorking() {
+        write(terminal, CSI + "1*|");
+        assertEquals(1, terminal.height);
+
+        write(terminal, "line one\r\nline two\r\nline three"); // must scroll without exploding
+
+        assertDoesNotThrow(() -> write(terminal, CSI + "24*|"), "growing back out must not throw either");
+        assertEquals(Terminal.HEIGHT, terminal.height);
+    }
+
+    @Test
+    void windowAndMarginsAreTransient() throws Exception {
+        // Save/load seam guard: these index the transient buffers; persisting them pairs stale
+        // values with a freshly re-initialized 24-row buffer on load (F3).
+        for (final String field : new String[] {"lastRowToDisplay", "lastRowToDisplayMax", "scrollFirst", "scrollLast"}) {
+            assertTrue(
+                    Modifier.isTransient(Terminal.class.getDeclaredField(field).getModifiers()),
+                    field + " must be transient (its values are meaningless without the transient buffers)");
+        }
+    }
+
+    private void saturateScrollback() {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 600; i++) {
+            sb.append("line").append(i).append("\r\n");
+        }
+        write(terminal, sb.toString());
     }
 
     private void write(final Terminal target, final String text) {

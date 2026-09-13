@@ -100,7 +100,7 @@ public class TerminalBufferWriter {
 
     /**
      * Sets the dirty bit for a single screen row, addressed by {@code dirtyLine} in
-      * {@code [0, height-1]}. The dirty mask is a 64-bit {@code long}, but {@code dirtyLine} can
+     * {@code [0, height-1]}. The dirty mask is a 64-bit {@code long}, but {@code dirtyLine} can
      * exceed that range while the view is scrolled back into scrollback (§36 M3): the write
      * lands off-screen, {@code 1L << dirtyLine} would silently wrap modulo 64 and flip an
      * unrelated bit, so a row we can't address in the mask instead forces a full redraw.

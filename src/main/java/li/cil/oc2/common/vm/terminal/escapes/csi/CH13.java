@@ -6,7 +6,6 @@ public class CH13
         extends CSISequenceHandler { // Combined Handler 13 (DECSCPP and DECSNLS) — the '|'
     // final is shared by the column-count selector ($ |) and the line-count selector (* |),
     // branched on the intermediate byte.
-    static final int MAX_HEIGHT = 64; // long dirty-mask ceiling (1L << row covers 0..63)
 
     public CH13(final Terminal terminal) {
         super(terminal);
@@ -50,11 +49,12 @@ public class CH13
             // xterm-410 CASE_DECSNLS (charproc.c:5740): value = zero_if_default(0);
             // if (value >= 1 && value <= 255) RequestResize(xw, value, -1, True).
             // Gated by AllowWindowOps(ewSetWinLines) in xterm — we accept directly (the
-            // guest owns the terminal). Clamped to MAX_HEIGHT (64) — the long dirty-mask
-            // ceiling. Values outside 1..MAX_HEIGHT are silently ignored, matching xterm's
-            // "value = -1, skip" for out-of-range.
+            // guest owns the terminal). Our ceiling is Terminal.MAX_HEIGHT (64 — the long
+            // dirty-mask ceiling), not xterm's 255. Values outside the range are silently
+            // ignored, matching xterm's "value = -1, skip" for out-of-range. (The clamp in
+            // resizeHeight is a second, independent guard.)
             final int lines = args[0];
-            if (lines >= 1 && lines <= MAX_HEIGHT) {
+            if (lines >= 1 && lines <= Terminal.MAX_HEIGHT) {
                 terminal.resizeHeight(lines);
             }
         }

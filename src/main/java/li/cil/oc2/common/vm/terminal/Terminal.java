@@ -25,6 +25,15 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class Terminal {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 24;
+    // Largest geometry the engine supports. MAX_HEIGHT is the long dirty-mask ceiling
+    // (1L << row must reach every screen row, i.e. rows 0..63). MAX_WIDTH mirrors xterm's
+    // 1..255 DECSCPP/DECSNLS parameter range. setWidth/resizeWidth/resizeHeight CLAMP to
+    // these so every caller — the escape handlers AND TerminalDiff.apply on the client —
+    // stays inside the mask arithmetic regardless of what a guest (or a malformed snapshot)
+    // asks for. Handlers still ignore out-of-range params entirely (xterm's skip behavior);
+    // the clamp here is the last line of defense, not the policy.
+    public static final int MAX_HEIGHT = 64;
+    public static final int MAX_WIDTH = 255;
     public static final int CHAR_WIDTH = 8;
     public static final int CHAR_HEIGHT = 16;
 
@@ -72,8 +81,11 @@ public class Terminal {
     public transient byte[] styles;
     public boolean[] tabs;
     public State state = State.NORMAL;
-    public int scrollFirst = 0;
-    public int scrollLast = HEIGHT - 1;
+    // Transient like the buffers: margins address buffer rows, and the buffers re-init on
+    // load — a restored margin would point into a re-initialized 24-row page (and, saved at
+    // a larger dynamic height, could exceed the fresh buffer's row count entirely).
+    public transient int scrollFirst = 0;
+    public transient int scrollLast = HEIGHT - 1;
     public int x;
     public int y;
     /**
@@ -124,8 +136,12 @@ public class Terminal {
     public ColorData altSavedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
     public ColorData altSavedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
     public ColorData altSavedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-    public int lastRowToDisplay = HEIGHT;
-    public int lastRowToDisplayMax = HEIGHT;
+    // Transient like the buffers (see scrollFirst/scrollLast): these are absolute buffer
+    // row indices bounded by height * SCROLL_BACK_COUNT. Persisting them across a dynamic
+    // height change breaks that invariant on load (a 48-row save restores up to 960 into
+    // a re-initialized 480-row window), producing out-of-bounds writer/renderer indices.
+    public transient int lastRowToDisplay = HEIGHT;
+    public transient int lastRowToDisplayMax = HEIGHT;
 
     public transient int[] altBuffer;
     public transient ColorData[] altColors;
@@ -229,8 +245,10 @@ public class Terminal {
 
     public void setWidth(final int newWidth) {
         // Guard against degenerate widths: width-1 feeds Math.clamp as a max everywhere,
-        // so a zero/negative width would throw IAE on the next cursor movement.
-        if (newWidth < 1) {
+        // so a zero/negative width would throw IAE on the next cursor movement. Oversized
+        // widths are likewise refused here — the escape handlers police their own params,
+        // but TerminalDiff.apply on the client calls this with whatever the snapshot said.
+        if (newWidth != Math.clamp(newWidth, 1, MAX_WIDTH)) {
             return;
         }
         this.width = newWidth;
@@ -307,12 +325,14 @@ public class Terminal {
      */
     public void resizeWidth(final int newWidth) {
         // Guard: degenerate widths would break Math.clamp; a no-op resize avoids a pointless
-        // reallocation (DECSCPP to the current width does nothing).
-        if (newWidth < 1 || newWidth == this.width) {
+        // reallocation (DECSCPP to the current width does nothing). Oversized widths are
+        // refused at this boundary too (see setWidth). The width field is only assigned at
+        // commit time below — if an allocation fails, the terminal keeps a consistent old
+        // width and old buffers instead of a bogus stride over live data.
+        if (newWidth != Math.clamp(newWidth, 1, MAX_WIDTH) || newWidth == this.width) {
             return;
         }
         final int oldWidth = this.width;
-        this.width = newWidth;
         final int copyCols = Math.min(oldWidth, newWidth);
 
         // New columns are default-initialized (blank, default fg/bg, no style) — DECSCPP is a
@@ -341,10 +361,6 @@ public class Terminal {
             System.arraycopy(this.colorsBackground, src, newColorsBackground, dst, copyCols);
             System.arraycopy(this.styles, src, newStyles, dst, copyCols);
         }
-        this.buffer = newBuffer;
-        this.colors = newColors;
-        this.colorsBackground = newColorsBackground;
-        this.styles = newStyles;
 
         // Alt buffer (no scrollback): same per-row copy.
         final ColorData[] newAltColors = new ColorData[newWidth * height];
@@ -363,10 +379,6 @@ public class Terminal {
             System.arraycopy(this.altColorsBackground, src, newAltColorsBackground, dst, copyCols);
             System.arraycopy(this.altStyles, src, newAltStyles, dst, copyCols);
         }
-        this.altBuffer = newAltBuffer;
-        this.altColors = newAltColors;
-        this.altColorsBackground = newAltColorsBackground;
-        this.altStyles = newAltStyles;
 
         // Tab stops: preserve existing stops in the surviving columns, default-fill new columns.
         final boolean[] newTabs = new boolean[newWidth];
@@ -380,8 +392,20 @@ public class Terminal {
                 newAltTabs[i] = true;
             }
         }
+
+        // Commit: all allocations succeeded — swap the fields in one stretch. Any failure
+        // above leaves the terminal fully consistent at the old width.
+        this.buffer = newBuffer;
+        this.colors = newColors;
+        this.colorsBackground = newColorsBackground;
+        this.styles = newStyles;
+        this.altBuffer = newAltBuffer;
+        this.altColors = newAltColors;
+        this.altColorsBackground = newAltColorsBackground;
+        this.altStyles = newAltStyles;
         this.tabs = newTabs;
         this.altTabs = newAltTabs;
+        this.width = newWidth;
 
         // Scroll margins + scrollback window are row-based (width-independent) — preserved per
         // DECSCPP (does not reset DECSTBM). The active cursor is clamped only if it now sits
@@ -390,6 +414,16 @@ public class Terminal {
         // saved cursor is left as-is — restore routes through the clamping setCursorPos (§36 Б6).
         if (this.x >= newWidth) {
             setCursorPos(newWidth - 1, this.y);
+        }
+
+        // Arm the full refresh atomically with the geometry commit: a consume landing between
+        // the field swap and here would otherwise ship a partial diff at the new width with no
+        // rows, blanking clients that apply it destructively (same seam class as #38 F1).
+        networkDirtyLock.lock();
+        try {
+            networkNeedsFullRefresh = true;
+        } finally {
+            networkDirtyLock.unlock();
         }
 
         // Mark all rows dirty — BOTH sinks. The renderer mask drives local redraw; markAllDirty
@@ -405,36 +439,86 @@ public class Terminal {
     }
 
     /**
-     * Non-destructive height change (DECSLPP, {@code CSI Pn * |}): reallocates the height-
-     * dependent buffers at the new row count while COPYING existing contents into the surviving
-     * rows, instead of clearing them. Per DEC VT510-RM and xterm-410: DECSLPP does not clear page
-     * memory, reset scrolling regions, reset SGR, or reset tab stops — it only changes the row
-     * count, clamping the cursor and margins if they now sit beyond the new height. Rows beyond
-     * the new height are lost (48→24); new rows (24→48) are default-initialized (blank, default
-     * fg/bg, no style) — a resize, not a clear, matching xterm's {@code Reallocate} behavior.
+     * Non-destructive height change (DECSLPP/DECSNLS, {@code CSI Pn * |}; also XTWINOPS case-8,
+     * {@code CSI 8;rows;cols t}): reallocates the height-dependent buffers at the new row count
+     * while preserving contents, instead of clearing them. New rows are default-initialized
+     * (blank, default fg/bg, no style) — a resize, not a clear.
      *
-     * <p>The caller (CH13) sets any mode flags — this method is flag-agnostic so it can be reused
-     * by XTWINOPS case-8 ({@code CSI 8;rows;cols t}) which sets both dimensions at once.
+     * <p>Content anchoring follows xterm-410 {@code Reallocate} with the default SouthWest
+     * resizeGravity (screen.c:447-570), NOT a prefix copy: newest content lives at high buffer
+     * rows (the buffer shifts up at capacity), so anchoring at row 0 would display ancient
+     * scrollback as the screen and destroy the live window.
+     * <ul>
+     * <li>Shrink: the excess drops off the BOTTOM of the screen first (the rows below the
+     * cursor, xterm's {@code max_row - cur_row}); only the remainder scrolls off the top of
+     * the buffer. If the surviving span still exceeds the new capacity, the oldest rows are
+     * trimmed until it fits. The visible window keeps the cursor's region — e.g. with the
+     * cursor on the bottom row, a 48→12 shrink shows the last 12 screen rows, cursor included.
+     * <li>Grow: up to {@code delta} scrollback rows are pulled back onto the top of the screen
+     * (xterm's {@code move_down}), keeping content glued to the bottom; any delta beyond the
+     * available history yields new blank rows at the bottom. This is a pure window shift —
+     * buffer rows do not move.
+     * </ul>
      *
-     * <p>Scrollback window: growing extends {@code lastRowToDisplay(Max)} so the new blank rows
-     * appear at the bottom of the visible area; shrinking discards bottom rows and clamps the
-     * window. The scrollback history (rows above the visible window) is preserved up to the new
-     * buffer capacity.
+     * <p>Scroll margins and origin mode are RESET to full-page, also per xterm
+     * ({@code ScreenResize} calls {@code resetMargins} and clears ORIGIN unconditionally,
+     * screen.c:2427). DEC VT510-RM says DECSLPP preserves DECSTBM — we deliberately follow
+     * xterm instead (verified against a physical VT420: the hardware keeps the margins and
+     * silently stops using the rest of the page, because this engine's scroll-window machinery
+     * gates on full-page margins). Convention: VT first, but when DEC did the big dumb, xterm
+     * wins.
+     *
+     * <p>The caller (CH13) sets any mode flags — this method is flag-agnostic so it can be
+     * reused by XTWINOPS case-8 which sets both dimensions at once. Out-of-range heights are
+     * refused at this boundary (the handlers police their own params; TerminalDiff.apply on
+     * the client does not), and all fields are assigned only after every allocation succeeds
+     * (commit-after-alloc), so a failure leaves the terminal fully consistent.
      */
-    public void resizeHeight(final int newHeight) { // NOPMD: NPath — row-copy + margin/window/cursor clamping mirrors resizeWidth's shape
-        if (newHeight < 1 || newHeight == this.height) {
+    public void resizeHeight(final int newHeight) { // NOPMD: NPath — relayout math mirrors resizeWidth's shape
+        if (newHeight != Math.clamp(newHeight, 1, MAX_HEIGHT) || newHeight == this.height) {
             return;
         }
         final int oldHeight = this.height;
-        this.height = newHeight;
+        final int oldMainRows = oldHeight * SCROLL_BACK_COUNT;
+        final int newMainRows = newHeight * SCROLL_BACK_COUNT;
+
+        // Relayout plan, computed in OLD buffer coordinates before allocating: source span
+        // [srcStart, srcLen) of the old main buffer lands at new rows [0, srcLen).
+        final int srcStart;
+        final int srcLen;
+        final int newLrd;
+        final int newLrdMax;
+        final int newY;
+        final int delta = newHeight - oldHeight;
+        if (delta > 0) { // grow: keep every row; pull history down into the new top rows
+            srcStart = 0;
+            srcLen = oldMainRows;
+            final int take = Math.min(delta, Math.max(0, this.lastRowToDisplay - oldHeight));
+            newLrdMax = this.lastRowToDisplayMax - take + delta;
+            newLrd = this.lastRowToDisplay - take;
+            newY = this.y + take;
+        } else { // shrink: drop below-cursor rows first, then off the buffer top (xterm move_up)
+            final int excess = -delta;
+            final int rowsBelowCursor = oldHeight - 1 - this.y;
+            final int fromTop = Math.max(0, excess - rowsBelowCursor);
+            final int fromBottom = excess - fromTop;
+            int start = fromTop;
+            int len = this.lastRowToDisplayMax - fromBottom - start;
+            if (len > newMainRows) { // surviving span overflows the new capacity: trim oldest
+                start += len - newMainRows;
+                len = newMainRows;
+            }
+            srcStart = start;
+            srcLen = len;
+            newLrdMax = len;
+            newLrd = Math.clamp(this.lastRowToDisplay - srcStart, newHeight, len);
+            newY = Math.clamp(this.y - fromTop, 0, newHeight - 1);
+        }
 
         final ColorData defaultBackground = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
 
         // Main buffer (incl. scrollback): reallocate at the new height, fill with defaults,
-        // then copy the surviving rows. Each row is width cells, stride unchanged.
-        final int newMainRows = newHeight * SCROLL_BACK_COUNT;
-        final int oldMainRows = oldHeight * SCROLL_BACK_COUNT;
-        final int copyMainRows = Math.min(oldMainRows, newMainRows);
+        // then copy the planned span. Each row is width cells, stride unchanged.
         final int[] newBuffer = new int[width * newMainRows];
         final ColorData[] newColors = new ColorData[width * newMainRows];
         final ColorData[] newColorsBackground = new ColorData[width * newMainRows];
@@ -443,19 +527,16 @@ public class Terminal {
         Arrays.fill(newColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(newColorsBackground, defaultBackground);
         Arrays.fill(newStyles, TerminalColors.DEFAULT_STYLE);
-        for (int r = 0; r < copyMainRows; r++) {
-            final int off = r * width;
-            System.arraycopy(this.buffer, off, newBuffer, off, width);
-            System.arraycopy(this.colors, off, newColors, off, width);
-            System.arraycopy(this.colorsBackground, off, newColorsBackground, off, width);
-            System.arraycopy(this.styles, off, newStyles, off, width);
+        for (int r = 0; r < srcLen; r++) {
+            final int src = (srcStart + r) * width;
+            final int dst = r * width;
+            System.arraycopy(this.buffer, src, newBuffer, dst, width);
+            System.arraycopy(this.colors, src, newColors, dst, width);
+            System.arraycopy(this.colorsBackground, src, newColorsBackground, dst, width);
+            System.arraycopy(this.styles, src, newStyles, dst, width);
         }
-        this.buffer = newBuffer;
-        this.colors = newColors;
-        this.colorsBackground = newColorsBackground;
-        this.styles = newStyles;
 
-        // Alt buffer (no scrollback): same per-row copy.
+        // Alt buffer (no scrollback): top-anchored copy of the surviving rows.
         final int copyAltRows = Math.min(oldHeight, newHeight);
         final ColorData[] newAltColors = new ColorData[width * newHeight];
         final ColorData[] newAltColorsBackground = new ColorData[width * newHeight];
@@ -472,42 +553,40 @@ public class Terminal {
             System.arraycopy(this.altColorsBackground, off, newAltColorsBackground, off, width);
             System.arraycopy(this.altStyles, off, newAltStyles, off, width);
         }
+
+        // Commit: all allocations succeeded — swap every field in one stretch. Any failure
+        // above leaves the terminal fully consistent at the old height.
+        this.buffer = newBuffer;
+        this.colors = newColors;
+        this.colorsBackground = newColorsBackground;
+        this.styles = newStyles;
         this.altBuffer = newAltBuffer;
         this.altColors = newAltColors;
         this.altColorsBackground = newAltColorsBackground;
         this.altStyles = newAltStyles;
+        this.height = newHeight;
+        this.lastRowToDisplay = newLrd;
+        this.lastRowToDisplayMax = newLrdMax;
 
-        // Scroll margins: clamp to new height (DECSLPP does not reset DECSTBM, but the bottom
-        // margin must not exceed the new page size).
-        if (this.scrollLast >= newHeight) {
-            this.scrollLast = newHeight - 1;
-        }
-        if (this.scrollFirst >= this.scrollLast) {
-            this.scrollFirst = 0;
-            this.scrollLast = newHeight - 1;
-        }
+        // Margins + origin reset per xterm ScreenResize (see Javadoc).
+        this.scrollFirst = 0;
+        this.scrollLast = newHeight - 1;
+        this.currentPrivateModeState.DECOM = false;
 
-        // Scrollback window: growing extends the window so new blank rows appear at the bottom;
-        // shrinking clamps. The delta is the row-count change; adding it to lastRowToDisplay(Max)
-        // keeps the same content visible and extends the view downward.
-        final int delta = newHeight - oldHeight;
-        if (delta > 0) {
-            this.lastRowToDisplay = Math.min(this.lastRowToDisplay + delta, newMainRows);
-            this.lastRowToDisplayMax = Math.min(this.lastRowToDisplayMax + delta, newMainRows);
-        } else {
-            this.lastRowToDisplay = Math.min(this.lastRowToDisplay, newMainRows);
-            this.lastRowToDisplayMax = Math.min(this.lastRowToDisplayMax, newMainRows);
+        // Move the cursor with its content (grow pull-down / shrink top-drop), clamped into
+        // the new page; routes through setCursorPos for the pending-wrap/REP clearing that
+        // matches any repositioning. Unmoved cursor (plain grow) is left alone.
+        if (newY != this.y) {
+            setCursorPos(this.x, newY);
         }
 
-        // Clamp cursor if beyond new height.
-        if (this.y >= newHeight) {
-            setCursorPos(this.x, newHeight - 1);
-        }
-
-        // Reallocate the network dirty BitSet for the new capacity.
+        // Reallocate the network dirty BitSet for the new capacity and arm the full refresh
+        // atomically with the geometry commit: a consume landing between the field swap and
+        // here would otherwise ship a partial diff at the new height with no rows.
         networkDirtyLock.lock();
         try {
             networkDirtyRows = new BitSet(newMainRows);
+            networkNeedsFullRefresh = true;
         } finally {
             networkDirtyLock.unlock();
         }
@@ -592,7 +671,7 @@ public class Terminal {
     /**
      * Converts a screen-row dirty bit mask into absolute buffer rows for the network diff
      * sink. Alt-buffer rows are indexed by screen row directly; main-buffer screen row
-     {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - HEIGHT}.
+     * {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - height}.
      */
     private void recordNetworkDirtyScreenRows(final long mask) {
         if (mask == 0) return;
@@ -602,6 +681,9 @@ public class Terminal {
             for (int s = 0; s < height; s++) {
                 if ((mask & (1L << s)) == 0) continue;
                 final int row = alt ? s : s + lastRowToDisplay - height;
+                // Bound is the LOGICAL capacity (height * SCROLL_BACK_COUNT), not
+                // networkDirtyRows.size() — a BitSet rounds its capacity up to 64-word
+                // multiples, so .size() would admit rows beyond the buffer's real end.
                 if (row >= 0 && row < height * SCROLL_BACK_COUNT) {
                     networkDirtyRows.set(row);
                 }

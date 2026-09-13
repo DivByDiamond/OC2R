@@ -25,16 +25,20 @@ public class CH4
         } else { // XTWINOPS
             switch (args[0]) {
                 case 8 -> { // ewSetWinSizeChars: resize text area in characters
-                    // xterm-410 charproc.c:9042: RequestResize(xw, optional_param(1),
-                    // optional_param(2), True). optional_param(0) means "no change" for that
-                    // dimension. Rows first, then cols — matching xterm's parameter order.
-                    // Does NOT set DECCOLM (only DECSCPP and DECCOLM mode 3 set the flag).
+                    // xterm-410 charproc.c:9044: RequestResize(xw, optional_param(1),
+                    // optional_param(2), True). A missing/zero param leaves that dimension
+                    // unchanged (optional_param returns DEFAULT, RequestResize skips
+                    // non-positive values). Rows first, then cols — matching xterm's
+                    // parameter order. Both dims are range-checked HERE (xterm give_up on
+                    // oversized requests): the escape channel carries arbitrary ints, and an
+                    // unchecked col count would reach resizeWidth's allocation straight from
+                    // the guest. Does NOT set DECCOLM (only DECSCPP and DECCOLM mode 3 do).
                     final int rows = argsCount > 1 ? args[1] : 0;
                     final int cols = argsCount > 2 ? args[2] : 0;
-                    if (rows >= 1 && rows <= CH13.MAX_HEIGHT) {
+                    if (rows >= 1 && rows <= Terminal.MAX_HEIGHT) {
                         terminal.resizeHeight(rows);
                     }
-                    if (cols >= 1) {
+                    if (cols >= 1 && cols <= Terminal.MAX_WIDTH) {
                         terminal.resizeWidth(cols);
                     }
                 }
