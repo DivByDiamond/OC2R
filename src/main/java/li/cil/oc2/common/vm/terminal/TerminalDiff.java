@@ -334,7 +334,7 @@ public final class TerminalDiff {
         // (Setting the SHIPPED cursor before the resize would be worse: that's the POST-resize
         // row, and the anchor formula needs the pre-resize one, which isn't on the wire.)
         if (terminal.width != s.width()) {
-            terminal.setWidth(s.width());
+            terminal.resizeWidth(s.width());
         }
         if (terminal.height != s.height()) {
             terminal.resizeHeight(s.height());

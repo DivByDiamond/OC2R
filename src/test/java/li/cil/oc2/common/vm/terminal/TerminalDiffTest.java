@@ -254,8 +254,8 @@ public class TerminalDiffTest {
     void decscppReshipsVisibleWindowSoClientSurvivesWidthChange() {
         // F1 regression (Kimi gate, 2026-09-07): resizeWidth must mark the NETWORK sink, not
         // just the renderer masks. DECSCPP is the first width path where the server PRESERVES
-        // content while the client's apply-side width change destructively reallocates
-        // (TerminalDiff.apply -> setWidth). If the snapshot ships width without rows, the
+        // content while the client's apply-side width change reallocates
+        // (TerminalDiff.apply -> resizeWidth). If the snapshot ships width without rows, the
         // client blanks (visible + scrollback) while the server keeps "HELLO" — divergence
         // until the next captureFull. Revert-and-fail: drop markAllDirty() from resizeWidth
         // and rows() comes back empty here, and the client's 'H' vanishes.
@@ -299,6 +299,39 @@ public class TerminalDiffTest {
         assertEquals(48, client.height, "client is resized to 48 rows");
         assertEquals('H', charAt(client, 0, 0),
                 "client keeps the server's content across the height change");
+    }
+
+    @Test
+    void combinedResizeViaXtwinopsReshipsVisibleWindowSoClientSurvives() {
+        // Bot review on PR #39 (2026-09-15) flagged TerminalDiff.apply using the
+        // destructive setWidth for the width half of a combined resize (XTWINOPS
+        // "CSI 8;rows;cols t") while the height half went through content-preserving
+        // resizeHeight -- an inconsistency now fixed (apply uses resizeWidth for both
+        // paths, matching the server's own non-destructive resize). Note this does NOT
+        // make scrollback survive a resize: apply() unconditionally clears every buffer
+        // via clearBuffers() whenever reset=true, and both resize primitives set
+        // Terminal.networkNeedsFullRefresh (-> Snapshot.reset()) on every call --
+        // pre-existing since DECSCPP (PR #38), not new here. What resizeWidth vs setWidth
+        // actually changes is consistency with the server-side resize semantics; the
+        // regression coverage that matters is the same as decscppReshipsVisibleWindow...
+        // below: the VISIBLE window must still survive a combined height+width resize.
+        write(server, "HELLO");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server)); // drain: HELLO shipped + consumed
+        assertEquals('H', charAt(client, 0, 0), "precondition: client shows HELLO");
+
+        write(server, CSI + "8;48;132t"); // XTWINOPS case 8: combined height+width resize
+        assertEquals(48, server.height, "precondition: server resized height");
+        assertEquals(132, server.getTerminalWidth(), "precondition: server resized width");
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertTrue(snapshot.rows().length > 0,
+                "combined resize must re-ship the visible window -- a geometry-only snapshot blanks the client");
+        TerminalDiff.apply(client, snapshot);
+        assertEquals(48, client.height, "client follows the server's height");
+        assertEquals(132, client.getTerminalWidth(), "client follows the server's width");
+        assertEquals('H', charAt(client, 0, 0),
+                "client keeps the server's visible-window content across the combined resize");
     }
 
     @Test
