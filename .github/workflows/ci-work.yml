@@ -52,8 +52,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # 1.21.1 predates the gameTest task/harness (added later on work) --
+      # skip rather than fail so this workflow is usable on both branches.
       - name: Run game tests
-        run: ./gradlew gameTest
+        run: |
+          if ./gradlew tasks --all --console=plain | grep -qE '^gameTest\b'; then
+            ./gradlew gameTest
+          else
+            echo "No 'gameTest' task on this branch -- skipping."
+          fi
 
       - name: Upload game test results
         if: ${{ !cancelled() }}
