@@ -16,6 +16,16 @@ public class CH4
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD: CyclomaticComplexity, CognitiveComplexity — multi-sub-handler dispatch (XTSMTITLE/DECSWBV/DECRARA/XTWINOPS) with a switch; inherent to the combined-handler architecture
+        // xterm-410 VTPrsTbl.c maps 't' to a handler in exactly four tables: plain CSI
+        // (XTERM_WINOPS), SP (DECSWBV), $ (DECRARA), and CSI > (XTERM_SM_TITLE). Every other
+        // intermediate table — ?, !, #, ", ', * — maps 't' to CASE_GROUND_STATE (ignored);
+        // the mixed CSI ? $ table does too. Those forms must NOT reach the branches below:
+        // pre-case-8 a misrouted reply was harmless, but a misrouted RESIZE would be exactly
+        // the "more permissive than xterm" trap CH13's guard documents.
+        if (state.questionMark || state.hash || state.quote || state.singleQuote
+                || state.exclamation || state.asterisk) {
+            return;
+        }
         if (state.greaterThan) { // XTSMTITLE
             LOGGER.warn("XTSMTITLE is not implemented");
         } else if (state.space) { // DECSWBV
