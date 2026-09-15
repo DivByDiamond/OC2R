@@ -22,10 +22,14 @@ public class TerminalBackgroundRenderer {
                 useAltBuffer
                         ? row * terminal.width
                         : (row + terminal.lastRowToDisplay - terminal.height) * terminal.width;
-        // Torn mid-resize read (§36 M4): skip rows that don't fit the captured style array
-        // instead of indexing out of bounds; the per-cell tear is the deferred M4 work.
+        // Torn mid-resize read (§36 M4): skip rows that don't fit the captured style/color
+        // arrays instead of indexing out of bounds; the per-cell tear is the deferred M4 work.
         final byte[] activeStyles = useAltBuffer ? terminal.altStyles : terminal.styles;
-        if (index < 0 || index + terminal.width > activeStyles.length) return;
+        final ColorData[] activeColors = useAltBuffer ? terminal.altColors : terminal.colors;
+        final ColorData[] activeColorsBackground = useAltBuffer ? terminal.altColorsBackground : terminal.colorsBackground;
+        final int end = index + terminal.width;
+        if (index < 0 || end > activeStyles.length
+                || end > activeColors.length || end > activeColorsBackground.length) return;
         for (int col = 0; col < terminal.width; col++, index++) {
             final byte style = activeStyles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
