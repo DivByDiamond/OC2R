@@ -486,6 +486,7 @@ public class Terminal {
         // [srcStart, srcLen) of the old main buffer lands at new rows [0, srcLen).
         final int srcStart;
         final int srcLen;
+        final int altSrcStart;
         final int newLrd;
         final int newLrdMax;
         final int newY;
@@ -493,6 +494,7 @@ public class Terminal {
         if (delta > 0) { // grow: keep every row; pull history down into the new top rows
             srcStart = 0;
             srcLen = oldMainRows;
+            altSrcStart = 0;
             // The pull comes from the WRITE window's scrollback (lrdMax-based), not the
             // transient view. Both window fields gain +delta (the window is delta taller)
             // and lose -take (the top reclaim): a bottom-anchored view stays glued to the
@@ -520,6 +522,11 @@ public class Terminal {
             }
             srcStart = start;
             srcLen = len;
+            // The alt buffer has no scrollback, but the same gravity applies to it (xterm's
+            // Reallocate treats every ScrnBuf alike): the copy must anchor at the same
+            // fromTop the cursor math uses, or the cursor would ride up while its content
+            // stays top-anchored — parked on an unrelated row.
+            altSrcStart = fromTop;
             newLrdMax = len;
             // lrd - srcStart may go negative when the capacity trim ate rows the view was
             // parked on (deep scrollback + aggressive shrink) — the floor at newHeight then
@@ -549,7 +556,8 @@ public class Terminal {
             System.arraycopy(this.styles, src, newStyles, dst, width);
         }
 
-        // Alt buffer (no scrollback): top-anchored copy of the surviving rows.
+        // Alt buffer (no scrollback): top-anchored on grow; on shrink anchored at the same
+        // fromTop as the cursor relayout (xterm Reallocate gravity, see the plan comment).
         final int copyAltRows = Math.min(oldHeight, newHeight);
         final ColorData[] newAltColors = new ColorData[width * newHeight];
         final ColorData[] newAltColorsBackground = new ColorData[width * newHeight];
@@ -560,11 +568,12 @@ public class Terminal {
         Arrays.fill(newAltColorsBackground, defaultBackground);
         Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
         for (int r = 0; r < copyAltRows; r++) {
-            final int off = r * width;
-            System.arraycopy(this.altBuffer, off, newAltBuffer, off, width);
-            System.arraycopy(this.altColors, off, newAltColors, off, width);
-            System.arraycopy(this.altColorsBackground, off, newAltColorsBackground, off, width);
-            System.arraycopy(this.altStyles, off, newAltStyles, off, width);
+            final int src = (altSrcStart + r) * width;
+            final int dst = r * width;
+            System.arraycopy(this.altBuffer, src, newAltBuffer, dst, width);
+            System.arraycopy(this.altColors, src, newAltColors, dst, width);
+            System.arraycopy(this.altColorsBackground, src, newAltColorsBackground, dst, width);
+            System.arraycopy(this.altStyles, src, newAltStyles, dst, width);
         }
 
         // Commit: all allocations succeeded — swap every field in one stretch. Any failure
