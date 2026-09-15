@@ -272,7 +272,7 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
 **Проблемы**: orphaned blob-файлы, мёртвый `HardDriveWithExternalDataItem`, размеры HDD через единый множитель, 2D-иконка дискеты, flash 12 MB захардкожен.
 
 - [x] **Orphaned blobs cleanup**: при `/clear` предмета blob-файл НЕ удаляется (только `MemoryDevice.dispose` вызывает `deleteAsync`). Нужен cleanup-механизм — например, реестр активных blob-handle'ов + периодическая проверка orphaned при старте сервера → `BlobStorage.ACTIVE_HANDLES` (регистрируются при `validateHandle`), `cleanupOrphaned()` по `ServerStartedEvent` через `ServerScheduler` с задержкой 5 с (устройства успевают смонтироваться)
-- [ ] **`HardDriveWithExternalDataItem`** — класс определён, провайдер есть, но предмет **не зарегистрирован** в `Items.java`. Мёртвый код — либо добить (зарегистрировать + модель + рецепт), либо удалить класс + провайдер + `HardDriveDeviceWithInitialData` → **зарегистрирован как `HARD_DRIVE_ONYXOS` (OnyxOS liquid-диск, рабочее дерево)**
+- [x] **`HardDriveWithExternalDataItem`** — пункт устарел (проверено 2026-09-15): предмет **зарегистрирован** как `HARD_DRIVE_ONYXOS` (`Items.java:97`), провайдер `hard_drive_custom` подключён в `ProviderRegistry`, есть рецепт (`StorageRecipes.java:178`), модель (`ModItemModelProvider.java:52`), цвет (`CustomItemColors.java:61`), запись в creative tab. Не мёртвый код — был закрыт раньше, чекбокс не обновили
 - [x] **Размеры HDD по тирам отдельно**: замена `diskSizeFactor` на `diskSizeTier1/2/3/4` (8/16/32/128 MB) в `VMSpec`/`Config`, `Items.java` читает тиры
 - [x] **Новые тиры HDD**: **8 / 16 / 32 / 128 MB** (было 2/4/8/16)
 - [ ] **3D-модель дискеты**: сейчас в слоте дисковода рисуется 2D-иконка (`FIXED` display context). Добавить нормальную 3D-модель floppy для рендера в `DiskDriveRenderer`
@@ -350,10 +350,22 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
 
 **Цель**: запустить OnyxKernel (github.com/loki5512344/OnyxKernel) внутри VM OC2R как альтернативу Minux.
 
-**Проверено (факты):**
+**Статус на 2026-09-15: все три пункта ниже закрыты, OnyxOS реально грузится в OC2R.** Секция оставлена
+как история диагностики — сама диагностика была верной, просто с тех пор всё решено (см. чекбоксы ниже).
+
+**Проверено (факты, актуализировано 2026-09-15):**
 - `linker.ld`: `KERNEL_BASE = 0x80200000` — совпадает с адресом загрузки ядра в `MinuxFirmware` (`startAddress + 0x200000`). Схема `layout: minux` подходит без изменений.
-- **Блокер**: `boot.S` рассчитан на вход в M-mode (`csrr mhartid`, `pmpaddr0/pmpcfg0`, `medeleg/mideleg`, `mstatus`, `mret`) — это путь OnyxBoot. В sedna ядро входит в S-mode через OpenSBI с `a0`=hartid, `a1`=DTB → первый же `csrr mhartid` = illegal instruction.
-- После boot: `kmain` монтирует **OnyxFS** и грузит `/bin/init`; встроенные rootfs OC2R (cramfs/squashfs) он не читает. Сеть захардкожена `[10,0,2,15]` (QEMU user-net).
+- ~~Блокер: `boot.S` рассчитан на вход в M-mode~~ — решено `boot_smode.rs` (см. чекбокс ниже): отдельный
+  S-mode энтрипоинт, не трогает ни одной M-mode-only CSR, просто паркует вторичные харты, зануляет BSS,
+  прыгает в `kmain`.
+- ~~`kmain` монтирует OnyxFS, встроенные rootfs OC2R не читает~~ — решено: OC2R сам шлёт правильный формат
+  (`src/main/resources/onyxos/onyxfs.img`, OnyxFS, не cramfs/squashfs), подаётся как виртуальный HDD через
+  `HARD_DRIVE_ONYXOS`/`OnyxOSBlockDeviceData` (см. §22 выше).
+- ~~Сеть захардкожена `[10,0,2,15]`~~ — решено: `srv/main/mod.rs` теперь пробует DHCP первым, явно
+  пропускает его при отсутствии virtio-net устройства (комментарий в коде: "OC2R/sedna has none"), и
+  только тогда падает на статику `10.0.2.15/255.255.255.0` — которая к тому же совпадает с
+  point-to-point моделью сетевой карты OC2R (см. §27 «Находки аудита inet/»: гость сам назначает
+  себе IP, DHCP не предусмотрен по дизайну карты). Не блокер, а случайно (или намеренно) совместимо.
 
 ### ОнyxKernel (репо)
 - [x] **Login incorrect при входе root** — исправлено в OnyxKernel/init/src/login/mod.rs (2026-08-23):
@@ -366,7 +378,9 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
   перезалить свежий образ (first-boot пересеет root).
 - [x] **`boot_smode.rs`** — реализовано (см. «вывод на монитор» ниже, `--features smode`, 2026-08-23):
   вход из OpenSBI в S-mode принят и работает, ядро успешно грузится и рисует в framebuffer.
-- [ ] **Сеть**: убрать хардкод `[10,0,2,15]`; DHCP или адрес из FDT/конфига
+- [x] **Сеть**: убрать хардкод `[10,0,2,15]`; DHCP или адрес из FDT/конфига — решено: DHCP пробуется
+  первым (пропускается явно при отсутствии virtio-net), статика — только fallback, совпадающий с
+  point-to-point моделью карты OC2R
 - [ ] Проверить: UART NS16550A (совместим с sedna), virtio_net, virtio-blk, libfdt — что FDT от sedna парсится `early_init`
 
 ### ОнyxKernel — вывод на монитор (сделано 2026-08-23)
@@ -378,9 +392,11 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
   (`--features smode` + objcopy), заменён в ресурсах мода.
 
 ### Мод (oc2r) — доставка OnyxOS-образа
-- [ ] **OnyxFS-диск**: образ rootfs (собранный `mkimage` из `tools/` OnyxKernel, содержит `/bin/init`, `/bin/osh`, userland) подаётся как виртуальный HDD/floppy через существующий blob-механизм, а НЕ как встроенный rootfs
+- [x] **OnyxFS-диск**: образ rootfs подаётся как виртуальный HDD через `HARD_DRIVE_ONYXOS`/
+  `OnyxOSBlockDeviceData` (`src/main/resources/onyxos/onyxfs.img`, оверрайд через
+  `config/oc2r/onyxfs.img`) — не встроенный rootfs, ровно как и планировалось
 - [ ] `layout: minux` в `FirmwareManifest`/`FirmwareDownloader` (задача 25) уже раскладывает kernel на 0x80200000 — проверить на реальном Onyx-образе
-- [ ] Build + проверка в игре: компьютер с флешкой-OnyxOS грузится до `login:` с OnyxKernel
+- [x] Build + проверка в игре: компьютер с OnyxOS-диском грузится до `login:` с OnyxKernel — работает
 
 ### Проверить дополнительно (открытые вопросы)
 - [ ] Память: сколько RAM нужно OnyxOS (256 MB в QEMU) vs `maxAllocatedMemory` OC2R (512 MB default) — влезет ли
