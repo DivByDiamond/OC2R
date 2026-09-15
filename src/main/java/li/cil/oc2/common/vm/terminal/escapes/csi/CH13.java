@@ -1,14 +1,11 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class CH13
-        extends CSISequenceHandler { // Combined Handler 13 (DECSCPP and DECSLPP/DECSNLS) — the '|'
+        extends CSISequenceHandler { // Combined Handler 13 (DECSCPP and DECSNLS) — the '|'
     // final is shared by the column-count selector ($ |) and the line-count selector (* |),
     // branched on the intermediate byte.
-    private static final Logger LOGGER = LogManager.getLogger();
 
     public CH13(final Terminal terminal) {
         super(terminal);
@@ -23,7 +20,7 @@ public class CH13
     }
 
     @Override
-    public void execute(final int[] args, final int argsCount, final CSIState state) {
+    public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD: CyclomaticComplexity — shared final-byte dispatch with intermediate branching, same shape as pre-PR
         // xterm-410 routes the private-marker forms elsewhere: csi_dec_dollar_table (the
         // "CSI ? Pn $" table, VTPrsTbl.c:4374) maps '|' to CASE_GROUND_STATE — ignored — and
         // only the plain csi_dollar_table (VTPrsTbl.c:3074) maps '|' to CASE_DECSCPP; the
@@ -48,12 +45,18 @@ public class CH13
                 terminal.currentPrivateModeState.DECCOLM = true;
             }
             // Any other value is ignored (xterm sets value = -1 and skips the resize).
-        } else if (state.asterisk) { // DECSLPP / DECSNLS — Set Lines Per Page (CSI Pn * |)
-            // Deferred: dynamic HEIGHT is a separate, larger axis (HEIGHT is static final and
-            // pervades buffer sizing, scrollback, the dirty BitSet, renderer rows, the network
-            // diff). 132x48 etc. is the eventual payoff. The '*' intermediate is parsed so this
-            // stub is reachable; implementation is a future session.
-            LOGGER.warn("DECSLPP not implemented");
+        } else if (state.asterisk) { // DECSNLS — Set Number of Lines per Screen (CSI Ps * |)
+            // xterm-410 CASE_DECSNLS (charproc.c:5740): value = zero_if_default(0);
+            // if (value >= 1 && value <= 255) RequestResize(xw, value, -1, True).
+            // Gated by AllowWindowOps(ewSetWinLines) in xterm — we accept directly (the
+            // guest owns the terminal). Our ceiling is Terminal.MAX_HEIGHT (64 — the long
+            // dirty-mask ceiling), not xterm's 255. Values outside the range are silently
+            // ignored, matching xterm's "value = -1, skip" for out-of-range. (The clamp in
+            // resizeHeight is a second, independent guard.)
+            final int lines = args[0];
+            if (lines >= 1 && lines <= Terminal.MAX_HEIGHT) {
+                terminal.resizeHeight(lines);
+            }
         }
         // A bare "CSI |" (no intermediate) is not a defined sequence; ignore it.
     }

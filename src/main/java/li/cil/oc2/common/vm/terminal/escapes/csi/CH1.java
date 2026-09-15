@@ -17,7 +17,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         if (state.questionMark || state.dollarSign) {
             return new int[0];
         }
-        return new int[] {1, Terminal.HEIGHT};
+        return new int[] {1, terminal.height};
     }
 
     @Override
@@ -48,7 +48,7 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
         final int last;
         /* Each parameter defaults independently: top=1, bottom=HEIGHT */
         final int top = args[0];
-        final int bottom = Math.min(args[1], Terminal.HEIGHT);
+        final int bottom = Math.min(args[1], terminal.height);
         first = top - 1;
         last = bottom - 1;
         if (last - first <= 0) {

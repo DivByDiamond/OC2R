@@ -1,9 +1,9 @@
 package li.cil.oc2.common.vm.terminal.render;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public interface RendererModel {
-    AtomicInteger getDirtyMask();
+    AtomicLong getDirtyMask();
 
     void close();
 }

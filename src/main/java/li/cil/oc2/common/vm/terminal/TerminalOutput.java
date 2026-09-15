@@ -346,12 +346,12 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
                 Arrays.fill(terminal.altBuffer, 'E');
             } else {
                 int startIndex =
-                        (terminal.lastRowToDisplayMax - Terminal.HEIGHT)
+                        (terminal.lastRowToDisplayMax - terminal.height)
                                 * terminal.width;
                 Arrays.fill(
                         terminal.buffer,
                         startIndex,
-                        startIndex + terminal.width * Terminal.HEIGHT,
+                        startIndex + terminal.width * terminal.height,
                         'E');
             }
             terminal.markAllDirty();

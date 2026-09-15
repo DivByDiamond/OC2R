@@ -1,8 +1,9 @@
 package li.cil.oc2.common.vm.terminal;
 
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.render.RendererModel;
@@ -1648,6 +1649,277 @@ public class TerminalBufferTest {
         assertFalse(terminal.tabs[85], "new column 85 has no tab stop (85 % 8 != 0)");
     }
 
+    @Test
+    void decsnlsGrowsHeightPreservingContent() {
+        write(terminal, "HELLO");
+        assertEquals('H', charAt(0, 0), "precondition: content at (0,0)");
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+
+        write(terminal, CSI + "48*|"); // DECSNLS -> 48 rows
+
+        assertEquals(48, terminal.height, "DECSNLS grows to 48 rows");
+        assertEquals(48 * Terminal.SCROLL_BACK_COUNT, terminal.buffer.length / terminal.width,
+            "main buffer reallocated to 48 * SCROLL_BACK_COUNT rows");
+        assertEquals('H', charAt(0, 0), "content preserved at (0,0)");
+        assertEquals(48, terminal.lastRowToDisplay,
+                "view bottom-anchored on the new window (lrd >= height invariant; renderer row math)");
+    }
+
+    @Test
+    void decsnlsShrinksHeightClampingCursor() {
+        write(terminal, CSI + "10;1H"); // cursor to row 10
+        assertEquals(9, terminal.y, "precondition: cursor at row 9");
+
+        write(terminal, CSI + "4*|"); // DECSNLS -> 4 rows
+
+        assertEquals(4, terminal.height, "DECSNLS shrinks to 4 rows");
+        assertEquals(3, terminal.y, "cursor clamped to new bottom row");
+    }
+
+    @Test
+    void decsnlsIgnoresOutOfRangeParam() {
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+
+        write(terminal, CSI + "0*|"); // 0 is out of range (xterm: value < 1 is ignored)
+
+        assertEquals(Terminal.HEIGHT, terminal.height, "0 is not a valid line count");
+    }
+
+    @Test
+    void xtwinopsCase8SetsRowsAndCols() {
+        write(terminal, "HELLO");
+        assertEquals(Terminal.HEIGHT, terminal.height, "precondition: 24 rows");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "precondition: 80 cols");
+
+        write(terminal, CSI + "8;48;132t"); // XTWINOPS case 8: 48 rows, 132 cols
+
+        assertEquals(48, terminal.height, "rows resized to 48");
+        assertEquals(132, terminal.getTerminalWidth(), "cols resized to 132");
+        assertEquals('H', charAt(0, 0), "content preserved");
+    }
+
+    @Test
+    void xtwinopsCase8RowsOnlyWithZeroCols() {
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "precondition: 80 cols");
+
+        write(terminal, CSI + "8;48;0t"); // rows=48, cols=0 (no change)
+
+        assertEquals(48, terminal.height, "rows resized to 48");
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "cols unchanged (0 = no change)");
+    }
+
+    // --- Dynamic-geometry resize semantics (xterm-410 Reallocate, SouthWest resizeGravity) ---
+
+    @Test
+    void decsnlsIgnoresHeightAboveMaxHeight() {
+        write(terminal, CSI + "65*|"); // 65 > MAX_HEIGHT (64, the long dirty-mask ceiling)
+
+        assertEquals(Terminal.HEIGHT, terminal.height, "65 rows exceeds the 64-row ceiling: ignored");
+    }
+
+    @Test
+    void xtwinopsCase8MissingParamsAreNoOps() {
+        write(terminal, "HI");
+
+        write(terminal, CSI + "8t"); // no rows/cols at all
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "bare CSI 8 t changes nothing");
+        assertEquals(Terminal.HEIGHT, terminal.height, "bare CSI 8 t changes nothing");
+
+        write(terminal, CSI + "8;;80t"); // empty rows, current cols
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "empty rows param changes nothing");
+        assertEquals(Terminal.HEIGHT, terminal.height, "empty rows param changes nothing");
+    }
+
+    @Test
+    void xtwinopsCase8IgnoresOutOfRangeCols() {
+        write(terminal, "HI");
+        // 5000000 * rows overflows the int buffer stride; before the ceiling this threw
+        // NegativeArraySizeException out of putOutput and left width assigned over the old
+        // buffers, bricking the terminal.
+        write(terminal, CSI + "8;24;5000000t");
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "5000000 cols is refused");
+        write(terminal, "XY");
+        assertEquals('X', charAt(2, 0), "terminal still usable after a refused resize");
+    }
+
+    @Test
+    void shrinkAnchorsAtCursorWithFullScrollback() {
+        saturateScrollback();
+        write(terminal, "MARKER");
+        assertEquals('M', charAt(0, 23), "precondition: MARKER on the bottom row");
+
+        write(terminal, CSI + "12*|");
+
+        assertEquals(12, terminal.height);
+        // xterm-410 Reallocate SouthWest: the excess drops below the cursor first; the cursor
+        // sits on the bottom row, so the 12 oldest buffer rows scroll off and the window keeps
+        // the bottom 12 screen rows. The prefix-copy bug this guards replaced the live screen
+        // with scrollback rows from ~250 lines back (and destroyed the live rows entirely).
+        assertEquals('M', charAt(0, 11), "the cursor's row stays on screen (anchored at its content)");
+        assertEquals(12 * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+                "window sits at the bottom of the new buffer");
+    }
+
+    @Test
+    void shrinkDropsRowsBelowCursorFirst() {
+        saturateScrollback();
+        final char topLeft =
+                (char) terminal.buffer[(terminal.lastRowToDisplayMax - terminal.height) * terminal.width];
+        write(terminal, CSI + "1;1H"); // cursor to the top row: 23 screen rows sit below it
+
+        write(terminal, CSI + "12*|");
+
+        assertEquals(12, terminal.height);
+        assertEquals(topLeft, charAt(0, 0),
+                "rows below the cursor absorb the whole shrink; the screen top stays put");
+        assertEquals(0, terminal.y, "cursor stays on the top row");
+    }
+
+    @Test
+    void growPullsScrollbackBackOntoScreen() {
+        saturateScrollback();
+        write(terminal, "MARKER");
+        final char pulled = (char) terminal.buffer
+                [(terminal.lastRowToDisplayMax - terminal.height - 24) * terminal.width];
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        // xterm move_down: the grown rows pull scrollback history back onto the screen top
+        // instead of appearing as blank rows below the prompt, and the cursor rides its
+        // content down. Buffer content does not move — this is a pure window shift.
+        assertEquals(pulled, charAt(0, 0), "grown area shows the scrollback row above the old screen top");
+        assertEquals('M', charAt(0, 47), "live bottom row remains at the bottom");
+        assertEquals(47, terminal.y, "cursor moves down by the pulled row count");
+        assertEquals(24 * Terminal.SCROLL_BACK_COUNT, terminal.lastRowToDisplayMax,
+                "content position is unchanged");
+        assertEquals(terminal.lastRowToDisplayMax, terminal.lastRowToDisplay,
+                "bottom-anchored view stays glued to the content");
+    }
+
+    @Test
+    void growWithPartialHistoryPullsWhatItCan() {
+        // 29 lines on a 24-row screen: the last 6 each scroll once, lrd = lrdMax = 30.
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 29; i++) {
+            sb.append("part").append(i).append("\r\n");
+        }
+        write(terminal, sb.toString());
+        assertEquals(30, terminal.lastRowToDisplayMax, "precondition: 6 history rows");
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        // Only 6 rows can be pulled (take = 6, not 24); the rest of the gain is blank below.
+        assertEquals('p', charAt(0, 0), "window extends to the very top of the content");
+        assertEquals(29, terminal.y, "cursor rides the 6-row pull");
+        assertEquals(48, terminal.lastRowToDisplayMax, "window spans history + screen + blanks");
+        assertEquals(terminal.lastRowToDisplayMax, terminal.lastRowToDisplay,
+                "bottom-anchored view stays glued (lrd >= height invariant)");
+    }
+
+    @Test
+    void growWithAltBufferDoesNotShiftCursor() {
+        saturateScrollback();
+        write(terminal, CSI + "?1049h"); // save + switch to alt buffer
+        write(terminal, "ALT\r\nmore");
+        final int yBefore = terminal.y;
+        assertTrue(terminal.currentPrivateModeState.isAltBufferEnabled(), "precondition: alt active");
+
+        write(terminal, CSI + "48*|");
+
+        assertEquals(48, terminal.height);
+        assertEquals(yBefore, terminal.y,
+                "alt buffer has no scrollback to pull — the cursor must not ride the main-buffer shift");
+        assertEquals('A', (char) terminal.altBuffer[0], "alt content stays top-anchored");
+    }
+
+    @Test
+    void decsnlsResetsMarginsAndOrigin() {
+        write(terminal, CSI + "5;15r" + CSI + "?6h"); // DECSTBM [5,15], DECOM on
+        assertEquals(4, terminal.scrollFirst, "precondition: margins set");
+        assertTrue(terminal.currentPrivateModeState.DECOM, "precondition: origin mode set");
+
+        write(terminal, CSI + "48*|");
+
+        // xterm ScreenResize resetMargins + ORIGIN clear, on ANY resize. DEC VT510-RM says
+        // DECSLPP preserves DECSTBM — xterm is deliberately preferred: a residual margin band
+        // silently disables this engine's full-page-gated scroll-window machinery (the grown
+        // rows below the old margin would never scroll into view).
+        assertEquals(0, terminal.scrollFirst, "resize resets the top margin");
+        assertEquals(47, terminal.scrollLast, "resize resets the bottom margin to the new page");
+        assertFalse(terminal.currentPrivateModeState.DECOM, "resize clears origin mode");
+    }
+
+    @Test
+    void decsnlsMaxHeight64MaskBitsReachEveryRow() {
+        write(terminal, CSI + "64*|"); // exactly the long-mask ceiling
+        assertEquals(64, terminal.height, "precondition: at the mask ceiling");
+
+        // Input at height 64 must mark all 64 rows (1L << 0..63): the (1L << h) - 1 idiom
+        // would degenerate to 0 here (Java masks shift counts to 0..63).
+        terminal.io.putInput("k");
+        assertNotNull(terminal.io.getInput(), "precondition: input drains");
+        assertEquals(-1L, renderer.getDirtyMask().get(), "all 64 rows dirty after input");
+
+        // Row 63 is the far edge of 1L << row — a write there must reach the network sink.
+        renderer.getDirtyMask().set(0L);
+        TerminalDiff.capture(terminal); // drain any pending rows
+        write(terminal, CSI + "64;1H" + "X");
+        assertEquals('X', charAt(0, 63), "write reaches the last row");
+        final int absRow63 = 63 + terminal.lastRowToDisplayMax - terminal.height;
+        boolean shipped = false;
+        for (final int r : terminal.consumeNetworkDirty().rows()) {
+            if (r == absRow63) {
+                shipped = true;
+            }
+        }
+        assertTrue(shipped, "row 63 lands in the network dirty set (no 1L << 64-style wrap)");
+    }
+
+    @Test
+    void oneRowTerminalKeepsWorking() {
+        write(terminal, CSI + "1*|");
+        assertEquals(1, terminal.height);
+
+        write(terminal, "line one\r\nline two\r\nline three"); // must scroll without exploding
+
+        assertDoesNotThrow(() -> write(terminal, CSI + "24*|"), "growing back out must not throw either");
+        assertEquals(Terminal.HEIGHT, terminal.height);
+    }
+
+    @Test
+    void windowAndMarginsAreTransient() throws Exception {
+        // Save/load seam guard: these index the transient buffers; persisting them pairs stale
+        // values with a freshly re-initialized 24-row buffer on load (F3).
+        for (final String field : new String[] {"lastRowToDisplay", "lastRowToDisplayMax", "scrollFirst", "scrollLast"}) {
+            assertTrue(
+                    Modifier.isTransient(Terminal.class.getDeclaredField(field).getModifiers()),
+                    field + " must be transient (its values are meaningless without the transient buffers)");
+        }
+    }
+
+    @Test
+    void maxHeightFitsTheLongDirtyMask() {
+        // Structural guard (same genre as the transient guard above): every dirty mask in the
+        // engine is a long built as 1L << row, so a row count above 64 would wrap the shift
+        // (1L << 64 == 1L << 0) and silently dirty the wrong rows. If MAX_HEIGHT is ever
+        // raised, the masks must move to BitSet first.
+        assertTrue(Terminal.MAX_HEIGHT <= Long.SIZE,
+                "MAX_HEIGHT must not exceed Long.SIZE while dirty masks shift 1L << row");
+    }
+
+    private void saturateScrollback() {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 600; i++) {
+            sb.append("line").append(i).append("\r\n");
+        }
+        write(terminal, sb.toString());
+    }
+
     private void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -1659,12 +1931,12 @@ public class TerminalBufferTest {
     }
 
     private char charAt(final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return (char) terminal.buffer[x + row * terminal.width];
     }
 
     private int cellIndex(final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return x + row * terminal.width;
     }
 
@@ -1677,16 +1949,16 @@ public class TerminalBufferTest {
     }
 
     private static final class DummyRenderer implements RendererModel {
-        private final AtomicInteger dirtyMask = new AtomicInteger();
+        private final AtomicLong dirtyMask = new AtomicLong();
 
         @Override
-        public AtomicInteger getDirtyMask() {
+        public AtomicLong getDirtyMask() {
             return dirtyMask;
         }
 
         @Override
         public void close() {
-            dirtyMask.set(0);
+            dirtyMask.set(0L);
         }
     }
 

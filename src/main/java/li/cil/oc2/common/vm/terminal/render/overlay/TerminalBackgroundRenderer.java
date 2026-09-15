@@ -21,9 +21,17 @@ public class TerminalBackgroundRenderer {
         int index =
                 useAltBuffer
                         ? row * terminal.width
-                        : (row + terminal.lastRowToDisplay - Terminal.HEIGHT) * terminal.width;
+                        : (row + terminal.lastRowToDisplay - terminal.height) * terminal.width;
+        // Torn mid-resize read (§36 M4): skip rows that don't fit the captured style/color
+        // arrays instead of indexing out of bounds; the per-cell tear is the deferred M4 work.
+        final byte[] activeStyles = useAltBuffer ? terminal.altStyles : terminal.styles;
+        final ColorData[] activeColors = useAltBuffer ? terminal.altColors : terminal.colors;
+        final ColorData[] activeColorsBackground = useAltBuffer ? terminal.altColorsBackground : terminal.colorsBackground;
+        final int end = index + terminal.width;
+        if (index < 0 || end > activeStyles.length
+                || end > activeColors.length || end > activeColorsBackground.length) return;
         for (int col = 0; col < terminal.width; col++, index++) {
-            final byte style = useAltBuffer ? terminal.altStyles[index] : terminal.styles[index];
+            final byte style = activeStyles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
             // DECSCNM screen inverse: XOR the per-cell SGR 7 invert with the screen-inverse mode.

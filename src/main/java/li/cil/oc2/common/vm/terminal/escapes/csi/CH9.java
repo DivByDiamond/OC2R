@@ -25,7 +25,7 @@ public class CH9 extends CSISequenceHandler { // Combined Handler 9 (SD, XTHIMOU
         } else { // SD
             // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
             // shifting more than the screen height has no additional effect.
-            final int n = Math.min(args[0], Terminal.HEIGHT);
+            final int n = Math.min(args[0], terminal.height);
             for (int i = 0; i < n; i++) {
                 terminal.bufferManager.shiftDownOne();
             }

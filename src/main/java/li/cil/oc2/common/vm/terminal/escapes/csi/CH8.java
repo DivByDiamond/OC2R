@@ -29,10 +29,10 @@ public class CH8
         } else { // SU
             // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
             // shifting more than the screen height has no additional effect.
-            final int n = Math.min(args[0], Terminal.HEIGHT);
+            final int n = Math.min(args[0], terminal.height);
             for (int i = 0; i < n; i++) {
                 if (terminal.lastRowToDisplay
-                        < Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT) {
+                        < terminal.height * Terminal.SCROLL_BACK_COUNT) {
                     terminal.bufferManager.incrementLastLineToDisplay();
                 }
                 terminal.bufferManager.shiftUpOne();

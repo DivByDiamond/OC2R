@@ -34,6 +34,7 @@ public class TerminalDiffCodecTest {
 
         assertEquals(snapshot.reset(), decoded.reset(), "reset");
         assertEquals(snapshot.width(), decoded.width(), "width");
+        assertEquals(snapshot.height(), decoded.height(), "height");
         assertEquals(snapshot.altBuffer(), decoded.altBuffer(), "altBuffer");
         assertArrayEquals(snapshot.rows(), decoded.rows(), "rows");
         assertEquals(snapshot.cursorX(), decoded.cursorX(), "cursorX");
@@ -65,6 +66,19 @@ public class TerminalDiffCodecTest {
         assertEquals(snapshot.cursorX(), decoded.cursorX(), "cursorX");
         assertEquals(snapshot.inputModes(), decoded.inputModes(), "inputModes");
         assertEquals(0, buf.readableBytes(), "read and write order must agree to the last byte");
+    }
+
+    @Test
+    void codecRoundTripPreservesHeightField() {
+        final Terminal server = new Terminal();
+        write(server, "hello");
+        TerminalDiff.capture(server); // drain initial
+        server.height = 48; // simulate a DECSLPP resize
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+
+        final TerminalDiff.Snapshot decoded = roundTrip(snapshot);
+
+        assertEquals(48, decoded.height(), "height must survive the wire");
     }
 
     @Test

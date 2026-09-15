@@ -10,7 +10,7 @@ public class NEL {
                 terminal.bufferManager.incrementLastLineToDisplay();
             terminal.setCursorPos(0, terminal.y);
         } else {
-            terminal.setCursorPos(0, Math.min(terminal.y + 1, Terminal.HEIGHT - 1));
+            terminal.setCursorPos(0, Math.min(terminal.y + 1, terminal.height - 1));
         }
     }
 }

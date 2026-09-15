@@ -15,8 +15,8 @@ public class TerminalCursorRenderer {
         BufferUploader.reset();
         if (!terminal.currentPrivateModeState.DECTCEM) return;
 
-        int globalY = terminal.lastRowToDisplayMax - (Terminal.HEIGHT - terminal.y);
-        int localY = Terminal.HEIGHT + globalY - terminal.lastRowToDisplay;
+        int globalY = terminal.lastRowToDisplayMax - (terminal.height - terminal.y);
+        int localY = terminal.height + globalY - terminal.lastRowToDisplay;
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
         if (!isCursorVisible(terminal, useAltBuffer, globalY, localY)) {
@@ -75,8 +75,8 @@ public class TerminalCursorRenderer {
                 && terminal.x < terminal.width
                 && (useAltBuffer || localY >= 0)
                 && terminal.y >= 0
-                && (useAltBuffer || localY < Terminal.HEIGHT)
-                && terminal.y < Terminal.HEIGHT
+                && (useAltBuffer || localY < terminal.height)
+                && terminal.y < terminal.height
                 && (useAltBuffer || globalY <= terminal.lastRowToDisplay);
     }
 

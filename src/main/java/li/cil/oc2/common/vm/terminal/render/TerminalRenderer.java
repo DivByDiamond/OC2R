@@ -2,7 +2,7 @@ package li.cil.oc2.common.vm.terminal.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
@@ -21,8 +21,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
     private static final Logger RENDERER_LOGGER = LogManager.getLogger();
 
     public final Terminal terminal;
-    public final VertexBuffer[] lines = new VertexBuffer[Terminal.HEIGHT];
-    public final AtomicInteger dirty = new AtomicInteger(-1);
+    private VertexBuffer[] lines = new VertexBuffer[Terminal.HEIGHT];
+    public final AtomicLong dirty = new AtomicLong(-1L);
 
     // Blink phase tracking: when the blink phase changes, lines containing blink-styled
     // chars must be rebuilt so the chars appear/disappear.
@@ -37,24 +37,45 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
 
+        // Read the geometry once per frame: the resize paths mutate it lock-free from the VM/
+        // network side, so repeated reads could mix geometries within one frame (the lines
+        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred —
+        // the blink skip below and the row guards in the char/background renderers only bound
+        // the crash class (no AIOOBE), not the occasional torn frame.
+        final int frameHeight = terminal.height;
+        final int frameWidth = terminal.width;
+        final byte[] frameStyles = terminal.styles;
+        final byte[] frameAltStyles = terminal.altStyles;
+
+        // Dynamic height: reallocate the lines array if the terminal's height changed
+        // (e.g. via TerminalDiff.apply calling resizeHeight). Close old buffers first.
+        if (lines.length != frameHeight) {
+            for (final VertexBuffer line : lines) {
+                if (line != null) line.close();
+            }
+            lines = new VertexBuffer[frameHeight];
+            dirty.set(-1L);
+        }
+
         // Blink phase tracking: when the blink phase changes, mark lines containing
         // blink-styled chars dirty so they rebuild and the chars appear/disappear.
         final boolean blinkPhase = Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) < 500;
         if (blinkPhase != lastBlinkPhase) {
             lastBlinkPhase = blinkPhase;
             final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
-            final int baseRow = useAltBuffer ? 0 : terminal.lastRowToDisplay - Terminal.HEIGHT;
-            final byte[] styles = terminal.styles;
-            final byte[] altStyles = terminal.altStyles;
-            int mask = 0;
-            for (int row = 0; row < Terminal.HEIGHT; row++) {
-                final int rowBase = (baseRow + row) * terminal.width;
-                for (int col = 0; col < terminal.width; col++) {
-                    final int index = rowBase + col;
-                    if ((useAltBuffer
-                            ? (altStyles[index] & Terminal.STYLE_BLINK_MASK)
-                            : (styles[index] & Terminal.STYLE_BLINK_MASK)) != 0) {
-                        mask |= (1 << row);
+            final int baseRow = useAltBuffer ? 0 : terminal.lastRowToDisplay - frameHeight;
+            final byte[] activeStyles = useAltBuffer ? frameAltStyles : frameStyles;
+            long mask = 0;
+            for (int row = 0; row < frameHeight; row++) {
+                final int rowBase = (baseRow + row) * frameWidth;
+                // Torn mid-resize read (§36 M4): skip rows that don't fit the captured
+                // geometry instead of indexing out of bounds. Next frame repaints.
+                if (rowBase < 0 || rowBase + frameWidth > activeStyles.length) {
+                    continue;
+                }
+                for (int col = 0; col < frameWidth; col++) {
+                    if ((activeStyles[rowBase + col] & Terminal.STYLE_BLINK_MASK) != 0) {
+                        mask |= (1L << row);
                         break;
                     }
                 }
@@ -77,7 +98,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
     @Override
-    public AtomicInteger getDirtyMask() {
+    public AtomicLong getDirtyMask() {
         return dirty;
     }
 
@@ -153,10 +174,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
     public void validateLineCache() {
         if (dirty.get() == 0) return;
 
-        final int mask = dirty.getAndSet(0);
+        final long mask = dirty.getAndSet(0L);
         final Matrix4f matrix = new Matrix4f();
         for (int row = 0; row < lines.length; row++) {
-            if ((mask & (1 << row)) == 0) continue;
+            if ((mask & (1L << row)) == 0) continue;
 
             BufferBuilder builder =
                     Tesselator.getInstance()

@@ -22,6 +22,6 @@ public class CNL extends CSISequenceHandler {
         // column, so this resets it explicitly and clamps the delta inline: parseArgument saturates
         // at Integer.MAX_VALUE, so terminal.y + args[0] would overflow negative to row 0 (top)
         // instead of the bottom row.
-        terminal.setClampedCursorPos(0, terminal.y + Math.clamp(args[0], 0, Terminal.HEIGHT));
+        terminal.setClampedCursorPos(0, terminal.y + Math.clamp(args[0], 0, terminal.height));
     }
 }

@@ -9,6 +9,7 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -169,6 +170,7 @@ public class TerminalDiffTest {
                 new TerminalDiff.Snapshot(
                         snapshot.reset(),
                         snapshot.width(),
+                        snapshot.height(),
                         snapshot.altBuffer(),
                         snapshot.rows(),
                         truncated,
@@ -275,6 +277,68 @@ public class TerminalDiffTest {
         assertEquals(132, client.getTerminalWidth(), "client is resized to 132 columns");
     }
 
+    @Test
+    void resizeHeightShipsHeightAndRowsSoClientSurvives() {
+        // Same class of seam bug as DECSCPP (PR #38 F1): resizeHeight on the server preserves
+        // content, but the client's apply must see the new height in the snapshot or the client
+        // renders at the old height with truncated/missing rows. Revert-and-fail: drop height
+        // from the Snapshot record and the client stays at 24 while the server is at 48.
+        write(server, "HELLO");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server)); // drain: HELLO shipped + consumed
+        assertEquals('H', charAt(client, 0, 0), "precondition: client shows HELLO");
+        assertEquals(Terminal.HEIGHT, client.height, "precondition: client at 24 rows");
+
+        server.resizeHeight(48);
+        assertEquals(48, server.height, "precondition: server resized to 48 rows");
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertEquals(48, snapshot.height(), "snapshot carries the new height");
+        assertTrue(snapshot.rows().length > 0, "height resize must re-ship the visible window");
+        TerminalDiff.apply(client, snapshot);
+        assertEquals(48, client.height, "client is resized to 48 rows");
+        assertEquals('H', charAt(client, 0, 0),
+                "client keeps the server's content across the height change");
+    }
+
+    @Test
+    void applyRefusesOversizedSnapshotGeometry() {
+        // The snapshot dimensions feed straight into setWidth/resizeHeight on the client. A
+        // malformed or hostile payload (5M cols, 200M rows) must not become an impossible
+        // allocation: width*rows overflows int and previously threw NegativeArraySizeException
+        // out of apply. The primitives refuse out-of-range geometry at their boundary.
+        final Terminal client = new Terminal();
+        final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
+                false, 5_000_000, 200_000_000, false, new int[0], new byte[0][],
+                0, 0, Terminal.HEIGHT, Terminal.HEIGHT, 0, true, false, 0L, null);
+
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
+        assertEquals(Terminal.WIDTH, client.getTerminalWidth(), "oversized snapshot width refused");
+        assertEquals(Terminal.HEIGHT, client.height, "oversized snapshot height refused");
+    }
+
+    @Test
+    void applyClampsHostileScrollWindow() {
+        // The scroll-window indices are raw wire values like the palette — a hostile or
+        // corrupt snapshot must not park the client window outside the buffer. In particular
+        // lastRowToDisplayMax < height would break the client's own later resize relayout
+        // (the span drops below newHeight and Math.clamp throws min > max), and a huge
+        // lastRowToDisplay would send the renderer's row indexing past the buffer.
+        final Terminal client = new Terminal();
+        final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
+                false, Terminal.WIDTH, Terminal.HEIGHT, false, new int[0], new byte[0][],
+                0, 0, 200_000_000, 1, 0, true, false, 0L, null);
+
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
+        final int capacity = client.height * Terminal.SCROLL_BACK_COUNT;
+        assertTrue(client.lastRowToDisplayMax >= client.height
+                        && client.lastRowToDisplayMax <= capacity,
+                "lastRowToDisplayMax clamped into [height, capacity]");
+        assertTrue(client.lastRowToDisplay >= client.height
+                        && client.lastRowToDisplay <= client.lastRowToDisplayMax,
+                "lastRowToDisplay clamped into [height, lastRowToDisplayMax]");
+    }
+
     private static void write(final Terminal target, final String text) {
         target.io.putOutput(ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8)));
     }
@@ -312,7 +376,7 @@ public class TerminalDiffTest {
     }
 
     private static int cellIndex(final Terminal terminal, final int x, final int y) {
-        final int row = y + terminal.lastRowToDisplayMax - Terminal.HEIGHT;
+        final int row = y + terminal.lastRowToDisplayMax - terminal.height;
         return x + row * terminal.width;
     }
 }

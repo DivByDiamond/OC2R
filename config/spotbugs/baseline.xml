@@ -32960,4 +32960,230 @@
     </SourceLine>
   </BugInstance>
   
+
+<!-- Dynamic-height PR: AT_STALE for height + scrollFirst/scrollLast/lastRowToDisplay/lastRowToDisplayMax in resizeHeight/setWidth (same M4 race as width), PA_PUBLIC for height (same as width), EI_EXPOSE_REP2 for Snapshot (constructor signature changed with height field) -->
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="a8e46441a1ac65bd35b4113d9db0e13f" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "height" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="resizeHeight" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="425" end="517" startBytecode="0" endBytecode="1245" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.resizeHeight(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="height" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.height</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="429" end="429" startBytecode="21" endBytecode="21" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 429]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="8b3fc0b03f05b7e9ce3604961f5d1f32" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "scrollFirst" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="resizeHeight" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="425" end="517" startBytecode="0" endBytecode="1245" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.resizeHeight(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="scrollFirst" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.scrollFirst</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="486" end="486" startBytecode="469" endBytecode="469" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 486]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="960c040210b0ca71eaa7be60ce1df5a1" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "scrollLast" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="resizeHeight" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="425" end="517" startBytecode="0" endBytecode="1245" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.resizeHeight(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="scrollLast" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.scrollLast</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="483" end="483" startBytecode="453" endBytecode="453" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 483]</Message>
+    </SourceLine>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="487" end="487" startBytecode="476" endBytecode="476" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" role="SOURCE_LINE_ANOTHER_INSTANCE">
+      <Message>Another occurrence at Terminal.java:[line 487]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="309c5ba201b692f35f39cfa0dc3f6d1f" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "lastRowToDisplay" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="setWidth" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="233" end="284" startBytecode="0" endBytecode="546" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.setWidth(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="lastRowToDisplay" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.lastRowToDisplay</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="278" end="278" startBytecode="253" endBytecode="253" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 278]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" priority="2" rank="14" abbrev="AT" category="MT_CORRECTNESS" instanceHash="674bea3b2a22bc1c47989bdf1156918" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="413">
+    <ShortMessage>This write of this shared primitive variable may not be visible to other threads</ShortMessage>
+    <LongMessage>Shared primitive variable "lastRowToDisplayMax" in one thread may not yield the value of the most recent write from another thread</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.Terminal" name="setWidth" signature="(I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="233" end="284" startBytecode="0" endBytecode="546" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java" />
+      <Message>In method li.cil.oc2.common.vm.terminal.Terminal.setWidth(int)</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="lastRowToDisplayMax" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.lastRowToDisplayMax</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" start="279" end="279" startBytecode="261" endBytecode="261" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+      <Message>At Terminal.java:[line 279]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" priority="2" rank="16" abbrev="PA" category="BAD_PRACTICE" instanceHash="3f61ab670960cf2558ff09cebab46367" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="766">
+    <ShortMessage>Primitive field is public</ShortMessage>
+    <LongMessage>Primitive field li.cil.oc2.common.vm.terminal.Terminal.height is public and set from inside the class, which makes it too exposed. Consider making it private to limit external accessibility.</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.Terminal" primary="true" classAnnotationNames="li.cil.ceres.api.Serialized">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" start="39" end="687" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>At Terminal.java:[lines 39-687]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.Terminal</Message>
+    </Class>
+    <Field classname="li.cil.oc2.common.vm.terminal.Terminal" name="height" signature="I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.Terminal" sourcefile="Terminal.java" sourcepath="li/cil/oc2/common/vm/terminal/Terminal.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/Terminal.java">
+        <Message>In Terminal.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.Terminal.height</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.escapes.index.IND" primary="true" start="13" end="13" startBytecode="55" endBytecode="55" sourcefile="IND.java" sourcepath="li/cil/oc2/common/vm/terminal/escapes/index/IND.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/escapes/index/IND.java">
+      <Message>At IND.java:[line 13]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="f05ad68d827bae4e3fb8d5c64b7f3776" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.palette</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 61]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" startBytecode="0" endBytecode="283" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java" />
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="palette" signature="[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.palette</Message>
+    </Field>
+    <LocalVariable name="palette" register="16" pc="88" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named palette</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="61" end="61" startBytecode="88" endBytecode="88" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 61]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="34f40382a5883b4a7ccd93673b7605bc" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.rowData</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 61]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" startBytecode="0" endBytecode="283" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java" />
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="rowData" signature="[[B" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.rowData</Message>
+    </Field>
+    <LocalVariable name="rowData" register="6" pc="34" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named rowData</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="61" end="61" startBytecode="34" endBytecode="34" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 61]</Message>
+    </SourceLine>
+  </BugInstance>
+  
+<BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="b5b444c2012af3807245fb81a02410ed" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
+    <LongMessage>new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[]) may expose internal representation by storing an externally mutable object into TerminalDiff$Snapshot.rows</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>At TerminalDiff.java:[line 61]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="&lt;init&gt;" signature="(ZIIZ[I[[BIIIIIZZJ[I)V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" start="61" end="61" startBytecode="0" endBytecode="283" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java" />
+      <Message>In method new li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot(boolean, int, int, boolean, int[], byte[][], int, int, int, int, int, boolean, boolean, long, int[])</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" name="rows" signature="[I" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+        <Message>In TerminalDiff.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot.rows</Message>
+    </Field>
+    <LocalVariable name="rows" register="5" pc="28" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named rows</Message>
+    </LocalVariable>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalDiff$Snapshot" primary="true" start="61" end="61" startBytecode="28" endBytecode="28" sourcefile="TerminalDiff.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalDiff.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalDiff.java">
+      <Message>At TerminalDiff.java:[line 61]</Message>
+    </SourceLine>
+  </BugInstance>
+  
 </BugCollection>
