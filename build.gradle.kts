@@ -266,6 +266,7 @@ dependencies {
 
     testImplementation("org.mockito:mockito-core:${mockito_version}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${jupiter_version}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiter_version}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
 
@@ -558,6 +559,9 @@ tasks.register("qodana") {
 
 tasks.test {
     useJUnitPlatform()
+    // The vttest harness regen mode (-Dvttest.regen=true) must reach the test worker JVM; a
+    // command-line -D only lands on the Gradle daemon, so forward it explicitly.
+    System.getProperty("vttest.regen")?.let { systemProperty("vttest.regen", it) }
 }
 
 /* ── GameTest runner ─────────────────────────────────────────────────────── */
