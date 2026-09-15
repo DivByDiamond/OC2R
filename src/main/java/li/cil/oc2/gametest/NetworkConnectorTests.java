@@ -2,6 +2,7 @@
 
 package li.cil.oc2.gametest;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.Items;
@@ -10,9 +11,13 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class NetworkConnectorTests {
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void networkConnectorCanBePlaced(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
@@ -22,7 +27,7 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void networkConnectorWithCableSmokeTest(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
@@ -36,7 +41,7 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void twoConnectorsCanBeLinked(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);

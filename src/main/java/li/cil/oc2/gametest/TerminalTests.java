@@ -2,13 +2,18 @@
 
 package li.cil.oc2.gametest;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class TerminalTests {
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void terminalExistsAfterComputerPlaced(final GameTestHelper helper) {
         final ComputerFixture computer = ComputerFixture.place(helper);
         final Terminal terminal = computer.blockEntity().terminalManager.getTerminal();
@@ -16,7 +21,7 @@ public final class TerminalTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void terminalBufferWritesHello(final GameTestHelper helper) {
         final ComputerFixture computer = ComputerFixture.place(helper);
         final Terminal terminal = computer.blockEntity().terminalManager.getTerminal();
@@ -30,7 +35,7 @@ public final class TerminalTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void terminalSurvivesComputerStart(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.placePower(helper, player);
