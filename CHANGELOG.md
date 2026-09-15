@@ -5,6 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+## [0.1.1-beta.3.1] — 2026-09-15
+
+### Fixed
+
+- **OnyxOS**: sedna boot page fault/lockup before login (#41) — `display::init_and_draw`'s virtio-gpu and ramfb fallbacks probed hardcoded QEMU-virt-fixed MMIO addresses (`0x1000_1000..0x1000_8000`, fw_cfg `@0x1010_0000`) unconditionally, which sedna doesn't back; both now gated behind a runtime `fdt::is_sedna()` check, matching the pattern `early::probe_devices` already used for its own virtio-blk scan. The PCI VGA/ECAM fallback is gated the same way. Confirmed via live crash traces (scause=5/7 access faults pinpointing the exact faulting MMIO reads) that boot now proceeds past `display::init_and_draw` cleanly on sedna
+- **OnyxOS**: bundled `onyxfs.img` rebuilt so `/bin/init`, `/bin/login` and the rest of userland are actually present — previously boot reached `kmain: open /bin/init failed: EINVAL` once the display-init crash above was fixed, because the shipped root filesystem image was stale
+
 ## [0.1.1-beta.3] — 2026-09-13
 
 ### Added
