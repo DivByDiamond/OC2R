@@ -37,7 +37,13 @@ jobs:
         run: bash scripts/download-libs.sh
 
       - name: build
-        run: ./gradlew build
+        # 5xx from any configured Maven repo aborts Gradle resolution (unlike 404,
+        # it is not treated as "not found"), which broke the beta.3.1 release via a
+        # transient 502 from maven.neoforged.net. One retry recovers on its own.
+        run: ./gradlew build || {
+          echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
+          ./gradlew build --refresh-dependencies
+        }
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TYPE: ${{ startsWith(github.ref, 'refs/tags/') && 'release' || '' }}
@@ -46,6 +52,18 @@ jobs:
         with:
           name: oc2r-artifacts
           path: build/libs/*.jar
+
+      # The self-hosted pool does not guarantee gh is present: a beta.3.1 rerun
+      # landed on a runner without gh and Create Release failed with exit 127.
+      - name: Ensure gh CLI
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          if ! command -v gh >/dev/null 2>&1; then
+            curl -fsSL -o /tmp/gh.tgz \
+              https://github.com/cli/cli/releases/download/v2.62.0/gh_2.62.0_linux_amd64.tar.gz
+            tar -xzf /tmp/gh.tgz -C /tmp
+            echo "/tmp/gh_2.62.0_linux_amd64/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')

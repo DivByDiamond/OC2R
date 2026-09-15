@@ -31,7 +31,12 @@ jobs:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
       - name: Build artifacts
-        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' build
+        # Transient Maven 5xx (e.g. maven.neoforged.net 502) aborts Gradle
+        # resolution; one retry keeps the release publish path reliable.
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' build || {
+          echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
+          ./gradlew -Psemver='${{ github.event.release.tag_name }}' build --refresh-dependencies
+        }
         env:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
           GITHUB_TOKEN: ${{ github.token }}
