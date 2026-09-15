@@ -1838,6 +1838,41 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void shrinkWithAltBufferAnchorsContentAtCursor() {
+        write(terminal, CSI + "?1049h"); // save + switch to alt buffer
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 20; i++) { // fill alt rows 0..19 without scrolling
+            final String line = "r" + i + "\r\n";
+            sb.append(line);
+        }
+        write(terminal, sb.toString());
+        write(terminal, CSI + "14;1H"); // cursor to row 13 (0-based)
+        assertEquals(13, terminal.y, "precondition: cursor mid-screen");
+
+        write(terminal, CSI + "12*|"); // 24 -> 12 alt rows
+
+        assertEquals(12, terminal.height);
+        // xterm gravity on the alt ScrnBuf too: 10 rows below the cursor absorb the excess
+        // first, the remaining 2 scroll off the top — kept rows are old [2, 14), and the
+        // cursor's own row (old 13) lands at row 11, ON its content.
+        assertEquals(11, terminal.y, "cursor rides the top-drop");
+        assertEquals('2', (char) terminal.altBuffer[1], "row 0 is the old row 2 (rows 0-1 dropped)");
+        assertEquals('3', (char) terminal.altBuffer[11 * terminal.width + 2],
+                "cursor row still shows its own content (old row 13)");
+    }
+
+    @Test
+    void xtwinopsIgnoresPrefixedIntermediates() {
+        // xterm maps 't' to CASE_GROUND_STATE under ?, !, #, ", ', * (and CSI ? $): those
+        // forms must not resize — a misrouted case-8 would be mutating.
+        write(terminal, CSI + "?8;48;132t");
+        write(terminal, CSI + "#8;48;132t");
+
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "CSI ? 8 ; ... t must be ignored");
+        assertEquals(Terminal.HEIGHT, terminal.height, "CSI # 8 ; ... t must be ignored");
+    }
+
+    @Test
     void decsnlsResetsMarginsAndOrigin() {
         write(terminal, CSI + "5;15r" + CSI + "?6h"); // DECSTBM [5,15], DECOM on
         assertEquals(4, terminal.scrollFirst, "precondition: margins set");
