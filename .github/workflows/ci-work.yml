@@ -1,0 +1,89 @@
+name: ci
+
+# Continuous integration for both the dev branch (work) and PRs into the
+# release branch (1.21.1): compile, tests and static analysis. Releases are
+# handled by build.yml (tags) and publish.yml (releases) -- this workflow
+# never publishes anything. `pull_request: [work, 1.21.1]` exists because
+# build.yml only triggers on `push` (post-merge) -- without this, a PR
+# targeting 1.21.1 got zero automated verification before merge.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ 'work' ]
+  pull_request:
+    branches: [ 'work', '1.21.1' ]
+
+# A new push to the same PR/branch makes the previous run's result moot --
+# cancel it instead of letting stale runs pile up on the (limited) self-hosted pool.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    # Self-hosted runner pool.
+    runs-on: pocketprobe-kube
+    # A wedged gradle/gametest run must not tie up the pool indefinitely --
+    # tuned above the slowest known-good run (game tests boot an MC server).
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+
+      # `build` includes check: tests + PMD + Checkstyle + SpotBugs.
+      - name: Build and verify
+        run: ./gradlew build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # 1.21.1 predates the gameTest task/harness (added later on work) --
+      # skip rather than fail so this workflow is usable on both branches.
+      - name: Run game tests
+        run: |
+          if ./gradlew tasks --all --console=plain | grep -qE '^gameTest\b'; then
+            ./gradlew gameTest
+          else
+            echo "No 'gameTest' task on this branch -- skipping."
+          fi
+
+      - name: Upload game test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametest-results
+          path: 'build/test-results/gameTest/*.xml'
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verification-reports
+          path: |
+            build/reports/tests/
+            build/reports/pmd/
+            build/reports/checkstyle/
+            build/reports/spotbugs/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: oc2r-dev-jar
+          path: build/libs/*.jar
