@@ -5,16 +5,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Added
+
+- **Terminal**: vttest harness — parameterized `VttestHarnessTest` replays captured vttest `stream.bin` fixtures through the server-side `Terminal` and asserts the visible grid and styles against golden files; 4 fixtures (`decaln`, `line-wrap`, `sgr-bold` + `dec-special-graphics` xfail), `xfail`-ratchet and `-Dvttest.regen` golden regeneration, geometry-aware resize and fixture validation (#44)
+
 ### Fixed
 
 - **Terminal**: SU (`CSI Ps S`) at the scrollback capacity boundary scrolled one row too many — the per-row loop performed both a window slide and a physical shift on the iteration that crossed the boundary, discarding one extra scrollback line; the boundary now scrolls exactly n rows (#45)
 - **Terminal**: `CSI ? Ps u` (XTRESTORE) restored the DECSCNM (reverse video) flag without redrawing, leaving the flip invisible until the next unrelated repaint; both XTRESTORE forms (`?r`/`?u`) now share one implementation that always triggers the redraw
 - **Terminal**: `CSI Ps SP A` (SR, scroll right) was misrouted to cursor-up, so a horizontal scroll-right moved the cursor and subsequent writes landed on the wrong line (visible e.g. in ttycity); SR now scrolls each row of the scroll region right, the mirror of SL, and both SL/SR are ignored when the cursor is outside the scroll region, matching xterm
+- **Bus**: cable `addInterface` never notified the bus — `onConnectionTypeChanged(..., false)` suppressed `scheduleScan`, so a device wired after the cable settled stayed invisible; now passes `true` and forces `updateDevicesForNeighbor` for the wired side (schedule alone only re-walks cable-to-cable topology) (#47)
+- **GameTest**: stabilized the full suite to 14/14 required green — explicit `connectInterface` for cable-computer/device links (cable only auto-connects cable-to-cable), `placeFloor` for `FaceAttached` blocks (`NetworkConnector`), `ComputerFixture` boot-error sentinel fix, `computerStartsWithoutBootError` now places power + CPU/memory/flash, timeout bumps for sequential waits, and deterministic recipe coverage (wrench-disambiguated `flash_memory_custom`/`onyxos` chain and `hard_drive_onyxos`, `ITEMS_WITHOUT_RECIPE` for smelting/debug/WIP items) (#47)
 
 ### Changed
 
 - **Terminal**: scrolling reworked behind the buffer API — n-ary `shiftUp`/`shiftDown` with a batched scrollback window-growth phase (one dirty mark instead of one per row) and a total clip-discard shift primitive; the SU/SD handlers no longer reach into the scrollback window fields directly (#45)
 - **Terminal**: SGR background color resolution unified into a single `Terminal.currentBackgroundColor()` (six inline copies removed); IL/DL pass explicit clip bounds to the shift primitive and DL drops a redundant pre-clear pass
+- **Recipes**: `flash_memory_onyxos` now chains from `flash_memory_custom` + wrench and `hard_drive_onyxos` is a wrench-applied shapeless recipe from `hard_drive_medium` (both previously collided with their base recipes and could never both be crafted) (#47)
 
 ## [0.1.1-beta.3.1] — 2026-09-15
 
