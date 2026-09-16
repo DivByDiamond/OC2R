@@ -12,38 +12,34 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalCharRenderer {
-    static void renderForeground(final Terminal terminal, // NOPMD: data-driven render loop (DECSCNM inverse, VT100 blink)
+    static void renderForeground(final FrameState frame, // NOPMD: data-driven render loop (DECSCNM inverse, VT100 blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row) {
         float tx = 0f;
-        boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
-        int index =
-                useAltBuffer
-                        ? row * terminal.width
-                        : (row + terminal.lastRowToDisplay - terminal.height) * terminal.width;
-        // Torn mid-resize read (§36 M4): the resize paths swap geometry lock-free from the
-        // network thread. Skip rows that don't fit the captured buffer/style/color arrays
-        // instead of indexing out of bounds; the remaining per-cell tear is the deferred M4 work.
-        final byte[] activeStyles = useAltBuffer ? terminal.altStyles : terminal.styles;
-        final int[] activeBuffer = useAltBuffer ? terminal.altBuffer : terminal.buffer;
-        final ColorData[] activeColors = useAltBuffer ? terminal.altColors : terminal.colors;
-        final ColorData[] activeColorsBackground = useAltBuffer ? terminal.altColorsBackground : terminal.colorsBackground;
-        final int end = index + terminal.width;
+        int index = frame.index(0, row);
+        // Consistent per-frame capture (§36 M4): all reads come from the seqlock-validated
+        // FrameState, so the row guards are belt-and-suspenders rather than tear bounds.
+        final byte[] activeStyles = frame.useAltBuffer() ? frame.altStyles() : frame.styles();
+        final int[] activeBuffer = frame.useAltBuffer() ? frame.altBuffer() : frame.buffer();
+        final ColorData[] activeColors = frame.useAltBuffer() ? frame.altColors() : frame.colors();
+        final ColorData[] activeColorsBackground = frame.useAltBuffer()
+                ? frame.altColorsBackground() : frame.colorsBackground();
+        final int end = index + frame.width();
         if (index < 0 || end > activeStyles.length || end > activeBuffer.length
                 || end > activeColors.length || end > activeColorsBackground.length) return;
-        for (int col = 0; col < terminal.width; col++, index++) {
+        for (int col = 0; col < frame.width(); col++, index++) {
             final byte style = activeStyles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
 
             // DECSCNM screen inverse: XOR the per-cell SGR 7 invert with the screen-inverse mode.
-            final boolean screenInverted = terminal.currentPrivateModeState.DECSCNM;
+            final boolean screenInverted = frame.decscnm();
             final boolean invertBackground = ((style & Terminal.STYLE_INVERT_MASK) != 0) ^ screenInverted;
             final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
             final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
             final boolean blinkOff = isBlinking
-                    && Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
+                    && Math.floorMod(System.currentTimeMillis() + System.identityHashCode(frame.buffer()), 1000) > 500;
             // VT100 blink: non-bold, non-inverted blink chars disappear on the off phase;
             // bold blink alternates normal/bright intensity instead (handled below).
             // For inverted (SGR 7 / DECSCNM) blink cells the glyph stays visible and the
@@ -56,16 +52,16 @@ public class TerminalCharRenderer {
 
             final int character = activeBuffer[index];
             final int foreground =
-                    getForegroundColor(terminal, style, index, useAltBuffer, invertBackground, isBold, isBlinking, blinkOff);
+                    getForegroundColor(frame, style, index, invertBackground, isBold, isBlinking, blinkOff);
             renderForegroundChar(matrix, buffer, tx, character, foreground, style);
             tx += Terminal.CHAR_WIDTH;
         }
     }
 
-    private static int getForegroundColor(final Terminal terminal, // NOPMD: data-driven color-mode switch (boldIsBright, VT100 blink)
-            final byte style, final int index, final boolean useAltBuffer,
+    private static int getForegroundColor(final FrameState frame, // NOPMD: data-driven color-mode switch (boldIsBright, VT100 blink)
+            final byte style, final int index,
             final boolean invertBackground, final boolean isBold, final boolean isBlinking, final boolean blinkOff) {
-        final ColorData color = selectColor(terminal, index, useAltBuffer, invertBackground);
+        final ColorData color = selectColor(frame, index, invertBackground);
         final boolean isDim = (style & Terminal.STYLE_DIM_MASK) != 0;
         // Bold blink alternates normal/bright intensity instead of on/off.
         final boolean dimBoldForBlink = isBlinking && !invertBackground && blinkOff && isBold;
@@ -73,12 +69,12 @@ public class TerminalCharRenderer {
         final int rgb = switch (color.mode) {
             // DEFAULT_FOREGROUND must not track OSC 4 (xterm reserves it for OSC 10/11).
             case DEFAULT_FOREGROUND -> TerminalColors.defaultForegroundRgb(isBold && !dimBoldForBlink);
-            case SIXTEEN_COLOR -> terminal.palette256[channel];
-            case TWO_FIFTY_SIX_COLOR -> terminal.palette256[channel];
+            case SIXTEEN_COLOR -> frame.palette()[channel];
+            case TWO_FIFTY_SIX_COLOR -> frame.palette()[channel];
             case TRUE_COLOR -> color.toInt();
             // Bright ANSI (8-15) live at palette256[8..15]; dimBoldForBlink drops back to normal.
             case SIXTEEN_COLOR_BRIGHT ->
-                    terminal.palette256[channel + (dimBoldForBlink ? 0 : 8)];
+                    frame.palette()[channel + (dimBoldForBlink ? 0 : 8)];
             case DEFAULT_BACKGROUND -> TerminalColors.defaultBackgroundRgb();
             default -> throw new AssertionError(color.mode);
         };
@@ -88,15 +84,14 @@ public class TerminalCharRenderer {
     }
 
     private static ColorData selectColor(
-            final Terminal terminal,
+            final FrameState frame,
             final int index,
-            final boolean useAltBuffer,
             final boolean invertBackground) {
         return !invertBackground
-                ? useAltBuffer ? terminal.altColors[index] : terminal.colors[index]
-                : useAltBuffer
-                        ? terminal.altColorsBackground[index]
-                        : terminal.colorsBackground[index];
+                ? frame.useAltBuffer() ? frame.altColors()[index] : frame.colors()[index]
+                : frame.useAltBuffer()
+                        ? frame.altColorsBackground()[index]
+                        : frame.colorsBackground()[index];
     }
 
     private static int foregroundChannel(final ColorData color, final boolean invertBackground) {

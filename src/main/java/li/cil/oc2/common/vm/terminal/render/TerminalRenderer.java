@@ -37,23 +37,23 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final Matrix4f projectionMatrix, boolean renderingToBlock) {
         if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
 
-        // Read the geometry once per frame: the resize paths mutate it lock-free from the VM/
-        // network side, so repeated reads could mix geometries within one frame (the lines
-        // realloc check and the blink loop must agree). The full §36 M4 fix stays deferred —
-        // the blink skip below and the row guards in the char/background renderers only bound
-        // the crash class (no AIOOBE), not the occasional torn frame.
-        final int frameHeight = terminal.height;
-        final int frameWidth = terminal.width;
-        final byte[] frameStyles = terminal.styles;
-        final byte[] frameAltStyles = terminal.altStyles;
+        // One consistent frame capture under the geometry seqlock (§36 M4): the resize paths
+        // bump the version around each commit stretch, so an even version before AND after the
+        // capture guarantees the fields belong to one committed geometry. Two attempts; if the
+        // terminal is being resized continuously we render the (possibly mixed) second capture
+        // rather than dropping the frame — the tear is one frame, next frame repaints.
+        FrameState frame = captureFrame();
+        if (frame == null) {
+            frame = captureFrame();
+        }
 
         // Dynamic height: reallocate the lines array if the terminal's height changed
         // (e.g. via TerminalDiff.apply calling resizeHeight). Close old buffers first.
-        if (lines.length != frameHeight) {
+        if (lines.length != frame.height()) {
             for (final VertexBuffer line : lines) {
                 if (line != null) line.close();
             }
-            lines = new VertexBuffer[frameHeight];
+            lines = new VertexBuffer[frame.height()];
             dirty.set(-1L);
         }
 
@@ -62,18 +62,17 @@ public class TerminalRenderer implements RendererModel, RendererView {
         final boolean blinkPhase = Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) < 500;
         if (blinkPhase != lastBlinkPhase) {
             lastBlinkPhase = blinkPhase;
-            final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
-            final int baseRow = useAltBuffer ? 0 : terminal.lastRowToDisplay - frameHeight;
-            final byte[] activeStyles = useAltBuffer ? frameAltStyles : frameStyles;
+            final int baseRow = frame.useAltBuffer() ? 0 : frame.lastRowToDisplay() - frame.height();
+            final byte[] activeStyles = frame.useAltBuffer() ? frame.altStyles() : frame.styles();
             long mask = 0;
-            for (int row = 0; row < frameHeight; row++) {
-                final int rowBase = (baseRow + row) * frameWidth;
+            for (int row = 0; row < frame.height(); row++) {
+                final int rowBase = (baseRow + row) * frame.width();
                 // Torn mid-resize read (§36 M4): skip rows that don't fit the captured
                 // geometry instead of indexing out of bounds. Next frame repaints.
-                if (rowBase < 0 || rowBase + frameWidth > activeStyles.length) {
+                if (rowBase < 0 || rowBase + frame.width() > activeStyles.length) {
                     continue;
                 }
-                for (int col = 0; col < frameWidth; col++) {
+                for (int col = 0; col < frame.width(); col++) {
                     if ((activeStyles[rowBase + col] & Terminal.STYLE_BLINK_MASK) != 0) {
                         mask |= (1L << row);
                         break;
@@ -85,7 +84,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
             }
         }
 
-        validateLineCache();
+        validateLineCache(frame);
         renderBuffer(stack, projectionMatrix, renderingToBlock);
 
         boolean steady = terminal.cursorMode == TerminalColors.CursorMode.STEADY_BLOCK
@@ -95,6 +94,14 @@ public class TerminalRenderer implements RendererModel, RendererView {
         if (steady || Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500) {
             TerminalCursorRenderer.renderCursor(terminal, stack);
         }
+    }
+
+    /**
+     * Capture one frame's terminal state via the seqlock; null means the geometry moved
+     * mid-capture (the caller retries once, then renders anyway).
+     */
+    private FrameState captureFrame() {
+        return FrameState.capture(terminal);
     }
 
     @Override
@@ -171,7 +178,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
         }
     }
 
-    public void validateLineCache() {
+    public void validateLineCache(final FrameState frame) {
         if (dirty.get() == 0) return;
 
         final long mask = dirty.getAndSet(0L);
@@ -184,8 +191,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
                             .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
-            TerminalBackgroundRenderer.renderBackground(terminal, matrix, builder, row);
-            TerminalCharRenderer.renderForeground(terminal, matrix, builder, row);
+            TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row);
+            TerminalCharRenderer.renderForeground(frame, matrix, builder, row);
 
             MeshData rb = builder.build();
 
