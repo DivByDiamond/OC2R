@@ -112,10 +112,6 @@ public class TerminalRegressionsTest {
         terminal.io.putOutput(ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8)));
     }
 
-    private void write(byte[] bytes) {
-        terminal.io.putOutput(ByteBuffer.wrap(bytes));
-    }
-
     private int charAt(int x, int y) {
         int idx = x + (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
@@ -127,7 +123,7 @@ public class TerminalRegressionsTest {
 
     private static class DummyRenderer implements RendererModel {
         private final AtomicLong dirtyMask = new AtomicLong(-1L);
-        @Override public AtomicLong getDirtyMask() { return dirtyMask; }
+        @Override public AtomicLong getDirtyMask() { return new AtomicLong(dirtyMask.get()); }
         @Override public void close() { dirtyMask.set(0L); }
     }
 }
