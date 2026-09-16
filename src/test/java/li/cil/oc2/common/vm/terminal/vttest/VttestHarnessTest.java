@@ -149,6 +149,9 @@ public class VttestHarnessTest {
         // Golden rows are UTF-8 text, one codepoint per cell. Missing trailing lines count as
         // all-blank, and so do cells past the end of a line (trailing spaces may be trimmed).
         final List<String> expectedLines = Files.readAllLines(screenGolden, StandardCharsets.UTF_8);
+        if (expectedLines.size() > cells.length) {
+            mismatches.add("golden has " + expectedLines.size() + " rows, terminal height is " + cells.length);
+        }
         for (int y = 0; y < cells.length; y++) {
             final int[] expected = y < expectedLines.size()
                     ? expectedLines.get(y).codePoints().toArray()

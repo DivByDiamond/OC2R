@@ -100,13 +100,16 @@ public final class VttestFixtures {
      * fast rather than letting a typo (e.g. {@code 0x0} or {@code 99999x99999}) reach unchecked
      * {@code int[height][width]} allocation elsewhere in the harness.
      */
-    private static int[] parseGeometry(String geometry, Path dir) {
+    private static int[] parseGeometry(String geometry, Path dir) { // NOPMD CyclomaticComplexity: regex + separator + range checks plus suppressed prior threshold (10) — splitting the three short guards into helpers would scatter one validation
+        if (!geometry.matches("^\\d+x\\d+$")) {
+            throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir);
+        }
         int sep = geometry.indexOf('x');
         if (sep <= 0 || sep == geometry.length() - 1) {
             throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir);
         }
-        int width = Integer.parseInt(geometry.substring(0, sep).trim());
-        int height = Integer.parseInt(geometry.substring(sep + 1).trim());
+        int width = Integer.parseInt(geometry.substring(0, sep));
+        int height = Integer.parseInt(geometry.substring(sep + 1));
         if (width <= 0 || height <= 0 || width > MAX_GEOMETRY_DIMENSION || height > MAX_GEOMETRY_DIMENSION) {
             throw new IllegalStateException("geometry '" + geometry + "' in " + dir
                     + " out of range: width and height must be in 1.." + MAX_GEOMETRY_DIMENSION);
@@ -161,11 +164,12 @@ public final class VttestFixtures {
         }
         // build/resources/test/vttest -> walk up until a src/main sibling is found; each
         // getParent() may be null, which only ends the walk (the work-dir path already
-        // covered every gradle-launched case).
+        // covered every gradle-launched case). The build.gradle.kts guard prevents a
+        // coincidental src/main elsewhere on the filesystem from being mistaken for the project root.
         Path candidate = fixturesRoot().getParent();
         while (candidate != null) {
             Path src = candidate.resolve("src").resolve("main");
-            if (Files.isDirectory(src)) {
+            if (Files.isDirectory(src) && Files.isRegularFile(candidate.resolve("build.gradle.kts"))) {
                 return candidate.resolve("src").resolve("test").resolve("resources")
                         .resolve(RESOURCE_ROOT).resolve(dirName);
             }
