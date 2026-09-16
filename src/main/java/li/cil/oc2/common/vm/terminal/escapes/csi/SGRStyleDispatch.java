@@ -45,7 +45,7 @@ public final class SGRStyleDispatch {
                     terminal.style |= Terminal.STYLE_INVERT_MASK;
             case 8 -> // Conceal aka Hide
                     terminal.style |= Terminal.STYLE_HIDDEN_MASK;
-            case 9 -> terminal.style |= Terminal.STYLE_CROSSED_OUT_MASK;
+            case 9 -> terminal.style = (byte) (terminal.style | Terminal.STYLE_CROSSED_OUT_MASK);
             case 22 -> // Normal color or intensity
                     terminal.style &= ~(Terminal.STYLE_BOLD_MASK | Terminal.STYLE_DIM_MASK);
             case 23 -> terminal.style &= ~Terminal.STYLE_ITALIC_MASK;
@@ -57,7 +57,7 @@ public final class SGRStyleDispatch {
                     terminal.style &= ~Terminal.STYLE_INVERT_MASK;
             case 28 -> // Reveal conceal off
                     terminal.style &= ~Terminal.STYLE_HIDDEN_MASK;
-            case 29 -> terminal.style &= ~Terminal.STYLE_CROSSED_OUT_MASK;
+            case 29 -> terminal.style = (byte) (terminal.style & ~Terminal.STYLE_CROSSED_OUT_MASK);
             case 30, 31, 32, 33, 34, 35, 36, 37 -> { // Set foreground color
                 terminal.currentForegroundColorMode = TerminalColors.ColorMode.SIXTEEN_COLOR;
                 terminal.sixteenColor.r = code - 30;
