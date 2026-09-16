@@ -123,7 +123,7 @@ public class TerminalRegressionsTest {
 
     private static class DummyRenderer implements RendererModel {
         private final AtomicLong dirtyMask = new AtomicLong(-1L);
-        @Override public AtomicLong getDirtyMask() { return new AtomicLong(dirtyMask.get()); }
+        @Override public AtomicLong getDirtyMask() { return dirtyMask; } // SpotBugs EI_EXPOSE_REP suppressed via baseline.xml: test helper, live mask needed for dirty checks
         @Override public void close() { dirtyMask.set(0L); }
     }
 }

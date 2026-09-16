@@ -169,9 +169,11 @@ public class TerminalCharRenderer {
         }
 
         if ((style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
-            // Strikethrough: 2px thick quad at mid-height, same color as foreground.
-            final float y0 = Terminal.CHAR_HEIGHT / 2f - 1;
-            final float y1 = Terminal.CHAR_HEIGHT / 2f + 1;
+            // Strikethrough: thickness derived from cell height, centered on midline.
+            final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
+            final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
+            final float y0 = Math.max(0, cyStrike - tStrike / 2f);
+            final float y1 = Math.min(Terminal.CHAR_HEIGHT, cyStrike + tStrike / 2f);
             buffer.addVertex(matrix, offset, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
             buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
             buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
@@ -187,10 +189,16 @@ public class TerminalCharRenderer {
         return FontHandling.FontStyle.REGULAR;
     }
 
+    // Only the line/box-drawing subset of DEC_SPECIAL_GRAPHICS (TerminalBufferWriter) needs
+    // vector rendering; the rest (◆ ▒ ° ± π ≤ ≥ ≠ £ · etc.) are real glyphs in the font atlas
+    // and fall through to renderForegroundChar's normal glyph path below. Intentionally not
+    // range-based: these code points aren't contiguous with the glyph-backed ones.
+    private static final java.util.Set<Integer> BOX_DRAWING_SET = java.util.Set.of(
+            0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524, 0x252C, 0x2534, 0x253C,
+            0x23BA, 0x23BB, 0x23BC, 0x23BD);
+
     private static boolean isBoxDrawingCharacter(final int ch) {
-        return ch == 0x2500 || ch == 0x2502 || ch == 0x250C || ch == 0x2510 || ch == 0x2514
-                || ch == 0x2518 || ch == 0x251C || ch == 0x2524 || ch == 0x252C || ch == 0x2534
-                || ch == 0x253C || ch == 0x23BA || ch == 0x23BB || ch == 0x23BC || ch == 0x23BD;
+        return BOX_DRAWING_SET.contains(ch);
     }
 
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
@@ -242,10 +250,10 @@ public class TerminalCharRenderer {
                 quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
                 quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
             }
-            case 0x23BA -> quad(buffer, matrix, offset, 2, offset + w, 2 + t, r, g, b); // ⎺ scan 1
-            case 0x23BB -> quad(buffer, matrix, offset, h / 3f, offset + w, h / 3f + t, r, g, b); // ⎻ scan 3
-            case 0x23BC -> quad(buffer, matrix, offset, h * 2 / 3f, offset + w, h * 2 / 3f + t, r, g, b); // ⎼ scan 7
-            case 0x23BD -> quad(buffer, matrix, offset, h - 3, offset + w, h - 3 + t, r, g, b); // ⎽ scan 9
+            case 0x23BA -> quad(buffer, matrix, offset, h * 0.12f, offset + w, h * 0.12f + t, r, g, b); // ⎺ scan 1
+            case 0x23BB -> quad(buffer, matrix, offset, h * 0.33f, offset + w, h * 0.33f + t, r, g, b); // ⎻ scan 3
+            case 0x23BC -> quad(buffer, matrix, offset, h * 0.66f, offset + w, h * 0.66f + t, r, g, b); // ⎼ scan 7
+            case 0x23BD -> quad(buffer, matrix, offset, h * 0.87f, offset + w, h * 0.87f + t, r, g, b); // ⎽ scan 9
             default -> {}
         }
     }
