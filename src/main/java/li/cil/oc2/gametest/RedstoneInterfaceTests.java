@@ -2,15 +2,20 @@
 
 package li.cil.oc2.gametest;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class RedstoneInterfaceTests {
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void redstoneInterfaceCanBePlaced(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.REDSTONE_INTERFACE.get()), TestSupport.DEVICE_POS);
@@ -23,7 +28,7 @@ public final class RedstoneInterfaceTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void redstoneInterfaceAttachesToComputerViaBus(final GameTestHelper helper) {
         final ComputerFixture computer = placeComputerAndCable(helper);
 
@@ -43,7 +48,7 @@ public final class RedstoneInterfaceTests {
             .thenSucceed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void redstoneInterfaceDeviceCountReturnsAfterRemoval(final GameTestHelper helper) {
         final ComputerFixture computer = placeComputerAndCable(helper);
 

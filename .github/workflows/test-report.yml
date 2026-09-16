@@ -24,3 +24,12 @@ jobs:
           path: '**/*.xml'
           reporter: java-junit
           fail-on-empty: false
+
+      - name: Publish unit test results
+        uses: dorny/test-reporter@v3
+        with:
+          artifact: /test-results(.*)/
+          name: Unit Tests
+          path: '**/*.xml'
+          reporter: java-junit
+          fail-on-empty: true

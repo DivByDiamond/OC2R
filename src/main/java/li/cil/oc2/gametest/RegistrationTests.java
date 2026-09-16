@@ -4,12 +4,17 @@ package li.cil.oc2.gametest;
 
 import static li.cil.oc2.gametest.TestSupport.assertNotNull;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class RegistrationTests {
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void deviceTypesAreRegistered(final GameTestHelper helper) {
         assertNotNull(helper, DeviceTypes.CPU, "DeviceTypes.CPU");
         assertNotNull(helper, DeviceTypes.MEMORY, "DeviceTypes.MEMORY");

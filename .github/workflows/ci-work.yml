@@ -6,10 +6,19 @@ name: ci
 # never publishes anything. `pull_request: [work, 1.21.1]` exists because
 # build.yml only triggers on `push` (post-merge) -- without this, a PR
 # targeting 1.21.1 got zero automated verification before merge.
+#
+# The pipeline is split into three jobs that share the pool and run in
+# parallel (lint / unit tests / game tests -- each dominates a different
+# bottleneck: static analysis CPU, JVM tests, MC server boot). Formally the
+# branch is still gated by a single check: the `ci` result job below.
+# NOTE: paths-ignore applies to `push` only. On pull_request every change --
+# docs included -- must produce the `ci` check, or a docs-only PR would sit in
+# "Expected - Waiting for status" forever once `ci` is a required check.
 on:
   workflow_dispatch:
   push:
     branches: [ 'work' ]
+    paths-ignore: [ '**.md', 'docs/**', 'LICENSE', 'SECURITY.md' ]
   pull_request:
     branches: [ 'work', '1.21.1' ]
 
@@ -20,14 +29,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  lint:
     permissions:
       contents: read
-    # Self-hosted runner pool.
     runs-on: pocketprobe-kube
-    # A wedged gradle/gametest run must not tie up the pool indefinitely --
-    # tuned above the slowest known-good run (game tests boot an MC server).
-    timeout-minutes: 45
+    # Static analysis on compiled classes (spotbugs) -- compile is needed but
+    # no game server; the whole job is CPU-bound gradle work.
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v7
@@ -46,37 +54,131 @@ jobs:
       - name: Download dependencies
         run: bash scripts/download-libs.sh
 
-      # `build` includes check: tests + PMD + Checkstyle + SpotBugs.
-      - name: Build and verify
-        run: ./gradlew build
+      - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
+        run: ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-reports
+          path: |
+            build/reports/pmd/
+            build/reports/checkstyle/
+            build/reports/spotbugs/
+          if-no-files-found: ignore
+          retention-days: 1
+
+  test:
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+
+      # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
+      # builds the mod jar so the job still guards packaging regressions.
+      - name: Unit tests and jar assembly
+        run: ./gradlew test assemble
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload unit test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: build/test-results/test/*.xml
+          if-no-files-found: error
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: oc2r-dev-jar
+          path: build/libs/*.jar
+
+  gametest:
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    # Booting the MC server dominates this job; the timeout is tuned above the
+    # slowest known-good full-suite run.
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+
       - name: Run game tests
         run: ./gradlew gameTest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
+      # The gameTest task fails on a vacuous run and always emits
+      # build/test-results/gameTest/results.xml; missing XML therefore means
+      # the task did not run at all -- upload with `error` so that is visible.
       - name: Upload game test results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: gametest-results
           path: 'build/test-results/gameTest/*.xml'
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 1
 
-      - name: Upload verification reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: verification-reports
-          path: |
-            build/reports/tests/
-            build/reports/pmd/
-            build/reports/checkstyle/
-            build/reports/spotbugs/
-          if-no-files-found: ignore
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: oc2r-dev-jar
-          path: build/libs/*.jar
+  ci:
+    # Single formal check aggregating the parallel jobs; branch protection can
+    # require `ci` only. `if: always()` so the check still reports (red) when a
+    # leg fails, instead of staying pending forever.
+    name: ci
+    needs: [ lint, test, gametest ]
+    if: always()
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    timeout-minutes: 5
+    steps:
+      - name: Evaluate result
+        env:
+          LINT: ${{ needs.lint.result }}
+          TEST: ${{ needs.test.result }}
+          GAMETEST: ${{ needs.gametest.result }}
+        run: |
+          for r in "$LINT" "$TEST" "$GAMETEST"; do
+            if [ "$r" != "success" ]; then
+              echo "failure leg: lint=$LINT test=$TEST gametest=$GAMETEST"
+              exit 1
+            fi
+          done
+          echo "all legs green"

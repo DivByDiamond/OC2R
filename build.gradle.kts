@@ -562,10 +562,69 @@ tasks.test {
 
 /* ── GameTest runner ─────────────────────────────────────────────────────── */
 
+val gameTestResultsFile = file("run/gameTestResults.tsv")
+
+// The reporter truncates the TSV only once it is installed (RegisterGameTestsEvent), so a
+// server crash before that would leave the PREVIOUS run's file on disk and the guard in the
+// doLast below would read it as success. Deleting before the server starts makes "absent
+// after the run" mean "absent this run" — the only state the guard can trust.
+tasks.named("runGameTestServer") {
+    doFirst { gameTestResultsFile.delete() }
+}
+
 tasks.register("gameTest") {
     group = "verification"
-    description = "Runs NeoForge game tests."
+    description = "Runs NeoForge game tests, converts the TSV report to JUnit XML, and fails on a vacuous run."
     dependsOn("runGameTestServer")
+
+    doLast {
+        // The game test server installs GameTestResultReporter and appends one TSV line per
+        // finished test (name, status, required|optional, message). Vanilla itself exits 0 when
+        // startup finds no tests ("No test functions were given!"), so an absent or empty file
+        // must abort the task instead of reporting green — that was the whole gametest suite
+        // silently not running in CI.
+        if (!gameTestResultsFile.exists()) {
+            throw GradleException(
+                "gameTest: no ${gameTestResultsFile.name} produced — the game test server did not complete a run " +
+                    "(startup crash or zero discovered tests)."
+            )
+        }
+        val rows = gameTestResultsFile.readLines(Charsets.UTF_8)
+            .filter { it.isNotBlank() }
+            .map { it.split('\t') }
+        if (rows.isEmpty()) {
+            throw GradleException("gameTest: ran zero tests (empty ${gameTestResultsFile.name}).")
+        }
+
+        fun esc(s: String) = s
+            .replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace("\"", "&quot;")
+
+        var failures = 0
+        var optionalFailures = 0
+        val cases = rows.joinToString("\n    ") { parts ->
+            val name = esc(parts.getOrElse(0) { "" })
+            val failed = parts.getOrNull(1) == "failed"
+            val optional = parts.getOrNull(2) == "optional"
+            val message = esc(parts.getOrElse(3) { "" })
+            when {
+                failed && optional -> { optionalFailures++; """<testcase name="$name" classname="oc2r.gametest"><skipped message="$message"/></testcase>""" }
+                failed -> { failures++; """<testcase name="$name" classname="oc2r.gametest"><failure message="$message"/></testcase>""" }
+                else -> """<testcase name="$name" classname="oc2r.gametest"/>"""
+            }
+        }
+        val skipped = optionalFailures
+        val xml = buildString {
+            appendLine("""<?xml version="1.0" encoding="UTF-8"?>""")
+            appendLine("""<testsuite name="gameTest" tests="${rows.size}" failures="$failures" errors="0" skipped="$skipped">""")
+            appendLine("    $cases")
+            appendLine("</testsuite>")
+        }
+        val xmlDir = layout.buildDirectory.dir("test-results/gameTest").get().asFile
+        xmlDir.mkdirs()
+        File(xmlDir, "results.xml").writeText(xml, Charsets.UTF_8)
+        logger.lifecycle("gameTest: ${rows.size} tests, $failures required failures, $optionalFailures optional failures")
+    }
 }
 
 // Wire lintRatchet into check (todo.md §39 Ступень B)

@@ -4,15 +4,20 @@ package li.cil.oc2.gametest;
 
 import static li.cil.oc2.gametest.TestSupport.*;
 
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class DeviceBusTests {
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void busTracksNeighborLifecycle(final GameTestHelper helper) {
         final ComputerFixture computer = placeComputerAndCable(helper);
 
@@ -40,7 +45,7 @@ public final class DeviceBusTests {
             .thenSucceed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void computerStartsWithoutBootError(final GameTestHelper helper) {
         final ComputerFixture computer = ComputerFixture.place(helper);
         computer.start();

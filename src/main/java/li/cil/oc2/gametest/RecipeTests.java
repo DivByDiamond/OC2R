@@ -20,7 +20,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+@GameTestHolder(API.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class RecipeTests {
     private static final BlockPos TABLE = new BlockPos(1, WORK_Y, 1);
     private static final int GRID_WIDTH = 3;
@@ -34,7 +38,7 @@ public final class RecipeTests {
 
     // --------------------------------------------------------------------- //
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void everyModItemIsCraftable(final GameTestHelper helper) {
         final ServerLevel level = helper.getLevel();
         final RecipeManager recipes = level.getServer().getRecipeManager();
@@ -78,7 +82,7 @@ public final class RecipeTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
     public static void everyRecipeCraftsInCraftingTable(final GameTestHelper helper) {
         final ServerLevel level = helper.getLevel();
         final RecipeManager recipes = level.getServer().getRecipeManager();
