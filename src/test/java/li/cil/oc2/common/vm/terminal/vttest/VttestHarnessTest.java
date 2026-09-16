@@ -195,6 +195,10 @@ public class VttestHarnessTest {
                     mismatches.add("row " + y + " col " + x + ": bad style token '" + token + "'");
                     continue;
                 }
+                if (want < 0 || want > 0xFF) {
+                    mismatches.add("row " + y + " col " + x + ": bad style token '" + token + "'");
+                    continue;
+                }
                 if (want != got) {
                     mismatches.add("row " + y + " col " + x + ": style "
                             + hex2(want) + ", got " + hex2(got));
@@ -206,6 +210,7 @@ public class VttestHarnessTest {
     private static void writeGoldens(
             final VttestFixtures.Fixture fixture, final int[][] cells, final byte[][] styles) throws IOException {
         final Path dir = VttestFixtures.sourceDir(fixture);
+        System.out.println("[vttest] regen writing to " + dir); // NOPMD SystemPrintln: regen is a cold authoring path; surfacing the resolved target makes a misresolved sourceDir (e.g. wrong user.dir) visible instead of silently mkdirs'ing the wrong place
         Files.createDirectories(dir);
 
         final List<String> screenLines = new ArrayList<>();
@@ -293,16 +298,18 @@ public class VttestHarnessTest {
     }
 
     private static final class DummyRenderer implements RendererModel {
-        private final AtomicLong dirtyMask = new AtomicLong();
-
+        // Terminal writes into the mask (Terminal.java:301,679,690) but nothing in this harness
+        // ever reads it back, so a fresh AtomicLong per call is a safe dummy: it satisfies
+        // Terminal's "mutate the returned mask" contract for that one call without exposing (or
+        // needing) any persistent internal state.
         @Override
         public AtomicLong getDirtyMask() {
-            return dirtyMask;
+            return new AtomicLong();
         }
 
         @Override
         public void close() {
-            dirtyMask.set(0L);
+            // no state to release
         }
     }
 }

@@ -33187,27 +33187,4 @@
   </BugInstance>
   
 
-  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE" instanceHash="c04eb3950ea9127153a7fa9851e92327" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
-    <ShortMessage>May expose internal representation by returning reference to mutable object</ShortMessage>
-    <LongMessage>li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer.getDirtyMask() may expose internal representation by returning VttestHarnessTest$DummyRenderer.dirtyMask</LongMessage>
-    <Class classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" primary="true">
-      <SourceLine classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" start="294" end="305" sourcefile="VttestHarnessTest.java" sourcepath="li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java">
-        <Message>At VttestHarnessTest.java:[lines 294-305]</Message>
-      </SourceLine>
-      <Message>In class li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer</Message>
-    </Class>
-    <Method classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" name="getDirtyMask" signature="()Ljava/util/concurrent/atomic/AtomicLong;" isStatic="false" primary="true">
-      <SourceLine classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" start="299" end="299" startBytecode="0" endBytecode="46" sourcefile="VttestHarnessTest.java" sourcepath="li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java"/>
-      <Message>In method li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer.getDirtyMask()</Message>
-    </Method>
-    <Field classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" name="dirtyMask" signature="Ljava/util/concurrent/atomic/AtomicLong;" isStatic="false" primary="true">
-      <SourceLine classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" sourcefile="VttestHarnessTest.java" sourcepath="li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java">
-        <Message>In VttestHarnessTest.java</Message>
-      </SourceLine>
-      <Message>Field li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer.dirtyMask</Message>
-    </Field>
-    <SourceLine classname="li.cil.oc2.common.vm.terminal.vttest.VttestHarnessTest$DummyRenderer" primary="true" start="299" end="299" startBytecode="4" endBytecode="4" sourcefile="VttestHarnessTest.java" sourcepath="li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/vttest/VttestHarnessTest.java">
-      <Message>At VttestHarnessTest.java:[line 299]</Message>
-    </SourceLine>
-  </BugInstance>
 </BugCollection>

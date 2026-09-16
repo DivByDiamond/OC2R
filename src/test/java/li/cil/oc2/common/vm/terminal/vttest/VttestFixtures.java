@@ -32,6 +32,9 @@ public final class VttestFixtures {
     static final String SCREEN_FILE = "screen.expected";
     static final String STYLES_FILE = "styles.expected";
     private static final String DEFAULT_GEOMETRY = "80x24";
+    // Generous upper bound well above any real terminal geometry; catches typo'd fixture
+    // geometry (e.g. "0x0" or "99999x99999") before it reaches int[height][width] allocation.
+    private static final int MAX_GEOMETRY_DIMENSION = 1000;
 
     private VttestFixtures() {
     }
@@ -70,10 +73,9 @@ public final class VttestFixtures {
             throw new UncheckedIOException("Failed to read " + dir.resolve(PROPERTIES_FILE), e);
         }
         String geometry = props.getProperty("geometry", DEFAULT_GEOMETRY);
-        int sep = geometry.indexOf('x');
-        if (sep <= 0 || sep == geometry.length() - 1) {
-            throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir);
-        }
+        int[] size = parseGeometry(geometry, dir);
+        int width = size[0];
+        int height = size[1];
         final boolean xfail;
         String status = props.getProperty("status", "pass");
         switch (status) {
@@ -87,10 +89,29 @@ public final class VttestFixtures {
         return new Fixture(
                 props.getProperty("id", dirName),
                 dir,
-                Integer.parseInt(geometry.substring(0, sep).trim()),
-                Integer.parseInt(geometry.substring(sep + 1).trim()),
+                width,
+                height,
                 xfail,
                 props.getProperty("reason", ""));
+    }
+
+    /**
+     * Parses and range-checks a {@code geometry} value ({@code "<width>x<height>"}), failing
+     * fast rather than letting a typo (e.g. {@code 0x0} or {@code 99999x99999}) reach unchecked
+     * {@code int[height][width]} allocation elsewhere in the harness.
+     */
+    private static int[] parseGeometry(String geometry, Path dir) {
+        int sep = geometry.indexOf('x');
+        if (sep <= 0 || sep == geometry.length() - 1) {
+            throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir);
+        }
+        int width = Integer.parseInt(geometry.substring(0, sep).trim());
+        int height = Integer.parseInt(geometry.substring(sep + 1).trim());
+        if (width <= 0 || height <= 0 || width > MAX_GEOMETRY_DIMENSION || height > MAX_GEOMETRY_DIMENSION) {
+            throw new IllegalStateException("geometry '" + geometry + "' in " + dir
+                    + " out of range: width and height must be in 1.." + MAX_GEOMETRY_DIMENSION);
+        }
+        return new int[] {width, height};
     }
 
     /**
