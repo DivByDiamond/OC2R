@@ -193,7 +193,7 @@ public class TerminalCharRenderer {
                 || ch == 0x253C || ch == 0x23BA || ch == 0x23BB || ch == 0x23BC || ch == 0x23BD;
     }
 
-    private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD CyclomaticComplexity - 15 box cases, data-driven table would obscure quad geometry
+    private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
             final float offset, final int ch, final float r, final float g, final float b) {
         final float w = Terminal.CHAR_WIDTH;
         final float h = Terminal.CHAR_HEIGHT;
