@@ -27,16 +27,11 @@ public class CH8
         } else if (state.hash) { // XTTITLEPOS
             LOGGER.warn("XTTITLEPOS not implemented");
         } else { // SU
-            // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
-            // shifting more than the screen height has no additional effect.
-            final int n = Math.min(args[0], terminal.height);
-            for (int i = 0; i < n; i++) {
-                if (terminal.lastRowToDisplay
-                        < terminal.height * Terminal.SCROLL_BACK_COUNT) {
-                    terminal.bufferManager.incrementLastLineToDisplay();
-                }
-                terminal.bufferManager.shiftUpOne();
-            }
+            // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE and the
+            // dispatcher substitutes 1 for missing/zero args, so the domain is [1, height] —
+            // a huge SU scrolls at most one screen and preserves scrollback beyond that.
+            // Scrollback window growth and region clamping live in the buffer layer (shiftUp).
+            terminal.bufferManager.shiftUp(Math.clamp(args[0], 1, terminal.height));
         }
     }
 }

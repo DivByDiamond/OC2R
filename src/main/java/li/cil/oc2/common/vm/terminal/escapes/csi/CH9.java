@@ -23,12 +23,11 @@ public class CH9 extends CSISequenceHandler { // Combined Handler 9 (SD, XTHIMOU
         } else if (argsCount == 5) { // XTHIMOUSE
             LOGGER.warn("XTHIMOUSE not implemented");
         } else { // SD
-            // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE;
-            // shifting more than the screen height has no additional effect.
-            final int n = Math.min(args[0], terminal.height);
-            for (int i = 0; i < n; i++) {
-                terminal.bufferManager.shiftDownOne();
-            }
+            // Clamp: EscapeUtilities.parseArgument saturates at Integer.MAX_VALUE and the
+            // dispatcher substitutes 1 for missing/zero args, so the domain is [1, height] —
+            // SD never touches the scrollback window, so more than a screen of rows has no
+            // additional effect. Region clamping lives in the buffer layer (shiftDown).
+            terminal.bufferManager.shiftDown(Math.clamp(args[0], 1, terminal.height));
         }
     }
 }
