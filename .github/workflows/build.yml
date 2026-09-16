@@ -40,10 +40,11 @@ jobs:
         # 5xx from any configured Maven repo aborts Gradle resolution (unlike 404,
         # it is not treated as "not found"), which broke the beta.3.1 release via a
         # transient 502 from maven.neoforged.net. One retry recovers on its own.
-        run: ./gradlew build || {
-          echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
-          ./gradlew build --refresh-dependencies
-        }
+        run: |
+          ./gradlew build || {
+            echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
+            ./gradlew build --refresh-dependencies
+          }
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TYPE: ${{ startsWith(github.ref, 'refs/tags/') && 'release' || '' }}
