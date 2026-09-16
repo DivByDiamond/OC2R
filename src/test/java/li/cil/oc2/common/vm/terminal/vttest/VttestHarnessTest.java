@@ -139,7 +139,7 @@ public class VttestHarnessTest {
         return mismatches;
     }
 
-    private static void compareCells(
+    private static void compareCells( // NOPMD CyclomaticComplexity: height+width truncation checks plus per-cell diff; splitting would scatter one comparison
             final VttestFixtures.Fixture fixture, final int[][] cells, final List<String> mismatches)
             throws IOException {
         final Path screenGolden = fixture.dir().resolve(VttestFixtures.SCREEN_FILE);
@@ -164,6 +164,14 @@ public class VttestHarnessTest {
                             + ", got " + formatCell(got));
                 }
             }
+            if (expected.length > cells[y].length) {
+                for (int x = cells[y].length; x < expected.length; x++) {
+                    if (expected[x] != ' ') {
+                        mismatches.add("row " + y + " col " + x + ": char "
+                                + formatCell(expected[x]) + " beyond terminal width " + cells[y].length);
+                    }
+                }
+            }
         }
     }
 
@@ -178,6 +186,9 @@ public class VttestHarnessTest {
         // count as style byte 0x00 (trailing all-00 cells may be trimmed). A malformed token
         // is reported as a cell mismatch instead of aborting the whole comparison.
         final List<String> styleLines = Files.readAllLines(stylesGolden, StandardCharsets.UTF_8);
+        if (styleLines.size() > styles.length) {
+            mismatches.add("golden has " + styleLines.size() + " style rows, terminal height is " + styles.length);
+        }
         for (int y = 0; y < styles.length; y++) {
             final String[] tokens = styleLines.size() > y && !styleLines.get(y).isEmpty()
                     ? styleLines.get(y).split("\\|")
@@ -205,6 +216,30 @@ public class VttestHarnessTest {
                 if (want != got) {
                     mismatches.add("row " + y + " col " + x + ": style "
                             + hex2(want) + ", got " + hex2(got));
+                }
+            }
+            if (tokens.length > styles[y].length) {
+                for (int x = styles[y].length; x < tokens.length; x++) {
+                    final String token = tokens[x].trim();
+                    if (token.isEmpty()) {
+                        continue;
+                    }
+                    final int want;
+                    try {
+                        want = Integer.parseInt(token, 16);
+                    } catch (NumberFormatException e) {
+                        mismatches.add("row " + y + " col " + x + ": bad style token '" + token
+                                + "' beyond terminal width " + styles[y].length);
+                        continue;
+                    }
+                    if (want < 0 || want > 0xFF) {
+                        mismatches.add("row " + y + " col " + x + ": bad style token '" + token + "'");
+                        continue;
+                    }
+                    if (want != 0) {
+                        mismatches.add("row " + y + " col " + x + ": style "
+                                + hex2(want) + " beyond terminal width " + styles[y].length);
+                    }
                 }
             }
         }

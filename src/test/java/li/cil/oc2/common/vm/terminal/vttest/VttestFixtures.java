@@ -108,8 +108,14 @@ public final class VttestFixtures {
         if (sep <= 0 || sep == geometry.length() - 1) {
             throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir);
         }
-        int width = Integer.parseInt(geometry.substring(0, sep));
-        int height = Integer.parseInt(geometry.substring(sep + 1));
+        final int width;
+        final int height;
+        try {
+            width = Integer.parseInt(geometry.substring(0, sep));
+            height = Integer.parseInt(geometry.substring(sep + 1));
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("bad geometry '" + geometry + "' in " + dir, e);
+        }
         if (width <= 0 || height <= 0 || width > MAX_GEOMETRY_DIMENSION || height > MAX_GEOMETRY_DIMENSION) {
             throw new IllegalStateException("geometry '" + geometry + "' in " + dir
                     + " out of range: width and height must be in 1.." + MAX_GEOMETRY_DIMENSION);
@@ -141,6 +147,9 @@ public final class VttestFixtures {
         if (url == null) {
             throw new IllegalStateException("No '" + RESOURCE_ROOT + "' directory on the test classpath");
         }
+        if (!"file".equals(url.getProtocol())) {
+            throw new IllegalStateException("vttest resource is not a file-system directory: " + url);
+        }
         try {
             return Paths.get(url.toURI());
         } catch (URISyntaxException e) {
@@ -164,14 +173,16 @@ public final class VttestFixtures {
         }
         // build/resources/test/vttest -> walk up until a src/main sibling is found; each
         // getParent() may be null, which only ends the walk (the work-dir path already
-        // covered every gradle-launched case). The build.gradle.kts guard prevents a
+        // covered every gradle-launched case). The build.gradle.kts + vttest guards prevent a
         // coincidental src/main elsewhere on the filesystem from being mistaken for the project root.
         Path candidate = fixturesRoot().getParent();
         while (candidate != null) {
             Path src = candidate.resolve("src").resolve("main");
-            if (Files.isDirectory(src) && Files.isRegularFile(candidate.resolve("build.gradle.kts"))) {
-                return candidate.resolve("src").resolve("test").resolve("resources")
-                        .resolve(RESOURCE_ROOT).resolve(dirName);
+            Path vttestRoot = candidate.resolve("src").resolve("test").resolve("resources").resolve(RESOURCE_ROOT);
+            if (Files.isDirectory(src)
+                    && Files.isRegularFile(candidate.resolve("build.gradle.kts"))
+                    && Files.isDirectory(vttestRoot)) {
+                return vttestRoot.resolve(dirName);
             }
             candidate = candidate.getParent();
         }
