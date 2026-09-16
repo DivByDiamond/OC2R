@@ -17,9 +17,10 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class NetworkConnectorTests {
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void networkConnectorCanBePlaced(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
+        TestSupport.placeFloor(helper, TestSupport.DEVICE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
         if (helper.getBlockState(TestSupport.DEVICE_POS).isAir()) {
             throw new GameTestAssertException("network connector not placed at " + TestSupport.DEVICE_POS);
@@ -27,9 +28,10 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void networkConnectorWithCableSmokeTest(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
+        TestSupport.placeFloor(helper, TestSupport.CABLE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.BUS_CABLE.get()), TestSupport.DEVICE_POS);
 
@@ -41,9 +43,11 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void twoConnectorsCanBeLinked(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
+        TestSupport.placeFloor(helper, TestSupport.CABLE_POS);
+        TestSupport.placeFloor(helper, TestSupport.DEVICE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
 

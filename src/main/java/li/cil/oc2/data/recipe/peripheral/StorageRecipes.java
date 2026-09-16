@@ -161,30 +161,40 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
+        // Both variants require an actual wrench in the grid (matching WrenchRecipe's remaining-
+        // item handling, which hands the wrench back uneaten): without it, FLASH_MEMORY_CUSTOM's
+        // recipe collided with the plain "unflash" recipe (also just FLASH_MEMORY_CUSTOM alone,
+        // see unflash.json) -- extra grid contents block a shapeless match, so the wrench also
+        // disambiguates the two.
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_CUSTOM.get())
                 .requires(Items.FLASH_MEMORY.get())
+                .requires(li.cil.oc2.common.tags.ItemTags.WRENCHES)
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
 
+        // Chained onto FLASH_MEMORY_CUSTOM rather than the raw FLASH_MEMORY: both used to
+        // require plain FLASH_MEMORY with no other distinguishing ingredient, so the crafting
+        // grid could only ever resolve to whichever recipe the recipe manager happened to pick,
+        // never the other (OC2R gametest RecipeTests.everyModItemIsCraftable caught this).
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_ONYXOS.get())
-                .requires(Items.FLASH_MEMORY.get())
+                .requires(Items.FLASH_MEMORY_CUSTOM.get())
+                .requires(li.cil.oc2.common.tags.ItemTags.WRENCHES)
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
-                .pattern("GTG")
-                .pattern("EBE")
-                .define('G', Tags.Items.INGOTS_GOLD)
-                .define('T', Items.TRANSISTOR.get())
-                .define('B', Items.CIRCUIT_BOARD.get())
-                .define('E', Tags.Items.GEMS_EMERALD)
+        // Wrench-flashed onto an existing HARD_DRIVE_MEDIUM instead of a standalone shaped
+        // recipe: the shaped recipe used to be byte-for-byte identical to HARD_DRIVE_MEDIUM's
+        // own (same pattern and ingredients), so the two were unresolvably ambiguous in a
+        // crafting table -- see the FLASH_MEMORY_ONYXOS comment above for the same class of bug.
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
+                .requires(Items.HARD_DRIVE_MEDIUM.get())
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
-                .save(consumer);
+                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
     }
 }
