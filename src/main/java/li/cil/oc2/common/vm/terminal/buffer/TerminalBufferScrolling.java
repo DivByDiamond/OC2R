@@ -185,17 +185,11 @@ class TerminalBufferScrolling {
     }
 
     /**
-     * Raw shift of an absolute buffer-row span, clipped only at the physical buffer edges.
-     * Region containment is the caller's responsibility (IL/DL clamp their own line counts).
+     * Raw shift of an absolute buffer-row span, clipped only to the physical buffer edges when
+     * the caller does not narrow the bounds further. Region containment is the caller's
+     * responsibility (IL/DL clamp their own line counts and pass their region bounds).
      */
-    public void shiftLines(final int firstLine, final int lastLine, final int count) {
-        final int rows = terminal.currentPrivateModeState.isAltBufferEnabled()
-                ? terminal.height
-                : terminal.height * Terminal.SCROLL_BACK_COUNT;
-        TerminalLineShifter.shiftLines(terminal, firstLine, lastLine, count, 0, rows - 1);
-    }
-
-    private void shiftLines(
+    public void shiftLines(
             final int firstLine, final int lastLine, final int count, final int floor, final int ceiling) {
         TerminalLineShifter.shiftLines(terminal, firstLine, lastLine, count, floor, ceiling);
     }

@@ -2,7 +2,6 @@ package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.escapes.SavedCursor;
-import li.cil.oc2.common.vm.terminal.modes.ModeTable;
 
 /**
  * Combined Handler 12 (SCORC and XTRESTORE) — the {@code u} final, grouped by modifier like the
@@ -33,17 +32,9 @@ public class CH12 extends CSISequenceHandler {
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.questionMark) { // XTRESTORE — restore private mode(s) from the saved state
-            handleXTRESTORE(args[0]);
+            XTRESTORE.execute(terminal, args[0]);
         } else { // SCORC — restore cursor (RCP, the ANSI alias of DECRC)
             SavedCursor.restore(terminal);
-        }
-    }
-
-    private void handleXTRESTORE(final int mode) {
-        final ModeTable table = ModeTable.forPrivateMode(mode);
-        if (table != null) {
-            // The mirror of CH6.handleXTSAVE: copy the saved mode value into the current state.
-            table.set(terminal.currentPrivateModeState, table.get(terminal.savePrivateModeState));
         }
     }
 }

@@ -220,12 +220,13 @@ public class Terminal {
     }
 
     /**
-     * Resolve the erase background color from the current SGR background mode — the VT510 erase
-     * character, used by {@link #setWidth} (DECCOLM's destructive clear) and matching the same
-     * resolution in {@link TerminalBuffer#clear}. (DECSCPP's {@link #resizeWidth} does NOT use
-     * this — it default-initializes new columns, since a resize is not a clear.)
+     * Resolve the CURRENT SGR background color — the color every erase/blank fill uses (the
+     * VT510 "erase character" background: DECCOLM's destructive clear via {@link #setWidth}, ED
+     * fills, shift-blanked rows) and the background written into cells by the character writer.
+     * One resolution point for the mode-to-color mapping; callers copy the result when it must
+     * outlive the current SGR state (the color fields are mutated in place by SGR).
      */
-    private ColorData resolveEraseBackground() {
+    public ColorData currentBackgroundColor() {
         return switch (currentBackgroundColorMode) {
             case SIXTEEN_COLOR -> sixteenColor;
             case TWO_FIFTY_SIX_COLOR -> twoFiftySixColor;
@@ -256,7 +257,7 @@ public class Terminal {
         // Erase color: DECCOLM clears with the current SGR background (VT510 erase
         // character), matching bufferManager.clear(). RIS resets the modes before
         // calling setWidth, so it still fills with defaults.
-        final ColorData background = resolveEraseBackground();
+        final ColorData background = currentBackgroundColor();
 
         // Reallocate main buffer arrays
         final int mainSize = newWidth * height * SCROLL_BACK_COUNT;

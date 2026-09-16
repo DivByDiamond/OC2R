@@ -15,6 +15,11 @@ public class CH11 extends CSISequenceHandler { // Combined Handler 11 (ICH and S
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
         if (state.space) { // SL — Scroll-Left: shift each scroll-region row left, blank the right
+            // xterm-410 xtermScrollLR/xtermColScroll (util.c) gates the scroll on the cursor
+            // being inside the row margins (no-op otherwise) and does not move the cursor.
+            if (terminal.y < terminal.scrollFirst || terminal.y > terminal.scrollLast) {
+                return;
+            }
             for (int i = terminal.scrollFirst; i <= terminal.scrollLast; i++) {
                 terminal.bufferManager.deleteChars(i, 0, args[0]);
             }

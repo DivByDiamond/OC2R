@@ -1,7 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
 import li.cil.oc2.common.vm.terminal.Terminal;
-import li.cil.oc2.common.vm.terminal.modes.ModeTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,23 +22,11 @@ public class CH1 extends CSISequenceHandler { // Combined Handler 1 (DECSTBM & X
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (state.questionMark) { // XTRESTORE
-            handleXTRESTORE(args[0]);
+            XTRESTORE.execute(terminal, args[0]);
         } else if (state.dollarSign) { // DECCARA
             LOGGER.warn("DECCARA is not implemented");
         } else { /* DECSTBM with 0 or 1 args = reset to full screen */
             handleDECSTBM(args);
-        }
-    }
-
-    private void handleXTRESTORE(int mode) {
-        final ModeTable table = ModeTable.forPrivateMode(mode);
-        if (table != null) {
-            table.set(terminal.currentPrivateModeState, table.get(terminal.savePrivateModeState));
-            // DECSCNM (reverse video) affects the whole viewport, so restoring it must trigger a
-            // full redraw — matching DECSET/DECRST (CH2/CH3), which mark the whole screen dirty.
-            if (table == ModeTable.DECSCNM) {
-                terminal.markAllDirty();
-            }
         }
     }
 

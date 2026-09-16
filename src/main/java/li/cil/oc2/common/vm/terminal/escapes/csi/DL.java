@@ -21,18 +21,18 @@ public class DL extends CSISequenceHandler {
         lines = Math.min(lines, Math.max(0, maxLines));
         if (lines == 0) return;
 
-        for (int i = 0; i < lines; i++) {
-            terminal.bufferManager.clearLine(terminal.y + i);
-        }
-
         boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
 
+        // No pre-clear of the deleted rows: the shift's copy overwrites them (or the shift's
+        // blank fill does when the region tail is short), and shiftLines marks exactly the
+        // touched rows dirty. The cleared-then-overwritten loop was dead work.
         if (useAltBuffer) {
-            terminal.bufferManager.shiftLines(terminal.y + lines, terminal.scrollLast, -lines);
+            terminal.bufferManager.shiftLines(terminal.y + lines, terminal.scrollLast, -lines,
+                    terminal.y, terminal.scrollLast);
         } else {
-            int startRow = terminal.y + lines + terminal.lastRowToDisplayMax - terminal.height;
-            int endRow = terminal.scrollLast + terminal.lastRowToDisplayMax - terminal.height;
-            terminal.bufferManager.shiftLines(startRow, endRow, -lines);
+            int off = terminal.lastRowToDisplayMax - terminal.height;
+            terminal.bufferManager.shiftLines(terminal.y + lines + off, terminal.scrollLast + off,
+                    -lines, terminal.y + off, terminal.scrollLast + off);
         }
     }
 }

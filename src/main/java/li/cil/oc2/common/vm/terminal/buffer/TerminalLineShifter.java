@@ -30,14 +30,7 @@ final class TerminalLineShifter {
             final int ceiling) {
         if (count == 0) return;
 
-        ColorData c;
-        switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-            case TRUE_COLOR -> c = terminal.backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-        }
+        final ColorData c = terminal.currentBackgroundColor();
 
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             shift(
