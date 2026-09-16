@@ -92,6 +92,7 @@ class FrameStateTest {
         assertNotNull(FrameState.captureRetrying(terminal, 2), "quiescent terminal: first attempt succeeds");
 
         final AtomicBoolean stop = new AtomicBoolean(false);
+        final AtomicInteger resizes = new AtomicInteger();
         final AtomicInteger captures = new AtomicInteger();
         final AtomicInteger skipped = new AtomicInteger();
         final AtomicInteger torn = new AtomicInteger();
@@ -106,6 +107,7 @@ class FrameStateTest {
                     h = h == Terminal.HEIGHT ? 48 : Terminal.HEIGHT;
                     terminal.resizeWidth(w);
                     terminal.resizeHeight(h);
+                    resizes.incrementAndGet();
                 }
             } catch (final Throwable t) {
                 resizerFailure.set(t);
@@ -139,6 +141,8 @@ class FrameStateTest {
         if (resizerFailure.get() != null) {
             throw new AssertionError("resizer thread failed", resizerFailure.get());
         }
+        assertTrue(resizes.get() > 10, "precondition: the resizer actually raced ("
+                + resizes.get() + " resizes, " + captures.get() + " captures, " + skipped.get() + " skipped)");
         assertTrue(captures.get() > 100, "precondition: enough accepted captures ("
                 + captures.get() + ", " + skipped.get() + " skipped)");
         assertEquals(0, torn.get(), "no retrying capture may mix geometry with buffer arrays");
