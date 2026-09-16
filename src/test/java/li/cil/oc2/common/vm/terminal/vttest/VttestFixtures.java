@@ -82,6 +82,8 @@ public final class VttestFixtures {
             default -> throw new IllegalStateException("unknown status '" + status + "' in " + dir);
         }
         String dirName = fileNameOf(dir);
+        requireFixtureFile(dir, STREAM_FILE, dirName);
+        requireFixtureFile(dir, SCREEN_FILE, dirName);
         return new Fixture(
                 props.getProperty("id", dirName),
                 dir,
@@ -89,6 +91,17 @@ public final class VttestFixtures {
                 Integer.parseInt(geometry.substring(sep + 1).trim()),
                 xfail,
                 props.getProperty("reason", ""));
+    }
+
+    /**
+     * Fails fast with a fixture-and-file-specific message when a required fixture file is
+     * missing, instead of letting it surface later as an opaque {@code IOException} or a
+     * generic {@code fail(...)} deep in the replay test body.
+     */
+    private static void requireFixtureFile(Path dir, String fileName, String dirName) {
+        if (!Files.isRegularFile(dir.resolve(fileName))) {
+            throw new IllegalStateException("fixture '" + dirName + "' missing " + fileName);
+        }
     }
 
     private static String fileNameOf(Path dir) {

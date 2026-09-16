@@ -51,10 +51,11 @@ public class VttestHarnessTest {
     @ArgumentsSource(FixtureArguments.class)
     void replayFixture(final VttestFixtures.Fixture fixture) throws IOException {
         final Terminal terminal = new Terminal();
-        if (terminal.width != fixture.width() || terminal.height != fixture.height()) {
-            fail("fixture " + fixture.id() + " requests " + fixture.width() + "x" + fixture.height()
-                    + " but the default Terminal geometry is " + terminal.width + "x" + terminal.height
-                    + "; non-default geometries are not replayed yet");
+        if (terminal.height != fixture.height()) {
+            terminal.resizeHeight(fixture.height());
+        }
+        if (terminal.width != fixture.width()) {
+            terminal.setWidth(fixture.width());
         }
 
         // The renderer is not strictly needed for putOutput, but keeping one matches SGRTest and
