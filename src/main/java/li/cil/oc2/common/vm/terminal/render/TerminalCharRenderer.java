@@ -190,7 +190,7 @@ public class TerminalCharRenderer {
     private static boolean isBoxDrawingCharacter(final int ch) {
         return ch == 0x2500 || ch == 0x2502 || ch == 0x250C || ch == 0x2510 || ch == 0x2514
                 || ch == 0x2518 || ch == 0x251C || ch == 0x2524 || ch == 0x252C || ch == 0x2534
-                || ch == 0x253C;
+                || ch == 0x253C || ch == 0x23BA || ch == 0x23BB || ch == 0x23BC || ch == 0x23BD;
     }
 
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer,
@@ -242,6 +242,10 @@ public class TerminalCharRenderer {
                 quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
                 quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
             }
+            case 0x23BA -> quad(buffer, matrix, offset, 2, offset + w, 2 + t, r, g, b); // ⎺ scan 1
+            case 0x23BB -> quad(buffer, matrix, offset, h / 3f, offset + w, h / 3f + t, r, g, b); // ⎻ scan 3
+            case 0x23BC -> quad(buffer, matrix, offset, h * 2 / 3f, offset + w, h * 2 / 3f + t, r, g, b); // ⎼ scan 7
+            case 0x23BD -> quad(buffer, matrix, offset, h - 3, offset + w, h - 3 + t, r, g, b); // ⎽ scan 9
             default -> {}
         }
     }
