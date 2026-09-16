@@ -51,12 +51,19 @@ public final class TerminalDiff {
 
     private static final ColorMode MODE_ORDINAL_FALLBACK = ColorMode.TRUE_COLOR;
     private static final int PALETTE_SIZE = 256;
+    // Shift ops ride the wire as flat quintuples of resolved memmove geometry.
+    private static final int SHIFT_OP_FIELDS = 5;
 
     /**
      * Terminal snapshot transferred from server to client.
      *
-     * @param rows    absolute buffer row indices (alt-buffer: screen rows 0..23)
-     * @param rowData serialized cell data, one array per entry of {@code rows}
+     * @param rows     absolute buffer row indices (alt-buffer: screen rows 0..23)
+     * @param rowData  serialized cell data, one array per entry of {@code rows}
+     * @param shiftOps resolved main-buffer scrollback shift operations since the last diff,
+     *                 quintuples (copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows).
+     *                 A shift moves content at absolute indices that need not be screen-visible;
+     *                 the client replays the identical memmove so its scrollback copy (above the
+     *                 visible window) stays exact.
      */
     public record Snapshot(
             boolean reset,
@@ -65,6 +72,7 @@ public final class TerminalDiff {
             boolean altBuffer,
             int[] rows,
             byte[][] rowData,
+            int[] shiftOps,
             int cursorX,
             int cursorY,
             int lastRowToDisplay,
@@ -73,7 +81,25 @@ public final class TerminalDiff {
             boolean cursorVisible,
             boolean bell,
             long inputModes,
-            int[] palette) {}
+            int[] palette) {
+        public Snapshot {
+            // Wire payload arrays are owned copies: the codec and apply treat snapshots as
+            // immutable, and defensive copies keep the record clean without extending the
+            // SpotBugs baseline. rowData's outer array is copied (the per-row payloads are
+            // never mutated in place by either side). Trivial cost at diff rates.
+            rows = rows.clone();
+            rowData = rowData.clone();
+            shiftOps = shiftOps.clone();
+            if (palette != null) {
+                palette = palette.clone();
+            }
+        }
+
+        @Override
+        public int[] shiftOps() {
+            return shiftOps.clone();
+        }
+    }
 
     /**
      * Private-mode flags that affect client-side rendering or input handling beyond the
@@ -133,15 +159,17 @@ public final class TerminalDiff {
     public static Snapshot capture(final Terminal terminal) {
         final Terminal.NetworkDirty dirty = terminal.consumeNetworkDirty();
         final boolean full = dirty.fullRefresh();
-        return build(terminal, full, false, full ? visibleWindowRows(terminal) : dirty.rows());
+        return build(terminal, full, false, dirty.shiftOps(), full ? visibleWindowRows(terminal) : dirty.rows());
     }
 
     /** Builds a full-screen snapshot flagged as reset (used after VM restarts / RIS). */
     public static Snapshot captureFull(final Terminal terminal) {
-        return build(terminal, true, true, visibleWindowRows(terminal));
+        return build(terminal, true, true, new int[0], visibleWindowRows(terminal));
     }
 
-    private static Snapshot build(final Terminal terminal, final boolean reset, final boolean forcePalette, final int... rows) {
+    private static Snapshot build(
+            final Terminal terminal, final boolean reset, final boolean forcePalette, final int[] shiftOps,
+            final int... rows) {
         final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
         // Consume the bell flag: it must fire exactly once per emitted diff, otherwise
         // every subsequent diff would replay the bell until the next one arrives.
@@ -159,6 +187,7 @@ public final class TerminalDiff {
                 alt,
                 rows,
                 serializeRows(terminal, alt, rows),
+                shiftOps,
                 terminal.x,
                 terminal.y,
                 terminal.lastRowToDisplay,
@@ -322,8 +351,39 @@ public final class TerminalDiff {
         }
     }
 
-    /** Applies a snapshot to a local (client-side) terminal copy and marks everything dirty. */
-    public static void apply(final Terminal terminal, final Snapshot s) {
+    /**
+     * Applies a snapshot to a local (client-side) terminal copy and marks everything dirty.
+     *
+     * <p>Order matters and mirrors the server's chronology: shift operations first (they
+     * reference PRE-resize absolute rows), then geometry, then row payloads (post-resize
+     * absolute rows). Known bounded divergence: the client re-runs resizeHeight's relayout
+     * with its OWN (previous snapshot's) cursor, and the shrink anchor is cursor-relative.
+     * A remote shrink can therefore anchor the off-screen scrollback rows differently than
+     * the server. The visible window always re-ships at absolute row indices and the cursor
+     * is set authoritatively below, so display state is exact after this call; the mismatch
+     * lives only in scrollback above the window and self-heals as rows scroll into view.
+     * (Setting the SHIPPED cursor before the resize would be worse: that's the POST-resize
+     * row, and the anchor formula needs the pre-resize one, which isn't on the wire.)
+     *
+     * <p>View ownership: the scroll position while a user is scrolled back through scrollback
+     * is a PER-VIEWER preference the server cannot own. The shipped {@code lastRowToDisplay}
+     * (the server's write-window view, always glued to the bottom) therefore only drives the
+     * client's view when the client is glued too; a scrolled-back client keeps its absolute
+     * content position — window slides don't move content, so the view stays put, and shift
+     * operations move the content, so the view follows them (the same anchoring semantics as
+     * xterm/tmux scrollback). Otherwise every incoming diff would yank a scrolled-back view
+     * back to the bottom, making scrollback review impossible while output streams.
+     */
+    public static void apply(final Terminal terminal, final Snapshot s) { // NOPMD: NPath — ops replay + view-anchoring branches over the snapshot fields, same shape as Terminal.resizeHeight
+        // The user's scrollback position BEFORE this snapshot, for the anchoring rule below.
+        final int preLrd = terminal.lastRowToDisplay;
+        final int preLrdMax = terminal.lastRowToDisplayMax;
+
+        int anchorLrd = preLrd;
+        if (!s.reset() && s.shiftOps().length > 0) {
+            anchorLrd = applyShiftOps(terminal, s.shiftOps(), preLrd);
+        }
+
         // Geometry first, rows after — the deserialize guards evaluate against post-resize
         // dims. Known bounded divergence: the client re-runs resizeHeight's relayout with its
         // OWN (previous snapshot's) cursor, and the shrink anchor is cursor-relative. A remote
@@ -358,10 +418,20 @@ public final class TerminalDiff {
         // its own later resizeHeight would compute a relayout span below newHeight and
         // Math.clamp would throw on the client network thread. Max clamps first so the view
         // bottom never ends up above the view top.
-        terminal.lastRowToDisplayMax = Math.clamp(
+        final int newLrdMax = Math.clamp(
                 s.lastRowToDisplayMax(), terminal.height, terminal.height * Terminal.SCROLL_BACK_COUNT);
-        terminal.lastRowToDisplay = Math.clamp(
-                s.lastRowToDisplay(), terminal.height, terminal.lastRowToDisplayMax);
+        terminal.lastRowToDisplayMax = newLrdMax;
+        if (alt || s.reset() || preLrd >= preLrdMax) {
+            // Glued (or alt, or a full reset): the view follows the shipped window bottom.
+            terminal.lastRowToDisplay = Math.clamp(
+                    s.lastRowToDisplay(), terminal.height, newLrdMax);
+        } else {
+            // User is scrolled back: anchor the view to its absolute content rows. Window
+            // slides grow lrdMax without moving content — the view stays put and new rows
+            // appear below it; shift ops moved the content, and applyShiftOps advanced the
+            // anchor by the same memmoves, so this preserves what the user was reading.
+            terminal.lastRowToDisplay = Math.clamp(anchorLrd, terminal.height, newLrdMax);
+        }
         terminal.setCursorPos(s.cursorX(), s.cursorY());
         terminal.cursorMode = s.cursorMode();
         terminal.currentPrivateModeState.DECTCEM = s.cursorVisible();
@@ -386,6 +456,43 @@ public final class TerminalDiff {
         terminal.currentPrivateModeState.SAVE_CLEAR_AND_SWITCH = false;
     }
 
+    /**
+     * Replays the snapshot's resolved shift operations against the local main buffer (the
+     * identical memmoves the server performed), tracking where the user's view anchor — the
+     * content row at {@code viewBottomLrd - 1} — moves with them. Blanked rows do NOT move
+     * the anchor: content went blank under a stationary position. Returns the content-anchored
+     * view bottom for the caller's clamp.
+     *
+     * <p>The ops reference PRE-resize geometry: the client's buffer has the same capacity at
+     * this point (the resize below hasn't run), so a geometry that doesn't fit is a malformed
+     * op — skipped, never an out-of-bounds access.
+     */
+    private static int applyShiftOps(final Terminal terminal, final int[] ops, final int viewBottomLrd) {
+        final int mainRows = terminal.height * Terminal.SCROLL_BACK_COUNT;
+        int lrd = viewBottomLrd;
+        for (int i = 0; i + SHIFT_OP_FIELDS <= ops.length; i += SHIFT_OP_FIELDS) {
+            final int copySrcRow = ops[i];
+            final int copyDstRow = ops[i + 1];
+            final int copyRows = ops[i + 2];
+            final int blankStartRow = ops[i + 3];
+            final int blankRows = ops[i + 4];
+            if (copyRows < 0 || blankRows < 0
+                    || copyRows > mainRows || blankRows > mainRows
+                    || copySrcRow < 0 || copySrcRow > mainRows - copyRows
+                    || copyDstRow < 0 || copyDstRow > mainRows - copyRows
+                    || blankStartRow < 0 || blankStartRow > mainRows - blankRows) {
+                continue;
+            }
+            terminal.bufferManager.applyResolvedShift(
+                    copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows);
+            final int viewBottom = lrd - 1;
+            if (viewBottom >= copySrcRow && viewBottom < copySrcRow + copyRows) {
+                lrd += copyDstRow - copySrcRow;
+            }
+        }
+        return lrd;
+    }
+
     private static void clearBuffers(final Terminal terminal) {
         Arrays.fill(terminal.buffer, ' ');
         Arrays.fill(terminal.altBuffer, ' ');
@@ -405,7 +512,8 @@ public final class TerminalDiff {
 
     private static void deserializeRow(
             final Terminal terminal, final boolean alt, final int row, final byte[] data) {
-        if (row < 0
+        if (data == null
+                || row < 0
                 || (alt ? row >= terminal.height : row >= terminal.height * Terminal.SCROLL_BACK_COUNT)) {
             return;
         }
@@ -505,6 +613,8 @@ public final class TerminalDiff {
         for (final byte[] row : s.rowData()) {
             writeByteArray(buf, row);
         }
+        // Shift ops are resolved memmove geometry — quintuples, flat-encoded.
+        writeByteArray(buf, encodeInts(s.shiftOps()));
         ByteBufCodecs.VAR_INT.encode(buf, s.cursorX());
         ByteBufCodecs.VAR_INT.encode(buf, s.cursorY());
         ByteBufCodecs.VAR_INT.encode(buf, s.lastRowToDisplay());
@@ -527,10 +637,18 @@ public final class TerminalDiff {
         final boolean altBuffer = buf.readBoolean();
         final int[] rows = decodeInts(readByteArray(buf));
         final int rowCount = ByteBufCodecs.VAR_INT.decode(buf);
-        final byte[][] rowData = new byte[rowCount][];
+        // rowData entries pair with rows entries; a malformed count must not become a huge
+        // allocation. Bounded to rows.length: extras are consumed (stream integrity) and
+        // dropped, missing entries decode as null (apply skips them).
+        final int boundedCount = Math.min(rowCount, Math.max(rows.length, 0));
+        final byte[][] rowData = new byte[boundedCount][];
         for (int i = 0; i < rowCount; i++) {
-            rowData[i] = readByteArray(buf);
+            final byte[] row = readByteArray(buf);
+            if (i < boundedCount) {
+                rowData[i] = row;
+            }
         }
+        final int[] shiftOps = decodeInts(readByteArray(buf));
         final int cursorX = ByteBufCodecs.VAR_INT.decode(buf);
         final int cursorY = ByteBufCodecs.VAR_INT.decode(buf);
         final int lastRowToDisplay = ByteBufCodecs.VAR_INT.decode(buf);
@@ -549,6 +667,7 @@ public final class TerminalDiff {
                 altBuffer,
                 rows,
                 rowData,
+                shiftOps,
                 cursorX,
                 cursorY,
                 lastRowToDisplay,

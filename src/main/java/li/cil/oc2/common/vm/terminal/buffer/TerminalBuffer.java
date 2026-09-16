@@ -256,4 +256,18 @@ public class TerminalBuffer {
             final int firstLine, final int lastLine, final int count, final int floor, final int ceiling) {
         scrolling.shiftLines(firstLine, lastLine, count, floor, ceiling);
     }
+
+    /**
+     * Pure replay of one resolved wire shift operation against the MAIN buffer — the
+     * client-side half of the shift recording in {@link #shiftLines}. No dirty marks, no sink
+     * recording: the diff application marks everything itself afterwards.
+     */
+    public void applyResolvedShift(
+            final int copySrcRow,
+            final int copyDstRow,
+            final int copyRows,
+            final int blankStartRow,
+            final int blankRows) {
+        scrolling.applyResolvedShift(copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows);
+    }
 }

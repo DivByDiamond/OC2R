@@ -7,8 +7,10 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -97,6 +99,61 @@ public class TerminalDiffCodecTest {
                 "precondition: this is a full-refresh (reset) snapshot");
         assertNotNull(full.palette(),
                 "a reset snapshot must carry the palette even when the revision is unchanged");
+    }
+
+    @Test
+    void codecRoundTripPreservesShiftOps() {
+        // At absolute capacity a linefeed physically shifts the whole main buffer; the shift
+        // is recorded as resolved memmove geometry and must survive the wire byte-exactly —
+        // the client replays it to keep its scrollback copy in sync.
+        final Terminal server = new Terminal();
+        write(server, "\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
+        TerminalDiff.capture(server); // drain: the saturation's own shifts
+        write(server, "\n"); // one more line at capacity -> exactly one new shift op
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+
+        assertEquals(1, snapshot.shiftOps().length / 5, "precondition: one shift op recorded");
+        assertNotEquals(0, snapshot.shiftOps()[2], "the op shifts a nonzero number of rows");
+
+        final TerminalDiff.Snapshot decoded = roundTrip(snapshot);
+        assertArrayEquals(snapshot.shiftOps(), decoded.shiftOps(),
+                "shift op geometry must survive the wire");
+    }
+
+    @Test
+    void hostileRowCountIsBoundedAndConsumesTheStream() {
+        // A malformed rowCount (larger than the rows array) must not become an unbounded
+        // allocation; extra entries are consumed (stream integrity) and dropped. The reverse
+        // (rowCount < rows) decodes nulls, which apply skips.
+        final Terminal server = new Terminal();
+        write(server, "hello");
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+
+        final TerminalDiff.Snapshot hostile =
+                new TerminalDiff.Snapshot(
+                        snapshot.reset(),
+                        snapshot.width(),
+                        snapshot.height(),
+                        snapshot.altBuffer(),
+                        snapshot.rows(), // 1 row index...
+                        new byte[][] {snapshot.rowData()[0], snapshot.rowData()[0], snapshot.rowData()[0]},
+                        snapshot.shiftOps(),
+                        snapshot.cursorX(),
+                        snapshot.cursorY(),
+                        snapshot.lastRowToDisplay(),
+                        snapshot.lastRowToDisplayMax(),
+                        snapshot.cursorMode(),
+                        snapshot.cursorVisible(),
+                        snapshot.bell(),
+                        snapshot.inputModes(),
+                        snapshot.palette());
+
+        final TerminalDiff.Snapshot decoded = roundTrip(hostile);
+        assertEquals(1, decoded.rowData().length, "rowData bounded to the rows array length");
+        assertNotNull(decoded.rowData()[0], "the paired row payload survives");
+
+        final Terminal client = new Terminal();
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, decoded));
     }
 
     private static TerminalDiff.Snapshot roundTrip(final TerminalDiff.Snapshot snapshot) {
