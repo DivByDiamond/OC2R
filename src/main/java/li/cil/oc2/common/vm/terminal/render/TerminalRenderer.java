@@ -39,12 +39,15 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
         // One consistent frame capture under the geometry seqlock (§36 M4): the resize paths
         // bump the version around each commit stretch, so an even version before AND after the
-        // capture guarantees the fields belong to one committed geometry. Two attempts; if the
-        // terminal is being resized continuously we render the (possibly mixed) second capture
-        // rather than dropping the frame — the tear is one frame, next frame repaints.
-        FrameState frame = captureFrame();
+        // capture guarantees the fields belong to one committed geometry. captureRetrying
+        // returns null if every attempt landed inside a commit stretch — drop the frame and
+        // let the next one render the committed state. There is deliberately NO torn-frame
+        // fallback: capture never returns mixed data, and rendering a mixed capture would
+        // re-open the structural tear class the seqlock closed (an earlier comment promised
+        // exactly that fallback — it never existed, and the two-probe code could NPE here).
+        final FrameState frame = captureFrame();
         if (frame == null) {
-            frame = captureFrame();
+            return; // resize storm: skip this frame entirely; nothing has been mutated yet
         }
 
         // Dynamic height: reallocate the lines array if the terminal's height changed
@@ -97,11 +100,11 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
     /**
-     * Capture one frame's terminal state via the seqlock; null means the geometry moved
-     * mid-capture (the caller retries once, then renders anyway).
+     * Capture one frame's terminal state via the seqlock with a bounded retry; null means the
+     * geometry was committing across every attempt (the caller drops the frame).
      */
     private FrameState captureFrame() {
-        return FrameState.capture(terminal);
+        return FrameState.captureRetrying(terminal, 2);
     }
 
     @Override
@@ -183,6 +186,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
         final long mask = dirty.getAndSet(0L);
         final Matrix4f matrix = new Matrix4f();
+        // Blink phase seed: the terminal's identity — stable across buffer reallocs, and the
+        // SAME seed the blink-dirty loop and cursor gate use, so row rebuilds and the visible
+        // phase stay in step. (The frame's buffer identity would re-seed every resize.)
+        final int blinkSeed = terminal.hashCode();
         for (int row = 0; row < lines.length; row++) {
             if ((mask & (1L << row)) == 0) continue;
 
@@ -191,8 +198,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
                             .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
-            TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row);
-            TerminalCharRenderer.renderForeground(frame, matrix, builder, row);
+            TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row, blinkSeed);
+            TerminalCharRenderer.renderForeground(frame, matrix, builder, row, blinkSeed);
 
             MeshData rb = builder.build();
 

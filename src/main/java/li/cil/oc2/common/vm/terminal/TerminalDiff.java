@@ -380,6 +380,13 @@ public final class TerminalDiff {
         final int preLrdMax = terminal.lastRowToDisplayMax;
 
         int anchorLrd = preLrd;
+        // Ops replay ONLY in incremental windows — this guard is load-bearing, not an
+        // optimization. A server-side resize arms a full refresh, so ops recorded after that
+        // resize ride in the full window and reference POST-resize geometry the client has
+        // not applied yet (it resizes below, in this same call). Replaying them against the
+        // pre-resize client buffer would move above-window scrollback wrongly; skipping is
+        // always safe because the full window repaints the visible rows, and ops in later
+        // incremental windows replay against matching post-resize geometry on both sides.
         if (!s.reset() && s.shiftOps().length > 0) {
             anchorLrd = applyShiftOps(terminal, s.shiftOps(), preLrd);
         }
@@ -638,8 +645,14 @@ public final class TerminalDiff {
         final int[] rows = decodeInts(readByteArray(buf));
         final int rowCount = ByteBufCodecs.VAR_INT.decode(buf);
         // rowData entries pair with rows entries; a malformed count must not become a huge
-        // allocation. Bounded to rows.length: extras are consumed (stream integrity) and
-        // dropped, missing entries decode as null (apply skips them).
+        // allocation. A NEGATIVE count is rejected outright (raw VAR_INT, so a hostile -1
+        // previously fell through to new byte[-1][] — a decoder-surface disconnect either
+        // way, but as an unnamed NegativeArraySizeException instead of a diagnosed one).
+        if (rowCount < 0) {
+            throw new IllegalArgumentException("negative rowData count: " + rowCount);
+        }
+        // Bounded to rows.length: extras are consumed (stream integrity) and dropped,
+        // missing entries decode as null (apply skips them).
         final int boundedCount = Math.min(rowCount, Math.max(rows.length, 0));
         final byte[][] rowData = new byte[boundedCount][];
         for (int i = 0; i < rowCount; i++) {

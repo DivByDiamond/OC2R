@@ -45,9 +45,10 @@ public record FrameState(
 
     /**
      * Capture one consistent frame of {@code terminal}'s state between two even seqlock
-     * readings, or null if the geometry moved mid-capture (the caller retries once, then
-     * renders the possibly-mixed capture rather than dropping the frame — a tear is one
-     * frame and the next frame repaints).
+     * readings, or null if the geometry moved mid-capture. Null is the DESIGNED degradation:
+     * there is deliberately no torn-frame fallback — a mixed capture would re-open the exact
+     * structural tear class this seqlock exists to close. Callers retry briefly and otherwise
+     * drop the frame (see {@link #captureRetrying}).
      */
     public static FrameState capture(final Terminal terminal) {
         final int version = terminal.getGeometryVersion();
@@ -71,5 +72,22 @@ public record FrameState(
                 terminal.altStyles,
                 terminal.palette256);
         return terminal.getGeometryVersion() == version ? frame : null;
+    }
+
+    /**
+     * Capture up to {@code attempts} frames, returning the first consistent one, or null if
+     * every attempt landed inside a resize commit stretch. Callers MUST treat null as "skip
+     * this frame" and dereference nothing — a dropped frame repaints next frame, and a commit
+     * stretch is milliseconds against a ~50ms frame budget, so a sustained null streak means
+     * a resize storm, where dropping frames is the correct behavior anyway.
+     */
+    public static FrameState captureRetrying(final Terminal terminal, final int attempts) {
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            final FrameState frame = capture(terminal);
+            if (frame != null) {
+                return frame;
+            }
+        }
+        return null;
     }
 }

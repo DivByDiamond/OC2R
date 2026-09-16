@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import net.minecraft.network.codec.ByteBufCodecs;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -154,6 +156,26 @@ public class TerminalDiffCodecTest {
 
         final Terminal client = new Terminal();
         assertDoesNotThrow(() -> TerminalDiff.apply(client, decoded));
+    }
+
+    @Test
+    void negativeRowCountIsRejectedAsMalformedStream() {
+        // A hostile VAR_INT count previously fell through Math.min to new byte[-1][] — a
+        // decoder disconnect either way, but as an unnamed NegativeArraySizeException.
+        // Stricter is safe: diagnose the malformed stream instead (Kimi gate F5). Revert-and-
+        // fail: without the guard this throws NegativeArraySizeException, failing the test.
+        final ByteBuf buf = Unpooled.buffer();
+        buf.writeBoolean(false); // reset
+        ByteBufCodecs.VAR_INT.encode(buf, Terminal.WIDTH);
+        ByteBufCodecs.VAR_INT.encode(buf, Terminal.HEIGHT);
+        buf.writeBoolean(false); // altBuffer
+        ByteBufCodecs.BYTE_ARRAY.encode(buf, new byte[0]); // rows blob (empty)
+        ByteBufCodecs.VAR_INT.encode(buf, -1); // hostile rowCount; decode must reject it
+
+        final IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> TerminalDiff.STREAM_CODEC.decode(buf));
+        assertTrue(thrown.getMessage().contains("negative rowData count"),
+                "the diagnostic must name the malformed field");
     }
 
     private static TerminalDiff.Snapshot roundTrip(final TerminalDiff.Snapshot snapshot) {

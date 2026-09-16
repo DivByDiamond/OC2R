@@ -14,7 +14,8 @@ public class TerminalBackgroundRenderer {
     public static void renderBackground(final FrameState frame, // NOPMD: data-driven background render (DECSCNM, blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
-            final int row) {
+            final int row,
+            final int blinkSeed) {
         final BackgroundRun run = new BackgroundRun();
         float tx = 0f;
 
@@ -38,7 +39,7 @@ public class TerminalBackgroundRenderer {
             final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
             final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
             final boolean blinkOff = isBlinking
-                    && Math.floorMod(System.currentTimeMillis() + System.identityHashCode(frame.buffer()), 1000) > 500;
+                    && Math.floorMod(System.currentTimeMillis() + blinkSeed, 1000) > 500;
             final ColorData color = resolveColor(frame, index, invertBackground);
             int background = resolveBackground(frame, color, invertBackground, isBold, isBlinking, blinkOff);
             // When the background blinks (inverted + blink), suppress it on the off phase

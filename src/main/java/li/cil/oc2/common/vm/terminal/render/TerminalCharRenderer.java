@@ -15,7 +15,8 @@ public class TerminalCharRenderer {
     static void renderForeground(final FrameState frame, // NOPMD: data-driven render loop (DECSCNM inverse, VT100 blink)
             final Matrix4f matrix,
             final BufferBuilder buffer,
-            final int row) {
+            final int row,
+            final int blinkSeed) {
         float tx = 0f;
 
         int index = frame.index(0, row);
@@ -39,7 +40,7 @@ public class TerminalCharRenderer {
             final boolean isBold = (style & Terminal.STYLE_BOLD_MASK) != 0;
             final boolean isBlinking = (style & Terminal.STYLE_BLINK_MASK) != 0;
             final boolean blinkOff = isBlinking
-                    && Math.floorMod(System.currentTimeMillis() + System.identityHashCode(frame.buffer()), 1000) > 500;
+                    && Math.floorMod(System.currentTimeMillis() + blinkSeed, 1000) > 500;
             // VT100 blink: non-bold, non-inverted blink chars disappear on the off phase;
             // bold blink alternates normal/bright intensity instead (handled below).
             // For inverted (SGR 7 / DECSCNM) blink cells the glyph stays visible and the

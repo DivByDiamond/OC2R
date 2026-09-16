@@ -749,7 +749,9 @@ public class Terminal {
      * Record one main-buffer shift's resolved memmove geometry for the network diff sink. The
      * client replays exactly this (see the shift-op replay in TerminalDiff.apply), so its
      * scrollback copy stays exact for rows the screen-row dirty mask cannot address (anything
-     * above the visible window). Bounded: op overflow degrades to a full refresh.
+     * above the visible window) — for as long as the op backlog survives. Bounded degradation:
+     * op overflow drops the backlog and forces a full refresh (below), which repaints only the
+     * visible window; scrollback above it stays diverged until the terminal is recreated.
      */
     public void recordNetworkShift(
             final int copySrcRow,
@@ -761,7 +763,10 @@ public class Terminal {
         try {
             if (networkShiftOps.size() >= MAX_PENDING_SHIFT_OPS * SHIFT_OP_FIELDS) {
                 // Degraded mode: drop the backlog and force a full re-ship of the visible
-                // window. Scrollback above the window self-heals on the next reset capture.
+                // window. Scrollback above the window does NOT self-heal — the full refresh
+                // paints only the visible rows, so the client's above-window copy diverges
+                // from here on (trigger: > MAX_PENDING_SHIFT_OPS shifts inside one diff
+                // window, i.e. very fast output at absolute capacity).
                 networkShiftOps.clear();
                 networkNeedsFullRefresh = true;
                 return;
