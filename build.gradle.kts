@@ -564,6 +564,14 @@ tasks.test {
 
 val gameTestResultsFile = file("run/gameTestResults.tsv")
 
+// The reporter truncates the TSV only once it is installed (RegisterGameTestsEvent), so a
+// server crash before that would leave the PREVIOUS run's file on disk and the guard in the
+// doLast below would read it as success. Deleting before the server starts makes "absent
+// after the run" mean "absent this run" — the only state the guard can trust.
+tasks.named("runGameTestServer") {
+    doFirst { gameTestResultsFile.delete() }
+}
+
 tasks.register("gameTest") {
     group = "verification"
     description = "Runs NeoForge game tests, converts the TSV report to JUnit XML, and fails on a vacuous run."

@@ -11,6 +11,9 @@ name: ci
 # parallel (lint / unit tests / game tests -- each dominates a different
 # bottleneck: static analysis CPU, JVM tests, MC server boot). Formally the
 # branch is still gated by a single check: the `ci` result job below.
+# NOTE: paths-ignore applies to `push` only. On pull_request every change --
+# docs included -- must produce the `ci` check, or a docs-only PR would sit in
+# "Expected - Waiting for status" forever once `ci` is a required check.
 on:
   workflow_dispatch:
   push:
@@ -18,7 +21,6 @@ on:
     paths-ignore: [ '**.md', 'docs/**', 'LICENSE', 'SECURITY.md' ]
   pull_request:
     branches: [ 'work', '1.21.1' ]
-    paths-ignore: [ '**.md', 'docs/**', 'LICENSE', 'SECURITY.md' ]
 
 # A new push to the same PR/branch makes the previous run's result moot --
 # cancel it instead of letting stale runs pile up on the (limited) self-hosted pool.
@@ -54,6 +56,8 @@ jobs:
 
       - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
         run: ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload verification reports
         if: always()
@@ -94,6 +98,8 @@ jobs:
       # builds the mod jar so the job still guards packaging regressions.
       - name: Unit tests and jar assembly
         run: ./gradlew test assemble
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload unit test results
         if: ${{ !cancelled() }}
@@ -136,6 +142,8 @@ jobs:
 
       - name: Run game tests
         run: ./gradlew gameTest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       # The gameTest task fails on a vacuous run and always emits
       # build/test-results/gameTest/results.xml; missing XML therefore means
