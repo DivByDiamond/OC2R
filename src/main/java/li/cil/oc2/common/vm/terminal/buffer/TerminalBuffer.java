@@ -68,7 +68,7 @@ public class TerminalBuffer {
      * blanks. Does not shift surrounding characters.
      */
     public void clearChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, terminal.width - x), 0);
+        final int n = Math.clamp(count, 0, terminal.width - x);
         if (n == 0) return;
         final ColorData c = getCurrentBackgroundColor();
         final int from = getLinearIndex(y, x);
@@ -92,7 +92,7 @@ public class TerminalBuffer {
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, terminal.width - x), 0);
+        final int n = Math.clamp(count, 0, terminal.width - x);
         if (n == 0) return;
         final int remaining = terminal.width - x - n;
         if (remaining <= 0) {
@@ -165,7 +165,7 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int n = Math.max(Math.min(count, terminal.width - x), 0);
+        final int n = Math.clamp(count, 0, terminal.width - x);
         if (n == 0) return;
         final int remaining = terminal.width - x - n;
         if (remaining <= 0) {
@@ -240,12 +240,28 @@ public class TerminalBuffer {
         scrolling.incrementLastLineToDisplay();
     }
 
-    public void incrementLastLineToDisplay(boolean scroll) {
-        scrolling.incrementLastLineToDisplay(scroll);
+    public void incrementLastLineToDisplay(boolean growWindow) {
+        scrolling.incrementLastLineToDisplay(growWindow);
     }
 
     public void decrementLastLineToDisplay() {
         scrolling.decrementLastLineToDisplay();
+    }
+
+    /**
+     * Scroll the active scroll region up by {@code count} rows (see
+     * {@link TerminalBufferScrolling#shiftUp} for the scrollback window semantics).
+     */
+    public void shiftUp(final int count) {
+        scrolling.shiftUp(count);
+    }
+
+    /**
+     * Scroll the active scroll region down by {@code count} rows (see
+     * {@link TerminalBufferScrolling#shiftDown}).
+     */
+    public void shiftDown(final int count) {
+        scrolling.shiftDown(count);
     }
 
     public void shiftUpOne() {
