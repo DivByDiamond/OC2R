@@ -93,49 +93,52 @@ public class TerminalBufferWriter {
         markDirtyLine(terminal, dirtyLine);
     }
 
+    // DEC Special Graphics maps only 0x60..0x7E (0x5F/'_' is handled separately as a blank;
+    // 0x5E/'^' and 0x7F/DEL are not part of the charset). Indexed by ch - 0x60.
+    // Source: xterm-411 fontutils.c dec2ucs (lines 4973-5007), cross-checked with Wikipedia
+    // "DEC Special Graphics".
+    private static final int[] DEC_SPECIAL_GRAPHICS = {
+        0x25C6, // ` -> ◆
+        0x2592, // a -> ▒
+        0x2409, // b -> ␉ (HT)
+        0x240C, // c -> ␌ (FF)
+        0x240D, // d -> ␍ (CR)
+        0x240A, // e -> ␊ (LF)
+        0x00B0, // f -> °
+        0x00B1, // g -> ±
+        0x2424, // h -> ␤ (NL)
+        0x240B, // i -> ␋ (VT)
+        0x2518, // j -> ┘
+        0x2510, // k -> ┐
+        0x250C, // l -> ┌
+        0x2514, // m -> └
+        0x253C, // n -> ┼
+        0x23BA, // o -> ⎺ scan 1
+        0x23BB, // p -> ⎻ scan 3
+        0x2500, // q -> ─
+        0x23BC, // r -> ⎼ scan 7
+        0x23BD, // s -> ⎽ scan 9
+        0x251C, // t -> ├
+        0x2524, // u -> ┤
+        0x2534, // v -> ┴
+        0x252C, // w -> ┬
+        0x2502, // x -> │
+        0x2264, // y -> ≤
+        0x2265, // z -> ≥
+        0x03C0, // { -> π
+        0x2260, // | -> ≠
+        0x00A3, // } -> £
+        0x00B7, // ~ -> ·
+    };
+
     private int mapDecSpecialGraphics(final int ch) {
         final int mode = terminal.useG0 ? terminal.drawingModeG0 : terminal.drawingModeG1;
-        if (mode != li.cil.oc2.common.vm.terminal.color.TerminalColors.DrawingMode.SPECIAL_GRAPHICS) {
+        if (mode != TerminalColors.DrawingMode.SPECIAL_GRAPHICS) {
             return ch;
         }
-        // DEC Special Graphics maps only 0x5F..0x7E (xterm charsets.c: '_' is space, 0x5E/^ and 0x7F DEL are not mapped).
-        // Source: xterm-411 fontutils.c dec2ucs (lines 4973-5007) cross-checked with Wikipedia DEC Special Graphics.
-        if (ch == 0x5F) return ' '; // '_' → blank
+        if (ch == 0x5F) return ' '; // '_' → blank (xterm charsets.c)
         if (ch < 0x60 || ch > 0x7E) return ch;
-        return switch (ch) {
-            case 0x60 -> 0x25C6; // ` -> ◆
-            case 0x61 -> 0x2592; // a -> ▒
-            case 0x62 -> 0x2409; // b -> ␉ (HT)
-            case 0x63 -> 0x240C; // c -> ␌ (FF)
-            case 0x64 -> 0x240D; // d -> ␍ (CR)
-            case 0x65 -> 0x240A; // e -> ␊ (LF)
-            case 0x66 -> 0x00B0; // f -> °
-            case 0x67 -> 0x00B1; // g -> ±
-            case 0x68 -> 0x2424; // h -> ␤ (NL)
-            case 0x69 -> 0x240B; // i -> ␋ (VT)
-            case 0x6A -> 0x2518; // j -> ┘
-            case 0x6B -> 0x2510; // k -> ┐
-            case 0x6C -> 0x250C; // l -> ┌
-            case 0x6D -> 0x2514; // m -> └
-            case 0x6E -> 0x253C; // n -> ┼
-            case 0x6F -> 0x23BA; // o -> ⎺ scan 1
-            case 0x70 -> 0x23BB; // p -> ⎻ scan 3
-            case 0x71 -> 0x2500; // q -> ─
-            case 0x72 -> 0x23BC; // r -> ⎼ scan 7
-            case 0x73 -> 0x23BD; // s -> ⎽ scan 9
-            case 0x74 -> 0x251C; // t -> ├
-            case 0x75 -> 0x2524; // u -> ┤
-            case 0x76 -> 0x2534; // v -> ┴
-            case 0x77 -> 0x252C; // w -> ┬
-            case 0x78 -> 0x2502; // x -> │
-            case 0x79 -> 0x2264; // y -> ≤
-            case 0x7A -> 0x2265; // z -> ≥
-            case 0x7B -> 0x03C0; // { -> π
-            case 0x7C -> 0x2260; // | -> ≠
-            case 0x7D -> 0x00A3; // } -> £
-            case 0x7E -> 0x00B7; // ~ -> ·
-            default -> ch;
-        };
+        return DEC_SPECIAL_GRAPHICS[ch - 0x60];
     }
 
     /**

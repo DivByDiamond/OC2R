@@ -165,6 +165,16 @@ public class TerminalCharRenderer {
                     .setColor(r, g, b, 1)
                     .setUv(0, 0);
         }
+
+        if ((style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
+            // Strikethrough: 2px thick quad at mid-height, same color as foreground.
+            final float y0 = Terminal.CHAR_HEIGHT / 2f - 1;
+            final float y1 = Terminal.CHAR_HEIGHT / 2f + 1;
+            buffer.addVertex(matrix, offset, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+            buffer.addVertex(matrix, offset, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+        }
     }
 
     private static FontHandling.FontStyle getFontStyle(byte style) {
