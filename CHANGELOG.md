@@ -5,6 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Fixed
+
+- **Terminal**: SU (`CSI Ps S`) at the scrollback capacity boundary scrolled one row too many — the per-row loop performed both a window slide and a physical shift on the iteration that crossed the boundary, discarding one extra scrollback line; the boundary now scrolls exactly n rows (#45)
+- **Terminal**: `CSI ? Ps u` (XTRESTORE) restored the DECSCNM (reverse video) flag without redrawing, leaving the flip invisible until the next unrelated repaint; both XTRESTORE forms (`?r`/`?u`) now share one implementation that always triggers the redraw
+- **Terminal**: `CSI Ps SP A` (SR, scroll right) was misrouted to cursor-up, so a horizontal scroll-right moved the cursor and subsequent writes landed on the wrong line (visible e.g. in ttycity); SR now scrolls each row of the scroll region right, the mirror of SL, and both SL/SR are ignored when the cursor is outside the scroll region, matching xterm
+
+### Changed
+
+- **Terminal**: scrolling reworked behind the buffer API — n-ary `shiftUp`/`shiftDown` with a batched scrollback window-growth phase (one dirty mark instead of one per row) and a total clip-discard shift primitive; the SU/SD handlers no longer reach into the scrollback window fields directly (#45)
+- **Terminal**: SGR background color resolution unified into a single `Terminal.currentBackgroundColor()` (six inline copies removed); IL/DL pass explicit clip bounds to the shift primitive and DL drops a redundant pre-clear pass
+
 ## [0.1.1-beta.3.1] — 2026-09-15
 
 ### Fixed
