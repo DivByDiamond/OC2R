@@ -81,7 +81,7 @@ public final class VttestFixtures {
             case "xfail" -> xfail = true;
             default -> throw new IllegalStateException("unknown status '" + status + "' in " + dir);
         }
-        String dirName = dir.getFileName().toString();
+        String dirName = fileNameOf(dir);
         return new Fixture(
                 props.getProperty("id", dirName),
                 dir,
@@ -91,8 +91,16 @@ public final class VttestFixtures {
                 props.getProperty("reason", ""));
     }
 
+    private static String fileNameOf(Path dir) {
+        Path fileName = dir.getFileName();
+        if (fileName == null) {
+            throw new IllegalStateException("fixture directory has no name: " + dir);
+        }
+        return fileName.toString();
+    }
+
     static Path fixturesRoot() {
-        URL url = VttestFixtures.class.getClassLoader().getResource(RESOURCE_ROOT);
+        URL url = VttestFixtures.class.getResource("/" + RESOURCE_ROOT);
         if (url == null) {
             throw new IllegalStateException("No '" + RESOURCE_ROOT + "' directory on the test classpath");
         }
@@ -106,20 +114,29 @@ public final class VttestFixtures {
     /**
      * Source-tree directory a fixture's regenerated goldens are written to
      * ({@code -Dvttest.regen=true}); never the classpath copy, so regeneration stays visible
-     * to git for review. Derived by mirroring the classpath layout
-     * {@code <project>/build/resources/test/vttest} onto {@code <project>/src/test/resources/vttest};
-     * falls back to the JVM working directory (gradle sets it to the project dir) if the
-     * build layout ever differs.
+     * to git for review. Gradle runs test JVMs with the working directory set to the project
+     * root, so {@code user.dir} is the authoritative anchor; the classpath-root walk-up is a
+     * null-tolerant fallback for other launchers.
      */
     static Path sourceDir(Fixture fixture) {
         Path dirName = fixture.dir().getFileName();
-        // vttest -> test -> resources -> build -> project root
-        Path project = fixturesRoot().getParent().getParent().getParent().getParent();
-        if (Files.isDirectory(project.resolve("src").resolve("main"))) {
-            return project.resolve("src").resolve("test").resolve("resources")
-                    .resolve(RESOURCE_ROOT).resolve(dirName);
+        Path fromWorkDir = Paths.get(System.getProperty("user.dir"), "src", "test", "resources")
+                .resolve(RESOURCE_ROOT).resolve(dirName);
+        if (Files.isDirectory(fromWorkDir)) {
+            return fromWorkDir;
         }
-        return Paths.get(System.getProperty("user.dir"), "src", "test", "resources", RESOURCE_ROOT)
-                .resolve(dirName);
+        // build/resources/test/vttest -> walk up until a src/main sibling is found; each
+        // getParent() may be null, which only ends the walk (the work-dir path already
+        // covered every gradle-launched case).
+        Path candidate = fixturesRoot().getParent();
+        while (candidate != null) {
+            Path src = candidate.resolve("src").resolve("main");
+            if (Files.isDirectory(src)) {
+                return candidate.resolve("src").resolve("test").resolve("resources")
+                        .resolve(RESOURCE_ROOT).resolve(dirName);
+            }
+            candidate = candidate.getParent();
+        }
+        return fromWorkDir;
     }
 }

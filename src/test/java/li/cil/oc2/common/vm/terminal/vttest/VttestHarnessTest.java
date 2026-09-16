@@ -69,6 +69,13 @@ public class VttestHarnessTest {
         final byte[][] styles = visibleStyles(terminal);
 
         if (REGEN) {
+            if (fixture.xfail()) {
+                System.out.println("[vttest] skipping regen for xfail fixture " + fixture.id() // NOPMD SystemPrintln: xfail diagnostics go to stdout, captured verbatim by the JUnit report
+                        + ": its golden encodes the not-yet-correct output, and regenerating would"
+                        + " bake today's wrong grid into the reference and flip the ratchet to a"
+                        + " spurious 'now passes'. Promote the status to pass first.");
+                return;
+            }
             writeGoldens(fixture, cells, styles);
             return;
         }
@@ -78,7 +85,7 @@ public class VttestHarnessTest {
             if (mismatches.isEmpty()) {
                 fail("fixture " + fixture.id() + " now passes — promote status to pass");
             }
-            System.out.println("[vttest] xfail " + fixture.id() + ": " + mismatches.size()
+            System.out.println("[vttest] xfail " + fixture.id() + ": " + mismatches.size() // NOPMD SystemPrintln: xfail diagnostics go to stdout, captured verbatim by the JUnit report
                     + " mismatch(es) as expected"
                     + (fixture.reason().isEmpty() ? "" : " (" + fixture.reason() + ")")
                     + "\n  " + summarize(mismatches));
@@ -125,19 +132,26 @@ public class VttestHarnessTest {
 
     private static List<String> compare(
             final VttestFixtures.Fixture fixture, final int[][] cells, final byte[][] styles) throws IOException {
+        final List<String> mismatches = new ArrayList<>();
+        compareCells(fixture, cells, mismatches);
+        compareStyles(fixture, styles, mismatches);
+        return mismatches;
+    }
+
+    private static void compareCells(
+            final VttestFixtures.Fixture fixture, final int[][] cells, final List<String> mismatches)
+            throws IOException {
         final Path screenGolden = fixture.dir().resolve(VttestFixtures.SCREEN_FILE);
         if (!Files.isRegularFile(screenGolden)) {
             fail("fixture " + fixture.id() + " has no " + VttestFixtures.SCREEN_FILE);
         }
-        final List<String> mismatches = new ArrayList<>();
-
         // Golden rows are UTF-8 text, one codepoint per cell. Missing trailing lines count as
         // all-blank, and so do cells past the end of a line (trailing spaces may be trimmed).
         final List<String> expectedLines = Files.readAllLines(screenGolden, StandardCharsets.UTF_8);
         for (int y = 0; y < cells.length; y++) {
             final int[] expected = y < expectedLines.size()
                     ? expectedLines.get(y).codePoints().toArray()
-                    : new int[0];
+                    : new int[0]; // NOPMD AvoidInstantiatingObjectsInLoops: per-row codepoint decode, ~24 small arrays per fixture on a cold test path
             for (int x = 0; x < cells[y].length; x++) {
                 final int want = x < expected.length ? expected[x] : ' ';
                 final int got = cells[y][x];
@@ -147,27 +161,45 @@ public class VttestHarnessTest {
                 }
             }
         }
+    }
 
-        // Styles are only compared when the golden exists; a missing line or trailing cells
-        // count as style byte 0x00 (trailing all-00 cells may be trimmed).
+    private static void compareStyles( // NOPMD CognitiveComplexity+CyclomaticComplexity: per-cell style compare with a malformed-token fallback; splitting further would scatter one comparison across more methods than it clarifies
+            final VttestFixtures.Fixture fixture, final byte[][] styles, final List<String> mismatches)
+            throws IOException {
         final Path stylesGolden = fixture.dir().resolve(VttestFixtures.STYLES_FILE);
-        if (Files.isRegularFile(stylesGolden)) {
-            final List<String> styleLines = Files.readAllLines(stylesGolden, StandardCharsets.UTF_8);
-            for (int y = 0; y < styles.length; y++) {
-                final String[] tokens = styleLines.size() > y && !styleLines.get(y).isEmpty()
-                        ? styleLines.get(y).split("\\|")
-                        : new String[0];
-                for (int x = 0; x < styles[y].length; x++) {
-                    final int want = x < tokens.length ? Integer.parseInt(tokens[x].trim(), 16) : 0;
-                    final int got = styles[y][x] & 0xFF;
-                    if (want != got) {
-                        mismatches.add("row " + y + " col " + x + ": style "
-                                + hex2(want) + ", got " + hex2(got));
+        if (!Files.isRegularFile(stylesGolden)) {
+            return;
+        }
+        // Styles are only compared when the golden exists; a missing line or trailing cells
+        // count as style byte 0x00 (trailing all-00 cells may be trimmed). A malformed token
+        // is reported as a cell mismatch instead of aborting the whole comparison.
+        final List<String> styleLines = Files.readAllLines(stylesGolden, StandardCharsets.UTF_8);
+        for (int y = 0; y < styles.length; y++) {
+            final String[] tokens = styleLines.size() > y && !styleLines.get(y).isEmpty()
+                    ? styleLines.get(y).split("\\|")
+                    : new String[0]; // NOPMD AvoidInstantiatingObjectsInLoops: per-row token split, ~24 small arrays per fixture on a cold test path
+            for (int x = 0; x < styles[y].length; x++) {
+                final int got = styles[y][x] & 0xFF;
+                if (x >= tokens.length) {
+                    if (got != 0) {
+                        mismatches.add("row " + y + " col " + x + ": style 00, got " + hex2(got));
                     }
+                    continue;
+                }
+                final String token = tokens[x].trim();
+                final int want;
+                try {
+                    want = Integer.parseInt(token, 16);
+                } catch (NumberFormatException e) {
+                    mismatches.add("row " + y + " col " + x + ": bad style token '" + token + "'");
+                    continue;
+                }
+                if (want != got) {
+                    mismatches.add("row " + y + " col " + x + ": style "
+                            + hex2(want) + ", got " + hex2(got));
                 }
             }
         }
-        return mismatches;
     }
 
     private static void writeGoldens(
@@ -177,7 +209,7 @@ public class VttestHarnessTest {
 
         final List<String> screenLines = new ArrayList<>();
         for (final int[] row : cells) {
-            final StringBuilder line = new StringBuilder();
+            final StringBuilder line = new StringBuilder(); // NOPMD AvoidInstantiatingObjectsInLoops: regen is a cold authoring path; a builder per screen row is the point
             for (final int codepoint : row) {
                 line.appendCodePoint(codepoint);
             }
@@ -185,14 +217,14 @@ public class VttestHarnessTest {
         }
         final Path screenGolden = dir.resolve(VttestFixtures.SCREEN_FILE);
         writeLinesGolden(screenGolden, screenLines);
-        System.out.println("[vttest] regenerated " + screenGolden);
+        System.out.println("[vttest] regenerated " + screenGolden); // NOPMD SystemPrintln: regen is a cold authoring path; the stdout notice is the point
 
         // Styles are opt-in: only refresh an existing golden, never create one.
         final Path stylesGolden = dir.resolve(VttestFixtures.STYLES_FILE);
         if (Files.isRegularFile(stylesGolden)) {
             final List<String> styleLines = new ArrayList<>();
             for (final byte[] row : styles) {
-                final StringBuilder line = new StringBuilder();
+                final StringBuilder line = new StringBuilder(); // NOPMD AvoidInstantiatingObjectsInLoops: regen is a cold authoring path; a builder per screen row is the point
                 for (int x = 0; x < row.length; x++) {
                     if (x > 0) {
                         line.append('|');
@@ -203,7 +235,7 @@ public class VttestHarnessTest {
                 styleLines.add(line.toString());
             }
             writeLinesGolden(stylesGolden, styleLines);
-            System.out.println("[vttest] regenerated " + stylesGolden);
+            System.out.println("[vttest] regenerated " + stylesGolden); // NOPMD SystemPrintln: regen is a cold authoring path; the stdout notice is the point
         }
     }
 
