@@ -32,7 +32,7 @@ public class CSIManager {
     public CSIManager(Terminal terminal) {
         this.terminal = terminal;
 
-        sequences.put('A', new CUU(terminal));
+        sequences.put('A', new CH14(terminal));
         sequences.put('B', new CUD(terminal));
         sequences.put('C', new CUF(terminal));
         sequences.put('D', new CUB(terminal));

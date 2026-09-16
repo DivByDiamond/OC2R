@@ -44,7 +44,7 @@ public class TerminalBufferWriter {
         }
     }
 
-    private void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground/background color-mode switches
+    private void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground color-mode switch
         final boolean altBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
         final int index = altBuffer
                 ? x + y * terminal.width
@@ -73,16 +73,9 @@ public class TerminalBufferWriter {
             terminal.colors[index] = fgColor;
         }
 
-        // Write background color
-        final TerminalColors.ColorData bgColor;
-        switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> bgColor = terminal.sixteenColor.copy();
-            case TWO_FIFTY_SIX_COLOR -> bgColor = terminal.twoFiftySixColor.copy();
-            case TRUE_COLOR -> bgColor = terminal.backgroundColor.copy();
-            case SIXTEEN_COLOR_BRIGHT -> bgColor = terminal.sixteenColorBright.copy();
-            case DEFAULT_BACKGROUND -> bgColor = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
-            default -> bgColor = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
-        }
+        // Write background color — the shared SGR-background resolution; copied so the cell
+        // keeps this value even if SGR later mutates the color fields in place.
+        final TerminalColors.ColorData bgColor = terminal.currentBackgroundColor().copy();
         if (altBuffer) {
             terminal.altColorsBackground[index] = bgColor;
             terminal.altStyles[index] = terminal.style;

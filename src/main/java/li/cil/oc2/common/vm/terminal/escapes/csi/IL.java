@@ -22,11 +22,12 @@ public class IL extends CSISequenceHandler {
         lines = Math.min(lines, Math.max(0, maxLines));
         if (lines == 0) return;
         if (useAltBuffer) {
-            terminal.bufferManager.shiftLines(terminal.y, terminal.scrollLast - lines, lines);
+            terminal.bufferManager.shiftLines(terminal.y, terminal.scrollLast - lines, lines,
+                    terminal.y, terminal.scrollLast);
         } else {
-            int startRow = terminal.y + terminal.lastRowToDisplayMax - terminal.height;
-            int endRow = terminal.scrollLast + terminal.lastRowToDisplayMax - terminal.height - lines;
-            terminal.bufferManager.shiftLines(startRow, endRow, lines);
+            int off = terminal.lastRowToDisplayMax - terminal.height;
+            terminal.bufferManager.shiftLines(terminal.y + off, terminal.scrollLast + off - lines,
+                    lines, terminal.y + off, terminal.scrollLast + off);
         }
     }
 }

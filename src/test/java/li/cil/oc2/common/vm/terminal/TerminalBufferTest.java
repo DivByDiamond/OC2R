@@ -1947,6 +1947,111 @@ public class TerminalBufferTest {
                 "MAX_HEIGHT must not exceed Long.SIZE while dirty masks shift 1L << row");
     }
 
+    @Test
+    void xtrestoreURestoresDecscnmAndMarksWholeScreenDirty() {
+        // CH12's XTRESTORE (CSI ? Ps u) is the mirror of CH1's (CSI ? Ps r) and must share its
+        // DECSCNM handling: restoring reverse video without a full redraw leaves the flip
+        // unrepainted. CH12 used to restore the flag silently — the drift the shared XTRESTORE
+        // body exists to prevent.
+        write(terminal, CSI + "?5h");   // DECSCNM on (marks all dirty)
+        resetDirty();
+        write(terminal, CSI + "?5s");   // XTSAVE: saved state now has DECSCNM=true
+        write(terminal, CSI + "?5l");   // DECSCNM off (marks all dirty)
+        resetDirty();
+        assertFalse(terminal.currentPrivateModeState.DECSCNM, "precondition: DECSCNM off");
+
+        write(terminal, CSI + "?5u");   // XTRESTORE via CH12
+
+        assertTrue(terminal.currentPrivateModeState.DECSCNM, "?5u restores DECSCNM");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
+                "restoring DECSCNM must redraw the whole screen");
+    }
+
+    @Test
+    void xtrestoreRRestoresDecscnmAndMarksWholeScreenDirty() {
+        // The CH1 form (CSI ? Ps r) of the same operation — pinned alongside ?u so the two
+        // dispatch sites cannot drift again.
+        write(terminal, CSI + "?5h");
+        resetDirty();
+        write(terminal, CSI + "?5s");
+        write(terminal, CSI + "?5l");
+        resetDirty();
+
+        write(terminal, CSI + "?5r");
+
+        assertTrue(terminal.currentPrivateModeState.DECSCNM, "?5r restores DECSCNM");
+        assertEquals(0xFFFFFF, renderer.dirtyMask.get() & 0xFFFFFF,
+                "restoring DECSCNM must redraw the whole screen");
+    }
+
+    @Test
+    void scrollLeftShiftsContentLeftWithinMargins() {
+        // SL (CSI Ps SP @, xterm csi_sp_table '@' -> CASE_SL): each region row shifts left,
+        // the right end blanks, rows outside the region and the cursor are untouched.
+        write(terminal, CSI + "2;8r");               // region rows 1..7 (0-based)
+        write(terminal, CSI + "5;1H" + "ABCDEFGH");  // region row y=4, cols 0..7
+        write(terminal, CSI + "1;1H" + "ZZZZZZZZ");  // row y=0 — outside the region
+        write(terminal, CSI + "5;1H");               // cursor inside the region
+
+        write(terminal, CSI + "2" + ' ' + "@");
+
+        assertEquals('C', charAt(0, 4), "region row shifted left by 2");
+        assertEquals('D', charAt(1, 4));
+        assertEquals('H', charAt(5, 4));
+        assertEquals(' ', charAt(6, 4), "right end of the row blanked");
+        assertEquals(' ', charAt(7, 4));
+        assertEquals('Z', charAt(0, 0), "row above the region untouched");
+        assertEquals(0, terminal.x, "SL does not move the cursor");
+        assertEquals(4, terminal.y);
+    }
+
+    @Test
+    void scrollRightShiftsContentRightWithinMargins() {
+        // SR (CSI Ps SP A, xterm csi_sp_table 'A' -> CASE_SR — NOT a cursor move): the mirror
+        // of SL; the left end blanks.
+        write(terminal, CSI + "2;8r");
+        write(terminal, CSI + "5;1H" + "ABCDEFGH");
+        write(terminal, CSI + "1;1H" + "ZZZZZZZZ");
+        write(terminal, CSI + "5;1H");
+
+        write(terminal, CSI + "2" + ' ' + "A");
+
+        assertEquals(' ', charAt(0, 4), "left end of the row blanked");
+        assertEquals(' ', charAt(1, 4));
+        assertEquals('A', charAt(2, 4), "region row shifted right by 2");
+        assertEquals('B', charAt(3, 4));
+        assertEquals('F', charAt(7, 4));
+        assertEquals('Z', charAt(0, 0), "row above the region untouched");
+        assertEquals(0, terminal.x, "SR does not move the cursor");
+        assertEquals(4, terminal.y);
+    }
+
+    @Test
+    void scrollLeftIgnoresWhenCursorOutsideMargins() {
+        // xterm's xtermScrollLR gates the column scroll on the cursor being inside the row
+        // margins (util.c) — with the cursor outside, SL is a no-op.
+        write(terminal, CSI + "10;1H" + "ABCDEFGH"); // region row y=9
+        write(terminal, CSI + "10;20r");             // margins rows 9..19; cursor homes to (0,0)
+        assertEquals(0, terminal.y, "precondition: cursor outside the margins");
+
+        write(terminal, CSI + "2" + ' ' + "@");
+
+        assertEquals('A', charAt(0, 9), "region row untouched");
+        assertEquals('H', charAt(7, 9));
+    }
+
+    @Test
+    void scrollRightIgnoresWhenCursorOutsideMargins() {
+        write(terminal, CSI + "10;1H" + "ABCDEFGH");
+        write(terminal, CSI + "10;20r");
+        assertEquals(0, terminal.y, "precondition: cursor outside the margins");
+
+        write(terminal, CSI + "2" + ' ' + "A");
+
+        assertEquals('A', charAt(0, 9), "region row untouched");
+        assertEquals('H', charAt(7, 9));
+    }
+
     private void saturateScrollback() {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 600; i++) {

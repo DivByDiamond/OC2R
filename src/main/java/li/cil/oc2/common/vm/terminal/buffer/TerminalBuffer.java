@@ -15,14 +15,7 @@ public class TerminalBuffer {
     }
 
     public void clear() {
-        ColorData c;
-        switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-            case TRUE_COLOR -> c = terminal.backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR;
-        }
+        final ColorData c = terminal.currentBackgroundColor();
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             Arrays.fill(terminal.altBuffer, ' ');
             Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
@@ -43,15 +36,7 @@ public class TerminalBuffer {
     public void clearAlt() {
         Arrays.fill(terminal.altBuffer, ' ');
         Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        ColorData c;
-        switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> c = terminal.sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> c = terminal.twoFiftySixColor;
-            case TRUE_COLOR -> c = terminal.backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> c = terminal.sixteenColorBright;
-            default -> c = TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
-        }
-        Arrays.fill(terminal.altColorsBackground, c.copy());
+        Arrays.fill(terminal.altColorsBackground, terminal.currentBackgroundColor().copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
     }
 
@@ -70,7 +55,7 @@ public class TerminalBuffer {
     public void clearChars(final int y, final int x, final int count) {
         final int n = Math.clamp(count, 0, terminal.width - x);
         if (n == 0) return;
-        final ColorData c = getCurrentBackgroundColor();
+        final ColorData c = terminal.currentBackgroundColor();
         final int from = getLinearIndex(y, x);
         final int to = from + n;
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
@@ -99,7 +84,7 @@ public class TerminalBuffer {
             clearChars(y, x, terminal.width - x);
             return;
         }
-        final ColorData c = getCurrentBackgroundColor();
+        final ColorData c = terminal.currentBackgroundColor();
         final int index = getLinearIndex(y, x);
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             System.arraycopy(
@@ -172,7 +157,7 @@ public class TerminalBuffer {
             clearChars(y, x, terminal.width - x);
             return;
         }
-        final ColorData c = getCurrentBackgroundColor();
+        final ColorData c = terminal.currentBackgroundColor();
         final int index = getLinearIndex(y, x);
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             System.arraycopy(
@@ -216,16 +201,6 @@ public class TerminalBuffer {
             return y * terminal.width + x;
         }
         return (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width + x;
-    }
-
-    private ColorData getCurrentBackgroundColor() {
-        return switch (terminal.currentBackgroundColorMode) {
-            case SIXTEEN_COLOR -> terminal.sixteenColor;
-            case TWO_FIFTY_SIX_COLOR -> terminal.twoFiftySixColor;
-            case TRUE_COLOR -> terminal.backgroundColor;
-            case SIXTEEN_COLOR_BRIGHT -> terminal.sixteenColorBright;
-            default -> TerminalColors.DEFAULT_BACKGROUND_COLOR;
-        };
     }
 
     private void markDirty(final int y) {
@@ -272,7 +247,13 @@ public class TerminalBuffer {
         scrolling.shiftDownOne();
     }
 
-    public void shiftLines(final int firstLine, final int lastLine, final int count) {
-        scrolling.shiftLines(firstLine, lastLine, count);
+    /**
+     * Raw shift of an absolute buffer-row span, clipped to {@code [floor, ceiling]}: rows pushed
+     * past either bound are discarded (scrolled off), never an out-of-bounds access. Callers own
+     * scroll-region containment (IL/DL clamp their line counts and pass their region bounds).
+     */
+    public void shiftLines(
+            final int firstLine, final int lastLine, final int count, final int floor, final int ceiling) {
+        scrolling.shiftLines(firstLine, lastLine, count, floor, ceiling);
     }
 }
