@@ -33,12 +33,20 @@ public final class RecipeTests {
     private static final int FIRST_GRID_SLOT = 1;
 
     private static final java.util.Set<String> ITEMS_WITHOUT_RECIPE = java.util.Set.of(
-        "creative_energy"
+        "creative_energy",
+        // Smelting outputs, not crafting-table outputs (see silicon.json/silicon_wafer.json).
+        "silicon",
+        "silicon_wafer",
+        // 1 GHz debug/creative-only tier, never meant to be obtainable in survival.
+        "cpu_tier_inf",
+        // WIP blocks with no recipe (or even loot table, for speaker) yet -- see todo.md.
+        "monitor",
+        "speaker"
     );
 
     // --------------------------------------------------------------------- //
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void everyModItemIsCraftable(final GameTestHelper helper) {
         final ServerLevel level = helper.getLevel();
         final RecipeManager recipes = level.getServer().getRecipeManager();
@@ -82,13 +90,14 @@ public final class RecipeTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void everyRecipeCraftsInCraftingTable(final GameTestHelper helper) {
         final ServerLevel level = helper.getLevel();
         final RecipeManager recipes = level.getServer().getRecipeManager();
 
         final List<RecipeHolder<?>> modRecipes = recipes.getRecipes().stream()
             .filter(holder -> holder.id().getNamespace().equals(API.MOD_ID))
+            .filter(holder -> holder.value() instanceof CraftingRecipe)
             .filter(holder -> !holder.value().isSpecial())
             .toList();
 

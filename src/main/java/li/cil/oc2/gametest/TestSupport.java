@@ -50,6 +50,16 @@ public final class TestSupport {
         return player;
     }
 
+    /**
+     * Sets a solid block below {@code pos}. The shared {@code empty} test structure is entirely
+     * air, so face-attached blocks (e.g. {@code NetworkConnectorBlock}, a
+     * {@code FaceAttachedHorizontalDirectionalBlock}) have nothing to attach to and silently
+     * fail to place unless a fixture first gives them a floor.
+     */
+    public static void placeFloor(final GameTestHelper helper, final BlockPos pos) {
+        helper.setBlock(pos.below(), net.minecraft.world.level.block.Blocks.STONE);
+    }
+
     public static void place(final GameTestHelper helper, final Player player, final ItemStack stack, final BlockPos pos) {
         useOn(helper, player, stack, pos, Direction.UP);
         if (helper.getBlockState(pos).isAir()) {
@@ -69,6 +79,24 @@ public final class TestSupport {
 
     public static void placePower(final GameTestHelper helper, final Player player) {
         place(helper, player, new ItemStack(Items.CREATIVE_ENERGY.get()), POWER_POS);
+    }
+
+    /**
+     * Wires a bus cable's given side up as a device interface, the way a player would by
+     * wrenching that side of the cable. Adjacency alone does not connect a device to a cable --
+     * {@code BusCableBusElement.canDetectDevicesTowards} only scans a side once its connection
+     * type is {@code INTERFACE}, which only {@link
+     * li.cil.oc2.common.block.cable.BusCableStateProperties#addInterface} sets.
+     */
+    public static void connectInterface(
+            final GameTestHelper helper, final BlockPos cablePos, final Direction side) {
+        final BlockPos absoluteCablePos = helper.absolutePos(cablePos);
+        final boolean added = li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(
+            helper.getLevel(), absoluteCablePos, helper.getBlockState(cablePos), side);
+        if (!added) {
+            throw new GameTestAssertException("addInterface(" + cablePos + ", " + side
+                + ") returned false; blockState=" + helper.getBlockState(cablePos));
+        }
     }
 
     public static void breakBlock(final GameTestHelper helper, final BlockPos pos) {

@@ -3,7 +3,10 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "oc2r:flash_memory"
+      "item": "oc2r:flash_memory_custom"
+    },
+    {
+      "tag": "oc2r:wrenches"
     }
   ],
   "result": {

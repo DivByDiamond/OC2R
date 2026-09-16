@@ -88,8 +88,12 @@ public final class ComputerFixture {
     }
 
     public void assertNoBootError() {
-        if (virtualMachine().getBootError() != null) {
-            throw new GameTestAssertException("computer reports boot error " + virtualMachine().getBootError());
+        // bootError is never null: AbstractVirtualMachine.start() resets it to
+        // Component.literal("") as a sentinel, only replacing it with real text on an actual
+        // failure. A blank component is "no error yet", not an error.
+        final net.minecraft.network.chat.Component error = virtualMachine().getBootError();
+        if (error != null && !error.getString().isEmpty()) {
+            throw new GameTestAssertException("computer reports boot error " + error);
         }
     }
 

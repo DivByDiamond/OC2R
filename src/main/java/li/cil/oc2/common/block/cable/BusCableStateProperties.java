@@ -90,7 +90,13 @@ public final class BusCableStateProperties {
                 pos,
                 state.setValue(property, ConnectionType.INTERFACE),
                 Block.UPDATE_ALL_IMMEDIATE);
-        onConnectionTypeChanged(level, pos, side, false);
+        // true: a side going NONE -> INTERFACE is exactly the neighbor-connectivity change this
+        // flag exists for. Passing false here meant a device wired up via BusInterfaceItem after
+        // the cable's bus had already settled (BusElementManager.scan() only re-scans when
+        // something calls scheduleScan()) was never discovered -- the interface stayed
+        // configured but silently invisible to the bus until something unrelated forced a
+        // rescan (OC2R gametest RedstoneInterfaceTests/DeviceBusTests caught this).
+        onConnectionTypeChanged(level, pos, side, true);
         return true;
     }
 

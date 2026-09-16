@@ -91,6 +91,13 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         if (side != null) {
             setInterfaceName(side, "");
             if (level != null) level.invalidateCapabilities(getBlockPos());
+            // scheduleScan() below only re-walks bus TOPOLOGY (cable-to-cable/computer BFS); it
+            // never re-evaluates which devices sit behind this specific side, which is cached
+            // separately per side and otherwise only refreshed by the load-time scan or a
+            // neighbor's own capability invalidation. Without this, a side that just went
+            // NONE -> INTERFACE keeps reporting zero devices until something unrelated forces
+            // a rescan.
+            busElement.updateDevicesForNeighbor(side);
         }
         if (neighborConnectivityChanged) {
             busElement.scheduleScan();

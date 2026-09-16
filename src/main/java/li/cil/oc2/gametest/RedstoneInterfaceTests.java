@@ -4,6 +4,7 @@ package li.cil.oc2.gametest;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -28,7 +29,11 @@ public final class RedstoneInterfaceTests {
         helper.succeed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    // Two sequential 60-tick waits (120 ticks total) exceed @GameTest's default
+    // timeoutTicks=100, so the sequence was always going to time out before it could
+    // report the actual assertion result.
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE,
+        timeoutTicks = 200)
     public static void redstoneInterfaceAttachesToComputerViaBus(final GameTestHelper helper) {
         final ComputerFixture computer = placeComputerAndCable(helper);
 
@@ -48,7 +53,11 @@ public final class RedstoneInterfaceTests {
             .thenSucceed();
     }
 
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, required = false)
+    // Two sequential 60-tick waits (120 ticks total) exceed @GameTest's default
+    // timeoutTicks=100, so the sequence was always going to time out before it could
+    // report the actual assertion result.
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE,
+        timeoutTicks = 200)
     public static void redstoneInterfaceDeviceCountReturnsAfterRemoval(final GameTestHelper helper) {
         final ComputerFixture computer = placeComputerAndCable(helper);
 
@@ -83,12 +92,17 @@ public final class RedstoneInterfaceTests {
         TestSupport.placePower(helper, player);
         final ComputerFixture computer = ComputerFixture.place(helper, player);
         TestSupport.place(helper, player, new ItemStack(Items.BUS_CABLE.get()), TestSupport.CABLE_POS);
+        // A cable only auto-connects to an adjacent cable (BusCableStateProperties.canHaveCableTo
+        // requires the neighbor to literally be a BUS_CABLE block); linking to a computer needs
+        // the same explicit wiring a device does.
+        TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.WEST);
         return computer;
     }
 
     private static void placeInterface(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.REDSTONE_INTERFACE.get()), TestSupport.DEVICE_POS);
+        TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.EAST);
     }
 
     // --------------------------------------------------------------------- //

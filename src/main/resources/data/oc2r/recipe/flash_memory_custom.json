@@ -4,6 +4,9 @@
   "ingredients": [
     {
       "item": "oc2r:flash_memory"
+    },
+    {
+      "tag": "oc2r:wrenches"
     }
   ],
   "result": {
