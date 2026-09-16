@@ -113,6 +113,8 @@ public class TerminalRegressionsTest {
     }
 
     private int charAt(int x, int y) {
+        assertTrue(terminal.lastRowToDisplayMax >= terminal.height,
+                "lastRowToDisplayMax must never drop below height, or the viewport offset below goes negative");
         int idx = x + (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             idx = x + y * terminal.width;

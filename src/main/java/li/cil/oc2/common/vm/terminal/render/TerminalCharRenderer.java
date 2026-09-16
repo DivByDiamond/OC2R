@@ -168,7 +168,7 @@ public class TerminalCharRenderer {
                     .setUv(0, 0);
         }
 
-        if ((style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
+        if (isPrintableCharacter(character) && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
             // Strikethrough: thickness derived from cell height, centered on midline.
             final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
             final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
@@ -191,14 +191,25 @@ public class TerminalCharRenderer {
 
     // Only the line/box-drawing subset of DEC_SPECIAL_GRAPHICS (TerminalBufferWriter) needs
     // vector rendering; the rest (◆ ▒ ° ± π ≤ ≥ ≠ £ · etc.) are real glyphs in the font atlas
-    // and fall through to renderForegroundChar's normal glyph path below. Intentionally not
-    // range-based: these code points aren't contiguous with the glyph-backed ones.
-    private static final java.util.Set<Integer> BOX_DRAWING_SET = java.util.Set.of(
-            0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524, 0x252C, 0x2534, 0x253C,
-            0x23BA, 0x23BB, 0x23BC, 0x23BD);
+    // and fall through to renderForegroundChar's normal glyph path below. Values span two
+    // disjoint ranges (0x2500-0x253C box chars, 0x23BA-0x23BD scan-line chars), so each range
+    // gets its own primitive bitmask instead of boxing into a Set<Integer> on the hot path.
+    private static final long BOX_CHARS_MASK =
+            (1L << (0x2500 - 0x2500)) | (1L << (0x2502 - 0x2500)) | (1L << (0x250C - 0x2500))
+                    | (1L << (0x2510 - 0x2500)) | (1L << (0x2514 - 0x2500)) | (1L << (0x2518 - 0x2500))
+                    | (1L << (0x251C - 0x2500)) | (1L << (0x2524 - 0x2500)) | (1L << (0x252C - 0x2500))
+                    | (1L << (0x2534 - 0x2500)) | (1L << (0x253C - 0x2500));
+    private static final int SCAN_CHARS_MASK =
+            (1 << (0x23BA - 0x23BA)) | (1 << (0x23BB - 0x23BA)) | (1 << (0x23BC - 0x23BA)) | (1 << (0x23BD - 0x23BA));
 
     private static boolean isBoxDrawingCharacter(final int ch) {
-        return BOX_DRAWING_SET.contains(ch);
+        if (ch >= 0x2500 && ch <= 0x253C) {
+            return (BOX_CHARS_MASK & (1L << (ch - 0x2500))) != 0;
+        }
+        if (ch >= 0x23BA && ch <= 0x23BD) {
+            return (SCAN_CHARS_MASK & (1 << (ch - 0x23BA))) != 0;
+        }
+        return false;
     }
 
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
