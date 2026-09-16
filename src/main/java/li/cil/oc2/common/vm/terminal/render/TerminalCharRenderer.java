@@ -114,7 +114,9 @@ public class TerminalCharRenderer {
         final float g = ((color >> 8) & 0xFF) / 255f;
         final float b = (color & 0xFF) / 255f;
 
-        if (isPrintableCharacter(character)) {
+        if (isBoxDrawingCharacter(character)) {
+            renderBoxDrawing(matrix, buffer, offset, character, r, g, b);
+        } else if (isPrintableCharacter(character)) {
             FontHandling.FontStyle font = getFontStyle(style);
             Glyph glyph = FontHandling.getGlyph(character, font);
 
@@ -183,6 +185,74 @@ public class TerminalCharRenderer {
         if ((style & Terminal.STYLE_BOLD_MASK) != 0) return FontHandling.FontStyle.BOLD;
         if ((style & Terminal.STYLE_ITALIC_MASK) != 0) return FontHandling.FontStyle.ITALIC;
         return FontHandling.FontStyle.REGULAR;
+    }
+
+    private static boolean isBoxDrawingCharacter(final int ch) {
+        return ch == 0x2500 || ch == 0x2502 || ch == 0x250C || ch == 0x2510 || ch == 0x2514
+                || ch == 0x2518 || ch == 0x251C || ch == 0x2524 || ch == 0x252C || ch == 0x2534
+                || ch == 0x253C;
+    }
+
+    private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer,
+            final float offset, final int ch, final float r, final float g, final float b) {
+        final float w = Terminal.CHAR_WIDTH;
+        final float h = Terminal.CHAR_HEIGHT;
+        final float t = 2f; // thickness
+        final float cx = w / 2f - t / 2f;
+        final float cy = h / 2f - t / 2f;
+        // helper to add quad
+        // horizontal mid line
+        // vertical mid line
+        switch (ch) {
+            case 0x2500 -> quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b); // ─
+            case 0x2502 -> quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b); // │
+            case 0x250C -> { // ┌
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2510 -> { // ┐
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2514 -> { // └
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+            }
+            case 0x2518 -> { // ┘
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x251C -> { // ├
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+            }
+            case 0x2524 -> { // ┤
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x252C -> { // ┬
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2534 -> { // ┴
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x253C -> { // ┼
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+            }
+            default -> {}
+        }
+    }
+
+    private static void quad(final BufferBuilder buffer, final Matrix4f matrix,
+            final float x0, final float y0, final float x1, final float y1,
+            final float r, final float g, final float b) {
+        buffer.addVertex(matrix, x0, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x1, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x1, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x0, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
     }
 
     private static boolean isPrintableCharacter(final int ch) {
