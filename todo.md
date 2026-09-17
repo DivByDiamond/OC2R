@@ -591,10 +591,7 @@ PMD обнулён (423→0), но ценой ~81 inline `// NOPMD`-маркер
 
 Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изолированные, ревьюятся за 10 минут. Всё на ветке `work`.
 
-- [ ] **CH10/CH11 → новые buffer-хелперы + убрать `System.out.println`** (маленький)
-  - `escapes/csi/CH10.java` (DCH) и `escapes/csi/CH11.java` (ICH/SL) оставлены на inline-реализациях сдвига — в `TerminalBuffer` уже есть `deleteChars`/`insertChars`. Перевести на хелперы (убрать две параллельные копии логики).
-  - `client/gui/widget/terminal/TerminalMouseHandler.java:82` — `System.out.println("ERR: Unsupported primary mode")` в продакшн-коде → логгер.
-  - Автор PR #10 согласен открыть этот PR (в ответе на ревью: «I'd rather not expand the port's blast radius. Happy to open a follow-up PR»).
+- [x] **CH10/CH11 → новые buffer-хелперы + убрать `System.out.println`** (маленький) ✅ — уже использует `deleteChars`/`insertChars` (проверено `CH10.java:26`, `CH11.java:24/29`), `TerminalMouseHandler.java:86` уже `LOGGER.warn`.
 
 - [ ] **DEC Special Graphics рендер** (средний, ~100 строк + тесты)
   - `drawingMode`/`SPECIAL_GRAPHICS` парсится (`ESC ( 0`, `TerminalOutput.java:161-163`), но **не используется в рендере**: `TerminalCharRenderer.isPrintableCharacter` берёт сырой кодпоинт без трансляции DEC-графики (`0x6A`→`─`, `0x71`→`─`, `0x71`→`┘` и т.д.).
@@ -625,86 +622,11 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 
 ### Блокеры
 
-- [x] **Б1 — AIOOBE при SD/RI на заполненном scrollback**
-  `[buffer/TerminalBufferScrolling.java:77-81]` + `[buffer/TerminalLineShifter.java:101]`
-  Ветка `shiftDown` при полных маргинах использует `lastRowToDisplay` (не Max!):
-  `firstLine = L−24, lastLine = L−1`; при `L == HEIGHT*SCROLL_BACK_COUNT == 480`:
-  `srcIndex = 456w, charCount = 24w, dstIndex = 457w` → arraycopy пишет до `481w−1`
-  при длине массива `480w`. Гарантированный ArrayIndexOutOfBoundsException под lock
-  в `TerminalOutput.putOutput` → терминал навсегда перестаёт обрабатывать вывод.
-  **Репро** (только вывод гостя): `\n` × ~470 (scrollback до 480 через
-  `incrementLastLineToDisplay`, cap `TerminalBufferScrolling.java:20-23`), затем `ESC[2T`
-  или `ESC M` при курсоре в верхней строке (RI).
-  Попутно: та же ветка семантически неверна при прокрученном назад view — сдвигает
-  не окно рендера (`lastRowToDisplay` вместо `lastRowToDisplayMax`, как во всех остальных путях).
-  Фикс: клампить как остальные пути (`lastRowToDisplayMax − HEIGHT .. lastRowToDisplayMax − max(count,1)`)
-  + тест: полный scrollback → `CSI 2 T`.
-
-- [x] **Б2 — Freeze/DoS терминала через SU/SD с большим счётчиком**
-  `[escapes/csi/CH8.java:36-43]`, `[escapes/csi/CH9.java:33-40]`
-  `for (int i = 0; i < args[0]; i++) shiftUpOne();` — `EscapeUtilities.parseArgument`
-  сатурирует на `Integer.MAX_VALUE` → `\033[2147483647S` из гостя = 2³¹−1 итераций
-  по 4 arraycopy каждая, всё под lock внутри `putOutput` → поток VM-вывода заморожен
-  на минуты, lock удержан. Остальные хендлеры аргументы клампят — проблема локализована.
-  Фикс: `int n = Math.min(args[0], Terminal.HEIGHT);` перед циклом.
-  Тест: `\033[999999999S` завершается мгновенно.
+Б1 (AIOOBE SD/RI на полном scrollback), Б2 (freeze SU/SD MAX) — закрыты; клиенты см. тесты `CSI 2 T`, `999999999S`.
 
 ### Major
 
-- [x] **M1 — `ESC ) Ps` (designate G1) пишет в G0; G1 недостижим** — закрыто (2026-09-07):
-  `[TerminalIO.java:121-122,156-167]` — оба состояния `'('` и `')'` попадали в один
-  handler, всегда модифицирующий `drawingModeG0`; `drawingModeG1` писался только
-  в RIS/DECSC/DECRC. Репро: `\033)0` + SO → ASCII вместо псевдографики.
-  Фикс: `TerminalOutput.handleEscape` теперь диспетчерит `SHIFT_IN_CHARACTER_SET`/
-  `SHIFT_OUT_CHARACTER_SET` в `handleCharsetDesignate(ch, designateG0)`, который пишет
-  в `drawingModeG0` только для `ESC (`, в `drawingModeG1` — только для `ESC )`.
-  Тесты: `escLeftParenDesignatesG0Only`, `escRightParenDesignatesG1Only`.
-  Не в рамках фикса (отдельная задача, §35): `A`/`1`/`2` по-прежнему молча игнорируются;
-  `useG0`/`drawingModeG1` всё ещё не влияют на рендер (см. §35 DEC Special Graphics) —
-  сам маршрутизирующий баг закрыт, но переключение набора символов пока не отрисовывается.
-
-- [x] **M2 — обрезанный true-color SGR превращается в стили** — закрыто (2026-09-07):
-  `[escapes/csi/SGR.java]` — malformed-ветка пропускала только селектор+mode-byte:
-  `\033[38;2;1m` → остаток `1` применялся как bold; `\033[48;2;10;20m` → смена атрибута
-  кодом 10. Фикс: `skipMalformedExtendedColor` различает 2 случая — mode-байт не 5/2
-  (селектор невалиден) → пропустить ровно 2 (селектор+mode), остаток — независимые
-  SGR-коды (сохранено поведение `38;7;1` → `1` всё ещё bold); mode-байт 5 или 2, но не
-  хватает аргументов (обрезано) → пропустить весь остаток списка (нет точки ресинка).
-  Тесты: `sgrTruncatedTrueColorDoesNotMisapplyLeftoverAsStyle`,
-  `sgrTruncated256ColorBackgroundDoesNotMisapplyLeftoverArgs` (+ все старые malformed-тесты
-  зелёные).
-
-- [x] **M3 — overflow `1 << dirtyLine` при выводе в свёрнутый scrollback** — закрыто
-  (2026-09-07): `[buffer/TerminalBufferWriter.java]`, `[TerminalBuffer.java]` —
-  `dirtyLine = offset + y` мог достигать 479 → int-сдвиг mod 32 → случайный бит вместо
-  нужной строки. Фикс: новый `TerminalBufferWriter.markDirtyLine(terminal, dirtyLine)`
-  клампит — при `dirtyLine` вне `[0, HEIGHT-1]` вызывает `terminal.markAllDirty()`
-  (полный редрою) вместо порчи произвольного бита; используется и в `setChar`, и в
-  `TerminalBuffer.markDirty(y)`. Тест: `charWriteFarIntoScrollbackForcesFullRefreshInsteadOfWrongBit`.
-
-- [x] **M4 — рендер читает буфер без лока, Netty пишет под `io.lock`** — закрыто задачей 19
-  (2026-08-23): клиент больше не парсит UART, дифф применяется на main-thread;
-  `[TerminalCharRenderer.java:26-27,47]`, `[TerminalBackgroundRenderer.java:26,60-62]`
-  vs бывший писатель `[ComputerTerminalOutputMessage.java:45 → putOutput]` (удалён).
-  `setChar` = 4 отдельных store (char/color/bg/style, `[TerminalBufferWriter.java:42-79]`),
-  прокрутка = 4 несмежных arraycopy (`[TerminalLineShifter.java:101-109]`) — рендер между
-  шагами видит смесь. Эффект: «цветной шлейф» за текстом, атрибуты с опозданием,
-  полусдвинутые строки; само сходится после burst. Отдельный тяжёлый случай:
-  DECCOLM `setWidth` перевыделяет массивы (`[Terminal.java:173-176]`) на Netty-потоке —
-  возможен AIOOBE прямо в кадре рендера (устаревшая ссылка + новый width).
-  Фикс-варианты: снапшот под лок / версия-счётник + retry кадра / enqueueWork для putOutput.
-
-- [x] **M5 — `fonts/FontHandling`/`UnicodeFontRenderer` без `@OnlyIn(CLIENT)`** — закрыто
-  (2026-09-07): статическая инициализация → `new FontAtlas(1024,1024,...)` →
-  `Minecraft.getInstance().getTextureManager().register(...)` (`[FontAtlas.java:35]`).
-  Было безопасно случайно: единственные потребители — `@OnlyIn(CLIENT)`-рендереры.
-  Фикс: оба класса аннотированы `@OnlyIn(Dist.CLIENT)`, так что случайный импорт из
-  common-кода теперь падает при загрузке класса вместо краша dedicated server внутри
-  `Minecraft.getInstance()`.
-
-- [x] **M6 — `SCROLL_BACK_COUNT` — public mutable поле в UPPER_CASE** — закрыто PR #34
-  (2026-08-25): `Terminal.SCROLL_BACK_COUNT` теперь `public static final int`, внешняя
-  мутация после аллокации буферов больше невозможна.
+M1 G1 designate, M2 truncated true-color, M3 dirtyLine overflow, M4 render race, M5 @OnlyIn, M6 SCROLL_BACK_COUNT final — закрыты (PR #24, #28, #30, #34, #36).
 
 ### Minor
 

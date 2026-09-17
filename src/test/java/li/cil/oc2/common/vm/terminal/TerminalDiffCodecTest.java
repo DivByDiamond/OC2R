@@ -165,6 +165,7 @@ public class TerminalDiffCodecTest {
         // Stricter is safe: diagnose the malformed stream instead (Kimi gate F5). Revert-and-
         // fail: without the guard this throws NegativeArraySizeException, failing the test.
         final ByteBuf buf = Unpooled.buffer();
+        ByteBufCodecs.VAR_INT.encode(buf, 1); // protocol version
         buf.writeBoolean(false); // reset
         ByteBufCodecs.VAR_INT.encode(buf, Terminal.WIDTH);
         ByteBufCodecs.VAR_INT.encode(buf, Terminal.HEIGHT);

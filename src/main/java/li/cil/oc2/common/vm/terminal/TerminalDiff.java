@@ -643,7 +643,10 @@ public final class TerminalDiff {
     public static final StreamCodec<ByteBuf, Snapshot> STREAM_CODEC =
             StreamCodec.ofMember(TerminalDiff::writeSnapshot, TerminalDiff::readSnapshot);
 
+    private static final int PROTOCOL_VERSION = 1;
+
     private static void writeSnapshot(final Snapshot s, final ByteBuf buf) {
+        ByteBufCodecs.VAR_INT.encode(buf, PROTOCOL_VERSION);
         buf.writeBoolean(s.reset());
         ByteBufCodecs.VAR_INT.encode(buf, s.width());
         ByteBufCodecs.VAR_INT.encode(buf, s.height());
@@ -671,6 +674,11 @@ public final class TerminalDiff {
     }
 
     private static Snapshot readSnapshot(final ByteBuf buf) {
+        final int version = ByteBufCodecs.VAR_INT.decode(buf);
+        if (version != PROTOCOL_VERSION) {
+            throw new IllegalArgumentException(
+                    "unsupported terminal protocol version: " + version + " (expected " + PROTOCOL_VERSION + ")");
+        }
         final boolean reset = buf.readBoolean();
         final int width = ByteBufCodecs.VAR_INT.decode(buf);
         final int height = ByteBufCodecs.VAR_INT.decode(buf);
