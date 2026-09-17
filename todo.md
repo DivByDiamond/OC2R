@@ -1477,7 +1477,7 @@ GameTest раньше никогда не выполнялся (ни локал�
 - [ ] **Стиль-2 — qodana.yaml excludes расходятся с checkstyle/spotbugs** `[qodana.yaml:6] vs [checkstyle.xml:15]` — синхронизировать (generated/gametest).
 - [ ] **Стиль-3 — gradle.properties динамические ccl 4.6.1.+ / cbm 3.5.0.+** `[gradle.properties:32-33]` → пин `strictly`, добавить `gradle.lockfile`/`verification-metadata.xml`, убрать дубль `fileTree(libs)` vs `maven libs` `[build.gradle.kts:226 vs 168]`.
 - [ ] **Стиль-4 — System.out в gametest** `[gametest/DeviceBusTests.java:34] + [RedstoneInterfaceTests.java:44]` 5× `println` вне линта из-за `exclude "**/gametest/**"` `[build.gradle.kts:408]` → добавить `// NOPMD` или включить gametest в checkstyle с фильтром.
-- [ ] **Стиль-5 — бинарники natives в репо** `[src/main/resources/natives/ 8 файлов]` закоммичены (осознанно для оффлайн), но `gradle/wrapper.jar` тоже — ок, задокум.
+- [x] **Стиль-5 — бинарники natives в репо** `[src/main/resources/natives/ 8 файлов]` закоммичены (осознанно для оффлайн), `gradle/wrapper.jar` тоже — задокументировано в `CONTRIBUTING.md` (2026-09-17).
 - [ ] **Стиль-6 — магические числа без констант** — checkstyle MagicNumber отсутствует, PMD тоже — ввести `FULL_DIRTY_MASK`, `BLINK_*`, `TAB_WIDTH` константы (см. §36 m12).
 
 ### Контракты / безопасность (дополнения)
