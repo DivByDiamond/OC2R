@@ -1315,8 +1315,8 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 
 ### 44.3 Double-sized characters (ESC #3/#4/#5/#6) — большой, два PR
 
-- [ ] PR-A: парсинг (`handleHash` знает только `'8'`/DECALN) + per-line атрибут
-      double-height верх/низ (`ESC # 3`/`# 4`) и сброс (`# 5` или обычная строка).
+- [x] PR-A: парсинг (`handleHash` знает только `'8'`/DECALN) + per-line атрибут
+      double-height верх/низ (`ESC # 3`/`# 4`) и сброс (`# 5` или обычная строка). ✅ 2026-09-17: `Terminal.LINE_ATTR_*` (0 SINGLE,1 DWL,2 DHL_TOP,3 DHL_BOTTOM), `lineAttrs`/`altLineAttrs` per-row (480/24), `handleHash` ставит атрибут текущей строки `y` (whole line, xterm doublechr.c), `setWidth`/`resizeHeight`/`clear`/`clearScrollback`/`TerminalLineShifter` копируют/бланкуют атрибуты, `TerminalDiff` bump `PROTOCOL_VERSION 1→2` + `lineAttrs` byte per row parallel to `rows`, `apply`/`clearBuffers` sync. Тесты `TerminalDiff` обновлены, vttest harness зелёный. Рендер пока stub (single-width).
       **Уточнение 2026-09-16 (xterm-411 `doublechr.c`):** коды: `# 3`=DHL-верх,
       `# 4`=DHL-низ, `# 5`=SWL (одинарная ширина), `# 6`=DWL (двойная ширина),
       `ESC # 7` **не существует** — пара «двойная ширина+высота» набирается как
@@ -1326,9 +1326,9 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
       ptyx.h:1680-1695, EK-VT520-RM (DECDHL стр.188, DECSWL стр.304).
 - [ ] PR-B: double-width (`# 6`): 2 ячейки на символ → ломает autowrap (pending wrap
       на последней колонке), EL/DL/IL/copy-путь и модель Cell в diff (1 codepoint = 1 колонка):
-      расширять протокол (padding-ячейки или wide-флаг). Отдельный implementation-план.
-- [ ] MVP-критерий: не ломает парсинг (сейчас `# 3` уходит в warn-ветку — это терпимо, но
-      молча игнорировать до полного рендера лучше с явным TODO, чем падать).
+      расширять протокол (padding-ячейки или wide-флаг). Отдельный implementation-план. (Протокол v2 уже зарезервирован, PR-A использует line-attr, PR-B потребует wide-клетки.)
+- [x] MVP-критерий: не ломает парсинг (сейчас `# 3` уходит в warn-ветку — это терпимо, но
+      молча игнорировать до полного рендера лучше с явным TODO, чем падать). ✅ — `handleHash` теперь парсит #3/#4/#5/#6 без warn, помечает dirty.
 
 ### 44.4 vttest без интерактива — автоматизация приёмки
 

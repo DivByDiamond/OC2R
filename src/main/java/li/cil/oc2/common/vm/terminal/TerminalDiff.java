@@ -82,7 +82,8 @@ public final class TerminalDiff {
             boolean cursorVisible,
             boolean bell,
             long inputModes,
-            int[] palette) {
+            int[] palette,
+            byte[] lineAttrs) {
         public Snapshot {
             // Wire payload arrays are owned copies: the codec and apply treat snapshots as
             // immutable, and defensive copies keep the record clean without extending the
@@ -93,6 +94,9 @@ public final class TerminalDiff {
             shiftOps = shiftOps.clone();
             if (palette != null) {
                 palette = palette.clone();
+            }
+            if (lineAttrs != null) {
+                lineAttrs = lineAttrs.clone();
             }
         }
 
@@ -207,6 +211,26 @@ public final class TerminalDiff {
         // that missed the original OSC 4 change (opened/tracked the computer later) rebuilds
         // its screen from that snapshot and must not render a stale default palette.
         final int[] palette = terminal.consumePaletteDirty(forcePalette || reset);
+        // Per-row double-size line attributes (ESC #3/#4/#5/#6). One byte per row, parallel to rows.
+        final byte[] lineAttrs = new byte[rows.length];
+        for (int i = 0; i < rows.length; i++) {
+            final int absRow = rows[i];
+            byte attr = Terminal.LINE_ATTR_SINGLE;
+            if (alt) {
+                if (terminal.altLineAttrs != null
+                        && absRow >= 0
+                        && absRow < terminal.altLineAttrs.length) {
+                    attr = terminal.altLineAttrs[absRow];
+                }
+            } else {
+                if (terminal.lineAttrs != null
+                        && absRow >= 0
+                        && absRow < terminal.lineAttrs.length) {
+                    attr = terminal.lineAttrs[absRow];
+                }
+            }
+            lineAttrs[i] = attr;
+        }
         return new Snapshot(
                 reset,
                 terminal.width,
@@ -223,7 +247,8 @@ public final class TerminalDiff {
                 terminal.currentPrivateModeState.DECTCEM,
                 bell,
                 packInputModes(terminal.currentPrivateModeState),
-                palette);
+                palette,
+                lineAttrs);
     }
 
     private static int[] visibleWindowRows(final Terminal terminal) {
@@ -451,6 +476,24 @@ public final class TerminalDiff {
         for (int i = 0; i < rowPairs; i++) {
             deserializeRow(terminal, alt, s.rows()[i], s.rowData()[i]);
         }
+        // Per-row double-size line attributes (ESC #3/#4/#5/#6), parallel to rows. Guarded like
+        // rowData above: only the overlap is applied, missing rows keep their prior attribute.
+        if (s.lineAttrs() != null) {
+            final int attrPairs = Math.min(s.rows().length, s.lineAttrs().length);
+            for (int i = 0; i < attrPairs; i++) {
+                final int absRow = s.rows()[i];
+                final byte attr = s.lineAttrs()[i];
+                if (alt) {
+                    if (absRow >= 0 && absRow < terminal.altLineAttrs.length) {
+                        terminal.altLineAttrs[absRow] = attr;
+                    }
+                } else {
+                    if (absRow >= 0 && absRow < terminal.lineAttrs.length) {
+                        terminal.lineAttrs[absRow] = attr;
+                    }
+                }
+            }
+        }
 
         // Clamp the scroll-window indices into the (already-resized) geometry, mirroring the
         // palette guard below: they're raw wire values. A malformed snapshot with
@@ -542,6 +585,12 @@ public final class TerminalDiff {
         fillColors(terminal.altColorsBackground, TerminalColors.DEFAULT_BACKGROUND_COLOR);
         Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
+        if (terminal.lineAttrs != null) {
+            Arrays.fill(terminal.lineAttrs, Terminal.LINE_ATTR_SINGLE);
+        }
+        if (terminal.altLineAttrs != null) {
+            Arrays.fill(terminal.altLineAttrs, Terminal.LINE_ATTR_SINGLE);
+        }
     }
 
     private static void fillColors(final ColorData[] colors, final ColorData color) {
@@ -643,7 +692,7 @@ public final class TerminalDiff {
     public static final StreamCodec<ByteBuf, Snapshot> STREAM_CODEC =
             StreamCodec.ofMember(TerminalDiff::writeSnapshot, TerminalDiff::readSnapshot);
 
-    private static final int PROTOCOL_VERSION = 1;
+    private static final int PROTOCOL_VERSION = 2;
 
     private static void writeSnapshot(final Snapshot s, final ByteBuf buf) {
         ByteBufCodecs.VAR_INT.encode(buf, PROTOCOL_VERSION);
@@ -671,6 +720,10 @@ public final class TerminalDiff {
         if (palette != null) {
             writeByteArray(buf, encodeInts(palette));
         }
+        // v2: per-row line attributes (ESC #3/#4/#5/#6), one byte per row parallel to rows.
+        byte[] lineAttrs = s.lineAttrs();
+        if (lineAttrs == null) lineAttrs = new byte[0];
+        writeByteArray(buf, lineAttrs);
     }
 
     private static Snapshot readSnapshot(final ByteBuf buf) {
@@ -714,6 +767,8 @@ public final class TerminalDiff {
         // Palette is written LAST (after inputModes) — read it last or every field above
         // decodes from the wrong offset. Repro: CodecRoundTripReproTest.
         final int[] palette = buf.readBoolean() ? decodeInts(readByteArray(buf)) : null;
+        // v2: per-row line attributes (ESC #3/#4/#5/#6) after palette.
+        final byte[] lineAttrs = readByteArray(buf);
         return new Snapshot(
                 reset,
                 width,
@@ -730,7 +785,8 @@ public final class TerminalDiff {
                 cursorVisible,
                 bell,
                 inputModes,
-                palette);
+                palette,
+                lineAttrs);
     }
 
     private static void writeByteArray(final ByteBuf buf, final byte[] data) {

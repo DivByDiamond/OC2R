@@ -361,6 +361,31 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
                         'E');
             }
             terminal.markAllDirty();
+        } else if (ch == '3' || ch == '4' || ch == '5' || ch == '6') {
+            // DECDHL/DECSWL/DECDWL per-line attributes (VT100/VT520). ESC #3 = DHL top,
+            // ESC #4 = DHL bottom (both double-width double-height), ESC #5 = SWL (single),
+            // ESC #6 = DWL (double-width). Applied to the whole current line from column 0
+            // (xterm doublechr.c), not from cursor to EOL. Stored per absolute buffer row.
+            final byte attr;
+            if (ch == '3') attr = Terminal.LINE_ATTR_DOUBLE_HEIGHT_TOP;
+            else if (ch == '4') attr = Terminal.LINE_ATTR_DOUBLE_HEIGHT_BOTTOM;
+            else if (ch == '6') attr = Terminal.LINE_ATTR_DOUBLE_WIDTH;
+            else attr = Terminal.LINE_ATTR_SINGLE;
+            final int y = terminal.y;
+            if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+                if (terminal.altLineAttrs != null && y >= 0 && y < terminal.altLineAttrs.length) {
+                    terminal.altLineAttrs[y] = attr;
+                }
+            } else {
+                final int absRow = terminal.lastRowToDisplayMax - terminal.height + y;
+                if (terminal.lineAttrs != null
+                        && absRow >= 0
+                        && absRow < terminal.lineAttrs.length) {
+                    terminal.lineAttrs[absRow] = attr;
+                }
+            }
+            // Attribute change needs repaint and network sync for that screen row.
+            terminal.markDirty(1L << y);
         }
     }
 }

@@ -48,6 +48,15 @@ public class Terminal {
     public static final int STYLE_ITALIC_MASK = 1 << 6;
     public static final int STYLE_CROSSED_OUT_MASK = 1 << 7;
 
+    // Per-line double-size attributes (ESC #3/#4/#5/#6). Stored per absolute buffer row
+    // (main buffer: height*SCROLL_BACK_COUNT rows, alt buffer: height rows). Values are
+    // LINE_ATTR_* below; all rows default to SINGLE. Double-height (DHL) is double-width
+    // double-height per VT520, so TOP/BOTTOM both imply double-width.
+    public static final byte LINE_ATTR_SINGLE = 0;
+    public static final byte LINE_ATTR_DOUBLE_WIDTH = 1;
+    public static final byte LINE_ATTR_DOUBLE_HEIGHT_TOP = 2;
+    public static final byte LINE_ATTR_DOUBLE_HEIGHT_BOTTOM = 3;
+
     public ColorMode currentForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
     public ColorMode currentBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
     public ColorData sixteenColor,
@@ -155,6 +164,9 @@ public class Terminal {
     public transient ColorData[] altColorsBackground;
     public transient byte[] altStyles;
     public boolean[] altTabs;
+    // Per-row double-size line attributes (ESC #3/#4/#5/#6). One byte per absolute row.
+    public transient byte[] lineAttrs;
+    public transient byte[] altLineAttrs;
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
@@ -311,6 +323,12 @@ public class Terminal {
         Arrays.fill(this.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(this.altColorsBackground, background.copy());
         Arrays.fill(this.altStyles, TerminalColors.DEFAULT_STYLE);
+
+        // Reset line attributes to single for destructive width change (DECCOLM/RIS)
+        this.lineAttrs = new byte[height * SCROLL_BACK_COUNT];
+        this.altLineAttrs = new byte[height];
+        Arrays.fill(this.lineAttrs, LINE_ATTR_SINGLE);
+        Arrays.fill(this.altLineAttrs, LINE_ATTR_SINGLE);
 
         // Reset tab stops
         this.tabs = new boolean[newWidth];
@@ -629,6 +647,22 @@ public class Terminal {
             System.arraycopy(this.altStyles, src, newAltStyles, dst, width);
         }
 
+        // Line attributes (per-row, ESC #3/#4/#5/#6) — same relayout as rows, but one byte per row.
+        final byte[] newLineAttrs = new byte[newMainRows];
+        final byte[] newAltLineAttrs = new byte[newHeight];
+        Arrays.fill(newLineAttrs, LINE_ATTR_SINGLE);
+        Arrays.fill(newAltLineAttrs, LINE_ATTR_SINGLE);
+        for (int r = 0; r < srcLen; r++) {
+            if (this.lineAttrs != null && srcStart + r < this.lineAttrs.length) {
+                newLineAttrs[r] = this.lineAttrs[srcStart + r];
+            }
+        }
+        for (int r = 0; r < copyAltRows; r++) {
+            if (this.altLineAttrs != null && altSrcStart + r < this.altLineAttrs.length) {
+                newAltLineAttrs[r] = this.altLineAttrs[altSrcStart + r];
+            }
+        }
+
         // Commit: all allocations succeeded — swap every field in one stretch. Any failure
         // above leaves the terminal fully consistent at the old height.
         this.buffer = newBuffer;
@@ -639,6 +673,8 @@ public class Terminal {
         this.altColors = newAltColors;
         this.altColorsBackground = newAltColorsBackground;
         this.altStyles = newAltStyles;
+        this.lineAttrs = newLineAttrs;
+        this.altLineAttrs = newAltLineAttrs;
         this.height = newHeight;
         this.lastRowToDisplay = newLrd;
         this.lastRowToDisplayMax = newLrdMax;

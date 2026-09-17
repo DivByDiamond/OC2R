@@ -21,6 +21,9 @@ public class TerminalBuffer {
             Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.altColorsBackground, c.copy());
             Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
+            if (terminal.altLineAttrs != null) {
+                Arrays.fill(terminal.altLineAttrs, Terminal.LINE_ATTR_SINGLE);
+            }
         } else {
             int startIndex = (terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
             int endIndex = startIndex + (terminal.height * terminal.width);
@@ -29,6 +32,11 @@ public class TerminalBuffer {
                     terminal.colors, startIndex, endIndex, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
             Arrays.fill(terminal.colorsBackground, startIndex, endIndex, c.copy());
             Arrays.fill(terminal.styles, startIndex, endIndex, TerminalColors.DEFAULT_STYLE);
+            if (terminal.lineAttrs != null) {
+                final int startRow = terminal.lastRowToDisplayMax - terminal.height;
+                final int endRow = startRow + terminal.height;
+                Arrays.fill(terminal.lineAttrs, startRow, endRow, Terminal.LINE_ATTR_SINGLE);
+            }
         }
         terminal.markAllDirty();
     }
@@ -53,6 +61,9 @@ public class TerminalBuffer {
             System.arraycopy(
                     terminal.colorsBackground, visibleStart * w, terminal.colorsBackground, 0, visibleCells);
             System.arraycopy(terminal.styles, visibleStart * w, terminal.styles, 0, visibleCells);
+            if (terminal.lineAttrs != null) {
+                System.arraycopy(terminal.lineAttrs, visibleStart, terminal.lineAttrs, 0, h);
+            }
         }
         // Clear the tail (old scrollback + freed tail) to spaces.
         final int start = h * w;
@@ -69,6 +80,9 @@ public class TerminalBuffer {
                 end,
                 terminal.currentBackgroundColor().copy());
         Arrays.fill(terminal.styles, start, end, TerminalColors.DEFAULT_STYLE);
+        if (terminal.lineAttrs != null) {
+            Arrays.fill(terminal.lineAttrs, h, capacityRows, Terminal.LINE_ATTR_SINGLE);
+        }
         terminal.lastRowToDisplayMax = h;
         terminal.lastRowToDisplay = h;
         terminal.markAllBufferRowsDirty();
@@ -79,6 +93,9 @@ public class TerminalBuffer {
         Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
         Arrays.fill(terminal.altColorsBackground, terminal.currentBackgroundColor().copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
+        if (terminal.altLineAttrs != null) {
+            Arrays.fill(terminal.altLineAttrs, Terminal.LINE_ATTR_SINGLE);
+        }
     }
 
     public void clearLine(final int y) {

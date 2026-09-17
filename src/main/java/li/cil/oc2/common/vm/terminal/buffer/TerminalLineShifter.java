@@ -99,6 +99,11 @@ final class TerminalLineShifter {
                     styles,
                     g.copyDstRow() * width,
                     g.copyRows() * width);
+            // Per-row line attributes (ESC #3/#4/#5/#6) travel with the rows.
+            final byte[] lineAttrs = alt ? terminal.altLineAttrs : terminal.lineAttrs;
+            if (lineAttrs != null) {
+                System.arraycopy(lineAttrs, g.copySrcRow(), lineAttrs, g.copyDstRow(), g.copyRows());
+            }
         }
         if (g.blankRows() > 0) {
             final ColorData c = terminal.currentBackgroundColor();
@@ -122,6 +127,10 @@ final class TerminalLineShifter {
                     g.blankStartRow() * width,
                     (g.blankStartRow() + g.blankRows()) * width,
                     TerminalColors.DEFAULT_STYLE);
+            final byte[] lineAttrs = alt ? terminal.altLineAttrs : terminal.lineAttrs;
+            if (lineAttrs != null) {
+                Arrays.fill(lineAttrs, g.blankStartRow(), g.blankStartRow() + g.blankRows(), Terminal.LINE_ATTR_SINGLE);
+            }
         }
     }
 

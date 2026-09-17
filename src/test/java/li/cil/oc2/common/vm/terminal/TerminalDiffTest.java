@@ -184,7 +184,8 @@ public class TerminalDiffTest {
                         snapshot.cursorVisible(),
                         snapshot.bell(),
                         snapshot.inputModes(),
-                        snapshot.palette());
+                        snapshot.palette(),
+                        snapshot.lineAttrs());
         final Terminal client = new Terminal();
         TerminalDiff.apply(client, broken); // must not throw
     }
@@ -384,7 +385,7 @@ public class TerminalDiffTest {
         final Terminal client = new Terminal();
         final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
                 false, 5_000_000, 200_000_000, false, new int[0], new byte[0][], new int[0],
-                0, 0, Terminal.HEIGHT, Terminal.HEIGHT, 0, true, false, 0L, null);
+                0, 0, Terminal.HEIGHT, Terminal.HEIGHT, 0, true, false, 0L, null, new byte[0]);
 
         assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
         assertEquals(Terminal.WIDTH, client.getTerminalWidth(), "oversized snapshot width refused");
@@ -401,7 +402,7 @@ public class TerminalDiffTest {
         final Terminal client = new Terminal();
         final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
                 false, Terminal.WIDTH, Terminal.HEIGHT, false, new int[0], new byte[0][], new int[0],
-                0, 0, 200_000_000, 1, 0, true, false, 0L, null);
+                0, 0, 200_000_000, 1, 0, true, false, 0L, null, new byte[0]);
 
         assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
         final int capacity = client.height * Terminal.SCROLL_BACK_COUNT;
@@ -539,7 +540,8 @@ public class TerminalDiffTest {
                         true,
                         false,
                         0L,
-                        null);
+                        null,
+                        new byte[0]);
 
         final Terminal client = new Terminal();
         assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
