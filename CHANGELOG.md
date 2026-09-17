@@ -11,6 +11,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **Terminal**: every incoming network diff yanked a scrolled-back (mouse-wheel) view back to the bottom, making scrollback review impossible while output streamed; scroll position is now a per-viewer preference anchored to absolute content rows — window slides leave the view put, shift operations move it with the content, and a reset snapshot re-glues to the bottom
+- **Terminal**: the client render thread could crash with a `NullPointerException` when a frame capture raced a terminal resize (both seqlock attempts landing inside the commit stretch); such a frame is now dropped and repainted next frame
+- **Terminal**: a malformed network diff carrying a negative row count decoded as an unnamed `NegativeArraySizeException`; it is now rejected with a diagnostic before allocation
 - **Terminal**: SU (`CSI Ps S`) at the scrollback capacity boundary scrolled one row too many — the per-row loop performed both a window slide and a physical shift on the iteration that crossed the boundary, discarding one extra scrollback line; the boundary now scrolls exactly n rows (#45)
 - **Terminal**: `CSI ? Ps u` (XTRESTORE) restored the DECSCNM (reverse video) flag without redrawing, leaving the flip invisible until the next unrelated repaint; both XTRESTORE forms (`?r`/`?u`) now share one implementation that always triggers the redraw
 - **Terminal**: `CSI Ps SP A` (SR, scroll right) was misrouted to cursor-up, so a horizontal scroll-right moved the cursor and subsequent writes landed on the wrong line (visible e.g. in ttycity); SR now scrolls each row of the scroll region right, the mirror of SL, and both SL/SR are ignored when the cursor is outside the scroll region, matching xterm
@@ -19,6 +22,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Changed
 
+- **Terminal**: the client render thread draws from a per-frame consistent snapshot (`FrameState`) captured under a geometry seqlock instead of reading live terminal state, closing the unsynchronized-reads-during-render race; row renderers' blink phase is keyed to the terminal identity so line rebuilds and the visible phase stay in step
+- **Terminal**: the network diff carries resolved scrollback shift operations (memmove geometry) instead of the client re-deriving them, keeping scrollback above the visible window exact on the client; degradation is bounded when more than 32 shifts land inside one diff window
 - **Terminal**: scrolling reworked behind the buffer API — n-ary `shiftUp`/`shiftDown` with a batched scrollback window-growth phase (one dirty mark instead of one per row) and a total clip-discard shift primitive; the SU/SD handlers no longer reach into the scrollback window fields directly (#45)
 - **Terminal**: SGR background color resolution unified into a single `Terminal.currentBackgroundColor()` (six inline copies removed); IL/DL pass explicit clip bounds to the shift primitive and DL drops a redundant pre-clear pass
 - **Recipes**: `flash_memory_onyxos` now chains from `flash_memory_custom` + wrench and `hard_drive_onyxos` is a wrench-applied shapeless recipe from `hard_drive_medium` (both previously collided with their base recipes and could never both be crafted) (#47)

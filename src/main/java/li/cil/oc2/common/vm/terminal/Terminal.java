@@ -1,7 +1,9 @@
 package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
@@ -155,6 +157,16 @@ public class Terminal {
     // Network diff sink: absolute buffer rows changed since the last consume. The server
     // serializes these rows into TerminalDiff messages; the client never parses VT100.
     private transient BitSet networkDirtyRows = new BitSet(HEIGHT * SCROLL_BACK_COUNT);
+    // Scrollback shift operations accumulated since the last consume — quintuples of the
+    // RESOLVED memmove geometry: copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows
+    // (main buffer only; alt shifts are fully covered by screen-row marks). A shift moves
+    // content at absolute indices WITHOUT the moved rows necessarily being screen-visible,
+    // so row payloads alone cannot keep a client's scrolled-back copy in sync — the operation
+    // itself crosses the wire and the client replays the identical memmove. Capped: a burst
+    // beyond the cap degrades to a full refresh (visible window re-ships).
+    private static final int MAX_PENDING_SHIFT_OPS = 32;
+    private static final int SHIFT_OP_FIELDS = 5;
+    private final transient IntArrayList networkShiftOps = new IntArrayList();
     private final transient ReentrantLock networkDirtyLock = new ReentrantLock();
     private transient boolean networkNeedsFullRefresh;
     public transient boolean displayOnly;
@@ -181,6 +193,14 @@ public class Terminal {
 
     public transient TerminalBuffer bufferManager;
     public transient TerminalBufferWriter bufferWriter;
+    // Seqlock for the client render thread (§36 M4): the resize paths mutate geometry and swap
+    // buffer arrays lock-free, so a frame capturing field-by-field could mix pre/post-resize
+    // state. Bumped +1 around each commit stretch (odd = mid-commit); the renderer captures
+    // between two even readings and retries on mismatch. Closes the geometry-tear class; the
+    // per-cell content tear (rows written mid-tessellation) remains inherent to shared arrays.
+    // Atomic only to keep ErrorProne's NonAtomicVolatileUpdate quiet — each terminal has a
+    // single writer thread (VM/runner on the server, network apply on the client).
+    private final AtomicInteger geometryVersion = new AtomicInteger();
     transient CSIManager csiManager = new CSIManager(this);
     transient OSCManager oscManager = new OSCManager(this);
     transient DCSManager dcsManager = new DCSManager();
@@ -245,6 +265,11 @@ public class Terminal {
         return height;
     }
 
+    /** Seqlock version for lock-free geometry capture on the render thread (see field doc). */
+    public int getGeometryVersion() {
+        return geometryVersion.get();
+    }
+
     public void setWidth(final int newWidth) {
         // Guard against degenerate widths: width-1 feeds Math.clamp as a max everywhere,
         // so a zero/negative width would throw IAE on the next cursor movement. Oversized
@@ -253,6 +278,7 @@ public class Terminal {
         if (newWidth != Math.clamp(newWidth, 1, MAX_WIDTH)) {
             return;
         }
+        geometryVersion.incrementAndGet();
         this.width = newWidth;
 
         // Erase color: DECCOLM clears with the current SGR background (VT510 erase
@@ -300,6 +326,7 @@ public class Terminal {
         this.setCursorPos(0, 0);
 
         // Mark all rows dirty
+        geometryVersion.incrementAndGet();
         this.renderers.forEach(model -> model.getDirtyMask().set(-1L));
     }
 
@@ -334,6 +361,7 @@ public class Terminal {
         if (newWidth != Math.clamp(newWidth, 1, MAX_WIDTH) || newWidth == this.width) {
             return;
         }
+        geometryVersion.incrementAndGet();
         final int oldWidth = this.width;
         final int copyCols = Math.min(oldWidth, newWidth);
 
@@ -421,6 +449,7 @@ public class Terminal {
         // Arm the full refresh atomically with the geometry commit: a consume landing between
         // the field swap and here would otherwise ship a partial diff at the new width with no
         // rows, blanking clients that apply it destructively (same seam class as #38 F1).
+        geometryVersion.incrementAndGet();
         networkDirtyLock.lock();
         try {
             networkNeedsFullRefresh = true;
@@ -480,6 +509,7 @@ public class Terminal {
         if (newHeight != Math.clamp(newHeight, 1, MAX_HEIGHT) || newHeight == this.height) {
             return;
         }
+        geometryVersion.incrementAndGet();
         final int oldHeight = this.height;
         final int oldMainRows = oldHeight * SCROLL_BACK_COUNT;
         final int newMainRows = newHeight * SCROLL_BACK_COUNT;
@@ -605,8 +635,7 @@ public class Terminal {
         }
 
         // Reallocate the network dirty BitSet for the new capacity and arm the full refresh
-        // atomically with the geometry commit: a consume landing between the field swap and
-        // here would otherwise ship a partial diff at the new height with no rows.
+        geometryVersion.incrementAndGet();
         networkDirtyLock.lock();
         try {
             networkDirtyRows = new BitSet(newMainRows);
@@ -717,20 +746,69 @@ public class Terminal {
         }
     }
 
+    /**
+     * Record one main-buffer shift's resolved memmove geometry for the network diff sink. The
+     * client replays exactly this (see the shift-op replay in TerminalDiff.apply), so its
+     * scrollback copy stays exact for rows the screen-row dirty mask cannot address (anything
+     * above the visible window) — for as long as the op backlog survives. Bounded degradation:
+     * op overflow drops the backlog and forces a full refresh (below), which repaints only the
+     * visible window; scrollback above it stays diverged until the terminal is recreated.
+     */
+    public void recordNetworkShift(
+            final int copySrcRow,
+            final int copyDstRow,
+            final int copyRows,
+            final int blankStartRow,
+            final int blankRows) {
+        networkDirtyLock.lock();
+        try {
+            if (networkShiftOps.size() >= MAX_PENDING_SHIFT_OPS * SHIFT_OP_FIELDS) {
+                // Degraded mode: drop the backlog and force a full re-ship of the visible
+                // window. Scrollback above the window does NOT self-heal — the full refresh
+                // paints only the visible rows, so the client's above-window copy diverges
+                // from here on (trigger: > MAX_PENDING_SHIFT_OPS shifts inside one diff
+                // window, i.e. very fast output at absolute capacity).
+                networkShiftOps.clear();
+                networkNeedsFullRefresh = true;
+                return;
+            }
+            networkShiftOps.add(copySrcRow);
+            networkShiftOps.add(copyDstRow);
+            networkShiftOps.add(copyRows);
+            networkShiftOps.add(blankStartRow);
+            networkShiftOps.add(blankRows);
+        } finally {
+            networkDirtyLock.unlock();
+        }
+    }
+
     /** Dirty state since the last consume: full-refresh request plus changed buffer rows. */
-    // Array component is intentional: transient internal diff record, rows is a fresh copy from
+    // Array components are intentional: transient internal diff record, rows is a fresh copy from
     // BitSet.stream().toArray() consumed immediately; List would add allocation overhead on hot path.
     @SuppressWarnings("ArrayRecordComponent")
-    public record NetworkDirty(boolean fullRefresh, int[] rows) {}
+    public record NetworkDirty(boolean fullRefresh, int[] rows, int[] shiftOps) {
+        public NetworkDirty {
+            // Owned copies (rows arrives fresh from the sink either way; cheap at diff rates).
+            rows = rows.clone();
+            shiftOps = shiftOps.clone();
+        }
+
+        @Override
+        public int[] shiftOps() {
+            return shiftOps.clone();
+        }
+    }
 
     public NetworkDirty consumeNetworkDirty() {
         networkDirtyLock.lock();
         try {
             final boolean full = networkNeedsFullRefresh;
             final int[] rows = networkDirtyRows.stream().toArray();
+            final int[] ops = networkShiftOps.toIntArray();
             networkNeedsFullRefresh = false;
             networkDirtyRows.clear();
-            return new NetworkDirty(full, rows);
+            networkShiftOps.clear();
+            return new NetworkDirty(full, rows, ops);
         } finally {
             networkDirtyLock.unlock();
         }

@@ -3,6 +3,7 @@
 package li.cil.oc2.gametest;
 
 import li.cil.oc2.api.API;
+import java.nio.charset.StandardCharsets;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -51,6 +52,33 @@ public final class TerminalTests {
                     terminal.bufferWriter.putChar(ch);
                 }
                 computer.assertScreenContains("hello", "terminal after start should still buffer hello");
+            })
+            .thenSucceed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void terminalDiffRecordsShiftOpsAtCapacity(final GameTestHelper helper) {
+        // The server-integration pin for the shift-op wire protocol: driving a REAL block
+        // entity's terminal to absolute capacity must accumulate resolved shift geometry in
+        // the network sink (the client replays it to keep its scrolled-back scrollback exact).
+        final ComputerFixture computer = ComputerFixture.place(helper);
+        final Terminal terminal = computer.blockEntity().terminalManager.getTerminal();
+
+        helper.startSequence()
+            .thenExecute(() -> {
+                final byte[] line = "\n".getBytes(StandardCharsets.UTF_8);
+                final int capacity = Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT;
+                // Saturate the scrollback, then one more line: exactly one whole-buffer shift.
+                for (int i = 0; i <= capacity; i++) {
+                    terminal.io.putOutput(java.nio.ByteBuffer.wrap(line));
+                }
+            })
+            .thenExecute(() -> {
+                final Terminal.NetworkDirty dirty = terminal.consumeNetworkDirty();
+                TestSupport.assertTrue(helper, "at-capacity linefeed must record a shift op for the wire",
+                        dirty.shiftOps().length >= 5);
+                TestSupport.assertTrue(helper, "the recorded op must shift a nonzero number of rows",
+                        dirty.shiftOps()[2] > 0);
             })
             .thenSucceed();
     }
