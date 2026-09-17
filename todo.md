@@ -1674,8 +1674,11 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 - [ ] (chunk 1, PR #45) Shift-грязные scrollback-строки вне видимого окна не уходят клиенту,
       пока view не переприклеится к низу — pre-existing, лечится текущим mark-all при вводе,
       но не устранено на уровне протокола.
-- [ ] (chunk 2, PR #46) XTRESTORE восстанавливает флаг DECCOLM, но не сам resize — xterm
+- [x] (chunk 2, PR #46) XTRESTORE восстанавливает флаг DECCOLM, но не сам resize — xterm
       маршрутизирует восстановление режима через DECSET update path, мы нет.
+      ✅ Исправлено: `XTRESTORE.execute` теперь вызывает `resetRendition()` + `setWidth()`
+      при восстановлении DECCOLM, как это делают CH2/CH3; тест
+      `xtrestoreDeccolmAlsoRestoresColumnWidth`.
 - [ ] (chunk 3, PR #49) >32 shift-операций в одном diff-окне сбрасывают бэклог и форсят
       full refresh — scrollback выше видимого окна расходится с реальностью с этого момента
       (full refresh перерисовывает только видимое окно). Нужен протокольный фикс (geometry

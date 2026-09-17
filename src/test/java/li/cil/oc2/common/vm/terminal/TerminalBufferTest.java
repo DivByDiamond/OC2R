@@ -1435,6 +1435,21 @@ public class TerminalBufferTest {
     }
 
     @Test
+    void xtrestoreDeccolmAlsoRestoresColumnWidth() {
+        // Restoring DECCOLM must resize the buffer too, not just flip the flag — xterm routes
+        // mode restore through the same DECSET/DECRST update path that performs the resize.
+        write(terminal, CSI + "?3h");             // DECCOLM on -> 132 columns
+        assertEquals(132, terminal.getTerminalWidth(), "precondition: 132 columns after DECCOLM set");
+        write(terminal, CSI + "?3s");              // XTSAVE mode 3 -> save DECCOLM=true
+        write(terminal, CSI + "?3l");              // DECCOLM off -> back to 80 columns
+        assertEquals(Terminal.WIDTH, terminal.getTerminalWidth(), "DECCOLM off resizes back to 80");
+        write(terminal, CSI + "?3r");               // XTRESTORE mode 3 -> restore DECCOLM=true
+        assertTrue(terminal.currentPrivateModeState.DECCOLM, "XTRESTORE restores the DECCOLM flag");
+        assertEquals(132, terminal.getTerminalWidth(),
+            "XTRESTORE must also resize the buffer to match the restored DECCOLM flag");
+    }
+
+    @Test
     void scorcPlainUDoesNotTouchSavedPrivateModes() {
         // Plain CSI u (SCORC) restores the cursor only — it must not touch the private modes
         // (that's ?u / XTRESTORE). And ?u must not restore the cursor (that's plain u / SCORC).

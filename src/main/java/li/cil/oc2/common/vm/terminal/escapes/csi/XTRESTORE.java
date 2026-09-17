@@ -23,6 +23,15 @@ public final class XTRESTORE {
             if (table == ModeTable.DECSCNM) {
                 terminal.markAllDirty();
             }
+            // DECCOLM restore previously flipped only the flag, leaving the buffer at its prior
+            // width — xterm routes mode restore through the same DECSET/DECRST update path, which
+            // performs the (destructive, per VT100-VT420 spec) resize. Matching CH2/CH3's DECCOLM
+            // actions: reset rendition before the resize so the screen erases to the default
+            // background, then resize to the restored flag's column count.
+            if (table == ModeTable.DECCOLM) {
+                terminal.resetRendition();
+                terminal.setWidth(terminal.currentPrivateModeState.DECCOLM ? 132 : Terminal.WIDTH);
+            }
         }
     }
 }
