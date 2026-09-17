@@ -94,9 +94,10 @@ public class TerminalBufferWriter {
     }
 
     // DEC Special Graphics maps only 0x60..0x7E (0x5F/'_' is handled separately as a blank;
-    // 0x5E/'^' and 0x7F/DEL are not part of the charset). Indexed by ch - 0x60.
-    // Source: xterm-411 fontutils.c dec2ucs (lines 4973-5007), cross-checked with Wikipedia
-    // "DEC Special Graphics".
+    // 0x5E/'^' and 0x7F/DEL are not part of the VT100 SPECIAL_GRAPHICS charset — xterm
+    // charsets.c leaves them untranslated (return ch as-is), and our guard ch < 0x60 ||
+    // ch > 0x7E mirrors that. Source: xterm-411 fontutils.c dec2ucs (lines 4973-5007),
+    // charsets.c: '_' -> ' ' mapping, cross-checked with Wikipedia "DEC Special Graphics".
     private static final int[] DEC_SPECIAL_GRAPHICS = {
         0x25C6, // ` -> ◆
         0x2592, // a -> ▒

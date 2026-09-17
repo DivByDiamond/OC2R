@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
@@ -132,7 +133,7 @@ public class TerminalRegressionsTest {
 
     private static class DummyRenderer implements RendererModel {
         private final AtomicLong dirtyMask = new AtomicLong(-1L);
-        @SuppressWarnings("EI_EXPOSE_REP") // test helper needs live view for dirty checks; also suppressed in config/spotbugs/baseline.xml
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "test helper needs live view for dirty checks; baseline.xml also suppresses but inline is primary")
         @Override public AtomicLong getDirtyMask() { return dirtyMask; }
         @Override public void close() { dirtyMask.set(0L); }
     }

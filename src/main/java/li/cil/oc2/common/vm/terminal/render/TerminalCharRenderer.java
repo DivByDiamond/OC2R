@@ -171,14 +171,13 @@ public class TerminalCharRenderer {
         if (isPrintableCharacter(character) && !isBoxDrawingCharacter(character)
                 && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
             // Strikethrough: thickness derived from cell height, centered on midline.
+            // Use quad() to keep winding consistent with box-drawing (CCW) and avoid
+            // culling mismatch between the two paths.
             final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
             final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
             final float y0 = Math.max(0, cyStrike - tStrike / 2f);
             final float y1 = Math.min(Terminal.CHAR_HEIGHT, cyStrike + tStrike / 2f);
-            buffer.addVertex(matrix, offset, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
-            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
-            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
-            buffer.addVertex(matrix, offset, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+            quad(buffer, matrix, offset, y0, offset + Terminal.CHAR_WIDTH, y1, r, g, b);
         }
     }
 
@@ -219,6 +218,9 @@ public class TerminalCharRenderer {
     private static final float SCAN_7_Y = 0.66f;
     private static final float SCAN_9_Y = 0.87f;
 
+    // Per-frame quad construction for 15 box chars is cheap (≤8 quads/char, 4 verts each)
+    // and keeps geometry derived from live CHAR_WIDTH/HEIGHT (resize-aware). Atlas
+    // pre-tessellation is deferred pending profiling; not a bottleneck vs glyph path.
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
             final float offset, final int ch, final float r, final float g, final float b) {
         final float w = Terminal.CHAR_WIDTH;
@@ -283,9 +285,10 @@ public class TerminalCharRenderer {
     }
 
     private static boolean isPrintableCharacter(final int ch) {
-        // 0xA0 (NBSP) is the first printable after the C1 control range 0x80-0x9F; 177 (0xB1 ±)
-        // was the old cutoff which left ° (0xB0) and £ (0xA3) invisible while claiming they
-        // were "real glyphs in the font atlas" (see BOX_CHARS_MASK comment). Include 0xA0-0xFF.
-        return ch == 0 || (ch > ' ' && ch <= '~') || ch >= 0xA0;
+        // C1 control range 0x80-0x9F is non-printable; NBSP 0xA0 is conventionally a space.
+        // Old cutoff 177 (0xB1 ±) left ° (0xB0) and £ (0xA3) invisible while claiming they
+        // were "real glyphs in the font atlas" (see BOX_CHARS_MASK comment). Include 0xA1-0xFF
+        // so NBSP stays blank but £/°/· etc. render.
+        return ch == 0 || (ch > ' ' && ch <= '~') || ch > 0xA0;
     }
 }
