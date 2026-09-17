@@ -507,161 +507,18 @@ PCM-стриминг `write(byte[])` (ring buffer + `StreamingPcmSoundInstance`,
 - [ ] Альтернатива/расширение: скачивание по URL (сеть из `inet/`) в `config/oc2r/` и прошивка.
 - [ ] Build + проверка в игре: прошил флешку из файла → вставил в комп → OnyxOS грузится с кастомным kernel/rootfs.
 
-## 31. Аудит VT100-терминала (2026-08-18, ветка work, HEAD 75c8cc4)
+## 31. Аудит VT100-терминала (2026-08-18, ветка work, HEAD 75c8cc4) — ✅ DONE, все 25 находок закрыты
 
-Аудит модуля `src/main/java/li/cil/oc2/common/vm/terminal/**`. Формат: `[файл:строка]`.
-
-### Блокеры
-
-- [x] **Б1 — `clearLine()` сбрасывает текущий цвет переднего плана**
-  `[buffer/TerminalBuffer.java:65]` — `terminal.currentForegroundColorMode = ColorMode.SIXTEEN_COLOR;` внутри очистки строки.
-  После EL/ED/DL программа в truecolor/256-цветах начинает писать в 16-цветную палитру.
-  Фикс: удалить строку 65 + тест: `CSI 38;2;r;g;b` + `CSI K` + символ → цвет не меняется.
-
-- [x] **Б2 — SU (CSI S) — no-op, пока scrollback не заполнен**
-  `[buffer/TerminalBufferScrolling.java:66-68]`, `[escapes/csi/CH8.java:18-20]`
-  Условие `lastRowToDisplay == HEIGHT * SCROLL_BACK_COUNT` ложно на свежем терминале,
-  а CH8 не вызывает `incrementLastLineToDisplay()` → `printf` + `CSI S` не двигает экран.
-  Фикс: при `lastRowToDisplay < max` — `incrementLastLineToDisplay()`, физический сдвиг — при достижении max.
-
-- [x] **Б3 — dirty-маска `shiftMainBuffer` мапит не те строки**
-  `[buffer/TerminalLineShifter.java:126-128]`
-  `i` — абсолютный индекс строки буфера, а формула — копия из `setChar` для относительной.
-  Правильно: `localI = i + HEIGHT - lastRowToDisplay`. Текущая даёт смещение на `(max - HEIGHT)`.
-  Эффект: после IL/DL/SU/SD с маргинами (при выросшем scrollback) видимые строки не перерисовываются.
-
-### Major
-
-- [x] **ED (CSI J) case 2 двигает курсор домой**
-  `[TerminalBuffer.java:41]`, `[escapes/csi/ED.java:28-29]`
-  `clear()` вызывает `setCursorPos(0,0)`. По VT100 ED не должен трогать курсор.
-  Фикс: отдельный `clearScreen()` без перемещения курсора.
-
-- [x] **SGR 38/48 обрывает последовательность**
-  `[escapes/csi/SGR.java:47]`
-  `return;` после обработки 38/48 — `CSI 38;5;196;1m` теряет bold, `...;48;5;52m` теряет фон.
-  Фикс: `i = index; continue;` вместо `return`.
-
-- [x] **Не-ASCII ввод обрезается до одного байта**
-  `[client/gui/widget/terminal/TerminalKeyboardHandler.java:17,41]`, `[TerminalIO.java:99-108]`
-  `putInput((byte) ch)` — кириллица/вставка из буфера → моджибек. Фикс: UTF-8-кодировать.
-
-- [x] **RIS не сбрасывает часть состояния**
-  `[escapes/index/RIS.java:10-45]`
-  Не сбрасываются: `scrollFirst`/`scrollLast`, `savedX`/`savedY`, `altSavedX`/`altSavedY`, `cursorMode`, очередь `input`.
-
-- [x] **SD/RI сдвигают весь буфер — втягивают scrollback в экран**
-  `[buffer/TerminalBufferScrolling.java:84-100]`
-  `shiftDown` всегда сдвигает `[0..478]`; при выросшем scrollback верхняя строка экрана заполняется
-  содержимым scrollback вместо пустой. Верный диапазон — видимая область `[L-24 .. L-1]`.
-
-- [x] **Гонка на серверной очереди input**
-  `[TerminalIO.java:121-135]`, `[TerminalOutput.java:43-46]`
-  `putResponse`/`enqueueInput` пишут под `TerminalOutput.lock`, а `readInput`/`putInput` — под `TerminalIO.lock`.
-  Разные лока, `ByteArrayFIFOQueue` не потокобезопасен → потерянные/перемешанные байты при DSR-запросе + вводе.
-  Фикс: единый лок на оба пути.
-
-- [x] **System.out.println в продакшн-коде**
-  `[TerminalOutput.java:122]`, `[CSIManager.java:164]`, `[CH1.java:15]`, `[CH4.java:15,17,19]`,
-  `[CH5.java:15,17,19,38]`, `[CH7.java:27,29,31]`, `[CH8.java:14,16]`, `[CH9.java:13,15]`,
-  `[CH10.java:15]`, `[ED.java:13]`, `[CH6.java:17,19]`, `[modes/impl/ImplementedPrivateModes.java:94]`
-  Печать на каждый нераспознанный байт/режим → консольный спам. Заменить на логгер.
-
-### Minor
-
-- [x] **TBC очищает только main tabs, HTS пишет в altTabs**
-  `[escapes/csi/TBC.java:13-21]`, `[escapes/HTS.java:8-10]` — согласовать.
-
-- [x] **getInput() щёлкает вид вниз без пометки dirty** — закрыто аудитом №2 (2026-08-23):
-  реализовано в `[TerminalIO.java:43-49]` — `lastRowToDisplay` + `markDirty` всех строк.
-
-- [x] **Dirty-маска сырым `y` при прокрутке**
-  `[CH10.java:104]`, `[CH11.java:91,162]`, `[ECH.java:52]`, `[TerminalBuffer.java:120]`
-  Используют `1 << y` вместо `localY`-трансформации из `setChar` (TerminalBufferWriter.java:138-143).
-
-- [x] **`ColorData()` — локальная переменная `Mode` вместо поля**
-  `[color/TerminalColors.java:117-123]` — `Mode` остаётся null, рендер может упасть по NPE.
-
-- [x] **Двойной `lock.lock()`**
-  `[TerminalOutput.java:43,46]` — реентрантный, не крашит, но маскирует границы. Убрать внутренний.
-
-- [x] **Мёртвые поля Terminal**
-  `[Terminal.java:25,78-81]` — `Use1006`, `continuationByte`, `bytesRead`, `bytesToRead`, `unicode` — удалить.
-
-- [x] **Сериализуемость/размер NBT терминала**
-  `[Terminal.java:50]` — буфер/alt-массивы и `input` помечены `transient` (Ceres создаёт инстанс через
-  no-arg конструктор, экран сбрасывается при загрузке). NBT ~512 КиБ → ~2 КиБ на снимок.
-  `input` и так не сериализовался (поля fastutil transient).
-
-### Nit
-
-- [x] **Дубликат square-глифа в FontAtlas** `[fonts/FontAtlas.java:52-56]`
-  Удалён второй `glyphs.add(square)` — при resize UV делился на 2 дважды.
-- [x] **Дубликат fw_jump.bin в 3 местах + легаси onyx-kernel**
-  `src/main/resources/generated/` удалён (gitignored мёртвый вес, легаси onyx-kernel нигде не читается);
-  копия из `scripts/firmware_files/` удалена — `packageScripts` теперь кладёт fw_jump.bin в zip из `onyxos/`.
-  Один источник: `src/main/resources/onyxos/fw_jump.bin`.
-- [x] **Константы PrivateMode/Mode не используются** — CH2/CH3 захардкожены, заменить на константы.
-
-### Архитектура
-
-- [x] **Дублирование ~60-case таблиц режимов** в CH1/CH2/CH3/CH6 — вынести в один `ModeTable`.
-  Создан `modes/ModeTable.java` — единственный источник истины для 74 private + 4 ANSI режимов
-  (номер из `PrivateMode`/`Mode`, kind PRIVATE/ANSI, флаг implemented). CH1/CH6 делают save/restore
-  через `get()`/`set()` таблицы; CH2/CH3 оставили только спец-тела (DECCOLM/DECOM/mouse/alt-buffer
-  и т.п., ~15/6 case) + `default` через `mode.set(...)`; `PrivateModeState.getMode()` и
-  `ImplementedPrivateModes` тоже делегируют таблице. Поведение идентично — 38 тестов зелёные.
-- [x] **Dirty-механика в buffer-слое** — `TerminalBuffer`/`TerminalLineShifter` знают про `renderers`
-  и `getDirtyMask` (TerminalBuffer.java:42,118-120, TerminalLineShifter.java:80-84,131-135).
-  Перенести в render-слой.
-  Решено (2026-08-18): buffer-слой и CSI-хендлеры больше не трогают `renderers`/`getDirtyMask` —
-  единственная точка распределения dirty — хуки `Terminal.markDirty(mask)` / `Terminal.markAllDirty()`;
-  сам реестр `renderers` живёт в `TerminalClient` (render-слой), маски — в `TerminalRenderer.dirty`.
-- [x] **Договор молчания по `args`/`argCount`** — CSIManager клампает до 10 и подмешивает пустой нулевой слот;
-  каждый хендлер сам фильтрует `args[i]==0`. Нормализовать (0 → default) в CSIManager.
-  Решено (2026-08-18): единый дефолт невозможен — зависит от функции и CSI-модификаторов
-  (DECSTBM vs XTRESTORE на одном `r`; DECSCUSR где 0 валиден; DECSET/DECRST где 0 = пустой слот).
-  Дефолт параметризован per-handler: `CSISequenceHandler.defaultParameters(CSIState)` возвращает
-  значения по слотам, CSIManager подменяет пропущенный/0 перед `execute`; хендлеры без дефолта
-  (CH2/CH3/CH6/CH7/DECREQTPARM) не трогаются и читают args как есть.
-
-### Тесты
-
-- [x] **Снять `@Disabled` с TerminalBufferTest** — декомпозировать `@OnlyIn(Dist.CLIENT)` с `Terminal`
-  (оставить только на `getRenderer()`/`clientTick()`), добавить assert'ы (сейчас тел нет).
-- [x] **Покрыть критичные пути:** CSI-парсер, DECSTBM+DECOM, IL/DL/SU/SD с count>1 и маргинами,
-  alt-буфер 47/1047/1049, SGR 38;2/38;5, pending-wrap (колонка 80), dirty-маску при прокрутке.
-
----
+Первый полный аудит `common/vm/terminal/**`. Все блокеры (Б1 clearLine сбрасывал цвет, Б2 SU
+no-op на свежем терминале, Б3 dirty-маска мапила не те строки), major/minor/nit-находки и
+архитектурные решения закрыты и покрыты тестами. Что осталось как источник истины на будущее:
+`ModeTable` (единый источник для 74 private + 4 ANSI режимов, заменил ~60-case таблицы в
+CH1/CH2/CH3/CH6), `CSISequenceHandler.defaultParameters(CSIState)` (per-handler дефолты args
+вместо единого правила в CSIManager — DECSTBM vs XTRESTORE делят один финал `r`), единственная
+точка dirty-распределения — `Terminal.markDirty(mask)`/`markAllDirty()` (buffer-слой/CSI-хендлеры
+больше не трогают `renderers` напрямую).
 
 ## 32. Аудит блоков на логические баги + PMD (2026-08-18, ветка work)
-
-Аудит мониторов и логики блоков на баги по образцу кабеля (энергия не шла дальше 1-го кабеля из-за «пинг-понга»). Формат: `[файл:строка]`.
-
-### Баги (найдено при аудите)
-
-- [x] **Монитор перекодирует кадры вечно**
-  `[vm/device/SimpleFramebufferDevice.java:72]` — `applyChanges()` конвертил буфер, но не чистил `dirtyLines`
-  (в оригинале OC2 чистит). → `hasChanges()` всегда true → монитор шлёт кадры каждый тик бюджета лоадбалансера даже без изменений.
-  Фикс: `dirtyLines.clear()` внутри lock после конвертации.
-
-- [x] **NetworkSwitch — краш на загрузке (IndexOutOfBoundsException)**
-  `[blockentity/network/switches/NetworkSwitchBlockEntity.java:47-51]` —
-  `new ArrayList<>(BLOCK_FACE_COUNT)` создаёт *пустой* список (capacity 6, size 0), а `adj.set(side.get3DDataValue(), …)` на нём всегда кидает IOOBE.
-  → любой чанк со свитчем крашит сервер при загрузке (свитч в креативе/командой).
-  Фикс: предзаполнить список null'ами перед `set`.
-
-- [x] **NetworkConnector — бесконечный цикл пустых кадров → краш свитча**
-  `[blockentity/network/connector/NetworkConnectorBlockEntity.java:72-77]` —
-  контракт `NetworkInterface.readEthernetFrame()`: «нет данных → null», но `NullNetworkInterface`/свитч/хаб/VXLAN возвращают пустой `byte[0]`.
-  Цикл `while (frame != null && byteBudget > 0)` крутится ~78 раз/тик и шлёт пустые кадры.
-  Пустой кадр в свитче → `SwitchPacketForwarder.forward` → `PacketProcessor.macToLong(frame, 0)` на `byte[0]` → ArrayIndexOutOfBoundsException → краш сервера.
-  Фикс: `while (frame != null && frame.length > 0 && byteBudget > 0)`.
-
-- [x] **PCI Card Cage — потребление энергии мертво**
-  `[blockentity/misc/PciCardCageBlockEntity.java:37]` — `handleMountedChanged(boolean)` пустой → `isMounted` никогда не true → `serverTick()` ранний выход.
-  Плюс `energyPresent` считался только на клиенте (`handleUpdateTag`), на сервере не вычислялся → `has_energy` всегда false в апдейт-теге.
-  Фикс: `isMounted = value;` + вычислять `energyPresent` на сервере и слать через `setChanged()`.
 
 - [x] **BundledRedstone — get/set на разных гранях**
   `[blockentity/misc/redstone/BundledRedstoneCallbacks.java:18,24,29,43]` —
@@ -1644,44 +1501,15 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 4. **44.3** — после, с отдельным планом на PR-B.
 5. **§42 Этап 1** (core/neoforge split, «builds both at once») — после текущего раунда фиксов в мастере.
 
-## 45. GameTest CI: настоящая базовая линия (2026-09-16)
+## 45. GameTest CI: настоящая базовая линия (2026-09-16) — ✅ DONE, см. PR ci/gametest-parallel
 
-Выяснилось: гейм-тесты **никогда не выполнялись** — и локально, и в CI.
-- NeoForge discovery требует `@GameTestHolder` на классе; без него тесты не находились,
-  сервер падал с "No test functions were given!" **с exit code 0** (catch в vanilla Main),
-  workflow-путь `build/test-results/gameTest/*.xml` не существовал, upload с
-  `if-no-files-found: ignore` молча ничего не загружал — CI вечно зелёный.
-- Шаблоны структур: `minecraft:empty` как built-in файла нет (1.21.1), ванильные тесты
-  ссылаются на него только из моющих datapack; для мода обязан быть свой nbt.
+GameTest раньше никогда не выполнялся (ни локально, ни в CI — тихий exit 0). Починено:
+`@GameTestHolder`, свой `empty.nbt`, `GameTestResultReporter` (фейлит на пустой/отсутствующий
+отчёт, закрывает vacuous-green), `ci-work.yml` разрезан на `lint`/`test`/`gametest`.
 
-Чинит PR в work (ветка `ci/gametest-parallel`):
-- [x] `@GameTestHolder(API.MOD_ID)` + `@PrefixGameTestTemplate(false)` +
-      `@GameTest(templateNamespace = TestSupport.TEMPLATE_NAMESPACE)` на все 14 тестов
-      (без явного templateNamespace фильтр `enabledGameTestNamespaces=[oc2r]` вырезает всё).
-- [x] `data/oc2r/structure/empty.nbt` — 9×9×9 воздуха (формат 1.21.1: size/entities/
-      blocks/palette/DataVersion=2865; координаты тестов доходят до x=4).
-- [x] `GameTestResultReporter` (TestReporter через GlobalTestReporter.replaceWith,
-      ставится на RegisterGameTestsEvent — только в gametest-сервере): TSV на тест,
-      gradle-таска `gameTest` конвертирует в JUnit XML и **фейлится при пуст/отсутствует**
-      (закрывает vacuous-green).
-- [x] 9 падающих помечены `required = false` — они теперь видны в отчёте как skipped,
-      но не валят пайплайн. Починка = снять флаг + убрать из списка:
-      - `everyModItemIsCraftable`, `everyRecipeCraftsInCraftingTable` — ассерты устарели
-        после OnyxOS (flash_memory_custom конфликтует с onyxos-образом, silicon — smelting).
-      - `networkConnectorCanBePlaced`, `twoConnectorsCanBeLinked`,
-        `networkConnectorWithCableSmokeTest` — "nothing placed at ..." в свежей структуре
-        (interaction/useItem в fixture, вероятно не хватает опорного блока/фACING).
-      - `busTracksNeighborLifecycle`, `redstoneInterfaceAttachesToComputerViaBus`,
-        `redstoneInterfaceDeviceCountReturnsAfterRemoval` — timeout до конца sequence
-        (поднять timeoutTicks или починить ожидание).
-      - `computerStartsWithoutBootError` — not_enough_energy на старте (нужен placePower).
-- [x] `ci-work.yml` разрезан на `lint` / `test` / `gametest` (параллельно, пул autoscale —
-      подтвердил Dana) + один формальный чек `ci` (result-job с needs). Docs-only пуши CI
-      не запускают (paths-ignore).
-- [x] `test-report.yml`: отдельный репорт Unit Tests (`fail-on-empty: true`).
-
-Осталось после PR: починить 9 optional (задачи выше), вернуть `required = true`,
-прогнать vttest-страницы через GameTest-слой 2 (§44.4) поверх живой инфраструктуры.
+- [ ] Осталось: 9 тестов помечены `required = false` (список причин — в истории git/PR),
+      снять флаг после починки; прогнать vttest-страницы через GameTest-слой 2 (§44.4)
+      поверх живой инфраструктуры.
 
 ## 46. Отложенные хвосты Dana'иного "hard"-таска (terminal sweep chunk 1-3, PR #45/#46/#49)
 
@@ -1693,17 +1521,32 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
       ✅ Частично исправлено: `processContinuation` теперь ресинкается на lead byte (`0xC0` маска)
       вместо stitching low 6 bits в предыдущий кодпоинт; xterm дополнительно эмитит `UCS_REPL`
       за оборванную последовательность, у нас — silent drop (без REPL) до отдельного решения.
-- [ ] (chunk 1, PR #45) Shift-грязные scrollback-строки вне видимого окна не уходят клиенту,
+- [x] (chunk 1, PR #45) Shift-грязные scrollback-строки вне видимого окна не уходят клиенту,
       пока view не переприклеится к низу — pre-existing, лечится текущим mark-all при вводе,
       но не устранено на уровне протокола.
+      ✅ Исправлено 2026-09-17 вместе с chunk 3 (общий корень — см. ниже): `TerminalDiff.capture`
+      раньше на full-refresh отбрасывал `dirty.rows()` целиком и подставлял только
+      `visibleWindowRows()`, из-за чего `Terminal.markAllBufferRowsDirty()` (единственный вызов —
+      `TerminalBuffer.clearScrollback`, ED `3 J`) молча терялся. Теперь `capture` шлёт объединение
+      видимого окна и явно помеченных строк вне него (`TerminalDiff.fullRefreshRows`). Тест
+      `eraseScrollbackFullRefreshShipsOffScreenRowsNotJustVisibleWindow`.
 - [x] (chunk 2, PR #46) XTRESTORE восстанавливает флаг DECCOLM, но не сам resize — xterm
       маршрутизирует восстановление режима через DECSET update path, мы нет.
       ✅ Исправлено: `XTRESTORE.execute` теперь вызывает `resetRendition()` + `setWidth()`
       при восстановлении DECCOLM, как это делают CH2/CH3; тест
       `xtrestoreDeccolmAlsoRestoresColumnWidth`.
-- [ ] (chunk 3, PR #49) >32 shift-операций в одном diff-окне сбрасывают бэклог и форсят
+- [x] (chunk 3, PR #49) >32 shift-операций в одном diff-окне сбрасывают бэклог и форсят
       full refresh — scrollback выше видимого окна расходится с реальностью с этого момента
       (full refresh перерисовывает только видимое окно). Нужен протокольный фикс (geometry
       epoch либо отправка scrollback вместе с full refresh).
+      ✅ Исправлено 2026-09-17: выбран вариант «scrollback вместе с full refresh». Overflow-ветка
+      `Terminal.recordNetworkShift` теперь помечает грязными ВСЕ буферные строки
+      (`networkDirtyRows.set(0, height * SCROLL_BACK_COUNT)`), не только флаг `fullRefresh` —
+      в паре с фиксом `TerminalDiff.capture` выше это даёт самозаживление: один full-refresh
+      diff перевозит весь scrollback и клиент больше не расходится навсегда. Тест
+      `shiftBacklogOverflowSelfHealsFullScrollbackOnNextCapture`. Компромисс: этот diff разово
+      большой (до `height * SCROLL_BACK_COUNT` строк вместо `height`), но триггер редкий
+      (>32 физических сдвигов в одном окне — очень быстрый вывод на упёртой в капасити
+      scrollback), и корректность важнее.
 - [ ] (chunk 3, PR #49) Accepted residue: возможен tear содержимого ячейки между кадрами,
       и мутация палитры на месте (in-place) — не блокер, но известная неточность рендера.

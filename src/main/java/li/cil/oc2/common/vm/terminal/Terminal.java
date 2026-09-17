@@ -811,9 +811,11 @@ public class Terminal {
      * Record one main-buffer shift's resolved memmove geometry for the network diff sink. The
      * client replays exactly this (see the shift-op replay in TerminalDiff.apply), so its
      * scrollback copy stays exact for rows the screen-row dirty mask cannot address (anything
-     * above the visible window) — for as long as the op backlog survives. Bounded degradation:
-     * op overflow drops the backlog and forces a full refresh (below), which repaints only the
-     * visible window; scrollback above it stays diverged until the terminal is recreated.
+     * above the visible window) — for as long as the op backlog survives. Op overflow drops the
+     * backlog and marks every buffer row dirty (below) instead of just the visible window, so
+     * the resulting full refresh re-ships the entire scrollback and self-heals in one diff —
+     * see {@link TerminalDiff#capture} (§46 sweep tail: this used to only flag a full refresh of
+     * the visible window, leaving scrollback above it permanently diverged).
      */
     public void recordNetworkShift(
             final int copySrcRow,
@@ -824,12 +826,13 @@ public class Terminal {
         networkDirtyLock.lock();
         try {
             if (networkShiftOps.size() >= MAX_PENDING_SHIFT_OPS * SHIFT_OP_FIELDS) {
-                // Degraded mode: drop the backlog and force a full re-ship of the visible
-                // window. Scrollback above the window does NOT self-heal — the full refresh
-                // paints only the visible rows, so the client's above-window copy diverges
-                // from here on (trigger: > MAX_PENDING_SHIFT_OPS shifts inside one diff
-                // window, i.e. very fast output at absolute capacity).
+                // Degraded mode: drop the backlog (trigger: > MAX_PENDING_SHIFT_OPS shifts
+                // inside one diff window, i.e. very fast output at absolute capacity) and mark
+                // the WHOLE buffer dirty, not just the visible window — TerminalDiff.capture
+                // ships the union of dirty rows and the visible window on a full refresh, so
+                // this one diff re-syncs scrollback instead of leaving it diverged forever.
                 networkShiftOps.clear();
+                networkDirtyRows.set(0, height * SCROLL_BACK_COUNT);
                 networkNeedsFullRefresh = true;
                 return;
             }

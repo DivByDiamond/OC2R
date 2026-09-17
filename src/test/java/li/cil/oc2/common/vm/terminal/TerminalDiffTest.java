@@ -336,6 +336,45 @@ public class TerminalDiffTest {
                 "client keeps the server's visible-window content across the combined resize");
     }
 
+    // §46 (chunk 1/3 sweep tails): a full refresh used to discard any dirty rows outside the
+    // visible window in favor of just re-shipping the window, so scrollback above it silently
+    // diverged from the server and never self-healed. TerminalDiff.capture now ships the union
+    // of the visible window and any explicitly marked off-screen rows on a full refresh.
+
+    @Test
+    void eraseScrollbackFullRefreshShipsOffScreenRowsNotJustVisibleWindow() {
+        // Push content into scrollback, then erase it (ED 3 J) -- Terminal.markAllBufferRowsDirty
+        // marks every buffer row (not just the visible height rows), and the fix under test is
+        // that capture() must actually include those in a full-refresh snapshot instead of
+        // silently substituting just the visible window.
+        write(server, "\n".repeat(Terminal.HEIGHT * 2)); // build up some scrollback
+        write(server, CSI + "3J"); // ED 3 J: erase scrollback (xterm E3)
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertTrue(snapshot.reset(), "erase-scrollback forces a full refresh");
+        assertEquals(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, snapshot.rows().length,
+                "erase-scrollback must re-ship the WHOLE buffer, not just the visible window,"
+                        + " or a client's off-screen scrollback copy is left stale forever");
+    }
+
+    @Test
+    void shiftBacklogOverflowSelfHealsFullScrollbackOnNextCapture() {
+        // Saturate scrollback to capacity first: below capacity, incrementLastLineToDisplay's
+        // growth phase just slides the window (no physical shift, nothing recorded), so the
+        // backlog only fills once every further newline is a real shiftUpOne.
+        write(server, "\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
+        TerminalDiff.capture(server); // drain, so the backlog below starts from zero
+
+        // MAX_PENDING_SHIFT_OPS is 32 (Terminal.java) -- 40 newlines overflows it.
+        write(server, "\n".repeat(40));
+
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertTrue(snapshot.reset(), "shift-backlog overflow forces a full refresh");
+        assertEquals(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, snapshot.rows().length,
+                "overflow must re-ship the WHOLE buffer so scrollback self-heals in one diff"
+                        + " instead of staying permanently diverged");
+    }
+
     @Test
     void applyRefusesOversizedSnapshotGeometry() {
         // The snapshot dimensions feed straight into setWidth/resizeHeight on the client. A

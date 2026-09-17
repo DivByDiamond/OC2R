@@ -5,6 +5,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -159,7 +160,33 @@ public final class TerminalDiff {
     public static Snapshot capture(final Terminal terminal) {
         final Terminal.NetworkDirty dirty = terminal.consumeNetworkDirty();
         final boolean full = dirty.fullRefresh();
-        return build(terminal, full, false, dirty.shiftOps(), full ? visibleWindowRows(terminal) : dirty.rows());
+        final int[] rows = full ? fullRefreshRows(terminal, dirty.rows()) : dirty.rows();
+        return build(terminal, full, false, dirty.shiftOps(), rows);
+    }
+
+    /**
+     * §46 (chunk 1/3 sweep tails): a full refresh always re-ships the visible window, but rows
+     * explicitly marked dirty OUTSIDE it — erase-scrollback ({@code ED 3 J}, which marks every
+     * buffer row via {@link Terminal#markAllBufferRowsDirty}) or a shift-op backlog overflow
+     * (see {@link Terminal#recordNetworkShift}) — must ride along too. Previously {@code capture}
+     * discarded {@code dirty.rows()} outright on a full refresh in favor of just the visible
+     * window, so the client's off-screen scrollback copy silently diverged from server state and
+     * never self-healed (documented as accepted/bounded degradation in todo.md §46 — this closes
+     * it: the extra rows now ship with the same full-refresh diff instead of being dropped).
+     */
+    private static int[] fullRefreshRows(final Terminal terminal, final int... extraRows) {
+        final int[] visible = visibleWindowRows(terminal);
+        if (extraRows.length == 0) {
+            return visible;
+        }
+        final BitSet union = new BitSet();
+        for (final int row : visible) {
+            union.set(row);
+        }
+        for (final int row : extraRows) {
+            union.set(row);
+        }
+        return union.stream().toArray();
     }
 
     /** Builds a full-screen snapshot flagged as reset (used after VM restarts / RIS). */
