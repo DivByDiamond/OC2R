@@ -722,6 +722,24 @@ public class Terminal {
     }
 
     /**
+     * Marks every absolute buffer row (visible + scrollback) dirty for the network diff and
+     * forces a full renderer repaint. Used by erase-scrollback (ED 3 J) where the cleared
+     * scrollback rows are not covered by the screen-row mask alone — the client's scrollback
+     * copy must be brought to spaces. The buffer content has already been moved/cleared by the
+     * caller; this just publishes the dirty state to both sinks.
+     */
+    public void markAllBufferRowsDirty() {
+        networkDirtyLock.lock();
+        try {
+            networkDirtyRows.set(0, height * SCROLL_BACK_COUNT);
+            networkNeedsFullRefresh = true;
+        } finally {
+            networkDirtyLock.unlock();
+        }
+        renderers.forEach(model -> model.getDirtyMask().set(-1L));
+    }
+
+    /**
      * Converts a screen-row dirty bit mask into absolute buffer rows for the network diff
      * sink. Alt-buffer rows are indexed by screen row directly; main-buffer screen row
      * {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - height}.

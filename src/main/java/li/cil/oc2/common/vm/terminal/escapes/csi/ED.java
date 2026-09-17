@@ -37,6 +37,8 @@ public class ED extends CSISequenceHandler {
                 }
                 case 2 -> // Entire screen
                         terminal.bufferManager.clear();
+                case 3 -> // Erase scrollback (xterm E3)
+                        terminal.bufferManager.clearScrollback();
                 default -> {}
             }
         }

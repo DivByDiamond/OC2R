@@ -847,7 +847,7 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   `x==width` no-op, HTS молча теряет tab stop последней колонки. Полноценное решение —
   pending-wrap флаг вместо `x == width`.
 
-- [ ] **m3 — `CSI 3 J` (erase scrollback, xterm E3) молча игнорируется** `[escapes/csi/ED.java:26-39]`
+- [x] **m3 — `CSI 3 J` (erase scrollback, xterm E3) молча игнорируется** `[escapes/csi/ED.java:26-39]` ✅ — `ED:39` → `bufferManager.clearScrollback()` (копия видимого окна в начало, хвост blank, `lastRowToDisplay(Max)=height`, `markAllBufferRowsDirty`).
 
 - [x] **m4 — `CSI n` без параметра не отвечает** — закрыто PR #28 (2026-08-25):
   `DSR.defaultParameters()` теперь возвращает `{5}`, bare `CSI n` резолвится в

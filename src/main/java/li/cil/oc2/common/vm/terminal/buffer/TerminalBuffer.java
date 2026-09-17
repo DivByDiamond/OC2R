@@ -33,6 +33,47 @@ public class TerminalBuffer {
         terminal.markAllDirty();
     }
 
+    /**
+     * Erase scrollback (ED 3 J, xterm's E3 — erase saved lines). Clears the scrollback buffer
+     * above the visible window and resets the window to the bottom, keeping the visible screen
+     * content. No-op on alt buffer or when scrollback is already empty.
+     */
+    public void clearScrollback() {
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) return;
+        if (terminal.lastRowToDisplayMax <= terminal.height) return;
+        final int w = terminal.width;
+        final int h = terminal.height;
+        final int visibleStart = terminal.lastRowToDisplayMax - h;
+        final int capacityRows = h * Terminal.SCROLL_BACK_COUNT;
+        // Move the visible window to the front of the buffer.
+        if (visibleStart != 0) {
+            final int visibleCells = h * w;
+            System.arraycopy(terminal.buffer, visibleStart * w, terminal.buffer, 0, visibleCells);
+            System.arraycopy(terminal.colors, visibleStart * w, terminal.colors, 0, visibleCells);
+            System.arraycopy(
+                    terminal.colorsBackground, visibleStart * w, terminal.colorsBackground, 0, visibleCells);
+            System.arraycopy(terminal.styles, visibleStart * w, terminal.styles, 0, visibleCells);
+        }
+        // Clear the tail (old scrollback + freed tail) to spaces.
+        final int start = h * w;
+        final int end = capacityRows * w;
+        Arrays.fill(terminal.buffer, start, end, ' ');
+        Arrays.fill(
+                terminal.colors,
+                start,
+                end,
+                TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.fill(
+                terminal.colorsBackground,
+                start,
+                end,
+                terminal.currentBackgroundColor().copy());
+        Arrays.fill(terminal.styles, start, end, TerminalColors.DEFAULT_STYLE);
+        terminal.lastRowToDisplayMax = h;
+        terminal.lastRowToDisplay = h;
+        terminal.markAllBufferRowsDirty();
+    }
+
     public void clearAlt() {
         Arrays.fill(terminal.altBuffer, ' ');
         Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
