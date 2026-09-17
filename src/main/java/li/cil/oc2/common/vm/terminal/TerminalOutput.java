@@ -347,6 +347,11 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
             // were, so a subsequent scroll with non-full margins would operate on a stale region.
             terminal.scrollFirst = 0;
             terminal.scrollLast = terminal.height - 1;
+            // DECSLRM left/right margins reset alongside the vertical ones (DECSTR/RIS reset
+            // both axes; xterm's VTReset(full=false) also clears DECSLRM) - otherwise a stale
+            // horizontal margin survives DECALN and bounds the next ICH/DCH/IL/DL.
+            terminal.scrollColFirst = 0;
+            terminal.scrollColLast = terminal.width - 1;
             terminal.setCursorPos(0, 0);
             if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
                 Arrays.fill(terminal.altBuffer, 'E');

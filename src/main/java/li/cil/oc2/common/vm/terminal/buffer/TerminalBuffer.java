@@ -275,7 +275,14 @@ public class TerminalBuffer {
      * moves a column sub-range one row at a time and never touches scrollback.
      */
     public void copyRowRange(final int srcY, final int dstY, final int x, final int count) {
-        final int n = Math.clamp(count, 0, terminal.width - x);
+        // Defensive bounds: callers (IL/DL) already compute correct row/column ranges, but this
+        // method is public within the package, so guard the screen-row bounds and the horizontal
+        // DECSLRM margin here too instead of trusting every future caller to get it right.
+        if (srcY < 0 || srcY >= terminal.height || dstY < 0 || dstY >= terminal.height) return;
+        final int marginLimit = x <= terminal.scrollColLast
+                ? terminal.scrollColLast - x + 1
+                : terminal.width - x;
+        final int n = Math.clamp(count, 0, Math.min(marginLimit, terminal.width - x));
         if (n == 0) return;
         final int srcIndex = getLinearIndex(srcY, x);
         final int dstIndex = getLinearIndex(dstY, x);

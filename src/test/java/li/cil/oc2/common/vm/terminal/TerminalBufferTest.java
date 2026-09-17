@@ -2355,4 +2355,28 @@ public class TerminalBufferTest {
         terminal.resizeWidth(terminal.width - 10);
         assertEquals(terminal.width - 1, terminal.scrollColLast, "clamped, not reset (DECSCPP is non-destructive)");
     }
+
+    @Test
+    void resizeWidthClampsColumnMarginsPreservingLeftLessThanRight() {
+        // §51 follow-up review: a left margin of 10 shrinking to width 5 used to clamp
+        // scrollColLast and scrollColFirst to the same column (4, 4), violating the
+        // left < right invariant the DECSLRM handler (CH6) itself enforces.
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "11;80s"); // left margin at column 10 (0-indexed)
+        terminal.resizeWidth(5);
+        assertTrue(terminal.scrollColFirst < terminal.scrollColLast,
+                "left margin must stay strictly less than right margin after an aggressive shrink");
+    }
+
+    @Test
+    void decalnResetsHorizontalMargins() {
+        // §51 follow-up review: DECALN (ESC # 8) reset the vertical scroll region but left a
+        // DECSLRM horizontal margin stale, so the next ICH/DCH/IL/DL was bounded by a margin
+        // that no longer made sense post-alignment-fill.
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "11;20s"); // narrow horizontal margin
+        write(terminal, ESC + "#8"); // DECALN
+        assertEquals(0, terminal.scrollColFirst, "DECALN resets the left margin to column 0");
+        assertEquals(terminal.width - 1, terminal.scrollColLast, "DECALN resets the right margin to the full width");
+    }
 }

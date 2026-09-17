@@ -233,6 +233,12 @@ final class TerminalResizer {
         terminal.scrollColLast = terminal.scrollColLast == oldWidth - 1
                 ? newWidth - 1
                 : Math.min(terminal.scrollColLast, newWidth - 1);
-        terminal.scrollColFirst = Math.min(terminal.scrollColFirst, terminal.scrollColLast);
+        // Preserve the left < right invariant the DECSLRM handler enforces (CH6 rejects Pl >=
+        // Pr): a plain Math.min(scrollColFirst, scrollColLast) can still produce left ==
+        // right when shrinking (e.g. margins [10, 79] resized to width 5 -> scrollColLast
+        // clamps to 4, so scrollColFirst would land on 4 too). Clamp one column short of
+        // scrollColLast instead, floored at 0 for width-1 terminals.
+        terminal.scrollColFirst =
+                Math.min(terminal.scrollColFirst, Math.max(0, terminal.scrollColLast - 1));
     }
 }
