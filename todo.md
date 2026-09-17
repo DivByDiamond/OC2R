@@ -1015,9 +1015,9 @@ Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в �
   клампит `moveCursorBy` через `Math.clamp(dx, -width, width)`; тесты `cudMovesCursorDownAndClampsSaturatedCount` и т.д.
 - [x] Дубликат RegistryUtils: `common/util/RegistryUtils.java` ≡ `common/util/item/RegistryUtils.java`,
   обе живые, раздельная статика → оставить одну. ✅ Удален `common/util/item/RegistryUtils.java`, `Main.java:26` переключен на `common.util.RegistryUtils`.
-- [ ] System.out в проде (~14 мест): ConfigManager.java:21, VxlanBlockEntity.java:102,
+- [x] System.out в проде (~14 мест): ConfigManager.java:21, VxlanBlockEntity.java:102,
   SwitchLog.java:28-51, TerminalMouseHandler.java:82,146, ByteBufferFlashStorageDevice.java:111,
-  PciRootPortDevice.java:54-78 → SLF4J.
+  PciRootPortDevice.java:54-78 → SLF4J. ✅ Закрыто ступенью A (00a7aa7): 13× System.out → Log4j, проверки `grep -r System.out src/main` пусто.
 - [ ] Сборка: ContainedDeps ссылается на несуществующий commons-collections4 (build.gradle.kts:331);
   дрейф sedna-buildroot 0.0.70 vs 0.0.72-oc2r1 (gradle.properties:20 vs settings.gradle.kts:30);
   architectury/markdownmanual дважды на classpath (fileTree libs + maven).
