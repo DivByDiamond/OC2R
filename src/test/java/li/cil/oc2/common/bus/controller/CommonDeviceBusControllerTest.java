@@ -3,12 +3,9 @@ package li.cil.oc2.common.bus.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.*;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
-import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
-import li.cil.oc2.common.bus.controller.event.DevicesChangedEvent;
 import org.junit.jupiter.api.*;
 
 class CommonDeviceBusControllerTest {

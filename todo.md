@@ -1496,7 +1496,7 @@ GameTest раньше никогда не выполнялся (ни локал�
 
 ### Архитектура (средний приоритет, не блокер)
 
-- [ ] **А1 — Terminal God 973 строки** `[Terminal.java:27]` → выделить `TerminalNetworkState`/`TerminalRenderState`, `ModeTable` уже выделен, но `buffer/colors/styles` + dirty + seqlock остались.
+- [~] **А1 — Terminal God 973 строки** `[Terminal.java:27]` → частично: `TerminalNetworkState` (dirty rows/shift-ops/palette revision) и `TerminalRenderState` (lazy client handle) выделены (2026-09-17), Terminal.java 973→842 строк. Остаётся: `buffer/colors/styles` геометрия (`setWidth/resizeWidth/resizeHeight`, ~450 строк) — самая рискованная часть (seqlock, кросс-мутации полей), ещё не вынесена, всё ещё >200 строк на файл.
 - [ ] **А2 — циклы пакетов** `blockentity↔bus.provider`, `vm↔bus.device.vm` → разорвать через `DeviceFactory`/`api` интерфейс.
 - [ ] **А3 — теневое имя TunnelManager** `[NetworkTunnelDevice.java:42]` внутренний `TunnelManager` перекрывает `common.vxlan.TunnelManager` → переименовать в `TunnelEndpointRegistry`.
 

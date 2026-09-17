@@ -35,9 +35,6 @@ class BlockDeviceBusControllerTest {
 
     @Test
     void testDisposeClearsChunksAndRemovesListeners() {
-        controller.dispose();
-        
-        // Should complete without exception
-        assertTrue(true);
+        assertDoesNotThrow(controller::dispose);
     }
 }

@@ -3,17 +3,14 @@ package li.cil.oc2.common.vm;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.concurrent.*;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
-import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
 import li.cil.sedna.riscv.R5CPU;
 import li.cil.oc2.common.bus.adapter.RPCDeviceBusAdapter;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
-import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.*;
 
 class VMRunnerTest {
@@ -35,7 +32,7 @@ class VMRunnerTest {
         DeviceBusElement rootElement = mock(DeviceBusElement.class);
         CommonDeviceBusController busController = new CommonDeviceBusController(rootElement, 100);
         
-        AbstractVirtualMachine vm = new TestVirtualMachine(busController);
+        AbstractVirtualMachine vm = new StubVirtualMachine(busController);
         
         // Set up the state with our mocks
         vm.state.board = board;
@@ -46,8 +43,8 @@ class VMRunnerTest {
     }
 
     // Concrete test implementation of AbstractVirtualMachine
-    static class TestVirtualMachine extends AbstractVirtualMachine {
-        public TestVirtualMachine(CommonDeviceBusController busController) {
+    static class StubVirtualMachine extends AbstractVirtualMachine {
+        public StubVirtualMachine(CommonDeviceBusController busController) {
             super(busController);
         }
 

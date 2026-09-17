@@ -1,10 +1,8 @@
 package li.cil.oc2.common.vm.terminal;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
@@ -69,13 +67,6 @@ public class Terminal {
     // static defaults stay immutable). Transient — ceres re-inits via the no-arg
     // constructor -> RIS -> getDefaultPalette256(), same lifecycle as the buffers.
     public transient int[] palette256;
-    // Monotonic revision bumped on every palette256 write (RIS/OSC4/OSC104). The network diff
-    // ships the palette to clients only when this differs from lastSentPaletteRevision, so a
-    // server-side OSC 4 redefinition actually reaches the player's screen (the render path
-    // reads the client Terminal's palette256). Transient: a freshly-loaded terminal starts at
-    // revision 0 with the default palette; runtime mutations sync via the diff, not persistence.
-    private transient int paletteRevision = 0;
-    private transient int lastSentPaletteRevision = -1;
     public byte style;
 
     public static final int SCROLL_BACK_COUNT = 20;
@@ -170,21 +161,10 @@ public class Terminal {
 
     public final transient Set<RendererModel> renderers =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-    // Network diff sink: absolute buffer rows changed since the last consume. The server
-    // serializes these rows into TerminalDiff messages; the client never parses VT100.
-    private transient BitSet networkDirtyRows = new BitSet(HEIGHT * SCROLL_BACK_COUNT);
-    // Scrollback shift operations accumulated since the last consume — quintuples of the
-    // RESOLVED memmove geometry: copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows
-    // (main buffer only; alt shifts are fully covered by screen-row marks). A shift moves
-    // content at absolute indices WITHOUT the moved rows necessarily being screen-visible,
-    // so row payloads alone cannot keep a client's scrolled-back copy in sync — the operation
-    // itself crosses the wire and the client replays the identical memmove. Capped: a burst
-    // beyond the cap degrades to a full refresh (visible window re-ships).
-    private static final int MAX_PENDING_SHIFT_OPS = 32;
-    private static final int SHIFT_OP_FIELDS = 5;
-    private final transient IntArrayList networkShiftOps = new IntArrayList();
-    private final transient ReentrantLock networkDirtyLock = new ReentrantLock();
-    private transient boolean networkNeedsFullRefresh;
+    // Network diff dirty-tracking (rows/shift-ops/palette revision) — extracted to
+    // TerminalNetworkState (А1); geometry inputs (height, lastRowToDisplay, alt state) are
+    // passed in per call since this terminal's own fields are the source of truth for those.
+    private final transient TerminalNetworkState networkState = new TerminalNetworkState(height);
     public transient boolean displayOnly;
     public transient boolean hasPendingBell;
     public boolean useG0 = true;
@@ -222,8 +202,7 @@ public class Terminal {
     transient DCSManager dcsManager = new DCSManager();
     transient APCManager apcManager = new APCManager();
     public transient TerminalIO io = new TerminalIO(this);
-    private transient volatile TerminalClient clientInstance;
-    private final transient ReentrantLock clientLock = new ReentrantLock();
+    private final transient TerminalRenderState renderState = new TerminalRenderState(this);
 
     public Terminal() {
         bufferManager = new TerminalBuffer(this);
@@ -477,12 +456,7 @@ public class Terminal {
         // the field swap and here would otherwise ship a partial diff at the new width with no
         // rows, blanking clients that apply it destructively (same seam class as #38 F1).
         geometryVersion.incrementAndGet();
-        networkDirtyLock.lock();
-        try {
-            networkNeedsFullRefresh = true;
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.markAllDirty();
 
         // Mark all rows dirty — BOTH sinks. The renderer mask drives local redraw; markAllDirty
         // drives the network diff (it also sets the renderer mask internally). The network mark
@@ -694,15 +668,9 @@ public class Terminal {
             setCursorPos(this.x, newY);
         }
 
-        // Reallocate the network dirty BitSet for the new capacity and arm the full refresh
+        // Reallocate the network dirty sink for the new capacity and arm the full refresh
         geometryVersion.incrementAndGet();
-        networkDirtyLock.lock();
-        try {
-            networkDirtyRows = new BitSet(newMainRows);
-            networkNeedsFullRefresh = true;
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.reallocate(newMainRows);
 
         // Mark all rows dirty — BOTH sinks (same rationale as resizeWidth).
         markAllDirty();
@@ -710,7 +678,7 @@ public class Terminal {
 
     @OnlyIn(Dist.CLIENT)
     public RendererView getRenderer() {
-        return client().getRenderer();
+        return renderState.getRenderer();
     }
 
     public void setCursorPos(final int x, final int y) {
@@ -774,16 +742,17 @@ public class Terminal {
 
     @OnlyIn(Dist.CLIENT)
     public void setDisplayOnly(final boolean value) {
-        client().setDisplayOnly(value);
+        renderState.setDisplayOnly(value);
     }
 
     @OnlyIn(Dist.CLIENT)
     public void releaseRenderer(final RendererView renderer) {
-        client().releaseRenderer(renderer);
+        renderState.releaseRenderer(renderer);
     }
 
     public void markDirty(final long mask) {
-        recordNetworkDirtyScreenRows(mask);
+        final boolean alt = currentPrivateModeState.isAltBufferEnabled();
+        networkState.recordDirtyScreenRows(mask, height, alt, lastRowToDisplay);
         renderers.forEach(
                 model ->
                         model.getDirtyMask()
@@ -791,12 +760,7 @@ public class Terminal {
     }
 
     public void markAllDirty() {
-        networkDirtyLock.lock();
-        try {
-            networkNeedsFullRefresh = true;
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.markAllDirty();
         renderers.forEach(model -> model.getDirtyMask().set(-1L));
     }
 
@@ -808,39 +772,8 @@ public class Terminal {
      * caller; this just publishes the dirty state to both sinks.
      */
     public void markAllBufferRowsDirty() {
-        networkDirtyLock.lock();
-        try {
-            networkDirtyRows.set(0, height * SCROLL_BACK_COUNT);
-            networkNeedsFullRefresh = true;
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.markAllBufferRowsDirty(height);
         renderers.forEach(model -> model.getDirtyMask().set(-1L));
-    }
-
-    /**
-     * Converts a screen-row dirty bit mask into absolute buffer rows for the network diff
-     * sink. Alt-buffer rows are indexed by screen row directly; main-buffer screen row
-     * {@code s} lives at absolute buffer row {@code s + lastRowToDisplay - height}.
-     */
-    private void recordNetworkDirtyScreenRows(final long mask) {
-        if (mask == 0) return;
-        final boolean alt = currentPrivateModeState.isAltBufferEnabled();
-        networkDirtyLock.lock();
-        try {
-            for (int s = 0; s < height; s++) {
-                if ((mask & (1L << s)) == 0) continue;
-                final int row = alt ? s : s + lastRowToDisplay - height;
-                // Bound is the LOGICAL capacity (height * SCROLL_BACK_COUNT), not
-                // networkDirtyRows.size() — a BitSet rounds its capacity up to 64-word
-                // multiples, so .size() would admit rows beyond the buffer's real end.
-                if (row >= 0 && row < height * SCROLL_BACK_COUNT) {
-                    networkDirtyRows.set(row);
-                }
-            }
-        } finally {
-            networkDirtyLock.unlock();
-        }
     }
 
     /**
@@ -848,9 +781,9 @@ public class Terminal {
      * client replays exactly this (see the shift-op replay in TerminalDiff.apply), so its
      * scrollback copy stays exact for rows the screen-row dirty mask cannot address (anything
      * above the visible window) — for as long as the op backlog survives. Op overflow drops the
-     * backlog and marks every buffer row dirty (below) instead of just the visible window, so
-     * the resulting full refresh re-ships the entire scrollback and self-heals in one diff —
-     * see {@link TerminalDiff#capture} (§46 sweep tail: this used to only flag a full refresh of
+     * backlog and marks every buffer row dirty instead of just the visible window, so the
+     * resulting full refresh re-ships the entire scrollback and self-heals in one diff — see
+     * {@link TerminalDiff#capture} (§46 sweep tail: this used to only flag a full refresh of
      * the visible window, leaving scrollback above it permanently diverged).
      */
     public void recordNetworkShift(
@@ -859,27 +792,7 @@ public class Terminal {
             final int copyRows,
             final int blankStartRow,
             final int blankRows) {
-        networkDirtyLock.lock();
-        try {
-            if (networkShiftOps.size() >= MAX_PENDING_SHIFT_OPS * SHIFT_OP_FIELDS) {
-                // Degraded mode: drop the backlog (trigger: > MAX_PENDING_SHIFT_OPS shifts
-                // inside one diff window, i.e. very fast output at absolute capacity) and mark
-                // the WHOLE buffer dirty, not just the visible window — TerminalDiff.capture
-                // ships the union of dirty rows and the visible window on a full refresh, so
-                // this one diff re-syncs scrollback instead of leaving it diverged forever.
-                networkShiftOps.clear();
-                networkDirtyRows.set(0, height * SCROLL_BACK_COUNT);
-                networkNeedsFullRefresh = true;
-                return;
-            }
-            networkShiftOps.add(copySrcRow);
-            networkShiftOps.add(copyDstRow);
-            networkShiftOps.add(copyRows);
-            networkShiftOps.add(blankStartRow);
-            networkShiftOps.add(blankRows);
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.recordShift(copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows, height);
     }
 
     /** Dirty state since the last consume: full-refresh request plus changed buffer rows. */
@@ -900,32 +813,15 @@ public class Terminal {
     }
 
     public NetworkDirty consumeNetworkDirty() {
-        networkDirtyLock.lock();
-        try {
-            final boolean full = networkNeedsFullRefresh;
-            final int[] rows = networkDirtyRows.stream().toArray();
-            final int[] ops = networkShiftOps.toIntArray();
-            networkNeedsFullRefresh = false;
-            networkDirtyRows.clear();
-            networkShiftOps.clear();
-            return new NetworkDirty(full, rows, ops);
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        return networkState.consume();
     }
 
     /**
      * Bump the palette revision so the next network diff ships the palette to clients. Called
-     * wherever palette256 is written (RIS/OSC4/OSC104). Under networkDirtyLock to keep the
-     * revision check in consumePaletteDirty atomic with the bump.
+     * wherever palette256 is written (RIS/OSC4/OSC104).
      */
     public void markPaletteDirty() {
-        networkDirtyLock.lock();
-        try {
-            paletteRevision++;
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        networkState.markPaletteDirty();
     }
 
     /**
@@ -933,41 +829,14 @@ public class Terminal {
      * null if unchanged (zero steady-state cost). {@code force} is set by the reset path
      * (captureFull) so a RIS reset snapshot always carries the palette even when the revision
      * hasn't moved — otherwise a client that missed an earlier change would keep a stale one.
-     * Updates lastSentPaletteRevision atomically.
      */
     @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // null is a load-bearing sentinel: the Snapshot record + stream codec use it to mean "palette unchanged this diff" (skip the ~1 KiB payload). An empty array can't express absence, and Optional<int[]> allocates on the hot path.
     public int[] consumePaletteDirty(final boolean force) {
-        networkDirtyLock.lock();
-        try {
-            if (!force && paletteRevision == lastSentPaletteRevision) {
-                return null;
-            }
-            lastSentPaletteRevision = paletteRevision;
-            return palette256.clone();
-        } finally {
-            networkDirtyLock.unlock();
-        }
+        return networkState.consumePaletteDirty(force, palette256);
     }
 
     @OnlyIn(Dist.CLIENT)
     public void clientTick() {
-        client().clientTick();
-    }
-
-    private TerminalClient client() {
-        TerminalClient result = clientInstance;
-        if (result == null) {
-            clientLock.lock();
-            try {
-                result = clientInstance;
-                if (result == null) {
-                    result = new TerminalClient(this);
-                    clientInstance = result;
-                }
-            } finally {
-                clientLock.unlock();
-            }
-        }
-        return result;
+        renderState.clientTick();
     }
 }
