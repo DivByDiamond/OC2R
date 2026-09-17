@@ -11,19 +11,11 @@ import org.junit.jupiter.api.*;
 class CommonDeviceBusControllerTest {
 
     DeviceBusElement rootElement;
-    DeviceBusElement element1;
-    DeviceBusElement element2;
-    Device device1;
-    Device device2;
     CommonDeviceBusController controller;
 
     @BeforeEach
     void setUp() {
         rootElement = mock(DeviceBusElement.class);
-        element1 = mock(DeviceBusElement.class);
-        element2 = mock(DeviceBusElement.class);
-        device1 = mock(Device.class);
-        device2 = mock(Device.class);
         controller = new CommonDeviceBusController(rootElement, 100);
     }
 

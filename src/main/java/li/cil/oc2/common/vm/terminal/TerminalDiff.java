@@ -85,10 +85,12 @@ public final class TerminalDiff {
             int[] palette,
             byte[] lineAttrs) {
         public Snapshot {
-            // Wire payload arrays are owned copies: the codec and apply treat snapshots as
-            // immutable, and defensive copies keep the record clean without extending the
-            // SpotBugs baseline. rowData's outer array is copied (the per-row payloads are
-            // never mutated in place by either side). Trivial cost at diff rates.
+            // Wire payload arrays are owned copies on the way in; every accessor (below) clones
+            // again on the way out, so a caller can never observe or mutate this record's actual
+            // backing arrays. rowData's outer array is copied here (the per-row payloads are
+            // never mutated in place by either side). Trivial cost at diff rates — hot call sites
+            // (TerminalDiff.apply's per-row loop) hoist the accessor result into a local instead
+            // of calling it per element.
             rows = rows.clone();
             rowData = rowData.clone();
             shiftOps = shiftOps.clone();
@@ -103,6 +105,26 @@ public final class TerminalDiff {
         @Override
         public int[] shiftOps() {
             return shiftOps.clone();
+        }
+
+        @Override
+        public int[] rows() {
+            return rows.clone();
+        }
+
+        @Override
+        public byte[][] rowData() {
+            return rowData.clone();
+        }
+
+        @Override
+        public int[] palette() {
+            return palette != null ? palette.clone() : null;
+        }
+
+        @Override
+        public byte[] lineAttrs() {
+            return lineAttrs != null ? lineAttrs.clone() : null;
         }
     }
 
@@ -472,17 +494,20 @@ public final class TerminalDiff {
         // non-negative bounded value; this handles the residual mismatch (e.g. rows.length !=
         // rowData.length) by decoding only the overlap — missing rows stay as they were, extra
         // rowData is ignored (stream integrity was already preserved by reading it).
-        final int rowPairs = Math.min(s.rows().length, s.rowData().length);
+        final int[] rows = s.rows();
+        final byte[][] rowData = s.rowData();
+        final int rowPairs = Math.min(rows.length, rowData.length);
         for (int i = 0; i < rowPairs; i++) {
-            deserializeRow(terminal, alt, s.rows()[i], s.rowData()[i]);
+            deserializeRow(terminal, alt, rows[i], rowData[i]);
         }
         // Per-row double-size line attributes (ESC #3/#4/#5/#6), parallel to rows. Guarded like
         // rowData above: only the overlap is applied, missing rows keep their prior attribute.
-        if (s.lineAttrs() != null) {
-            final int attrPairs = Math.min(s.rows().length, s.lineAttrs().length);
+        final byte[] lineAttrs = s.lineAttrs();
+        if (lineAttrs != null) {
+            final int attrPairs = Math.min(rows.length, lineAttrs.length);
             for (int i = 0; i < attrPairs; i++) {
-                final int absRow = s.rows()[i];
-                final byte attr = s.lineAttrs()[i];
+                final int absRow = rows[i];
+                final byte attr = lineAttrs[i];
                 if (alt) {
                     if (absRow >= 0 && absRow < terminal.altLineAttrs.length) {
                         terminal.altLineAttrs[absRow] = attr;
@@ -522,11 +547,12 @@ public final class TerminalDiff {
         if (s.bell()) {
             terminal.hasPendingBell = true;
         }
-        // Apply a synced palette (clone so the client's array stays independent of the server's,
-        // matching the per-instance discipline). Null = unchanged this diff. Guarded to the
-        // canonical 256-entry xterm palette to avoid AIOOBE on malformed payloads.
-        if (s.palette() != null && s.palette().length == PALETTE_SIZE) {
-            terminal.palette256 = s.palette().clone();
+        // Apply a synced palette (accessor already clones, so the client's array stays
+        // independent of the server's). Null = unchanged this diff. Guarded to the canonical
+        // 256-entry xterm palette to avoid AIOOBE on malformed payloads.
+        final int[] palette = s.palette();
+        if (palette != null && palette.length == PALETTE_SIZE) {
+            terminal.palette256 = palette;
         }
         terminal.markAllDirty();
     }
@@ -701,8 +727,9 @@ public final class TerminalDiff {
         ByteBufCodecs.VAR_INT.encode(buf, s.height());
         buf.writeBoolean(s.altBuffer());
         writeByteArray(buf, encodeInts(s.rows()));
-        ByteBufCodecs.VAR_INT.encode(buf, s.rowData().length);
-        for (final byte[] row : s.rowData()) {
+        final byte[][] rowData = s.rowData();
+        ByteBufCodecs.VAR_INT.encode(buf, rowData.length);
+        for (final byte[] row : rowData) {
             writeByteArray(buf, row);
         }
         // Shift ops are resolved memmove geometry — quintuples, flat-encoded.
