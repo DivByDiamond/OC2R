@@ -67,8 +67,9 @@ public final class MonitorDisplayWidget {
                     1f);
 
             if (rendererView == null) {
-                rendererView =
-                        container.getMonitor().getMonitor().getRenderer(container.getMonitor());
+                final MonitorGUIRenderer renderer =
+                        (MonitorGUIRenderer) container.getMonitor().getMonitor();
+                rendererView = renderer.getRenderer(container.getMonitor());
             }
 
             final Matrix4f projectionMatrix =

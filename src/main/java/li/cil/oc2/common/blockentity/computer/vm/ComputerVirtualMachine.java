@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.computer.vm;
 
 import java.time.Duration;
 import javax.annotation.Nullable;
-import li.cil.oc2.client.audio.LoopingSoundManager;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.blockentity.computer.ComputerVMRunner;
 import li.cil.oc2.common.bus.controller.BusState;
@@ -13,7 +12,6 @@ import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalDiffMessage;
 import li.cil.oc2.common.util.sound.ComputerPost;
-import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.util.world.chunk.ChunkUtils;
@@ -23,6 +21,8 @@ import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLLoader;
 
 public class ComputerVirtualMachine extends AbstractVirtualMachine {
     private static final int MAX_RUNNING_SOUND_DELAY = TickUtils.toTicks(Duration.ofSeconds(2));
@@ -42,16 +42,9 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
     public void setRunStateClient(final VMRunState value) {
         super.setRunStateClient(value);
 
-        if (value == VMRunState.RUNNING) {
+        if (FMLLoader.getDist() == Dist.CLIENT) {
             final Level level = owner.getLevel();
-            if (!LoopingSoundManager.isPlaying(owner) && level != null) {
-                LoopingSoundManager.play(
-                        owner,
-                        SoundEvents.COMPUTER_RUNNING.get(),
-                        level.getRandom().nextInt(MAX_RUNNING_SOUND_DELAY));
-            }
-        } else {
-            LoopingSoundManager.stop(owner);
+            li.cil.oc2.client.hooks.ComputerSoundHooks.handleRunStateChange(owner, value, level, MAX_RUNNING_SOUND_DELAY);
         }
     }
 

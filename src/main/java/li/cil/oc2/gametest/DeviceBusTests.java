@@ -15,10 +15,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class DeviceBusTests {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     // Three sequential 60-tick waits (180 ticks total) exceed @GameTest's default
     // timeoutTicks=100, so the sequence was always going to time out before it could
     // report the actual assertion result.
@@ -31,12 +35,12 @@ public final class DeviceBusTests {
         helper.startSequence()
             .thenExecuteAfter(60, () -> {
                 base[0] = computer.deviceCount();
-                System.out.println("[busTracks] base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[busTracks] base={} {}", base[0], computer.describe());
             })
             .thenExecute(() -> placeDevice(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
-                System.out.println("[busTracks] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[busTracks] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
                     final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
                         helper.getBlockEntity(TestSupport.CABLE_POS);
@@ -50,7 +54,7 @@ public final class DeviceBusTests {
             .thenExecute(() -> breakBlock(helper, DEVICE_POS))
             .thenExecuteAfter(60, () -> {
                 final int after = computer.deviceCount();
-                System.out.println("[busTracks] after=" + after + " base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[busTracks] after={} base={} {}", after, base[0], computer.describe());
                 if (after != base[0]) {
                     throw new GameTestAssertException(
                         "device count did not return to baseline after removing the neighbour: alone="

@@ -4,7 +4,6 @@ import static li.cil.oc2.common.block.cable.BusCableStateProperties.*;
 import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.client.gui.screen.monitor.BusInterfaceScreen;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeType;
@@ -12,7 +11,6 @@ import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -28,6 +26,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.loading.FMLLoader;
 
 public final class BusCableInteractionHandler {
     @Nullable
@@ -215,8 +214,9 @@ public final class BusCableInteractionHandler {
     @OnlyIn(Dist.CLIENT)
     private static void openBusInterfaceScreen(
             final BusCableBlockEntity blockEntity, final Direction side) {
-        final BusInterfaceScreen screen = new BusInterfaceScreen(blockEntity, side);
-        Minecraft.getInstance().setScreen(screen);
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            li.cil.oc2.client.hooks.BusInterfaceScreenHooks.openBusInterfaceScreen(blockEntity, side);
+        }
     }
 
     private BusCableInteractionHandler() {}
