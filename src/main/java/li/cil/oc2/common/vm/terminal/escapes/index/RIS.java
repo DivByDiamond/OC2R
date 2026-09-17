@@ -30,6 +30,7 @@ public class RIS {
         SavedCursor.reset(terminal);
         terminal.cursorMode = TerminalColors.CursorMode.DEFAULT;
         terminal.input.clear();
+        terminal.hasPendingBell = false;
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;

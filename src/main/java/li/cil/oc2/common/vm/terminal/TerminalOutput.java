@@ -342,6 +342,12 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
     private void handleHash(final char ch) {
         terminal.state = State.NORMAL;
         if (ch == '8') {
+            // DECALN: fill the visible screen with 'E', reset margins and home cursor (VT100
+            // §4.7.2). The previous implementation left scroll margins and cursor where they
+            // were, so a subsequent scroll with non-full margins would operate on a stale region.
+            terminal.scrollFirst = 0;
+            terminal.scrollLast = terminal.height - 1;
+            terminal.setCursorPos(0, 0);
             if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
                 Arrays.fill(terminal.altBuffer, 'E');
             } else {

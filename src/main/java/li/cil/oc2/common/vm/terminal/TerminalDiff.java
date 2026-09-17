@@ -415,7 +415,13 @@ public final class TerminalDiff {
         }
         setAltBufferEnabled(terminal, alt);
 
-        for (int i = 0; i < s.rows().length; i++) {
+        // Guard the rows/rowData pairing: a malformed snapshot with mismatched lengths must not
+        // AIOOBE on the client network thread (see §37). The codec already clamps rowCount to a
+        // non-negative bounded value; this handles the residual mismatch (e.g. rows.length !=
+        // rowData.length) by decoding only the overlap — missing rows stay as they were, extra
+        // rowData is ignored (stream integrity was already preserved by reading it).
+        final int rowPairs = Math.min(s.rows().length, s.rowData().length);
+        for (int i = 0; i < rowPairs; i++) {
             deserializeRow(terminal, alt, s.rows()[i], s.rowData()[i]);
         }
 

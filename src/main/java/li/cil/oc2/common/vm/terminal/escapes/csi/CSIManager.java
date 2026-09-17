@@ -102,9 +102,16 @@ public class CSIManager {
                 terminal.x = 0;
             }
             case 0x0A, 0x0B -> handleControlLineFeed(); /* LF / VT — respect LNM like normal path */
-            case 0x09 -> { /* HT */
+            case 0x09 -> { /* HT — respect tab stops, like TerminalOutput.handleTab */
                 terminal.autowrapPending = false; // cursor move clears pending (xterm ResetWrap)
-                terminal.x = Math.min(terminal.x + 8 - (terminal.x % 8), terminal.width - 1);
+                if (terminal.x < terminal.width - 1) {
+                    do {
+                        terminal.x++;
+                    } while (terminal.x < terminal.width - 1
+                            && (terminal.currentPrivateModeState.isAltBufferEnabled()
+                                    ? !terminal.altTabs[terminal.x]
+                                    : !terminal.tabs[terminal.x]));
+                }
             }
             case 0x18, 0x1A -> { /* CAN / SUB — abort CSI sequence */
                 reset();

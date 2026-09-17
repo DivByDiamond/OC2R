@@ -899,15 +899,15 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
 
 ### Nit
 
-- [ ] HT внутри CSI игнорирует tabs[] (`CSIManager.java:93-95` — фиксированные `% 8`)
-- [ ] `ESC # 8` (DECALN) не сбрасывает маргины и не делает home (`TerminalIO.java:170-186`)
-- [ ] DL предочистка `clearLine(y+i)` избыточна (перезаписывается сдвигом) `[DL.java:29-32]`
+- [x] HT внутри CSI игнорирует tabs[] (`CSIManager.java:93-95` — фиксированные `% 8`) ✅ — `CSIManager:105` теперь как `TerminalOutput.handleTab`: `while` по `tabs[]/altTabs[]`.
+- [x] `ESC # 8` (DECALN) не сбрасывает маргины и не делает home (`TerminalIO.java:170-186`) ✅ — `TerminalOutput.handleHash:344` теперь `scrollFirst=0, scrollLast=height-1, setCursorPos(0,0)` перед fill.
+- [x] DL предочистка `clearLine(y+i)` избыточна (перезаписывается сдвигом) `[DL.java:29-32]` ✅ — уже убрана, комментарий `DL:26` «No pre-clear...».
 - [ ] `putResponse(String)` — N полных lock/unlock на байт; ответ не атомарен относительно readInput
 - [ ] reentrant-запахи: вложенный lock в `putInput(String)/putInput(char)` (`TerminalIO:63-71,95-104`)
 - [ ] разнобой `//` vs `/* */` (DSR/SGR/SGRColorParser/CH1/CSIManager/DA vs остальное); 7 строк >120 (LineLength подавлен)
 - [ ] устаревший чекбокс выше (§31 «getInput без dirty») — уже реализовано в `TerminalIO.getInput():43-49`, закрыть
 - [ ] XTVERSION-версия захардкожена `oc2rvt(1.0.0)` (`CH7.java:21`)
-- [ ] RIS не сбрасывает transient `hasPendingBell` (остальное сверено — RIS полон)
+- [x] RIS не сбрасывает transient `hasPendingBell` (остальное сверено — RIS полон) ✅ — `RIS.java:32` `hasPendingBell=false`.
 
 ### Потокобезопасность (сводка)
 
@@ -1009,8 +1009,8 @@ Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в �
   pause/resume↔step (:101-133) → rebuild реестра параллельно с диспетчеризацией RPC.
 - [ ] InternetConnectionImpl.saveAdapterState: `.get()` на server thread при автосейве
   (`inet/internet/connection/InternetConnectionImpl.java:38`) — фриз тика + дедлок-риск.
-- [ ] TerminalDiff.apply: равенство rows.length == rowData.length не проверяется нигде
-  (`vm/terminal/TerminalDiff.java:205-207,313`) → AIOOBE/дисконнект клиента; clamp ширины.
+- [x] TerminalDiff.apply: равенство rows.length == rowData.length не проверяется нигде
+  (`vm/terminal/TerminalDiff.java:205-207,313`) → AIOOBE/дисконнект клиента; clamp ширины. ✅ — `readSnapshot` уже клампит отрицательный `rowCount` и `boundedCount`; `apply:418` теперь `min(rows.length, rowData.length)` overlap, ширина клампится `resizeWidth`.
 - [x] CUD/CUF int overflow при аргументе MAX_VALUE (`csi/CUD.java:17`, `CUF.java:17`) ✅ —
   клампит `moveCursorBy` через `Math.clamp(dx, -width, width)`; тесты `cudMovesCursorDownAndClampsSaturatedCount` и т.д.
 - [x] Дубликат RegistryUtils: `common/util/RegistryUtils.java` ≡ `common/util/item/RegistryUtils.java`,
