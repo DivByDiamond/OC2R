@@ -15,8 +15,37 @@ public class DL extends CSISequenceHandler {
     @Override
     public void execute(int[] args, int argCount, CSIState state) {
         if (terminal.y < terminal.scrollFirst || terminal.y > terminal.scrollLast) return;
+        // DECSLRM (§44): DL only respects horizontal margins when the cursor is inside them, same
+        // gating IL uses.
+        if (terminal.x < terminal.scrollColFirst || terminal.x > terminal.scrollColLast) {
+            shiftFullRows(args[0]);
+            return;
+        }
 
         int lines = args[0];
+        int maxLines = terminal.scrollLast - terminal.y + 1;
+        lines = Math.min(lines, Math.max(0, maxLines));
+        if (lines == 0) return;
+        if (terminal.scrollColFirst == 0 && terminal.scrollColLast == terminal.width - 1) {
+            shiftFullRows(lines);
+        } else {
+            shiftWithinColumnMargin(lines);
+        }
+    }
+
+    // Column-bounded (see IL's mirror-image loop and TerminalBuffer#copyRowRange).
+    private void shiftWithinColumnMargin(final int lines) {
+        final int width = terminal.scrollColLast - terminal.scrollColFirst + 1;
+        for (int i = terminal.y; i <= terminal.scrollLast - lines; i++) {
+            terminal.bufferManager.copyRowRange(i + lines, i, terminal.scrollColFirst, width);
+        }
+        for (int i = terminal.scrollLast - lines + 1; i <= terminal.scrollLast; i++) {
+            terminal.bufferManager.clearChars(i, terminal.scrollColFirst, width);
+        }
+    }
+
+    private void shiftFullRows(final int requestedLines) {
+        int lines = requestedLines;
         int maxLines = terminal.scrollLast - terminal.y + 1;
         lines = Math.min(lines, Math.max(0, maxLines));
         if (lines == 0) return;

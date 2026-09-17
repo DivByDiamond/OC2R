@@ -14,6 +14,8 @@ public class VPA extends CSISequenceHandler {
 
     @Override
     public void execute(final int[] args, final int argsCount, final CSIState state) {
-        terminal.setRelativeCursorPos(terminal.x, args[0] - 1);
+        // xRelative=false: VPA only repositions the row, x stays absolute — DECOM's left-margin
+        // origin (see Terminal#setRelativeCursorPos) does not apply to a column it didn't set.
+        terminal.setRelativeCursorPos(terminal.x, args[0] - 1, false);
     }
 }

@@ -30,4 +30,33 @@
         <Class name="li.cil.oc2.common.vm.terminal.render.FrameState" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
+    <!-- scrollColFirst/scrollColLast (§44 DECSLRM) are plain ints written only from the single
+         VM-output thread that drives the escape-sequence parser, same as the pre-existing
+         scrollFirst/scrollLast (DECSTBM) they sit next to — client rendering reads the terminal
+         buffers through the geometryVersion seqlock (§36 M4), not these fields directly. SpotBugs'
+         AT_ heuristics flag the pair anyway once enough write sites exist (setWidth/resizeWidth/
+         resizeHeight/CH6/DECSTR); scrollFirst/scrollLast stay under whatever count trips it. -->
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.Terminal" />
+        <Field name="scrollColFirst" />
+        <Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE,AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.Terminal" />
+        <Field name="scrollColLast" />
+        <Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE,AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
+    </Match>
+    <!-- IL sets scrollColFirst-adjacent state from outside Terminal, mirroring the existing
+         DECSTBM handlers (CH1 sets scrollFirst/scrollLast the same way) — PA_PUBLIC_PRIMITIVE_
+         ATTRIBUTE flags the field, not the call site, so this exclusion lives on Terminal too. -->
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.Terminal" />
+        <Field name="scrollColFirst" />
+        <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.Terminal" />
+        <Field name="scrollColLast" />
+        <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" />
+    </Match>
 </FindBugsFilter>

@@ -2219,4 +2219,140 @@ public class TerminalBufferTest {
         feed.append("\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
         write(terminal, feed.toString());
     }
+
+    // §44 DECSLRM (left/right margins, CH6 `CSI Pl;Pr s`) — vt420-rm §5.9, xterm-411 charproc.c
+    // CASE_DECSLRM / CASE_DECSET(DECLRMM).
+
+    @Test
+    void decslrmIgnoredWithoutDeclrmm() {
+        // DECLRMM (mode 69) is off by default — `CSI Pl;Pr s` with 2 numeric args parses but must
+        // not touch the margins (it would otherwise collide with SCOSC's 0-arg form).
+        write(terminal, CSI + "5;10s");
+        assertEquals(0, terminal.scrollColFirst);
+        assertEquals(terminal.width - 1, terminal.scrollColLast);
+    }
+
+    @Test
+    void decslrmSetsMarginsAndHomesCursor() {
+        write(terminal, CSI + "?69h"); // DECLRMM on
+        write(terminal, CSI + "5;20H"); // move away from home first
+        write(terminal, CSI + "3;10s"); // Pl=3, Pr=10 -> 0-based [2, 9]
+        assertEquals(2, terminal.scrollColFirst);
+        assertEquals(9, terminal.scrollColLast);
+        assertEquals(0, terminal.x, "DECSLRM homes the cursor, like DECSTBM");
+        assertEquals(0, terminal.y);
+    }
+
+    @Test
+    void decslrmRejectsInvertedMargins() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "3;10s");
+        write(terminal, CSI + "10;3s"); // Pl >= Pr is an error — margins must be unchanged
+        assertEquals(2, terminal.scrollColFirst);
+        assertEquals(9, terminal.scrollColLast);
+    }
+
+    @Test
+    void decslrmDisabledOnRis() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "3;10s");
+        write(terminal, ESC + "c"); // RIS
+        assertEquals(0, terminal.scrollColFirst);
+        assertEquals(terminal.width - 1, terminal.scrollColLast);
+    }
+
+    @Test
+    void decslrmAutowrapsAtRightMarginNotPhysicalEdge() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "3;10s"); // margins [2, 9]
+        write(terminal, CSI + "1;3H"); // cursor to column 2 (0-based), inside the margins
+        write(terminal, "12345678"); // fills columns 2..9 exactly (8 chars)
+        assertEquals(9, terminal.x, "cursor holds at the right margin, autowrap pending");
+        write(terminal, "9"); // fires the deferred wrap, then prints '9'
+        assertEquals(1, terminal.y);
+        assertEquals(3, terminal.x, "wrap lands one past the LEFT margin (col 2), not column 0");
+        assertEquals('9', charAt(2, 1));
+    }
+
+    @Test
+    void decslrmPrintingOutsideMarginsWrapsAtPhysicalEdge() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "3;10s"); // margins [2, 9]
+        // Cursor placed past the right margin: printing there is unconstrained by DECSLRM.
+        write(terminal, CSI + "1;" + terminal.width + "H");
+        write(terminal, "X"); // fills the last physical column, arms the deferred wrap
+        assertEquals(terminal.width - 1, terminal.x);
+        write(terminal, "Y"); // fires it
+        assertEquals(1, terminal.y, "wraps at the physical edge, not the margin");
+        assertEquals(1, terminal.x, "lands at column 0, then 'Y' advances it to 1");
+    }
+
+    @Test
+    void decslrmBoundsInsertCharsToRightMargin() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "1;10s"); // margins [0, 9]
+        write(terminal, "0123456789"); // cols 0..9
+        write(terminal, CSI + "1;11H" + "X"); // marker just past the right margin, col 10
+        write(terminal, CSI + "1;3H"); // cursor to col 2 (0-based), inside the margins
+        write(terminal, CSI + "2@"); // ICH: insert 2 blanks at col 2
+        assertEquals('0', charAt(0, 0));
+        assertEquals('1', charAt(1, 0));
+        assertEquals(' ', charAt(2, 0));
+        assertEquals(' ', charAt(3, 0));
+        assertEquals('2', charAt(4, 0), "content shifted right within the margin");
+        assertEquals('7', charAt(9, 0), "chars 8,9 pushed off the right margin, discarded");
+        assertEquals('X', charAt(10, 0), "content past the right margin is untouched by ICH");
+    }
+
+    @Test
+    void decslrmBoundsDeleteCharsToRightMargin() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "1;10s"); // margins [0, 9]
+        write(terminal, "0123456789");
+        write(terminal, CSI + "1;11H" + "X"); // marker just past the right margin
+        write(terminal, CSI + "1;3H"); // cursor to col 2
+        write(terminal, CSI + "2P"); // DCH: delete 2 chars at col 2
+        assertEquals('0', charAt(0, 0));
+        assertEquals('1', charAt(1, 0));
+        assertEquals('4', charAt(2, 0), "chars 4.. shifted left into the gap");
+        assertEquals(' ', charAt(8, 0), "tail blanked only up to the right margin");
+        assertEquals(' ', charAt(9, 0));
+        assertEquals('X', charAt(10, 0), "content past the right margin is untouched by DCH");
+    }
+
+    @Test
+    void decslrmBoundsInsertLineToMarginColumns() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "2;5r"); // vertical scroll region rows [1, 4] (0-based)
+        write(terminal, CSI + "1;10s"); // horizontal margins [0, 9]
+        fillRows(1, "AB"); // rows 1,2 col 0 get 'A'/'B'
+        write(terminal, CSI + "2;11H" + "Y"); // marker at row 1, col 10 — outside the margin
+        write(terminal, CSI + "2;1H"); // cursor to row 1, col 0 (inside margins)
+        write(terminal, CSI + "1L"); // IL: insert 1 line
+        assertEquals(' ', charAt(0, 1), "row 1 col 0 blanked by the inserted line");
+        assertEquals('A', charAt(0, 2), "old row 1 content pushed down to row 2");
+        assertEquals('Y', charAt(10, 1), "column past the right margin is untouched by IL");
+    }
+
+    @Test
+    void decslrmBoundsDeleteLineToMarginColumns() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "2;5r"); // vertical scroll region rows [1, 4] (0-based)
+        write(terminal, CSI + "1;10s"); // horizontal margins [0, 9]
+        fillRows(1, "ABC"); // rows 1,2,3 col 0
+        write(terminal, CSI + "2;11H" + "Y"); // marker at row 1, col 10 — outside the margin
+        write(terminal, CSI + "2;1H"); // cursor to row 1, col 0 (inside margins)
+        write(terminal, CSI + "1M"); // DL: delete 1 line
+        assertEquals('B', charAt(0, 1), "row 2 content pulled up into row 1");
+        assertEquals(' ', charAt(0, 3), "vacated tail row blanked");
+        assertEquals('Y', charAt(10, 1), "column past the right margin is untouched by DL");
+    }
+
+    @Test
+    void resizeWidthClampsColumnMargins() {
+        write(terminal, CSI + "?69h");
+        write(terminal, CSI + "1;" + terminal.width + "s"); // right margin at the far edge
+        terminal.resizeWidth(terminal.width - 10);
+        assertEquals(terminal.width - 1, terminal.scrollColLast, "clamped, not reset (DECSCPP is non-destructive)");
+    }
 }

@@ -20,7 +20,16 @@ public class TerminalBufferWriter {
         // char (BS/CR/Tab) between the two prints can clear the pending wrap instead.
         if (terminal.autowrapPending) {
             if (terminal.currentPrivateModeState.DECAWM) {
+                // Wrapped inside the horizontal margins (§44 DECSLRM): land on the left margin,
+                // not the physical column 0 — NEL.execute always targets column 0, so the wrap
+                // destination is fixed up afterwards rather than teaching general-purpose NEL
+                // about margins it has no other reason to know about.
+                final boolean wrappedAtMargin =
+                        terminal.x == terminal.scrollColLast && terminal.scrollColFirst > 0;
                 NEL.execute(terminal); // moves to (0, y+1) and clears pending via setCursorPos
+                if (wrappedAtMargin) {
+                    terminal.x = terminal.scrollColFirst;
+                }
             } else {
                 terminal.autowrapPending = false; // DECAWM off: overwrite the last column
             }
@@ -34,15 +43,27 @@ public class TerminalBufferWriter {
         final int mapped = mapDecSpecialGraphics(ch);
         setChar(terminal.x, terminal.y, mapped);
         terminal.lastPrintedChar = mapped; // remember for REP (CSI Ps b) — xterm repeats with current charset
-        // Fill the last column: arm the pending wrap and hold the cursor at width-1
-        // (never advance to a phantom width). Otherwise advance normally.
-        if (terminal.x == terminal.width - 1) {
+        // Fill the last column: arm the pending wrap and hold the cursor there (never advance to
+        // a phantom column). Otherwise advance normally. DECSLRM (§44): while the cursor sits
+        // inside the left/right margins the "last column" is the right margin, not the physical
+        // edge — printing outside the margins (DECLRMM was toggled off mid-line, or DECOM is off
+        // and the cursor was placed past the margin) still wraps at the physical edge, matching
+        // xterm's WrapLine (screen.c) margin check.
+        final int wrapColumn = rightWrapBoundary();
+        if (terminal.x == wrapColumn) {
             if (terminal.currentPrivateModeState.DECAWM) {
                 terminal.autowrapPending = true;
             }
         } else {
             terminal.x++;
         }
+    }
+
+    private int rightWrapBoundary() {
+        if (terminal.x >= terminal.scrollColFirst && terminal.x <= terminal.scrollColLast) {
+            return terminal.scrollColLast;
+        }
+        return terminal.width - 1;
     }
 
     private void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground color-mode switch

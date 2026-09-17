@@ -744,9 +744,23 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   - Результат: +vttest suite 2 (charsets), рамки в ncurses-приложениях (vim/top/mc).
   - Проверить после: `ESC ( 0` + box-drawing в vttest suite 2.
 
-- [ ] **DECSLRM + DECSTR** (средний)
-  - `DECSLRM` (left/right margins, `CSI Pl;Pr s` — в `CH6.java:24` стоит `LOGGER.warn("DECSLRM not implemented")`) — нужен tmux / вертикальные сплиты vim. Пересечение с `DECOM` и `DECLRMM`/`DECRLM`.
-  - `DECSTR` (soft reset, `CSI ! p`) — **сделано** (`escapes/index/DECSTR.java`, тесты `DecstrTest`): сброс таблиц режимов без полного RIS. Курсор и тэбы сохраняются; скролл-маргины сбрасываются в полный экран (DEC VT510-RM Table 5-9 + xterm-410 `VTReset(full=false)` — прежняя заметка «маргины сохраняются» была неверной).
+- [x] **DECSLRM + DECSTR** (средний) — реализовано 2026-09-17
+  - `DECSLRM` (left/right margins, `CSI Pl;Pr s`, `CH6.handleDECSLRM`) — `Terminal.scrollColFirst/scrollColLast`,
+    работает только при включённом `DECLRMM` (mode 69, теперь помечен `isImplemented=true` в `ModeTable`).
+    Затронуто: cursor homing/DECOM (`Terminal.setRelativeCursorPos` — новый оверлоад с `xRelative`,
+    `VPA` явно передаёт `false`), autowrap (`TerminalBufferWriter.rightWrapBoundary`/wrap-to-left-margin),
+    ICH/DCH (`TerminalBuffer.rightEditBoundary`), IL/DL (`copyRowRange` — колоночно-ограниченный сдвиг
+    вместо full-row `shiftLines`, когда курсор внутри маргинов и они не на всю ширину). Сброс маргинов:
+    `setWidth`(DECCOLM)/`resizeHeight`/`DECSTR`/RIS — сброс на всю ширину; `resizeWidth`(DECSCPP) —
+    неразрушающий clamp/track (см. `Terminal.adjustColumnMarginsForWidthChange`).
+    **Осознанно не сделано**: SU/SD (`CSI Ps S/T`) и линейный перенос по IND/NEL/RI остаются
+    full-width — не ограничены DECSLRM (архитектурно завязаны на scrollback-кольцо
+    `TerminalLineShifter`, колоночно-ограниченный сдвиг сломал бы это без отдельного плана);
+    SL/SR (`CSI Ps SP @`/`CSI Ps SP A`) тоже не урезаны маргинами по левому краю (только по правому,
+    через `rightEditBoundary`, случайно — не по спецификации). Тесты: `TerminalBufferTest`
+    (`decslrm*` — 11 тестов: parsing gate, homing, invalid Pl/Pr, RIS reset, autowrap внутри/вне
+    маргинов, ICH/DCH/IL/DL bounding, DECSCPP resize).
+  - `DECSTR` (soft reset, `CSI ! p`) — **сделано** (`escapes/index/DECSTR.java`, тесты `DecstrTest`): сброс таблиц режимов без полного RIS. Курсор и тэбы сохраняются; скролл-маргины (вкл. DECSLRM) сбрасываются в полный экран (DEC VT510-RM Table 5-9 + xterm-410 `VTReset(full=false)` — прежняя заметка «маргины сохраняются» была неверной).
 
 ## 36. Аудит VT100-терминала №2 — 6 суб-агентов (2026-08-23, ветка 1.21.1)
 
@@ -1509,9 +1523,14 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 Три таски по терминалу (приёмка: boxes сразу видны в tmux, vttest section 2).
 Ориентироваться на доки: исходники xterm + VT510 programmer manual. Очередь: 44.2 → 44.1 → 44.4 → 44.3.
 
-### 44.1 Line drawing characters (DEC Special Graphics) — средний PR
+### 44.1 Line drawing characters (DEC Special Graphics) — средний PR — [x] сделано (2026-09-16)
 
-Состояние в коде (проверено 2026-09-15):
+Реализовано: `TerminalBufferWriter.mapDecSpecialGraphics` (маппинг 0x60-0x7E → Unicode,
+применяется в `putChar` перед `setChar`) + `TerminalCharRenderer.renderBoxDrawing`
+(процедурные квады для box-drawing U+2500-253C и scan-line U+23BA-23BD, остальные —
+обычные глифы шрифта). Пункты плана ниже — исторический план, оставлен для справки.
+
+Состояние в коде (проверено 2026-09-15, устарело — см. выше):
 - Парсер готов: `ESC ( 0`/`ESC ) 0` выставляют `drawingModeG0/G1`
   (`TerminalOutput.handleCharsetDesignate`, строка ~326), `SO`/`SI` крутят `useG0`,
   DECSC/DECRC сохраняют чарсеты, RIS/DECSTR сбрасывают.
@@ -1544,9 +1563,9 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 - [ ] Ручная приёмка: tmux с рамкой (`tmux` показывает boxes в status-баре/поп-апах) и
       любой нcurses-скрипт; эталон — vttest §2a (DEC Special Graphics), simcity.c/nInvaders позже.
 
-### 44.2 Strikethrough (SGR 9/29) — маленький PR, начать с него
+### 44.2 Strikethrough (SGR 9/29) — маленький PR, начать с него — [x] сделано (2026-09-16)
 
-- [ ] `Terminal.STYLE_CROSSED_OUT_MASK = 1 << 7`. **Осторожно**: `style` — `byte`
+- [x] `Terminal.STYLE_CROSSED_OUT_MASK = 1 << 7`. **Осторожно**: `style` — `byte`
       (Terminal.java:67), 0x80 станет отрицательным байтом; побитовые операции ок, но
       сериализация в diff (`buf.put(cell.style())`) обязана сохранить бит — тест ниже.
 - [ ] `SGRStyleDispatch`: `case 9` — set, `case 29` — clear (коды DEC/xterm; 21 не трогать,

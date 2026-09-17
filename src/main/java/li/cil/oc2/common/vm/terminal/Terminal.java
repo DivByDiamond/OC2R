@@ -89,6 +89,10 @@ public class Terminal {
     // a larger dynamic height, could exceed the fresh buffer's row count entirely).
     public transient int scrollFirst = 0;
     public transient int scrollLast = HEIGHT - 1;
+    // DECSLRM left/right margins (§44, CH6 `CSI Pl;Pr s`), only settable while DECLRMM is on.
+    // Column-based like scrollFirst/scrollLast is row-based; same transient/re-init rationale.
+    public transient int scrollColFirst = 0;
+    public transient int scrollColLast = WIDTH - 1;
     public int x;
     public int y;
     /**
@@ -321,6 +325,8 @@ public class Terminal {
         // DECCOLM spec: clear screen, reset margins, home cursor
         this.scrollFirst = 0;
         this.scrollLast = height - 1;
+        this.scrollColFirst = 0;
+        this.scrollColLast = newWidth - 1;
         this.lastRowToDisplay = height;
         this.lastRowToDisplayMax = height;
         this.setCursorPos(0, 0);
@@ -446,6 +452,9 @@ public class Terminal {
             setCursorPos(newWidth - 1, this.y);
         }
 
+        // Column margins (DECSLRM): non-destructive like the rest of DECSCPP (see Javadoc).
+        adjustColumnMarginsForWidthChange(oldWidth, newWidth);
+
         // Arm the full refresh atomically with the geometry commit: a consume landing between
         // the field swap and here would otherwise ship a partial diff at the new width with no
         // rows, blanking clients that apply it destructively (same seam class as #38 F1).
@@ -467,6 +476,18 @@ public class Terminal {
         // because DECCOLM's escape paths (CH2/CH3) call markAllDirty themselves — the clear
         // ships symmetrically.
         markAllDirty();
+    }
+
+    /**
+     * DECSLRM (§44) margin adjustment for a DECSCPP width change: an untouched right margin
+     * (still at the OLD full width) tracks growth/shrink like the implicit default it is; an
+     * explicit narrower margin is only clamped if it no longer fits.
+     */
+    private void adjustColumnMarginsForWidthChange(final int oldWidth, final int newWidth) {
+        this.scrollColLast = this.scrollColLast == oldWidth - 1
+                ? newWidth - 1
+                : Math.min(this.scrollColLast, newWidth - 1);
+        this.scrollColFirst = Math.min(this.scrollColFirst, this.scrollColLast);
     }
 
     /**
@@ -622,9 +643,12 @@ public class Terminal {
         this.lastRowToDisplay = newLrd;
         this.lastRowToDisplayMax = newLrdMax;
 
-        // Margins + origin reset per xterm ScreenResize (see Javadoc).
+        // Margins + origin reset per xterm ScreenResize (see Javadoc) — left/right margins too,
+        // xterm resetMargins() clears both axes unconditionally.
         this.scrollFirst = 0;
         this.scrollLast = newHeight - 1;
+        this.scrollColFirst = 0;
+        this.scrollColLast = width - 1;
         this.currentPrivateModeState.DECOM = false;
 
         // Move the cursor with its content (grow pull-down / shrink top-drop), clamped into
@@ -682,12 +706,31 @@ public class Terminal {
     }
 
     public void setRelativeCursorPos(final int x, final int y) {
+        setRelativeCursorPos(x, y, true);
+    }
+
+    /**
+     * Move the cursor, treating {@code x}/{@code y} as origin-relative under DECOM.
+     *
+     * @param xRelative whether {@code x} is origin-relative to the left margin under DECOM (CUP/
+     *         HVP/home) or an absolute column that should pass through untouched (VPA, which only
+     *         ever repositions the row) — see the {@link #setRelativeCursorPos(int, int)} callers.
+     */
+    public void setRelativeCursorPos(final int x, final int y, final boolean xRelative) {
         if (currentPrivateModeState.DECOM) {
             // Clamp y into the scroll region (origin-relative under DECOM) BEFORE adding
             // scrollFirst: parseArgument saturates at Integer.MAX_VALUE, so scrollFirst + y
             // would overflow negative and clamp to scrollFirst (top) instead of scrollLast
             // (bottom). Bounding y to the region keeps the sum in range; row 1 = scrollFirst.
-            setCursorPos(x, scrollFirst + Math.clamp(y, 0, scrollLast - scrollFirst));
+            final int clampedY = scrollFirst + Math.clamp(y, 0, scrollLast - scrollFirst);
+            if (xRelative) {
+                // Same overflow rationale, on the column axis: origin becomes the left margin.
+                final int clampedX =
+                        scrollColFirst + Math.clamp(x, 0, scrollColLast - scrollColFirst);
+                setCursorPos(clampedX, clampedY);
+            } else {
+                setCursorPos(x, clampedY);
+            }
         } else {
             setCursorPos(x, y);
         }

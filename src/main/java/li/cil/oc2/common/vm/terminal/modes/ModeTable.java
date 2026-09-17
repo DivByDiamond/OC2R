@@ -52,7 +52,7 @@ public enum ModeTable { // NOPMD: inherently large data-driven 1:1 mode-number l
     ALT_BUFFER(PrivateMode.ALT_BUFFER, Kind.PRIVATE, true),
     DECNKM(PrivateMode.DECNKM, Kind.PRIVATE, false),
     DECBKM(PrivateMode.DECBKM, Kind.PRIVATE, false),
-    DECLRMM(PrivateMode.DECLRMM, Kind.PRIVATE, false),
+    DECLRMM(PrivateMode.DECLRMM, Kind.PRIVATE, true), // §44 DECSLRM (CH6.java) reads this flag
     DECSDM(PrivateMode.DECSDM, Kind.PRIVATE, false),
     DECNCSM(PrivateMode.DECNCSM, Kind.PRIVATE, false),
     X11MM(PrivateMode.X11MM, Kind.PRIVATE, true),

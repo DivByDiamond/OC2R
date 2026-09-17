@@ -12,7 +12,8 @@ import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
  * defaults WITHOUT the destructive geometry reset RIS performs.
  *
  * <p>Per DEC VT510-RM Table 5-9 and xterm-410 {@code VTReset(full=false)} (charproc.c,
- * {@code CASE_DECSTR}): DECSTR resets DECSTBM (margins to full page), DECOM (to absolute), DECAWM
+ * {@code CASE_DECSTR}): DECSTR resets DECSTBM and DECSLRM (margins to full page), DECOM (to
+ * absolute), DECAWM
  * (to default), IRM (to replace), DECTCEM (to visible via fresh {@code PrivateModeState}),
  * charsets (to ASCII), SGR rendition (colors+style, not the OSC 4 palette), DECSCA, and the
  * saved-cursor position (to home). It does not clear the screen, reset tab stops, move the active
@@ -48,6 +49,8 @@ public class DECSTR {
         // DECSTBM: scroll margins to full page. DEC VT510-RM Table 5-9 and xterm both reset this
         terminal.scrollFirst = 0;
         terminal.scrollLast = terminal.height - 1;
+        terminal.scrollColFirst = 0;
+        terminal.scrollColLast = terminal.width - 1;
         terminal.drawingModeG0 = TerminalColors.DrawingMode.ASCII;
         terminal.drawingModeG1 = TerminalColors.DrawingMode.ASCII;
         terminal.useG0 = true;

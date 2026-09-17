@@ -114,15 +114,27 @@ public class TerminalBuffer {
     }
 
     /**
+     * The column ICH/DCH/DL etc. shift up to, when clamping a count: the right margin if the
+     * cursor sits inside the horizontal DECSLRM margins, otherwise the physical edge — xterm only
+     * bounds these operations by DECSLRM when the cursor started inside it (util.c margin checks).
+     */
+    private int rightEditBoundary(final int x) {
+        if (x >= terminal.scrollColFirst && x <= terminal.scrollColLast) {
+            return terminal.scrollColLast + 1;
+        }
+        return terminal.width;
+    }
+
+    /**
      * Delete {@code count} characters at column {@code x} on line {@code y}, shifting remaining
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int n = Math.clamp(count, 0, terminal.width - x);
+        final int n = Math.clamp(count, 0, rightEditBoundary(x) - x);
         if (n == 0) return;
-        final int remaining = terminal.width - x - n;
+        final int remaining = rightEditBoundary(x) - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, terminal.width - x);
+            clearChars(y, x, rightEditBoundary(x) - x);
             return;
         }
         final ColorData c = terminal.currentBackgroundColor();
@@ -191,11 +203,11 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int n = Math.clamp(count, 0, terminal.width - x);
+        final int n = Math.clamp(count, 0, rightEditBoundary(x) - x);
         if (n == 0) return;
-        final int remaining = terminal.width - x - n;
+        final int remaining = rightEditBoundary(x) - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, terminal.width - x);
+            clearChars(y, x, rightEditBoundary(x) - x);
             return;
         }
         final ColorData c = terminal.currentBackgroundColor();
@@ -235,6 +247,35 @@ public class TerminalBuffer {
             Arrays.fill(terminal.styles, index, index + n, TerminalColors.DEFAULT_STYLE);
         }
         markDirty(y);
+    }
+
+    /**
+     * Copy {@code count} columns starting at {@code x} from row {@code srcY} into the same column
+     * range of row {@code dstY} — screen-row addressed (0..height-1), like {@link #clearChars}.
+     * Used for DECSLRM-bounded IL/DL (§44, {@code IL}/{@code DL}): those insert/delete whole
+     * lines, but when horizontal margins are active only the margin columns move, so unlike
+     * {@link #shiftLines} (which swaps entire buffer rows, including through scrollback) this
+     * moves a column sub-range one row at a time and never touches scrollback.
+     */
+    public void copyRowRange(final int srcY, final int dstY, final int x, final int count) {
+        final int n = Math.clamp(count, 0, terminal.width - x);
+        if (n == 0) return;
+        final int srcIndex = getLinearIndex(srcY, x);
+        final int dstIndex = getLinearIndex(dstY, x);
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            System.arraycopy(terminal.altBuffer, srcIndex, terminal.altBuffer, dstIndex, n);
+            System.arraycopy(terminal.altColors, srcIndex, terminal.altColors, dstIndex, n);
+            System.arraycopy(
+                    terminal.altColorsBackground, srcIndex, terminal.altColorsBackground, dstIndex, n);
+            System.arraycopy(terminal.altStyles, srcIndex, terminal.altStyles, dstIndex, n);
+        } else {
+            System.arraycopy(terminal.buffer, srcIndex, terminal.buffer, dstIndex, n);
+            System.arraycopy(terminal.colors, srcIndex, terminal.colors, dstIndex, n);
+            System.arraycopy(
+                    terminal.colorsBackground, srcIndex, terminal.colorsBackground, dstIndex, n);
+            System.arraycopy(terminal.styles, srcIndex, terminal.styles, dstIndex, n);
+        }
+        markDirty(dstY);
     }
 
     private int getLinearIndex(final int y, final int x) {
