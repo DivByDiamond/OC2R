@@ -206,7 +206,7 @@ public class Terminal {
     transient DCSManager dcsManager = new DCSManager();
     transient APCManager apcManager = new APCManager();
     public transient TerminalIO io = new TerminalIO(this);
-    private transient TerminalClient clientInstance;
+    private transient volatile TerminalClient clientInstance;
     private final transient ReentrantLock clientLock = new ReentrantLock();
 
     public Terminal() {

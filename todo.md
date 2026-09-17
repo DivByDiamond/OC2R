@@ -870,10 +870,10 @@ Follow-up'ы из ревью `pr/screen-features` (PR #10). Мелкие, изо
   `[util/tick/TerminalUtils.java]` — переписан задачей 19 (2026-08-23): RIS + full snapshot,
   без статического буфера и литерального `'J'`.
 
-- [ ] **m9 — DCL без volatile в `Terminal.client()`**
+- [x] **m9 — DCL без volatile в `Terminal.client()`** ✅
   `[Terminal.java:131-132,266-281]` — формально data race по JMM; спасает final-поле
   `TerminalClient.terminal`. Станет багом при добавлении любого нефинального поля.
-  Фикс: `private transient volatile TerminalClient clientInstance;`
+  Фикс: `private transient volatile TerminalClient clientInstance;` — исправлено.
 
 - [ ] **m10 — `lastRowToDisplay/Max` — plain int-пара с тремя писателями без синхронизации**
   Netty (IND/NEL) / main (mouseScrolled, getInput) → редкие «прыжки» окна просмотра истории.
@@ -997,10 +997,10 @@ Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в �
   не мерджится. Проверено исполнением: put(5,15); put(0,10) → [0-10, 5-15], count()=22
   вместо 16; contains(12)=false при покрытом элементе. Через Ipv4Space ломает allow/deny
   интернет-карты. Фикс: удалять `key >= begin && value <= end`; мерджить с floorEntry(end).
-- [ ] **Б6 — DECRC/restoreSavedCursor после смены ширины → AIOOBE** (апгрейд m1 из §36 до краша)
+- [x] **Б6 — DECRC/restoreSavedCursor после смены ширины → AIOOBE** (апгрейд m1 из §36 до краша) ✅
   `[escapes/DECRC.java:11-12]`, `[escapes/csi/CH3.java:76-81]` — ESC7 в 132 колонках на x=131 →
   `?3l` (setWidth(80)) → ESC8 → x=131 → index 1971 ≥ 1920 → AIOOBE под lock → терминал умирает.
-  Фикс: setCursorPos/clamp по текущему width.
+  Фикс: `SavedCursor.restore` через `setCursorPos` клампит; тест `decrcClampsSavedCursorAfterWidthShrink` — уже закрыто PR #24, верифицировано.
 
 ### Major
 
@@ -1011,10 +1011,10 @@ Issue #17 (mount `/mnt/builtin`) можно закрывать — фикс в �
   (`inet/internet/connection/InternetConnectionImpl.java:38`) — фриз тика + дедлок-риск.
 - [ ] TerminalDiff.apply: равенство rows.length == rowData.length не проверяется нигде
   (`vm/terminal/TerminalDiff.java:205-207,313`) → AIOOBE/дисконнект клиента; clamp ширины.
-- [ ] CUD/CUF int overflow при аргументе MAX_VALUE (`csi/CUD.java:17`, `CUF.java:17`) —
-  курсор прыгает вверх; клампить как CH8/CH9.
-- [ ] Дубликат RegistryUtils: `common/util/RegistryUtils.java` ≡ `common/util/item/RegistryUtils.java`,
-  обе живые, раздельная статика → оставить одну.
+- [x] CUD/CUF int overflow при аргументе MAX_VALUE (`csi/CUD.java:17`, `CUF.java:17`) ✅ —
+  клампит `moveCursorBy` через `Math.clamp(dx, -width, width)`; тесты `cudMovesCursorDownAndClampsSaturatedCount` и т.д.
+- [x] Дубликат RegistryUtils: `common/util/RegistryUtils.java` ≡ `common/util/item/RegistryUtils.java`,
+  обе живые, раздельная статика → оставить одну. ✅ Удален `common/util/item/RegistryUtils.java`, `Main.java:26` переключен на `common.util.RegistryUtils`.
 - [ ] System.out в проде (~14 мест): ConfigManager.java:21, VxlanBlockEntity.java:102,
   SwitchLog.java:28-51, TerminalMouseHandler.java:82,146, ByteBufferFlashStorageDevice.java:111,
   PciRootPortDevice.java:54-78 → SLF4J.

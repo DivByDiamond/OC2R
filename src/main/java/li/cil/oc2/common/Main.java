@@ -23,7 +23,7 @@ import li.cil.oc2.common.setup.CommonSetup;
 import li.cil.oc2.common.setup.NativeLoader;
 import li.cil.oc2.common.tags.BlockTags;
 import li.cil.oc2.common.tags.ItemTags;
-import li.cil.oc2.common.util.item.RegistryUtils;
+import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
 import li.cil.sedna.Sedna;
