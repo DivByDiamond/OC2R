@@ -45,14 +45,15 @@ public class TerminalRegressionsTest {
     }
 
     @Test
-    void wideCharAtEolDoesNotCorrupt() {
-        // Wide char at last column - current engine stores one codepoint per cell, so wide
-        // occupies one cell. Test that it does not overflow or corrupt next row.
+    void singleCellUnicodeAtEolDoesNotCorrupt() {
+        // Engine stores one codepoint per cell (no wide-spanning double-cell yet), so a
+        // non-ASCII BMP char at the last column must not overflow or corrupt the next row.
+        // Named wideChar* before; renamed to reflect what is actually verified.
         String wide = "\u3042"; // hiragana 'a', 3 bytes in UTF-8, single cell in our model
         terminal.setCursorPos(Terminal.WIDTH - 1, 0);
         write(wide);
-        assertEquals(0x3042, charAt(Terminal.WIDTH - 1, 0), "wide char at EOL stored");
-        assertEquals(' ', charAt(0, 1), "next row not corrupted by wide at EOL");
+        assertEquals(0x3042, charAt(Terminal.WIDTH - 1, 0), "single-cell unicode at EOL stored");
+        assertEquals(' ', charAt(0, 1), "next row not corrupted by unicode at EOL");
     }
 
     // --- Resize ---

@@ -168,7 +168,8 @@ public class TerminalCharRenderer {
                     .setUv(0, 0);
         }
 
-        if (isPrintableCharacter(character) && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
+        if (isPrintableCharacter(character) && !isBoxDrawingCharacter(character)
+                && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
             // Strikethrough: thickness derived from cell height, centered on midline.
             final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
             final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
@@ -212,6 +213,12 @@ public class TerminalCharRenderer {
         return false;
     }
 
+    // Scan-line Y positions as fraction of cell height (1,3,7,9 of 10 rows, xterm dec2ucs).
+    private static final float SCAN_1_Y = 0.12f;
+    private static final float SCAN_3_Y = 0.33f;
+    private static final float SCAN_7_Y = 0.66f;
+    private static final float SCAN_9_Y = 0.87f;
+
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
             final float offset, final int ch, final float r, final float g, final float b) {
         final float w = Terminal.CHAR_WIDTH;
@@ -219,9 +226,6 @@ public class TerminalCharRenderer {
         final float t = 2f; // thickness
         final float cx = w / 2f - t / 2f;
         final float cy = h / 2f - t / 2f;
-        // helper to add quad
-        // horizontal mid line
-        // vertical mid line
         switch (ch) {
             case 0x2500 -> quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b); // ─
             case 0x2502 -> quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b); // │
@@ -261,10 +265,10 @@ public class TerminalCharRenderer {
                 quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
                 quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
             }
-            case 0x23BA -> quad(buffer, matrix, offset, h * 0.12f, offset + w, h * 0.12f + t, r, g, b); // ⎺ scan 1
-            case 0x23BB -> quad(buffer, matrix, offset, h * 0.33f, offset + w, h * 0.33f + t, r, g, b); // ⎻ scan 3
-            case 0x23BC -> quad(buffer, matrix, offset, h * 0.66f, offset + w, h * 0.66f + t, r, g, b); // ⎼ scan 7
-            case 0x23BD -> quad(buffer, matrix, offset, h * 0.87f, offset + w, h * 0.87f + t, r, g, b); // ⎽ scan 9
+            case 0x23BA -> quad(buffer, matrix, offset, h * SCAN_1_Y, offset + w, h * SCAN_1_Y + t, r, g, b); // ⎺ scan 1
+            case 0x23BB -> quad(buffer, matrix, offset, h * SCAN_3_Y, offset + w, h * SCAN_3_Y + t, r, g, b); // ⎻ scan 3
+            case 0x23BC -> quad(buffer, matrix, offset, h * SCAN_7_Y, offset + w, h * SCAN_7_Y + t, r, g, b); // ⎼ scan 7
+            case 0x23BD -> quad(buffer, matrix, offset, h * SCAN_9_Y, offset + w, h * SCAN_9_Y + t, r, g, b); // ⎽ scan 9
             default -> {}
         }
     }
@@ -279,6 +283,9 @@ public class TerminalCharRenderer {
     }
 
     private static boolean isPrintableCharacter(final int ch) {
-        return ch == 0 || (ch > ' ' && ch <= '~') || ch >= 177;
+        // 0xA0 (NBSP) is the first printable after the C1 control range 0x80-0x9F; 177 (0xB1 ±)
+        // was the old cutoff which left ° (0xB0) and £ (0xA3) invisible while claiming they
+        // were "real glyphs in the font atlas" (see BOX_CHARS_MASK comment). Include 0xA0-0xFF.
+        return ch == 0 || (ch > ' ' && ch <= '~') || ch >= 0xA0;
     }
 }
