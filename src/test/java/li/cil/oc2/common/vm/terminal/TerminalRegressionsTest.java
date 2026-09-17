@@ -116,17 +116,24 @@ public class TerminalRegressionsTest {
     private int charAt(int x, int y) {
         assertTrue(terminal.lastRowToDisplayMax >= terminal.height,
                 "lastRowToDisplayMax must never drop below height, or the viewport offset below goes negative");
+        assertTrue(x >= 0 && x < terminal.width && y >= 0 && y < terminal.height,
+                () -> "charAt x/y out of visible window: x=" + x + " y=" + y + " width=" + terminal.width + " height=" + terminal.height);
         int idx = x + (y + terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
         if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
             idx = x + y * terminal.width;
+            assertTrue(idx >= 0 && idx < terminal.altBuffer.length,
+                    "charAt alt idx out of bounds: idx=" + idx + " altLen=" + terminal.altBuffer.length);
             return terminal.altBuffer[idx];
         }
+        assertTrue(idx >= 0 && idx < terminal.buffer.length,
+                "charAt idx out of bounds: idx=" + idx + " bufLen=" + terminal.buffer.length + " y=" + y + " lrdMax=" + terminal.lastRowToDisplayMax);
         return terminal.buffer[idx];
     }
 
     private static class DummyRenderer implements RendererModel {
         private final AtomicLong dirtyMask = new AtomicLong(-1L);
-        @Override public AtomicLong getDirtyMask() { return dirtyMask; } // SpotBugs EI_EXPOSE_REP suppressed via baseline.xml: test helper, live mask needed for dirty checks
+        @SuppressWarnings("EI_EXPOSE_REP") // test helper needs live view for dirty checks; also suppressed in config/spotbugs/baseline.xml
+        @Override public AtomicLong getDirtyMask() { return dirtyMask; }
         @Override public void close() { dirtyMask.set(0L); }
     }
 }
