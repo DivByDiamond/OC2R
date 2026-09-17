@@ -114,7 +114,9 @@ public class TerminalCharRenderer {
         final float g = ((color >> 8) & 0xFF) / 255f;
         final float b = (color & 0xFF) / 255f;
 
-        if (isPrintableCharacter(character)) {
+        if (isBoxDrawingCharacter(character)) {
+            renderBoxDrawing(matrix, buffer, offset, character, r, g, b);
+        } else if (isPrintableCharacter(character)) {
             FontHandling.FontStyle font = getFontStyle(style);
             Glyph glyph = FontHandling.getGlyph(character, font);
 
@@ -165,6 +167,18 @@ public class TerminalCharRenderer {
                     .setColor(r, g, b, 1)
                     .setUv(0, 0);
         }
+
+        if (isPrintableCharacter(character) && !isBoxDrawingCharacter(character)
+                && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
+            // Strikethrough: thickness derived from cell height, centered on midline.
+            // Use quad() to keep winding consistent with box-drawing (CCW) and avoid
+            // culling mismatch between the two paths.
+            final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
+            final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
+            final float y0 = Math.max(0, cyStrike - tStrike / 2f);
+            final float y1 = Math.min(Terminal.CHAR_HEIGHT, cyStrike + tStrike / 2f);
+            quad(buffer, matrix, offset, y0, offset + Terminal.CHAR_WIDTH, y1, r, g, b);
+        }
     }
 
     private static FontHandling.FontStyle getFontStyle(byte style) {
@@ -175,7 +189,106 @@ public class TerminalCharRenderer {
         return FontHandling.FontStyle.REGULAR;
     }
 
+    // Only the line/box-drawing subset of DEC_SPECIAL_GRAPHICS (TerminalBufferWriter) needs
+    // vector rendering; the rest (◆ ▒ ° ± π ≤ ≥ ≠ £ · etc.) are real glyphs in the font atlas
+    // and fall through to renderForegroundChar's normal glyph path below. Values span two
+    // disjoint ranges (0x2500-0x253C box chars, 0x23BA-0x23BD scan-line chars), so each range
+    // gets its own primitive bitmask instead of boxing into a Set<Integer> on the hot path.
+    private static final long BOX_CHARS_MASK =
+            (1L << (0x2500 - 0x2500)) | (1L << (0x2502 - 0x2500)) | (1L << (0x250C - 0x2500))
+                    | (1L << (0x2510 - 0x2500)) | (1L << (0x2514 - 0x2500)) | (1L << (0x2518 - 0x2500))
+                    | (1L << (0x251C - 0x2500)) | (1L << (0x2524 - 0x2500)) | (1L << (0x252C - 0x2500))
+                    | (1L << (0x2534 - 0x2500)) | (1L << (0x253C - 0x2500));
+    private static final int SCAN_CHARS_MASK =
+            (1 << (0x23BA - 0x23BA)) | (1 << (0x23BB - 0x23BA)) | (1 << (0x23BC - 0x23BA)) | (1 << (0x23BD - 0x23BA));
+
+    private static boolean isBoxDrawingCharacter(final int ch) {
+        if (ch >= 0x2500 && ch <= 0x253C) {
+            return (BOX_CHARS_MASK & (1L << (ch - 0x2500))) != 0;
+        }
+        if (ch >= 0x23BA && ch <= 0x23BD) {
+            return (SCAN_CHARS_MASK & (1 << (ch - 0x23BA))) != 0;
+        }
+        return false;
+    }
+
+    // Scan-line Y positions as fraction of cell height (1,3,7,9 of 10 rows, xterm dec2ucs).
+    private static final float SCAN_1_Y = 0.12f;
+    private static final float SCAN_3_Y = 0.33f;
+    private static final float SCAN_7_Y = 0.66f;
+    private static final float SCAN_9_Y = 0.87f;
+
+    // Per-frame quad construction for 15 box chars is cheap (≤8 quads/char, 4 verts each)
+    // and keeps geometry derived from live CHAR_WIDTH/HEIGHT (resize-aware). Atlas
+    // pre-tessellation is deferred pending profiling; not a bottleneck vs glyph path.
+    private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
+            final float offset, final int ch, final float r, final float g, final float b) {
+        final float w = Terminal.CHAR_WIDTH;
+        final float h = Terminal.CHAR_HEIGHT;
+        final float t = 2f; // thickness
+        final float cx = w / 2f - t / 2f;
+        final float cy = h / 2f - t / 2f;
+        switch (ch) {
+            case 0x2500 -> quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b); // ─
+            case 0x2502 -> quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b); // │
+            case 0x250C -> { // ┌
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2510 -> { // ┐
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2514 -> { // └
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+            }
+            case 0x2518 -> { // ┘
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x251C -> { // ├
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+            }
+            case 0x2524 -> { // ┤
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x252C -> { // ┬
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+            }
+            case 0x2534 -> { // ┴
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+            }
+            case 0x253C -> { // ┼
+                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+            }
+            case 0x23BA -> quad(buffer, matrix, offset, h * SCAN_1_Y, offset + w, h * SCAN_1_Y + t, r, g, b); // ⎺ scan 1
+            case 0x23BB -> quad(buffer, matrix, offset, h * SCAN_3_Y, offset + w, h * SCAN_3_Y + t, r, g, b); // ⎻ scan 3
+            case 0x23BC -> quad(buffer, matrix, offset, h * SCAN_7_Y, offset + w, h * SCAN_7_Y + t, r, g, b); // ⎼ scan 7
+            case 0x23BD -> quad(buffer, matrix, offset, h * SCAN_9_Y, offset + w, h * SCAN_9_Y + t, r, g, b); // ⎽ scan 9
+            default -> {}
+        }
+    }
+
+    private static void quad(final BufferBuilder buffer, final Matrix4f matrix,
+            final float x0, final float y0, final float x1, final float y1,
+            final float r, final float g, final float b) {
+        buffer.addVertex(matrix, x0, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x1, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x1, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, x0, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+    }
+
     private static boolean isPrintableCharacter(final int ch) {
-        return ch == 0 || (ch > ' ' && ch <= '~') || ch >= 177;
+        // C1 control range 0x80-0x9F is non-printable; NBSP 0xA0 is conventionally a space.
+        // Old cutoff 177 (0xB1 ±) left ° (0xB0) and £ (0xA3) invisible while claiming they
+        // were "real glyphs in the font atlas" (see BOX_CHARS_MASK comment). Include 0xA1-0xFF
+        // so NBSP stays blank but £/°/· etc. render.
+        return ch == 0 || (ch > ' ' && ch <= '~') || ch > 0xA0;
     }
 }

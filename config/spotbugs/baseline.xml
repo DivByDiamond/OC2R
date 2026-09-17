@@ -33187,4 +33187,27 @@
   </BugInstance>
   
 
+  <BugInstance type="EI_EXPOSE_REP" priority="2" rank="18" abbrev="EI" category="MALICIOUS_CODE" instanceHash="eec879c2d94c49b84fc386e054cb9f5c" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
+    <ShortMessage>May expose internal representation by returning reference to mutable object</ShortMessage>
+    <LongMessage>li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer.getDirtyMask() may expose internal representation by returning TerminalRegressionsTest$DummyRenderer.dirtyMask</LongMessage>
+    <Class classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" start="124" end="127" sourcefile="TerminalRegressionsTest.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java">
+        <Message>At TerminalRegressionsTest.java:[lines 124-127]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" name="getDirtyMask" signature="()Ljava/util/concurrent/atomic/AtomicLong;" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" start="126" end="126" startBytecode="0" endBytecode="46" sourcefile="TerminalRegressionsTest.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java"/>
+      <Message>In method li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer.getDirtyMask()</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" name="dirtyMask" signature="Ljava/util/concurrent/atomic/AtomicLong;" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" sourcefile="TerminalRegressionsTest.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java">
+        <Message>In TerminalRegressionsTest.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer.dirtyMask</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.vm.terminal.TerminalRegressionsTest$DummyRenderer" primary="true" start="126" end="126" startBytecode="4" endBytecode="4" sourcefile="TerminalRegressionsTest.java" sourcepath="li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java" relSourcepath="java/li/cil/oc2/common/vm/terminal/TerminalRegressionsTest.java">
+      <Message>At TerminalRegressionsTest.java:[line 126]</Message>
+    </SourceLine>
+  </BugInstance>
 </BugCollection>

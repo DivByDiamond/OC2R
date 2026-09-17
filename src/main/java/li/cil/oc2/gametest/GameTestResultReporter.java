@@ -26,6 +26,10 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
  * when the file is absent or empty, closing the vacuous-green window where the server
  * exits 0 without running anything.
  */
+// RegisterGameTestsEvent fires on the MOD bus during mod loading, before the GAME bus (the
+// @EventBusSubscriber default) even exists — omitting bus here would silently drop this
+// subscription and turn every test run vacuously green.
+@SuppressWarnings("removal") // Bus.MOD is deprecated but still the only bus RegisterGameTestsEvent fires on
 @EventBusSubscriber(modid = API.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class GameTestResultReporter implements TestReporter {
     public static final String RESULTS_FILE_NAME = "gameTestResults.tsv";
