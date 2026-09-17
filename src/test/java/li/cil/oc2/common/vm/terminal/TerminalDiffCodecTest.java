@@ -4,12 +4,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import net.minecraft.network.codec.ByteBufCodecs;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -97,6 +101,81 @@ public class TerminalDiffCodecTest {
                 "precondition: this is a full-refresh (reset) snapshot");
         assertNotNull(full.palette(),
                 "a reset snapshot must carry the palette even when the revision is unchanged");
+    }
+
+    @Test
+    void codecRoundTripPreservesShiftOps() {
+        // At absolute capacity a linefeed physically shifts the whole main buffer; the shift
+        // is recorded as resolved memmove geometry and must survive the wire byte-exactly —
+        // the client replays it to keep its scrollback copy in sync.
+        final Terminal server = new Terminal();
+        write(server, "\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
+        TerminalDiff.capture(server); // drain: the saturation's own shifts
+        write(server, "\n"); // one more line at capacity -> exactly one new shift op
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+
+        assertEquals(1, snapshot.shiftOps().length / 5, "precondition: one shift op recorded");
+        assertNotEquals(0, snapshot.shiftOps()[2], "the op shifts a nonzero number of rows");
+
+        final TerminalDiff.Snapshot decoded = roundTrip(snapshot);
+        assertArrayEquals(snapshot.shiftOps(), decoded.shiftOps(),
+                "shift op geometry must survive the wire");
+    }
+
+    @Test
+    void hostileRowCountIsBoundedAndConsumesTheStream() {
+        // A malformed rowCount (larger than the rows array) must not become an unbounded
+        // allocation; extra entries are consumed (stream integrity) and dropped. The reverse
+        // (rowCount < rows) decodes nulls, which apply skips.
+        final Terminal server = new Terminal();
+        write(server, "hello");
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+
+        final TerminalDiff.Snapshot hostile =
+                new TerminalDiff.Snapshot(
+                        snapshot.reset(),
+                        snapshot.width(),
+                        snapshot.height(),
+                        snapshot.altBuffer(),
+                        snapshot.rows(), // 1 row index...
+                        new byte[][] {snapshot.rowData()[0], snapshot.rowData()[0], snapshot.rowData()[0]},
+                        snapshot.shiftOps(),
+                        snapshot.cursorX(),
+                        snapshot.cursorY(),
+                        snapshot.lastRowToDisplay(),
+                        snapshot.lastRowToDisplayMax(),
+                        snapshot.cursorMode(),
+                        snapshot.cursorVisible(),
+                        snapshot.bell(),
+                        snapshot.inputModes(),
+                        snapshot.palette());
+
+        final TerminalDiff.Snapshot decoded = roundTrip(hostile);
+        assertEquals(1, decoded.rowData().length, "rowData bounded to the rows array length");
+        assertNotNull(decoded.rowData()[0], "the paired row payload survives");
+
+        final Terminal client = new Terminal();
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, decoded));
+    }
+
+    @Test
+    void negativeRowCountIsRejectedAsMalformedStream() {
+        // A hostile VAR_INT count previously fell through Math.min to new byte[-1][] — a
+        // decoder disconnect either way, but as an unnamed NegativeArraySizeException.
+        // Stricter is safe: diagnose the malformed stream instead (Kimi gate F5). Revert-and-
+        // fail: without the guard this throws NegativeArraySizeException, failing the test.
+        final ByteBuf buf = Unpooled.buffer();
+        buf.writeBoolean(false); // reset
+        ByteBufCodecs.VAR_INT.encode(buf, Terminal.WIDTH);
+        ByteBufCodecs.VAR_INT.encode(buf, Terminal.HEIGHT);
+        buf.writeBoolean(false); // altBuffer
+        ByteBufCodecs.BYTE_ARRAY.encode(buf, new byte[0]); // rows blob (empty)
+        ByteBufCodecs.VAR_INT.encode(buf, -1); // hostile rowCount; decode must reject it
+
+        final IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> TerminalDiff.STREAM_CODEC.decode(buf));
+        assertTrue(thrown.getMessage().contains("negative rowData count"),
+                "the diagnostic must name the malformed field");
     }
 
     @Test

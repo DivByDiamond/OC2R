@@ -185,13 +185,29 @@ class TerminalBufferScrolling {
     }
 
     /**
-     * Raw shift of an absolute buffer-row span, clipped only to the physical buffer edges when
-     * the caller does not narrow the bounds further. Region containment is the caller's
-     * responsibility (IL/DL clamp their own line counts and pass their region bounds).
+     * Raw shift of an absolute buffer-row span, clipped to {@code [floor, ceiling]}: rows pushed
+     * past either bound are discarded (scrolled off), never an out-of-bounds access. Callers own
+     * scroll-region containment (IL/DL clamp their line counts and pass their region bounds).
      */
     public void shiftLines(
             final int firstLine, final int lastLine, final int count, final int floor, final int ceiling) {
         TerminalLineShifter.shiftLines(terminal, firstLine, lastLine, count, floor, ceiling);
+    }
+
+    /**
+     * Pure replay of one resolved wire shift operation against the MAIN buffer — the
+     * client-side half of {@link #shiftLines}'s network recording. No dirty marks, no sink
+     * recording: the diff application marks everything itself afterwards.
+     */
+    public void applyResolvedShift(
+            final int copySrcRow,
+            final int copyDstRow,
+            final int copyRows,
+            final int blankStartRow,
+            final int blankRows) {
+        final var geometry = new TerminalLineShifter.ShiftGeometry(
+                copySrcRow, copyDstRow, copyRows, blankStartRow, blankRows, copyDstRow, copyDstRow + copyRows);
+        TerminalLineShifter.applyResolved(terminal, false, geometry);
     }
 
     private void markAllRowsDirty() {

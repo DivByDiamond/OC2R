@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -174,6 +175,7 @@ public class TerminalDiffTest {
                         snapshot.altBuffer(),
                         snapshot.rows(),
                         truncated,
+                        snapshot.shiftOps(),
                         snapshot.cursorX(),
                         snapshot.cursorY(),
                         snapshot.lastRowToDisplay(),
@@ -342,7 +344,7 @@ public class TerminalDiffTest {
         // out of apply. The primitives refuse out-of-range geometry at their boundary.
         final Terminal client = new Terminal();
         final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
-                false, 5_000_000, 200_000_000, false, new int[0], new byte[0][],
+                false, 5_000_000, 200_000_000, false, new int[0], new byte[0][], new int[0],
                 0, 0, Terminal.HEIGHT, Terminal.HEIGHT, 0, true, false, 0L, null);
 
         assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
@@ -359,7 +361,7 @@ public class TerminalDiffTest {
         // lastRowToDisplay would send the renderer's row indexing past the buffer.
         final Terminal client = new Terminal();
         final TerminalDiff.Snapshot hostile = new TerminalDiff.Snapshot(
-                false, Terminal.WIDTH, Terminal.HEIGHT, false, new int[0], new byte[0][],
+                false, Terminal.WIDTH, Terminal.HEIGHT, false, new int[0], new byte[0][], new int[0],
                 0, 0, 200_000_000, 1, 0, true, false, 0L, null);
 
         assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
@@ -370,6 +372,138 @@ public class TerminalDiffTest {
         assertTrue(client.lastRowToDisplay >= client.height
                         && client.lastRowToDisplay <= client.lastRowToDisplayMax,
                 "lastRowToDisplay clamped into [height, lastRowToDisplayMax]");
+    }
+
+    @Test
+    void scrolledBackViewSurvivesWindowSlideDiff() {
+        // View ownership: while the user is scrolled back through scrollback, the view is
+        // anchored to its absolute content rows. A server-side window slide (new output with
+        // scrollback room) grows lrdMax WITHOUT moving content — the view must stay put, not
+        // snap to the bottom. Before this fix every incoming diff yanked a scrolled-back view
+        // down, making scrollback review impossible while output streamed.
+        write(server, "\n".repeat(29)); // 6 lines scroll off the bottom
+        assertEquals(Terminal.HEIGHT + 6, server.lastRowToDisplayMax, "precondition: 6 history rows");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+        assertEquals(client.lastRowToDisplayMax, client.lastRowToDisplay, "precondition: client glued");
+
+        // Wheel up 4 on the client (its own view state — the server never sees this).
+        for (int i = 0; i < 4; i++) {
+            client.bufferManager.decrementLastLineToDisplay();
+        }
+        assertEquals(client.lastRowToDisplayMax - 4, client.lastRowToDisplay, "precondition: scrolled back");
+
+        // Server emits two more lines: pure window slide, no shift ops.
+        write(server, "\n\n");
+        assertEquals(0, server.consumeNetworkDirty().shiftOps().length, "precondition: slide, no ops");
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        assertEquals(Terminal.HEIGHT + 8, client.lastRowToDisplayMax, "window geometry tracks the server");
+        assertEquals(Terminal.HEIGHT + 6 - 4, client.lastRowToDisplay,
+                "scrolled-back view must keep its absolute content position");
+    }
+
+    @Test
+    void scrolledBackViewFollowsContentAcrossCapacityShift() {
+        // At absolute capacity a linefeed physically shifts the whole buffer: the content the
+        // user was reading moves up one row per line. The view must follow it (xterm/tmux
+        // anchoring), and the client's scrollback copy must stay exact via the shift-op
+        // replay — before this fix the ops didn't exist and scrollback above the visible
+        // window silently diverged from the server.
+        write(server, "\n".repeat(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT));
+        assertEquals(Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT, server.lastRowToDisplayMax,
+                "precondition: at absolute capacity");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        for (int i = 0; i < 10; i++) {
+            client.bufferManager.decrementLastLineToDisplay();
+        }
+        final int scrolledTo = client.lastRowToDisplay;
+
+        write(server, "\n\n"); // two linefeeds at capacity: two whole-buffer shifts
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        assertEquals(2, snapshot.shiftOps().length / 5, "precondition: two shift ops");
+
+        TerminalDiff.apply(client, snapshot);
+
+        assertEquals(scrolledTo - 2, client.lastRowToDisplay,
+                "the view follows its content across the shift");
+        // The shifted window region the client had synced must now match the server exactly.
+        final int width = client.width;
+        for (int row = Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT - Terminal.HEIGHT - 1;
+                row < Terminal.HEIGHT * Terminal.SCROLL_BACK_COUNT; row++) {
+            assertArrayEquals(
+                    Arrays.copyOfRange(server.buffer, row * width, (row + 1) * width),
+                    Arrays.copyOfRange(client.buffer, row * width, (row + 1) * width),
+                    "shifted scrollback row " + row + " must match the server after op replay");
+        }
+    }
+
+    @Test
+    void gluedViewFollowsShippedBottomAfterOutput() {
+        // The other half of view ownership: a glued view (at the bottom) keeps following the
+        // newest output — wheeling down to the bottom re-attaches the live tail.
+        write(server, "\n".repeat(30));
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+        client.bufferManager.decrementLastLineToDisplay();
+        assertTrue(client.lastRowToDisplay < client.lastRowToDisplayMax, "precondition: scrolled back");
+
+        client.bufferManager.incrementLastLineToDisplay(true); // wheel back down: glue
+        assertEquals(client.lastRowToDisplayMax, client.lastRowToDisplay, "precondition: re-glued");
+
+        write(server, "\n");
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        assertEquals(client.lastRowToDisplayMax, client.lastRowToDisplay,
+                "a glued view follows the shipped bottom");
+    }
+
+    @Test
+    void resetSnapshotOverridesScrolledBackView() {
+        // A reset snapshot rebuilds the client from scratch — the shipped scroll-window is
+        // authoritative and a scrolled-back view does not survive it.
+        write(server, "\n".repeat(30));
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+        client.bufferManager.decrementLastLineToDisplay();
+        assertTrue(client.lastRowToDisplay < client.lastRowToDisplayMax, "precondition: scrolled back");
+
+        server.markAllDirty(); // force a reset (full-refresh) snapshot
+        TerminalDiff.apply(client, TerminalDiff.capture(server));
+
+        assertEquals(client.lastRowToDisplayMax, client.lastRowToDisplay,
+                "a reset snapshot resets the view to the shipped bottom");
+    }
+
+    @Test
+    void hostileShiftOpsAreSkippedNotFatal() {
+        // Shift ops are raw wire geometry: values that do not fit the main buffer must be
+        // skipped, never an out-of-bounds access on the client network thread.
+        write(server, "hello");
+        final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
+        final TerminalDiff.Snapshot hostile =
+                new TerminalDiff.Snapshot(
+                        false,
+                        snapshot.width(),
+                        snapshot.height(),
+                        false,
+                        new int[0],
+                        new byte[0][],
+                        new int[] {-5, 0, 10, 0, 10, 0, Integer.MAX_VALUE, 5, 0, 5},
+                        0,
+                        0,
+                        Terminal.HEIGHT,
+                        Terminal.HEIGHT,
+                        0,
+                        true,
+                        false,
+                        0L,
+                        null);
+
+        final Terminal client = new Terminal();
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, hostile));
     }
 
     private static void write(final Terminal target, final String text) {

@@ -18,4 +18,16 @@
     <Match>
         <Class name="~li\.cil\.oc2\.gametest\..*" />
     </Match>
+    <!-- FrameState is a deliberately zero-copy read-only view of the terminal's buffer arrays,
+         captured once per render frame under the geometry seqlock (§36 M4). EI_EXPOSE_REP{,2}
+         on its accessors/constructor is the design, not a defect: cloning eight arrays per
+         frame would defeat the capture's purpose, and the view is never mutated. -->
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.render.FrameState" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.common.vm.terminal.render.FrameState" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
 </FindBugsFilter>
