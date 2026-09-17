@@ -1613,7 +1613,7 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 - UTF-8: `split write`, `0xFF` + resync, `wide at EOL`
 - Resize: `altBuffer`, `scroll region`, `DECCOLM 132→80` (cursor/visible rows/buffer)
 
-**VT-регрессии только по факту:** DEC graphics U+2500 (tmux), SGR bold, margins/DECOM, wrap, scrollback, `simcity`/`nInvaders`.
+**VT-регрессии только по факту:** DEC graphics U+2500 (tmux) ✅, SGR bold ✅, margins/DECOM ✅ (`decom-margins` fixture), wrap ✅ (`line-wrap` + `no-autowrap` fixtures), scrollback, `simcity`/`nInvaders`.
 
 **Отложить:** headless xterm runner, массовый fuzz, `terminal-core` модуль, kitty/sixel/hyperlinks/clipboard, широкая Unicode/emoji матрица, копирование `libvterm`/`kitty` без нужды. `TerminalBufferTest` disabled — оставить до `§42` core split.
 
