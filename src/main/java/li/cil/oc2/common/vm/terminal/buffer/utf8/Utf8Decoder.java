@@ -57,6 +57,17 @@ public class Utf8Decoder {
             codepoint = ch;
             return true;
         }
+        // Lead byte in the middle of a multi-byte sequence — xterm's decodeUtf8 aborts the
+        // previous incomplete sequence (emitting UCS_REPL) and resyncs on the new lead. Our
+        // decoder silently drops the incomplete sequence (no REPL), but it must at least resync
+        // rather than stitching the lead's low 6 bits into the previous codepoint.
+        if ((ch & 0xC0) == 0xC0) {
+            continuationByte = false;
+            bytesToRead = 0;
+            bytesRead = 0;
+            codepoint = 0;
+            return startSequence(ch);
+        }
         bytesRead++;
         codepoint |= (ch & 0x3F) << ((bytesToRead - bytesRead) * 6);
         if (bytesToRead == bytesRead) {
