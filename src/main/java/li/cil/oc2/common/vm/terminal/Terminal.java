@@ -110,39 +110,12 @@ public class Terminal {
      * {@code lastchar}. Transient: not part of saved/restored state.
      */
     public transient int lastPrintedChar = -1;
-    public int savedX;
-    public int savedY;
     /**
-     * Saved autowrap-pending flag (xterm's {@code sc->wrap_flag}), saved/restored by DECSC/DECRC
-     * and the SCOSC/SCORC pair as part of the cursor state. Restored AFTER the cursor move in
-     * {@link SavedCursor#restore}, mirroring xterm's "after CursorSet/ResetWrap" ordering.
+     * Saved cursor position + rendition for the main and alt buffers, written by DECSC/SCOSC and
+     * read back by DECRC/SCORC (see {@link li.cil.oc2.common.vm.terminal.escapes.SavedCursor}).
      */
-    public boolean savedAutowrapPending;
-    public byte savedStyle;
-    public boolean savedUseG0 = true;
-    public int savedDrawingModeG0;
-    public int savedDrawingModeG1;
-    public ColorMode savedForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
-    public ColorMode savedBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
-    public ColorData savedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
-    public ColorData savedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
-    public ColorData savedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
-    public ColorData savedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
-    public ColorData savedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
-    public int altSavedX;
-    public int altSavedY;
-    public boolean altSavedAutowrapPending;
-    public byte altSavedStyle;
-    public boolean altSavedUseG0 = true;
-    public int altSavedDrawingModeG0;
-    public int altSavedDrawingModeG1;
-    public ColorMode altSavedForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
-    public ColorMode altSavedBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;
-    public ColorData altSavedSixteenColor = TerminalColors.DEFAULT_COLORS.copy();
-    public ColorData altSavedSixteenColorBright = TerminalColors.DEFAULT_BRIGHT_COLORS.copy();
-    public ColorData altSavedTwoFiftySixColor = TerminalColors.DEFAULT_256_COLORS.copy();
-    public ColorData altSavedForegroundColor = TerminalColors.DEFAULT_TRUE_COLOR_FOREGROUND.copy();
-    public ColorData altSavedBackgroundColor = TerminalColors.DEFAULT_TRUE_COLOR_BACKGROUND.copy();
+    public SavedCursorState savedCursor = new SavedCursorState();
+    public SavedCursorState altSavedCursor = new SavedCursorState();
     // Transient like the buffers (see scrollFirst/scrollLast): these are absolute buffer
     // row indices bounded by height * SCROLL_BACK_COUNT. Persisting them across a dynamic
     // height change breaks that invariant on load (a 48-row save restores up to 960 into

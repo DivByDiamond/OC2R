@@ -119,15 +119,15 @@ public class DecstrTest {
         write(terminal, CSI + "5;5H"); // cursor to (4,4)
         write(terminal, CSI + "1m");   // bold
         write(terminal, ESC + "7");    // DECSC: save cursor + rendition
-        assertEquals(4, terminal.savedX, "precondition: saved cursor x");
-        assertEquals(4, terminal.savedY, "precondition: saved cursor y");
-        assertEquals(Terminal.STYLE_BOLD_MASK, terminal.savedStyle, "precondition: saved bold style");
+        assertEquals(4, terminal.savedCursor.x, "precondition: saved cursor x");
+        assertEquals(4, terminal.savedCursor.y, "precondition: saved cursor y");
+        assertEquals(Terminal.STYLE_BOLD_MASK, terminal.savedCursor.style, "precondition: saved bold style");
 
         write(terminal, DECSTR);
 
-        assertEquals(0, terminal.savedX, "DECSTR resets the saved cursor x to home");
-        assertEquals(0, terminal.savedY, "DECSTR resets the saved cursor y to home");
-        assertEquals(TerminalColors.DEFAULT_STYLE, terminal.savedStyle, "DECSTR resets the saved rendition to default");
+        assertEquals(0, terminal.savedCursor.x, "DECSTR resets the saved cursor x to home");
+        assertEquals(0, terminal.savedCursor.y, "DECSTR resets the saved cursor y to home");
+        assertEquals(TerminalColors.DEFAULT_STYLE, terminal.savedCursor.style, "DECSTR resets the saved rendition to default");
     }
 
     @Test
