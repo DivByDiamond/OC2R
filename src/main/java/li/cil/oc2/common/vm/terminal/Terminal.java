@@ -46,6 +46,7 @@ public class Terminal {
     public static final int STYLE_INVERT_MASK = 1 << 4;
     public static final int STYLE_HIDDEN_MASK = 1 << 5;
     public static final int STYLE_ITALIC_MASK = 1 << 6;
+    public static final int STYLE_CROSSED_OUT_MASK = 1 << 7;
 
     public ColorMode currentForegroundColorMode = ColorMode.DEFAULT_FOREGROUND;
     public ColorMode currentBackgroundColorMode = ColorMode.DEFAULT_BACKGROUND;

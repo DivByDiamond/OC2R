@@ -39,15 +39,21 @@ public final class RedstoneInterfaceTests {
 
         final int[] base = new int[1];
         helper.startSequence()
-            .thenExecuteAfter(60, () -> base[0] = computer.deviceCount())
+            .thenExecuteAfter(60, () -> {
+                base[0] = computer.deviceCount();
+                System.out.println("[redstoneAttach] base=" + base[0] + " " + computer.describe());
+            })
             .thenExecute(() -> placeInterface(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
+                System.out.println("[redstoneAttach] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
                 if (withNeighbor <= base[0]) {
+                    final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
+                        helper.getBlockEntity(TestSupport.CABLE_POS);
                     throw new GameTestAssertException(
                         "redstone interface added no device (alone=" + base[0]
-                            + ", attached=" + withNeighbor + ") "
-                            + computer.describe());
+                            + ", attached=" + withNeighbor + ") " + computer.describe()
+                            + "; cableDevices=" + (cableBe == null ? "null" : cableBe.busElement.getLocalDevices()));
                 }
             })
             .thenSucceed();
@@ -63,23 +69,28 @@ public final class RedstoneInterfaceTests {
 
         final int[] base = new int[1];
         helper.startSequence()
-            .thenExecuteAfter(60, () -> base[0] = computer.deviceCount())
+            .thenExecuteAfter(60, () -> {
+                base[0] = computer.deviceCount();
+                System.out.println("[redstoneRemove] base=" + base[0] + " " + computer.describe());
+            })
             .thenExecute(() -> placeInterface(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
+                System.out.println("[redstoneRemove] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
                 if (withNeighbor <= base[0]) {
                     throw new GameTestAssertException(
                         "redstone interface added no device (alone=" + base[0]
-                            + ", attached=" + withNeighbor + ")");
+                            + ", attached=" + withNeighbor + ") " + computer.describe());
                 }
             })
             .thenExecute(() -> TestSupport.breakBlock(helper, TestSupport.DEVICE_POS))
             .thenExecuteAfter(60, () -> {
                 final int after = computer.deviceCount();
+                System.out.println("[redstoneRemove] after=" + after + " base=" + base[0] + " " + computer.describe());
                 if (after != base[0]) {
                     throw new GameTestAssertException(
                         "device count did not return to baseline after removing redstone interface: alone="
-                            + base[0] + ", after=" + after);
+                            + base[0] + ", after=" + after + " " + computer.describe());
                 }
             })
             .thenSucceed();

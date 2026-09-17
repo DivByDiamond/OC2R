@@ -29,23 +29,32 @@ public final class DeviceBusTests {
 
         final int[] base = new int[1];
         helper.startSequence()
-            .thenExecuteAfter(60, () -> base[0] = computer.deviceCount())
+            .thenExecuteAfter(60, () -> {
+                base[0] = computer.deviceCount();
+                System.out.println("[busTracks] base=" + base[0] + " " + computer.describe());
+            })
             .thenExecute(() -> placeDevice(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
+                System.out.println("[busTracks] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
                 if (withNeighbor <= base[0]) {
+                    final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
+                        helper.getBlockEntity(TestSupport.CABLE_POS);
                     throw new GameTestAssertException(
                         "attaching a redstone interface added no device (alone=" + base[0]
-                            + ", attached=" + withNeighbor + ")");
+                            + ", attached=" + withNeighbor + ") " + computer.describe()
+                            + "; cableDevices=" + (cableBe == null ? "null" : cableBe.busElement.getLocalDevices())
+                            + "; connEast=" + (cableBe == null ? "null" : li.cil.oc2.common.block.cable.BusCableStateProperties.getConnectionType(cableBe.getBlockState(), net.minecraft.core.Direction.EAST)));
                 }
             })
             .thenExecute(() -> breakBlock(helper, DEVICE_POS))
             .thenExecuteAfter(60, () -> {
                 final int after = computer.deviceCount();
+                System.out.println("[busTracks] after=" + after + " base=" + base[0] + " " + computer.describe());
                 if (after != base[0]) {
                     throw new GameTestAssertException(
                         "device count did not return to baseline after removing the neighbour: alone="
-                            + base[0] + ", after=" + after);
+                            + base[0] + ", after=" + after + " " + computer.describe());
                 }
             })
             .thenSucceed();

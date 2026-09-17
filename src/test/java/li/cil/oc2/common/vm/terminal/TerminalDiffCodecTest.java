@@ -178,6 +178,25 @@ public class TerminalDiffCodecTest {
                 "the diagnostic must name the malformed field");
     }
 
+    @Test
+    void codecRoundTripPreservesCrossedOutStyle0x80() {
+        // S44.2: style 0x80 (1<<7) is negative as a Java byte (-128). The diff writes it via
+        // buf.put(style) and reads via buf.get() - sign extension must not corrupt the bit.
+        final Terminal server = new Terminal();
+        write(server, ESC + "[9m"); // SGR 9 - strikethrough
+        write(server, "X");
+        final TerminalDiff.Snapshot snap = TerminalDiff.capture(server);
+        final TerminalDiff.Snapshot decoded = roundTrip(snap);
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, decoded);
+        // Row 0, col 0 in main buffer - lastRowToDisplay window is at bottom
+        final int row = client.lastRowToDisplay - client.height;
+        final int idx = row * client.width;
+        assertTrue((client.styles[idx] & Terminal.STYLE_CROSSED_OUT_MASK) != 0,
+                "strikethrough 0x80 must survive diff codec round-trip (byte sign handling)");
+        assertEquals('X', client.buffer[idx], "codepoint must also survive");
+    }
+
     private static TerminalDiff.Snapshot roundTrip(final TerminalDiff.Snapshot snapshot) {
         final ByteBuf buf = Unpooled.buffer();
         TerminalDiff.STREAM_CODEC.encode(buf, snapshot);

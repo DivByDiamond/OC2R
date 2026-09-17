@@ -1605,7 +1605,19 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
       «DEC Special Graphics»; xterm `convtbl.c`; VT510 manual — bitsavers
       (pdf/dec/terminal/vt510); демо-приёмка: simcity.c (Anders Gräsjo), nInvaders.
 
-### Приоритет и связка
+### Приоритет и связка (сужено 2026-09-16: не универсальный стенд, а VT для shell/vim/tmux/OnyxOS)
+
+**Оставить:** `vttest` + `VttestHarnessTest` goldens как формат регрессий, `xterm`/`ref/vttest/charsets.c` только для спорных VT-таблиц, текущие scrolling property-тесты.
+
+**Добавить ровно 6 регрессий:**
+- UTF-8: `split write`, `0xFF` + resync, `wide at EOL`
+- Resize: `altBuffer`, `scroll region`, `DECCOLM 132→80` (cursor/visible rows/buffer)
+
+**VT-регрессии только по факту:** DEC graphics U+2500 (tmux), SGR bold, margins/DECOM, wrap, scrollback, `simcity`/`nInvaders`.
+
+**Отложить:** headless xterm runner, массовый fuzz, `terminal-core` модуль, kitty/sixel/hyperlinks/clipboard, широкая Unicode/emoji матрица, копирование `libvterm`/`kitty` без нужды. `TerminalBufferTest` disabled — оставить до `§42` core split.
+
+Критерий DONE следующего этапа: §44.1/§44.2 зеленые (`dec-special-graphics` xfail→pass) + 6 тестов, без расширения харнесса.
 
 1. **44.2** — вечер, разминочный.
 2. **44.1** — ~день работы, максимальный видимый эффект (tmux/нcurses сразу красивее).
