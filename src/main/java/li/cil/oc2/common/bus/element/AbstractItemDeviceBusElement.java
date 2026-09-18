@@ -95,11 +95,13 @@ public abstract class AbstractItemDeviceBusElement
 
         // getDisplayName() is @NotNull (falls back to the item's translation key), so this
         // always runs when entries is non-empty — no need to guard against a null display name.
+        // .getString() flattens the Component to plain text; .toString() would instead dump the
+        // Component's internal representation (e.g. "TranslatableContents{key=...}").
         entries.add(
                 new ItemEntry(
                         new ItemDeviceInfo(
                                 null,
-                                new TypeNameRPCDevice(query.getItemStack().getDisplayName().toString()),
+                                new TypeNameRPCDevice(query.getItemStack().getDisplayName().getString()),
                                 0)));
     }
 

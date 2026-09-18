@@ -109,9 +109,12 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     @Override
     public void store(final int offset, final long value, final int sizeLog2)
             throws MemoryAccessException {
-        if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-            lock.lock();
-            try {
+        // The bounds check must happen under the lock: length can drop to 0 in close()
+        // (which also releases the buffer) between an unlocked check and locking here,
+        // letting a stale offset through to a put() on a freed direct buffer.
+        lock.lock();
+        try {
+            if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
                 switch (sizeLog2) {
                     case 0 -> buffer.put(offset, (byte) value);
                     case 1 -> buffer.putShort(offset, (short) value);
@@ -120,9 +123,9 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
                     default -> throw new IllegalArgumentException();
                 }
                 setDirty(offset);
-            } finally {
-                lock.unlock();
             }
+        } finally {
+            lock.unlock();
         }
     }
 

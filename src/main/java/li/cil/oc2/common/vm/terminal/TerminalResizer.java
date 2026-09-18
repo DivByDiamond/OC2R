@@ -82,8 +82,11 @@ final class TerminalResizer {
         terminal.lastRowToDisplayMax = terminal.height;
         terminal.setCursorPos(0, 0);
 
-        // Mark all rows dirty
+        // Mark all rows dirty — BOTH sinks, same reasoning as resizeWidth below: the renderer
+        // mask drives local redraw, but the network diff needs its own full-refresh bit or a
+        // client mid-consume when this lands sees a partial diff at the new width and diverges.
         terminal.geometryVersion.incrementAndGet();
+        terminal.networkState.markAllDirty();
         terminal.renderersLock.lock();
         try {
             terminal.renderers.forEach(model -> model.getDirtyMask().set(-1L));

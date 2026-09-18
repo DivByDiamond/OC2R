@@ -26,11 +26,18 @@ final class TerminalNetworkState {
         networkDirtyRows = new BitSet(height * Terminal.SCROLL_BACK_COUNT);
     }
 
-    /** Reallocates the dirty-row sink for a new buffer capacity and arms a full refresh. */
-    void reallocate(final int newMainRows) {
+    /**
+     * Reallocates the dirty-row sink for a new buffer capacity and arms a full refresh.
+     *
+     * <p>Takes the new screen height rather than the derived row count so this and
+     * {@link #recordDirtyScreenRows} always compute the same capacity from the same input —
+     * a caller passing a pre-computed row count could drift from {@code height} if the two
+     * were ever derived separately.
+     */
+    void reallocate(final int newHeight) {
         networkDirtyLock.lock();
         try {
-            networkDirtyRows = new BitSet(newMainRows);
+            networkDirtyRows = new BitSet(newHeight * Terminal.SCROLL_BACK_COUNT);
             networkShiftOps.clear();
             networkNeedsFullRefresh = true;
         } finally {

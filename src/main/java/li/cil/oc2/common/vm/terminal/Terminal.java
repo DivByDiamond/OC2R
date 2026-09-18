@@ -133,6 +133,12 @@ public class Terminal {
     public transient byte[] lineAttrs;
     public transient byte[] altLineAttrs;
 
+    // Public only for tests (li.cil.oc2.common.vm.terminal.* and .vttest, which add directly,
+    // single-threaded, without locking). Every other access MUST hold renderersLock first:
+    // WeakHashMap is not thread-safe, and an unlocked iteration can hit a
+    // ConcurrentModificationException or a torn view against a concurrent GC-driven expunge.
+    // Production code only reaches this set via TerminalClient's getRenderer/releaseRenderer
+    // and Terminal's own markDirty/markAllDirty, which all lock.
     public final transient Set<RendererModel> renderers =
             Collections.newSetFromMap(new WeakHashMap<>());
     final transient ReentrantLock renderersLock = new ReentrantLock();

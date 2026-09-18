@@ -128,6 +128,7 @@ public class TerminalDiffCodecTest {
         // allocation; extra entries are consumed (stream integrity) and dropped. The reverse
         // (rowCount < rows) decodes nulls, which apply skips.
         final Terminal server = new Terminal();
+        TerminalDiff.capture(server); // drain the construction-time full refresh (RIS)
         write(server, "hello");
         final TerminalDiff.Snapshot snapshot = TerminalDiff.capture(server);
 

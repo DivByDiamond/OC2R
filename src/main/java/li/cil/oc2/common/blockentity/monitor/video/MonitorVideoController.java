@@ -1,6 +1,5 @@
 package li.cil.oc2.common.blockentity.monitor.video;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -68,7 +67,6 @@ public final class MonitorVideoController {
         this.frameConsumer = consumer;
     }
 
-    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "overflow guard: monitor size from VM, must validate")
     public void sendFrame(final MonitorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
@@ -79,7 +77,7 @@ public final class MonitorVideoController {
         // The buffer is handed off to the encoder worker after copying, so a fresh
         // one is obtained from the pool every frame instead of being reused.
         final long frameBytes = (long) width * height * 2;
-        if (frameBytes > 32L * 1024 * 1024 || frameBytes > Integer.MAX_VALUE) {
+        if (frameBytes > Integer.MAX_VALUE || frameBytes > 32L * 1024 * 1024) {
             return;
         }
         final byte[] frame = encoder.obtainBuffer((int) frameBytes);
@@ -130,13 +128,17 @@ public final class MonitorVideoController {
         final var message =
                 new MonitorFramebufferMessage(
                         pos, codecId, width, height, frameSize, chunkIndex, chunkCount, data);
+        // Copy the recipient list under the lock, then send outside it: sendToClient does
+        // network I/O and must not block handleWatchedBy/evictWatchers on other threads.
+        final ServerPlayer[] recipients;
         watchersLock.lock();
         try {
-            for (final ServerPlayer player : watchers.keySet()) {
-                NetworkMessages.sendToClient(message, player);
-            }
+            recipients = watchers.keySet().toArray(new ServerPlayer[0]);
         } finally {
             watchersLock.unlock();
+        }
+        for (final ServerPlayer player : recipients) {
+            NetworkMessages.sendToClient(message, player);
         }
     }
 

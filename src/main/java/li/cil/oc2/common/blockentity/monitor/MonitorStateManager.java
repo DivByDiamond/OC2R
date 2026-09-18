@@ -18,11 +18,10 @@ public final class MonitorStateManager {
     public final DeviceGroup deviceGroup;
     final MonitorDevice monitorDevice;
     final KeyboardDevice<BlockEntity> keyboardDevice;
-    private final Supplier<Object> monitorSupplier;
     public final FixedEnergyStorage energy;
     UUID deviceId = UUID.randomUUID();
 
-    private Object monitorCache;
+    private final Object monitorCache;
 
     private static Supplier<Object> createMonitorSupplier() {
         if (FMLLoader.getDist() == Dist.CLIENT) {
@@ -41,15 +40,15 @@ public final class MonitorStateManager {
         this.monitorDevice = new MonitorDevice(blockEntity, onMountedChanged);
         this.keyboardDevice = new KeyboardDevice<>(blockEntity);
         this.deviceGroup = new DeviceGroup(blockEntity);
-        this.monitorSupplier = createMonitorSupplier();
+        // Created once here rather than lazily in getMonitor(): a lazy null-check-then-set
+        // is not thread-safe (render thread vs. main thread could both pass the null check
+        // and each construct their own renderer, leaking one).
+        this.monitorCache = createMonitorSupplier().get();
         deviceGroup.addDevice(monitorDevice);
         deviceGroup.addDevice(keyboardDevice);
     }
 
     public Object getMonitor() {
-        if (monitorCache == null) {
-            monitorCache = monitorSupplier.get();
-        }
         return monitorCache;
     }
 

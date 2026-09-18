@@ -1,11 +1,11 @@
 package li.cil.oc2.common.vm;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.api.bus.device.vm.event.VMInitializationException;
@@ -51,7 +51,9 @@ public class VMRunner implements Runnable {
     // Written from the main thread in tick(), read/written from the VM runner thread in run() —
     // needs volatile for cross-thread visibility.
     @Serialized private volatile long cycleLimit;
-    @Serialized private volatile long cycles;
+    // AtomicLong rather than a volatile long: the increment in run() is a read-modify-write,
+    // and getCycles() can be read from another thread concurrently with that increment.
+    @Serialized private final AtomicLong cycles = new AtomicLong();
 
     public VMRunner(final AbstractVirtualMachine virtualMachine) {
         this.board = virtualMachine.state.board;
@@ -65,20 +67,11 @@ public class VMRunner implements Runnable {
     }
 
     long getCycles() {
-        return cycles;
+        return cycles.get();
     }
 
     long getCycleLimit() {
         return cycleLimit;
-    }
-
-    // The += is a read-modify-write, but cycles is only ever mutated here, from the single VM
-    // runner thread that owns run() — no concurrent writer exists, so this can't race. volatile
-    // is still needed so tick()'s cycleLimit comparison and getCycles() see the latest value.
-    @SuppressFBWarnings(value = "AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE",
-            justification = "single-writer thread (VM runner); volatile is for cross-thread visibility only")
-    private void addCycles(final long delta) {
-        cycles += delta;
     }
 
     public void tick() {
@@ -128,7 +121,7 @@ public class VMRunner implements Runnable {
                 }
 
                 for (int i = 0; i < maxSteps; i++) {
-                    addCycles(cyclesPerStep);
+                    cycles.addAndGet(cyclesPerStep);
                     board.step(cyclesPerStep);
                     step(cyclesPerStep);
 
@@ -141,7 +134,7 @@ public class VMRunner implements Runnable {
 
                 final int elapsed = (int) (System.currentTimeMillis() - start);
                 timeQuotaInMillis.addAndGet(-elapsed);
-            } while (cycles < cycleLimit && timeQuotaInMillis.get() > 0);
+            } while (cycles.get() < cycleLimit && timeQuotaInMillis.get() > 0);
         } catch (final Exception t) {
             LOGGER.error("Unhandled exception in VM runner", t);
             runtimeError = Component.literal(t.getClass().getSimpleName() + ": " + t.getMessage());

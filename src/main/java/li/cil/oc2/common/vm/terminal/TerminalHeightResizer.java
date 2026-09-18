@@ -205,7 +205,7 @@ final class TerminalHeightResizer {
 
         // Reallocate the network dirty sink for the new capacity and arm the full refresh
         terminal.geometryVersion.incrementAndGet();
-        terminal.networkState.reallocate(newMainRows);
+        terminal.networkState.reallocate(newHeight);
 
         // Mark all rows dirty — BOTH sinks (same rationale as resizeWidth).
         terminal.markAllDirty();
