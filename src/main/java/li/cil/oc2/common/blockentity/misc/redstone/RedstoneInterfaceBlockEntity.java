@@ -67,22 +67,30 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
 
     @Callback(name = GET_REDSTONE_INPUT)
     public int getRedstoneInput(@Parameter(SIDE) @Nullable final Side side) {
-        if (side == null) throw new IllegalArgumentException();
-        if (level == null) return 0;
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
+        if (level == null) {
+            return 0;
+        }
 
         final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
         assert direction != null;
 
         final BlockPos neighborPos = getBlockPos().relative(direction);
         final ChunkPos chunkPos = new ChunkPos(neighborPos);
-        if (!level.hasChunk(chunkPos.x, chunkPos.z)) return 0;
+        if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+            return 0;
+        }
 
         return level.getSignal(neighborPos, direction);
     }
 
     @Callback(name = GET_REDSTONE_OUTPUT, synchronize = false)
     public int getRedstoneOutput(@Parameter(SIDE) @Nullable final Side side) {
-        if (side == null) throw new IllegalArgumentException();
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
         assert direction != null;
         return state.getOutput(direction.get3DDataValue());
@@ -91,12 +99,16 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Callback(name = SET_REDSTONE_OUTPUT)
     public void setRedstoneOutput(
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int value) {
-        if (side == null) throw new IllegalArgumentException();
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
         assert direction != null;
         final int index = direction.get3DDataValue();
         final byte clampedValue = (byte) Mth.clamp(value, 0, 15);
-        if (clampedValue == state.getOutput(index)) return;
+        if (clampedValue == state.getOutput(index)) {
+            return;
+        }
 
         state.setOutput(index, clampedValue);
         notifyNeighbor(direction);
@@ -106,15 +118,23 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Nullable
     @Callback(name = GET_BUNDLED_INPUT)
     public byte[] getBundledInput(@Parameter(SIDE) @Nullable final Side side) {
-        if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
-        if (side == null) throw new IllegalArgumentException();
+        if (!ModList.get().isLoaded("projectred_transmission")) {
+            throw new IllegalStateException();
+        }
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         return BundledRedstoneCallbacks.getBundledInput(level, getBlockPos(), side);
     }
 
     @Callback(name = GET_BUNDLED_OUTPUT)
     public byte[] getBundledOutput(@Parameter(SIDE) @Nullable final Side side) {
-        if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
-        if (side == null) throw new IllegalArgumentException();
+        if (!ModList.get().isLoaded("projectred_transmission")) {
+            throw new IllegalStateException();
+        }
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         return BundledRedstoneCallbacks.getBundledOutput(side, state);
     }
 
@@ -123,11 +143,17 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
             @Parameter(SIDE) @Nullable final Side side,
             @Parameter(VALUE) final int value,
             @Parameter(COLOUR) final int color) {
-        if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
-        if (side == null) throw new IllegalArgumentException();
+        if (!ModList.get().isLoaded("projectred_transmission")) {
+            throw new IllegalStateException();
+        }
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         if (BundledRedstoneCallbacks.setBundledOutput(side, value, color, state)) {
             final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
-            if (direction != null) notifyNeighbor(direction);
+            if (direction != null) {
+                notifyNeighbor(direction);
+            }
             setChanged();
         }
     }
@@ -135,11 +161,17 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Callback(name = SET_BUNDLED_OUTPUTS)
     public void setBundledOutputs(
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int... values) {
-        if (!ModList.get().isLoaded("projectred_transmission")) throw new IllegalStateException();
-        if (side == null) throw new IllegalArgumentException();
+        if (!ModList.get().isLoaded("projectred_transmission")) {
+            throw new IllegalStateException();
+        }
+        if (side == null) {
+            throw new IllegalArgumentException();
+        }
         if (BundledRedstoneCallbacks.setBundledOutputs(side, values, state)) {
             final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
-            if (direction != null) notifyNeighbor(direction);
+            if (direction != null) {
+                notifyNeighbor(direction);
+            }
             setChanged();
         }
     }
@@ -155,7 +187,9 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     }
 
     private void notifyNeighbor(final Direction direction) {
-        if (level == null) return;
+        if (level == null) {
+            return;
+        }
         level.updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
         level.updateNeighborsAt(getBlockPos().relative(direction), getBlockState().getBlock());
     }

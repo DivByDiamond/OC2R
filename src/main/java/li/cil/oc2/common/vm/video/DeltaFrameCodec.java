@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.video;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -74,8 +75,13 @@ public final class DeltaFrameCodec {
      * Encodes an RGB565 framebuffer into a self-contained payload; the consumer
      * passes the same width/height alongside the payload when decoding.
      */
+    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "bounds guard: width/height from network, must validate before int allocation")
     public synchronized byte[] encode(final byte[] rgb565, final int width, final int height) {
-        if (rgb565.length != width * height * 2) {
+        final long frameBytes = (long) width * height * 2;
+        if (frameBytes > 32L * 1024 * 1024 || frameBytes > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("frame too large: " + width + "x" + height);
+        }
+        if (rgb565.length != (int) frameBytes) {
             throw new IllegalArgumentException("frame size mismatch");
         }
         if (forceKeyframe || width != encodedWidth || height != encodedHeight) {
@@ -111,6 +117,14 @@ public final class DeltaFrameCodec {
         assert previousFrame != null;
         final int tilesX = RgbTiles.tileCountX(width);
         final int tilesY = RgbTiles.tileCountY(height);
+        // A zero-area frame (width==0 or height==0, e.g. a monitor array not yet laid out)
+        // has no tiles to diff; countDirtyTiles below divides by `width * 2`, which would
+        // throw ArithmeticException for width==0 (§47 Б1). Bail out with an empty tile list
+        // instead - there is nothing to encode either way.
+        if (tilesX == 0 || tilesY == 0) {
+            writeVarint(out, 0);
+            return;
+        }
 
         writeVarint(out, countDirtyTiles(rgb565, width, tilesX, tilesY));
         for (int ty = 0; ty < tilesY; ty++) {
@@ -179,6 +193,7 @@ public final class DeltaFrameCodec {
      * Allocates or validates the backing frame buffer for the incoming payload.
      * A delta (non-keyframe) payload cannot bootstrap a buffer by itself.
      */
+    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "overflow guard: same as encode")
     private boolean prepareFrameBuffer(final int width, final int height, final boolean keyframe) {
         if (width == decodedWidth && height == decodedHeight && currentFrame != null) {
             return true;
@@ -186,7 +201,11 @@ public final class DeltaFrameCodec {
         if (!keyframe) {
             return false;
         }
-        currentFrame = new byte[width * height * 2];
+        final long frameBytes = (long) width * height * 2;
+        if (frameBytes > 32L * 1024 * 1024 || frameBytes > Integer.MAX_VALUE) {
+            return false;
+        }
+        currentFrame = new byte[(int) frameBytes];
         decodedWidth = width;
         decodedHeight = height;
         return true;
@@ -215,6 +234,10 @@ public final class DeltaFrameCodec {
         final int tilesX = RgbTiles.tileCountX(width);
         final int maxTiles = tilesX * RgbTiles.tileCountY(height);
         final int dirtyTiles = readVarint(in);
+        // maxTiles==0 (width==0 or height==0) forces every positive dirtyTiles to fail this
+        // check, so applyOneTile's `tileIndex % tilesX` can never run with tilesX==0 (§47 Б1) -
+        // dirtyTiles<=0 is the only value that survives, and the loop below then runs zero
+        // iterations. This check is the single source of truth for that invariant.
         if (dirtyTiles > maxTiles) {
             return Optional.empty();
         }

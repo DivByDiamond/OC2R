@@ -30,6 +30,9 @@ public class TerminalDiffTest {
     @BeforeEach
     void setUp() {
         server = new Terminal();
+        // Drain the construction-time full refresh (RIS's setWidth now correctly arms
+        // networkState's full-refresh bit) so tests see incremental diffs, not the initial one.
+        TerminalDiff.capture(server);
     }
 
     @Test

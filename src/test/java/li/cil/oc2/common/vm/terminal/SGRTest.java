@@ -195,10 +195,10 @@ public class SGRTest {
         write(terminal, "\u001b[38;5;200m");    // current = 200
         write(terminal, "\u001b8");             // restore → current = 100
         assertEquals(100, terminal.twoFiftySixColor.r);
-        assertEquals(100, terminal.savedTwoFiftySixColor.r);
+        assertEquals(100, terminal.savedCursor.twoFiftySixColor.r);
         write(terminal, "\u001b[38;5;50m");     // mutate current again
         assertEquals(50, terminal.twoFiftySixColor.r);
-        assertEquals(100, terminal.savedTwoFiftySixColor.r,
+        assertEquals(100, terminal.savedCursor.twoFiftySixColor.r,
             "saved color must not alias current color after restore");
     }
 
@@ -263,14 +263,14 @@ public class SGRTest {
         write(terminal, "\u001b[38;5;196m");   // fg 256-color
         write(terminal, "\u001b[48;5;21m");    // bg 256-color
         write(terminal, "\u001b7");            // DECSC: save the non-default modes
-        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedForegroundColorMode);
-        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedBackgroundColorMode);
+        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedCursor.foregroundColorMode);
+        assertEquals(TerminalColors.ColorMode.TWO_FIFTY_SIX_COLOR, terminal.savedCursor.backgroundColorMode);
         write(terminal, "\u001bc");            // RIS
         assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.currentForegroundColorMode);
         assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.currentBackgroundColorMode);
-        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.savedForegroundColorMode,
+        assertEquals(TerminalColors.ColorMode.DEFAULT_FOREGROUND, terminal.savedCursor.foregroundColorMode,
             "RIS must reset the saved foreground mode to the default");
-        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.savedBackgroundColorMode,
+        assertEquals(TerminalColors.ColorMode.DEFAULT_BACKGROUND, terminal.savedCursor.backgroundColorMode,
             "RIS must reset the saved background mode to the default");
     }
 

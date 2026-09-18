@@ -7,19 +7,19 @@ import java.util.TreeMap;
 
 /** A set of integers that is more effective with ranges of integers. */
 public class IntegerSpace {
-    private final NavigableMap<Integer, Integer> ranges = new TreeMap<>();
+    private final NavigableMap<Integer, Integer> ranges = new TreeMap<>(Integer::compareUnsigned);
 
     public final boolean put(final int element) {
         return put(element, element);
     }
 
     public final boolean put(final int begin, final int end) {
-        if (end < begin) {
+        if (Integer.compareUnsigned(end, begin) < 0) {
             return put(end, begin);
         }
 
         final Map.Entry<Integer, Integer> floor = ranges.floorEntry(begin);
-        if (floor != null && floor.getKey() <= begin && floor.getValue() >= end) {
+        if (floor != null && Integer.compareUnsigned(floor.getKey(), begin) <= 0 && Integer.compareUnsigned(floor.getValue(), end) >= 0) {
             // Already exists in the space
             // [---------]
             // [---------]
@@ -34,9 +34,13 @@ public class IntegerSpace {
         // Absorb the range below begin if it touches or overlaps the new one,
         // including ranges that start below and extend past end (the old strict
         // comparisons left such overlapping ranges behind forever).
-        if (floor != null && (long) floor.getValue() + 1 >= begin) {
+        // Guard against unsigned wrap: 0xFFFFFFFF + 1 wraps to 0, must not merge
+        // [255.255.255.255] with [0.0.0.0] - IP space is not a ring.
+        if (floor != null
+                && floor.getValue() != -1
+                && Integer.toUnsignedLong(floor.getValue()) + 1 >= Integer.toUnsignedLong(begin)) {
             mergedBegin = floor.getKey();
-            mergedEnd = Math.max(mergedEnd, floor.getValue());
+            mergedEnd = Integer.compareUnsigned(mergedEnd, floor.getValue()) >= 0 ? mergedEnd : floor.getValue();
             ranges.remove(floor.getKey());
         }
 
@@ -45,10 +49,16 @@ public class IntegerSpace {
                 ranges.tailMap(mergedBegin, false).entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Integer, Integer> range = iterator.next();
-            if ((long) range.getKey() - 1 > mergedEnd) {
+            if (range.getKey() == 0) {
+                // 0 cannot be adjacent from below via -1 (wrap from 0xFFFFFFFF),
+                // so treat 0 as start of space - check containment only
+                if (Integer.compareUnsigned(range.getKey(), mergedEnd) > 0) {
+                    break;
+                }
+            } else if (Integer.toUnsignedLong(range.getKey()) - 1 > Integer.toUnsignedLong(mergedEnd)) {
                 break;
             }
-            mergedEnd = Math.max(mergedEnd, range.getValue());
+            mergedEnd = Integer.compareUnsigned(mergedEnd, range.getValue()) >= 0 ? mergedEnd : range.getValue();
             iterator.remove();
         }
 
@@ -62,8 +72,8 @@ public class IntegerSpace {
     public final boolean contains(final int element) {
         final Map.Entry<Integer, Integer> floorRange = ranges.floorEntry(element);
         return floorRange != null
-                && element >= floorRange.getKey()
-                && element <= floorRange.getValue();
+                && Integer.compareUnsigned(element, floorRange.getKey()) >= 0
+                && Integer.compareUnsigned(element, floorRange.getValue()) <= 0;
     }
 
     public final boolean isEmpty() {
@@ -74,10 +84,22 @@ public class IntegerSpace {
         return ranges.size();
     }
 
-    public final int count() {
+    public final long countLong() {
         return ranges.entrySet().stream()
-                .map(range -> range.getValue() - range.getKey() + 1)
-                .reduce(0, Integer::sum);
+                .mapToLong(range -> Integer.toUnsignedLong(range.getValue()) - Integer.toUnsignedLong(range.getKey()) + 1)
+                .sum();
+    }
+
+    /**
+     * Returns the element count, saturating at {@link Integer#MAX_VALUE}.
+     *
+     * @return the element count. A full 32-bit space (e.g. an unrestricted IPv4 allow-list) holds
+     *     2^32 elements, which overflows {@code int} — use {@link #countLong()} when the space
+     *     may be that large.
+     */
+    public final int count() {
+        final long c = countLong();
+        return c > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) c;
     }
 
     protected void elementToString(final StringBuilder builder, final int element) {

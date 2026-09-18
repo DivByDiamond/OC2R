@@ -2,7 +2,10 @@ package li.cil.oc2.common.blockentity.network.switches;
 
 import static java.util.Collections.singletonList;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
@@ -17,7 +20,9 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
@@ -48,7 +53,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
         final BlockCapabilityCache<NetworkInterface, Direction>[] caches =
                 (BlockCapabilityCache<NetworkInterface, Direction>[])
                         new BlockCapabilityCache<?, ?>[Constants.BLOCK_FACE_COUNT];
-        for (final Direction side : Constants.DIRECTIONS)
+        for (final Direction side : Constants.DIRECTIONS) {
             caches[side.get3DDataValue()] =
                     BlockCapabilityCache.create(
                             Capabilities.NetworkInterface.BLOCK,
@@ -57,6 +62,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
                             side.getOpposite(),
                             () -> !this.isRemoved(),
                             this::handleNeighborChanged);
+        }
         adjacentBlockCaches = caches;
     }
 
@@ -76,11 +82,15 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
 
     @Override
     public void serverTick() {
-        if (level == null) return;
+        if (level == null) {
+            return;
+        }
         tickCount++;
         if (tickCount % 20 == 1) {
             long threshold = getLevel().getGameTime() - HOST_TTL;
-            if (threshold < 0) return;
+            if (threshold < 0) {
+                return;
+            }
             hostTable.removeExpired(threshold);
         }
     }
@@ -138,25 +148,35 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     public boolean[] getLinkState() {
         validateAdjacentBlocks();
         boolean[] sides = new boolean[Constants.BLOCK_FACE_COUNT];
-        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
+        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
             sides[i] = adjacentBlockInterfaces[i] != null;
+        }
         return sides;
     }
 
     Optional<Integer> sideReverseLookup(NetworkInterface iface) {
-        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++)
-            if (iface.equals(adjacentBlockInterfaces[i])) return Optional.of(i);
+        for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
+            if (iface.equals(adjacentBlockInterfaces[i])) {
+                return Optional.of(i);
+            }
+        }
         return Optional.empty();
     }
 
     void validateAdjacentBlocks() {
-        if (isRemoved() || !haveAdjacentBlocksChanged) return;
-        for (final Direction side : Constants.DIRECTIONS)
+        if (isRemoved() || !haveAdjacentBlocksChanged) {
+            return;
+        }
+        for (final Direction side : Constants.DIRECTIONS) {
             adjacentBlockInterfaces[side.get3DDataValue()] = null;
+        }
         haveAdjacentBlocksChanged = false;
-        if (level == null || level.isClientSide()) return;
-        for (int i = 0; i < adjacentBlockCaches.length; i++)
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        for (int i = 0; i < adjacentBlockCaches.length; i++) {
             adjacentBlockInterfaces[i] = adjacentBlockCaches[i].getCapability();
+        }
     }
 
     private void handleNeighborChanged() {

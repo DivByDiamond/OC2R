@@ -1,8 +1,6 @@
 package li.cil.oc2.common.blockentity.monitor;
 
 import java.util.UUID;
-import li.cil.oc2.client.model.monitor.MonitorModelTypes;
-import li.cil.oc2.client.renderer.MonitorGUIRenderer;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
@@ -16,6 +14,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 public final class MonitorBlockEntity extends ModBlockEntity
@@ -42,21 +42,30 @@ public final class MonitorBlockEntity extends ModBlockEntity
      */
     @Override
     public ModelData getModelData() {
-        return MonitorModelTypes.fromState(getBlockState());
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            return li.cil.oc2.client.hooks.MonitorModelHooks.getModelData(getBlockState());
+        }
+        return ModelData.EMPTY;
     }
 
     public void start() {
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         stateManager.isPowered = true;
     }
 
     public void stop() {
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         stateManager.isPowered = false;
     }
 
     public void handleInput(final int keycode, final boolean isDown) {
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         stateManager.keyboardDevice.sendKeyEvent(keycode, isDown);
     }
 
@@ -65,7 +74,9 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     public void applyMonitorStateClient(final boolean isRendering, final boolean hasEnergy) {
-        if (level == null || !level.isClientSide()) return;
+        if (level == null || !level.isClientSide()) {
+            return;
+        }
         stateManager.isMounted = isRendering;
         stateManager.hasEnergy = hasEnergy;
     }
@@ -82,8 +93,10 @@ public final class MonitorBlockEntity extends ModBlockEntity
         return stateManager.isMounted;
     }
 
-    public MonitorGUIRenderer getMonitor() {
-        return stateManager.monitor;
+    // Typed Object on purpose: MonitorGUIRenderer is client-only and must not appear in this
+    // common class signature. Non-null only on the client; callers there cast to the renderer.
+    public Object getMonitor() {
+        return stateManager.getMonitor();
     }
 
     public UUID getDeviceId() {
@@ -91,7 +104,9 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     public void openTerminalScreen(final ServerPlayer player) {
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         MonitorDisplayContainer.createServer(this, stateManager.energy, player);
     }
 
@@ -99,13 +114,17 @@ public final class MonitorBlockEntity extends ModBlockEntity
     public void clientTick() {
         // Only the origin registers with the contraption helper and tracks framebuffer state.
         // Sub-blocks have no video device and never receive frames.
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         MonitorContraptionHelper.registerInClientRegistry(this);
     }
 
     @Override
     protected void loadClient() {
-        if (!isOrigin()) return;
+        if (!isOrigin()) {
+            return;
+        }
         MonitorContraptionHelper.registerInClientRegistry(this);
     }
 

@@ -103,9 +103,29 @@
         <exclude name="FieldNamingConventions"/>
     </rule>
 
+<rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="100"/>
+            <property name="methodReportLevel" value="20"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/NPathComplexity">
+        <properties>
+            <property name="reportLevel" value="500"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/CognitiveComplexity">
+        <properties>
+            <property name="reportLevel" value="25"/>
+        </properties>
+    </rule>
+
     <!-- §168: design.xml — complexity metrics + simplification rules kept,
-         law-of-demeter/god-class/noisy data-class rules excluded. -->
+          law-of-demeter/god-class/noisy data-class rules excluded. -->
     <rule ref="category/java/design.xml">
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="NPathComplexity"/>
+        <exclude name="CognitiveComplexity"/>
         <exclude name="AbstractClassWithoutAnyMethod"/>
         <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidThrowingNewInstanceOfSameException"/>

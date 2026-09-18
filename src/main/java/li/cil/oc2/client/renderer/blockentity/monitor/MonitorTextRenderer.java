@@ -42,7 +42,7 @@ final class MonitorTextRenderer {
         final float visibleX = 16f - 2f * borderX;
         final float visibleY = 16f - 2f * borderY;
 
-        final MonitorGUIRenderer terminal = monitor.getMonitor();
+        final MonitorGUIRenderer terminal = (MonitorGUIRenderer) monitor.getMonitor();
 
         // Resolution of the last frame received from the server (falls back to the legacy
         // default before the first frame); keeps scale and quad in sync with the texture.

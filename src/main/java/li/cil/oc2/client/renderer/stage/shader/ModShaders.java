@@ -58,7 +58,6 @@ public final class ModShaders {
      * @param projectorCameraMatrices the camera matrices for each projector.
      * @param count the number of active projectors.
      */
-    @SuppressWarnings("ConstantConditions")
     public static void configureProjectorsShader(
             final RenderTarget target,
             final Matrix4f inverseCameraMatrix,
@@ -66,6 +65,12 @@ public final class ModShaders {
             final RenderTarget[] depths,
             final Matrix4f[] projectorCameraMatrices,
             final int count) {
+        // The shader may not be compiled yet (very first frame, or RegisterShadersEvent failed
+        // with an IOException) — skip configuring it rather than NPE on projectorsShader.
+        if (projectorsShader == null) {
+            return;
+        }
+
         final int projectorCount = Math.min(count, MAX_PROJECTORS);
         projectorsShader.safeGetUniform("Count").set(projectorCount);
 

@@ -20,6 +20,10 @@ public final class FrameChunker {
     }
 
     public static byte[] slice(final byte[] frame, final int index) {
+        final int chunkCount = chunkCount(frame.length);
+        if (index < 0 || index >= chunkCount) {
+            throw new IndexOutOfBoundsException("chunk index " + index + " out of bounds [0, " + chunkCount + ")");
+        }
         final int from = index * MAX_CHUNK_SIZE;
         final int to = Math.min(frame.length, from + MAX_CHUNK_SIZE);
         final int size = to - from;

@@ -29,7 +29,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 public final class BusCableBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
@@ -108,7 +107,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     }
 
     @Override
-    public ModelData getModelData() {
+    public net.neoforged.neoforge.client.model.data.ModelData getModelData() {
         return modelData.getModelData();
     }
 

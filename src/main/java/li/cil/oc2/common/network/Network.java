@@ -55,65 +55,140 @@ public final class Network {
         final PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
 
         // Computer
-        registrar.playToClient(ComputerTerminalDiffMessage.TYPE, ComputerTerminalDiffMessage.STREAM_CODEC, ComputerTerminalDiffMessage::handleMessage);
-        registrar.playToServer(ComputerTerminalInputMessage.TYPE, ComputerTerminalInputMessage.STREAM_CODEC, ComputerTerminalInputMessage::handleMessage);
-        registrar.playToClient(ComputerRunStateMessage.TYPE, ComputerRunStateMessage.STREAM_CODEC, ComputerRunStateMessage::handleMessage);
-        registrar.playToClient(ComputerBusStateMessage.TYPE, ComputerBusStateMessage.STREAM_CODEC, ComputerBusStateMessage::handleMessage);
-        registrar.playToClient(ComputerBootErrorMessage.TYPE, ComputerBootErrorMessage.STREAM_CODEC, ComputerBootErrorMessage::handleMessage);
-        registrar.playToClient(SoundCardBeepMessage.TYPE, SoundCardBeepMessage.STREAM_CODEC, SoundCardBeepMessage::handleMessage);
-        registrar.playToClient(SoundCardPcmMessage.TYPE, SoundCardPcmMessage.STREAM_CODEC, SoundCardPcmMessage::handleMessage);
-        registrar.playToServer(ComputerPowerMessage.TYPE, ComputerPowerMessage.STREAM_CODEC, ComputerPowerMessage::handleMessage);
-        registrar.playToServer(MonitorPowerMessage.TYPE, MonitorPowerMessage.STREAM_CODEC, MonitorPowerMessage::handleMessage);
-        registrar.playToClient(MonitorPowerMessageForwarded.TYPE, MonitorPowerMessageForwarded.STREAM_CODEC, MonitorPowerMessageForwarded::handleMessage);
-        registrar.playToServer(OpenComputerInventoryMessage.TYPE, OpenComputerInventoryMessage.STREAM_CODEC, OpenComputerInventoryMessage::handleMessage);
-        registrar.playToServer(OpenComputerTerminalMessage.TYPE, OpenComputerTerminalMessage.STREAM_CODEC, OpenComputerTerminalMessage::handleMessage);
+        registrar.playToClient(ComputerTerminalDiffMessage.TYPE,
+                ComputerTerminalDiffMessage.STREAM_CODEC,
+                ComputerTerminalDiffMessage::handleMessage);
+        registrar.playToServer(ComputerTerminalInputMessage.TYPE,
+                ComputerTerminalInputMessage.STREAM_CODEC,
+                ComputerTerminalInputMessage::handleMessage);
+        registrar.playToClient(ComputerRunStateMessage.TYPE,
+                ComputerRunStateMessage.STREAM_CODEC,
+                ComputerRunStateMessage::handleMessage);
+        registrar.playToClient(ComputerBusStateMessage.TYPE,
+                ComputerBusStateMessage.STREAM_CODEC,
+                ComputerBusStateMessage::handleMessage);
+        registrar.playToClient(ComputerBootErrorMessage.TYPE,
+                ComputerBootErrorMessage.STREAM_CODEC,
+                ComputerBootErrorMessage::handleMessage);
+        registrar.playToClient(SoundCardBeepMessage.TYPE,
+                SoundCardBeepMessage.STREAM_CODEC,
+                SoundCardBeepMessage::handleMessage);
+        registrar.playToClient(SoundCardPcmMessage.TYPE,
+                SoundCardPcmMessage.STREAM_CODEC,
+                SoundCardPcmMessage::handleMessage);
+        registrar.playToServer(ComputerPowerMessage.TYPE,
+                ComputerPowerMessage.STREAM_CODEC,
+                ComputerPowerMessage::handleMessage);
+        registrar.playToServer(MonitorPowerMessage.TYPE,
+                MonitorPowerMessage.STREAM_CODEC,
+                MonitorPowerMessage::handleMessage);
+        registrar.playToClient(MonitorPowerMessageForwarded.TYPE,
+                MonitorPowerMessageForwarded.STREAM_CODEC,
+                MonitorPowerMessageForwarded::handleMessage);
+        registrar.playToServer(OpenComputerInventoryMessage.TYPE,
+                OpenComputerInventoryMessage.STREAM_CODEC,
+                OpenComputerInventoryMessage::handleMessage);
+        registrar.playToServer(OpenComputerTerminalMessage.TYPE,
+                OpenComputerTerminalMessage.STREAM_CODEC,
+                OpenComputerTerminalMessage::handleMessage);
 
         // Network
-        registrar.playToServer(NetworkTunnelLinkMessage.TYPE, NetworkTunnelLinkMessage.STREAM_CODEC, NetworkTunnelLinkMessage::handleMessage);
+        registrar.playToServer(NetworkTunnelLinkMessage.TYPE,
+                NetworkTunnelLinkMessage.STREAM_CODEC,
+                NetworkTunnelLinkMessage::handleMessage);
 
         // Robot
-        registrar.playToClient(RobotTerminalDiffMessage.TYPE, RobotTerminalDiffMessage.STREAM_CODEC, RobotTerminalDiffMessage::handleMessage);
-        registrar.playToServer(RobotTerminalInputMessage.TYPE, RobotTerminalInputMessage.STREAM_CODEC, RobotTerminalInputMessage::handleMessage);
-        registrar.playToClient(RobotRunStateMessage.TYPE, RobotRunStateMessage.STREAM_CODEC, RobotRunStateMessage::handleMessage);
-        registrar.playToClient(RobotBusStateMessage.TYPE, RobotBusStateMessage.STREAM_CODEC, RobotBusStateMessage::handleMessage);
-        registrar.playToClient(RobotBootErrorMessage.TYPE, RobotBootErrorMessage.STREAM_CODEC, RobotBootErrorMessage::handleMessage);
-        registrar.playToServer(RobotPowerMessage.TYPE, RobotPowerMessage.STREAM_CODEC, RobotPowerMessage::handleMessage);
-        registrar.playToServer(RobotInitializationRequestMessage.TYPE, RobotInitializationRequestMessage.STREAM_CODEC, RobotInitializationRequestMessage::handleMessage);
-        registrar.playToClient(RobotInitializationMessage.TYPE, RobotInitializationMessage.STREAM_CODEC, RobotInitializationMessage::handleMessage);
-        registrar.playToServer(OpenRobotInventoryMessage.TYPE, OpenRobotInventoryMessage.STREAM_CODEC, OpenRobotInventoryMessage::handleMessage);
-        registrar.playToServer(OpenRobotTerminalMessage.TYPE, OpenRobotTerminalMessage.STREAM_CODEC, OpenRobotTerminalMessage::handleMessage);
+        registrar.playToClient(RobotTerminalDiffMessage.TYPE,
+                RobotTerminalDiffMessage.STREAM_CODEC,
+                RobotTerminalDiffMessage::handleMessage);
+        registrar.playToServer(RobotTerminalInputMessage.TYPE,
+                RobotTerminalInputMessage.STREAM_CODEC,
+                RobotTerminalInputMessage::handleMessage);
+        registrar.playToClient(RobotRunStateMessage.TYPE,
+                RobotRunStateMessage.STREAM_CODEC,
+                RobotRunStateMessage::handleMessage);
+        registrar.playToClient(RobotBusStateMessage.TYPE,
+                RobotBusStateMessage.STREAM_CODEC,
+                RobotBusStateMessage::handleMessage);
+        registrar.playToClient(RobotBootErrorMessage.TYPE,
+                RobotBootErrorMessage.STREAM_CODEC,
+                RobotBootErrorMessage::handleMessage);
+        registrar.playToServer(RobotPowerMessage.TYPE,
+                RobotPowerMessage.STREAM_CODEC,
+                RobotPowerMessage::handleMessage);
+        registrar.playToServer(RobotInitializationRequestMessage.TYPE,
+                RobotInitializationRequestMessage.STREAM_CODEC,
+                RobotInitializationRequestMessage::handleMessage);
+        registrar.playToClient(RobotInitializationMessage.TYPE,
+                RobotInitializationMessage.STREAM_CODEC,
+                RobotInitializationMessage::handleMessage);
+        registrar.playToServer(OpenRobotInventoryMessage.TYPE,
+                OpenRobotInventoryMessage.STREAM_CODEC,
+                OpenRobotInventoryMessage::handleMessage);
+        registrar.playToServer(OpenRobotTerminalMessage.TYPE,
+                OpenRobotTerminalMessage.STREAM_CODEC,
+                OpenRobotTerminalMessage::handleMessage);
 
         // Disk / Firmware
         // (contents ride on the block entities' update tags via sendBlockUpdated)
 
         // Bus interface (client-to-server input from the GUI)
         registrar.playToServer(
-                BusInterfaceNameMessage.TYPE, BusInterfaceNameMessage.STREAM_CODEC,
+                BusInterfaceNameMessage.TYPE,
+                BusInterfaceNameMessage.STREAM_CODEC,
                 BusInterfaceNameMessage::handleServerMessage);
 
         // File import/export
-        registrar.playToClient(ExportedFileMessage.TYPE, ExportedFileMessage.STREAM_CODEC, ExportedFileMessage::handleMessage);
-        registrar.playToClient(RequestImportedFileMessage.TYPE, RequestImportedFileMessage.STREAM_CODEC, RequestImportedFileMessage::handleMessage);
-        registrar.playToServer(ImportedFileMessage.TYPE, ImportedFileMessage.STREAM_CODEC, ImportedFileMessage::handleMessage);
-        registrar.playToClient(ServerCanceledImportFileMessage.TYPE, ServerCanceledImportFileMessage.STREAM_CODEC, ServerCanceledImportFileMessage::handleMessage);
-        registrar.playToServer(ClientCanceledImportFileMessage.TYPE, ClientCanceledImportFileMessage.STREAM_CODEC, ClientCanceledImportFileMessage::handleMessage);
+        registrar.playToClient(ExportedFileMessage.TYPE,
+                ExportedFileMessage.STREAM_CODEC,
+                ExportedFileMessage::handleMessage);
+        registrar.playToClient(RequestImportedFileMessage.TYPE,
+                RequestImportedFileMessage.STREAM_CODEC,
+                RequestImportedFileMessage::handleMessage);
+        registrar.playToServer(ImportedFileMessage.TYPE,
+                ImportedFileMessage.STREAM_CODEC,
+                ImportedFileMessage::handleMessage);
+        registrar.playToClient(ServerCanceledImportFileMessage.TYPE,
+                ServerCanceledImportFileMessage.STREAM_CODEC,
+                ServerCanceledImportFileMessage::handleMessage);
+        registrar.playToServer(ClientCanceledImportFileMessage.TYPE,
+                ClientCanceledImportFileMessage.STREAM_CODEC,
+                ClientCanceledImportFileMessage::handleMessage);
 
         // Bus cable / Network config
-        registrar.playToServer(NetworkInterfaceCardConfigurationMessage.TYPE, NetworkInterfaceCardConfigurationMessage.STREAM_CODEC, NetworkInterfaceCardConfigurationMessage::handleMessage);
+        registrar.playToServer(NetworkInterfaceCardConfigurationMessage.TYPE,
+                NetworkInterfaceCardConfigurationMessage.STREAM_CODEC,
+                NetworkInterfaceCardConfigurationMessage::handleMessage);
 
         // Monitor framebuffer
-        registrar.playToServer(MonitorRequestFramebufferMessage.TYPE, MonitorRequestFramebufferMessage.STREAM_CODEC, MonitorRequestFramebufferMessage::handleMessage);
-        registrar.playToClient(MonitorFramebufferMessage.TYPE, MonitorFramebufferMessage.STREAM_CODEC, MonitorFramebufferMessage::handleMessage);
+        registrar.playToServer(MonitorRequestFramebufferMessage.TYPE,
+                MonitorRequestFramebufferMessage.STREAM_CODEC,
+                MonitorRequestFramebufferMessage::handleMessage);
+        registrar.playToClient(MonitorFramebufferMessage.TYPE,
+                MonitorFramebufferMessage.STREAM_CODEC,
+                MonitorFramebufferMessage::handleMessage);
 
         // Projector
-        registrar.playToServer(ProjectorRequestFramebufferMessage.TYPE, ProjectorRequestFramebufferMessage.STREAM_CODEC, ProjectorRequestFramebufferMessage::handleMessage);
-        registrar.playToClient(ProjectorFramebufferMessage.TYPE, ProjectorFramebufferMessage.STREAM_CODEC, ProjectorFramebufferMessage::handleMessage);
-        registrar.playToClient(ProjectorStateMessage.TYPE, ProjectorStateMessage.STREAM_CODEC, ProjectorStateMessage::handleMessage);
-        registrar.playToClient(MonitorStateMessage.TYPE, MonitorStateMessage.STREAM_CODEC, MonitorStateMessage::handleMessage);
+        registrar.playToServer(ProjectorRequestFramebufferMessage.TYPE,
+                ProjectorRequestFramebufferMessage.STREAM_CODEC,
+                ProjectorRequestFramebufferMessage::handleMessage);
+        registrar.playToClient(ProjectorFramebufferMessage.TYPE,
+                ProjectorFramebufferMessage.STREAM_CODEC,
+                ProjectorFramebufferMessage::handleMessage);
+        registrar.playToClient(ProjectorStateMessage.TYPE,
+                ProjectorStateMessage.STREAM_CODEC,
+                ProjectorStateMessage::handleMessage);
+        registrar.playToClient(MonitorStateMessage.TYPE,
+                MonitorStateMessage.STREAM_CODEC,
+                MonitorStateMessage::handleMessage);
 
         // Input
-        registrar.playToServer(KeyboardInputMessage.TYPE, KeyboardInputMessage.STREAM_CODEC, KeyboardInputMessage::handleMessage);
-        registrar.playToServer(MonitorInputMessage.TYPE, MonitorInputMessage.STREAM_CODEC, MonitorInputMessage::handleMessage);
+        registrar.playToServer(KeyboardInputMessage.TYPE,
+                KeyboardInputMessage.STREAM_CODEC,
+                KeyboardInputMessage::handleMessage);
+        registrar.playToServer(MonitorInputMessage.TYPE,
+                MonitorInputMessage.STREAM_CODEC,
+                MonitorInputMessage::handleMessage);
 
         // Multipart (client->server and server->client for large payloads)
         registrar.playBidirectional(

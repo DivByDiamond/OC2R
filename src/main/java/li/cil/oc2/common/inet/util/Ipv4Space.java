@@ -16,9 +16,9 @@ public final class Ipv4Space extends IntegerSpace {
     private static final Pattern ipRangePattern =
             line(group("start", IPADDRESS_PATTERN) + "-" + group("end", IPADDRESS_PATTERN));
     private static final Pattern subnetPattern =
-            line(group("ip", IPADDRESS_PATTERN) + "\\/" + group("prefix", "[1-9]\\d?"));
+            line(group("ip", IPADDRESS_PATTERN) + "\\/" + group("prefix", "(?:[0-9]|[12][0-9]|3[0-2])"));
     private static final Pattern interfaceNamePattern = line("@" + group("name", "[a-zA-Z].*"));
-    private static final Pattern interfaceIdPattern = line("@" + group("id", "\\d*"));
+    private static final Pattern interfaceIdPattern = line("@" + group("id", "\\d+"));
     private final boolean isAllowListMode;
 
     public Ipv4Space(final Modes mode) {

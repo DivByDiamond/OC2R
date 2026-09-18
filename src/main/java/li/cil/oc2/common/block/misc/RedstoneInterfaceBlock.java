@@ -68,7 +68,6 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
     }
 
     @Override
-    @SuppressWarnings("DataFlowIssue")
     public void neighborChanged(
             BlockState state,
             Level worldIn,
@@ -76,9 +75,11 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
             Block blockIn,
             BlockPos fromPos,
             boolean isMoving) {
-        RedstoneInterfaceBlockEntity ribe =
-                (RedstoneInterfaceBlockEntity) worldIn.getBlockEntity(pos);
-        ribe.neighborChanged(fromPos);
+        // getBlockEntity is @Nullable: a neighbor-change notification can still be in flight
+        // for a tick after this block's entity was removed (chunk unload, block replaced).
+        if (worldIn.getBlockEntity(pos) instanceof final RedstoneInterfaceBlockEntity ribe) {
+            ribe.neighborChanged(fromPos);
+        }
     }
 
     // EntityBlock

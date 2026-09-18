@@ -53,4 +53,14 @@ public class InetUtilsTest {
     public void ipv4AddressToStringMax() {
         assertEquals("255.255.255.255", InetUtils.ipv4AddressToString(0xFFFFFFFF));
     }
+
+    @Test
+    public void getSubnetByPrefixZero() {
+        assertEquals(0, InetUtils.getSubnetByPrefix(0));
+    }
+
+    @Test
+    public void getSubnetByPrefixThirtyTwo() {
+        assertEquals(-1, InetUtils.getSubnetByPrefix(32));
+    }
 }

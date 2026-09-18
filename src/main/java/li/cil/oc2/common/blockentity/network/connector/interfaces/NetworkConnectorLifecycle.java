@@ -3,7 +3,6 @@ package li.cil.oc2.common.blockentity.network.connector.interfaces;
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.renderer.cable.NetworkCableRenderer;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
@@ -11,8 +10,10 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 @EventBusSubscriber(modid = API.MOD_ID)
@@ -35,7 +36,9 @@ public final class NetworkConnectorLifecycle {
     }
 
     public static void loadClient(final NetworkConnectorBlockEntity entity) {
-        NetworkCableRenderer.addNetworkConnector(entity);
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            li.cil.oc2.client.hooks.NetworkCableRendererHooks.addNetworkConnector(entity);
+        }
     }
 
     public static void loadServer(final NetworkConnectorBlockEntity entity) {

@@ -117,6 +117,10 @@ group = "li.cil.oc2"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "utf-8"
 }
@@ -223,8 +227,6 @@ dependencies {
     // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
     errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
-    implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
-
     implementation("li.cil.ceres:ceres:${ceres_version}")
     add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
 
@@ -247,8 +249,12 @@ dependencies {
     runtimeOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}:${jei_version}")
 
     compileOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:api")
-    runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}")
-    runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}")
+    runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}") {
+        version { strictly("1.21.1-4.6.1.529") }
+    }
+    runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}") {
+        version { strictly("1.21.1-3.5.0.161") }
+    }
     runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:core")
     runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:transmission")
 
@@ -270,6 +276,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiter_version}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
     testCompileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
 
     // The terminal tests construct `new Terminal()` on the plain JUnit runtime classpath.
     // fastutil/log4j used to be added here by hand; since the test classpaths now share

@@ -19,7 +19,12 @@ class TerminalClient {
     @OnlyIn(Dist.CLIENT)
     public RendererView getRenderer() {
         final TerminalRenderer renderer = new TerminalRenderer(terminal);
-        terminal.renderers.add(renderer);
+        terminal.renderersLock.lock();
+        try {
+            terminal.renderers.add(renderer);
+        } finally {
+            terminal.renderersLock.unlock();
+        }
         return renderer;
     }
 
@@ -32,7 +37,12 @@ class TerminalClient {
     public void releaseRenderer(final RendererView renderer) {
         if (renderer instanceof final RendererModel rendererModel) {
             rendererModel.close();
-            terminal.renderers.remove(rendererModel);
+            terminal.renderersLock.lock();
+            try {
+                terminal.renderers.remove(rendererModel);
+            } finally {
+                terminal.renderersLock.unlock();
+            }
         }
     }
 

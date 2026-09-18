@@ -50,6 +50,15 @@ test: add Ipv4Space extended tests
 - ≤200 lines per file, ≤4 files per folder
 - No SPDX headers
 
+## Committed Binaries
+
+Two kinds of binary files are intentionally committed to this repository, not generated at build time:
+
+- `src/main/resources/natives/` — prebuilt `liboc2rnet`/`oc2rnet` native libraries for android/linux/macos/windows (arm64 + x86_64). These are committed so the mod works fully offline without a native toolchain or network fetch during build; see `src/main/resources/natives/.version` for the built revision.
+- `gradle/wrapper/gradle-wrapper.jar` — the standard Gradle Wrapper jar, committed per [Gradle's own recommendation](https://docs.gradle.org/current/userguide/gradle_wrapper.html#sec:adding_wrapper) so `./gradlew` works on a fresh checkout without a pre-installed Gradle.
+
+Both are expected to trip generic "no binaries in git" style lint rules; that is a known, accepted tradeoff, not an oversight.
+
 ## Issues
 
 Use the provided templates in `.github/ISSUE_TEMPLATE/`:

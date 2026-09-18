@@ -14,24 +14,32 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
     public static final int STRIDE = 2;
 
+    // VRAM budget: caps the shared-memory framebuffer region reserved for a single device.
+    private static final long MAX_FRAMEBUFFER_BYTES = 32L * 1024 * 1024;
+
     private final int width;
     private final int height;
     private final ByteBuffer buffer;
-    private int length;
+    // load()/store() read this outside the lock (only mutations are guarded), so it must be volatile.
+    private volatile int length;
     private final BitSet dirtyLines;
 
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
         this.height = height;
-        this.length = width * height * STRIDE;
+        final long required = (long) width * height * STRIDE;
+        if (required > MAX_FRAMEBUFFER_BYTES) {
+            throw new IllegalArgumentException("Framebuffer too large: " + width + "x" + height);
+        }
+        this.length = (int) required;
 
         if (buffer.capacity() < length) {
             throw new IllegalArgumentException("Buffer too small.");
         }
 
         this.buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
-        this.dirtyLines = new BitSet(height / 2);
-        this.dirtyLines.set(0, height / 2);
+        this.dirtyLines = new BitSet((height + 1) / 2);
+        this.dirtyLines.set(0, (height + 1) / 2);
     }
 
     public void close() {
@@ -53,10 +61,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
     public int getHeight() {
         return height;
-    }
-
-    public boolean hasChanges() {
-        return !dirtyLines.isEmpty();
     }
 
     public boolean copyFrame(final ByteBuffer dst) {
@@ -105,20 +109,37 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     @Override
     public void store(final int offset, final long value, final int sizeLog2)
             throws MemoryAccessException {
-        if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-            switch (sizeLog2) {
-                case 0 -> buffer.put(offset, (byte) value);
-                case 1 -> buffer.putShort(offset, (short) value);
-                case 2 -> buffer.putInt(offset, (int) value);
-                case 3 -> buffer.putLong(offset, value);
-                default -> throw new IllegalArgumentException();
+        // The bounds check must happen under the lock: length can drop to 0 in close()
+        // (which also releases the buffer) between an unlocked check and locking here,
+        // letting a stale offset through to a put() on a freed direct buffer.
+        lock.lock();
+        try {
+            if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
+                switch (sizeLog2) {
+                    case 0 -> buffer.put(offset, (byte) value);
+                    case 1 -> buffer.putShort(offset, (short) value);
+                    case 2 -> buffer.putInt(offset, (int) value);
+                    case 3 -> buffer.putLong(offset, value);
+                    default -> throw new IllegalArgumentException();
+                }
+                setDirty(offset);
             }
-            setDirty(offset);
+        } finally {
+            lock.unlock();
         }
     }
 
     private void setDirty(final int offset) {
         final int pixelY = offset / (width * STRIDE);
         dirtyLines.set(pixelY / 2);
+    }
+
+    public boolean hasChanges() {
+        lock.lock();
+        try {
+            return !dirtyLines.isEmpty();
+        } finally {
+            lock.unlock();
+        }
     }
 }

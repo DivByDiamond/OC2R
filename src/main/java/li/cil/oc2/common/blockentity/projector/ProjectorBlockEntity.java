@@ -83,13 +83,17 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
 
     @Override
     public void serverTick() {
-        if (!projectorState.isMounted) return;
+        if (!projectorState.isMounted) {
+            return;
+        }
         final boolean isPowered;
         if (Config.projectorsUseEnergy()) {
             isPowered =
                     energy.extractEnergy(Config.projectorEnergyPerTick, true)
                             >= Config.projectorEnergyPerTick;
-            if (isPowered) energy.extractEnergy(Config.projectorEnergyPerTick, false);
+            if (isPowered) {
+                energy.extractEnergy(Config.projectorEnergyPerTick, false);
+            }
         } else {
             isPowered = true;
         }
@@ -104,7 +108,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         // Deliver frames finished by the async encoder even when nothing changed,
         // otherwise the last frame of an animation could sit in the outbox forever.
         frameSender.flush();
-        if (!projectorState.hasEnergy || !projectorDevice.hasChanges()) return;
+        if (!projectorState.hasEnergy || !projectorDevice.hasChanges()) {
+            return;
+        }
         frameSender.sendFrame(projectorDevice);
     }
 
@@ -157,7 +163,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     }
 
     public void applyProjectorStateClient(final boolean isProjecting, final boolean hasEnergy) {
-        if (level == null || !level.isClientSide()) return;
+        if (level == null || !level.isClientSide()) {
+            return;
+        }
         projectorState.applyClient(isProjecting, hasEnergy);
     }
 
@@ -169,7 +177,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
             final int chunkIndex,
             final int chunkCount,
             final byte[] data) {
-        if (level == null || !level.isClientSide()) return;
+        if (level == null || !level.isClientSide()) {
+            return;
+        }
         frameSender.applyChunk(codec, width, height, frameSize, chunkIndex, chunkCount, data);
     }
 

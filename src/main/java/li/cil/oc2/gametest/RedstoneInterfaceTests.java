@@ -12,10 +12,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RedstoneInterfaceTests {
+    private static final Logger LOGGER = LogManager.getLogger();
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void redstoneInterfaceCanBePlaced(final GameTestHelper helper) {
         final Player player = TestSupport.fakePlayer(helper);
@@ -41,12 +44,12 @@ public final class RedstoneInterfaceTests {
         helper.startSequence()
             .thenExecuteAfter(60, () -> {
                 base[0] = computer.deviceCount();
-                System.out.println("[redstoneAttach] base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[redstoneAttach] base={} {}", base[0], computer.describe());
             })
             .thenExecute(() -> placeInterface(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
-                System.out.println("[redstoneAttach] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[redstoneAttach] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
                     final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
                         helper.getBlockEntity(TestSupport.CABLE_POS);
@@ -71,12 +74,12 @@ public final class RedstoneInterfaceTests {
         helper.startSequence()
             .thenExecuteAfter(60, () -> {
                 base[0] = computer.deviceCount();
-                System.out.println("[redstoneRemove] base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[redstoneRemove] base={} {}", base[0], computer.describe());
             })
             .thenExecute(() -> placeInterface(helper))
             .thenExecuteAfter(60, () -> {
                 final int withNeighbor = computer.deviceCount();
-                System.out.println("[redstoneRemove] withNeighbor=" + withNeighbor + " base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[redstoneRemove] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
                     throw new GameTestAssertException(
                         "redstone interface added no device (alone=" + base[0]
@@ -86,7 +89,7 @@ public final class RedstoneInterfaceTests {
             .thenExecute(() -> TestSupport.breakBlock(helper, TestSupport.DEVICE_POS))
             .thenExecuteAfter(60, () -> {
                 final int after = computer.deviceCount();
-                System.out.println("[redstoneRemove] after=" + after + " base=" + base[0] + " " + computer.describe());
+                LOGGER.info("[redstoneRemove] after={} base={} {}", after, base[0], computer.describe());
                 if (after != base[0]) {
                     throw new GameTestAssertException(
                         "device count did not return to baseline after removing redstone interface: alone="
