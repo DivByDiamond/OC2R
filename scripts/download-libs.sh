@@ -53,7 +53,10 @@ install_maven() {
 
     echo "[download] ${jar#libs/}"
     echo "  from: ${release_url}"
-    curl -fL "${release_url}" -o "${jar}.tmp"
+    # Retries survive transient CI runner network/DNS blips (e.g. a momentary
+    # "Could not resolve host" hiccup) instead of failing the whole build.
+    curl -fL --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 \
+        "${release_url}" -o "${jar}.tmp"
     mv "${jar}.tmp" "$jar"
 
     # Group ID = group_path with '/' replaced by '.'
