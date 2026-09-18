@@ -66,6 +66,7 @@ final class TerminalResizer {
         // Reset tab stops
         terminal.tabs = new boolean[newWidth];
         terminal.altTabs = new boolean[newWidth];
+        // Column 0 is never a tab stop (a tab there would be a no-op), so start at 1.
         for (int i = 1; i < newWidth; i++) {
             if (i % TerminalColors.TAB_WIDTH == 0) {
                 terminal.tabs[i] = true;
@@ -178,6 +179,7 @@ final class TerminalResizer {
         // Tab stops: preserve existing stops in the surviving columns, default-fill new columns.
         final boolean[] newTabs = new boolean[newWidth];
         final boolean[] newAltTabs = new boolean[newWidth];
+        // Column 0 is never a tab stop (a tab there would be a no-op), so start at 1.
         for (int i = 1; i < newWidth; i++) {
             if (i < oldWidth) {
                 newTabs[i] = terminal.tabs[i];

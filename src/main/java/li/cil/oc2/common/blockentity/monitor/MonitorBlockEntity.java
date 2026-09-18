@@ -93,6 +93,8 @@ public final class MonitorBlockEntity extends ModBlockEntity
         return stateManager.isMounted;
     }
 
+    // Typed Object on purpose: MonitorGUIRenderer is client-only and must not appear in this
+    // common class signature. Non-null only on the client; callers there cast to the renderer.
     public Object getMonitor() {
         return stateManager.getMonitor();
     }

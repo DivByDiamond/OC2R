@@ -38,6 +38,8 @@ final class TerminalNetworkState {
         networkDirtyLock.lock();
         try {
             networkDirtyRows = new BitSet(newHeight * Terminal.SCROLL_BACK_COUNT);
+            // Shift ops hold row indices of the old geometry; they are meaningless after a
+            // reallocation, and the full refresh below repaints everything anyway.
             networkShiftOps.clear();
             networkNeedsFullRefresh = true;
         } finally {
@@ -123,6 +125,8 @@ final class TerminalNetworkState {
             final int[] ops = networkShiftOps.toIntArray();
             networkNeedsFullRefresh = false;
             networkDirtyRows.clear();
+            // Shift ops hold row indices of the old geometry; they are meaningless after a
+            // reallocation, and the full refresh below repaints everything anyway.
             networkShiftOps.clear();
             return new Terminal.NetworkDirty(full, rows, ops);
         } finally {
