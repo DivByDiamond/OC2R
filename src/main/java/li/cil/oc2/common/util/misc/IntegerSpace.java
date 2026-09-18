@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import static java.lang.Integer.compareUnsigned;
-
 /** A set of integers that is more effective with ranges of integers. */
 public class IntegerSpace {
     private final NavigableMap<Integer, Integer> ranges = new TreeMap<>(Integer::compareUnsigned);
@@ -16,12 +14,12 @@ public class IntegerSpace {
     }
 
     public final boolean put(final int begin, final int end) {
-        if (compareUnsigned(end, begin) < 0) {
+        if (Integer.compareUnsigned(end, begin) < 0) {
             return put(end, begin);
         }
 
         final Map.Entry<Integer, Integer> floor = ranges.floorEntry(begin);
-        if (floor != null && compareUnsigned(floor.getKey(), begin) <= 0 && compareUnsigned(floor.getValue(), end) >= 0) {
+        if (floor != null && Integer.compareUnsigned(floor.getKey(), begin) <= 0 && Integer.compareUnsigned(floor.getValue(), end) >= 0) {
             // Already exists in the space
             // [---------]
             // [---------]
@@ -38,7 +36,7 @@ public class IntegerSpace {
         // comparisons left such overlapping ranges behind forever).
         if (floor != null && Integer.toUnsignedLong(floor.getValue()) + 1 >= Integer.toUnsignedLong(begin)) {
             mergedBegin = floor.getKey();
-            mergedEnd = compareUnsigned(mergedEnd, floor.getValue()) >= 0 ? mergedEnd : floor.getValue();
+            mergedEnd = Integer.compareUnsigned(mergedEnd, floor.getValue()) >= 0 ? mergedEnd : floor.getValue();
             ranges.remove(floor.getKey());
         }
 
@@ -50,7 +48,7 @@ public class IntegerSpace {
             if (Integer.toUnsignedLong(range.getKey()) - 1 > Integer.toUnsignedLong(mergedEnd)) {
                 break;
             }
-            mergedEnd = compareUnsigned(mergedEnd, range.getValue()) >= 0 ? mergedEnd : range.getValue();
+            mergedEnd = Integer.compareUnsigned(mergedEnd, range.getValue()) >= 0 ? mergedEnd : range.getValue();
             iterator.remove();
         }
 
@@ -64,8 +62,8 @@ public class IntegerSpace {
     public final boolean contains(final int element) {
         final Map.Entry<Integer, Integer> floorRange = ranges.floorEntry(element);
         return floorRange != null
-                && compareUnsigned(element, floorRange.getKey()) >= 0
-                && compareUnsigned(element, floorRange.getValue()) <= 0;
+                && Integer.compareUnsigned(element, floorRange.getKey()) >= 0
+                && Integer.compareUnsigned(element, floorRange.getValue()) <= 0;
     }
 
     public final boolean isEmpty() {

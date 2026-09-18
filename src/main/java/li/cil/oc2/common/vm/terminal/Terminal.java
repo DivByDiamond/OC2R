@@ -3,6 +3,7 @@ package li.cil.oc2.common.vm.terminal;
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBuffer;
 import li.cil.oc2.common.vm.terminal.buffer.TerminalBufferWriter;
@@ -133,7 +134,8 @@ public class Terminal {
     public transient byte[] altLineAttrs;
 
     public final transient Set<RendererModel> renderers =
-            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+            Collections.newSetFromMap(new WeakHashMap<>());
+    final transient ReentrantLock renderersLock = new ReentrantLock();
     // Network diff dirty-tracking (rows/shift-ops/palette revision) — extracted to
     // TerminalNetworkState (А1); geometry inputs (height, lastRowToDisplay, alt state) are
     // passed in per call since this terminal's own fields are the source of truth for those.
@@ -337,18 +339,24 @@ public class Terminal {
     public void markDirty(final long mask) {
         final boolean alt = currentPrivateModeState.isAltBufferEnabled();
         networkState.recordDirtyScreenRows(mask, height, alt, lastRowToDisplay);
-        synchronized (renderers) {
+        renderersLock.lock();
+        try {
             renderers.forEach(
                     model ->
                             model.getDirtyMask()
                                     .accumulateAndGet(mask, (left, right) -> left | right));
+        } finally {
+            renderersLock.unlock();
         }
     }
 
     public void markAllDirty() {
         networkState.markAllDirty();
-        synchronized (renderers) {
+        renderersLock.lock();
+        try {
             renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        } finally {
+            renderersLock.unlock();
         }
     }
 
@@ -361,8 +369,11 @@ public class Terminal {
      */
     public void markAllBufferRowsDirty() {
         networkState.markAllBufferRowsDirty(height);
-        synchronized (renderers) {
+        renderersLock.lock();
+        try {
             renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        } finally {
+            renderersLock.unlock();
         }
     }
 
