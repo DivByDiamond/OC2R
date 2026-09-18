@@ -281,7 +281,7 @@ public class TerminalBuffer {
         if (srcY < 0 || srcY >= terminal.height || dstY < 0 || dstY >= terminal.height) return;
         final int marginLimit = x <= terminal.scrollColLast
                 ? terminal.scrollColLast - x + 1
-                : terminal.width - x;
+                : 0; // outside the DECSLRM margins: hard boundary, copy nothing
         final int maxCols = Math.max(0, Math.min(marginLimit, terminal.width - x));
         final int n = Math.clamp(count, 0, maxCols);
         if (n == 0) return;

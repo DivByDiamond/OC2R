@@ -43,7 +43,7 @@ final class TerminalResizer {
         terminal.styles = new byte[mainSize];
         Arrays.fill(terminal.buffer, ' ');
         Arrays.fill(terminal.colors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(terminal.colorsBackground, background.copy());
+        Arrays.setAll(terminal.colorsBackground, i -> background.copy());
         Arrays.fill(terminal.styles, TerminalColors.DEFAULT_STYLE);
 
         // Reallocate alt buffer arrays
@@ -54,7 +54,7 @@ final class TerminalResizer {
         terminal.altStyles = new byte[altSize];
         Arrays.fill(terminal.altBuffer, ' ');
         Arrays.fill(terminal.altColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(terminal.altColorsBackground, background.copy());
+        Arrays.setAll(terminal.altColorsBackground, i -> background.copy());
         Arrays.fill(terminal.altStyles, TerminalColors.DEFAULT_STYLE);
 
         // Reset line attributes to single for destructive width change (DECCOLM/RIS)

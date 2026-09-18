@@ -42,7 +42,8 @@ public final class MonitorStateManager {
         this.deviceGroup = new DeviceGroup(blockEntity);
         // Created once here rather than lazily in getMonitor(): a lazy null-check-then-set
         // is not thread-safe (render thread vs. main thread could both pass the null check
-        // and each construct their own renderer, leaking one).
+        // and each construct their own renderer, leaking one). This fixes construction only;
+        // thread-safety of using the renderer is up to the renderer itself.
         this.monitorCache = createMonitorSupplier().get();
         deviceGroup.addDevice(monitorDevice);
         deviceGroup.addDevice(keyboardDevice);

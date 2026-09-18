@@ -75,7 +75,7 @@ public final class DeltaFrameCodec {
      * Encodes an RGB565 framebuffer into a self-contained payload; the consumer
      * passes the same width/height alongside the payload when decoding.
      */
-    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "overflow guard: width/height from network, must validate before allocation")
+    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "bounds guard: width/height from network, must validate before int allocation")
     public synchronized byte[] encode(final byte[] rgb565, final int width, final int height) {
         final long frameBytes = (long) width * height * 2;
         if (frameBytes > 32L * 1024 * 1024 || frameBytes > Integer.MAX_VALUE) {

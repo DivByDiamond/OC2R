@@ -125,7 +125,7 @@ final class TerminalHeightResizer {
         final byte[] newStyles = new byte[width * newMainRows];
         Arrays.fill(newBuffer, ' ');
         Arrays.fill(newColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(newColorsBackground, defaultBackground);
+        Arrays.setAll(newColorsBackground, i -> defaultBackground.copy());
         Arrays.fill(newStyles, TerminalColors.DEFAULT_STYLE);
         for (int r = 0; r < srcLen; r++) {
             final int src = (srcStart + r) * width;
@@ -145,7 +145,7 @@ final class TerminalHeightResizer {
         final byte[] newAltStyles = new byte[width * newHeight];
         Arrays.fill(newAltBuffer, ' ');
         Arrays.fill(newAltColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(newAltColorsBackground, defaultBackground);
+        Arrays.setAll(newAltColorsBackground, i -> defaultBackground.copy());
         Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
         for (int r = 0; r < copyAltRows; r++) {
             final int src = (altSrcStart + r) * width;
