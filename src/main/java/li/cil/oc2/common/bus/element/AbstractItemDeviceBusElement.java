@@ -87,22 +87,20 @@ public abstract class AbstractItemDeviceBusElement
         return new ItemQueryResult(query, entries);
     }
 
-    @SuppressWarnings("ConstantValue")
     protected void collectSyntheticDevices(
             final ItemDeviceQuery query, final Set<ItemEntry> entries) {
         if (entries.isEmpty()) {
             return;
         }
 
-        if (query.getItemStack().getDisplayName() != null) {
-            entries.add(
-                    new ItemEntry(
-                            new ItemDeviceInfo(
-                                    null,
-                                    new TypeNameRPCDevice(
-                                            query.getItemStack().getDisplayName().toString()),
-                                    0)));
-        }
+        // getDisplayName() is @NotNull (falls back to the item's translation key), so this
+        // always runs when entries is non-empty — no need to guard against a null display name.
+        entries.add(
+                new ItemEntry(
+                        new ItemDeviceInfo(
+                                null,
+                                new TypeNameRPCDevice(query.getItemStack().getDisplayName().toString()),
+                                0)));
     }
 
     @Override

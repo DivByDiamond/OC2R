@@ -90,6 +90,13 @@ public class IntegerSpace {
                 .sum();
     }
 
+    /**
+     * Returns the element count, saturating at {@link Integer#MAX_VALUE}.
+     *
+     * @return the element count. A full 32-bit space (e.g. an unrestricted IPv4 allow-list) holds
+     *     2^32 elements, which overflows {@code int} — use {@link #countLong()} when the space
+     *     may be that large.
+     */
     public final int count() {
         final long c = countLong();
         return c > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) c;

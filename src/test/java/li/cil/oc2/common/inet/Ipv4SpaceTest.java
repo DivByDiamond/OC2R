@@ -36,6 +36,22 @@ public class Ipv4SpaceTest {
     }
 
     @Test
+    public void subnetPrefixZeroMatchesEverything() throws AddressParseException {
+        final Ipv4Space ipv4Space = new Ipv4Space(Ipv4Space.Modes.ALLOWLIST);
+        ipv4Space.put("0.0.0.0/0");
+        assertTrue(ipv4Space.isAllowed(InetUtils.parseIpv4Address("1.2.3.4")));
+        assertTrue(ipv4Space.isAllowed(InetUtils.parseIpv4Address("255.255.255.255")));
+    }
+
+    @Test
+    public void subnetPrefixThirtyTwoMatchesSingleAddress() throws AddressParseException {
+        final Ipv4Space ipv4Space = new Ipv4Space(Ipv4Space.Modes.ALLOWLIST);
+        ipv4Space.put("1.2.3.4/32");
+        assertTrue(ipv4Space.isAllowed(InetUtils.parseIpv4Address("1.2.3.4")));
+        assertFalse(ipv4Space.isAllowed(InetUtils.parseIpv4Address("1.2.3.5")));
+    }
+
+    @Test
     public void computeIpSpaceTest() throws AddressParseException {
         final Ipv4Space space = InetUtils.computeIpSpace(List.of("127.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16", "224.0.0.0/4"), List.of());
         assertEquals("[10.0.0.0-10.255.255.255, 100.64.0.0-100.127.255.255, 127.0.0.0-127.255.255.255, 172.16.0.0-172.31.255.255, 192.168.0.0-192.168.255.255, 224.0.0.0-239.255.255.255]", space.toString());

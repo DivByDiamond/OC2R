@@ -142,8 +142,8 @@ final class TerminalResizer {
         final ColorData[] newColorsBackground = new ColorData[newWidth * mainRows];
         final byte[] newStyles = new byte[newWidth * mainRows];
         Arrays.fill(newBuffer, ' ');
-        Arrays.fill(newColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(newColorsBackground, defaultBackground);
+        Arrays.setAll(newColors, i -> TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.setAll(newColorsBackground, i -> defaultBackground.copy());
         Arrays.fill(newStyles, TerminalColors.DEFAULT_STYLE);
         for (int r = 0; r < mainRows; r++) {
             final int src = r * oldWidth;
@@ -160,8 +160,8 @@ final class TerminalResizer {
         final int[] newAltBuffer = new int[newWidth * terminal.height];
         final byte[] newAltStyles = new byte[newWidth * terminal.height];
         Arrays.fill(newAltBuffer, ' ');
-        Arrays.fill(newAltColors, TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
-        Arrays.fill(newAltColorsBackground, defaultBackground);
+        Arrays.setAll(newAltColors, i -> TerminalColors.DEFAULT_FOREGROUND_COLOR.copy());
+        Arrays.setAll(newAltColorsBackground, i -> defaultBackground.copy());
         Arrays.fill(newAltStyles, TerminalColors.DEFAULT_STYLE);
         for (int r = 0; r < terminal.height; r++) {
             final int src = r * oldWidth;
@@ -204,8 +204,11 @@ final class TerminalResizer {
         // beyond the new width (xterm CursorSet on cur_col + 1 > value); setCursorPos clamps x
         // and clears the pending wrap + REP last-char, matching any cursor repositioning. The
         // saved cursor is left as-is — restore routes through the clamping setCursorPos (§36 Б6).
+        // Clamp only the column directly, not via setCursorPos: DECSCPP must not reset the
+        // pending-wrap/REP-lastchar state or touch y (which setCursorPos would also clamp,
+        // wrongly pulling a scrollback cursor into the visible window).
         if (terminal.x >= newWidth) {
-            terminal.setCursorPos(newWidth - 1, terminal.y);
+            terminal.x = newWidth - 1;
         }
 
         // Column margins (DECSLRM): non-destructive like the rest of DECSCPP (see Javadoc).

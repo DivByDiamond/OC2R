@@ -35,7 +35,9 @@ class CommonDeviceBusControllerTest {
     @Test
     void testScheduleBusScanDelegatesToManager() {
         controller.scheduleBusScan(DeviceBusController.ScanReason.BUS_CHANGE);
-        // Manager should be called
+        // scheduleBusScan(BUS_CHANGE) unconditionally moves the manager's state machine to
+        // SCAN_PENDING (BusElementManager#scheduleBusScan), so this is observable via getState().
+        assertEquals(BusState.SCAN_PENDING, controller.getState());
     }
 
     @Test
@@ -72,13 +74,22 @@ class CommonDeviceBusControllerTest {
     @Test
     void testDisposeDisposesManager() {
         controller.dispose();
-        // Should complete without exception
+        // No bus scan ever ran, so the manager holds no elements to remove this controller from;
+        // dispose() must still be idempotent and leave energy consumption untouched.
+        assertEquals(0, controller.getEnergyConsumption());
+        assertDoesNotThrow(controller::dispose);
     }
 
     @Test
     void testSetDeviceContainersChangedDoesNothingInBase() {
-        // Base implementation does nothing
+        // Base implementation does nothing: neither the bus state nor energy consumption
+        // should be affected by calling it.
+        final BusState stateBefore = controller.getState();
+        final int energyBefore = controller.getEnergyConsumption();
+
         controller.setDeviceContainersChanged();
-        // Should complete without exception
+
+        assertEquals(stateBefore, controller.getState());
+        assertEquals(energyBefore, controller.getEnergyConsumption());
     }
 }

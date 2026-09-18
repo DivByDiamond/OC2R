@@ -282,7 +282,8 @@ public class TerminalBuffer {
         final int marginLimit = x <= terminal.scrollColLast
                 ? terminal.scrollColLast - x + 1
                 : terminal.width - x;
-        final int n = Math.clamp(count, 0, Math.min(marginLimit, terminal.width - x));
+        final int maxCols = Math.max(0, Math.min(marginLimit, terminal.width - x));
+        final int n = Math.clamp(count, 0, maxCols);
         if (n == 0) return;
         final int srcIndex = getLinearIndex(srcY, x);
         final int dstIndex = getLinearIndex(dstY, x);

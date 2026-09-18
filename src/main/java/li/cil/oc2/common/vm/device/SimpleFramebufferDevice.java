@@ -14,17 +14,21 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
     public static final int STRIDE = 2;
 
+    // VRAM budget: caps the shared-memory framebuffer region reserved for a single device.
+    private static final long MAX_FRAMEBUFFER_BYTES = 32L * 1024 * 1024;
+
     private final int width;
     private final int height;
     private final ByteBuffer buffer;
-    private int length;
+    // load()/store() read this outside the lock (only mutations are guarded), so it must be volatile.
+    private volatile int length;
     private final BitSet dirtyLines;
 
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
         this.height = height;
         final long required = (long) width * height * STRIDE;
-        if (required > Integer.MAX_VALUE || required > 32L * 1024 * 1024) {
+        if (required > MAX_FRAMEBUFFER_BYTES) {
             throw new IllegalArgumentException("Framebuffer too large: " + width + "x" + height);
         }
         this.length = (int) required;
@@ -84,12 +88,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
     @Override
     public int getLength() {
-        lock.lock();
-        try {
-            return length;
-        } finally {
-            lock.unlock();
-        }
+        return length;
     }
 
     @Override

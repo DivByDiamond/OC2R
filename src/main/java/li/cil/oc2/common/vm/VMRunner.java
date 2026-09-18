@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,10 +44,14 @@ public class VMRunner implements Runnable {
 
     private boolean firedResumedRunningEvent;
     @Serialized private boolean firedInitializationEvent;
-    @Serialized private Component runtimeError;
+    // Written from the VM runner thread in run()/handleBeforeRun(), read from the main thread via
+    // getRuntimeError() — needs volatile for cross-thread visibility.
+    @Serialized private volatile Component runtimeError;
 
-    @Serialized private long cycleLimit;
-    @Serialized private long cycles;
+    // Written from the main thread in tick(), read/written from the VM runner thread in run() —
+    // needs volatile for cross-thread visibility.
+    @Serialized private volatile long cycleLimit;
+    @Serialized private volatile long cycles;
 
     public VMRunner(final AbstractVirtualMachine virtualMachine) {
         this.board = virtualMachine.state.board;
@@ -57,6 +62,23 @@ public class VMRunner implements Runnable {
     @Nullable
     public Component getRuntimeError() {
         return runtimeError;
+    }
+
+    long getCycles() {
+        return cycles;
+    }
+
+    long getCycleLimit() {
+        return cycleLimit;
+    }
+
+    // The += is a read-modify-write, but cycles is only ever mutated here, from the single VM
+    // runner thread that owns run() — no concurrent writer exists, so this can't race. volatile
+    // is still needed so tick()'s cycleLimit comparison and getCycles() see the latest value.
+    @SuppressFBWarnings(value = "AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE",
+            justification = "single-writer thread (VM runner); volatile is for cross-thread visibility only")
+    private void addCycles(final long delta) {
+        cycles += delta;
     }
 
     public void tick() {
@@ -106,7 +128,7 @@ public class VMRunner implements Runnable {
                 }
 
                 for (int i = 0; i < maxSteps; i++) {
-                    cycles += cyclesPerStep;
+                    addCycles(cyclesPerStep);
                     board.step(cyclesPerStep);
                     step(cyclesPerStep);
 
