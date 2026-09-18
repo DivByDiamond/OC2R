@@ -16,12 +16,12 @@ public class IntegerSpace {
     }
 
     public final boolean put(final int begin, final int end) {
-        if (end < begin) {
+        if (compareUnsigned(end, begin) < 0) {
             return put(end, begin);
         }
 
         final Map.Entry<Integer, Integer> floor = ranges.floorEntry(begin);
-        if (floor != null && floor.getKey() <= begin && floor.getValue() >= end) {
+        if (floor != null && compareUnsigned(floor.getKey(), begin) <= 0 && compareUnsigned(floor.getValue(), end) >= 0) {
             // Already exists in the space
             // [---------]
             // [---------]
@@ -36,9 +36,9 @@ public class IntegerSpace {
         // Absorb the range below begin if it touches or overlaps the new one,
         // including ranges that start below and extend past end (the old strict
         // comparisons left such overlapping ranges behind forever).
-        if (floor != null && (long) floor.getValue() + 1 >= begin) {
+        if (floor != null && Integer.toUnsignedLong(floor.getValue()) + 1 >= Integer.toUnsignedLong(begin)) {
             mergedBegin = floor.getKey();
-            mergedEnd = Math.max(mergedEnd, floor.getValue());
+            mergedEnd = compareUnsigned(mergedEnd, floor.getValue()) >= 0 ? mergedEnd : floor.getValue();
             ranges.remove(floor.getKey());
         }
 
@@ -47,10 +47,10 @@ public class IntegerSpace {
                 ranges.tailMap(mergedBegin, false).entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Integer, Integer> range = iterator.next();
-            if ((long) range.getKey() - 1 > mergedEnd) {
+            if (Integer.toUnsignedLong(range.getKey()) - 1 > Integer.toUnsignedLong(mergedEnd)) {
                 break;
             }
-            mergedEnd = Math.max(mergedEnd, range.getValue());
+            mergedEnd = compareUnsigned(mergedEnd, range.getValue()) >= 0 ? mergedEnd : range.getValue();
             iterator.remove();
         }
 
@@ -64,8 +64,8 @@ public class IntegerSpace {
     public final boolean contains(final int element) {
         final Map.Entry<Integer, Integer> floorRange = ranges.floorEntry(element);
         return floorRange != null
-                && element >= floorRange.getKey()
-                && element <= floorRange.getValue();
+                && compareUnsigned(element, floorRange.getKey()) >= 0
+                && compareUnsigned(element, floorRange.getValue()) <= 0;
     }
 
     public final boolean isEmpty() {

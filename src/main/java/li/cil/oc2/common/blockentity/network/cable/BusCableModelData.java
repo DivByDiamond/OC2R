@@ -3,10 +3,13 @@ package li.cil.oc2.common.blockentity.network.cable;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class BusCableModelData {
+    private static final Logger LOGGER = LogManager.getLogger();
     private final BusCableBlockEntity owner;
-    private Object currentModelData;
+    private ModelData currentModelData;
 
     BusCableModelData(final BusCableBlockEntity owner) {
         this.owner = owner;
@@ -23,7 +26,7 @@ final class BusCableModelData {
         }
         try {
             final Class<?> hooks = Class.forName("li.cil.oc2.client.hooks.BusCableModelHooks");
-            final ModelData current = (ModelData) currentModelData;
+            final ModelData current = currentModelData;
             final Object result = hooks
                     .getMethod(
                             "computeModelData",
@@ -31,11 +34,13 @@ final class BusCableModelData {
                             ModelData.class)
                     .invoke(null, owner, current);
             if (result != null) {
-                currentModelData = result;
+                currentModelData = (ModelData) result;
                 return (ModelData) result;
             }
             return ModelData.EMPTY;
         } catch (final ReflectiveOperationException e) {
+            // Missing/renamed hook class indicates a build/packaging error — must be visible, not silent.
+            LOGGER.error("Failed to compute BusCable model data via reflection", e);
             return ModelData.EMPTY;
         }
     }

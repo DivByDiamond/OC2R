@@ -3,6 +3,7 @@ package li.cil.oc2.common.vm.terminal;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.BitSet;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
 
 /**
  * Network diff dirty-tracking for a {@link Terminal}: which absolute buffer rows changed since
@@ -30,6 +31,7 @@ final class TerminalNetworkState {
         networkDirtyLock.lock();
         try {
             networkDirtyRows = new BitSet(newMainRows);
+            networkShiftOps.clear();
             networkNeedsFullRefresh = true;
         } finally {
             networkDirtyLock.unlock();
@@ -134,6 +136,7 @@ final class TerminalNetworkState {
         "PMD.ReturnEmptyCollectionRatherThanNull", // null is a load-bearing sentinel — see Terminal.consumePaletteDirty
         "PMD.UseVarargs" // palette256 is a fixed-size buffer, not a variadic argument list
     })
+    @Nullable
     int[] consumePaletteDirty(final boolean force, final int[] palette256) {
         networkDirtyLock.lock();
         try {
