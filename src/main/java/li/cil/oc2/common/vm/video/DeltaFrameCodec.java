@@ -111,6 +111,14 @@ public final class DeltaFrameCodec {
         assert previousFrame != null;
         final int tilesX = RgbTiles.tileCountX(width);
         final int tilesY = RgbTiles.tileCountY(height);
+        // A zero-area frame (width==0 or height==0, e.g. a monitor array not yet laid out)
+        // has no tiles to diff; countDirtyTiles below divides by `width * 2`, which would
+        // throw ArithmeticException for width==0 (§47 Б1). Bail out with an empty tile list
+        // instead - there is nothing to encode either way.
+        if (tilesX == 0 || tilesY == 0) {
+            writeVarint(out, 0);
+            return;
+        }
 
         writeVarint(out, countDirtyTiles(rgb565, width, tilesX, tilesY));
         for (int ty = 0; ty < tilesY; ty++) {
@@ -215,6 +223,10 @@ public final class DeltaFrameCodec {
         final int tilesX = RgbTiles.tileCountX(width);
         final int maxTiles = tilesX * RgbTiles.tileCountY(height);
         final int dirtyTiles = readVarint(in);
+        // maxTiles==0 (width==0 or height==0) forces every positive dirtyTiles to fail this
+        // check, so applyOneTile's `tileIndex % tilesX` can never run with tilesX==0 (§47 Б1) -
+        // dirtyTiles<=0 is the only value that survives, and the loop below then runs zero
+        // iterations. This check is the single source of truth for that invariant.
         if (dirtyTiles > maxTiles) {
             return Optional.empty();
         }

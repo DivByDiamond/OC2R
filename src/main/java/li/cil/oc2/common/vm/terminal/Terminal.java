@@ -337,15 +337,19 @@ public class Terminal {
     public void markDirty(final long mask) {
         final boolean alt = currentPrivateModeState.isAltBufferEnabled();
         networkState.recordDirtyScreenRows(mask, height, alt, lastRowToDisplay);
-        renderers.forEach(
-                model ->
-                        model.getDirtyMask()
-                                .accumulateAndGet(mask, (left, right) -> left | right));
+        synchronized (renderers) {
+            renderers.forEach(
+                    model ->
+                            model.getDirtyMask()
+                                    .accumulateAndGet(mask, (left, right) -> left | right));
+        }
     }
 
     public void markAllDirty() {
         networkState.markAllDirty();
-        renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        synchronized (renderers) {
+            renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        }
     }
 
     /**
@@ -357,7 +361,9 @@ public class Terminal {
      */
     public void markAllBufferRowsDirty() {
         networkState.markAllBufferRowsDirty(height);
-        renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        synchronized (renderers) {
+            renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        }
     }
 
     /**

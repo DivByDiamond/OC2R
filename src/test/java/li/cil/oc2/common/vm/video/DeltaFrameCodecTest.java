@@ -136,6 +136,27 @@ class DeltaFrameCodecTest {
         assertTrue(decoder.decode(staleDelta, 640, 480).isEmpty());
     }
 
+    @Test
+    void zeroWidthFrameDoesNotThrow() {
+        // §47 Б1: a zero-area frame (e.g. a monitor array not yet laid out) used to divide by
+        // `width * 2` == 0 in countDirtyTiles when a second, non-keyframe encode() landed on
+        // the same zero width - ArithmeticException on whichever thread calls encode().
+        final byte[] empty = new byte[0];
+        assertArrayEquals(empty, roundtrip(0, 5, empty)); // keyframe
+        final byte[] delta = encoder.encode(empty, 0, 5); // non-keyframe: used to crash here
+        assertEquals(0, delta[0] & Flag.KEYFRAME);
+        assertArrayEquals(empty, decoder.decode(delta, 0, 5).orElseThrow());
+    }
+
+    @Test
+    void zeroHeightFrameDoesNotThrow() {
+        final byte[] empty = new byte[0];
+        assertArrayEquals(empty, roundtrip(5, 0, empty)); // keyframe
+        final byte[] delta = encoder.encode(empty, 5, 0); // non-keyframe: used to crash here
+        assertEquals(0, delta[0] & Flag.KEYFRAME);
+        assertArrayEquals(empty, decoder.decode(delta, 5, 0).orElseThrow());
+    }
+
     private static final class Flag {
         static final int KEYFRAME = 1;
     }

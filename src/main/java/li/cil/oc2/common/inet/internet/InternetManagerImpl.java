@@ -5,7 +5,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
@@ -42,7 +44,10 @@ public final class InternetManagerImpl implements InternetManager {
 
     private final InternetProvider internetProvider;
     private final List<InternetConnectionImpl> connections = new LinkedList<>();
-    private final List<TaskImpl> tasks = new LinkedList<>();
+    // §47 Б2: runOnInternetThreadTick() (server thread, e.g. SocketManager wiring a new
+    // connection) adds while runTasks() (Internet executor thread, every tick) removes - a
+    // plain LinkedList would corrupt its links or drop tasks under concurrent add/removeIf.
+    private final Queue<TaskImpl> tasks = new ConcurrentLinkedQueue<>();
 
     private final ExecutorService executor;
     private final Ipv4Space ipSpace;

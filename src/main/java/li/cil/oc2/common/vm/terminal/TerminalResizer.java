@@ -84,7 +84,9 @@ final class TerminalResizer {
 
         // Mark all rows dirty
         terminal.geometryVersion.incrementAndGet();
-        terminal.renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        synchronized (terminal.renderers) {
+            terminal.renderers.forEach(model -> model.getDirtyMask().set(-1L));
+        }
     }
 
     /**

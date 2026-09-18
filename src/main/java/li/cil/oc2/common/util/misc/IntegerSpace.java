@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import static java.lang.Integer.compareUnsigned;
+
 /** A set of integers that is more effective with ranges of integers. */
 public class IntegerSpace {
-    private final NavigableMap<Integer, Integer> ranges = new TreeMap<>();
+    private final NavigableMap<Integer, Integer> ranges = new TreeMap<>(Integer::compareUnsigned);
 
     public final boolean put(final int element) {
         return put(element, element);

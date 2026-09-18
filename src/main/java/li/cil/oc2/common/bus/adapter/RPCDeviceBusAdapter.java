@@ -42,11 +42,11 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     private final MessageWriter messageWriter;
     private final MethodInvoker methodInvoker;
     private final Lock pauseLock = new ReentrantLock();
-    private boolean isPaused;
+    private volatile boolean isPaused;
     private boolean crmode;
     @Serialized private ByteBuffer transmitBuffer;
     @Serialized private ByteBuffer receiveBuffer;
-    @Serialized private MethodInvocation synchronizedInvocation;
+    @Serialized private volatile MethodInvocation synchronizedInvocation;
 
     public RPCDeviceBusAdapter(final SerialDevice serialDevice) {
         this(serialDevice, DEFAULT_MAX_MESSAGE_SIZE);

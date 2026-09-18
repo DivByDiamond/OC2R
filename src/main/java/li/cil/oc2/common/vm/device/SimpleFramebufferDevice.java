@@ -55,10 +55,6 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         return height;
     }
 
-    public boolean hasChanges() {
-        return !dirtyLines.isEmpty();
-    }
-
     public boolean copyFrame(final ByteBuffer dst) {
         lock.lock();
         try {
@@ -106,19 +102,33 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public void store(final int offset, final long value, final int sizeLog2)
             throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-            switch (sizeLog2) {
-                case 0 -> buffer.put(offset, (byte) value);
-                case 1 -> buffer.putShort(offset, (short) value);
-                case 2 -> buffer.putInt(offset, (int) value);
-                case 3 -> buffer.putLong(offset, value);
-                default -> throw new IllegalArgumentException();
+            lock.lock();
+            try {
+                switch (sizeLog2) {
+                    case 0 -> buffer.put(offset, (byte) value);
+                    case 1 -> buffer.putShort(offset, (short) value);
+                    case 2 -> buffer.putInt(offset, (int) value);
+                    case 3 -> buffer.putLong(offset, value);
+                    default -> throw new IllegalArgumentException();
+                }
+                setDirty(offset);
+            } finally {
+                lock.unlock();
             }
-            setDirty(offset);
         }
     }
 
     private void setDirty(final int offset) {
         final int pixelY = offset / (width * STRIDE);
         dirtyLines.set(pixelY / 2);
+    }
+
+    public boolean hasChanges() {
+        lock.lock();
+        try {
+            return !dirtyLines.isEmpty();
+        } finally {
+            lock.unlock();
+        }
     }
 }
