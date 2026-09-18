@@ -1,9 +1,10 @@
 package li.cil.oc2.common.blockentity.monitor.video;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
@@ -32,8 +33,12 @@ public final class MonitorVideoController {
 
     // Weakly keyed so players disconnecting without a goodbye are still collected
     // by the GC; values are last-seen timestamps checked against WATCHER_TIMEOUT_MS.
-    private final Map<ServerPlayer, Long> watchers =
-            Collections.synchronizedMap(new WeakHashMap<>());
+    // Guarded by watchersLock — WeakHashMap is not thread-safe and iteration
+    // requires external locking (same CME pattern as Terminal.renderers §47 Б6).
+    // PMD UseConcurrentHashMap is suppressed: need weak keys, not strong ConcurrentHashMap.
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    private final Map<ServerPlayer, Long> watchers = new WeakHashMap<>();
+    private final ReentrantLock watchersLock = new ReentrantLock();
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
     private final FrameCodec codec = new FrameCodec();
     private final AsyncVideoEncoder encoder = new AsyncVideoEncoder();
@@ -63,6 +68,7 @@ public final class MonitorVideoController {
         this.frameConsumer = consumer;
     }
 
+    @SuppressFBWarnings(value = "UC_USELESS_CONDITION", justification = "overflow guard: monitor size from VM, must validate")
     public void sendFrame(final MonitorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
@@ -72,7 +78,11 @@ public final class MonitorVideoController {
         final int height = device.getHeight();
         // The buffer is handed off to the encoder worker after copying, so a fresh
         // one is obtained from the pool every frame instead of being reused.
-        final byte[] frame = encoder.obtainBuffer(width * height * 2);
+        final long frameBytes = (long) width * height * 2;
+        if (frameBytes > 32L * 1024 * 1024 || frameBytes > Integer.MAX_VALUE) {
+            return;
+        }
+        final byte[] frame = encoder.obtainBuffer((int) frameBytes);
         if (!device.copyFrame(ByteBuffer.wrap(frame))) {
             encoder.recycle(frame);
             return;
@@ -120,13 +130,23 @@ public final class MonitorVideoController {
         final var message =
                 new MonitorFramebufferMessage(
                         pos, codecId, width, height, frameSize, chunkIndex, chunkCount, data);
-        for (final ServerPlayer player : watchers.keySet()) {
-            NetworkMessages.sendToClient(message, player);
+        watchersLock.lock();
+        try {
+            for (final ServerPlayer player : watchers.keySet()) {
+                NetworkMessages.sendToClient(message, player);
+            }
+        } finally {
+            watchersLock.unlock();
         }
     }
 
     public void handleWatchedBy(final ServerPlayer player) {
-        watchers.put(player, System.currentTimeMillis());
+        watchersLock.lock();
+        try {
+            watchers.put(player, System.currentTimeMillis());
+        } finally {
+            watchersLock.unlock();
+        }
     }
 
     public void applyChunk(
@@ -168,11 +188,13 @@ public final class MonitorVideoController {
         }
     }
 
-    @SuppressWarnings("PMD.AvoidSynchronizedStatement")
     private boolean evictWatchers(final long now) {
-        synchronized (watchers) {
+        watchersLock.lock();
+        try {
             watchers.entrySet().removeIf(entry -> now - entry.getValue() > WATCHER_TIMEOUT_MS);
             return !watchers.isEmpty();
+        } finally {
+            watchersLock.unlock();
         }
     }
 }

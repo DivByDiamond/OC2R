@@ -34,7 +34,11 @@ public class IntegerSpace {
         // Absorb the range below begin if it touches or overlaps the new one,
         // including ranges that start below and extend past end (the old strict
         // comparisons left such overlapping ranges behind forever).
-        if (floor != null && Integer.toUnsignedLong(floor.getValue()) + 1 >= Integer.toUnsignedLong(begin)) {
+        // Guard against unsigned wrap: 0xFFFFFFFF + 1 wraps to 0, must not merge
+        // [255.255.255.255] with [0.0.0.0] - IP space is not a ring.
+        if (floor != null
+                && floor.getValue() != -1
+                && Integer.toUnsignedLong(floor.getValue()) + 1 >= Integer.toUnsignedLong(begin)) {
             mergedBegin = floor.getKey();
             mergedEnd = Integer.compareUnsigned(mergedEnd, floor.getValue()) >= 0 ? mergedEnd : floor.getValue();
             ranges.remove(floor.getKey());
@@ -45,7 +49,13 @@ public class IntegerSpace {
                 ranges.tailMap(mergedBegin, false).entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Integer, Integer> range = iterator.next();
-            if (Integer.toUnsignedLong(range.getKey()) - 1 > Integer.toUnsignedLong(mergedEnd)) {
+            if (range.getKey() == 0) {
+                // 0 cannot be adjacent from below via -1 (wrap from 0xFFFFFFFF),
+                // so treat 0 as start of space - check containment only
+                if (Integer.compareUnsigned(range.getKey(), mergedEnd) > 0) {
+                    break;
+                }
+            } else if (Integer.toUnsignedLong(range.getKey()) - 1 > Integer.toUnsignedLong(mergedEnd)) {
                 break;
             }
             mergedEnd = Integer.compareUnsigned(mergedEnd, range.getValue()) >= 0 ? mergedEnd : range.getValue();
@@ -74,10 +84,15 @@ public class IntegerSpace {
         return ranges.size();
     }
 
-    public final int count() {
+    public final long countLong() {
         return ranges.entrySet().stream()
-                .map(range -> range.getValue() - range.getKey() + 1)
-                .reduce(0, Integer::sum);
+                .mapToLong(range -> Integer.toUnsignedLong(range.getValue()) - Integer.toUnsignedLong(range.getKey()) + 1)
+                .sum();
+    }
+
+    public final int count() {
+        final long c = countLong();
+        return c > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) c;
     }
 
     protected void elementToString(final StringBuilder builder, final int element) {

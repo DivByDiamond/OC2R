@@ -23,15 +23,19 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
         this.height = height;
-        this.length = width * height * STRIDE;
+        final long required = (long) width * height * STRIDE;
+        if (required > Integer.MAX_VALUE || required > 32L * 1024 * 1024) {
+            throw new IllegalArgumentException("Framebuffer too large: " + width + "x" + height);
+        }
+        this.length = (int) required;
 
         if (buffer.capacity() < length) {
             throw new IllegalArgumentException("Buffer too small.");
         }
 
         this.buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
-        this.dirtyLines = new BitSet(height / 2);
-        this.dirtyLines.set(0, height / 2);
+        this.dirtyLines = new BitSet((height + 1) / 2);
+        this.dirtyLines.set(0, (height + 1) / 2);
     }
 
     public void close() {
@@ -80,7 +84,12 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
     @Override
     public int getLength() {
-        return length;
+        lock.lock();
+        try {
+            return length;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override

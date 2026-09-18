@@ -141,7 +141,7 @@ public class Terminal {
     // passed in per call since this terminal's own fields are the source of truth for those.
     final transient TerminalNetworkState networkState = new TerminalNetworkState(height);
     public transient boolean displayOnly;
-    public transient boolean hasPendingBell;
+    public transient volatile boolean hasPendingBell;
     public boolean useG0 = true;
     public int drawingModeG0;
     public int drawingModeG1;

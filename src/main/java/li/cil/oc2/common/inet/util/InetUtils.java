@@ -126,8 +126,14 @@ public final class InetUtils {
     }
 
     public static int getSubnetByPrefix(final int prefix) {
-        if (prefix > 30 || prefix < 0) {
-            throw new IllegalArgumentException("Wrong subnet prefix range");
+        if (prefix < 0 || prefix > 32) {
+            throw new IllegalArgumentException("Wrong subnet prefix range: " + prefix);
+        }
+        if (prefix == 0) {
+            return 0;
+        }
+        if (prefix == 32) {
+            return -1;
         }
         return -1 << (32 - prefix);
     }

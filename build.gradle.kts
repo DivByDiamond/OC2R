@@ -276,6 +276,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiter_version}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
     testCompileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
 
     // The terminal tests construct `new Terminal()` on the plain JUnit runtime classpath.
     // fastutil/log4j used to be added here by hand; since the test classpaths now share
