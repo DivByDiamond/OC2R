@@ -178,7 +178,13 @@ public final class ServerScheduler {
         public static void handleServerTick(final ServerTickEvent.Pre event) {
             globalTickScheduler.tick();
 
-            for (final TickScheduler scheduler : levelTickSchedulers.values()) {
+            // values() of a synchronizedMap must be iterated under the map's lock; snapshot it so
+            // scheduler.tick() (arbitrary callbacks) never runs while the lock is held.
+            final List<TickScheduler> schedulers;
+            synchronized (levelTickSchedulers) { // NOPMD - must hold the synchronizedMap monitor to iterate values()
+                schedulers = new ArrayList<>(levelTickSchedulers.values());
+            }
+            for (final TickScheduler scheduler : schedulers) {
                 scheduler.tick();
             }
         }

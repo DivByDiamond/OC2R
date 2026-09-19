@@ -4,7 +4,7 @@ import li.cil.oc2.api.inet.InternetManager;
 
 public final class TaskImpl implements InternetManager.Task {
     private final Runnable action;
-    private boolean closed = false;
+    private volatile boolean closed = false;
 
     public TaskImpl(final Runnable action) {
         this.action = action;

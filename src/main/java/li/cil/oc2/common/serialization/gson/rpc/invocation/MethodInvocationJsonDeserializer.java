@@ -11,6 +11,10 @@ public final class MethodInvocationJsonDeserializer implements JsonDeserializer<
             final JsonElement json, final Type typeOfT, final JsonDeserializationContext context)
             throws JsonParseException {
         final JsonObject jsonObject = json.getAsJsonObject();
+        if (!jsonObject.has("deviceId") || !jsonObject.has("name")
+                || jsonObject.get("name").isJsonNull()) {
+            throw new JsonParseException("missing 'deviceId' or 'name'");
+        }
         final UUID deviceId = context.deserialize(jsonObject.get("deviceId"), UUID.class);
         final String methodName = jsonObject.get("name").getAsString();
         final JsonElement parameters = jsonObject.get("parameters");

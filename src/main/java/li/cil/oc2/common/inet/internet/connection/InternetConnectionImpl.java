@@ -76,7 +76,7 @@ public final class InternetConnectionImpl implements InternetConnection {
      * Once set, the manager removes this connection on its next tick and {@link #process()}
      * stops refilling {@link #incoming}.
      */
-    public boolean isStopped = false;
+    public volatile boolean isStopped = false;
 
     public InternetConnectionImpl(
             final ExecutorService executor,

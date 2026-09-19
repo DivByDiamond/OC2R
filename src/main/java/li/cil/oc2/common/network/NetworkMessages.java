@@ -59,6 +59,11 @@ public final class NetworkMessages {
             if (player.connection == null || !player.connection.isAcceptingMessages()) {
                 continue;
             }
+            // Compare dimension keys, not Level identity: hostLevel is not a ServerLevel here,
+            // so it can never be the same object as a player's level.
+            if (!player.level().dimension().equals(hostLevel.dimension())) {
+                continue;
+            }
             PacketDistributor.sendToPlayer(player, message);
         }
     }

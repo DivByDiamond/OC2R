@@ -13,6 +13,9 @@ public final class MessageJsonDeserializer implements JsonDeserializer<Message> 
             final JsonElement json, final Type typeOfT, final JsonDeserializationContext context)
             throws JsonParseException {
         final JsonObject jsonObject = json.getAsJsonObject();
+        if (!jsonObject.has("type") || jsonObject.get("type").isJsonNull()) {
+            throw new JsonParseException("missing 'type'");
+        }
         final String messageType = jsonObject.get("type").getAsString();
         final Object messageData =
                 switch (messageType) {
