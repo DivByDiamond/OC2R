@@ -2379,4 +2379,79 @@ public class TerminalBufferTest {
         assertEquals(0, terminal.scrollColFirst, "DECALN resets the left margin to column 0");
         assertEquals(terminal.width - 1, terminal.scrollColLast, "DECALN resets the right margin to the full width");
     }
+
+    @Test
+    void enqTransmitsAnswerbackMessage() {
+        // VT100 Table 3-10: "ENQ 005 — Transmit answerback message." xterm's
+        // XTerm*answerbackString defaults to EMPTY — ENQ must produce an immediate (empty)
+        // reply, never silence, so a probing guest does not hang.
+        assertEquals("", terminal.answerback, "precondition: default answerback is empty");
+        terminal.io.putOutput(ByteBuffer.wrap(new byte[] {0x05}));
+        assertNull(terminal.io.getInput(), "empty answerback: ENQ replies with nothing");
+
+        // A configured answerback transmits verbatim through the INPUT stream (the same
+        // sink keystrokes go to — xterm transmits the answerback as if typed).
+        terminal.answerback = "VT100";
+        terminal.io.putOutput(ByteBuffer.wrap(new byte[] {0x05}));
+        final java.nio.ByteBuffer reply = terminal.io.getInput();
+        final byte[] got = new byte[reply.remaining()];
+        reply.get(got);
+        assertEquals("VT100", new String(got, StandardCharsets.US_ASCII), "ENQ transmits the answerback");
+    }
+
+    @Test
+    void enqInsideCsiIsIgnoredAndDisturbsNothing() {
+        // DELIBERATE DIVERGENCE from xterm: OC2R's CSI-state C0 dispatch (CSIManager
+        // handleControlChar) ignores control chars other than BS/CR/LF/VT/HT/CAN/SUB/ESC —
+        // same griefer-safety family as the CAN-abort-instead-of-error-char choice. So ENQ
+        // mid-CSI transmits NO answerback (xterm would send it); the sequence is undisturbed:
+        // "CSI 2 <ENQ> ; 3 H" is still CUP row 2 col 3. Pin the divergence so a refactor
+        // cannot silently flip it.
+        terminal.answerback = "X";
+        write(terminal, CSI + "2");
+        terminal.io.putOutput(ByteBuffer.wrap(new byte[] {0x05}));
+        write(terminal, ";3H#");
+        assertEquals('#', charAt(2, 1), "CUP still lands row 2 col 3 with ENQ inside the sequence");
+        assertNull(terminal.io.getInput(), "ENQ mid-CSI transmits nothing (deliberate divergence)");
+        write(terminal, "\u0005"); // same ENQ in NORMAL state: answerback flows
+        assertEquals('X', (char) terminal.io.getInput().get(), "ENQ in NORMAL state transmits");
+    }
+
+    @Test
+    void ukCharsetMapsPoundSign() {
+        // SCS "ESC ( A" designates the United Kingdom set on G0: only '#' (0x23) differs
+        // from ASCII — it renders as U+00A3 (£). xterm-410 charsets.c nrc_British.
+        write(terminal, ESC + "(A");
+        write(terminal, "a#b");
+        assertEquals('a', charAt(0, 0), "UK leaves ordinary ASCII alone");
+        assertEquals(0x00A3, charAt(1, 0), "UK maps '#' to the pound sign");
+        assertEquals('b', charAt(2, 0), "UK leaves ordinary ASCII alone (after the mapped glyph)");
+
+        // G1 via "ESC ) A", invoked by SO (0x0E). Controls do not advance the cursor.
+        write(terminal, ESC + ")A");
+        write(terminal, "\u000E#");
+        assertEquals(0x00A3, charAt(3, 0), "G1-UK invoked by SO also maps '#' to £");
+
+        // SI (0x0F) drops back to G0 — but G0 is still UK from the first designation, so
+        // re-designate G0 as ASCII first and THEN the '#' is literal again.
+        write(terminal, ESC + "(B");
+        write(terminal, "\u000F#");
+        assertEquals('#', charAt(4, 0), "SI drops back to G0; with G0=ASCII '#' is literal");
+    }
+
+    @Test
+    void ukCharsetSurvivesDiffCodecAndResets() {
+        // The £ must travel to the client: the buffer stores codepoints, so the diff codec
+        // round-trips it like any other glyph; resets return the charset to ASCII.
+        write(terminal, ESC + "(A#");
+        final Terminal client = new Terminal();
+        TerminalDiff.apply(client, TerminalDiff.captureFull(terminal));
+        final int clientRow = client.lastRowToDisplayMax - client.height;
+        assertEquals(0x00A3, client.buffer[clientRow * client.width], "£ survives capture/apply");
+
+        write(terminal, ESC + "c"); // RIS — homes the cursor as well as resetting charsets
+        assertEquals(TerminalColors.DrawingMode.ASCII, terminal.drawingModeG0, "RIS resets G0 to ASCII");
+        write(terminal, "#");
+        assertEquals('#', charAt(0, 0), "post-RIS '#' is literal again");
+    }
 }

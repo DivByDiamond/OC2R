@@ -112,6 +112,16 @@ public class Terminal {
      */
     public transient int lastPrintedChar = -1;
     /**
+     * ENQ answerback message (VT100 Table 3-10: "ENQ 005 — Transmit answerback message"),
+     * transmitted by {@code TerminalOutput} on ENQ. xterm's {@code XTerm*answerbackString}
+     * defaults to EMPTY, so the default here is the empty string too: a guest that queries
+     * gets an immediate empty reply, not silence. Transient and deliberately NOT
+     * save/restored or shipped in the diff — it is terminal configuration, not display
+     * state (if it ever becomes user-configurable, it belongs in the computer's config
+     * serialization, like the ONYXOS setup writes, not in the Terminal snapshot).
+     */
+    public transient String answerback = "";
+    /**
      * Saved cursor position + rendition for the main and alt buffers, written by DECSC/SCOSC and
      * read back by DECRC/SCORC (see {@link li.cil.oc2.common.vm.terminal.escapes.SavedCursor}).
      */

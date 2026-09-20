@@ -40,7 +40,7 @@ public class TerminalBufferWriter {
             terminal.bufferManager.insertChars(terminal.y, terminal.x, 1);
         }
 
-        final int mapped = mapDecSpecialGraphics(ch);
+        final int mapped = mapCharset(ch);
         setChar(terminal.x, terminal.y, mapped);
         terminal.lastPrintedChar = mapped; // remember for REP (CSI Ps b) — xterm repeats with current charset
         // Fill the last column: arm the pending wrap and hold the cursor there (never advance to
@@ -153,8 +153,14 @@ public class TerminalBufferWriter {
         0x00B7, // ~ -> ·
     };
 
-    private int mapDecSpecialGraphics(final int ch) {
+    private int mapCharset(final int ch) {
         final int mode = terminal.useG0 ? terminal.drawingModeG0 : terminal.drawingModeG1;
+        if (mode == TerminalColors.DrawingMode.UK) {
+            // United Kingdom set: only '#' (0x23) differs from ASCII — it renders as '£'
+            // (U+00A3). xterm-410 charsets.c nrc_British invocation path (~404-414).
+            // DECALN and everything else is untouched.
+            return ch == '#' ? 0x00A3 : ch;
+        }
         if (mode != TerminalColors.DrawingMode.SPECIAL_GRAPHICS) {
             return ch;
         }

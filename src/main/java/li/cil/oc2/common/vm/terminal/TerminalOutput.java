@@ -235,6 +235,12 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
             case '\033' -> terminal.state = State.ESCAPE;
             case '\016' -> terminal.useG0 = false;
             case '\017' -> terminal.useG0 = true;
+            // ENQ (VT100 Table 3-10): transmit the answerback message. xterm's
+            // XTerm*answerbackString defaults to EMPTY, so the reply is a no-op unless a
+            // future setup screen / config wires a real message in (putResponse iterates,
+            // so an empty string costs nothing). A guest probing the terminal gets an
+            // immediate (if empty) reply instead of hanging on a response that never comes.
+            case '\005' -> terminal.io.putResponse(terminal.answerback);
 
             case (byte) '\r' -> terminal.setCursorPos(0, terminal.y);
             case (byte) '\n' -> handleLineFeed();
@@ -328,7 +334,8 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
         final int mode = switch (ch) {
             case 'B' -> TerminalColors.DrawingMode.ASCII;
             case '0' -> TerminalColors.DrawingMode.SPECIAL_GRAPHICS;
-            case 'A', '1', '2' -> -1; // UK / alternate ROM: not implemented, no-op
+            case 'A' -> TerminalColors.DrawingMode.UK;
+            case '1', '2' -> -1; // alternate ROM sets: not implemented, no-op (optioned units only)
             default -> -1;
         };
         if (mode == -1) return;
