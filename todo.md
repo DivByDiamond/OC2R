@@ -1395,3 +1395,167 @@ DEC Special Graphics, маппинг в буфер при этом коррек�
       Регресс-щит: `MonocraftFontCoverageTest` (canDisplay по всем 4 TTF — тест ловит
       подмену шрифта, которая не видна буферным тестам). Остальное в шрифте в порядке:
       ◆ ° ± π ≠ £ · есть; рамочные/scan — процедурные квады (S44.1), см. план отката ниже.
+- [ ] **ПЛАН: перенести line drawing в шрифт** — Kyle строит полный набор глифов
+      (вкл. рамочные/scan вместо процедурных квадов S44.1) на базе Monocraft HEAD,
+      готовится upstream-PR в IdreesInc/Monocraft (OFL-1.1, RFN не объявлен — модификации
+      легальны; артефакты подготовки: /tmp/opencode/Monocraft fork + probe-скрипты).
+      Когда глифы будут в шрифте — упростить `TerminalCharRenderer`: убрать
+      процедурные квады box-drawing (isBoxDrawingCharacter/BOX_CHARS_MASK/SCAN_CHARS_MASK),
+      рендер через обычный глифовый путь. Внимание к тонкости: процедурный путь даёт
+      пиксель-перфектную геометрию под масштаб ячейки, глифы из атласа — фиксированное
+      растровое разрешение; сверить качество на реальном скриншоте до удаления квадов.
+- [ ] `b c d e h i` → control pictures ␉␌␍␊␋␤ (U+2409..U+2424) — tofu. Полноценная
+      процедура = рамка + подпись из 2 букв (суб-глифовая композиция), дорого при редком
+      использовании. Сначала скриншот-триаж: насколько плохо выглядит tofu в реальных
+      приложениях (mc/vttest).
+- [ ] `y z` → ≤ ≥ (U+2264/2265) — tofu. Композит «глиф + бар-квад» возможен, но это
+      аппроксимация, не настоящий глиф — Kyle: оставить tofu до решения по шрифту.
+- [ ] Идея на будущее: альтернативный шрифт (в т.ч. дамп VT220 font ROM — аутентично,
+      но, мнe Kyle, «wrong in minecraft»; вопрос лицензирования рассмотреть до любого
+      пере-шрифтования). Дополнено 2026-09-19: проверен свежий Monocraft (master TTF,
+      canDisplay по всем weight) — те же 9 глифов ОТСУТСТВУЮТ (▒, ␉␌␍␊␋␤, ≤ ≥ и все
+      рамочные/scan), т.е. смена шрифта дыры не закрывает; процедурный путь правильный.
+- [ ] **Аудит PR-A double-size (ESC #3/#4/#5/#6, 9f472797) против EK-VT100-UG-003 —
+      проведён 2026-09-19 (Dana), результат — ЖИЗНЕННЫЙ ЦИКЛ ГОТОВ, РЕНДЕР ОТСУТСТВУЕТ.**
+      Проверено и корректно: парсинг (handleHash 3/4/5/6, per-line от колонки 0 —
+      xterm doublechr.c семантика), перенос атрибутов со строками (n-ary shiftUp/Down
+      copy+blank, TerminalResizer/HeightResizer, TerminalBuffer.clear/clearScrollback
+      с altLineAttrs), codec v2 (write после palette / read после palette, version gate,
+      hostile-payload тесты), clearBuffers (apply-side reset), DECALN не трогает атрибуты.
+      СЛЕДУЮЩИЕ ШАГИ:
+      1. **Рендер** — главный пробел: lineAttrs до клиента доезжают, но НИ ОДИН
+         рендерер их не читает (PR-A todo честно звал это stub). Нужно: DWL —
+         рисовать строку двойной шириной (или 2x-скейл глифов), DHL top/bottom —
+         2x-скейл половин, SWL — сброс. Системы координат: скриншот-верификация
+         против vt420.png (Kyle multimodal-верификация).
+      2. **Cursor clamp / truncation при конверсии** (manual #DECDHL: «all characters
+         to the right of the center are lost; cursor clamped to right margin») —
+         СЕЙЧАС moot (нет конверсии без рендера). xterm doublechr.c сам НЕ клампит
+         и НЕ трнакейтит (только repaint_line) — когда дойдём до рендера, решить:
+         manual-точность vs xterm-точность (по конвенции «VT first, xterm wins
+         при big dumb DEC» — тут xterm ленивее, это скорее «xterm wins»).
+      3. **Пары DHL top/bottom**: manual требует «used in pairs on adjacent lines» —
+         обязанность приложения, не терминала (xterm тоже laissez-faire); не
+         энфорсить, только не сломать соседние строки при скролле (shift copy
+         уже переносит 1:1 — ок).
+
+## 45. GameTest CI: настоящая базовая линия (2026-09-16) — ✅ DONE, см. PR ci/gametest-parallel
+
+GameTest раньше никогда не выполнялся (ни локально, ни в CI — тихий exit 0). Починено:
+`@GameTestHolder`, свой `empty.nbt`, `GameTestResultReporter` (фейлит на пустой/отсутствующий
+отчёт, закрывает vacuous-green), `ci-work.yml` разрезан на `lint`/`test`/`gametest`.
+
+- [ ] Осталось: 9 тестов помечены `required = false` (список причин — в истории git/PR),
+      снять флаг после починки; прогнать vttest-страницы через GameTest-слой 2 (§44.4)
+      поверх живой инфраструктуры.
+
+## 46. Отложенные хвосты Dana'иного "hard"-таска (terminal sweep chunk 1-3, PR #45/#46/#49)
+
+Все три PR смёржены, но каждый честно задокументировал мелкие отложенные несоответствия —
+фиксирую здесь, чтобы не потерялись:
+
+- [x] (chunk 1, PR #45) `Utf8Decoder` ресинкается иначе, чем xterm-410's `decodeUtf8` при
+      lead byte в середине multi-byte последовательности — сверить и привести к параметру.
+      ✅ Частично исправлено: `processContinuation` теперь ресинкается на lead byte (`0xC0` маска)
+      вместо stitching low 6 bits в предыдущий кодпоинт; xterm дополнительно эмитит `UCS_REPL`
+      за оборванную последовательность, у нас — silent drop (без REPL) до отдельного решения.
+- [x] (chunk 1, PR #45) Shift-грязные scrollback-строки вне видимого окна не уходят клиенту,
+      пока view не переприклеится к низу — pre-existing, лечится текущим mark-all при вводе,
+      но не устранено на уровне протокола.
+      ✅ Исправлено 2026-09-17 вместе с chunk 3 (общий корень — см. ниже): `TerminalDiff.capture`
+      раньше на full-refresh отбрасывал `dirty.rows()` целиком и подставлял только
+      `visibleWindowRows()`, из-за чего `Terminal.markAllBufferRowsDirty()` (единственный вызов —
+      `TerminalBuffer.clearScrollback`, ED `3 J`) молча терялся. Теперь `capture` шлёт объединение
+      видимого окна и явно помеченных строк вне него (`TerminalDiff.fullRefreshRows`). Тест
+      `eraseScrollbackFullRefreshShipsOffScreenRowsNotJustVisibleWindow`.
+- [x] (chunk 2, PR #46) XTRESTORE восстанавливает флаг DECCOLM, но не сам resize — xterm
+      маршрутизирует восстановление режима через DECSET update path, мы нет.
+      ✅ Исправлено: `XTRESTORE.execute` теперь вызывает `resetRendition()` + `setWidth()`
+      при восстановлении DECCOLM, как это делают CH2/CH3; тест
+      `xtrestoreDeccolmAlsoRestoresColumnWidth`.
+- [x] (chunk 3, PR #49) >32 shift-операций в одном diff-окне сбрасывают бэклог и форсят
+      full refresh — scrollback выше видимого окна расходится с реальностью с этого момента
+      (full refresh перерисовывает только видимое окно). Нужен протокольный фикс (geometry
+      epoch либо отправка scrollback вместе с full refresh).
+      ✅ Исправлено 2026-09-17: выбран вариант «scrollback вместе с full refresh». Overflow-ветка
+      `Terminal.recordNetworkShift` теперь помечает грязными ВСЕ буферные строки
+      (`networkDirtyRows.set(0, height * SCROLL_BACK_COUNT)`), не только флаг `fullRefresh` —
+      в паре с фиксом `TerminalDiff.capture` выше это даёт самозаживление: один full-refresh
+      diff перевозит весь scrollback и клиент больше не расходится навсегда. Тест
+      `shiftBacklogOverflowSelfHealsFullScrollbackOnNextCapture`. Компромисс: этот diff разово
+      большой (до `height * SCROLL_BACK_COUNT` строк вместо `height`), но триггер редкий
+      (>32 физических сдвигов в одном окне — очень быстрый вывод на упёртой в капасити
+      scrollback), и корректность важнее.
+- [ ] (chunk 3, PR #49) Accepted residue: возможен tear содержимого ячейки между кадрами,
+      и мутация палитры на месте (in-place) — не блокер, но известная неточность рендера.
+
+---
+
+## 47. Аудит 2026-09-17 — 6 суб-агентов (сенior-ревьюер, HEAD текущего)
+
+Полный аудит: структура/архитектура, логика (границы/массивы/арифметика), потокобезопасность, стиль/сборка, тесты, контракты/безопасность. Верификация чтением исходников. Ниже — только то, что надо исправить (опровергнутые гипотезы см. в отчёте аудита, не дублируются).
+
+### Блокеры (детерминированные краши / потеря данных / неверная security-логика)
+
+- [ ] **Б1 — DeltaFrameCodec tilesX==0 → ArithmeticException на client net thread** `[common/vm/video/DeltaFrameCodec.java:248]`: `tileIndex % tilesX` при `width==0` (tilesX=0) → краш клиента. Фикс: guard `if(tilesX==0) return Optional.empty()` в `applyOneTile` + `long frameBytes=(long)width*height*2` c overflow-проверкой и капой `<=32MiB` в `encode/decode`.
+- [ ] **Б2 — InternetManagerImpl.tasks LinkedList cross-thread без синхронизации** `[common/inet/internet/InternetManagerImpl.java:44-45,83,144]` : Server пишет `tasks.add()`, Internet читает `removeIf()` → CME/потеря задач, интернет-молчание. Фикс: `ConcurrentLinkedQueue<TaskImpl>` или `synchronized(tasks)` в обеих точках.
+- [ ] **Б3 — RPCDeviceBusAdapter handoff без volatile** `[common/bus/adapter/RPCDeviceBusAdapter.java:49,80,101-129] + MethodInvoker.java:64`: `synchronizedInvocation` и `isPaused` plain → потеря синхронного RPC, зависание VM на `while(...null)`. Фикс: `volatile` (+ `isPaused` volatile).
+- [ ] **Б4 — Ipv4Space/IntegerSpace signed TreeMap → обход deniedHosts/allowedHosts** `[common/util/misc/IntegerSpace.java:10,77] + [common/inet/util/InetUtils.java:92] + [common/inet/util/Ipv4Space.java:10]`: `TreeMap<Integer,Integer>` signed, `count()` int overflow, `put("0.0.0.0/1")`/`128.0.0.0/1` порядок неверен → фильтр безопасности не матчит. Фикс: `new TreeMap<>(Comparator.comparingInt(Integer::compareUnsigned))`, `count():long` через `(long)value - key +1L`, `getSubnetByPrefix` разрешить 0..32, regex `prefix` → `(?:[0-9]|[12][0-9]|3[0-2])`, `interfaceIdPattern \\d+`.
+- [ ] **Б5 — FrameChunker.slice без валидации index** `[common/network/util/frame/FrameChunker.java:22]`: `index<0` или `>=chunkCount` → `NegativeArraySizeException`/AIOOBE на net thread. Фикс: `if(index<0||index>=chunkCount(frame.length)) throw IAE`.
+- [ ] **Б6 — Terminal.renderers итерация без synchronized** `[common/vm/terminal/Terminal.java:172,785,787,800]`: `synchronizedSet` требует `synchronized(renderers)` при итерации → CME на VM thread или потеря dirty. Фикс: `synchronized(renderers){ forEach... }` в `markDirty/markAllDirty` и `getRenderer/releaseRenderer`.
+- [ ] **Б7 — SimpleFramebufferDevice dirtyLines гонка VM vs server** `[common/vm/device/SimpleFramebufferDevice.java:13,21,37,62,106,120]`: `store/setDirty/hasChanges` без lock vs `copyFrame/close` с lock → `BitSet` word tear / AIOOBE / чёрный экран. Фикс: `store`+`setDirty`+`hasChanges` под `lock`.
+
+### Критичные логические баги (major)
+
+- [ ] **Л1 — IntegerSpace.count() int overflow** `[IntegerSpace.java:77]` → см. Б4 (long).
+- [ ] **Л2 — InetUtils.getSubnetByPrefix reject 31/32/0 + regex не пускает 0.0.0.0/0** `[InetUtils.java:128] + [Ipv4Space.java:19]` → см. Б4.
+- [ ] **Л3 — DeltaFrameCodec width*height*2 overflow** `[DeltaFrameCodec.java:78,189]` → см. Б1.
+- [ ] **Л4 — Terminal hasPendingBell без volatile/lock** `[Terminal.java:hasPendingBell]` : VM пишет, server читает `bell=hasPendingBell; hasPendingBell=false` без lock → потеря bell. Фикс: `volatile boolean hasPendingBell` или под `networkDirtyLock` как `paletteRevision`.
+- [ ] **Л5 — VMRunner cycleLimit/cycles/runtimeError без volatile** `[common/vm/VMRunner.java:46,48,49]` : stale квота/невидимый краш. Фикс: `volatile long cycleLimit/cycles` + `volatile Component runtimeError`.
+- [ ] **Л6 — GlobalInterruptController raisedInterruptMask RMW без атомарности** `[common/vm/context/global/GlobalInterruptController.java:9]` → потеря прерывания. Фикс: `AtomicInteger` или `synchronized`.
+- [ ] **Л7 — ServerScheduler synchronizedMap итерация без блока** `[common/util/scheduler/ServerScheduler.java:181]` → CME. Фикс: `synchronized(levelTickSchedulers){ for(...) }`.
+- [ ] **Л8 — InternetConnectionImpl.isStopped / TaskImpl.closed без volatile** `[InternetConnectionImpl.java:79] + [TaskImpl.java:7]` → неудаляемая задача/коннект. Фикс: `volatile`.
+- [ ] **Л9 — TunnelManager.managerInstance без volatile** `[common/vxlan/TunnelManager.java:61]` → публикация гонки. Фикс: `volatile`.
+- [ ] **Л10 — NBTDeserializerImpl маскирует ошибку формата** `[common/serialization/nbt/NBTDeserializerImpl.java:103]` : возврат `into` при неожиданном Tag → должен `throw SerializationException`.
+- [ ] **Л11 — RPC JSON десериализаторы NPE без has/isJsonNull** `[common/bus/adapter/MessageJsonDeserializer.java:16] + [MethodInvocationJsonDeserializer.java:14]` → `writeError(NPE)` вместо `JsonParseException("missing 'type'")`. Фикс: явные проверки `has("type")`.
+- [ ] **Л12 — NetworkMessages fallback broadcast всем измерениям** `[common/network/NetworkMessages.java:55-62]` → утечка экрана в другие измерения. Фикс: фильтр `player.level()==hostLevel` или аналог `sendToPlayersTrackingChunk`.
+- [ ] **Л13 — common → client 6 импортов** `[ComputerVirtualMachine.java:5] → LoopingSoundManager, [MonitorStateManager.java:5] → MonitorGUIRenderer, [MonitorBlockEntity.java:4], [BusCableModelData.java:6], [NetworkConnector*.java:9], [BusCableInteractionHandler.java:7]` → ломает dedicated server, инвертировать через EventBus/DistExecutor.
+
+### Потокобезопасность — дополнения к блокерам (см. отчёт §5)
+
+- [ ] **П1 — Terminal buffer/colors/styles без лока vs serializeRow** `[Terminal.java:58] + [TerminalDiff.java:284]` : tear кадра (accepted, но докум. как риск) — опционально вынести в `networkDirtyLock` или задокум. как known.
+- [ ] **П2 — ServerScheduler SimpleScheduler listeners без синхронизации** `[SimpleScheduler.java:8]` `for(Runnable r:listeners)` без `synchronized` vs `add/remove`.
+- [ ] **П3 — SocketManager usesCount без синхронизации** `[SocketManager.java:29]` → double-create leak Selector.
+- [ ] **П4 — BusElementManager scanDelay off-by-one** `[BusElementManager.java:91]` 101 тик вместо 100 — minor.
+
+### Стиль / сборка (minor)
+
+- [ ] **Стиль-1 — checkstyle 41 правило глобально подавлено** `[config/checkstyle/checkstyle.xml:21-148]` SuppressionSingleFilter без files → скрыты 98 строк >120 (Network.java:58 len151, Terminal.java:938 len292) и Terminal 973 строки. Фикс: убрать суппрессии `LineLength/FileLength/MethodLength` или задокум. как техдолг.
+- [ ] **Стиль-2 — qodana.yaml excludes расходятся с checkstyle/spotbugs** `[qodana.yaml:6] vs [checkstyle.xml:15]` — синхронизировать (generated/gametest).
+- [ ] **Стиль-3 — gradle.properties динамические ccl 4.6.1.+ / cbm 3.5.0.+** `[gradle.properties:32-33]` → пин `strictly`, добавить `gradle.lockfile`/`verification-metadata.xml`, убрать дубль `fileTree(libs)` vs `maven libs` `[build.gradle.kts:226 vs 168]`.
+- [ ] **Стиль-4 — System.out в gametest** `[gametest/DeviceBusTests.java:34] + [RedstoneInterfaceTests.java:44]` 5× `println` вне линта из-за `exclude "**/gametest/**"` `[build.gradle.kts:408]` → добавить `// NOPMD` или включить gametest в checkstyle с фильтром.
+- [x] **Стиль-5 — бинарники natives в репо** `[src/main/resources/natives/ 8 файлов]` закоммичены (осознанно для оффлайн), `gradle/wrapper.jar` тоже — задокументировано в `CONTRIBUTING.md` (2026-09-17).
+- [ ] **Стиль-6 — магические числа без констант** — checkstyle MagicNumber отсутствует, PMD тоже — ввести `FULL_DIRTY_MASK`, `BLINK_*`, `TAB_WIDTH` константы (см. §36 m12).
+
+### Контракты / безопасность (дополнения)
+
+- [ ] **КБ-1 — JSON десериализаторы** см. Л11.
+- [ ] **КБ-2 — NetworkMessages broadcast** см. Л12.
+- [ ] **КБ-3 — TunnelManager volatile** см. Л9.
+- [ ] **КБ-4 — ImportFileRequestManager forged sender** — текущее `!PendingPlayers.contains(sender)` не consume request — корректно, добавить тест на `sender==null`.
+
+### Тесты — дыры (high)
+
+- [ ] **Т1 — VM ядро 0 тестов**: `vm/{VirtualMachine,VMRunner,runner/*,lifecycle/*,context/*}` → добавить `VMRunnerTest`, `VMLifecycleTest`.
+- [ ] **Т2 — Bus 0**: `common/bus/*` (~60 файлов) только `ImportFileRequestManagerTest` + 3 gametest → `BusControllerTest`, `GroupManagerTest`, `RPCAdapterTest`.
+- [ ] **Т3 — inet неполно**: нет `UDP/DHCP/DNS`, `TcpStates` (SYN_SENT...), `Ethernet/LinkLocal` → расширить `DefaultNetworkLayerTest` + новые.
+- [ ] **Т4 — конкуренция**: только `FrameStateTest` + `AsyncVideoEncoderTest` → добавить `VMRunner tick vs TerminalDiff capture` multithread, `SessionManager` под потоком.
+
+### Архитектура (средний приоритет, не блокер)
+
+- [~] **А1 — Terminal God 973 строки** `[Terminal.java:27]` → частично: `TerminalNetworkState` (dirty rows/shift-ops/palette revision), `TerminalRenderState` (lazy client handle), `TerminalResizer` (setWidth/resizeWidth), `TerminalHeightResizer` (resizeHeight) и `SavedCursorState` (13-полевой value-object для main+alt saved cursor, вместо 33 плоских полей) выделены (2026-09-17), Terminal.java 973→426 строк. Побочный эффект: 3 pre-existing spotbugs находки (AT_STALE_THREAD_WRITE_OF_PRIMITIVE, 2× PA_PUBLIC_PRIMITIVE_ATTRIBUTE) пропали сами; `SavedCursor.reset()` упростился до `new SavedCursorState()` x2. Остаётся: Terminal.java всё ещё >200 строк — geometry-поля (buffer/colors/styles/scroll margins/cursor x,y) читаются 26+ файлами напрямую, выносить владение рискованнее вторичной цели (размер файла).
+- [x] **spotbugsMain/spotbugsTest падали на pre-existing находках** (2026-09-17): `TerminalDiff.Snapshot` — `rows()/rowData()/palette()/lineAttrs()` теперь клонируют на выходе (как уже было у `shiftOps()`), горячий цикл в `apply()` вынес локальные переменные вместо повторных вызовов аксессора в теле цикла (иначе clone был бы O(n²)); `CommonDeviceBusControllerTest` — удалены 4 неиспользуемых mock-поля (`element1/element2/device1/device2`, `URF_UNREAD_FIELD`). Полный чек-лист (`checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet test`) зелёный.
+- [ ] **А2 — циклы пакетов** `blockentity↔bus.provider`, `vm↔bus.device.vm` → разорвать через `DeviceFactory`/`api` интерфейс.
+- [ ] **А3 — теневое имя TunnelManager** `[NetworkTunnelDevice.java:42]` внутренний `TunnelManager` перекрывает `common.vxlan.TunnelManager` → переименовать в `TunnelEndpointRegistry`.
+
+Приоритет внедрения: Б1-Б7 → Л4-Л9 → Л11-Л13 → Стиль-1/3 → Т1-Т2 → остальное. Верификация каждого: `./gradlew checkstyleMain pmdMain spotbugsMain lintRatchet test gameTest` + ручной прогон.
