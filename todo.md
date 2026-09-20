@@ -1382,6 +1382,54 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 4. **44.3** — после, с отдельным планом на PR-B.
 5. **§42 Этап 1** (core/neoforge split, «builds both at once») — после текущего раунда фиксов в мастере.
 
+### 44.5 Оставшиеся tofu-глифы шрифта (2026-09-19, скриншот-аудит Kyle: vt420.png vs oc2r.png)
+
+Monocraft 4.0 (проверено `Font.canDisplay` по реальным TTF) не содержит 9 из 31 глифов
+DEC Special Graphics, маппинг в буфер при этом корректный — экран показывает .notdef:
+
+- [x] `a` → ▒ (U+2592, medium shade) — ✅ 2026-09-19 через ПАТЧ ШРИФТА (не процедурно):
+      Monocraft HEAD (4.2) + матрица medium_shade 6×9 edge-to-edge (descent 1 — глиф
+      должен заливать ячейку целиком, поля на shade выглядят сломанно; матрица —
+      плейсхолдер, арт-проход Kyle). Все 4 weight (r/b/i/bi) пересобраны генератором
+      upstream и подменены в assets; процедурный растеризатор удалён (это был хак).
+      Регресс-щит: `MonocraftFontCoverageTest` (canDisplay по всем 4 TTF — тест ловит
+      подмену шрифта, которая не видна буферным тестам). Остальное в шрифте в порядке:
+      ◆ ° ± π ≠ £ · есть; рамочные/scan — процедурные квады (S44.1), см. план отката ниже.
+- [ ] `b c d e h i` → control pictures ␉␌␍␊␋␤ (U+2409..U+2424) — tofu. Полноценная
+      процедура = рамка + подпись из 2 букв (суб-глифовая композиция), дорого при редком
+      использовании. Сначала скриншот-триаж: насколько плохо выглядит tofu в реальных
+      приложениях (mc/vttest).
+- [ ] `y z` → ≤ ≥ (U+2264/2265) — tofu. Композит «глиф + бар-квад» возможен, но это
+      аппроксимация, не настоящий глиф — Kyle: оставить tofu до решения по шрифту.
+- [ ] Идея на будущее: альтернативный шрифт (в т.ч. дамп VT220 font ROM — аутентично,
+      но, мнe Kyle, «wrong in minecraft»; вопрос лицензирования рассмотреть до любого
+      пере-шрифтования). Дополнено 2026-09-19: проверен свежий Monocraft (master TTF,
+      canDisplay по всем weight) — те же 9 глифов ОТСУТСТВУЮТ (▒, ␉␌␍␊␋␤, ≤ ≥ и все
+      рамочные/scan), т.е. смена шрифта дыры не закрывает; процедурный путь правильный.
+- [ ] **Аудит PR-A double-size (ESC #3/#4/#5/#6, 9f472797) против EK-VT100-UG-003 —
+      проведён 2026-09-19 (Dana), результат — ЖИЗНЕННЫЙ ЦИКЛ ГОТОВ, РЕНДЕР ОТСУТСТВУЕТ.**
+      Проверено и корректно: парсинг (handleHash 3/4/5/6, per-line от колонки 0 —
+      xterm doublechr.c семантика), перенос атрибутов со строками (n-ary shiftUp/Down
+      copy+blank, TerminalResizer/HeightResizer, TerminalBuffer.clear/clearScrollback
+      с altLineAttrs), codec v2 (write после palette / read после palette, version gate,
+      hostile-payload тесты), clearBuffers (apply-side reset), DECALN не трогает атрибуты.
+      СЛЕДУЮЩИЕ ШАГИ:
+      1. **Рендер** — главный пробел: lineAttrs до клиента доезжают, но НИ ОДИН
+         рендерер их не читает (PR-A todo честно звал это stub). Нужно: DWL —
+         рисовать строку двойной шириной (или 2x-скейл глифов), DHL top/bottom —
+         2x-скейл половин, SWL — сброс. Системы координат: скриншот-верификация
+         против vt420.png (Kyle multimodal-верификация).
+      2. **Cursor clamp / truncation при конверсии** (manual #DECDHL: «all characters
+         to the right of the center are lost; cursor clamped to right margin») —
+         СЕЙЧАС moot (нет конверсии без рендера). xterm doublechr.c сам НЕ клампит
+         и НЕ трнакейтит (только repaint_line) — когда дойдём до рендера, решить:
+         manual-точность vs xterm-точность (по конвенции «VT first, xterm wins
+         при big dumb DEC» — тут xterm ленивее, это скорее «xterm wins»).
+      3. **Пары DHL top/bottom**: manual требует «used in pairs on adjacent lines» —
+         обязанность приложения, не терминала (xterm тоже laissez-faire); не
+         энфорсить, только не сломать соседние строки при скролле (shift copy
+         уже переносит 1:1 — ок).
+
 ## 45. GameTest CI: настоящая базовая линия (2026-09-16) — ✅ DONE, см. PR ci/gametest-parallel
 
 GameTest раньше никогда не выполнялся (ни локально, ни в CI — тихий exit 0). Починено:
