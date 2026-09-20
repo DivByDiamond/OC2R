@@ -4,5 +4,14 @@
 src/generated/**/.cache/cache text eol=lf
 src/generated/**/*.json text eol=lf
 
+# Binary assets — must never be touched by autocrlf/eol conversion.
+*.ttf binary
+*.jar binary
+*.so binary
+*.dll binary
+*.dylib binary
+src/main/resources/assets/oc2r/fonts/** binary
+src/main/resources/natives/** binary
+
 # Files provided to VM.
 src/main/scripts/**/*.lua text eol=lf

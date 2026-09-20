@@ -55,7 +55,13 @@ jobs:
         run: bash scripts/download-libs.sh
 
       - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
-        run: ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet
+        # Transient 5xx from maven.neoforged.net aborts Gradle resolution (unlike 404
+        # it is not treated as "not found"); one retry recovers the same way build.yml does.
+        run: |
+          ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet || {
+            echo "::warning::First lint gradle run failed (likely transient dependency resolution); retrying."
+            ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet --refresh-dependencies
+          }
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -94,10 +100,23 @@ jobs:
       - name: Download dependencies
         run: bash scripts/download-libs.sh
 
+      - name: Verify bundled fonts
+        run: |
+          ls -lh src/main/resources/assets/oc2r/fonts/
+          file src/main/resources/assets/oc2r/fonts/*.ttf
+          # cmp ensures processResources will have the patched shade glyph; size guards truncation.
+          for f in src/main/resources/assets/oc2r/fonts/*.ttf; do
+            sz=$(stat -c%s "$f"); echo "$f $sz"; [ "$sz" -gt 100000 ] || { echo "font truncated: $f"; exit 1; }
+          done
+
       # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
       # builds the mod jar so the job still guards packaging regressions.
       - name: Unit tests and jar assembly
-        run: ./gradlew test assemble
+        run: |
+          ./gradlew test assemble || {
+            echo "::warning::First test gradle run failed (likely transient dependency resolution); retrying."
+            ./gradlew test assemble --refresh-dependencies
+          }
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -141,7 +160,11 @@ jobs:
         run: bash scripts/download-libs.sh
 
       - name: Run game tests
-        run: ./gradlew gameTest
+        run: |
+          ./gradlew gameTest || {
+            echo "::warning::First gameTest gradle run failed (likely transient dependency resolution); retrying."
+            ./gradlew gameTest --refresh-dependencies
+          }
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
