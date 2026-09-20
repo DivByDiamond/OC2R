@@ -7,6 +7,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Terminal**: ENQ (ANSI 0x05) transmits the answerback message (xterm `XTerm*answerbackString` semantics — empty by default, immediate no-op reply instead of silence); ENQ mid-CSI stays ignored per the existing deliberate C0-during-CSI divergence
+- **Terminal**: United Kingdom charset (`ESC ( A` / `ESC ) A`) — `#` renders as `£`, matching xterm's `nrc_British`; alternate-ROM designators remain documented no-ops
+- **Terminal**: medium shade glyph (`DEC Special Graphics 'a'` → U+2592) via an updated Monocraft font build (upstream HEAD + the shade matrix patched in), replacing .notdef tofu for the most-used missing glyph; the shade fills the cell edge-to-edge as a real VT renders it
 - **Terminal**: vttest harness — parameterized `VttestHarnessTest` replays captured vttest `stream.bin` fixtures through the server-side `Terminal` and asserts the visible grid and styles against golden files; 4 fixtures (`decaln`, `line-wrap`, `sgr-bold` + `dec-special-graphics` xfail), `xfail`-ratchet and `-Dvttest.regen` golden regeneration, geometry-aware resize and fixture validation (#44)
 
 ### Fixed

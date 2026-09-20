@@ -173,6 +173,13 @@ public final class TerminalColors {
     public static final class DrawingMode {
         public static final int ASCII = 0;
         public static final int SPECIAL_GRAPHICS = 1;
+        /**
+         * United Kingdom set (SCS {@code ESC ( A} / {@code ESC ) A}, VT100 SCS table):
+         * identical to ASCII except code 0x23 ('#') renders as U+00A3 ('£') — xterm-410
+         * charsets.c nrc_British invocation path (lines ~404-414). Note DEC Special
+         * Graphics maps its own '}' to £ too; the two sets are independent tables.
+         */
+        public static final int UK = 2;
     }
 
     @SuppressWarnings("unused")
