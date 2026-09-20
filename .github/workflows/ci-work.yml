@@ -103,10 +103,9 @@ jobs:
       - name: Verify bundled fonts
         run: |
           ls -lh src/main/resources/assets/oc2r/fonts/
-          file src/main/resources/assets/oc2r/fonts/*.ttf
-          # cmp ensures processResources will have the patched shade glyph; size guards truncation.
+          if command -v file >/dev/null 2>&1; then file src/main/resources/assets/oc2r/fonts/*.ttf || true; fi
           for f in src/main/resources/assets/oc2r/fonts/*.ttf; do
-            sz=$(stat -c%s "$f"); echo "$f $sz"; [ "$sz" -gt 100000 ] || { echo "font truncated: $f"; exit 1; }
+            sz=$(wc -c < "$f"); echo "$f $sz"; [ "$sz" -gt 100000 ] || { echo "font truncated: $f"; exit 1; }
           done
 
       # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
