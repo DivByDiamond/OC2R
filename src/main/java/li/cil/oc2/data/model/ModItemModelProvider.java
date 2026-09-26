@@ -3,6 +3,7 @@ package li.cil.oc2.data.model;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -72,7 +73,7 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.TRANSISTOR, "item/components/materials/transistor");
         simple(Items.CIRCUIT_BOARD, "item/components/materials/circuit_board");
 
-        withExistingParent(Entities.ROBOT.getId().getPath(), "template_shulker_box");
+        withExistingParent(BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get()).getPath(), "template_shulker_box");
     }
 
     private <T extends Item> ItemModelBuilder simple(
