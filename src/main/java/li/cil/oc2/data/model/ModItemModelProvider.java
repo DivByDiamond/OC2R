@@ -24,6 +24,8 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.MANUAL, "item/tools/manual");
 
         simple(Items.NETWORK_CABLE, "item/components/materials/network_cable");
+        simple(Items.NETWORK_CABLE_GOLD, "item/components/materials/network_cable_gold");
+        simple(Items.NETWORK_CABLE_OPTICAL, "item/components/materials/network_cable_optical");
 
         simple(Items.MEMORY_SMALL, "item/components/memory/memory_small");
         simple(Items.MEMORY_MEDIUM, "item/components/memory/memory_medium");

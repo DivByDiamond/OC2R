@@ -45,11 +45,11 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 (gitignored): `ref/createaddition` (Create Crafts & Additions 1.20.1, wire nodes, spool, wire renderer), `ref/Create-Radar` (Create: Radars 1.20.1, official repo),
 `ref/Create-radars-port-1.21.1-neoforge` (1.21.1 NeoForge port, has a ComputerCraft peripheral layer to mirror).
 
-- [ ] Wire node model: each connector stores a list of links (local index, target position relative to the block, target index, wire type). No network object is saved. A link is dropped on load
+- [x] Wire node model (partly): links store position and wire type (`wire` tag, old saves read as copper); a link is dropped on load when the other end does not confirm it. Relative positions and a saved peer port index are not done.
   if the other end does not confirm it.
-- [ ] Multiple ports per connector instead of two.
-- [ ] Wire spool item: click one node, click another to connect; a remover spool disconnects. Every attempt returns a result enum with a message and a sound (too long, exists, no free port, linked).
-- [ ] Wire types with different range and throughput (copper, gold, optical for data only).
+- [x] Multiple ports per connector: config `networkConnectorPorts` (default 4, range 2 to 8).
+- [ ] Wire spool item: the existing cable item already links two connectors by two clicks with result messages; still open: a remover spool that disconnects, sounds per result, and returning the exact wire type (done for the drop on disconnect).
+- [x] Wire types: copper (16 blocks, x1), gold (32, x2), optical (64, x4) as separate items with recipes and textures; bandwidth per connector is the best attached wire. Optical is not yet data-only; all types carry the same traffic.
 - [ ] Sagging wire renderer and per-type color.
 - [ ] Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the tower network without wires. Towers relay to each other by wire or radio.
 - [ ] Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.

@@ -33278,4 +33278,46 @@
       <Message>At GameplaySpec.java:[line 117]</Message>
     </SourceLine>
   </BugInstance>
+  <BugInstance type="MS_CANNOT_BE_FINAL" priority="2" rank="18" abbrev="MS" category="MALICIOUS_CODE" instanceHash="bc720ef1fa41bcfae94f2323b317eab8" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="493">
+    <ShortMessage>Field isn&apos;t final and cannot be protected from malicious code</ShortMessage>
+    <LongMessage>li.cil.oc2.common.config.Config.networkConnectorPorts isn&apos;t final and cannot be protected from malicious code</LongMessage>
+    <Class classname="li.cil.oc2.common.config.Config" primary="true">
+      <SourceLine classname="li.cil.oc2.common.config.Config" start="11" end="130" sourcefile="Config.java" sourcepath="li/cil/oc2/common/config/Config.java" relSourcepath="java/li/cil/oc2/common/config/Config.java">
+        <Message>At Config.java:[lines 11-130]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.config.Config</Message>
+    </Class>
+    <Field classname="li.cil.oc2.common.config.Config" name="networkConnectorPorts" signature="I" isStatic="true" primary="true">
+      <SourceLine classname="li.cil.oc2.common.config.Config" sourcefile="Config.java" sourcepath="li/cil/oc2/common/config/Config.java" relSourcepath="java/li/cil/oc2/common/config/Config.java">
+        <Message>In Config.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.config.Config.networkConnectorPorts</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.config.Config" primary="true" start="22" end="22" startBytecode="48" endBytecode="48" sourcefile="Config.java" sourcepath="li/cil/oc2/common/config/Config.java" relSourcepath="java/li/cil/oc2/common/config/Config.java">
+      <Message>At Config.java:[line 22]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" priority="1" rank="15" abbrev="ST" category="STYLE" instanceHash="49b1cda1d70c4beb76e9fa0e2456f1a0" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Write to static field from instance method</ShortMessage>
+    <LongMessage>Write to static field li.cil.oc2.common.config.Config.networkConnectorPorts from instance method li.cil.oc2.common.config.common.GameplaySpec.loadValues()</LongMessage>
+    <Class classname="li.cil.oc2.common.config.common.GameplaySpec" primary="true">
+      <SourceLine classname="li.cil.oc2.common.config.common.GameplaySpec" start="24" end="136" sourcefile="GameplaySpec.java" sourcepath="li/cil/oc2/common/config/common/GameplaySpec.java" relSourcepath="java/li/cil/oc2/common/config/common/GameplaySpec.java">
+        <Message>At GameplaySpec.java:[lines 24-136]</Message>
+      </SourceLine>
+      <Message>In class li.cil.oc2.common.config.common.GameplaySpec</Message>
+    </Class>
+    <Method classname="li.cil.oc2.common.config.common.GameplaySpec" name="loadValues" signature="()V" isStatic="false" primary="true">
+      <SourceLine classname="li.cil.oc2.common.config.common.GameplaySpec" start="117" end="130" startBytecode="0" endBytecode="314" sourcefile="GameplaySpec.java" sourcepath="li/cil/oc2/common/config/common/GameplaySpec.java" relSourcepath="java/li/cil/oc2/common/config/common/GameplaySpec.java"/>
+      <Message>In method li.cil.oc2.common.config.common.GameplaySpec.loadValues()</Message>
+    </Method>
+    <Field classname="li.cil.oc2.common.config.Config" name="networkConnectorPorts" signature="I" isStatic="true" primary="true">
+      <SourceLine classname="li.cil.oc2.common.config.Config" sourcefile="Config.java" sourcepath="li/cil/oc2/common/config/Config.java" relSourcepath="java/li/cil/oc2/common/config/Config.java">
+        <Message>In Config.java</Message>
+      </SourceLine>
+      <Message>Field li.cil.oc2.common.config.Config.networkConnectorPorts</Message>
+    </Field>
+    <SourceLine classname="li.cil.oc2.common.config.common.GameplaySpec" primary="true" start="125" end="125" startBytecode="153" endBytecode="153" sourcefile="GameplaySpec.java" sourcepath="li/cil/oc2/common/config/common/GameplaySpec.java" relSourcepath="java/li/cil/oc2/common/config/common/GameplaySpec.java">
+      <Message>At GameplaySpec.java:[line 125]</Message>
+    </SourceLine>
+  </BugInstance>
 </BugCollection>

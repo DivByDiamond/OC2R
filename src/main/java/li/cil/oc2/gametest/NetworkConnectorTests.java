@@ -6,6 +6,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.Items;
+import li.cil.oc2.network.wire.WireType;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -57,7 +58,7 @@ public final class NetworkConnectorTests {
         TestSupport.assertNotNull(helper, first, "first network connector block entity at " + TestSupport.CABLE_POS);
         TestSupport.assertNotNull(helper, second, "second network connector block entity at " + TestSupport.DEVICE_POS);
 
-        final ConnectionResult result = NetworkConnectorBlockEntity.connect(first, second);
+        final ConnectionResult result = NetworkConnectorBlockEntity.connect(first, second, WireType.COPPER);
         if (result != ConnectionResult.SUCCESS && result != ConnectionResult.ALREADY_CONNECTED) {
             throw new GameTestAssertException("connecting two adjacent connectors failed: " + result);
         }
@@ -66,6 +67,31 @@ public final class NetworkConnectorTests {
             first.getConnectedPositions().contains(helper.absolutePos(TestSupport.DEVICE_POS))
                 || first.getConnectedPositions().contains(TestSupport.DEVICE_POS)
                 || !first.getConnectedPositions().isEmpty());
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void connectorHoldsMoreThanTwoCablesAndKeepsWireType(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        final var positions = new net.minecraft.core.BlockPos[] {
+            TestSupport.COMPUTER_POS, TestSupport.CABLE_POS, TestSupport.DEVICE_POS
+        };
+        for (final var position : positions) {
+            TestSupport.placeFloor(helper, position);
+            TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), position);
+        }
+        final NetworkConnectorBlockEntity hub = helper.getBlockEntity(TestSupport.CABLE_POS);
+        final NetworkConnectorBlockEntity west = helper.getBlockEntity(TestSupport.COMPUTER_POS);
+        final NetworkConnectorBlockEntity east = helper.getBlockEntity(TestSupport.DEVICE_POS);
+
+        final ConnectionResult a = NetworkConnectorBlockEntity.connect(hub, west, WireType.COPPER);
+        final ConnectionResult b = NetworkConnectorBlockEntity.connect(hub, east, WireType.GOLD);
+        if (a != ConnectionResult.SUCCESS || b != ConnectionResult.SUCCESS) {
+            throw new GameTestAssertException("expected two links from one connector, got " + a + " and " + b);
+        }
+        TestSupport.assertTrue(helper, "connector should hold both links", hub.getConnectedPositions().size() == 2);
+        TestSupport.assertTrue(helper, "the best wire sets the bandwidth factor",
+            hub.connectionManager.getBandwidthFactor() == WireType.GOLD.bandwidthFactor());
         helper.succeed();
     }
 

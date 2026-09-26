@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CXC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "oc2r:network_cable_gold"
+    },
+    "X": {
+      "item": "minecraft:amethyst_shard"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "oc2r:network_cable_optical"
+  }
+}

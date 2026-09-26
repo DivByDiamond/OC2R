@@ -26,6 +26,7 @@ import li.cil.oc2.common.item.tool.BlockOperationsModule;
 import li.cil.oc2.common.item.tool.ManualItem;
 import li.cil.oc2.common.item.tool.RobotItem;
 import li.cil.oc2.common.item.tool.WrenchItem;
+import li.cil.oc2.network.wire.WireType;
 import li.cil.oc2.platform.BlockHolder;
 import li.cil.oc2.platform.ItemHolder;
 import li.cil.oc2.platform.NeoForgeRegistryBridge;
@@ -65,7 +66,11 @@ public final class Items {
 
     public static final ItemHolder<Item> ROBOT = register("robot", RobotItem::new);
     public static final ItemHolder<NetworkCableItem> NETWORK_CABLE =
-            register("network_cable", NetworkCableItem::new);
+            register("network_cable", () -> new NetworkCableItem(WireType.COPPER));
+    public static final ItemHolder<NetworkCableItem> NETWORK_CABLE_GOLD =
+            register("network_cable_gold", () -> new NetworkCableItem(WireType.GOLD));
+    public static final ItemHolder<NetworkCableItem> NETWORK_CABLE_OPTICAL =
+            register("network_cable_optical", () -> new NetworkCableItem(WireType.OPTICAL));
 
     public static final ItemHolder<MemoryItem> MEMORY_SMALL =
             register("memory_small", () -> new MemoryItem(2 * Constants.MEGABYTE));
@@ -176,6 +181,15 @@ public final class Items {
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_memory_buildroot"),
                 FLASH_MEMORY_CUSTOM.getId());
         NeoForgeRegistryBridge.instance().bind(modBus);
+    }
+
+    /** The cable item for {@code wireType}. */
+    public static NetworkCableItem networkCable(final WireType wireType) {
+        return switch (wireType) {
+            case COPPER -> NETWORK_CABLE.get();
+            case GOLD -> NETWORK_CABLE_GOLD.get();
+            case OPTICAL -> NETWORK_CABLE_OPTICAL.get();
+        };
     }
 
     private static ItemHolder<Item> register(final String name) {
