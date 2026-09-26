@@ -1,22 +1,20 @@
 package li.cil.oc2.common.item;
 
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.computer.factory.ComputerBlockFactory;
 import li.cil.oc2.common.item.tool.RobotItem;
-import net.minecraft.core.registries.BuiltInRegistries;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ItemGroup {
-    public static final DeferredRegister<CreativeModeTab> TAB_REGISTER =
-            DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB, API.MOD_ID);
-
     @SuppressWarnings("unused")
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> COMMON_TAB =
-            TAB_REGISTER.register(
+    public static final Supplier<CreativeModeTab> COMMON_TAB =
+            Platform.registries().register(
+                    "minecraft:creative_mode_tab",
+                    API.MOD_ID,
                     "common",
                     () ->
                             CreativeModeTab.builder()

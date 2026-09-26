@@ -15,7 +15,6 @@ import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
-import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
 import li.cil.oc2.common.serialization.ceres.Serializers;
@@ -26,6 +25,7 @@ import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.sedna.Sedna;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -74,7 +74,7 @@ public final class Main {
             Manuals.initialize(modBus);
         }
 
-        ItemGroup.TAB_REGISTER.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
 
         NativeLoader.loadLibrary();
     }
