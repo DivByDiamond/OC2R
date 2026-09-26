@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.components.DataComponents;
+import li.cil.oc2.platform.BlockHolder;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -22,7 +25,6 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 public final class ModLootTableProvider extends LootTableProvider {
     public ModLootTableProvider(
@@ -65,9 +67,9 @@ public final class ModLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return Blocks.REGISTRY.getEntries().stream()
+            return Platform.registries().blocks(API.MOD_ID).stream()
                     .filter(blockRegObj -> !blockRegObj.get().equals(Blocks.BUS_CABLE.get()))
-                    .map(DeferredHolder::get)
+                    .<Block>map(BlockHolder::get)
                     .collect(Collectors.toList());
         }
 

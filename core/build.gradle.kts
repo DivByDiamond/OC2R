@@ -1,5 +1,11 @@
 plugins {
     `java-library`
+    id("net.neoforged.moddev") version "2.0.144"
+}
+
+// Vanilla Minecraft only (NeoForm, no loader): lets core declare Minecraft-typed bridge APIs.
+neoForge {
+    neoFormVersion = "1.21.1-20240808.144430"
 }
 
 // Loader-independent module: plain JDK only. It must never depend on NeoForge or Fabric

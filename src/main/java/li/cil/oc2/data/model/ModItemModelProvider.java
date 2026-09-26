@@ -3,6 +3,7 @@ package li.cil.oc2.data.model;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.Items;
+import li.cil.oc2.platform.ItemHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +11,6 @@ import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.registries.DeferredItem;
 
 public final class ModItemModelProvider extends ItemModelProvider {
     public ModItemModelProvider(
@@ -77,7 +77,7 @@ public final class ModItemModelProvider extends ItemModelProvider {
     }
 
     private <T extends Item> ItemModelBuilder simple(
-            final DeferredItem<T> item, final String texturePath) {
+            final ItemHolder<T> item, final String texturePath) {
         return singleTexture(
                 item.getId().getPath(),
                 ResourceLocation.parse("item/generated"),

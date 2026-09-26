@@ -5,9 +5,9 @@ import java.util.function.Predicate;
 import li.cil.oc2.api.bus.device.ItemDevice;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+import li.cil.oc2.platform.ItemHolder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredItem;
 
 public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
     private final Predicate<Item> predicate;
@@ -16,7 +16,7 @@ public abstract class AbstractItemDeviceProvider implements ItemDeviceProvider {
         this.predicate = predicate;
     }
 
-    protected AbstractItemDeviceProvider(final DeferredItem<? extends Item> item) {
+    protected AbstractItemDeviceProvider(final ItemHolder<? extends Item> item) {
         this(i -> i.equals(item.get()));
     }
 

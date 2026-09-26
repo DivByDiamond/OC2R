@@ -1225,9 +1225,9 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
 **Этапы** (каждый — свой implementation-план и свои PR, когда до него дойдёт очередь):
 - [~] **Этап 1 (в работе, ветка `feat/multiloader-stage1`)** — сделано: модуль `core` (JDK-only,
   `li.cil.oc2.platform.{RegistryBridge,Platform}` + тесты), `NeoForgeRegistryBridge`
-  (ServiceLoader), `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `BlockEntities` мигрированы на мост (осталось: `ItemGroup`, `DataComponents` — типы `DeferredHolder` в ~33 местах;
-  `Blocks`/`Items` — `DeferredBlock/DeferredItem` в ~100 местах, вкл. datagen (`getEntries`, loot, модели), т.е.
-  нужен отдельный `BlockEntry`/`ItemEntry` в `core`; провайдеры/прошивки/`DeviceTypes`/`Manuals` — им нужен
+  (ServiceLoader), `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `BlockEntities` мигрированы на мост `Blocks`/`Items` мигрированы на `BlockHolder`/`ItemHolder` (в `core`, который теперь зависит от ванильного
+  Minecraft через NeoForm, без загрузчика; `RegistryBridge.registerBlock/registerItem/blocks/addItemAlias`)
+  (осталось: `ItemGroup`, `DataComponents` — типы `DeferredHolder` в ~33 местах; провайдеры/прошивки/`DeviceTypes`/`Manuals` — им нужен
   `makeRegistry`, мост пока умеет только регистрацию в существующих реестрах). Критерий «образцовая
   подсистема» этапа 1 выполнен, дальше — этап 2;
   `runData` падает на `Missing loottable 'oc2r:blocks/speaker'` — воспроизводится и на `work` без этих правок; jar содержит классы
