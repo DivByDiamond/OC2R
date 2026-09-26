@@ -1593,3 +1593,30 @@ GameTest раньше никогда не выполнялся (ни локал�
 - [ ] **А3 — теневое имя TunnelManager** `[NetworkTunnelDevice.java:42]` внутренний `TunnelManager` перекрывает `common.vxlan.TunnelManager` → переименовать в `TunnelEndpointRegistry`.
 
 Приоритет внедрения: Б1-Б7 → Л4-Л9 → Л11-Л13 → Стиль-1/3 → Т1-Т2 → остальное. Верификация каждого: `./gradlew checkstyleMain pmdMain spotbugsMain lintRatchet test gameTest` + ручной прогон.
+
+---
+
+## 48. Network overhaul: wires, towers, tablet, Create Radars (2026-09-26)
+
+Decision (supersedes the removal plan in §43): `NetworkConnector` stays and is reworked. Hub and switch
+are re-evaluated after the new node model exists. Reference code lives in `ref/` (gitignored):
+`ref/createaddition` (Create Crafts & Additions 1.20.1, wire nodes, spool, wire renderer),
+`ref/Create-Radar` (Create: Radars 1.20.1, official repo), `ref/Create-radars-port-1.21.1-neoforge`
+(1.21.1 NeoForge port, has a ComputerCraft peripheral layer to mirror).
+
+- [ ] Wire node model: each connector stores a list of links (local index, target position relative to
+  the block, target index, wire type). No network object is saved. A link is dropped on load if the
+  other end does not confirm it.
+- [ ] Multiple ports per connector instead of two.
+- [ ] Wire spool item: click one node, click another to connect; a remover spool disconnects. Every
+  attempt returns a result enum with a message and a sound (too long, exists, no free port, linked).
+- [ ] Wire types with different range and throughput (copper, gold, optical for data only).
+- [ ] Sagging wire renderer and per-type color.
+- [ ] Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the
+  tower network without wires. Towers relay to each other by wire or radio.
+- [ ] Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.
+- [ ] Tablet item with a screen, terminal and tower link (see also §16 for the UART tablet).
+- [ ] Create Radars compatibility: soft dependency, RPC device exposing radar tracks, mirroring the
+  peripherals in the port's `compat/computercraft`. Check first that a NeoForge 1.21.1 build exists and
+  which Create version it needs.
+- [ ] Docs: split this file into `docs/` (one page per subsystem) and translate the docs to English.
