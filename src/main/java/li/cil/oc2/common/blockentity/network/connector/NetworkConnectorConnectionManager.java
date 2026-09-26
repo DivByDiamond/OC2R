@@ -12,7 +12,6 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.tick.TickUtils;
-import li.cil.oc2.network.wire.WireType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -24,11 +23,12 @@ public final class NetworkConnectorConnectionManager {
     private static final int RETRY_UNLOADED_CHUNK_INTERVAL =
             TickUtils.toTicks(Duration.ofSeconds(5));
 
+    private static final int MAX_CONNECTION_DISTANCE = 16;
+
     private final NetworkConnectorBlockEntity owner;
 
     public final Set<BlockPos> connectorPositions = new HashSet<>();
     public final Set<BlockPos> ownedCables = new HashSet<>();
-    public final Map<BlockPos, WireType> wireTypes = new ConcurrentHashMap<>();
     public final Set<BlockPos> dirtyConnectors = new HashSet<>();
     public final Map<BlockPos, NetworkConnectorBlockEntity> connectors = new ConcurrentHashMap<>();
 
@@ -38,21 +38,19 @@ public final class NetworkConnectorConnectionManager {
 
     public static ConnectionResult connect(
             final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB,
-            final WireType wireType) {
-        final ConnectionResult validation = validateConnection(connectorA, connectorB, wireType);
+            final NetworkConnectorBlockEntity connectorB) {
+        final ConnectionResult validation = validateConnection(connectorA, connectorB);
         if (validation != null) {
             return validation;
         }
 
         return establishConnection(
-                connectorA, connectorB, connectorA.getBlockPos(), connectorB.getBlockPos(), wireType);
+                connectorA, connectorB, connectorA.getBlockPos(), connectorB.getBlockPos());
     }
 
     private static ConnectionResult validateConnection(
             final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB,
-            final WireType wireType) {
+            final NetworkConnectorBlockEntity connectorB) {
         if (areInvalid(connectorA, connectorB)) {
             return ConnectionResult.FAILURE;
         }
@@ -69,7 +67,7 @@ public final class NetworkConnectorConnectionManager {
         final BlockPos posA = connectorA.getBlockPos();
         final BlockPos posB = connectorB.getBlockPos();
 
-        if (!posA.closerThan(posB, wireType.maxRange())) {
+        if (!posA.closerThan(posB, MAX_CONNECTION_DISTANCE)) {
             return ConnectionResult.FAILURE_TOO_FAR;
         }
 
@@ -106,10 +104,7 @@ public final class NetworkConnectorConnectionManager {
             final NetworkConnectorBlockEntity connectorA,
             final NetworkConnectorBlockEntity connectorB,
             final BlockPos posA,
-            final BlockPos posB,
-            final WireType wireType) {
-        connectorA.connectionManager.wireTypes.put(posB, wireType);
-        connectorB.connectionManager.wireTypes.put(posA, wireType);
+            final BlockPos posB) {
         if (connectorA.connectionManager.connectorPositions.add(posB)) {
             connectorA.connectionManager.dirtyConnectors.add(posB);
             connectorA.connectionManager.onConnectedPositionsChanged();
@@ -140,15 +135,13 @@ public final class NetworkConnectorConnectionManager {
     public void disconnectFrom(final BlockPos pos) {
         dirtyConnectors.remove(pos);
         connectors.remove(pos);
-        final WireType wireType = wireTypes.getOrDefault(pos, WireType.COPPER);
-        wireTypes.remove(pos);
 
         if (ownedCables.remove(pos)) {
             final Level level = owner.getLevel();
             if (level != null) {
                 final Vec3 middle = Vec3.atCenterOf(owner.getBlockPos().offset(pos)).scale(0.5f);
                 ItemStackUtils.spawnAsEntity(
-                        level, middle, new ItemStack(Items.networkCable(wireType)));
+                        level, middle, new ItemStack(Items.NETWORK_CABLE.get()));
             }
         }
 
@@ -163,15 +156,6 @@ public final class NetworkConnectorConnectionManager {
 
     public boolean canConnectMore() {
         return connectorPositions.size() < Config.networkConnectorPorts;
-    }
-
-    /** Bandwidth multiplier of this connector: the best wire attached to it (at least 1). */
-    public int getBandwidthFactor() {
-        int factor = 1;
-        for (final WireType type : wireTypes.values()) {
-            factor = Math.max(factor, type.bandwidthFactor());
-        }
-        return factor;
     }
 
     public Collection<BlockPos> getConnectedPositions() {
@@ -212,8 +196,7 @@ public final class NetworkConnectorConnectionManager {
             return;
         }
 
-        final WireType wireType = wireTypes.getOrDefault(connectedPosition, WireType.COPPER);
-        if (!connectedPosition.closerThan(owner.getBlockPos(), wireType.maxRange())) {
+        if (!connectedPosition.closerThan(owner.getBlockPos(), MAX_CONNECTION_DISTANCE)) {
             disconnectFrom(connectedPosition);
             networkConnector.connectionManager.disconnectFrom(owner.getBlockPos());
             return;

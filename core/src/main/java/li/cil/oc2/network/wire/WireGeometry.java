@@ -31,12 +31,8 @@ public final class WireGeometry {
         return Math.max(MIN_SEGMENTS, Math.min(MAX_SEGMENTS, wanted));
     }
 
-    /** Half width of the drawn ribbon for a wire tier. */
-    public static float thickness(final WireType type) {
-        return switch (type) {
-            case COPPER -> 0.025f;
-            case GOLD -> 0.03f;
-            case OPTICAL -> 0.018f;
-        };
+    /** Half width of the drawn ribbon. */
+    public static float thickness() {
+        return 0.025f;
     }
 }

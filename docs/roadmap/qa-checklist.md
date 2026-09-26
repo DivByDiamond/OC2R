@@ -46,4 +46,4 @@ Source: [34](cables-bus-energy.md#34-manual-in-game-testing-wires-and-screens)
 - [ ] **Monitor**: frame rendering must not chew CPU without changes (`dirtyLines.clear()` fix); terminal text renders correctly; monitor multiblock (merge/split/break) works.
 - [ ] **Speaker**: the new Charger-style texture/model shows correctly from all sides.
 
-- [ ] Network wires: check the new per-tier color, thickness, sag up to 64 blocks and the glowing optical wire in game (see network-overhaul.md)
+- [ ] Network wires: check the blue color and the sag on long (up to 16 block) wires in game (see network-overhaul.md)

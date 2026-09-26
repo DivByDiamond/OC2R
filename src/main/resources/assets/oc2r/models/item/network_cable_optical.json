@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "oc2r:item/components/materials/network_cable_optical"
-  }
-}

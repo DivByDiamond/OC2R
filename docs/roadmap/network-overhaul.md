@@ -45,12 +45,12 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 (gitignored): `ref/createaddition` (Create Crafts & Additions 1.20.1, wire nodes, spool, wire renderer), `ref/Create-Radar` (Create: Radars 1.20.1, official repo),
 `ref/Create-radars-port-1.21.1-neoforge` (1.21.1 NeoForge port, has a ComputerCraft peripheral layer to mirror).
 
-- [x] Wire node model (partly): links store position and wire type (`wire` tag, old saves read as copper); a link is dropped on load when the other end does not confirm it. Relative positions and a saved peer port index are not done.
+- [x] Wire node model (partly): a link is dropped on load when the other end does not confirm it. Relative positions and a saved peer port index are not done.
   if the other end does not confirm it.
 - [x] Multiple ports per connector: config `networkConnectorPorts` (default 4, range 2 to 8).
-- [x] Wire spool: two clicks link two connectors (result message plus sound for every outcome); using the cable on two already linked connectors removes the link and returns the owner's cable of the right wire type. Result enum has `DISCONNECTED`.
-- [x] Wire types: copper (16 blocks, x1), gold (32, x2), optical (64, x4) as separate items with recipes and textures; bandwidth per connector is the best attached wire. Optical is not yet data-only; all types carry the same traffic.
-- [x] Wire renderer (needs in-game check): the existing hanging ribbon now uses a per-tier color and thickness (copper teal, gold, thin glowing optical), sag and segment count grow with length up to 64 blocks (`WireGeometry` in core, unit tested), and the culling box covers the sag. Rendering itself is client only and was not run.
+- [x] Wire spool: two clicks link two connectors (result message plus sound for every outcome); using the cable on two already linked connectors removes the link and returns the owner's cable. Result enum has `DISCONNECTED`.
+- [ ] Wire tiers were tried and removed: the plan is a single network cable (improve the existing one, blue). Revisit only if requested.
+- [x] Wire renderer (needs in-game check): the existing hanging ribbon is now blue (matching the cable item), its sag and segment count follow the length (`WireGeometry` in core, unit tested), and the culling box covers the sag. Rendering is client only and was not run.
 - [ ] DEFERRED (far backlog, needs a block model and a design agreement first): Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the tower network without wires. Towers relay to each other by wire or radio.
 - [ ] DEFERRED with towers: Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.
 - [ ] Wrench UX (moved here from section 43).

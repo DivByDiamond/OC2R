@@ -15,7 +15,6 @@ import li.cil.oc2.common.blockentity.network.connector.interfaces.NetworkConnect
 import li.cil.oc2.common.blockentity.network.connector.interfaces.NullNetworkInterface;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.tick.TickUtils;
-import li.cil.oc2.network.wire.WireType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -69,7 +68,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         NetworkInterface source = adjacentInterface;
         if (source == null) source = NullNetworkInterface.INSTANCE;
 
-        int byteBudget = BYTES_PER_TICK * connectionManager.getBandwidthFactor();
+        int byteBudget = BYTES_PER_TICK;
         byte[] frame = source.readEthernetFrame();
         while (frame != null && frame.length > 0 && byteBudget > 0) {
             byteBudget -= Math.max(frame.length, MIN_ETHERNET_FRAME_SIZE);
@@ -82,7 +81,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
         NetworkConnectorConnectionStore.writeToUpdateTag(
-                tag, registries, connectionManager.connectorPositions, connectionManager.wireTypes);
+                tag, registries, connectionManager.connectorPositions);
         return tag;
     }
 
@@ -93,8 +92,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 tag,
                 registries,
                 connectionManager.connectorPositions,
-                connectionManager.dirtyConnectors,
-                connectionManager.wireTypes);
+                connectionManager.dirtyConnectors);
         // Live updates arrive via this tag instead of a custom message; the cable
         // renderer caches connections, so it must rebuild after positions change.
         if (FMLLoader.getDist() == Dist.CLIENT) {
@@ -109,8 +107,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 tag,
                 registries,
                 connectionManager.connectorPositions,
-                connectionManager.ownedCables,
-                connectionManager.wireTypes);
+                connectionManager.ownedCables);
     }
 
     @Override
@@ -121,8 +118,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 registries,
                 connectionManager.connectorPositions,
                 connectionManager.dirtyConnectors,
-                connectionManager.ownedCables,
-                connectionManager.wireTypes);
+                connectionManager.ownedCables);
     }
 
     @Override
@@ -149,9 +145,8 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
 
     public static ConnectionResult connect(
             final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB,
-            final WireType wireType) {
-        return NetworkConnectorConnectionManager.connect(connectorA, connectorB, wireType);
+            final NetworkConnectorBlockEntity connectorB) {
+        return NetworkConnectorConnectionManager.connect(connectorA, connectorB);
     }
 
     /** Removes the link between two connectors from both sides; the owner's cable item drops. */

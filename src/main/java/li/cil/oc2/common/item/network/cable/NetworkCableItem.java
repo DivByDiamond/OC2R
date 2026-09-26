@@ -7,7 +7,6 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.ModItem;
-import li.cil.oc2.network.wire.WireType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -26,16 +25,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class NetworkCableItem extends ModItem {
-    private final WireType wireType;
-
-    public NetworkCableItem(final WireType wireType) {
-        super();
-        this.wireType = wireType;
-    }
-
-    public WireType getWireType() {
-        return wireType;
-    }
 
     private static final String LINK_START_TAG_NAME = API.MOD_ID + ":" + "network_cable_link_start";
 
@@ -136,7 +125,7 @@ public final class NetworkCableItem extends ModItem {
         }
 
         final ConnectionResult connectionResult =
-                NetworkConnectorBlockEntity.connect(startConnector, currentConnector, wireType);
+                NetworkConnectorBlockEntity.connect(startConnector, currentConnector);
         return handleConnectionResult(connectionResult, startPos, player, stack, persistentData);
     }
 

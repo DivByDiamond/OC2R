@@ -29,10 +29,4 @@ class WireGeometryTest {
         assertEquals(48, WireGeometry.segments(500));
         assertTrue(WireGeometry.segments(20) > WireGeometry.segments(6));
     }
-
-    @Test
-    void opticalIsThinnestGoldThickest() {
-        assertTrue(WireGeometry.thickness(WireType.OPTICAL) < WireGeometry.thickness(WireType.COPPER));
-        assertTrue(WireGeometry.thickness(WireType.GOLD) > WireGeometry.thickness(WireType.COPPER));
-    }
 }

@@ -2,7 +2,6 @@ package li.cil.oc2.client.renderer.cable;
 
 import java.util.Objects;
 import li.cil.oc2.network.wire.WireGeometry;
-import li.cil.oc2.network.wire.WireType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -17,10 +16,8 @@ final class NetworkCableConnection {
     public final Vec3 forward;
     public final Vec3 right;
     public final AABB bounds;
-    public final WireType wireType;
 
-    NetworkCableConnection(final BlockPos fromPos, final BlockPos toPos, final WireType wireType) {
-        this.wireType = wireType;
+    NetworkCableConnection(final BlockPos fromPos, final BlockPos toPos) {
         if (fromPos.compareTo(toPos) > 0) {
             this.fromPos = toPos;
             this.toPos = fromPos;

@@ -51,8 +51,6 @@ public final class ItemGroup {
                                                 output.accept(Items.MANUAL.get());
                                                 output.accept(RobotItem.getRobotWithFlash());
                                                 output.accept(Items.NETWORK_CABLE.get());
-                                                output.accept(Items.NETWORK_CABLE_GOLD.get());
-                                                output.accept(Items.NETWORK_CABLE_OPTICAL.get());
                                                 output.accept(Items.MEMORY_SMALL.get());
                                                 output.accept(Items.MEMORY_MEDIUM.get());
                                                 output.accept(Items.MEMORY_LARGE.get());
