@@ -24,7 +24,7 @@ public final class PacketProcessor {
 
     public static short getVLAN(byte[] packet) {
         if (packet[12] == ((byte) 0x81) && packet[13] == 0x00) {
-            return (short) (packet[15] | ((packet[14] & 0x0f) << 8));
+            return (short) ((packet[15] & 0xff) | ((packet[14] & 0x0f) << 8));
         } else {
             return (short) 0;
         }
@@ -50,7 +50,7 @@ public final class PacketProcessor {
             byte[] ret = new byte[packet.length - 4];
             copyBytes(packet, ret, 0, 0, 12);
             copyBytes(packet, ret, 16, 12, packet.length - 16);
-            short tag = (short) (packet[15] | ((packet[14] & 0x0f) << 8));
+            short tag = (short) ((packet[15] & 0xff) | ((packet[14] & 0x0f) << 8));
             return new Pair<>(tag, ret);
         } else {
             return new Pair<>((short) 0, packet);

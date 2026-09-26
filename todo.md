@@ -44,6 +44,14 @@ Robot, MonitorBlockEntity, BusCableBlockEntity и т.д.; раскладка в�
   (html+xml отчёты), Error Prone 5.1.0 + error_prone_core 2.50.0 (выборочно,
   `-PenableErrorProne`, warnings-only; Guava-шейдинг против mixin-процессора),
   AvoidDuplicateLiterals, AvoidInstantiatingObjectsInLoops, Qodana 2026.2.0 (`./gradlew qodana`)
+- [x] SpotBugs baseline (511 записей) разобран: реальный баг — знаковый байт в `PacketProcessor` VLAN
+  (исправлен + `PacketProcessorTest`); остальное (EI_EXPOSE*, MS_CANNOT_BE_FINAL, PA_PUBLIC_*, ST_WRITE_*,
+  ~400 записей) — сознательный дизайн, остаётся в baseline
+- [x] client/common: сообщения звуковой карты и файлового импорта/экспорта идут через
+  `client/hooks` (`SoundCardMessageHooks`, `FileTransferHooks`); `ClientImportGuardTest` запрещает
+  новые клиентские импорты в `common`
+- [ ] client/common: осталось 25 файлов с клиентскими импортами (список `LEGACY_OFFENDERS` в
+  `ClientImportGuardTest`) — выносить по одному в `client/hooks` и удалять из списка
 - [ ] Остаточные вёрдлы в отчётах (`build/reports/*`): SpotBugs ~453 main (EI_EXPOSE_REP2 99,
   MS_CANNOT_BE_FINAL 71, ...), Error Prone ~100 — разбирать точечно при рефакторинге
 

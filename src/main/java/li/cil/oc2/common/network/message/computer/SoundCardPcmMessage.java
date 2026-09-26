@@ -1,7 +1,7 @@
 package li.cil.oc2.common.network.message.computer;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.audio.SoundClientManager;
+import li.cil.oc2.client.hooks.SoundCardMessageHooks;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -32,6 +32,6 @@ public record SoundCardPcmMessage(BlockPos pos, byte[] pcm) implements AbstractM
     @Override
     @SuppressWarnings("FutureReturnValueIgnored")
     public void handleMessage(final IPayloadContext context) {
-        context.enqueueWork(() -> SoundClientManager.streamPcm(pos, pcm));
+        context.enqueueWork(() -> SoundCardMessageHooks.streamPcm(pos, pcm));
     }
 }
