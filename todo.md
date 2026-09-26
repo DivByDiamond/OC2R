@@ -1223,20 +1223,18 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
   остальное) — просто "добавить Fabric" не получится, нужна платформенная абстракция.
 
 **Этапы** (каждый — свой implementation-план и свои PR, когда до него дойдёт очередь):
-- [~] **Этап 1 (в работе, ветка `feat/multiloader-stage1`)** — сделано: модуль `core` (JDK-only,
-  `li.cil.oc2.platform.{RegistryBridge,Platform}` + тесты), `NeoForgeRegistryBridge`
-  (ServiceLoader), `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `BlockEntities` мигрированы на мост `Blocks`/`Items` мигрированы на `BlockHolder`/`ItemHolder` (в `core`, который теперь зависит от ванильного
-  Minecraft через NeoForm, без загрузчика; `RegistryBridge.registerBlock/registerItem/blocks/addItemAlias`)
-  `ItemGroup`, `DataComponents`, прошивки, block-device-data и провайдеры (свои реестры через `RegistryBridge.createRegistry`) тоже мигрированы
-  (осталось: `DeviceTypes` — его `DeferredRegister` нигде не привязан к шине, т.е. регистрация фактически мёртвая, нужно
-  разобраться отдельно; `Manuals` — клиентский. Дальше — этап 2). Критерий «образцовая
-  подсистема» этапа 1 выполнен, дальше — этап 2;
-  `runData` падает на `Missing loottable 'oc2r:blocks/speaker'` — воспроизводится и на `work` без этих правок; jar содержит классы
-  `core`, `build` и `gameTest` (15/15) зелёные. Отступление от спеки: исходники НЕ перенесены
-  в `core/`/`neoforge/` (корневой проект остаётся NeoForge-модулем) — массовый `git mv` отложен,
-  потому что ~230 NeoForge-файлов не могут жить в `core` без NeoForge на classpath.
-  Осталось: мигрировать остальные реестры (Blocks/Items/BlockEntities/…), затем решить судьбу
-  переноса дерева. Исходная постановка этапа:
+- [x] **Этап 1 — реестры (ветка `feat/multiloader-stage1`, не смержена)** — модуль `core`
+  (зависит только от ванильного Minecraft через NeoForm, без загрузчика) с `li.cil.oc2.platform`:
+  `RegistryBridge` (`register`, `registerBlock/Item`, `blocks`, `addItemAlias`, `createRegistry`),
+  `Platform` (ServiceLoader), `BlockHolder`/`ItemHolder`; реализация `NeoForgeRegistryBridge`.
+  На мост мигрированы `Blocks`, `Items`, `BlockEntities`, `BlockCodecs`, `SoundEvents`, `RecipeSerializers`,
+  `Entities`, `Containers`, `ItemGroup`, `DataComponents`, прошивки, block-device-data, провайдеры.
+  Не мигрированы: `DeviceTypes` (его `DeferredRegister` нигде не привязан к шине — регистрация фактически
+  мёртвая, разобраться отдельно) и клиентский `Manuals`. Jar содержит классы `core`; lint, тесты, `gameTest`
+  (15/15) зелёные. Отступление от спеки: исходники НЕ перенесены в `core/`/`neoforge/` (корневой проект остаётся
+  NeoForge-модулем): ~230 NeoForge-файлов не могут жить в `core` без NeoForge. Дальше — этап 2.
+  `runData` падает на `Missing loottable 'oc2r:blocks/speaker'` — воспроизводится и на `work`.
+  Исходная постановка этапа:
 - [ ] **Этап 1** — `core`/`neoforge` Gradle-split (без поведенческих изменений) + registries
   как образцовая подсистема (`core: RegistryBridge` → `neoforge` impl → tests/CI). Остальные
   ~230 NeoForge-файлов сознательно не трогаются. Детали, критерии готовности, git/CI-стратегия
