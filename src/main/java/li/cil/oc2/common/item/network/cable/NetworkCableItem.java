@@ -13,6 +13,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -106,9 +109,9 @@ public final class NetworkCableItem extends ModItem {
             final Player player) {
         if (currentConnector.canConnectMore()) {
             persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(currentPos));
+            notifyPlayer(player, Constants.CONNECTOR_LINK_STARTED, SoundEvents.LEASH_KNOT_PLACE, 0.6f);
         } else {
-            player.displayClientMessage(
-                    Component.translatable(Constants.CONNECTOR_ERROR_FULL), true);
+            notifyPlayer(player, Constants.CONNECTOR_ERROR_FULL, SoundEvents.DISPENSER_FAIL, 1f);
         }
     }
 
@@ -123,6 +126,13 @@ public final class NetworkCableItem extends ModItem {
         if (!(startBlockEntity instanceof final NetworkConnectorBlockEntity startConnector)) {
             // Starting connector was removed in the meantime.
             return true;
+        }
+
+        if (startConnector.getConnectedPositions().contains(currentConnector.getBlockPos())) {
+            // Using the cable on two connectors that are already linked removes that link.
+            NetworkConnectorBlockEntity.disconnect(startConnector, currentConnector);
+            return handleConnectionResult(
+                    ConnectionResult.DISCONNECTED, startPos, player, stack, persistentData);
         }
 
         final ConnectionResult connectionResult =
@@ -141,6 +151,11 @@ public final class NetworkCableItem extends ModItem {
                 if (!player.isCreative()) {
                     stack.shrink(1);
                 }
+                notifyPlayer(player, Constants.CONNECTOR_CONNECTED, SoundEvents.LEASH_KNOT_PLACE, 1f);
+                break;
+            case DISCONNECTED:
+                notifyPlayer(
+                        player, Constants.CONNECTOR_DISCONNECTED, SoundEvents.LEASH_KNOT_BREAK, 1f);
                 break;
 
             case FAILURE:
@@ -148,29 +163,34 @@ public final class NetworkCableItem extends ModItem {
                 break;
             case ALREADY_CONNECTED:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_ALREADY_CONNECTED),
-                        true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_ALREADY_CONNECTED, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_FULL:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_FULL), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_FULL, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_TOO_FAR:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_TOO_FAR), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_TOO_FAR, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_OBSTRUCTED:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_OBSTRUCTED), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_OBSTRUCTED, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             default:
                 throw new AssertionError(connectionResult);
         }
         return false;
+    }
+
+    private static void notifyPlayer(
+            final Player player, final String messageKey, final SoundEvent sound, final float pitch) {
+        player.displayClientMessage(Component.translatable(messageKey), true);
+        player.level().playSound(null, player.blockPosition(), sound, SoundSource.BLOCKS, 0.8f, pitch);
     }
 
     private static void keepLinkStart(

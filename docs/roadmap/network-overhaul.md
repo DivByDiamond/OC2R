@@ -48,11 +48,11 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 - [x] Wire node model (partly): links store position and wire type (`wire` tag, old saves read as copper); a link is dropped on load when the other end does not confirm it. Relative positions and a saved peer port index are not done.
   if the other end does not confirm it.
 - [x] Multiple ports per connector: config `networkConnectorPorts` (default 4, range 2 to 8).
-- [ ] Wire spool item: the existing cable item already links two connectors by two clicks with result messages; still open: a remover spool that disconnects, sounds per result, and returning the exact wire type (done for the drop on disconnect).
+- [x] Wire spool: two clicks link two connectors (result message plus sound for every outcome); using the cable on two already linked connectors removes the link and returns the owner's cable of the right wire type. Result enum has `DISCONNECTED`.
 - [x] Wire types: copper (16 blocks, x1), gold (32, x2), optical (64, x4) as separate items with recipes and textures; bandwidth per connector is the best attached wire. Optical is not yet data-only; all types carry the same traffic.
 - [ ] Sagging wire renderer and per-type color.
-- [ ] Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the tower network without wires. Towers relay to each other by wire or radio.
-- [ ] Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.
+- [ ] DEFERRED (far backlog, needs a block model and a design agreement first): Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the tower network without wires. Towers relay to each other by wire or radio.
+- [ ] DEFERRED with towers: Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.
 - [ ] Wrench UX (moved here from section 43).
 - [ ] Tablet item family with two modes sharing one item base: the UART tablet (see [section 16](devices-storage.md#16-uart-tablet-item): wire-minigame link to a computer, UART mirror terminal) and
   the tower/radio tablet (screen, terminal and tower link). Both descriptions are kept in their sections.

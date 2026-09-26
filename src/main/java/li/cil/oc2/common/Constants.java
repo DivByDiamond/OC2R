@@ -73,4 +73,7 @@ public final class Constants {
             key("message.{mod}.connector.error.obstructed");
     public static final String CONNECTOR_ERROR_ALREADY_CONNECTED =
             key("message.{mod}.connector.error.already_connected");
+    public static final String CONNECTOR_LINK_STARTED = key("message.{mod}.connector.link_started");
+    public static final String CONNECTOR_CONNECTED = key("message.{mod}.connector.connected");
+    public static final String CONNECTOR_DISCONNECTED = key("message.{mod}.connector.disconnected");
 }

@@ -95,6 +95,28 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void disconnectRemovesLinkFromBothSides(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        TestSupport.placeFloor(helper, TestSupport.CABLE_POS);
+        TestSupport.placeFloor(helper, TestSupport.DEVICE_POS);
+        TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
+        TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
+        final NetworkConnectorBlockEntity first = helper.getBlockEntity(TestSupport.CABLE_POS);
+        final NetworkConnectorBlockEntity second = helper.getBlockEntity(TestSupport.DEVICE_POS);
+
+        NetworkConnectorBlockEntity.connect(first, second, WireType.OPTICAL);
+        TestSupport.assertTrue(helper, "link should exist before removal",
+            first.getConnectedPositions().size() == 1 && second.getConnectedPositions().size() == 1);
+
+        NetworkConnectorBlockEntity.disconnect(first, second);
+        TestSupport.assertTrue(helper, "both sides should drop the link",
+            first.getConnectedPositions().isEmpty() && second.getConnectedPositions().isEmpty());
+        TestSupport.assertTrue(helper, "wire type bookkeeping should be cleared",
+            first.connectionManager.getBandwidthFactor() == 1);
+        helper.succeed();
+    }
+
     // --------------------------------------------------------------------- //
 
     private NetworkConnectorTests() {
