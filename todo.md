@@ -1227,8 +1227,9 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
   `li.cil.oc2.platform.{RegistryBridge,Platform}` + тесты), `NeoForgeRegistryBridge`
   (ServiceLoader), `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `BlockEntities` мигрированы на мост `Blocks`/`Items` мигрированы на `BlockHolder`/`ItemHolder` (в `core`, который теперь зависит от ванильного
   Minecraft через NeoForm, без загрузчика; `RegistryBridge.registerBlock/registerItem/blocks/addItemAlias`)
-  (осталось: `ItemGroup`, `DataComponents` — типы `DeferredHolder` в ~33 местах; провайдеры/прошивки/`DeviceTypes`/`Manuals` — им нужен
-  `makeRegistry`, мост пока умеет только регистрацию в существующих реестрах). Критерий «образцовая
+  `ItemGroup`, `DataComponents`, прошивки, block-device-data и провайдеры (свои реестры через `RegistryBridge.createRegistry`) тоже мигрированы
+  (осталось: `DeviceTypes` — его `DeferredRegister` нигде не привязан к шине, т.е. регистрация фактически мёртвая, нужно
+  разобраться отдельно; `Manuals` — клиентский. Дальше — этап 2). Критерий «образцовая
   подсистема» этапа 1 выполнен, дальше — этап 2;
   `runData` падает на `Missing loottable 'oc2r:blocks/speaker'` — воспроизводится и на `work` без этих правок; jar содержит классы
   `core`, `build` и `gameTest` (15/15) зелёные. Отступление от спеки: исходники НЕ перенесены

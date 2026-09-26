@@ -2,6 +2,7 @@ package li.cil.oc2.platform;
 
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -34,4 +35,10 @@ public interface RegistryBridge {
 
     /** Makes {@code oldId} resolve to {@code target} when loading data that still uses the old item id. */
     void addItemAlias(String namespace, ResourceLocation oldId, ResourceLocation target);
+
+    /**
+     * Creates a new custom registry {@code registryId} owned by {@code namespace}. Must be called before
+     * entries are registered into it through {@link #register} and before the loader binds registries.
+     */
+    <T> Registry<T> createRegistry(String registryId, String namespace);
 }

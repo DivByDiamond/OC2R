@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -89,6 +90,20 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
                     return deferred.get();
                 }
             };
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Registry<T> createRegistry(final String registryId, final String namespace) {
+        final String key = registryId + '|' + namespace;
+        lock.lock();
+        try {
+            final DeferredRegister<Object> register = registers.computeIfAbsent(key,
+                    k -> DeferredRegister.create(ResourceLocation.parse(registryId), namespace));
+            return (Registry<T>) register.makeRegistry(builder -> {});
         } finally {
             lock.unlock();
         }

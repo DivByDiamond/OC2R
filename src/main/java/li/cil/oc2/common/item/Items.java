@@ -131,13 +131,13 @@ public final class Items {
     public static final ItemHolder<FlashMemoryWithExternalDataItem> FLASH_MEMORY_CUSTOM =
             register(
                     "flash_memory_custom",
-                    () -> new FlashMemoryWithExternalDataItem(FirmwareRegistry.MINUX.getId()));
+                    () -> new FlashMemoryWithExternalDataItem(FirmwareRegistry.MINUX_ID));
     public static final ItemHolder<FlashMemoryWithExternalDataItem> FLASH_MEMORY_ONYXOS =
             register(
                     "flash_memory_onyxos",
                     () ->
                             new FlashMemoryWithExternalDataItem(
-                                    FirmwareRegistry.ONYXOS.getId()));
+                                    FirmwareRegistry.ONYXOS_ID));
 
     public static final ItemHolder<FloppyItem> FLOPPY =
             register("floppy", () -> new FloppyItem(512 * Constants.KILOBYTE));
