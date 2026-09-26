@@ -47,7 +47,13 @@ public final class FileTransferHooks {
                     @Override
                     public void onFileSelected(final Path path) {
                         try {
-                            final String fileName = path.getFileName().toString();
+                            final Path fileNamePath = path.getFileName();
+                            if (fileNamePath == null) {
+                                LOGGER.error("Selected path has no file name: {}", path);
+                                NetworkMessages.sendToServer(new ClientCanceledImportFileMessage(id));
+                                return;
+                            }
+                            final String fileName = fileNamePath.toString();
                             final byte[] data = Files.readAllBytes(path);
                             if (data.length > FileImportExportCardItemDevice.MAX_TRANSFERRED_FILE_SIZE) {
                                 NetworkMessages.sendToServer(new ClientCanceledImportFileMessage(id));

@@ -1223,6 +1223,14 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
   остальное) — просто "добавить Fabric" не получится, нужна платформенная абстракция.
 
 **Этапы** (каждый — свой implementation-план и свои PR, когда до него дойдёт очередь):
+- [~] **Этап 1 (в работе, ветка `feat/multiloader-stage1`)** — сделано: модуль `core` (JDK-only,
+  `li.cil.oc2.platform.{RegistryBridge,Platform}` + тесты), `NeoForgeRegistryBridge`
+  (ServiceLoader), `BlockCodecs` мигрирован как образцовая подсистема; jar содержит классы
+  `core`, `build` и `gameTest` (15/15) зелёные. Отступление от спеки: исходники НЕ перенесены
+  в `core/`/`neoforge/` (корневой проект остаётся NeoForge-модулем) — массовый `git mv` отложен,
+  потому что ~230 NeoForge-файлов не могут жить в `core` без NeoForge на classpath.
+  Осталось: мигрировать остальные реестры (Blocks/Items/BlockEntities/…), затем решить судьбу
+  переноса дерева. Исходная постановка этапа:
 - [ ] **Этап 1** — `core`/`neoforge` Gradle-split (без поведенческих изменений) + registries
   как образцовая подсистема (`core: RegistryBridge` → `neoforge` impl → tests/CI). Остальные
   ~230 NeoForge-файлов сознательно не трогаются. Детали, критерии готовности, git/CI-стратегия

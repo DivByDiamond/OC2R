@@ -216,6 +216,8 @@ neoForge {
     mods {
         register(modId) {
             sourceSet(sourceSets.main.get())
+            // core classes must live in the same mod module as the loader code that uses them.
+            sourceSet(project(":core").sourceSets["main"])
         }
     }
 }
@@ -269,6 +271,9 @@ dependencies {
     if (debug_oculus.toBoolean()) {
         runtimeOnly("curse.maven:oculus-${oculus_project_id}:${oculus_file_id}")
     }
+
+    // Loader-independent module; its classes are packed into the mod jar below (docs/MULTILOADER.md).
+    implementation(project(":core"))
 
     testImplementation("org.mockito:mockito-core:${mockito_version}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
@@ -326,6 +331,7 @@ tasks.register<Copy>("copyGeneratedResources") {
 }
 
 tasks.jar {
+    from(project(":core").sourceSets["main"].output)
     manifest {
         attributes(
             mapOf(
