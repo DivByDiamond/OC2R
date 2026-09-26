@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.Collections;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
+import li.cil.oc2.network.wire.WireType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -146,7 +147,10 @@ public final class NetworkCableRenderer {
             for (final BlockPos connectedPosition : connector.getConnectedPositions()) {
                 final NetworkCableConnection connection =
                         new NetworkCableConnection(// NOPMD: depends on loop positions
-                                position, connectedPosition);
+                                position,
+                                connectedPosition,
+                                connector.connectionManager.wireTypes.getOrDefault(
+                                        connectedPosition, WireType.COPPER));
                 if (seen.add(connection)) {
                     connections.add(connection);
                     connectionsByConnector

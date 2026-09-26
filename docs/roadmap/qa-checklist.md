@@ -45,3 +45,5 @@ Source: [34](cables-bus-energy.md#34-manual-in-game-testing-wires-and-screens)
 - [ ] **Bundled Redstone**: write/read a bundled signal on the same face (`.getOpposite()` fix). The "check all 4 horizontal faces at FACING != NORTH" line is closed: side index bug is fixed (ec49a41).
 - [ ] **Monitor**: frame rendering must not chew CPU without changes (`dirtyLines.clear()` fix); terminal text renders correctly; monitor multiblock (merge/split/break) works.
 - [ ] **Speaker**: the new Charger-style texture/model shows correctly from all sides.
+
+- [ ] Network wires: check the new per-tier color, thickness, sag up to 64 blocks and the glowing optical wire in game (see network-overhaul.md)

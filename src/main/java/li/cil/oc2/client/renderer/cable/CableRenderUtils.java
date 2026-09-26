@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.util.block.Vec3Utils;
+import li.cil.oc2.network.wire.WireGeometry;
+import li.cil.oc2.network.wire.WireType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,15 +24,12 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 final class CableRenderUtils {
-    private static final int CABLE_VERTEX_COUNT = 9;
-    private static final float CABLE_THICKNESS = 0.025f;
     private static final float CABLE_LENGTH_FOR_MAX_SWING = 6f;
     private static final float CABLE_MAX_SWING_AMOUNT = 0.05f;
     private static final int CABLE_SWING_INTERVAL = 8000;
-    private static final float CABLE_HANG_MIN = 0.1f;
-    private static final float CABLE_HANG_MAX = 0.5f;
-    private static final float CABLE_MAX_LENGTH = 8f;
-    private static final Vector3f CABLE_COLOR = new Vector3f(0.0f, 0.33f, 0.4f);
+    private static final Vector3f COPPER_COLOR = new Vector3f(0.0f, 0.33f, 0.4f);
+    private static final Vector3f GOLD_COLOR = new Vector3f(0.85f, 0.65f, 0.15f);
+    private static final Vector3f OPTICAL_COLOR = new Vector3f(0.55f, 0.9f, 1.0f);
     private static final int MAX_RENDER_DISTANCE = 100;
 
     private static final List<NetworkCablePoint> cablePoints = new ArrayList<>();
@@ -49,13 +48,17 @@ final class CableRenderUtils {
         final MultiBufferSource.BufferSource bufferSource =
                 Minecraft.getInstance().renderBuffers().bufferSource();
 
-        final float r = CABLE_COLOR.x();
-        final float g = CABLE_COLOR.y();
-        final float b = CABLE_COLOR.z();
-
         for (final NetworkCableConnection connection : connections) {
             final Vec3 p0 = connection.from;
             final Vec3 p1 = connection.to;
+            final Vector3f color = colorOf(connection.wireType);
+            final float r = color.x();
+            final float g = color.y();
+            final float b = color.z();
+            final boolean glows = connection.wireType == WireType.OPTICAL;
+            final double length = p0.distanceTo(p1);
+            final int vertexCount = WireGeometry.segments(length) + 1;
+            final float thickness = WireGeometry.thickness(connection.wireType);
 
             if (!p0.closerThan(eye, MAX_RENDER_DISTANCE)
                     && !p1.closerThan(eye, MAX_RENDER_DISTANCE)) {
@@ -76,16 +79,16 @@ final class CableRenderUtils {
             final VertexConsumer consumer = bufferSource.getBuffer(renderType);
 
             cablePoints.clear();
-            for (int i = 0; i < CABLE_VERTEX_COUNT; i++) {
-                final float t = i / (CABLE_VERTEX_COUNT - 1f);
+            for (int i = 0; i < vertexCount; i++) {
+                final float t = i / (vertexCount - 1f);
                 final Vec3 p = quadraticBezier(p0, p1, p2, t);
-                final Vec3 n = getExtrusionVector(eye, p, connection.forward);
+                final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
 
                 // NOPMD - the block position depends on the per-iteration point p
                 final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD allocation depends on loop iteration / per-item state
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
-                final int packedLight = LightTexture.pack(blockLight, skyLight);
+                final int packedLight = glows ? LightTexture.FULL_BRIGHT : LightTexture.pack(blockLight, skyLight);
 
                 final Vector3f v0 = p.subtract(n).toVector3f();
                 final Vector3f v1 = p.add(n).toVector3f();
@@ -125,14 +128,21 @@ final class CableRenderUtils {
         return lerp(a1, b1, t);
     }
 
-    private static Vec3 getExtrusionVector(final Vec3 eye, final Vec3 v, final Vec3 forward) {
-        return forward.cross(eye.subtract(v)).normalize().scale(CABLE_THICKNESS);
+    private static Vec3 getExtrusionVector(
+            final Vec3 eye, final Vec3 v, final Vec3 forward, final float thickness) {
+        return forward.cross(eye.subtract(v)).normalize().scale(thickness);
     }
 
     private static float computeCableHang(final Vec3 a, final Vec3 b) {
-        final double length = a.distanceTo(b);
-        final double hangFactor = Mth.clamp(length / CABLE_MAX_LENGTH, 0, 1);
-        return (float) (CABLE_HANG_MIN + (CABLE_HANG_MAX - CABLE_HANG_MIN) * hangFactor);
+        return (float) WireGeometry.hang(a.distanceTo(b));
+    }
+
+    private static Vector3f colorOf(final WireType type) {
+        return switch (type) {
+            case COPPER -> COPPER_COLOR;
+            case GOLD -> GOLD_COLOR;
+            case OPTICAL -> OPTICAL_COLOR;
+        };
     }
 
     private static float computeCableSwingAmount(final Vec3 p0, final Vec3 p1) {
