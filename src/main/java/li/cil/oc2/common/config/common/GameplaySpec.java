@@ -14,6 +14,7 @@ public class GameplaySpec {
     public final ModConfigSpec.IntValue cpuFrequencyTier2;
     public final ModConfigSpec.IntValue cpuFrequencyTier3;
     public final ModConfigSpec.IntValue cpuFrequencyTier4;
+    public final ModConfigSpec.IntValue maxBusElements;
     public final ModConfigSpec.IntValue monitorMaxWidth;
     public final ModConfigSpec.IntValue monitorMaxHeight;
     public final ModConfigSpec.IntValue monitorFps;
@@ -40,6 +41,14 @@ public class GameplaySpec {
                                 128 * 1024,
                                 4096,
                                 16 * 1024 * 1024);
+
+        maxBusElements =
+                builder.comment(
+                                "Maximum number of bus elements (cables, interfaces, devices) that"
+                                        + " a single computer can reach over one connected bus."
+                                        + " Elements beyond this limit are left out of the bus while"
+                                        + " everything else keeps working.")
+                        .defineInRange("maxBusElements", 1024, 16, 65536);
 
         monitorMaxWidth =
                 builder.comment(
@@ -105,6 +114,7 @@ public class GameplaySpec {
         Config.cpuFrequencyTier2 = cpuFrequencyTier2.get() * 1_000_000;
         Config.cpuFrequencyTier3 = cpuFrequencyTier3.get() * 1_000_000;
         Config.cpuFrequencyTier4 = cpuFrequencyTier4.get() * 1_000_000;
+        Config.maxBusElements = maxBusElements.get();
         Config.monitorMaxWidth = monitorMaxWidth.get();
         Config.monitorMaxHeight = monitorMaxHeight.get();
         Config.monitorFps = monitorFps.get();

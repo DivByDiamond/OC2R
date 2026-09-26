@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.bus.topology.OwnerResolver;
 import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
 import li.cil.oc2.common.bus.controller.event.DevicesChangedEvent;
 import li.cil.oc2.common.util.event.Event;
@@ -27,8 +28,43 @@ public class CommonDeviceBusController implements DeviceBusController {
     private final Set<Device> devices = new HashSet<>();
     private final Map<Device, Set<UUID>> deviceIds = new ConcurrentHashMap<>();
 
+    private final DeviceBusElement root;
+    private final Map<Device, DeviceBusController> occupiedDevices = new ConcurrentHashMap<>();
+
     public CommonDeviceBusController(final DeviceBusElement root, final int baseEnergyConsumption) {
+        this.root = root;
         this.manager = new BusElementManager(this, root, baseEnergyConsumption);
+    }
+
+    /**
+     * Whether this controller owns the devices of {@code element}. An element that is the root of one
+     * of its controllers always belongs to that controller (a computer's own devices are never
+     * handed to a neighbor); shared cable elements go to the controller with the lowest ownership key.
+     */
+    boolean isOwnerOf(final DeviceBusElement element) {
+        return ownerOf(element).equals(this);
+    }
+
+    private DeviceBusController ownerOf(final DeviceBusElement element) {
+        final Collection<DeviceBusController> controllers = element.getControllers();
+        for (final DeviceBusController candidate : controllers) {
+            if (candidate instanceof CommonDeviceBusController common && common.root.equals(element)) {
+                return common;
+            }
+        }
+        return OwnerResolver.owner(
+                        controllers,
+                        DeviceBusController::getOwnershipKey,
+                        Comparator.comparingInt(System::identityHashCode))
+                .orElse(this);
+    }
+
+    /**
+     * Devices this controller can reach but that are owned by another controller, with that owner.
+     * Lets tooling report "occupied by ..." instead of the device silently missing.
+     */
+    public Map<Device, DeviceBusController> getOccupiedDevices() {
+        return Collections.unmodifiableMap(occupiedDevices);
     }
 
     public void setDeviceContainersChanged() {}
@@ -55,8 +91,16 @@ public class CommonDeviceBusController implements DeviceBusController {
         onBeforeDeviceScan();
 
         final Set<Device> newDevices = new HashSet<>();
+        occupiedDevices.clear();
         final Map<Device, Set<UUID>> newDeviceIds = new ConcurrentHashMap<>();
         for (final DeviceBusElement element : manager.getElements()) {
+            if (!isOwnerOf(element)) {
+                final DeviceBusController owner = ownerOf(element);
+                for (final Device device : element.getLocalDevices()) {
+                    occupiedDevices.put(device, owner);
+                }
+                continue;
+            }
             for (final Device device : element.getLocalDevices()) {
                 newDevices.add(device);
                 element.getDeviceIdentifier(device)

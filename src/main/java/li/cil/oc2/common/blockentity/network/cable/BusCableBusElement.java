@@ -36,6 +36,9 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
 
     @Override
     public boolean canScanContinueTowards(@Nullable final Direction direction) {
+        if (owner.getFaceOverride(direction).blocksConnection()) {
+            return false;
+        }
         final ConnectionType connectionType =
                 BusCableStateProperties.getConnectionType(owner.getBlockState(), direction);
         return connectionType == ConnectionType.CABLE || connectionType == ConnectionType.INTERFACE;
@@ -43,6 +46,9 @@ final class BusCableBusElement extends AbstractBlockDeviceBusElement {
 
     @Override
     public boolean canDetectDevicesTowards(@Nullable final Direction direction) {
+        if (owner.getFaceOverride(direction).blocksConnection()) {
+            return false;
+        }
         final ConnectionType connectionType =
                 BusCableStateProperties.getConnectionType(owner.getBlockState(), direction);
         return connectionType == ConnectionType.INTERFACE;

@@ -4,36 +4,32 @@ import java.time.Duration;
 import java.util.*;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
+import li.cil.oc2.bus.topology.NetworkResolver;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.tick.TickUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 final class BusElementManager {
-    private static final int MAX_BUS_ELEMENT_COUNT = 128;
+    private static final Logger LOGGER = LogManager.getLogger();
     /** Delay before re-scanning after an incomplete bus (a neighbor returned no neighbors yet). */
     private static final int INCOMPLETE_RETRY_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(10));
-    /**
-     * Delay before re-scanning after a configuration the player must fix (bus too complex,
-     * or multiple controllers fighting over the same bus).
-     */
-    private static final int BAD_CONFIGURATION_RETRY_INTERVAL =
-            TickUtils.toTicks(Duration.ofSeconds(5));
 
     private final CommonDeviceBusController controller;
     private final DeviceBusElement root;
     private final int baseEnergyConsumption;
 
     private final Set<DeviceBusElement> elements = new HashSet<>();
-    // Scratch collections reused across scans; scans run on the server thread only.
-    private final Set<DeviceBusElement> bfsClosed = new HashSet<>();
-    private final Deque<DeviceBusElement> bfsOpen = new ArrayDeque<>();
     private final Set<DeviceBusElement> collectedElements = new HashSet<>();
     private final List<DeviceBusElement> removedElements = new ArrayList<>();
-    private final Set<DeviceBusController> otherControllers = new HashSet<>();
+    private int overflowCount;
     /**
      * Current state of the bus state machine ({@link BusState}). Only ever changed on the
      * server thread by this class: {@link #scheduleBusScan} resets to {@code SCAN_PENDING};
-     * {@link #scan} transitions to {@code INCOMPLETE}/{@code TOO_COMPLEX} while collecting
-     * elements, to {@code MULTIPLE_CONTROLLERS} when another controller is detected, and
-     * to {@code READY} on a successful scan.
+     * {@link #scan} transitions to {@code INCOMPLETE} while a neighbor cannot report its
+     * neighbors yet, and to {@code READY} on a successful scan. Sharing a bus with other
+     * controllers and exceeding the element limit are not errors: devices are assigned to
+     * one owner and elements over the limit are left out.
      */
     private BusState state = BusState.SCAN_PENDING;
     private int scanDelay;
@@ -99,14 +95,15 @@ final class BusElementManager {
             return;
         }
         final Set<DeviceBusElement> addedElements = updateElements(collectedElements);
-        if (checkOtherBusControllers()) {
-            return;
-        }
-        addedElements.remove(root);
+        notifyControllersSharing(addedElements);
         controller.scanDevices();
         updateEnergyConsumption();
         state = BusState.READY;
         controller.onAfterBusScan();
+    }
+
+    int getOverflowCount() {
+        return overflowCount;
     }
 
     private void clearElements() {
@@ -118,40 +115,26 @@ final class BusElementManager {
     }
 
     private boolean collectBusElements() {
-        bfsClosed.clear();
-        bfsOpen.clear();
-        collectedElements.clear();
-
-        bfsClosed.add(root);
-        bfsOpen.add(root);
-        collectedElements.add(root);
-
-        while (!bfsOpen.isEmpty()) {
-            final DeviceBusElement element = bfsOpen.pop();
-
-            final Optional<Collection<DeviceBusElement>> elementNeighbors = element.getNeighbors();
-            if (elementNeighbors.isEmpty()) {
-                scanDelay = INCOMPLETE_RETRY_INTERVAL;
-                state = BusState.INCOMPLETE;
-                clearElements();
-                return false;
-            }
-
-            for (final DeviceBusElement neighborElement : elementNeighbors.get()) {
-                if (neighborElement != null && bfsClosed.add(neighborElement)) {
-                    bfsOpen.add(neighborElement);
-                    collectedElements.add(neighborElement);
-                }
-            }
-
-            if (bfsClosed.size() > MAX_BUS_ELEMENT_COUNT) {
-                scanDelay = BAD_CONFIGURATION_RETRY_INTERVAL;
-                state = BusState.TOO_COMPLEX;
-                clearElements();
-                return false;
-            }
+        final NetworkResolver.Result<DeviceBusElement> result =
+                NetworkResolver.resolve(root, DeviceBusElement::getNeighbors, Config.maxBusElements);
+        if (result.incomplete()) {
+            scanDelay = INCOMPLETE_RETRY_INTERVAL;
+            state = BusState.INCOMPLETE;
+            clearElements();
+            return false;
         }
 
+        if (result.overflow().size() != overflowCount) {
+            LOGGER.warn(
+                    "Device bus of {} exceeds maxBusElements ({}); {} element(s) are left out.",
+                    root,
+                    Config.maxBusElements,
+                    result.overflow().size());
+        }
+        overflowCount = result.overflow().size();
+
+        collectedElements.clear();
+        collectedElements.addAll(result.nodes());
         return true;
     }
 
@@ -193,31 +176,26 @@ final class BusElementManager {
         return addedElements;
     }
 
-    private boolean checkOtherBusControllers() {
-        otherControllers.clear();
-        for (final DeviceBusElement element : elements) {
-            otherControllers.addAll(element.getControllers());
+    /**
+     * Asks other controllers that share newly attached elements to re-scan so they re-derive device
+     * ownership. They only notify back when their own element set changes, so this settles after one round.
+     */
+    private void notifyControllersSharing(final Set<DeviceBusElement> addedElements) {
+        for (final DeviceBusElement element : addedElements) {
+            for (final DeviceBusController other : element.getControllers()) {
+                if (!other.equals(controller)) {
+                    other.scheduleBusScan(DeviceBusController.ScanReason.BUS_CHANGE);
+                }
+            }
         }
-
-        otherControllers.remove(controller);
-
-        if (otherControllers.isEmpty()) {
-            return false;
-        }
-
-        for (final DeviceBusController otherController : otherControllers) {
-            otherController.scheduleBusScan(DeviceBusController.ScanReason.BUS_ERROR);
-        }
-
-        state = BusState.MULTIPLE_CONTROLLERS;
-        scanDelay = BAD_CONFIGURATION_RETRY_INTERVAL;
-        return true;
     }
 
     private void updateEnergyConsumption() {
         double accumulator = baseEnergyConsumption;
         for (final DeviceBusElement element : elements) {
-            accumulator += Math.max(0, element.getEnergyConsumption());
+            if (controller.isOwnerOf(element)) {
+                accumulator += Math.max(0, element.getEnergyConsumption());
+            }
         }
 
         if (accumulator > Integer.MAX_VALUE) {

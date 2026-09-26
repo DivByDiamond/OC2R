@@ -34,11 +34,13 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
     private static final String INTERFACE_NAMES_TAG_NAME = "interfaceNames";
     private static final String FACADE_TAG_NAME = "facade";
+    private static final String FACE_OVERRIDES_TAG_NAME = "faceOverrides";
 
     public final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
     public final CableEnergyStorage energy = new CableEnergyStorage();
     public long energyDistributionTick = -1;
     public long energyRedistributeTick = -1;
+    private final FaceOverride[] faceOverrides = new FaceOverride[Constants.BLOCK_FACE_COUNT];
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
@@ -48,7 +50,22 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
 
     public BusCableBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.BUS_CABLE.get(), pos, state);
+        java.util.Arrays.fill(faceOverrides, FaceOverride.AUTO);
         requestModelDataUpdate();
+    }
+
+    public FaceOverride getFaceOverride(@Nullable final Direction side) {
+        return side == null ? FaceOverride.AUTO : faceOverrides[side.get3DDataValue()];
+    }
+
+    /** Sets the override for {@code side} and re-resolves the bus if it changed. */
+    public void setFaceOverride(final Direction side, final FaceOverride override) {
+        if (faceOverrides[side.get3DDataValue()] == override) {
+            return;
+        }
+        faceOverrides[side.get3DDataValue()] = override;
+        setChanged();
+        handleConfigurationChanged(side, true);
     }
 
     public String getInterfaceName(final Direction side) {
@@ -147,6 +164,11 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(BUS_ELEMENT_TAG_NAME, busElement.save(registries));
+        final byte[] overrides = new byte[faceOverrides.length];
+        for (int i = 0; i < overrides.length; i++) {
+            overrides[i] = faceOverrides[i].toByte();
+        }
+        tag.putByteArray(FACE_OVERRIDES_TAG_NAME, overrides);
         tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
         tag.put(
                 FACADE_TAG_NAME,
@@ -159,6 +181,10 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
+        final byte[] overrides = tag.getByteArray(FACE_OVERRIDES_TAG_NAME);
+        for (int i = 0; i < faceOverrides.length; i++) {
+            faceOverrides[i] = i < overrides.length ? FaceOverride.fromByte(overrides[i]) : FaceOverride.AUTO;
+        }
         interfaceNameManager.deserialize(
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         final var facadeNbt = tag.getCompound(FACADE_TAG_NAME);

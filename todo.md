@@ -1272,6 +1272,20 @@ NeoForge сам пишет JUnit XML в `build/test-results/gameTest/*.xml`, bui
   гранях (приём из чужих модов почти бесплатно), буфер в каждом кабеле, не в сети; hub/switch
   и `NetworkConnector` выпиливаются осознанно (дальние point-to-point связи — фиче-лосс,
   записан явно, возможное продолжение отдельным под-проектом).
+- **Реализовано (ветка `feat/multiloader-stage1`, device-bus lane):** `core` — `NetworkResolver` (свежий BFS
+  без сохранённого состояния, лимит + `overflow`, `incomplete`) и `OwnerResolver` (владелец = минимальный ключ,
+  вычисляется, не хранится) с тестами; `BusElementManager` использует резолвер, лимит теперь `maxBusElements`
+  (по умолчанию 1024, конфиг) и элементы сверх лимита исключаются вместо `TOO_COMPLEX`; `MULTIPLE_CONTROLLERS`
+  больше не выставляется — несколько компьютеров делят шину, устройства достаются владельцу
+  (`DeviceBusController.getOwnershipKey`, у корневого элемента компьютера всегда свой контроллер),
+  `CommonDeviceBusController.getOccupiedDevices()` даёт «занято кем»; per-face `FaceOverride`
+  (AUTO/FORCED_ON/FORCED_OFF) сохраняется в `BusCableBlockEntity`, FORCED_OFF учитывается при обходе и
+  поиске устройств; GameTest `twoComputersShareOneBus`. `TOO_COMPLEX`/`MULTIPLE_CONTROLLERS` оставлены в
+  enum для старых сейвов/пакетов.
+- **Не сделано из §43** (намеренно, требует проверки в игре и решений): удаление
+  `NetworkConnector`/hub/switch и слияние internet-mesh в кабель; отдельная receive-only энергия на гранях;
+  тултип «занято: Computer #N» на блоке и в RPC-API гостя; INCOMPLETE-повтор по таймеру (10 с) вместо
+  события загрузки чанка; UX wrench; миграция старых миров.
 - **Не решено в этой спеке** (свои спеки позже): wrench-инструмент/UX (тег `c:wrenches`-стиль,
   сама механика — позже), миграция существующих построек с `BusCable`/`NetworkConnector`,
   шаринг устройств (кроме модели владения выше).

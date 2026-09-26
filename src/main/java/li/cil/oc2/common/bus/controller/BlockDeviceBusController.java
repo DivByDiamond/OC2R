@@ -43,6 +43,11 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
     }
 
     @Override
+    public long getOwnershipKey() {
+        return blockEntity.getBlockPos().asLong();
+    }
+
+    @Override
     public void setDeviceContainersChanged() {
         super.setDeviceContainersChanged();
         for (final ChunkLocation location : busChunks) {

@@ -18,6 +18,7 @@ public final class Config {
     public static int flashMemorySizeTier2 = 8 * Constants.MEGABYTE;
     public static int flashMemorySizeTier3 = 16 * Constants.MEGABYTE;
 
+    public static int maxBusElements = 1024;
     public static double busCableEnergyPerTick = 0.1;
     public static double busInterfaceEnergyPerTick = 0.5;
     public static int cableEnergyCapacity = 3000;

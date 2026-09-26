@@ -93,4 +93,15 @@ public interface DeviceBusController {
      * @see DeviceBusElement#getDeviceIdentifier(Device)
      */
     Set<UUID> getDeviceIdentifiers(Device device);
+
+    /**
+     * Key deciding which controller owns a device that several controllers can reach over a shared bus:
+     * the controller with the smallest key wins. Ownership is derived from the controllers currently
+     * loaded and is never stored, so it re-resolves when the owner unloads.
+     *
+     * <p>Controllers backed by a block should return a stable per-position value; the default ranks last.
+     */
+    default long getOwnershipKey() {
+        return Long.MAX_VALUE;
+    }
 }

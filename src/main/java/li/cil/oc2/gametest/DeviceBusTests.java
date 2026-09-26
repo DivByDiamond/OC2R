@@ -64,6 +64,33 @@ public final class DeviceBusTests {
             .thenSucceed();
     }
 
+    // Two computers on one cable used to freeze both in MULTIPLE_CONTROLLERS; they now share the wiring
+    // and each keeps its own devices (docs/CABLE-SYSTEM.md, "Device ownership").
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE,
+        timeoutTicks = 250)
+    public static void twoComputersShareOneBus(final GameTestHelper helper) {
+        final Player player = fakePlayer(helper);
+        placePower(helper, player);
+        final ComputerFixture first = ComputerFixture.place(helper, player, COMPUTER_POS);
+        place(helper, player, new ItemStack(Items.BUS_CABLE.get()), CABLE_POS);
+        connectInterface(helper, CABLE_POS, Direction.WEST);
+        final ComputerFixture second = ComputerFixture.place(helper, player, DEVICE_POS);
+        connectInterface(helper, CABLE_POS, Direction.EAST);
+
+        helper.startSequence()
+            .thenExecuteAfter(80, () -> {
+                final var firstState = first.virtualMachine().getBusState();
+                final var secondState = second.virtualMachine().getBusState();
+                if (firstState != li.cil.oc2.common.bus.controller.BusState.READY
+                    || secondState != li.cil.oc2.common.bus.controller.BusState.READY) {
+                    throw new GameTestAssertException(
+                        "both computers must reach READY on a shared bus: first=" + firstState
+                            + ", second=" + secondState);
+                }
+            })
+            .thenSucceed();
+    }
+
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void computerStartsWithoutBootError(final GameTestHelper helper) {
         final Player player = fakePlayer(helper);
