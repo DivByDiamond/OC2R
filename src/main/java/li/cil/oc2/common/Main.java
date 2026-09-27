@@ -19,6 +19,7 @@ import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
+import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.serialization.ceres.Serializers;
 import li.cil.oc2.common.setup.CommonSetup;
 import li.cil.oc2.common.setup.NativeLoader;
@@ -27,6 +28,7 @@ import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
+import li.cil.oc2.platform.NeoForgeMessageRegistrar;
 import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.sedna.Sedna;
 import net.neoforged.api.distmarker.Dist;
@@ -35,6 +37,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(API.MOD_ID)
 public final class Main {
@@ -79,7 +82,12 @@ public final class Main {
         }
 
         NeoForgeRegistryBridge.instance().bind(modBus);
+        modBus.addListener(Main::registerPayloads);
 
         NativeLoader.loadLibrary();
+    }
+
+    private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
+        Network.initialize(new NeoForgeMessageRegistrar(event.registrar("1")));
     }
 }

@@ -4,13 +4,13 @@ import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record NetworkTunnelLinkMessage(int containerId) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, NetworkTunnelLinkMessage> STREAM_CODEC =
@@ -30,7 +30,7 @@ public record NetworkTunnelLinkMessage(int containerId) implements AbstractMessa
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();
 
         final AbstractContainerMenu container = player.containerMenu;

@@ -6,11 +6,11 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.vm.terminal.TerminalDiff;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /** Server-authoritative terminal screen diff for a robot (see {@link TerminalDiff}). */
 public record RobotTerminalDiffMessage(int entityId, TerminalDiff.Snapshot snapshot)
@@ -38,7 +38,7 @@ public record RobotTerminalDiffMessage(int entityId, TerminalDiff.Snapshot snaps
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         MessageUtils.withClientEntity(
                 entityId,
                 Robot.class,

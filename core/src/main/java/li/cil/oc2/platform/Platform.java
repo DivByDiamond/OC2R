@@ -6,7 +6,10 @@ import java.util.ServiceLoader;
 public final class Platform {
     private static final Object INIT_LOCK = new Object();
 
+    private static final Object NETWORK_INIT_LOCK = new Object();
+
     private static volatile RegistryBridge bridge;
+    private static volatile NetworkBridge networkBridge;
 
     private Platform() {}
 
@@ -22,6 +25,20 @@ public final class Platform {
                 result = bridge;
                 if (result == null) {
                     bridge = result = load(RegistryBridge.class);
+                }
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static NetworkBridge network() {
+        NetworkBridge result = networkBridge;
+        if (result == null) {
+            synchronized (NETWORK_INIT_LOCK) {
+                result = networkBridge;
+                if (result == null) {
+                    networkBridge = result = load(NetworkBridge.class);
                 }
             }
         }

@@ -4,13 +4,13 @@ import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value)
         implements CustomPacketPayload {
@@ -43,7 +43,7 @@ public record BusInterfaceNameMessage(BlockPos pos, Direction side, String value
         return new BusInterfaceNameMessage(busCable.getBlockPos(), side, value);
     }
 
-    public void handleServerMessage(final IPayloadContext context) {
+    public void handleServerMessage(final MessageContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,
                 pos,

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.network;
 
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -10,18 +11,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class NetworkMessages {
     private NetworkMessages() {
     }
 
     public static void sendToServer(final CustomPacketPayload message) {
-        PacketDistributor.sendToServer(message);
+        Platform.network().sendToServer(message);
     }
 
     public static void sendToClient(final CustomPacketPayload message, final ServerPlayer player) {
-        PacketDistributor.sendToPlayer(player, message);
+        Platform.network().sendToPlayer(message, player);
     }
 
     public static void sendToClientsTrackingChunk(
@@ -32,7 +32,7 @@ public final class NetworkMessages {
         // out of the VM runner thread, which froze the computer in an "appears
         // on, UART never updates" state. Bail out cleanly instead.
         if (chunk.getLevel() instanceof final ServerLevel serverLevel) {
-            PacketDistributor.sendToPlayersTrackingChunk(serverLevel, chunk.getPos(), message);
+            Platform.network().sendToPlayersTrackingChunk(message, serverLevel, chunk.getPos());
             return;
         }
 
@@ -64,7 +64,7 @@ public final class NetworkMessages {
             if (!player.level().dimension().equals(hostLevel.dimension())) {
                 continue;
             }
-            PacketDistributor.sendToPlayer(player, message);
+            Platform.network().sendToPlayer(message, player);
         }
     }
 
@@ -102,6 +102,6 @@ public final class NetworkMessages {
 
     public static void sendToClientsTrackingEntity(
             final CustomPacketPayload message, final Entity entity) {
-        PacketDistributor.sendToPlayersTrackingEntity(entity, message);
+        Platform.network().sendToPlayersTrackingEntity(message, entity);
     }
 }

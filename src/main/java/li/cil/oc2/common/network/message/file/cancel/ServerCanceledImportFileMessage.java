@@ -4,11 +4,11 @@ import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.hooks.FileTransferHooks;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ServerCanceledImportFileMessage(int id) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, ServerCanceledImportFileMessage> STREAM_CODEC =
@@ -28,7 +28,7 @@ public record ServerCanceledImportFileMessage(int id) implements AbstractMessage
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         // The server notifies the client that an import request was fulfilled (or aborted on the
         // server side), so the client should close an open file chooser for that import without
         // sending a cancellation back to the server.

@@ -3,6 +3,7 @@ package li.cil.oc2.common.network.util;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -10,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public final class MessageUtils {
     /**
@@ -22,7 +22,7 @@ public final class MessageUtils {
     private static final double MAX_BLOCK_INTERACTION_DISTANCE = 8;
 
     public static <T extends BlockEntity> void withNearbyServerBlockEntityForInteraction(
-            final IPayloadContext context,
+            final MessageContext context,
             final BlockPos pos,
             final Class<T> type,
             final BiConsumer<ServerPlayer, T> callback) {
@@ -36,7 +36,7 @@ public final class MessageUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends BlockEntity> void withNearbyServerBlockEntity(
-            final IPayloadContext context,
+            final MessageContext context,
             final BlockPos pos,
             final Class<T> type,
             final BiConsumer<ServerPlayer, T> callback) {
@@ -60,7 +60,7 @@ public final class MessageUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends Entity> void withServerEntity(
-            final IPayloadContext context,
+            final MessageContext context,
             final int id,
             final Class<T> type,
             final Consumer<T> callback) {
@@ -78,7 +78,7 @@ public final class MessageUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends Entity> void withNearbyServerEntity(
-            final IPayloadContext context,
+            final MessageContext context,
             final int id,
             final Class<T> type,
             final Consumer<T> callback) {

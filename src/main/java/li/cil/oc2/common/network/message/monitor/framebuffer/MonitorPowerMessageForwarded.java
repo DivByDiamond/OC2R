@@ -4,12 +4,12 @@ import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record MonitorPowerMessageForwarded(BlockPos pos, boolean power)
         implements CustomPacketPayload {
@@ -35,7 +35,7 @@ public record MonitorPowerMessageForwarded(BlockPos pos, boolean power)
         this(monitor.getBlockPos(), power);
     }
 
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 MonitorBlockEntity.class,

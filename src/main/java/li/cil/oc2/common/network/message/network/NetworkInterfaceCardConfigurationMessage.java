@@ -4,6 +4,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.network.NetworkInterfaceCardItem;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -14,7 +15,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record NetworkInterfaceCardConfigurationMessage(
         InteractionHand hand, Direction side, boolean value) implements AbstractMessage {
@@ -40,7 +40,7 @@ public record NetworkInterfaceCardConfigurationMessage(
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         final ServerPlayer player = (ServerPlayer) context.player();
 
         final ItemStack itemStack = player.getItemInHand(hand);
