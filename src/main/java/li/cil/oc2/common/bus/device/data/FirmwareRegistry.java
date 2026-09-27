@@ -35,9 +35,9 @@ public final class FirmwareRegistry {
         NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
-    @SuppressWarnings("unused")
+    @Nullable
     public static ResourceLocation getKey(final Firmware firmware) {
-        return Registries.FIRMWARE.location();
+        return REGISTRY.getKey(firmware);
     }
 
     @Nullable

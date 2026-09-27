@@ -11,6 +11,7 @@ import li.cil.oc2.common.tags.ItemTags;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,10 +19,11 @@ import net.neoforged.neoforge.registries.NewRegistryEvent;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class DeviceTypes {
-    // Pending migration (docs/roadmap/multiloader.md §42): unlike Blocks/Items this still goes
-    // through NeoForge's DeferredRegister directly instead of the core RegistryBridge, and no
-    // caller ever binds DEVICE_TYPES to the mod bus, so the registration is effectively dead
-    // (open §42 item).
+    // Still goes through NeoForge's DeferredRegister directly instead of the core
+    // RegistryBridge (docs/roadmap/multiloader.md §42): DeviceType.REGISTRY is public API,
+    // already created eagerly by the interface field below, so switching this to
+    // Platform.registries().createRegistry() would create a second, disconnected registry
+    // instead of reusing it. Pending a real migration that also touches the api/ field.
     private static final DeferredRegister<DeviceType> DEVICE_TYPES =
             DeferredRegister.create(DeviceType.REGISTRY, API.MOD_ID);
 
@@ -51,6 +53,12 @@ public final class DeviceTypes {
     @SubscribeEvent // on the mod event bus
     public static void registerRegistries(NewRegistryEvent event) {
         event.register(DeviceType.REGISTRY);
+    }
+
+    /** Binds {@link #DEVICE_TYPES} to the mod bus; without this call its entries are never
+     * actually inserted into {@link DeviceType#REGISTRY} (see the field's comment). */
+    public static void initialize(final IEventBus modBus) {
+        DEVICE_TYPES.register(modBus);
     }
 
     private static DeviceType register(final TagKey<Item> tag) {

@@ -6,6 +6,7 @@ import li.cil.oc2.client.manual.Manuals;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.bus.device.DeviceTypes;
 import li.cil.oc2.common.bus.device.data.BlockDeviceDataRegistry;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
@@ -66,6 +67,7 @@ public final class Main {
 
         ProviderRegistry.initialize(modBus);
 
+        DeviceTypes.initialize(modBus);
         BlockDeviceDataRegistry.initialize(modBus);
         FirmwareRegistry.initialize(modBus);
 
