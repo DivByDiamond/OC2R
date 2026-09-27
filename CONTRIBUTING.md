@@ -12,23 +12,29 @@
 ## Project Layout
 
 ```
+core/src/main/java/li/cil/oc2/
+  platform/  - Loader-independent registry/platform bridge (no NeoForge/Fabric dependency)
+  bus/       - Loader-independent device bus topology
+  network/   - Loader-independent network geometry/math
+
 src/main/java/li/cil/oc2/
-  api/       — Public API (do not change without discussion!)
-  client/    — Client-side only (rendering, GUI)
-  common/    — Shared logic (blocks, entities, VM, networking, bus)
-  data/      — Data generators (blockstates, recipes, loot tables)
-  jcodec/    — Bundled H.264 library (do not touch)
+  api/       - Public API (do not change without discussion!)
+  client/    - Client-side only (rendering, GUI)
+  common/    - Shared logic (blocks, entities, VM, networking, bus)
+  data/      - Data generators (blockstates, recipes, loot tables)
+  jcodec/    - Bundled H.264 library (do not touch)
+  platform/  - NeoForge implementation of the core/platform bridge
 ```
 
-See [docs/SRC_STRUCTURE.md](docs/SRC_STRUCTURE.md) for a full breakdown.
+See [docs/SRC_STRUCTURE.md](docs/SRC_STRUCTURE.md) for a full breakdown, and [docs/MULTILOADER.md](docs/MULTILOADER.md) for why `core` exists.
 
 ## PR Process
 
 1. Fork the repository
-2. Create a branch from `1.21.1`
+2. Create a branch from `work`
 3. Make changes with meaningful commits
 4. Ensure `./gradlew build` passes
-5. Open a Pull Request targeting `1.21.1`
+5. Open a Pull Request targeting `work`
 
 ## Commit Messages
 
@@ -42,6 +48,18 @@ docs: update networking docs
 test: add Ipv4Space extended tests
 ```
 
+## AI Tool Disclosure
+
+If you used an AI tool (Claude, ChatGPT, Copilot, Cursor, etc.) to write or review any part of your contribution, say so in the PR description. Add a short section like:
+
+```
+## AI tools used
+- Claude: drafted the initial NetworkResolver implementation
+- Copilot: autocomplete throughout
+```
+
+This is not a reason to reject a PR - it just needs review with that in mind, the same way any external code needs a source and a reviewer who checked it.
+
 ## Before Submitting
 
 - `./gradlew build` passes
@@ -49,6 +67,7 @@ test: add Ipv4Space extended tests
 - Public API has JavaDoc
 - ≤200 lines per file, ≤4 files per folder
 - No SPDX headers
+- AI tool usage disclosed in the PR description, if any was used
 
 ## Issues
 

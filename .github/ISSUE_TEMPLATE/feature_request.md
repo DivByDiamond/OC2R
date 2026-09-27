@@ -17,3 +17,6 @@ What else have you considered?
 
 **Additional context**
 Links, code examples, etc.
+
+**Checklist**
+- [ ] I searched existing issues and this was not already requested
