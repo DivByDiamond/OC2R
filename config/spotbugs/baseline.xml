@@ -33210,32 +33210,6 @@
       <Message>At TerminalRegressionsTest.java:[line 126]</Message>
     </SourceLine>
   </BugInstance>
-  <BugInstance type="EI_EXPOSE_REP2" priority="2" rank="18" abbrev="EI2" category="MALICIOUS_CODE" instanceHash="e6592673df958d568526975e04de67b9" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="374">
-    <ShortMessage>May expose internal representation by incorporating reference to mutable object</ShortMessage>
-    <LongMessage>new li.cil.oc2.common.bus.controller.CommonDeviceBusController(DeviceBusElement, int) may expose internal representation by storing an externally mutable object into CommonDeviceBusController.root</LongMessage>
-    <Class classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" primary="true">
-      <SourceLine classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" start="18" end="188" sourcefile="CommonDeviceBusController.java" sourcepath="li/cil/oc2/common/bus/controller/CommonDeviceBusController.java" relSourcepath="java/li/cil/oc2/common/bus/controller/CommonDeviceBusController.java">
-        <Message>At CommonDeviceBusController.java:[lines 18-188]</Message>
-      </SourceLine>
-      <Message>In class li.cil.oc2.common.bus.controller.CommonDeviceBusController</Message>
-    </Class>
-    <Method classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" name="&lt;init&gt;" signature="(Lli/cil/oc2/api/bus/DeviceBusElement;I)V" isStatic="false" primary="true">
-      <SourceLine classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" start="34" end="37" startBytecode="0" endBytecode="217" sourcefile="CommonDeviceBusController.java" sourcepath="li/cil/oc2/common/bus/controller/CommonDeviceBusController.java" relSourcepath="java/li/cil/oc2/common/bus/controller/CommonDeviceBusController.java"/>
-      <Message>In method new li.cil.oc2.common.bus.controller.CommonDeviceBusController(DeviceBusElement, int)</Message>
-    </Method>
-    <Field classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" name="root" signature="Lli/cil/oc2/api/bus/DeviceBusElement;" isStatic="false" primary="true">
-      <SourceLine classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" sourcefile="CommonDeviceBusController.java" sourcepath="li/cil/oc2/common/bus/controller/CommonDeviceBusController.java" relSourcepath="java/li/cil/oc2/common/bus/controller/CommonDeviceBusController.java">
-        <Message>In CommonDeviceBusController.java</Message>
-      </SourceLine>
-      <Message>Field li.cil.oc2.common.bus.controller.CommonDeviceBusController.root</Message>
-    </Field>
-    <LocalVariable name="root" register="1" pc="94" role="LOCAL_VARIABLE_NAMED">
-      <Message>Local variable named root</Message>
-    </LocalVariable>
-    <SourceLine classname="li.cil.oc2.common.bus.controller.CommonDeviceBusController" primary="true" start="35" end="35" startBytecode="94" endBytecode="94" sourcefile="CommonDeviceBusController.java" sourcepath="li/cil/oc2/common/bus/controller/CommonDeviceBusController.java" relSourcepath="java/li/cil/oc2/common/bus/controller/CommonDeviceBusController.java">
-      <Message>At CommonDeviceBusController.java:[line 35]</Message>
-    </SourceLine>
-  </BugInstance>
   <BugInstance type="MS_CANNOT_BE_FINAL" priority="2" rank="18" abbrev="MS" category="MALICIOUS_CODE" instanceHash="a186d3cbde5e0d4dad0e50d81ea9b29c" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="493">
     <ShortMessage>Field isn&apos;t final and cannot be protected from malicious code</ShortMessage>
     <LongMessage>li.cil.oc2.common.config.Config.maxBusElements isn&apos;t final and cannot be protected from malicious code</LongMessage>

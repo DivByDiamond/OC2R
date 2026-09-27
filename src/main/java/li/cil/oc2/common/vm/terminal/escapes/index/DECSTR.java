@@ -27,8 +27,9 @@ import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
  *
  * <p>DECAWM: VT510-RM Table 5-9 lists DECAWM off, but xterm restores it to the resource default
  * (on); OC2R's {@link PrivateModeState} default is DECAWM=true (matching xterm), so a fresh
- * {@code PrivateModeState} matches xterm. (OC2R todo.md's claim that DECSTR preserves scroll
- * margins is incorrect — DEC and xterm both reset DECSTBM to full.)
+ * {@code PrivateModeState} matches xterm. (An earlier OC2R note claimed DECSTR preserves scroll
+ * margins; that is wrong — DEC and xterm both reset DECSTBM to full, see
+ * docs/roadmap/terminal.md §35.)
  *
  * <p>Column-width invariant: DECSTR preserves width, so the fresh {@code PrivateModeState} (which
  * clears DECCOLM) re-applies {@code DECCOLM = (width == 132)} to keep the flag and the allocated

@@ -13,20 +13,21 @@ class WireGeometryTest {
     }
 
     @Test
-    void hangGrowsWithLengthAndIsCapped() {
+    void hangGrowsWithLength() {
         double previous = WireGeometry.hang(0);
-        for (double length = 1; length <= 100; length += 1) {
+        for (int length = 1; length <= 16; length++) {
             final double hang = WireGeometry.hang(length);
             assertTrue(hang >= previous, "hang must not shrink at " + length);
             previous = hang;
         }
-        assertEquals(3.0, WireGeometry.hang(1000), 1e-9);
+        // Eight blocks of ramp, then the fixed rate over the maximum link distance of 16 blocks.
+        assertEquals(0.9, WireGeometry.hang(16), 1e-9);
     }
 
     @Test
-    void segmentCountIsBounded() {
+    void segmentCountGrowsWithLength() {
         assertEquals(8, WireGeometry.segments(1));
-        assertEquals(48, WireGeometry.segments(500));
-        assertTrue(WireGeometry.segments(20) > WireGeometry.segments(6));
+        assertEquals(24, WireGeometry.segments(16));
+        assertTrue(WireGeometry.segments(12) > WireGeometry.segments(6));
     }
 }

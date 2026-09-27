@@ -22,6 +22,7 @@ final class VirtualMachineTicker {
     void tick() {
         vm.busController.scan();
         vm.setBusState(vm.busController.getState());
+        vm.setBusOverflow(vm.busController.getBusOverflow());
         if (vm.busState != BusState.READY) return;
 
         if (vm.state.board.isRestarting()) {

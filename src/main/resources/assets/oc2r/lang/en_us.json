@@ -115,6 +115,7 @@
   "gui.oc2r.computer.bus_state.incomplete": "Bus Incomplete",
   "gui.oc2r.computer.bus_state.too_complex": "Bus Too Complex",
   "gui.oc2r.computer.bus_state.multiple_controllers": "Multiple Bus Controllers",
+  "gui.oc2r.computer.bus_overflow": "Bus too large: some devices were left out",
   "gui.oc2r.computer.error.not_enough_energy": "Not Enough Energy",
   "gui.oc2r.computer.error.missing_cpu": "Missing CPU",
   "gui.oc2r.computer.capture_input.capt": "Capture Input",

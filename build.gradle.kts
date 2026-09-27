@@ -225,7 +225,7 @@ neoForge {
 dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.7:processor")
 
-    // §170: Error Prone compiler analysis. Pinned to a version compatible with the
+    // Error Prone compiler analysis. Pinned to a version compatible with the
     // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
     errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
@@ -350,6 +350,16 @@ tasks.jar {
     }
 }
 
+java {
+    withSourcesJar()
+}
+
+tasks.named<Jar>("sourcesJar") {
+    // Published sources must cover the loader-independent core module too; the mod jar
+    // packs core classes (see tasks.jar above), so the sources jar has to as well.
+    from(project(":core").sourceSets["main"].allSource)
+}
+
 val apiJar = tasks.register<Jar>("apiJar") {
     archiveClassifier.set("api")
     from(sourceSets.main.get().allSource)
@@ -433,10 +443,10 @@ tasks.withType<Pmd>().configureEach {
     exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
 }
 
-/* ── Static analysis: SpotBugs (§169) ─────────────────────────────────────── */
+/* ── Static analysis: SpotBugs ──────────────────────────────────────────────── */
 
 spotbugs {
-    // §169: plugin 6.5.10 supports Gradle 9 (6.x line); toolVersion 4.10.3 bundles the analysis engine.
+    // Plugin 6.5.10 supports Gradle 9 (6.x line); toolVersion 4.10.3 bundles the analysis engine.
     toolVersion.set("4.10.3")
     ignoreFailures.set(false)
     showProgress.set(true)
@@ -455,9 +465,10 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
     classes = classes?.filter { !it.name.endsWith("package-info.class") }
 }
 
-/* ── Static analysis: Error Prone (§170) ─────────────────────────────────── */
+/* ── Static analysis: Error Prone ─────────────────────────────────────────── */
 
-// Error Prone is ON by default (todo.md §39 Ступень C). Override with -PenableErrorProne=false.
+// Error Prone is ON by default (docs/roadmap/quality.md §39 lint stages, Ступень C).
+// Override with -PenableErrorProne=false.
 val enableErrorProne = when (val v = project.findProperty("enableErrorProne")?.toString()) {
     null -> true // property absent -> on by default
     "" -> true // -PenableErrorProne (bare flag)
@@ -479,13 +490,13 @@ tasks.withType<JavaCompile>().configureEach {
         if (enableErrorProne) {
             allErrorsAsWarnings.set(false)
             disableWarningsInGeneratedCode.set(true)
-            // Critical checks enforced as errors (todo.md §39 Ступень C)
+            // Critical checks enforced as errors (docs/roadmap/quality.md §39 lint stages)
             error(
                 "ArrayToString", "UnusedVariable", "Finally", "DeadException",
                 "LoopConditionChecker", "EqualsIncompatibleType", "BoxedPrimitiveEquality",
                 "CompareToZero", "FormatString",
             )
-            // Noisy checks disabled: mixin/callback magic + intent (todo.md §39 Ступень C)
+            // Noisy checks disabled: mixin/callback magic + intent (docs/roadmap/quality.md §39 lint stages)
             disable(
                 "UnusedMethod", "StringSplitter", "EffectivelyPrivate",
                 // Style-only, noisy for this codebase (50+ warnings, intentional patterns)
@@ -497,7 +508,7 @@ tasks.withType<JavaCompile>().configureEach {
                 "InvalidParam", "InconsistentCapitalization",
                 "JavaDurationGetSecondsToToSeconds",
             )
-            // Exclude vendored jcodec (scheduled for removal, todo.md §40 K4), generated code,
+            // Exclude vendored jcodec (scheduled for removal, docs/roadmap/video-gpu.md §40 K4), generated code,
             // and gametest infrastructure (tested via runGameTestServer, not ErrorProne-linted),
             // consistent with checkstyle/pmd/spotbugs excludes.
             excludedPaths.set(".*[/\\\\](jcodec|generated|gametest)[/\\\\].*")
@@ -514,14 +525,21 @@ tasks.withType<JavaCompile>().configureEach {
     }
 }
 
-/* ── Lint ratchet (todo.md §39 Ступень B) ──────────────────────────────────── */
+/* ── Lint ratchet (docs/roadmap/quality.md §39 lint stages, Ступень B) ──────── */
 
 val lintBaselineFile = rootProject.file("config/lint-baseline.properties")
 
 tasks.register("lintRatchet") {
     group = "verification"
     description = "Fail if Checkstyle/PMD violation counts exceed config/lint-baseline.properties"
-    dependsOn("checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest")
+    // Core is linted by the same tools with the same configs (core/build.gradle.kts); run its
+    // tasks from here so a lone `lintRatchet` (and the CI lint job) always has fresh reports,
+    // and count them below so a single ratchet run covers both source sets.
+    dependsOn(
+        "checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest",
+        ":core:checkstyleMain", ":core:checkstyleTest", ":core:pmdMain", ":core:pmdTest",
+        ":core:spotbugsMain", ":core:spotbugsTest",
+    )
 
     val baseline = Properties()
     doFirst {
@@ -542,6 +560,11 @@ tasks.register("lintRatchet") {
             "checkstyleTest" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
             "pmdMain" to count(layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
             "pmdTest" to count(layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
+            // core module reports (core/build.gradle.kts applies the same tool configs).
+            "coreCheckstyleMain" to count(file("core/build/reports/checkstyle/main.xml"), "error"),
+            "coreCheckstyleTest" to count(file("core/build/reports/checkstyle/test.xml"), "error"),
+            "corePmdMain" to count(file("core/build/reports/pmd/main.xml"), "violation"),
+            "corePmdTest" to count(file("core/build/reports/pmd/test.xml"), "violation"),
         )
 
         var failed = false
@@ -645,7 +668,7 @@ tasks.register("gameTest") {
     }
 }
 
-// Wire lintRatchet into check (todo.md §39 Ступень B)
+// Wire lintRatchet into check (docs/roadmap/quality.md §39 lint stages, Ступень B)
 tasks.named("check") {
     dependsOn("lintRatchet")
 }

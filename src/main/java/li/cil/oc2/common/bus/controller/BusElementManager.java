@@ -14,14 +14,16 @@ final class BusElementManager {
     private static final Logger LOGGER = LogManager.getLogger();
     /** Delay before re-scanning after an incomplete bus (a neighbor returned no neighbors yet). */
     private static final int INCOMPLETE_RETRY_INTERVAL = TickUtils.toTicks(Duration.ofSeconds(10));
+    /** Scans slower than this mean a runaway maxBusElements config; warn so it stays visible. */
+    private static final long SLOW_SCAN_WARN_MILLIS = 10;
 
     private final CommonDeviceBusController controller;
     private final DeviceBusElement root;
     private final int baseEnergyConsumption;
 
     private final Set<DeviceBusElement> elements = new HashSet<>();
+    private final BusElementMembership membership;
     private final Set<DeviceBusElement> collectedElements = new HashSet<>();
-    private final List<DeviceBusElement> removedElements = new ArrayList<>();
     private int overflowCount;
     /**
      * Current state of the bus state machine ({@link BusState}). Only ever changed on the
@@ -42,6 +44,7 @@ final class BusElementManager {
         this.controller = controller;
         this.root = root;
         this.baseEnergyConsumption = baseEnergyConsumption;
+        this.membership = new BusElementMembership(controller, elements);
     }
 
     void dispose() {
@@ -91,15 +94,17 @@ final class BusElementManager {
         if (delay > 0) {
             return;
         }
-        if (!collectBusElements()) {
+        final long startNanos = System.nanoTime();
+        if (!collectBusElements(startNanos)) {
             return;
         }
-        final Set<DeviceBusElement> addedElements = updateElements(collectedElements);
-        notifyControllersSharing(addedElements);
+        final Set<DeviceBusElement> addedElements = membership.updateElements(collectedElements);
+        membership.handOverAddedElements(addedElements);
         controller.scanDevices();
         updateEnergyConsumption();
         state = BusState.READY;
         controller.onAfterBusScan();
+        warnIfSlowScan(startNanos, collectedElements.size(), overflowCount);
     }
 
     int getOverflowCount() {
@@ -109,18 +114,24 @@ final class BusElementManager {
     private void clearElements() {
         for (final DeviceBusElement element : elements) {
             element.removeController(controller);
+            // Wake the remaining controllers: we may have been the bridge between their buses, so
+            // their devices stay ownerless until someone re-scans. Self is already removed.
+            for (final DeviceBusController other : element.getControllers()) {
+                other.scheduleBusScan(DeviceBusController.ScanReason.BUS_CHANGE);
+            }
         }
         elements.clear();
         controller.scanDevices();
     }
 
-    private boolean collectBusElements() {
+    private boolean collectBusElements(final long startNanos) {
         final NetworkResolver.Result<DeviceBusElement> result =
                 NetworkResolver.resolve(root, DeviceBusElement::getNeighbors, Config.maxBusElements);
         if (result.incomplete()) {
             scanDelay = INCOMPLETE_RETRY_INTERVAL;
             state = BusState.INCOMPLETE;
             clearElements();
+            warnIfSlowScan(startNanos, result.nodes().size(), result.overflow().size());
             return false;
         }
 
@@ -138,55 +149,12 @@ final class BusElementManager {
         return true;
     }
 
-    /**
-     * Diffs the currently attached elements against the elements found by the last scan.
-     *
-     * <p>Removed elements are detached from this controller and, importantly, all their
-     * <em>remaining</em> controllers are asked to re-scan ({@code BUS_CHANGE}): the element
-     * may have been the bridge that connected those controllers' buses, so their topology
-     * may have changed too. Returns the set of newly added elements (still including the
-     * root; callers remove it if they do not want it scanned for devices).
-     */
-    private Set<DeviceBusElement> updateElements(final Set<DeviceBusElement> newElements) {
-        removedElements.clear();
-        for (final DeviceBusElement element : elements) {
-            if (!newElements.contains(element)) {
-                removedElements.add(element);
-            }
-        }
-        elements.removeAll(removedElements);
-
-        for (final DeviceBusElement removedElement : removedElements) {
-            removedElement.removeController(controller);
-            for (final DeviceBusController otherController : removedElement.getControllers()) {
-                otherController.scheduleBusScan(DeviceBusController.ScanReason.BUS_CHANGE);
-            }
-        }
-
-        final Set<DeviceBusElement> addedElements = new HashSet<>();
-        for (final DeviceBusElement element : newElements) {
-            if (elements.add(element)) {
-                addedElements.add(element);
-            }
-        }
-
-        for (final DeviceBusElement element : addedElements) {
-            element.addController(controller);
-        }
-        return addedElements;
-    }
-
-    /**
-     * Asks other controllers that share newly attached elements to re-scan so they re-derive device
-     * ownership. They only notify back when their own element set changes, so this settles after one round.
-     */
-    private void notifyControllersSharing(final Set<DeviceBusElement> addedElements) {
-        for (final DeviceBusElement element : addedElements) {
-            for (final DeviceBusController other : element.getControllers()) {
-                if (!other.equals(controller)) {
-                    other.scheduleBusScan(DeviceBusController.ScanReason.BUS_CHANGE);
-                }
-            }
+    private void warnIfSlowScan(final long startNanos, final int nodeCount, final int overflow) {
+        final long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000L;
+        if (elapsedMillis >= SLOW_SCAN_WARN_MILLIS) {
+            LOGGER.warn(
+                    "Bus scan of {} took {} ms: {} node(s), {} over the maxBusElements limit of {}.",
+                    root, elapsedMillis, nodeCount, overflow, Config.maxBusElements);
         }
     }
 

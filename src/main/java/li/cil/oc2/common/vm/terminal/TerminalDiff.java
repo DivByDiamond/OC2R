@@ -197,7 +197,7 @@ public final class TerminalDiff {
      * (see {@link Terminal#recordNetworkShift}) — must ride along too. Previously {@code capture}
      * discarded {@code dirty.rows()} outright on a full refresh in favor of just the visible
      * window, so the client's off-screen scrollback copy silently diverged from server state and
-     * never self-healed (documented as accepted/bounded degradation in todo.md §46 — this closes
+     * never self-healed (documented as accepted/bounded degradation in docs/roadmap/done.md §46 — this closes
      * it: the extra rows now ship with the same full-refresh diff instead of being dropped).
      */
     private static int[] fullRefreshRows(final Terminal terminal, final int... extraRows) {

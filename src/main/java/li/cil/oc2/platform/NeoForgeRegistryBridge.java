@@ -111,12 +111,23 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
 
     @Override
     public void addItemAlias(final String namespace, final ResourceLocation oldId, final ResourceLocation target) {
-        itemRegisters.computeIfAbsent(namespace, DeferredRegister::createItems).addAlias(oldId, target);
+        lock.lock();
+        try {
+            itemRegisters.computeIfAbsent(namespace, DeferredRegister::createItems).addAlias(oldId, target);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public List<BlockHolder<?>> blocks(final String namespace) {
-        return List.copyOf(blockHolders.getOrDefault(namespace, List.of()));
+        lock.lock();
+        try {
+            // Copy under the lock: registerBlock appends to the same list while it is being read.
+            return List.copyOf(blockHolders.getOrDefault(namespace, List.of()));
+        } finally {
+            lock.unlock();
+        }
     }
 
     /** Attaches every register created so far to {@code modBus}; safe to call repeatedly. */

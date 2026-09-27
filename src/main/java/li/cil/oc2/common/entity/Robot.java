@@ -60,7 +60,11 @@ public final class Robot extends AbstractRobotEntity
         movementController = new RobotMovementController(this);
         final CommonDeviceBusController busController =
                 new CommonDeviceBusController(
-                        robotInventory.getBusElement(), Config.robotEnergyPerTick);
+                        robotInventory.getBusElement(),
+                        Config.robotEnergyPerTick,
+                        // UUID at call time: Entity.load() overwrites the id after construction,
+                        // so a key captured here would go stale and flip ownership on restart.
+                        () -> getUUID().getMostSignificantBits());
         virtualMachine = new RobotVirtualMachine(this, busController, terminal, movementController);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
         animationState =

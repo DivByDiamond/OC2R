@@ -10,6 +10,7 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.blockentity.OverlayRenderer;
 import li.cil.oc2.common.block.computer.ComputerBlock;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
+import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -37,6 +38,8 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
     public static final ResourceLocation OVERLAY_TERMINAL_LOCATION =
             ResourceLocation.fromNamespaceAndPath(
                     API.MOD_ID, "block/computer/computer_overlay_terminal");
+    /** Blink period of the status light while the bus runs but left elements out. */
+    private static final int OVERFLOW_BLINK_PERIOD_MS = 1000;
 
     static final Cache<Terminal, RendererView> rendererViews =
             CacheBuilder.newBuilder()
@@ -136,17 +139,28 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
             final ComputerBlockEntity terminalSource,
             final Matrix4f matrix,
             final MultiBufferSource bufferSource) {
-        switch (terminalSource.getVirtualMachine().getRunState()) {
+        final VirtualMachine vm = terminalSource.getVirtualMachine();
+        // The bus runs with the elements that fit; blink the status light (same period the old
+        // TOO_COMPLEX state used) so a partial bus is never silent, on top of the normal overlay.
+        final boolean overflowed = vm.getBusOverflow() > 0;
+        switch (vm.getRunState()) {
             case STOPPED:
+                if (overflowed) {
+                    OverlayRenderer.renderStatus(matrix, bufferSource, OVERFLOW_BLINK_PERIOD_MS);
+                }
                 break;
             case LOADING_DEVICES:
-                OverlayRenderer.renderStatus(matrix, bufferSource);
+                OverlayRenderer.renderStatus(
+                        matrix, bufferSource, overflowed ? OVERFLOW_BLINK_PERIOD_MS : 0);
                 break;
             case RUNNING:
                 OverlayRenderer.renderPower(matrix, bufferSource);
+                if (overflowed) {
+                    OverlayRenderer.renderStatus(matrix, bufferSource, OVERFLOW_BLINK_PERIOD_MS);
+                }
                 break;
             default:
-                throw new AssertionError(terminalSource.getVirtualMachine().getRunState());
+                throw new AssertionError(vm.getRunState());
         }
     }
 

@@ -97,6 +97,7 @@
   "gui.oc2r.computer.bus_state.incomplete": "バスが未接続",
   "gui.oc2r.computer.bus_state.too_complex": "バスが複雑すぎる",
   "gui.oc2r.computer.bus_state.multiple_controllers": "複数のバスコントローラー",
+  "gui.oc2r.computer.bus_overflow": "バスが大きすぎるため、一部のデバイスが切り離されました",
   "gui.oc2r.computer.error.not_enough_energy": "電力不足",
   "gui.oc2r.computer.error.missing_cpu": "CPUが存在しない",
   "gui.oc2r.computer.capture_input.capt": "入力を取得",

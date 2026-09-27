@@ -57,6 +57,7 @@ public final class Constants {
             key("gui.{mod}.computer.bus_state.too_complex");
     public static final String COMPUTER_BUS_STATE_MULTIPLE_CONTROLLERS =
             key("gui.{mod}.computer.bus_state.multiple_controllers");
+    public static final String COMPUTER_BUS_OVERFLOW = key("gui.{mod}.computer.bus_overflow");
     public static final String COMPUTER_ERROR_NOT_ENOUGH_ENERGY =
             key("gui.{mod}.computer.error.not_enough_energy");
     public static final String COMPUTER_ERROR_NOT_CONNECTED =

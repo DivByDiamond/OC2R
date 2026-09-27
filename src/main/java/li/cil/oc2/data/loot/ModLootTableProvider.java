@@ -67,8 +67,12 @@ public final class ModLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
+            // Touching Blocks first runs its static initializers, which are what fill the
+            // registry bridge. blocks() snapshots the holder list, so the class must be
+            // initialized before that call, not lazily inside the filter below.
+            final Block busCable = Blocks.BUS_CABLE.get();
             return Platform.registries().blocks(API.MOD_ID).stream()
-                    .filter(blockRegObj -> !blockRegObj.get().equals(Blocks.BUS_CABLE.get()))
+                    .filter(blockRegObj -> !blockRegObj.get().equals(busCable))
                     .<Block>map(BlockHolder::get)
                     .collect(Collectors.toList());
         }

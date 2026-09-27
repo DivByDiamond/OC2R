@@ -99,7 +99,11 @@ public interface DeviceBusController {
      * the controller with the smallest key wins. Ownership is derived from the controllers currently
      * loaded and is never stored, so it re-resolves when the owner unloads.
      *
-     * <p>Controllers backed by a block should return a stable per-position value; the default ranks last.
+     * <p>Controllers backed by a block should return a stable per-position value; the default ranks
+     * last. The key must be stable across restarts, i.e. derived from persisted identity (a block
+     * position, an entity UUID read at call time) &mdash; an unstable key makes ownership flip
+     * between controllers from one session to the next. Ties are broken by an arbitrary but
+     * session-stable discriminator chosen by the implementation.
      */
     default long getOwnershipKey() {
         return Long.MAX_VALUE;

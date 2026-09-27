@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -32,8 +31,8 @@ public final class NetworkCableItem extends ModItem {
     public InteractionResultHolder<ItemStack> use(
             final Level level, final Player player, final InteractionHand hand) {
         if (player.isShiftKeyDown()) {
-            if (player instanceof final ServerPlayer serverPlayer) {
-                final CompoundTag persistentData = serverPlayer.getPersistentData();
+            if (!level.isClientSide()) {
+                final CompoundTag persistentData = player.getPersistentData();
                 persistentData.remove(LINK_START_TAG_NAME);
             }
 
@@ -63,9 +62,7 @@ public final class NetworkCableItem extends ModItem {
             return super.useOn(context);
         }
 
-        if (!level.isClientSide()
-                && player instanceof final ServerPlayer serverPlayer
-                && handleServerUse(serverPlayer, level, currentPos, currentConnector, stack)) {
+        if (!level.isClientSide() && handleServerUse(player, level, currentPos, currentConnector, stack)) {
             return super.useOn(context);
         }
 
@@ -73,20 +70,20 @@ public final class NetworkCableItem extends ModItem {
     }
 
     private boolean handleServerUse(
-            final ServerPlayer serverPlayer,
+            final Player player,
             final Level level,
             final BlockPos currentPos,
             final NetworkConnectorBlockEntity currentConnector,
             final ItemStack stack) {
-        final CompoundTag persistentData = serverPlayer.getPersistentData();
+        final CompoundTag persistentData = player.getPersistentData();
         final Optional<BlockPos> startPos =
                 NbtUtils.readBlockPos(persistentData, LINK_START_TAG_NAME);
         persistentData.remove(LINK_START_TAG_NAME);
         if (startPos.isEmpty() || Objects.equals(startPos.get(), currentPos)) {
-            beginLink(persistentData, currentPos, currentConnector, serverPlayer);
+            beginLink(persistentData, currentPos, currentConnector, player);
         } else {
             return completeLink(
-                    level, startPos.get(), currentConnector, serverPlayer, stack, persistentData);
+                    level, startPos.get(), currentConnector, player, stack, persistentData);
         }
         return false;
     }
@@ -96,7 +93,9 @@ public final class NetworkCableItem extends ModItem {
             final BlockPos currentPos,
             final NetworkConnectorBlockEntity currentConnector,
             final Player player) {
-        if (currentConnector.canConnectMore()) {
+        // A full connector must still be able to start a link so an existing one can be removed;
+        // completeLink reports FULL if the second click would add a new link.
+        if (currentConnector.canConnectMore() || !currentConnector.getConnectedPositions().isEmpty()) {
             persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(currentPos));
             notifyPlayer(player, Constants.CONNECTOR_LINK_STARTED, SoundEvents.LEASH_KNOT_PLACE, 0.6f);
         } else {
@@ -118,8 +117,10 @@ public final class NetworkCableItem extends ModItem {
         }
 
         if (startConnector.getConnectedPositions().contains(currentConnector.getBlockPos())) {
-            // Using the cable on two connectors that are already linked removes that link.
-            NetworkConnectorBlockEntity.disconnect(startConnector, currentConnector);
+            // Using the cable on two connectors that are already linked removes that link. The
+            // cable drops only in survival: a creative player never paid one for this link.
+            NetworkConnectorBlockEntity.disconnect(
+                    startConnector, currentConnector, !player.isCreative());
             return handleConnectionResult(
                     ConnectionResult.DISCONNECTED, startPos, player, stack, persistentData);
         }

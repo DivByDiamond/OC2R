@@ -127,7 +127,7 @@ public final class InternetManagerImpl implements InternetManager {
             adapter.sendEthernetFrame(received);
             // Adapters that retain the frame copy it themselves (borrowed-array contract);
             // once sendEthernetFrame returns, nobody holds a reference and the buffer can
-            // be recycled for the next receive cycle (todo.md §38 П7).
+            // be recycled for the next receive cycle (docs/roadmap/done.md §38 P7).
             connection.recycleFrame(received);
         }
         for (;;) {

@@ -10,6 +10,18 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
 public final class ItemGroup {
+    private ItemGroup() {
+    }
+
+    /**
+     * Forces this class to load. The tab is registered from the static initializer below, and
+     * the registry bridge only sees registrations made before it is bound, so Main must call
+     * this before {@code bind()} - nothing else references the class.
+     */
+    public static void initialize() {
+        // Intentionally empty: loading the class is what registers COMMON_TAB.
+    }
+
     @SuppressWarnings("unused")
     public static final Supplier<CreativeModeTab> COMMON_TAB =
             Platform.registries().register(

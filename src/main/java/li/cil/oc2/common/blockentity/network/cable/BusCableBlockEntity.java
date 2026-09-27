@@ -1,7 +1,5 @@
 package li.cil.oc2.common.blockentity.network.cable;
 
-import static java.util.Objects.requireNonNull;
-
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -11,20 +9,17 @@ import li.cil.oc2.common.blockentity.network.cable.facade.FacadeManager;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeType;
 import li.cil.oc2.common.blockentity.network.cable.facade.InterfaceNameManager;
 import li.cil.oc2.common.blockentity.network.cable.facade.NeighborListener;
-import li.cil.oc2.common.bus.element.AbstractBlockDeviceBusElement;
-import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.blockentity.network.cable.faceoverride.FaceOverride;
+import li.cil.oc2.common.blockentity.network.cable.faceoverride.FaceOverrides;
 import li.cil.oc2.common.energy.CableEnergyStorage;
 import li.cil.oc2.common.energy.EnergyNetworkCache;
 import li.cil.oc2.common.energy.EnergyTransferManager;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
-import li.cil.oc2.common.util.scheduler.ServerScheduler;
-import li.cil.oc2.common.util.world.level.LevelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,11 +31,11 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     private static final String FACADE_TAG_NAME = "facade";
     private static final String FACE_OVERRIDES_TAG_NAME = "faceOverrides";
 
-    public final AbstractBlockDeviceBusElement busElement = new BusCableBusElement(this);
+    public final BusCableBusElement busElement = new BusCableBusElement(this);
     public final CableEnergyStorage energy = new CableEnergyStorage();
     public long energyDistributionTick = -1;
     public long energyRedistributeTick = -1;
-    private final FaceOverride[] faceOverrides = new FaceOverride[Constants.BLOCK_FACE_COUNT];
+    private final FaceOverrides faceOverrides = new FaceOverrides();
     final FacadeManager facadeManager = new FacadeManager(this);
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
@@ -50,20 +45,18 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
 
     public BusCableBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.BUS_CABLE.get(), pos, state);
-        java.util.Arrays.fill(faceOverrides, FaceOverride.AUTO);
         requestModelDataUpdate();
     }
 
     public FaceOverride getFaceOverride(@Nullable final Direction side) {
-        return side == null ? FaceOverride.AUTO : faceOverrides[side.get3DDataValue()];
+        return faceOverrides.get(side);
     }
 
     /** Sets the override for {@code side} and re-resolves the bus if it changed. */
     public void setFaceOverride(final Direction side, final FaceOverride override) {
-        if (faceOverrides[side.get3DDataValue()] == override) {
+        if (!faceOverrides.set(side, override)) {
             return;
         }
-        faceOverrides[side.get3DDataValue()] = override;
         setChanged();
         handleConfigurationChanged(side, true);
     }
@@ -105,6 +98,10 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     public void handleConfigurationChanged(
             @Nullable final Direction side, final boolean neighborConnectivityChanged) {
         if (side != null) {
+            // Any change of this side's configuration (connection type toggled by the block state
+            // property, face override set by setFaceOverride) also discards that side's interface
+            // name: the name is a synthetic device advertised behind this side, and it must not
+            // outlive the configuration it was defined for.
             setInterfaceName(side, "");
             if (level != null) level.invalidateCapabilities(getBlockPos());
             // scheduleScan() below only re-walks bus TOPOLOGY (cable-to-cable/computer BFS); it
@@ -132,15 +129,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
         final CompoundTag tag = super.getUpdateTag(registries);
         tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
-        if (facadeManager.getFacade().equals(ItemStack.EMPTY)) {
-            tag.put(FACADE_TAG_NAME, new CompoundTag());
-        } else {
-            tag.put(
-                    FACADE_TAG_NAME,
-                    ItemStack.CODEC
-                            .encodeStart(NbtOps.INSTANCE, facadeManager.getFacade())
-                            .getOrThrow());
-        }
+        tag.put(FACADE_TAG_NAME, facadeManager.serialize());
         return tag;
     }
 
@@ -148,13 +137,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
         interfaceNameManager.deserialize(
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
-        final var facadeNbt = tag.getCompound(FACADE_TAG_NAME);
-        if (!facadeNbt.isEmpty()) {
-            facadeManager.setFacadeDirectly(
-                    ItemStack.CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
-        } else {
-            facadeManager.setFacadeDirectly(ItemStack.EMPTY);
-        }
+        facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
         // Model data is built from the facade; a client that starts tracking must
         // rebuild it, otherwise the cable renders without the facade.
         requestModelDataUpdate();
@@ -164,36 +147,19 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(BUS_ELEMENT_TAG_NAME, busElement.save(registries));
-        final byte[] overrides = new byte[faceOverrides.length];
-        for (int i = 0; i < overrides.length; i++) {
-            overrides[i] = faceOverrides[i].toByte();
-        }
-        tag.putByteArray(FACE_OVERRIDES_TAG_NAME, overrides);
+        faceOverrides.save(tag, FACE_OVERRIDES_TAG_NAME);
         tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
-        tag.put(
-                FACADE_TAG_NAME,
-                ItemStack.OPTIONAL_CODEC
-                        .encodeStart(NbtOps.INSTANCE, facadeManager.getFacade())
-                        .getOrThrow());
+        tag.put(FACADE_TAG_NAME, facadeManager.serialize());
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
-        final byte[] overrides = tag.getByteArray(FACE_OVERRIDES_TAG_NAME);
-        for (int i = 0; i < faceOverrides.length; i++) {
-            faceOverrides[i] = i < overrides.length ? FaceOverride.fromByte(overrides[i]) : FaceOverride.AUTO;
-        }
+        faceOverrides.load(tag, FACE_OVERRIDES_TAG_NAME);
         interfaceNameManager.deserialize(
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
-        final var facadeNbt = tag.getCompound(FACADE_TAG_NAME);
-        try {
-            facadeManager.setFacadeDirectly(
-                    ItemStack.OPTIONAL_CODEC.parse(NbtOps.INSTANCE, facadeNbt).getOrThrow());
-        } catch (final IllegalStateException e) {
-            facadeManager.setFacadeDirectly(ItemStack.EMPTY);
-        }
+        facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
         requestModelDataUpdate();
     }
 
@@ -209,7 +175,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             neighborListeners[side.get3DDataValue()] = listener;
             serverLevel.registerCapabilityListener(getBlockPos().relative(side), listener);
         }
-        scheduleLateLoad();
+        busElement.scheduleLateLoad();
         requestModelDataUpdate();
     }
 
@@ -218,31 +184,5 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         super.unloadServer(isRemove);
         EnergyNetworkCache.invalidate();
         if (isRemove) busElement.setRemoved();
-    }
-
-    private void scheduleLateLoad() {
-        assert level != null;
-        ServerScheduler.schedule(
-                level,
-                () -> {
-                    if (!isValid()) return;
-                    final var world = requireNonNull(getLevel());
-                    final var pos = getBlockPos();
-                    for (final var direction : Constants.DIRECTIONS) {
-                        busElement.updateDevicesForNeighbor(direction);
-                        final var neighborPos = pos.relative(direction);
-                        final var blockEntity =
-                                LevelUtils.getBlockEntityIfChunkExists(world, neighborPos);
-                        if (blockEntity == null) continue;
-                        final var capability =
-                                world.getCapability(
-                                        Capabilities.DeviceBusElement.BLOCK,
-                                        neighborPos,
-                                        null,
-                                        blockEntity,
-                                        direction.getOpposite());
-                        if (capability != null) capability.scheduleScan();
-                    }
-                });
     }
 }

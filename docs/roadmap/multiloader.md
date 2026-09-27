@@ -11,7 +11,7 @@ FML/bus the rest), so a platform abstraction is required.
 Stages:
 - [x] **Stage 1: registries** (branch `feat/multiloader-stage1`, implemented, **done on branch, pending merge**): module `core` (depends only on vanilla Minecraft via NeoForm, no loader) with `li.cil.oc2.platform`:
   `RegistryBridge` (`register`, `registerBlock/Item`, `blocks`, `addItemAlias`, `createRegistry`), `Platform` (ServiceLoader), `BlockHolder`/`ItemHolder`; implementation `NeoForgeRegistryBridge`. Migrated to the bridge:
-  `Blocks`, `Items`, `BlockEntities`, `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `ItemGroup`, `DataComponents`, firmware, block-device-data, providers. Not migrated: `DeviceTypes` and the client
+  `Blocks`, `Items`, `BlockEntities`, `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `ItemGroup`, `DataComponents`, firmware, block-device-data, providers. Not migrated: `DeviceTypes`, `RegistryUtils` (both still on NeoForge `DeferredRegister`) and the client
   `Manuals`. The jar contains `core` classes; lint, tests and `gameTest` (15/15) are green. Deviation from the spec: sources were NOT moved into `core/`/`neoforge/` (the root project stays the NeoForge module): about 230 NeoForge files
   cannot live in `core` without NeoForge. `runData` fails on `Missing loottable 'oc2r:blocks/speaker'`, reproducible on `work` as well.
 - Note: the original stage-1 statement (`core`/`neoforge` Gradle split without behavior changes + registries as a model subsystem) is superseded by the implemented variant above.

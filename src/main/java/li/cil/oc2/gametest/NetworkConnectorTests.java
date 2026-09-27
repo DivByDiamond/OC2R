@@ -5,7 +5,9 @@ package li.cil.oc2.gametest;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -112,7 +114,75 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void portLimitRefusesAdditionalLink(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        final int ports = Config.networkConnectorPorts;
+        TestSupport.assertTrue(helper, "peers below cover exactly the 2..8 range of the config",
+            ports >= 2 && ports <= 8);
+        final NetworkConnectorBlockEntity hub = connectorAt(helper, player, TestSupport.CABLE_POS);
+
+        // Eight mutually unobstructed neighbours of the hub, then one further peer. The port
+        // limit is validated before distance and line of sight, so the final attempt reports
+        // FAILURE_FULL even though that peer sits behind an intervening connector.
+        final BlockPos[] peers = new BlockPos[] {
+            new BlockPos(2, TestSupport.WORK_Y, 1), new BlockPos(3, TestSupport.WORK_Y, 1),
+            new BlockPos(4, TestSupport.WORK_Y, 1), new BlockPos(2, TestSupport.WORK_Y, 2),
+            new BlockPos(4, TestSupport.WORK_Y, 2), new BlockPos(2, TestSupport.WORK_Y, 3),
+            new BlockPos(3, TestSupport.WORK_Y, 3), new BlockPos(4, TestSupport.WORK_Y, 3),
+            new BlockPos(TestSupport.CABLE_POS.getX(), TestSupport.WORK_Y,
+                TestSupport.CABLE_POS.getZ() + 4),
+        };
+
+        for (int i = 0; i <= ports; i++) {
+            final NetworkConnectorBlockEntity peer = connectorAt(helper, player, peers[i]);
+            final ConnectionResult result = NetworkConnectorBlockEntity.connect(hub, peer);
+            if (i < ports) {
+                if (result != ConnectionResult.SUCCESS && result != ConnectionResult.ALREADY_CONNECTED) {
+                    throw new GameTestAssertException("link " + (i + 1) + " should be accepted, got " + result);
+                }
+            } else if (result != ConnectionResult.FAILURE_FULL) {
+                throw new GameTestAssertException("link " + (i + 1) + " should be refused as full, got " + result);
+            }
+        }
+
+        TestSupport.assertEquals(helper, "hub should hold exactly its port limit of links",
+            ports, hub.getConnectedPositions().size());
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void staleOneSidedLinkIsDroppedOnResolve(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        final NetworkConnectorBlockEntity first = connectorAt(helper, player, TestSupport.CABLE_POS);
+        final NetworkConnectorBlockEntity second = connectorAt(helper, player, TestSupport.DEVICE_POS);
+
+        NetworkConnectorBlockEntity.connect(first, second);
+        TestSupport.assertTrue(helper, "link should exist before the peer is removed",
+            first.getConnectedPositions().size() == 1);
+
+        // Dropping the link on one side alone must leave the other side with a phantom entry.
+        second.disconnectFrom(helper.absolutePos(TestSupport.CABLE_POS));
+        TestSupport.assertTrue(helper, "one-sided removal must not touch the other side",
+            first.getConnectedPositions().size() == 1 && second.getConnectedPositions().isEmpty());
+
+        TestSupport.breakBlock(helper, TestSupport.DEVICE_POS);
+        first.connectionManager.resolveConnectedInterface(helper.absolutePos(TestSupport.DEVICE_POS));
+        TestSupport.assertTrue(helper, "the stale link should be dropped when it is resolved",
+            first.getConnectedPositions().isEmpty());
+        helper.succeed();
+    }
+
     // --------------------------------------------------------------------- //
+
+    private static NetworkConnectorBlockEntity connectorAt(
+        final GameTestHelper helper, final Player player, final BlockPos pos) {
+        TestSupport.placeFloor(helper, pos);
+        TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), pos);
+        final NetworkConnectorBlockEntity connector = helper.getBlockEntity(pos);
+        TestSupport.assertNotNull(helper, connector, "network connector at " + pos);
+        return connector;
+    }
 
     private NetworkConnectorTests() {
     }

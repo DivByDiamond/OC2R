@@ -1,4 +1,4 @@
-package li.cil.oc2.common.blockentity.network.cable;
+package li.cil.oc2.common.blockentity.network.cable.faceoverride;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

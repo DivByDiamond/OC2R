@@ -153,12 +153,29 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
     public static void disconnect(
             final NetworkConnectorBlockEntity connectorA,
             final NetworkConnectorBlockEntity connectorB) {
-        connectorA.disconnectFrom(connectorB.getBlockPos());
-        connectorB.disconnectFrom(connectorA.getBlockPos());
+        disconnect(connectorA, connectorB, true);
+    }
+
+    /**
+     * Removes the link between two connectors from both sides.
+     *
+     * @param dropCable whether the owner's cable item drops; see
+     *                  {@link NetworkConnectorConnectionManager#disconnectFrom(BlockPos, boolean)}.
+     */
+    public static void disconnect(
+            final NetworkConnectorBlockEntity connectorA,
+            final NetworkConnectorBlockEntity connectorB,
+            final boolean dropCable) {
+        connectorA.disconnectFrom(connectorB.getBlockPos(), dropCable);
+        connectorB.disconnectFrom(connectorA.getBlockPos(), dropCable);
     }
 
     public void disconnectFrom(final BlockPos pos) {
         connectionManager.disconnectFrom(pos);
+    }
+
+    public void disconnectFrom(final BlockPos pos, final boolean dropCable) {
+        connectionManager.disconnectFrom(pos, dropCable);
     }
 
     public boolean canConnectMore() {

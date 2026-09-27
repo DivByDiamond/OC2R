@@ -59,4 +59,12 @@
         <Field name="scrollColLast" />
         <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" />
     </Match>
+    <!-- UselessSuppression false positive on the @SuppressFBWarnings(EI_EXPOSE_REP/REP2) that
+         NetworkResolver.Result actually needs (its accessors and canonical constructor really
+         are flagged for exposing the mutable Set fields; removing the annotation surfaces those
+         findings on the next :core:spotbugsMain run). -->
+    <Match>
+        <Class name="li.cil.oc2.bus.topology.NetworkResolver$Result" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
 </FindBugsFilter>

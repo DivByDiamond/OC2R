@@ -97,6 +97,7 @@
   "gui.oc2r.computer.bus_state.incomplete": "总线不完整",
   "gui.oc2r.computer.bus_state.too_complex": "总线过于复杂",
   "gui.oc2r.computer.bus_state.multiple_controllers": "有多个总线控制器",
+  "gui.oc2r.computer.bus_overflow": "总线过大：部分设备已被忽略",
   "gui.oc2r.computer.error.not_enough_energy": "能量不足",
   "gui.oc2r.computer.error.missing_cpu": "缺少CPU",
   "gui.oc2r.computer.capture_input.capt": "捕获输入",

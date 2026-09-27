@@ -15,6 +15,7 @@ import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
+import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
 import li.cil.oc2.common.serialization.ceres.Serializers;
@@ -56,6 +57,7 @@ public final class Main {
         Blocks.initialize(modBus);
         BlockCodecs.initialize(modBus);
         Items.initialize(modBus);
+        ItemGroup.initialize();
         BlockEntities.initialize(modBus);
         Entities.initialize(modBus);
         Containers.initialize(modBus);

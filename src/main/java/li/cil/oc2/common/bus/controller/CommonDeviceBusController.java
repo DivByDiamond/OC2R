@@ -1,10 +1,9 @@
 package li.cil.oc2.common.bus.controller;
 
-import static java.util.Collections.emptySet;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -25,15 +24,37 @@ public class CommonDeviceBusController implements DeviceBusController {
             new ParameterizedEvent<>();
 
     private final BusElementManager manager;
-    private final Set<Device> devices = new HashSet<>();
-    private final Map<Device, Set<UUID>> deviceIds = new ConcurrentHashMap<>();
+    private final DeviceTable deviceTable = new DeviceTable(this);
 
+    // Root is kept for the controller's lifetime and never handed out, so nothing new escapes.
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "root is only read, never exposed")
     private final DeviceBusElement root;
-    private final Map<Device, DeviceBusController> occupiedDevices = new ConcurrentHashMap<>();
+    private final LongSupplier ownershipKey;
 
     public CommonDeviceBusController(final DeviceBusElement root, final int baseEnergyConsumption) {
+        this(root, baseEnergyConsumption, () -> Long.MAX_VALUE);
+    }
+
+    /**
+     * Creates a controller whose ownership key for shared bus elements is supplied by the caller.
+     *
+     * @param ownershipKey supplies {@link #getOwnershipKey()}; it must yield a value that is stable
+     *                     for the lifetime of the controller and across restarts (for example one
+     *                     derived from a persisted id, read at call time), because shared elements
+     *                     are handed to the controller with the smallest key on every scan
+     */
+    public CommonDeviceBusController(
+            final DeviceBusElement root,
+            final int baseEnergyConsumption,
+            final LongSupplier ownershipKey) {
         this.root = root;
+        this.ownershipKey = ownershipKey;
         this.manager = new BusElementManager(this, root, baseEnergyConsumption);
+    }
+
+    @Override
+    public long getOwnershipKey() {
+        return ownershipKey.getAsLong();
     }
 
     /**
@@ -45,13 +66,17 @@ public class CommonDeviceBusController implements DeviceBusController {
         return ownerOf(element).equals(this);
     }
 
-    private DeviceBusController ownerOf(final DeviceBusElement element) {
+    DeviceBusController ownerOf(final DeviceBusElement element) {
         final Collection<DeviceBusController> controllers = element.getControllers();
         for (final DeviceBusController candidate : controllers) {
             if (candidate instanceof CommonDeviceBusController common && common.root.equals(element)) {
                 return common;
             }
         }
+        // identityHashCode is only consulted when two controllers report the exact same key. It is
+        // per-instance and stable for the lifetime of the JVM run, i.e. ownership stops flipping
+        // between scans; anything "better" would have to be persisted, and ownership is
+        // deliberately never stored (see OwnerResolver) so it can re-derive on unload.
         return OwnerResolver.owner(
                         controllers,
                         DeviceBusController::getOwnershipKey,
@@ -62,9 +87,11 @@ public class CommonDeviceBusController implements DeviceBusController {
     /**
      * Devices this controller can reach but that are owned by another controller, with that owner.
      * Lets tooling report "occupied by ..." instead of the device silently missing.
+     *
+     * @return an immutable snapshot, taken because the live map is cleared during scans
      */
     public Map<Device, DeviceBusController> getOccupiedDevices() {
-        return Collections.unmodifiableMap(occupiedDevices);
+        return Map.copyOf(deviceTable.getOccupiedDevices());
     }
 
     public void setDeviceContainersChanged() {}
@@ -81,6 +108,14 @@ public class CommonDeviceBusController implements DeviceBusController {
         return manager.getEnergyConsumption();
     }
 
+    /**
+     * Elements the last scan had to leave out because the bus exceeds the configured element
+     * limit. The bus keeps running with the rest; this is only surfaced to the player.
+     */
+    public int getBusOverflow() {
+        return manager.getOverflowCount();
+    }
+
     @Override
     public void scheduleBusScan(final ScanReason reason) {
         manager.scheduleBusScan(reason);
@@ -88,72 +123,17 @@ public class CommonDeviceBusController implements DeviceBusController {
 
     @Override
     public void scanDevices() {
-        onBeforeDeviceScan();
-
-        final Set<Device> newDevices = new HashSet<>();
-        occupiedDevices.clear();
-        final Map<Device, Set<UUID>> newDeviceIds = new ConcurrentHashMap<>();
-        for (final DeviceBusElement element : manager.getElements()) {
-            if (!isOwnerOf(element)) {
-                final DeviceBusController owner = ownerOf(element);
-                for (final Device device : element.getLocalDevices()) {
-                    occupiedDevices.put(device, owner);
-                }
-                continue;
-            }
-            for (final Device device : element.getLocalDevices()) {
-                newDevices.add(device);
-                element.getDeviceIdentifier(device)
-                        .ifPresent(
-                                identifier ->
-                        newDeviceIds
-                                .computeIfAbsent(// NOPMD: per-device set
-                                        device, unused -> new HashSet<>()) // NOPMD allocation depends on loop iteration / per-item state
-                                .add(identifier));
-            }
-        }
-
-        final Set<Device> removedDevices = new HashSet<>(devices);
-        removedDevices.removeAll(newDevices);
-        onDevicesRemoved(removedDevices);
-
-        final Set<Device> addedDevices = new HashSet<>(newDevices);
-        addedDevices.removeAll(devices);
-        onDevicesAdded(addedDevices);
-
-        final boolean didDevicesChange = !removedDevices.isEmpty() || !addedDevices.isEmpty();
-        final boolean didDeviceIdsChange;
-        if (didDevicesChange) {
-            devices.clear();
-            devices.addAll(newDevices);
-
-            didDeviceIdsChange = true;
-        } else {
-            didDeviceIdsChange =
-                    deviceIds.entrySet().stream()
-                            .anyMatch(
-                                    entry ->
-                                            !Objects.equals(
-                                                    entry.getValue(),
-                                                    newDeviceIds.get(entry.getKey())));
-        }
-
-        if (didDeviceIdsChange) {
-            deviceIds.clear();
-            deviceIds.putAll(newDeviceIds);
-        }
-
-        onAfterDeviceScan(didDevicesChange || didDeviceIdsChange);
+        deviceTable.scan();
     }
 
     @Override
     public Set<Device> getDevices() {
-        return devices;
+        return deviceTable.getDevices();
     }
 
     @Override
     public Set<UUID> getDeviceIdentifiers(final Device device) {
-        return deviceIds.getOrDefault(device, emptySet());
+        return deviceTable.getDeviceIdentifiers(device);
     }
 
     public void scan() {

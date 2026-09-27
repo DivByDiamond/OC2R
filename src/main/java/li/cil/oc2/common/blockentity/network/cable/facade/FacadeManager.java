@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -88,5 +90,21 @@ public final class FacadeManager {
 
     public void setFacadeDirectly(final ItemStack stack) {
         facade = stack;
+    }
+
+    /** The facade as an NBT tag; an empty facade is encoded as an empty compound. */
+    public CompoundTag serialize() {
+        return (CompoundTag) ItemStack.OPTIONAL_CODEC
+                .encodeStart(NbtOps.INSTANCE, facade)
+                .getOrThrow();
+    }
+
+    /** Restores a facade written by {@link #serialize()}; malformed or missing data clears it. */
+    public void deserialize(final CompoundTag tag) {
+        try {
+            setFacadeDirectly(ItemStack.OPTIONAL_CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow());
+        } catch (final IllegalStateException e) {
+            setFacadeDirectly(ItemStack.EMPTY);
+        }
     }
 }

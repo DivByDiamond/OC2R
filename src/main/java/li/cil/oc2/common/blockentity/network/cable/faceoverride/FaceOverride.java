@@ -1,4 +1,4 @@
-package li.cil.oc2.common.blockentity.network.cable;
+package li.cil.oc2.common.blockentity.network.cable.faceoverride;
 
 /**
  * Per-face connection override stored on every bus cable (docs/CABLE-SYSTEM.md). It is part of the save
@@ -14,11 +14,17 @@ public enum FaceOverride {
 
     private static final FaceOverride[] VALUES = values();
 
-    /** Decodes a saved byte, falling back to {@link #AUTO} for anything unknown. */
+    /**
+     * Decodes a saved byte, falling back to {@link #AUTO} for anything unknown.
+     * <p>
+     * The byte written to saves is the enum ordinal, so constants must never be reordered or
+     * inserted: existing worlds store the raw byte and would silently re-interpret it.
+     */
     public static FaceOverride fromByte(final byte value) {
         return value >= 0 && value < VALUES.length ? VALUES[value] : AUTO;
     }
 
+    /** Encodes this value for saves; see {@link #fromByte(byte)} for the ordinal caveat. */
     public byte toByte() {
         return (byte) ordinal();
     }

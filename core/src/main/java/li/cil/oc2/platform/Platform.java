@@ -4,17 +4,33 @@ import java.util.ServiceLoader;
 
 /** Locates the loader-specific implementations of the bridge interfaces in this package. */
 public final class Platform {
-    private static RegistryBridge registries;
+    private static final Object INIT_LOCK = new Object();
+
+    private static volatile RegistryBridge bridge;
 
     private Platform() {}
 
-    public static synchronized RegistryBridge registries() {
-        if (registries == null) {
-            registries = load(RegistryBridge.class);
+    // The bridge implementation is a stateless singleton handed to all callers; nothing escapes
+    // through it that callers could mutate. SpotBugs does not flag MS_EXPOSE_REP on this method
+    // (the field is accessed through a static accessor, not exposed directly), so no
+    // suppression is needed here.
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static RegistryBridge registries() {
+        RegistryBridge result = bridge;
+        if (result == null) {
+            synchronized (INIT_LOCK) {
+                result = bridge;
+                if (result == null) {
+                    bridge = result = load(RegistryBridge.class);
+                }
+            }
         }
-        return registries;
+        return result;
     }
 
+    // The implementation class ships in this very jar, so the interface's own class loader always
+    // sees it; the thread-context loader points at the loader module under FML and would miss it.
+    @SuppressWarnings("PMD.UseProperClassLoader")
     static <T> T load(final Class<T> type) {
         return ServiceLoader.load(type, type.getClassLoader()).findFirst().orElseThrow(() ->
                 new IllegalStateException("No " + type.getName() + " implementation found; "

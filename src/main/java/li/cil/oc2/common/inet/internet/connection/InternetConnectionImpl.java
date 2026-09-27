@@ -51,7 +51,7 @@ public final class InternetConnectionImpl implements InternetConnection {
      * Frames handed to the adapter must be treated as borrowed: adapters may keep the array
      * around (e.g. the gateway queues it), so {@code sendEthernetFrame} implementations that
      * retain a frame have to copy it. Buffers that are provably not retained can be returned
-     * via {@link #recycleFrame(byte[])} to avoid a fresh allocation per frame (todo.md §38 П7).
+     * via {@link #recycleFrame(byte[])} to avoid a fresh allocation per frame (docs/roadmap/done.md §38 P7).
      */
     private final Queue<byte[]> framePool = new ConcurrentLinkedQueue<>();
 
