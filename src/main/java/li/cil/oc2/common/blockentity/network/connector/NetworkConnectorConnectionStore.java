@@ -14,7 +14,9 @@ import net.minecraft.nbt.Tag;
 public final class NetworkConnectorConnectionStore {
     private static final String CONNECTIONS_TAG_NAME = "connections";
     private static final String IS_OWNER_TAG_NAME = "is_owner";
-    private static final int MAX_CONNECTION_COUNT = 2;
+    // Upper bound for accepted saved links, independent of the configurable port count so a lowered
+    // config never drops existing connections while loading.
+    private static final int MAX_CONNECTION_COUNT = 8;
 
     public static void writeToUpdateTag(
             final CompoundTag tag,
@@ -34,6 +36,9 @@ public final class NetworkConnectorConnectionStore {
             final HolderLookup.Provider registries,
             final Set<BlockPos> connectorPositions,
             final Set<BlockPos> dirtyConnectors) {
+        // The update tag is the full state: links removed since the last sync must disappear.
+        connectorPositions.clear();
+        dirtyConnectors.clear();
         final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundTag connectionTag = (CompoundTag) connections.get(i);
@@ -66,6 +71,9 @@ public final class NetworkConnectorConnectionStore {
             final Set<BlockPos> connectorPositions,
             final Set<BlockPos> dirtyConnectors,
             final Set<BlockPos> ownedCables) {
+        connectorPositions.clear();
+        dirtyConnectors.clear();
+        ownedCables.clear();
         final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundTag connectionTag = (CompoundTag) connections.get(i);

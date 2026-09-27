@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  * <ul>
  *   <li>{@code receive}: builds an ACK (or PSH+ACK) segment towards the VM carrying the next
  *       contiguous chunk of {@code receiveBuffer}, bounded by the VM's advertised {@code vmWindow}
- *       minus what is already in flight (sliding window, todo.md §38 П3.1). If there is no new
+ *       minus what is already in flight (sliding window, docs/roadmap/done.md §38 P3.1). If there is no new
  *       data and the session is not finishing, a bare ACK is emitted.
  *   <li>{@code send}: validates an inbound segment (sequence number must equal
  *       {@code vmSequence}, payload must fit the advertised window), accepts cumulative ACKs for

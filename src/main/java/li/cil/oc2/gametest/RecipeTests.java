@@ -39,7 +39,8 @@ public final class RecipeTests {
         "silicon_wafer",
         // 1 GHz debug/creative-only tier, never meant to be obtainable in survival.
         "cpu_tier_inf",
-        // WIP blocks with no recipe (or even loot table, for speaker) yet -- see todo.md.
+        // WIP blocks with no crafting recipe (the speaker has no loot table either; that gap is
+        // tracked in docs/roadmap/multiloader.md §42).
         "monitor",
         "speaker"
     );

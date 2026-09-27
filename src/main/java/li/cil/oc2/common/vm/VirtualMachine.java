@@ -12,6 +12,15 @@ public interface VirtualMachine {
     @OnlyIn(Dist.CLIENT)
     void setBusStateClient(BusState value);
 
+    /**
+     * Elements the last bus scan had to leave out because the bus exceeds the configured element
+     * limit; {@link #getBusState()} stays {@link BusState#READY} and the bus runs with the rest.
+     */
+    int getBusOverflow();
+
+    @OnlyIn(Dist.CLIENT)
+    void setBusOverflowClient(int value);
+
     VMRunState getRunState();
 
     @OnlyIn(Dist.CLIENT)

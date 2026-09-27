@@ -17,6 +17,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 @SuppressWarnings("unused")
+// Pending migration (docs/roadmap/multiloader.md §42): this helper creates NeoForge
+// DeferredRegisters directly instead of going through the core RegistryBridge like Blocks/Items.
 public abstract class RegistryUtils {
     private enum Phase {
         PRE_INIT,

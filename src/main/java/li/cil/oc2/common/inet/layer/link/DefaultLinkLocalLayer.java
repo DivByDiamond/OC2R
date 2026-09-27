@@ -78,7 +78,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
      * The MAC is derived deterministically from the card's stable identity UUID, never
      * taken from the {@code MACAddress} NBT field: that field lives in player-writable
      * item data, and trusting it would let any card impersonate another one in the LAN
-     * (todo.md §39 С8). The legacy parse path only remains for cards saved before the
+     * (docs/roadmap/done.md §39 C8). The legacy parse path only remains for cards saved before the
      * identity existed; their address changes once on the first save with an id.
      */
     private void loadMacAddress(final CompoundTag layerState) {
@@ -185,7 +185,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             }
         } else {
             LOGGER.trace("Network message received");
-            // Anti-spoofing (todo.md §39 С3): the guest may put any address into the IPv4
+            // Anti-spoofing (docs/roadmap/network-inet.md §39 C3): the guest may put any address into the IPv4
             // source field, so outbound packets are only forwarded when the source matches
             // the address the card itself claimed during ARP; anything else is dropped
             // silently to prevent impersonating other hosts out of the tunnel.

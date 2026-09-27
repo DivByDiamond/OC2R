@@ -49,7 +49,9 @@ when:
 
 1. `core` builds standalone and has **no** direct dependency on NeoForge.
 2. Registries are fully migrated: `core` (Bridge interface + types) →
-   NeoForge implementation → tests/GameTest/CI, all green.
+   NeoForge implementation → tests/GameTest/CI, all green. (`DeviceTypes`
+   and `RegistryUtils` still build their own `DeferredRegister`s directly
+   and are pending — roadmap §42.)
 3. The other ~230 NeoForge-coupled files are **not** touched. They stay
    in their current form until their own later migration PR. Do not let
    "while we're at it" scope creep pull more subsystems into Stage 1.
@@ -138,7 +140,9 @@ use neither; `RegistryBridge` and friends are ours.
 
 Chosen over capabilities (30 files), network (42 files) and energy (16
 files) because it's the most foundational — nearly everything else
-(blocks, items, block entities, menu types) registers through it — and
+(blocks, items, block entities, menu types) registers through it
+(`DeviceTypes` and `RegistryUtils` still build their own
+`DeferredRegister`s directly — pending, roadmap §42) — and
 NeoForge's `DeferredRegister` vs. Fabric's `Registry.register` are close
 enough in shape to design a clean, non-leaky `RegistryBridge` without
 fighting event-bus/lifecycle differences (which capabilities and network

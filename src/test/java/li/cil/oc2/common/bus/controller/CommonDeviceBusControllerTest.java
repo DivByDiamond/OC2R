@@ -3,9 +3,12 @@ package li.cil.oc2.common.bus.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
+import java.util.function.Consumer;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
+import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
 import org.junit.jupiter.api.*;
 
 class CommonDeviceBusControllerTest {
@@ -63,7 +66,10 @@ class CommonDeviceBusControllerTest {
 
     @Test
     void testScanDevicesFiresAfterDeviceScanListeners() {
-        var listener = mock(java.util.function.Consumer.class);
+        // Consumer.class cannot carry type arguments; suppress the single unchecked
+        // conversion it forces, so the set entry and accept() stay fully typed.
+        @SuppressWarnings("unchecked")
+        final Consumer<AfterDeviceScanEvent> listener = mock(Consumer.class);
         controller.afterDeviceScanListeners.add(listener);
 
         controller.scanDevices();
@@ -91,5 +97,38 @@ class CommonDeviceBusControllerTest {
 
         assertEquals(stateBefore, controller.getState());
         assertEquals(energyBefore, controller.getEnergyConsumption());
+    }
+
+    @Test
+    void testOwnershipGoesToLowestKey() {
+        final DeviceBusElement shared = mock(DeviceBusElement.class);
+        final var low = new CommonDeviceBusController(mock(DeviceBusElement.class), 100, () -> 1L);
+        final var high = new CommonDeviceBusController(mock(DeviceBusElement.class), 100, () -> 2L);
+        when(shared.getControllers()).thenReturn(List.of(high, low));
+
+        assertTrue(low.isOwnerOf(shared));
+        assertFalse(high.isOwnerOf(shared));
+    }
+
+    @Test
+    void testOwnershipTieBreakIsStable() {
+        final DeviceBusElement shared = mock(DeviceBusElement.class);
+        final var first = new CommonDeviceBusController(mock(DeviceBusElement.class), 100, () -> 7L);
+        final var second =
+                new CommonDeviceBusController(mock(DeviceBusElement.class), 100, () -> 7L);
+        when(shared.getControllers()).thenReturn(List.of(second, first));
+
+        // Equal keys fall back to identityHashCode: it must pick exactly one owner and keep
+        // picking it, otherwise shared devices flip ownership between consecutive scans.
+        final boolean firstOwns = first.isOwnerOf(shared);
+        assertNotEquals(firstOwns, second.isOwnerOf(shared));
+        for (int i = 0; i < 8; i++) {
+            assertEquals(firstOwns, first.isOwnerOf(shared));
+        }
+    }
+
+    @Test
+    void testBusOverflowDefaultsToZero() {
+        assertEquals(0, controller.getBusOverflow());
     }
 }

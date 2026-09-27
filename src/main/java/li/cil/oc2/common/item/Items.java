@@ -26,173 +26,173 @@ import li.cil.oc2.common.item.tool.BlockOperationsModule;
 import li.cil.oc2.common.item.tool.ManualItem;
 import li.cil.oc2.common.item.tool.RobotItem;
 import li.cil.oc2.common.item.tool.WrenchItem;
+import li.cil.oc2.platform.BlockHolder;
+import li.cil.oc2.platform.ItemHolder;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 @SuppressWarnings("unused")
 public final class Items {
-    private static final DeferredRegister.Items REGISTRY = DeferredRegister.createItems(API.MOD_ID);
-
-    public static final DeferredItem<Item> BUS_CABLE =
+    public static final ItemHolder<Item> BUS_CABLE =
             register(Blocks.BUS_CABLE, BusCableItem::new);
-    public static final DeferredItem<BusInterfaceItem> BUS_INTERFACE =
+    public static final ItemHolder<BusInterfaceItem> BUS_INTERFACE =
             register("bus_interface", BusInterfaceItem::new);
-    public static final DeferredItem<Item> CHARGER = register(Blocks.CHARGER, ChargerItem::new);
-    public static final DeferredItem<Item> COMPUTER = register(Blocks.COMPUTER);
-    public static final DeferredItem<Item> MONITOR = register(Blocks.MONITOR);
-    public static final DeferredItem<Item> CREATIVE_ENERGY = register(Blocks.CREATIVE_ENERGY);
-    public static final DeferredItem<Item> DISK_DRIVE = register(Blocks.DISK_DRIVE);
-    public static final DeferredItem<Item> FLASH_MEMORY_FLASHER =
+    public static final ItemHolder<Item> CHARGER = register(Blocks.CHARGER, ChargerItem::new);
+    public static final ItemHolder<Item> COMPUTER = register(Blocks.COMPUTER);
+    public static final ItemHolder<Item> MONITOR = register(Blocks.MONITOR);
+    public static final ItemHolder<Item> CREATIVE_ENERGY = register(Blocks.CREATIVE_ENERGY);
+    public static final ItemHolder<Item> DISK_DRIVE = register(Blocks.DISK_DRIVE);
+    public static final ItemHolder<Item> FLASH_MEMORY_FLASHER =
             register(Blocks.FLASH_MEMORY_FLASHER);
-    public static final DeferredItem<Item> KEYBOARD = register(Blocks.KEYBOARD);
-    public static final DeferredItem<Item> NETWORK_CONNECTOR = register(Blocks.NETWORK_CONNECTOR);
-    public static final DeferredItem<Item> NETWORK_HUB = register(Blocks.NETWORK_HUB);
-    // public static final DeferredItem<Item> NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH);
-    public static final DeferredItem<Item> PROJECTOR = register(Blocks.PROJECTOR);
-    public static final DeferredItem<Item> REDSTONE_INTERFACE = register(Blocks.REDSTONE_INTERFACE);
-    public static final DeferredItem<Item> VXLAN_HUB = register(Blocks.VXLAN_HUB);
-    public static final DeferredItem<Item> PCI_CARD_CAGE = register(Blocks.PCI_CARD_CAGE);
-    public static final DeferredItem<Item> INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY);
-    public static final DeferredItem<Item> SPEAKER = register(Blocks.SPEAKER);
+    public static final ItemHolder<Item> KEYBOARD = register(Blocks.KEYBOARD);
+    public static final ItemHolder<Item> NETWORK_CONNECTOR = register(Blocks.NETWORK_CONNECTOR);
+    public static final ItemHolder<Item> NETWORK_HUB = register(Blocks.NETWORK_HUB);
+    // public static final ItemHolder<Item> NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH);
+    public static final ItemHolder<Item> PROJECTOR = register(Blocks.PROJECTOR);
+    public static final ItemHolder<Item> REDSTONE_INTERFACE = register(Blocks.REDSTONE_INTERFACE);
+    public static final ItemHolder<Item> VXLAN_HUB = register(Blocks.VXLAN_HUB);
+    public static final ItemHolder<Item> PCI_CARD_CAGE = register(Blocks.PCI_CARD_CAGE);
+    public static final ItemHolder<Item> INTERNET_GATEWAY = register(Blocks.INTERNET_GATEWAY);
+    public static final ItemHolder<Item> SPEAKER = register(Blocks.SPEAKER);
 
-    public static final DeferredItem<Item> WRENCH = register("wrench", WrenchItem::new);
-    public static final DeferredItem<Item> MANUAL = register("manual", ManualItem::new);
+    public static final ItemHolder<Item> WRENCH = register("wrench", WrenchItem::new);
+    public static final ItemHolder<Item> MANUAL = register("manual", ManualItem::new);
 
-    public static final DeferredItem<Item> ROBOT = register("robot", RobotItem::new);
-    public static final DeferredItem<NetworkCableItem> NETWORK_CABLE =
+    public static final ItemHolder<Item> ROBOT = register("robot", RobotItem::new);
+    public static final ItemHolder<NetworkCableItem> NETWORK_CABLE =
             register("network_cable", NetworkCableItem::new);
 
-    public static final DeferredItem<MemoryItem> MEMORY_SMALL =
+    public static final ItemHolder<MemoryItem> MEMORY_SMALL =
             register("memory_small", () -> new MemoryItem(2 * Constants.MEGABYTE));
-    public static final DeferredItem<MemoryItem> MEMORY_MEDIUM =
+    public static final ItemHolder<MemoryItem> MEMORY_MEDIUM =
             register("memory_medium", () -> new MemoryItem(4 * Constants.MEGABYTE));
-    public static final DeferredItem<MemoryItem> MEMORY_LARGE =
+    public static final ItemHolder<MemoryItem> MEMORY_LARGE =
             register("memory_large", () -> new MemoryItem(8 * Constants.MEGABYTE));
-    public static final DeferredItem<MemoryItem> MEMORY_EXTRA_LARGE =
+    public static final ItemHolder<MemoryItem> MEMORY_EXTRA_LARGE =
             register("memory_extra_large", () -> new MemoryItem(16 * Constants.MEGABYTE));
 
-    public static final DeferredItem<HardDriveItem> HARD_DRIVE_SMALL =
+    public static final ItemHolder<HardDriveItem> HARD_DRIVE_SMALL =
             register(
                     "hard_drive_small",
                     () -> new HardDriveItem(Config.diskSizeTier1, DyeColor.LIGHT_GRAY));
-    public static final DeferredItem<HardDriveItem> HARD_DRIVE_MEDIUM =
+    public static final ItemHolder<HardDriveItem> HARD_DRIVE_MEDIUM =
             register(
                     "hard_drive_medium",
                     () -> new HardDriveItem(Config.diskSizeTier2, DyeColor.GREEN));
-    public static final DeferredItem<HardDriveItem> HARD_DRIVE_LARGE =
+    public static final ItemHolder<HardDriveItem> HARD_DRIVE_LARGE =
             register(
                     "hard_drive_large",
                     () -> new HardDriveItem(Config.diskSizeTier3, DyeColor.CYAN));
-    public static final DeferredItem<HardDriveItem> HARD_DRIVE_EXTRA_LARGE =
+    public static final ItemHolder<HardDriveItem> HARD_DRIVE_EXTRA_LARGE =
             register(
                     "hard_drive_extra_large",
                     () -> new HardDriveItem(Config.diskSizeTier4, DyeColor.YELLOW));
 
-    public static final DeferredItem<HardDriveWithExternalDataItem> HARD_DRIVE_ONYXOS =
+    public static final ItemHolder<HardDriveWithExternalDataItem> HARD_DRIVE_ONYXOS =
             register(
                     "hard_drive_onyxos",
                     () -> new HardDriveWithExternalDataItem(
                             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "onyxos-base"),
                             DyeColor.RED));
 
-    public static final DeferredItem<CPUItem> CPU_TIER_1 =
+    public static final ItemHolder<CPUItem> CPU_TIER_1 =
             register("cpu_tier_1", () -> new CPUItem(Config.cpuFrequencyTier1));
-    public static final DeferredItem<CPUItem> CPU_TIER_2 =
+    public static final ItemHolder<CPUItem> CPU_TIER_2 =
             register("cpu_tier_2", () -> new CPUItem(Config.cpuFrequencyTier2));
-    public static final DeferredItem<CPUItem> CPU_TIER_3 =
+    public static final ItemHolder<CPUItem> CPU_TIER_3 =
             register("cpu_tier_3", () -> new CPUItem(Config.cpuFrequencyTier3));
-    public static final DeferredItem<CPUItem> CPU_TIER_4 =
+    public static final ItemHolder<CPUItem> CPU_TIER_4 =
             register("cpu_tier_4", () -> new CPUItem(Config.cpuFrequencyTier4));
-    public static final DeferredItem<CPUItem> CPU_TIER_INF =
+    public static final ItemHolder<CPUItem> CPU_TIER_INF =
             register("cpu_tier_inf", () -> new CPUItem(1_000_000_000));
-    public static final DeferredItem<GPUItem> GPU_TIER_1 =
+    public static final ItemHolder<GPUItem> GPU_TIER_1 =
             register("gpu_tier_1", () -> new GPUItem(320, 200, 1));
-    public static final DeferredItem<GPUItem> GPU_TIER_2 =
+    public static final ItemHolder<GPUItem> GPU_TIER_2 =
             register("gpu_tier_2", () -> new GPUItem(640, 400, 2));
-    public static final DeferredItem<GPUItem> GPU_TIER_3 =
+    public static final ItemHolder<GPUItem> GPU_TIER_3 =
             register("gpu_tier_3", () -> new GPUItem(1024, 768, 3));
-    public static final DeferredItem<GPUItem> GPU_TIER_4 =
+    public static final ItemHolder<GPUItem> GPU_TIER_4 =
             register("gpu_tier_4", () -> new GPUItem(1920, 1080, 4));
-    public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY_SMALL =
+    public static final ItemHolder<FlashMemoryItem> FLASH_MEMORY_SMALL =
             register(
                     "flash_memory_small",
                     () -> new FlashMemoryItem(Config.flashMemorySizeTier1));
-    public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY_MEDIUM =
+    public static final ItemHolder<FlashMemoryItem> FLASH_MEMORY_MEDIUM =
             register(
                     "flash_memory_medium",
                     () -> new FlashMemoryItem(Config.flashMemorySizeTier2));
-    public static final DeferredItem<FlashMemoryItem> FLASH_MEMORY =
+    public static final ItemHolder<FlashMemoryItem> FLASH_MEMORY =
             register("flash_memory", () -> new FlashMemoryItem(Config.flashMemorySizeTier3));
-    public static final DeferredItem<FlashMemoryWithExternalDataItem> FLASH_MEMORY_CUSTOM =
+    public static final ItemHolder<FlashMemoryWithExternalDataItem> FLASH_MEMORY_CUSTOM =
             register(
                     "flash_memory_custom",
-                    () -> new FlashMemoryWithExternalDataItem(FirmwareRegistry.MINUX.getId()));
-    public static final DeferredItem<FlashMemoryWithExternalDataItem> FLASH_MEMORY_ONYXOS =
+                    () -> new FlashMemoryWithExternalDataItem(FirmwareRegistry.MINUX_ID));
+    public static final ItemHolder<FlashMemoryWithExternalDataItem> FLASH_MEMORY_ONYXOS =
             register(
                     "flash_memory_onyxos",
                     () ->
                             new FlashMemoryWithExternalDataItem(
-                                    FirmwareRegistry.ONYXOS.getId()));
+                                    FirmwareRegistry.ONYXOS_ID));
 
-    public static final DeferredItem<FloppyItem> FLOPPY =
+    public static final ItemHolder<FloppyItem> FLOPPY =
             register("floppy", () -> new FloppyItem(512 * Constants.KILOBYTE));
-    public static final DeferredItem<FloppyItem> FLOPPY_MODERN =
+    public static final ItemHolder<FloppyItem> FLOPPY_MODERN =
             register("floppy_modern", () -> new FloppyItem(1440 * Constants.KILOBYTE));
 
-    public static final DeferredItem<Item> REDSTONE_INTERFACE_CARD =
+    public static final ItemHolder<Item> REDSTONE_INTERFACE_CARD =
             register("redstone_interface_card");
-    public static final DeferredItem<Item> NETWORK_INTERFACE_CARD =
+    public static final ItemHolder<Item> NETWORK_INTERFACE_CARD =
             register("network_interface_card", NetworkInterfaceCardItem::new);
-    public static final DeferredItem<Item> NETWORK_TUNNEL_CARD =
+    public static final ItemHolder<Item> NETWORK_TUNNEL_CARD =
             register("network_tunnel_card", NetworkTunnelItem::new);
-    public static final DeferredItem<Item> INTERNET_CARD = register("internet_card");
-    public static final DeferredItem<Item> FILE_IMPORT_EXPORT_CARD =
+    public static final ItemHolder<Item> INTERNET_CARD = register("internet_card");
+    public static final ItemHolder<Item> FILE_IMPORT_EXPORT_CARD =
             register("file_import_export_card");
-    public static final DeferredItem<Item> SOUND_CARD = register("sound_card");
+    public static final ItemHolder<Item> SOUND_CARD = register("sound_card");
 
-    public static final DeferredItem<Item> INVENTORY_OPERATIONS_MODULE =
+    public static final ItemHolder<Item> INVENTORY_OPERATIONS_MODULE =
             register("inventory_operations_module");
-    public static final DeferredItem<Item> BLOCK_OPERATIONS_MODULE =
+    public static final ItemHolder<Item> BLOCK_OPERATIONS_MODULE =
             register("block_operations_module", BlockOperationsModule::new);
-    public static final DeferredItem<Item> NETWORK_TUNNEL_MODULE =
+    public static final ItemHolder<Item> NETWORK_TUNNEL_MODULE =
             register("network_tunnel_module", NetworkTunnelItem::new);
 
-    public static final DeferredItem<Item> TRANSISTOR = register("transistor", ModItem::new);
-    public static final DeferredItem<Item> SILICON_BLEND = register("silicon_blend", ModItem::new);
-    public static final DeferredItem<Item> SILICON = register("silicon", ModItem::new);
-    public static final DeferredItem<Item> SILICON_WAFER = register("silicon_wafer", ModItem::new);
-    public static final DeferredItem<Item> RAW_SILICON_WAFER =
+    public static final ItemHolder<Item> TRANSISTOR = register("transistor", ModItem::new);
+    public static final ItemHolder<Item> SILICON_BLEND = register("silicon_blend", ModItem::new);
+    public static final ItemHolder<Item> SILICON = register("silicon", ModItem::new);
+    public static final ItemHolder<Item> SILICON_WAFER = register("silicon_wafer", ModItem::new);
+    public static final ItemHolder<Item> RAW_SILICON_WAFER =
             register("raw_silicon_wafer", ModItem::new);
-    public static final DeferredItem<Item> CIRCUIT_BOARD = register("circuit_board", ModItem::new);
+    public static final ItemHolder<Item> CIRCUIT_BOARD = register("circuit_board", ModItem::new);
 
     public static void initialize(IEventBus modBus) {
-        REGISTRY.addAlias(
+        Platform.registries().addItemAlias(
+                API.MOD_ID,
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_memory_buildroot"),
                 FLASH_MEMORY_CUSTOM.getId());
-        REGISTRY.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
-    private static DeferredItem<Item> register(final String name) {
+    private static ItemHolder<Item> register(final String name) {
         return register(name, ModItem::new);
     }
 
-    private static <T extends Item> DeferredItem<T> register(
+    private static <T extends Item> ItemHolder<T> register(
             final String name, final Supplier<T> factory) {
-        return REGISTRY.register(name, factory);
+        return Platform.registries().registerItem(API.MOD_ID, name, factory);
     }
 
-    private static <T extends Block> DeferredItem<Item> register(final DeferredBlock<T> block) {
+    private static <T extends Block> ItemHolder<Item> register(final BlockHolder<T> block) {
         return register(block, ModBlockItem::new);
     }
 
-    private static <T extends Block, U extends Item> DeferredItem<U> register(
-            final DeferredBlock<T> block, final Function<T, U> factory) {
+    private static <T extends Block, U extends Item> ItemHolder<U> register(
+            final BlockHolder<T> block, final Function<T, U> factory) {
         return register(block.getId().getPath(), () -> factory.apply(block.get()));
     }
 }

@@ -18,6 +18,10 @@ import net.neoforged.neoforge.registries.NewRegistryEvent;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class DeviceTypes {
+    // Pending migration (docs/roadmap/multiloader.md §42): unlike Blocks/Items this still goes
+    // through NeoForge's DeferredRegister directly instead of the core RegistryBridge, and no
+    // caller ever binds DEVICE_TYPES to the mod bus, so the registration is effectively dead
+    // (open §42 item).
     private static final DeferredRegister<DeviceType> DEVICE_TYPES =
             DeferredRegister.create(DeviceType.REGISTRY, API.MOD_ID);
 

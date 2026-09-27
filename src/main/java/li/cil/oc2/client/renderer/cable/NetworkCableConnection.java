@@ -1,6 +1,7 @@
 package li.cil.oc2.client.renderer.cable;
 
 import java.util.Objects;
+import li.cil.oc2.network.wire.WireGeometry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -32,7 +33,8 @@ final class NetworkCableConnection {
                 this.fromPos.getX() == this.toPos.getX() && this.fromPos.getZ() == this.toPos.getZ()
                         ? null
                         : forward.cross(POS_Y);
-        bounds = new AABB(from, to).inflate(0, 0.5f, 0);
+        // The wire sags below the straight line, so the culling box must cover the hang.
+        bounds = new AABB(from, to).inflate(0, WireGeometry.hang(from.distanceTo(to)) + 0.25, 0);
     }
 
     @Override

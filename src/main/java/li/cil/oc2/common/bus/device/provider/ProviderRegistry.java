@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.provider;
 
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
@@ -30,66 +31,76 @@ import li.cil.oc2.common.bus.device.rpc.block.BlockStateObjectDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.EnergyStorageBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.FluidHandlerBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.ItemHandlerBlockDeviceProvider;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ProviderRegistry {
-    private static final DeferredRegister<BlockDeviceProvider> BLOCK_DEVICE_PROVIDERS =
-            DeferredRegister.create(Registries.BLOCK_DEVICE_PROVIDER, API.MOD_ID);
+    private static final String BLOCK_DEVICE_PROVIDERS =
+            Registries.BLOCK_DEVICE_PROVIDER.location().toString();
     public static final Registry<BlockDeviceProvider> BLOCK_DEVICE_PROVIDER_REGISTRY =
-            BLOCK_DEVICE_PROVIDERS.makeRegistry(builder -> {});
+            Platform.registries().createRegistry(BLOCK_DEVICE_PROVIDERS, API.MOD_ID);
 
-    private static final DeferredRegister<ItemDeviceProvider> ITEM_DEVICE_PROVIDERS =
-            DeferredRegister.create(Registries.ITEM_DEVICE_PROVIDER, API.MOD_ID);
+    private static final String ITEM_DEVICE_PROVIDERS =
+            Registries.ITEM_DEVICE_PROVIDER.location().toString();
     public static final Registry<ItemDeviceProvider> ITEM_DEVICE_PROVIDER_REGISTRY =
-            ITEM_DEVICE_PROVIDERS.makeRegistry(builder -> {});
+            Platform.registries().createRegistry(ITEM_DEVICE_PROVIDERS, API.MOD_ID);
+
+    private static void registerItemProvider(
+            final String name, final Supplier<? extends ItemDeviceProvider> factory) {
+        Platform.registries().register(ITEM_DEVICE_PROVIDERS, API.MOD_ID, name, factory);
+    }
+
+    private static void registerBlockProvider(
+            final String name, final Supplier<? extends BlockDeviceProvider> factory) {
+        Platform.registries().register(BLOCK_DEVICE_PROVIDERS, API.MOD_ID, name, factory);
+    }
 
     public static void initialize(IEventBus modBus) {
-        ITEM_DEVICE_PROVIDERS.register(modBus);
-        BLOCK_DEVICE_PROVIDERS.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
 
-        ITEM_DEVICE_PROVIDERS.register("memory", MemoryItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("hard_drive", HardDriveItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider("memory", MemoryItemDeviceProvider::new);
+        registerItemProvider("hard_drive", HardDriveItemDeviceProvider::new);
+        registerItemProvider(
                 "hard_drive_custom", HardDriveWithExternalDataItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("flash_memory", FlashMemoryItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider("flash_memory", FlashMemoryItemDeviceProvider::new);
+        registerItemProvider(
                 "flash_memory_custom", FlashMemoryWithExternalDataItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "redstone_interface_card", RedstoneInterfaceCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "file_import_export_card", FileImportExportCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("sound_card", SoundCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("cpu", CPUItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("gpu", GPUItemDeviceProvider::new);
+        registerItemProvider("sound_card", SoundCardItemDeviceProvider::new);
+        registerItemProvider("cpu", CPUItemDeviceProvider::new);
+        registerItemProvider("gpu", GPUItemDeviceProvider::new);
 
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "inventory_operations_module", InventoryOperationsModuleDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "block_operations_module", BlockOperationsModuleDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "network_tunnel_module", NetworkTunnelModuleItemDeviceProvider::new);
 
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "network_interface_card", NetworkInterfaceCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "network_tunnel_card", NetworkTunnelCardItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("internet_card", InternetCardItemDeviceProvider::new);
+        registerItemProvider("internet_card", InternetCardItemDeviceProvider::new);
 
-        ITEM_DEVICE_PROVIDERS.register(
+        registerItemProvider(
                 "item_stack/capability", ItemStackCapabilityDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("energy_storage", EnergyStorageItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("fluid_handler", FluidHandlerItemDeviceProvider::new);
-        ITEM_DEVICE_PROVIDERS.register("item_handler", ItemHandlerItemDeviceProvider::new);
+        registerItemProvider("energy_storage", EnergyStorageItemDeviceProvider::new);
+        registerItemProvider("fluid_handler", FluidHandlerItemDeviceProvider::new);
+        registerItemProvider("item_handler", ItemHandlerItemDeviceProvider::new);
 
-        BLOCK_DEVICE_PROVIDERS.register("block", BlockStateObjectDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("block_entity", BlockEntityObjectDeviceProvider::new);
+        registerBlockProvider("block", BlockStateObjectDeviceProvider::new);
+        registerBlockProvider("block_entity", BlockEntityObjectDeviceProvider::new);
 
-        BLOCK_DEVICE_PROVIDERS.register(
+        registerBlockProvider(
                 "block_entity/capability", BlockEntityCapabilityDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("energy_storage", EnergyStorageBlockDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("fluid_handler", FluidHandlerBlockDeviceProvider::new);
-        BLOCK_DEVICE_PROVIDERS.register("item_handler", ItemHandlerBlockDeviceProvider::new);
+        registerBlockProvider("energy_storage", EnergyStorageBlockDeviceProvider::new);
+        registerBlockProvider("fluid_handler", FluidHandlerBlockDeviceProvider::new);
+        registerBlockProvider("item_handler", ItemHandlerBlockDeviceProvider::new);
     }
 }

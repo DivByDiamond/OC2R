@@ -18,6 +18,10 @@ public final class Config {
     public static int flashMemorySizeTier2 = 8 * Constants.MEGABYTE;
     public static int flashMemorySizeTier3 = 16 * Constants.MEGABYTE;
 
+    // Read on the server thread during bus scans / connector placement, written at config load
+    // time; volatile so a reload from another thread is not observed as a torn or stale value.
+    public static volatile int maxBusElements = 1024;
+    public static volatile int networkConnectorPorts = 4;
     public static double busCableEnergyPerTick = 0.1;
     public static double busInterfaceEnergyPerTick = 0.5;
     public static int cableEnergyCapacity = 3000;

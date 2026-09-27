@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the internet-to-VM data path of {@link EstablishedState}: sliding window
- * segmentation and cumulative acknowledgment (todo.md §38 П3.1).
+ * segmentation and cumulative acknowledgment (docs/roadmap/done.md §38 P3.1).
  */
 final class EstablishedStateTest {
     private static boolean isForward(final SessionActions action) {

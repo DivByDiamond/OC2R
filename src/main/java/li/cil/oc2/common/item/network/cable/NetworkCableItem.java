@@ -11,7 +11,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -22,14 +24,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class NetworkCableItem extends ModItem {
+
     private static final String LINK_START_TAG_NAME = API.MOD_ID + ":" + "network_cable_link_start";
 
     @Override
     public InteractionResultHolder<ItemStack> use(
             final Level level, final Player player, final InteractionHand hand) {
         if (player.isShiftKeyDown()) {
-            if (player instanceof final ServerPlayer serverPlayer) {
-                final CompoundTag persistentData = serverPlayer.getPersistentData();
+            if (!level.isClientSide()) {
+                final CompoundTag persistentData = player.getPersistentData();
                 persistentData.remove(LINK_START_TAG_NAME);
             }
 
@@ -59,9 +62,7 @@ public final class NetworkCableItem extends ModItem {
             return super.useOn(context);
         }
 
-        if (!level.isClientSide()
-                && player instanceof final ServerPlayer serverPlayer
-                && handleServerUse(serverPlayer, level, currentPos, currentConnector, stack)) {
+        if (!level.isClientSide() && handleServerUse(player, level, currentPos, currentConnector, stack)) {
             return super.useOn(context);
         }
 
@@ -69,20 +70,20 @@ public final class NetworkCableItem extends ModItem {
     }
 
     private boolean handleServerUse(
-            final ServerPlayer serverPlayer,
+            final Player player,
             final Level level,
             final BlockPos currentPos,
             final NetworkConnectorBlockEntity currentConnector,
             final ItemStack stack) {
-        final CompoundTag persistentData = serverPlayer.getPersistentData();
+        final CompoundTag persistentData = player.getPersistentData();
         final Optional<BlockPos> startPos =
                 NbtUtils.readBlockPos(persistentData, LINK_START_TAG_NAME);
         persistentData.remove(LINK_START_TAG_NAME);
         if (startPos.isEmpty() || Objects.equals(startPos.get(), currentPos)) {
-            beginLink(persistentData, currentPos, currentConnector, serverPlayer);
+            beginLink(persistentData, currentPos, currentConnector, player);
         } else {
             return completeLink(
-                    level, startPos.get(), currentConnector, serverPlayer, stack, persistentData);
+                    level, startPos.get(), currentConnector, player, stack, persistentData);
         }
         return false;
     }
@@ -92,11 +93,13 @@ public final class NetworkCableItem extends ModItem {
             final BlockPos currentPos,
             final NetworkConnectorBlockEntity currentConnector,
             final Player player) {
-        if (currentConnector.canConnectMore()) {
+        // A full connector must still be able to start a link so an existing one can be removed;
+        // completeLink reports FULL if the second click would add a new link.
+        if (currentConnector.canConnectMore() || !currentConnector.getConnectedPositions().isEmpty()) {
             persistentData.put(LINK_START_TAG_NAME, NbtUtils.writeBlockPos(currentPos));
+            notifyPlayer(player, Constants.CONNECTOR_LINK_STARTED, SoundEvents.LEASH_KNOT_PLACE, 0.6f);
         } else {
-            player.displayClientMessage(
-                    Component.translatable(Constants.CONNECTOR_ERROR_FULL), true);
+            notifyPlayer(player, Constants.CONNECTOR_ERROR_FULL, SoundEvents.DISPENSER_FAIL, 1f);
         }
     }
 
@@ -111,6 +114,15 @@ public final class NetworkCableItem extends ModItem {
         if (!(startBlockEntity instanceof final NetworkConnectorBlockEntity startConnector)) {
             // Starting connector was removed in the meantime.
             return true;
+        }
+
+        if (startConnector.getConnectedPositions().contains(currentConnector.getBlockPos())) {
+            // Using the cable on two connectors that are already linked removes that link. The
+            // cable drops only in survival: a creative player never paid one for this link.
+            NetworkConnectorBlockEntity.disconnect(
+                    startConnector, currentConnector, !player.isCreative());
+            return handleConnectionResult(
+                    ConnectionResult.DISCONNECTED, startPos, player, stack, persistentData);
         }
 
         final ConnectionResult connectionResult =
@@ -129,6 +141,11 @@ public final class NetworkCableItem extends ModItem {
                 if (!player.isCreative()) {
                     stack.shrink(1);
                 }
+                notifyPlayer(player, Constants.CONNECTOR_CONNECTED, SoundEvents.LEASH_KNOT_PLACE, 1f);
+                break;
+            case DISCONNECTED:
+                notifyPlayer(
+                        player, Constants.CONNECTOR_DISCONNECTED, SoundEvents.LEASH_KNOT_BREAK, 1f);
                 break;
 
             case FAILURE:
@@ -136,29 +153,34 @@ public final class NetworkCableItem extends ModItem {
                 break;
             case ALREADY_CONNECTED:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_ALREADY_CONNECTED),
-                        true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_ALREADY_CONNECTED, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_FULL:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_FULL), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_FULL, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_TOO_FAR:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_TOO_FAR), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_TOO_FAR, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             case FAILURE_OBSTRUCTED:
                 keepLinkStart(persistentData, startPos);
-                player.displayClientMessage(
-                        Component.translatable(Constants.CONNECTOR_ERROR_OBSTRUCTED), true);
+                notifyPlayer(
+                        player, Constants.CONNECTOR_ERROR_OBSTRUCTED, SoundEvents.DISPENSER_FAIL, 1f);
                 break;
             default:
                 throw new AssertionError(connectionResult);
         }
         return false;
+    }
+
+    private static void notifyPlayer(
+            final Player player, final String messageKey, final SoundEvent sound, final float pitch) {
+        player.displayClientMessage(Component.translatable(messageKey), true);
+        player.level().playSound(null, player.blockPosition(), sound, SoundSource.BLOCKS, 0.8f, pitch);
     }
 
     private static void keepLinkStart(

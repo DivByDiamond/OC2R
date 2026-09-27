@@ -33,7 +33,7 @@ public final class MonitorVideoController {
     // Weakly keyed so players disconnecting without a goodbye are still collected
     // by the GC; values are last-seen timestamps checked against WATCHER_TIMEOUT_MS.
     // Guarded by watchersLock — WeakHashMap is not thread-safe and iteration
-    // requires external locking (same CME pattern as Terminal.renderers §47 Б6).
+    // requires external locking (same CME pattern as Terminal.renderers, docs/roadmap/done.md §47 B6).
     // PMD UseConcurrentHashMap is suppressed: need weak keys, not strong ConcurrentHashMap.
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private final Map<ServerPlayer, Long> watchers = new WeakHashMap<>();

@@ -20,11 +20,13 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class AbstractVirtualMachine implements VirtualMachine {
     public static final String BUS_STATE_TAG_NAME = "busState";
+    public static final String BUS_OVERFLOW_TAG_NAME = "busOverflow";
     public static final String RUN_STATE_TAG_NAME = "runState";
     public static final String BOOT_ERROR_TAG_NAME = "bootError";
 
     public final CommonDeviceBusController busController;
     BusState busState = BusState.SCAN_PENDING;
+    int busOverflow;
 
     private final VirtualMachineTicker ticker = new VirtualMachineTicker(this);
 
@@ -85,6 +87,17 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     @Override
+    public int getBusOverflow() {
+        return busOverflow;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void setBusOverflowClient(final int value) {
+        busOverflow = value;
+    }
+
+    @Override
     public VMRunState getRunState() {
         return runState;
     }
@@ -110,7 +123,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     @Override
     @Nullable
     public Component getError() {
-        return VMErrorCalculator.getError(busState, runState, bootError);
+        return VMErrorCalculator.getError(busState, busOverflow, runState, bootError);
     }
 
     @Override
@@ -149,6 +162,8 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     protected void handleBusStateChanged(final BusState value) {}
 
+    protected void handleBusOverflowChanged(final int value) {}
+
     protected void handleRunStateChanged(final VMRunState value) {}
 
     protected void handleBootErrorChanged(@Nullable final Component value) {}
@@ -171,6 +186,12 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         if (value == busState) return;
         busState = value;
         handleBusStateChanged(busState);
+    }
+
+    void setBusOverflow(final int value) {
+        if (value == busOverflow) return;
+        busOverflow = value;
+        handleBusOverflowChanged(value);
     }
 
     public void setRunState(final VMRunState value) {

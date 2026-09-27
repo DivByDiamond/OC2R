@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.data;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
@@ -7,28 +8,29 @@ import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.util.Registries;
 import li.cil.oc2.common.bus.device.data.block.BuildrootBlockDeviceData;
 import li.cil.oc2.common.bus.device.data.block.OnyxOSBlockDeviceData;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 @SuppressWarnings("unused")
 public final class BlockDeviceDataRegistry {
-    private static final DeferredRegister<BlockDeviceData> INITIALIZER =
-            DeferredRegister.create(Registries.BLOCK_DEVICE_DATA, API.MOD_ID);
+    private static final String REGISTRY_ID = Registries.BLOCK_DEVICE_DATA.location().toString();
 
     private static final Registry<BlockDeviceData> REGISTRY =
-            INITIALIZER.makeRegistry(builder -> {});
+            Platform.registries().createRegistry(REGISTRY_ID, API.MOD_ID);
 
-    public static final DeferredHolder<BlockDeviceData, BuildrootBlockDeviceData> BUILDROOT =
-            INITIALIZER.register("buildroot", BuildrootBlockDeviceData::new);
+    public static final Supplier<BuildrootBlockDeviceData> BUILDROOT =
+            Platform.registries().register(
+                    REGISTRY_ID, API.MOD_ID, "buildroot", BuildrootBlockDeviceData::new);
 
-    public static final DeferredHolder<BlockDeviceData, OnyxOSBlockDeviceData> ONYXOS =
-            INITIALIZER.register("onyxos-base", OnyxOSBlockDeviceData::new);
+    public static final Supplier<OnyxOSBlockDeviceData> ONYXOS =
+            Platform.registries().register(
+                    REGISTRY_ID, API.MOD_ID, "onyxos-base", OnyxOSBlockDeviceData::new);
 
     public static void initialize(IEventBus modBus) {
-        INITIALIZER.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
     @Nullable

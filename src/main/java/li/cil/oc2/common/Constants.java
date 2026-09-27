@@ -57,6 +57,7 @@ public final class Constants {
             key("gui.{mod}.computer.bus_state.too_complex");
     public static final String COMPUTER_BUS_STATE_MULTIPLE_CONTROLLERS =
             key("gui.{mod}.computer.bus_state.multiple_controllers");
+    public static final String COMPUTER_BUS_OVERFLOW = key("gui.{mod}.computer.bus_overflow");
     public static final String COMPUTER_ERROR_NOT_ENOUGH_ENERGY =
             key("gui.{mod}.computer.error.not_enough_energy");
     public static final String COMPUTER_ERROR_NOT_CONNECTED =
@@ -73,4 +74,7 @@ public final class Constants {
             key("message.{mod}.connector.error.obstructed");
     public static final String CONNECTOR_ERROR_ALREADY_CONNECTED =
             key("message.{mod}.connector.error.already_connected");
+    public static final String CONNECTOR_LINK_STARTED = key("message.{mod}.connector.link_started");
+    public static final String CONNECTOR_CONNECTED = key("message.{mod}.connector.connected");
+    public static final String CONNECTOR_DISCONNECTED = key("message.{mod}.connector.disconnected");
 }

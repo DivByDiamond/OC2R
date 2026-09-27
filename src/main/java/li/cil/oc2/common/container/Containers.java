@@ -1,5 +1,6 @@
 package li.cil.oc2.common.container;
 
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.gui.ScreenRegistry;
 import li.cil.oc2.client.gui.screen.computer.ComputerContainerScreen;
@@ -14,53 +15,49 @@ import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
 import li.cil.oc2.common.container.robot.RobotTerminalContainer;
-import net.minecraft.core.registries.BuiltInRegistries;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class Containers {
-    private static final DeferredRegister<MenuType<?>> REGISTRY =
-            DeferredRegister.create(BuiltInRegistries.MENU, API.MOD_ID);
-
-    public static final DeferredHolder<MenuType<?>, MenuType<ComputerInventoryContainer>> COMPUTER =
-            REGISTRY.register(
+    public static final Supplier<MenuType<ComputerInventoryContainer>> COMPUTER =
+            Platform.registries().register("minecraft:menu", API.MOD_ID, 
                     "computer",
                     () -> IMenuTypeExtension.create(ComputerInventoryContainer::createClient));
-    public static final DeferredHolder<MenuType<?>, MenuType<ComputerTerminalContainer>>
+    public static final Supplier<MenuType<ComputerTerminalContainer>>
             COMPUTER_TERMINAL =
-                    REGISTRY.register(
+                    Platform.registries().register("minecraft:menu", API.MOD_ID, 
                             "computer_terminal",
                             () ->
                                     IMenuTypeExtension.create(
                                             ComputerTerminalContainer::createClient));
-    public static final DeferredHolder<MenuType<?>, MenuType<MonitorDisplayContainer>> MONITOR =
-            REGISTRY.register(
+    public static final Supplier<MenuType<MonitorDisplayContainer>> MONITOR =
+            Platform.registries().register("minecraft:menu", API.MOD_ID, 
                     "monitor",
                     () -> IMenuTypeExtension.create(MonitorDisplayContainer::createClient));
-    public static final DeferredHolder<MenuType<?>, MenuType<RobotInventoryContainer>> ROBOT =
-            REGISTRY.register(
+    public static final Supplier<MenuType<RobotInventoryContainer>> ROBOT =
+            Platform.registries().register("minecraft:menu", API.MOD_ID, 
                     "robot",
                     () -> IMenuTypeExtension.create(RobotInventoryContainer::createClient));
-    public static final DeferredHolder<MenuType<?>, MenuType<RobotTerminalContainer>>
+    public static final Supplier<MenuType<RobotTerminalContainer>>
             ROBOT_TERMINAL =
-                    REGISTRY.register(
+                    Platform.registries().register("minecraft:menu", API.MOD_ID, 
                             "robot_terminal",
                             () -> IMenuTypeExtension.create(RobotTerminalContainer::createClient));
-    public static final DeferredHolder<MenuType<?>, MenuType<NetworkTunnelContainer>>
+    public static final Supplier<MenuType<NetworkTunnelContainer>>
             NETWORK_TUNNEL =
-                    REGISTRY.register(
+                    Platform.registries().register("minecraft:menu", API.MOD_ID, 
                             "network_tunnel",
                             () -> IMenuTypeExtension.create(NetworkTunnelContainer::createClient));
 
     public static void initialize(IEventBus modBus) {
-        REGISTRY.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
     @SubscribeEvent

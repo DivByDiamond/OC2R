@@ -93,12 +93,17 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     protected void handleBusStateChanged(final BusState value) {
-        owner.terminalManager.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner, value));
+        owner.terminalManager.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner));
 
         final Level level = owner.getLevel();
         if (value == BusState.READY && level != null) {
             level.updateNeighborsAt(owner.getBlockPos(), owner.getBlockState().getBlock());
         }
+    }
+
+    @Override
+    protected void handleBusOverflowChanged(final int value) {
+        owner.terminalManager.sendToClientsTrackingComputer(new ComputerBusStateMessage(owner));
     }
 
     @Override

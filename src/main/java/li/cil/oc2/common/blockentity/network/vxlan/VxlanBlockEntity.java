@@ -52,7 +52,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
      * Virtual tunnel identifier; selects the inbound VXLAN frames addressed to this hub.
      * Randomized per placed hub instead of a shared constant so two hubs cannot silently
      * steal each other's tunnel registration ({@code tunnels} maps VNI to one interface);
-     * values restored from NBT are range-validated (todo.md §39 С2).
+     * values restored from NBT are range-validated (docs/roadmap/network-inet.md §39 C2).
      */
     private int vti = VTI_RANDOM.nextInt(VNI_LIMIT);
     private int frameCount;
@@ -62,7 +62,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
     /**
      * Inbound frames delivered by the tunnel socket thread; capacity is configurable
      * ({@code vxlanPacketQueueCapacity}) and frames beyond it are dropped by the producer.
-     * {@link ArrayBlockingQueue} is thread-safe, so no external lock is needed (todo.md §38 Ш5).
+     * {@link ArrayBlockingQueue} is thread-safe, so no external lock is needed (docs/roadmap/done.md §38 Sh5).
      */
     private final Queue<byte[]> packetQueue =
             new ArrayBlockingQueue<>(Config.vxlanPacketQueueCapacity);

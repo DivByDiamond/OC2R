@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
+import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
@@ -21,8 +22,6 @@ import net.minecraft.world.phys.Vec3;
 public final class NetworkConnectorConnectionManager {
     private static final int RETRY_UNLOADED_CHUNK_INTERVAL =
             TickUtils.toTicks(Duration.ofSeconds(5));
-    private static final int MAX_CONNECTION_COUNT = 2;
-    private static final int MAX_CONNECTION_DISTANCE = 16;
 
     private final NetworkConnectorBlockEntity owner;
 
@@ -38,65 +37,14 @@ public final class NetworkConnectorConnectionManager {
     public static ConnectionResult connect(
             final NetworkConnectorBlockEntity connectorA,
             final NetworkConnectorBlockEntity connectorB) {
-        final ConnectionResult validation = validateConnection(connectorA, connectorB);
+        final ConnectionResult validation =
+                NetworkConnectorConnectionValidator.validate(connectorA, connectorB);
         if (validation != null) {
             return validation;
         }
 
         return establishConnection(
                 connectorA, connectorB, connectorA.getBlockPos(), connectorB.getBlockPos());
-    }
-
-    private static ConnectionResult validateConnection(
-            final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB) {
-        if (areInvalid(connectorA, connectorB)) {
-            return ConnectionResult.FAILURE;
-        }
-
-        final Level level = connectorA.getLevel();
-        if (!isValidLevel(level, connectorB)) {
-            return ConnectionResult.FAILURE;
-        }
-
-        if (!canConnectMore(connectorA, connectorB)) {
-            return ConnectionResult.FAILURE_FULL;
-        }
-
-        final BlockPos posA = connectorA.getBlockPos();
-        final BlockPos posB = connectorB.getBlockPos();
-
-        if (!posA.closerThan(posB, MAX_CONNECTION_DISTANCE)) {
-            return ConnectionResult.FAILURE_TOO_FAR;
-        }
-
-        if (NetworkConnectorConnectionValidator.isObstructed(level, posA, posB)) {
-            return ConnectionResult.FAILURE_OBSTRUCTED;
-        }
-
-        return null;
-    }
-
-    private static boolean areInvalid(
-            final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB) {
-        return connectorA.equals(connectorB)
-                || !connectorA.isValid()
-                || !connectorB.isValid();
-    }
-
-    private static boolean isValidLevel(
-            final Level level, final NetworkConnectorBlockEntity connectorB) {
-        return level != null
-                && !level.isClientSide()
-                && level.equals(connectorB.getLevel());
-    }
-
-    private static boolean canConnectMore(
-            final NetworkConnectorBlockEntity connectorA,
-            final NetworkConnectorBlockEntity connectorB) {
-        return connectorA.connectionManager.canConnectMore()
-                && connectorB.connectionManager.canConnectMore();
     }
 
     private static ConnectionResult establishConnection(
@@ -132,13 +80,31 @@ public final class NetworkConnectorConnectionManager {
     }
 
     public void disconnectFrom(final BlockPos pos) {
+        disconnectFrom(pos, true);
+    }
+
+    /**
+     * Removes the link to {@code pos} from this connector.
+     *
+     * @param dropCable whether the cable item this connector owns should be spawned back into the
+     *                  world. {@code false} for removals started by a creative player, who never
+     *                  paid a cable for the link and must not gain one from removing it.
+     */
+    public void disconnectFrom(final BlockPos pos, final boolean dropCable) {
         dirtyConnectors.remove(pos);
         connectors.remove(pos);
 
-        if (ownedCables.remove(pos)) {
+        final boolean owned = ownedCables.remove(pos);
+        // The validator rejects self-links at connect() time, so this can only be reached through a
+        // corrupted or hand-edited save; guard it anyway rather than spawning the cable on top of
+        // the connector itself.
+        if (owned && dropCable && !pos.equals(owner.getBlockPos())) {
             final Level level = owner.getLevel();
             if (level != null) {
-                final Vec3 middle = Vec3.atCenterOf(owner.getBlockPos().offset(pos)).scale(0.5f);
+                // Halfway between both connectors, so the cable lands inside the structure.
+                final Vec3 middle = Vec3.atCenterOf(owner.getBlockPos())
+                        .add(Vec3.atCenterOf(pos))
+                        .scale(0.5f);
                 ItemStackUtils.spawnAsEntity(
                         level, middle, new ItemStack(Items.NETWORK_CABLE.get()));
             }
@@ -154,7 +120,7 @@ public final class NetworkConnectorConnectionManager {
     }
 
     public boolean canConnectMore() {
-        return connectorPositions.size() < MAX_CONNECTION_COUNT;
+        return connectorPositions.size() < Config.networkConnectorPorts;
     }
 
     public Collection<BlockPos> getConnectedPositions() {
@@ -188,7 +154,15 @@ public final class NetworkConnectorConnectionManager {
             return;
         }
 
-        if (!connectedPosition.closerThan(owner.getBlockPos(), MAX_CONNECTION_DISTANCE)) {
+        if (!networkConnector.connectionManager.connectorPositions.contains(owner.getBlockPos())) {
+            // The other end does not know about this link (for example it was removed while this
+            // side was unloaded): drop our half instead of keeping a phantom cable.
+            disconnectFrom(connectedPosition);
+            return;
+        }
+
+        if (!connectedPosition.closerThan(owner.getBlockPos(),
+                NetworkConnectorConnectionValidator.MAX_CONNECTION_DISTANCE)) {
             disconnectFrom(connectedPosition);
             networkConnector.connectionManager.disconnectFrom(owner.getBlockPos());
             return;

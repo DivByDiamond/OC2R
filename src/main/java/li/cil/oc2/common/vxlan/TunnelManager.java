@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * prepended and are sent as a single datagram to the remote endpoint. Sends are
  * non-blocking: if the OS socket buffer is full the datagram is dropped, which
  * UDP receivers must tolerate anyway &mdash; this keeps frame floods on the server
- * tick thread from ever blocking it (todo.md §38 Ш3).
+ * tick thread from ever blocking it (docs/roadmap/done.md §38 Sh3).
  */
 @EventBusSubscriber(modid = API.MOD_ID)
 public class TunnelManager {
@@ -74,7 +74,7 @@ public class TunnelManager {
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         // The remote endpoint is a constant for the manager's lifetime; constructing the
-        // resolved address once keeps per-frame sends allocation-free (todo.md §38 Ш7).
+        // resolved address once keeps per-frame sends allocation-free (docs/roadmap/done.md §38 Sh7).
         this.cachedRemoteAddress = new InetSocketAddress(remoteHost, remotePort);
     }
 
@@ -129,7 +129,7 @@ public class TunnelManager {
         // Connected channel = kernel-level source filtering: datagrams from any address
         // other than the configured remote endpoint are dropped before we ever see them,
         // so arbitrary internet hosts cannot inject frames into the virtual network
-        // (todo.md §39 С1).
+        // (docs/roadmap/network-inet.md §39 C1).
         datagramChannel.connect(new InetSocketAddress(remoteHost, remotePort));
         final Selector datagramSelector = Selector.open();
         datagramChannel.register(datagramSelector, SelectionKey.OP_READ);
@@ -217,7 +217,7 @@ public class TunnelManager {
         }
 
         // Grow-only header+payload staging buffer: send() copies into the kernel on
-        // this thread before returning, so reuse between sends is safe (todo.md §38 Ш7).
+        // this thread before returning, so reuse between sends is safe (docs/roadmap/done.md §38 Sh7).
         final int total = HEADER_SIZE + payload.length;
         if (sendBuffer.length < total) {
             sendBuffer = new byte[Math.max(total, sendBuffer.length * 2)];

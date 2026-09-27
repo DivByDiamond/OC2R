@@ -1,20 +1,17 @@
 package li.cil.oc2.common.entity;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 import li.cil.oc2.api.API;
-import net.minecraft.core.registries.BuiltInRegistries;
+import li.cil.oc2.platform.NeoForgeRegistryBridge;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class Entities {
-    private static final DeferredRegister<EntityType<?>> REGISTRY =
-            DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, API.MOD_ID);
-
-    public static final DeferredHolder<EntityType<?>, EntityType<Robot>> ROBOT =
+    public static final Supplier<EntityType<Robot>> ROBOT =
             register(
                     "robot",
                     Robot::new,
@@ -22,16 +19,16 @@ public final class Entities {
                     b -> b.sized(14f / 16f, 14f / 16f).fireImmune().noSummon());
 
     public static void initialize(IEventBus modBus) {
-        REGISTRY.register(modBus);
+        NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static <T extends Entity> DeferredHolder<EntityType<?>, EntityType<T>> register(
+    private static <T extends Entity> Supplier<EntityType<T>> register(
             final String name,
             final EntityType.EntityFactory<T> factory,
             final MobCategory classification,
             final Function<EntityType.Builder<T>, EntityType.Builder<T>> customizer) {
-        return REGISTRY.register(
+        return Platform.registries().register("minecraft:entity_type", API.MOD_ID, 
                 name,
                 () -> customizer.apply(EntityType.Builder.of(factory, classification)).build(name));
     }

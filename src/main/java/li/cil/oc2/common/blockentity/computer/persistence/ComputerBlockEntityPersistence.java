@@ -26,6 +26,9 @@ public final class ComputerBlockEntityPersistence {
         tag.putString(
                 AbstractVirtualMachine.BUS_STATE_TAG_NAME,
                 computer.virtualMachine.getBusState().name());
+        tag.putInt(
+                AbstractVirtualMachine.BUS_OVERFLOW_TAG_NAME,
+                computer.virtualMachine.getBusOverflow());
         tag.putString(
                 AbstractVirtualMachine.RUN_STATE_TAG_NAME,
                 computer.virtualMachine.getRunState().name());
@@ -49,9 +52,13 @@ public final class ComputerBlockEntityPersistence {
         handleUpdateTag(computer, tag, registries);
         var level = computer.getLevel();
         if (level != null && level.isClientSide()) {
+            // The whole payload above (terminal *and* bus/run state) is nested under the terminal
+            // key by ComputerBlockEntity#getUpdateTag, so state is read from the same compound.
             var data = tag.getCompound(TERMINAL_TAG_NAME);
             computer.virtualMachine.setBusStateClient(
                     readBusState(data, AbstractVirtualMachine.BUS_STATE_TAG_NAME));
+            computer.virtualMachine.setBusOverflowClient(
+                    data.getInt(AbstractVirtualMachine.BUS_OVERFLOW_TAG_NAME));
             computer.virtualMachine.setRunStateClient(
                     readRunState(data, AbstractVirtualMachine.RUN_STATE_TAG_NAME));
             computer.virtualMachine.setBootErrorClient(

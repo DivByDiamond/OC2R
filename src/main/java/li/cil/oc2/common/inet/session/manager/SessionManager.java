@@ -27,7 +27,7 @@ public final class SessionManager {
     // Coarse shared clock: both per-packet scans below reuse one cached instant instead
     // of each fetching their own, refreshed at most once per interval. Expiration
     // thresholds are seconds-scale, so microsecond staleness is irrelevant; everything
-    // here runs on the single "Internet" thread (todo.md §38 Ш8).
+    // here runs on the single "Internet" thread (docs/roadmap/done.md §38 Sh8).
     private static final long CLOCK_RESOLUTION_NANOS = 200_000;
     private long clockNanos;
     private Instant clock = Instant.now();

@@ -89,8 +89,9 @@ public class DecstrTest {
 
     @Test
     void decstrResetsScrollMarginsToFull() {
-        // Corrects OC2R todo.md, which claims DECSTR preserves scroll margins: DEC VT510-RM
-        // Table 5-9 and xterm-410 both reset DECSTBM to the full page.
+        // Corrects an earlier OC2R note that claimed DECSTR preserves scroll margins
+        // (docs/roadmap/terminal.md §35): DEC VT510-RM Table 5-9 and xterm-410
+        // both reset DECSTBM to the full page.
         write(terminal, CSI + "5;10r"); // DECSTBM: top margin 5, bottom margin 10
         assertEquals(4, terminal.scrollFirst, "precondition: top margin");
         assertEquals(9, terminal.scrollLast, "precondition: bottom margin");

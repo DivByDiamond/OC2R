@@ -13,6 +13,8 @@ val minecraft_sdk: String get() = gradle.providers.gradleProperty("minecraft_sdk
 
 rootProject.name = "oc2r-${minecraft_version}-${minecraft_sdk}"
 
+include("core")
+
 fun substituteLocal(directoryName: String, libraryName: String) {
     val path = java.io.File("../${directoryName}")
     if (path.exists()) {

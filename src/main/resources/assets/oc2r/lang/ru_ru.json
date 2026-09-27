@@ -30,6 +30,7 @@
   "gui.oc2r.computer.bus_state.incomplete": "Шина не заполнена",
   "gui.oc2r.computer.bus_state.multiple_controllers": "Много контроллеров шины",
   "gui.oc2r.computer.bus_state.too_complex": "Слишком много устройств",
+  "gui.oc2r.computer.bus_overflow": "Слишком большая шина: часть устройств отключена",
   "gui.oc2r.computer.capture_input.capt": "Захват ввода",
   "gui.oc2r.computer.capture_input.desc": "Пока курсор находится в пределах окна терминала, ввод (включая нажатие на ESC) будет захватываться.",
   "gui.oc2r.computer.error.insufficient_memory": "Недостаточно памяти",

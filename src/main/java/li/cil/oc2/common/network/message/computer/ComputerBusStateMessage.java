@@ -7,19 +7,27 @@ import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record ComputerBusStateMessage(BlockPos pos, BusState value) implements AbstractMessage {
+/**
+ * Server-to-client snapshot of a computer's bus state, including how many elements the bus had to
+ * leave out ({@code overflow}); both sides ship together, so the codec may carry both fields.
+ */
+public record ComputerBusStateMessage(BlockPos pos, BusState value, int overflow)
+        implements AbstractMessage {
     public static final StreamCodec<FriendlyByteBuf, ComputerBusStateMessage> STREAM_CODEC =
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC,
                     ComputerBusStateMessage::pos,
                     NeoForgeStreamCodecs.enumCodec(BusState.class),
                     ComputerBusStateMessage::value,
+                    ByteBufCodecs.VAR_INT,
+                    ComputerBusStateMessage::overflow,
                     ComputerBusStateMessage::new);
 
     public static final CustomPacketPayload.Type<ComputerBusStateMessage> TYPE =
@@ -32,8 +40,11 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value) implements A
         return TYPE;
     }
 
-    public ComputerBusStateMessage(final ComputerBlockEntity computer, final BusState value) {
-        this(computer.getBlockPos(), value);
+    public ComputerBusStateMessage(final ComputerBlockEntity computer) {
+        this(
+                computer.getBlockPos(),
+                computer.getVirtualMachine().getBusState(),
+                computer.getVirtualMachine().getBusOverflow());
     }
 
     @Override
@@ -41,6 +52,9 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value) implements A
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 ComputerBlockEntity.class,
-                computer -> computer.getVirtualMachine().setBusStateClient(value));
+                computer -> {
+                    computer.getVirtualMachine().setBusStateClient(value);
+                    computer.getVirtualMachine().setBusOverflowClient(overflow);
+                });
     }
 }
