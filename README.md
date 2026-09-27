@@ -8,7 +8,7 @@ Fork of [North-Western-Development/OC2R], itself a fork of [OpenComputers 2] by 
 ![Java](https://img.shields.io/badge/Java-21+-orange?style=flat-square&logo=openjdk&logoColor=white)
 ![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1-green?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
-![GitHub Release](https://img.shields.io/github/v/release/TumRedSun/OC2R?style=flat-square)
+![GitHub Release](https://img.shields.io/github/v/release/DivByDiamond/OC2R?style=flat-square)
 
 [English](#english) | [Русский](#русский)
 
