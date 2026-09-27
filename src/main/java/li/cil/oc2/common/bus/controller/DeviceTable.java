@@ -2,12 +2,12 @@ package li.cil.oc2.common.bus.controller;
 
 import static java.util.Collections.emptySet;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -20,8 +20,12 @@ import li.cil.oc2.api.bus.device.Device;
 final class DeviceTable {
     private final CommonDeviceBusController controller;
     private final Set<Device> devices = new HashSet<>();
-    private final Map<Device, Set<UUID>> deviceIds = new ConcurrentHashMap<>();
-    private final Map<Device, DeviceBusController> occupiedDevices = new ConcurrentHashMap<>();
+    // Plain HashMap: scan() is only ever called on the server thread (see class javadoc), and
+    // getOccupiedDevices()/getDeviceIdentifiers() have no cross-thread caller currently.
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    private final Map<Device, Set<UUID>> deviceIds = new HashMap<>();
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    private final Map<Device, DeviceBusController> occupiedDevices = new HashMap<>();
 
     DeviceTable(final CommonDeviceBusController controller) {
         this.controller = controller;
@@ -32,7 +36,8 @@ final class DeviceTable {
 
         final Set<Device> newDevices = new HashSet<>();
         occupiedDevices.clear();
-        final Map<Device, Set<UUID>> newDeviceIds = new ConcurrentHashMap<>();
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
+        final Map<Device, Set<UUID>> newDeviceIds = new HashMap<>();
         for (final DeviceBusElement element : controller.getElements()) {
             if (!controller.isOwnerOf(element)) {
                 final DeviceBusController owner = controller.ownerOf(element);

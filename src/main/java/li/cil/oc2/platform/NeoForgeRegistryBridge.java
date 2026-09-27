@@ -139,13 +139,17 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
                     register.register(modBus);
                 }
             });
+            // Prefixed with a character ResourceLocation namespaces/paths can never contain, so
+            // these can never collide with a `registryId + '|' + namespace` key from `registers`
+            // (for example a caller mistakenly passing registryId "minecraft:block" to register()
+            // instead of using registerBlock() would otherwise land on the same "block|<ns>" key).
             blockRegisters.forEach((ns, register) -> {
-                if (bound.add("block|" + ns)) {
+                if (bound.add("\u0000block|" + ns)) {
                     register.register(modBus);
                 }
             });
             itemRegisters.forEach((ns, register) -> {
-                if (bound.add("item|" + ns)) {
+                if (bound.add("\u0000item|" + ns)) {
                     register.register(modBus);
                 }
             });

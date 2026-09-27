@@ -95,7 +95,10 @@ public final class NetworkConnectorConnectionManager {
         connectors.remove(pos);
 
         final boolean owned = ownedCables.remove(pos);
-        if (owned && dropCable) {
+        // The validator rejects self-links at connect() time, so this can only be reached through a
+        // corrupted or hand-edited save; guard it anyway rather than spawning the cable on top of
+        // the connector itself.
+        if (owned && dropCable && !pos.equals(owner.getBlockPos())) {
             final Level level = owner.getLevel();
             if (level != null) {
                 // Halfway between both connectors, so the cable lands inside the structure.

@@ -1,32 +1,43 @@
 package li.cil.oc2.common.blockentity.network.cable.faceoverride;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Per-face connection override stored on every bus cable (docs/CABLE-SYSTEM.md). It is part of the save
  * format from the start so the wrench tool can set it later without a data migration.
  */
 public enum FaceOverride {
     /** Follow the face's connection type (default). */
-    AUTO,
+    AUTO((byte) 0),
     /** Reserved for the wrench tool; currently behaves like {@link #AUTO}. */
-    FORCED_ON,
+    FORCED_ON((byte) 1),
     /** The face never connects, neither for bus traversal nor device detection. */
-    FORCED_OFF;
+    FORCED_OFF((byte) 2);
 
-    private static final FaceOverride[] VALUES = values();
+    // Built once from a fixed, small enum -- never mutated afterward, so a plain (immutable) Map
+    // is the right choice here, not ConcurrentHashMap.
+    private static final Map<Byte, FaceOverride> BY_ID =
+            Arrays.stream(values())
+                    .collect(Collectors.toUnmodifiableMap(value -> value.id, value -> value));
 
-    /**
-     * Decodes a saved byte, falling back to {@link #AUTO} for anything unknown.
-     * <p>
-     * The byte written to saves is the enum ordinal, so constants must never be reordered or
-     * inserted: existing worlds store the raw byte and would silently re-interpret it.
-     */
-    public static FaceOverride fromByte(final byte value) {
-        return value >= 0 && value < VALUES.length ? VALUES[value] : AUTO;
+    // Explicit, saved values: independent of declaration order, unlike ordinal(). Never change or
+    // reuse an existing constant's id -- that would silently re-interpret it in existing worlds.
+    private final byte id;
+
+    FaceOverride(final byte id) {
+        this.id = id;
     }
 
-    /** Encodes this value for saves; see {@link #fromByte(byte)} for the ordinal caveat. */
+    /** Decodes a saved byte, falling back to {@link #AUTO} for anything unknown. */
+    public static FaceOverride fromByte(final byte value) {
+        return BY_ID.getOrDefault(value, AUTO);
+    }
+
+    /** Encodes this value for saves. */
     public byte toByte() {
-        return (byte) ordinal();
+        return id;
     }
 
     public boolean blocksConnection() {
