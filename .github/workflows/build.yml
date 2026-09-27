@@ -3,7 +3,7 @@ name: build
 on:
   workflow_dispatch:
   push:
-    branches: [ '1.21.1' ]
+    branches: [ 'master' ]
     tags: [ 'v*' ]
 
 jobs:
