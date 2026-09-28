@@ -16,6 +16,8 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
@@ -148,8 +150,8 @@ public final class ComputerFixture {
     }
 
     public long energy() {
-        final var storage = helper.getLevel().getCapability(
-            Capabilities.EnergyStorage.BLOCK, helper.absolutePos(position), null);
+        final EnergyStorage storage = Platform.energy()
+            .getBlockEnergy(helper.getLevel(), helper.absolutePos(position), null);
         if (storage == null) {
             throw new GameTestAssertException("computer exposes no energy storage capability");
         }

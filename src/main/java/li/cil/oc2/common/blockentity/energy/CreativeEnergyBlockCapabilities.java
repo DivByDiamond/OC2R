@@ -2,7 +2,7 @@ package li.cil.oc2.common.blockentity.energy;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -12,8 +12,7 @@ final class CreativeEnergyBlockCapabilities {
 
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
-                Capabilities.EnergyStorage.BLOCK,
+        new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
                 (level, pos, state, be, side) -> {
                     if (be instanceof final CreativeEnergyBlockEntity self) {
                         return self.energy;

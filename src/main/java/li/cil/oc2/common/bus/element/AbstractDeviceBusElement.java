@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.element;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
@@ -10,7 +11,11 @@ import li.cil.oc2.api.bus.device.Device;
 
 public abstract class AbstractDeviceBusElement implements DeviceBusElement {
     public final Object2IntMap<Device> devices = new Object2IntArrayMap<>();
-    protected final Set<DeviceBusController> controllers = new HashSet<>();
+    // Concurrent set: addController()/removeController() and getControllers() were assumed
+    // server-thread-only, but a plain HashSet mutated and iterated from different call paths
+    // during the same device scan can corrupt its bucket structure and spin forever in
+    // nextNode() (observed as a GameTestServer hang inside OwnerResolver.owner()).
+    protected final Set<DeviceBusController> controllers = ConcurrentHashMap.newKeySet();
 
     public void addDevice(final Device device) {
         devices.put(device, 0);

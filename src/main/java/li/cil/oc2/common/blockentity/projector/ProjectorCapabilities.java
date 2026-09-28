@@ -5,6 +5,7 @@ import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -15,8 +16,7 @@ final class ProjectorCapabilities {
     @SubscribeEvent
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
         if (Config.projectorsUseEnergy()) {
-            event.registerBlock(
-                    Capabilities.EnergyStorage.BLOCK,
+            new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
                     (level, pos, state, be, side) ->
                             be instanceof ProjectorBlockEntity self ? self.energy : null,
                     Blocks.PROJECTOR.get());

@@ -10,6 +10,7 @@ import li.cil.oc2.common.bus.device.vm.block.misc.PciCardCageDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -95,8 +96,7 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         if (Config.cardCagesUseEnergy()) {
-            event.registerBlock(
-                    Capabilities.EnergyStorage.BLOCK,
+            new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
                     (level, pos, state, be, side) -> {
                         if (be instanceof final PciCardCageBlockEntity self) {
                             return self.energy;

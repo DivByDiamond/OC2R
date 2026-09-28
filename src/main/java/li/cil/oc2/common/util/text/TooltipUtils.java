@@ -9,11 +9,12 @@ import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
 import li.cil.oc2.common.bus.device.util.Devices;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.ItemTags;
+import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.*;
@@ -165,7 +166,7 @@ public final class TooltipUtils {
 
     public static void addEntityEnergyInformation(
             final ItemStack stack, final List<Component> tooltip) {
-        var energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+        final EnergyStorage energy = Platform.energy().getItemEnergy(stack);
         if (energy != null) {
             if (energy.getEnergyStored() == 0) {
                 return;

@@ -7,9 +7,11 @@ public final class Platform {
     private static final Object INIT_LOCK = new Object();
 
     private static final Object NETWORK_INIT_LOCK = new Object();
+    private static final Object ENERGY_INIT_LOCK = new Object();
 
     private static volatile RegistryBridge bridge;
     private static volatile NetworkBridge networkBridge;
+    private static volatile EnergyBridge energyBridge;
 
     private Platform() {}
 
@@ -39,6 +41,20 @@ public final class Platform {
                 result = networkBridge;
                 if (result == null) {
                     networkBridge = result = load(NetworkBridge.class);
+                }
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static EnergyBridge energy() {
+        EnergyBridge result = energyBridge;
+        if (result == null) {
+            synchronized (ENERGY_INIT_LOCK) {
+                result = energyBridge;
+                if (result == null) {
+                    energyBridge = result = load(EnergyBridge.class);
                 }
             }
         }

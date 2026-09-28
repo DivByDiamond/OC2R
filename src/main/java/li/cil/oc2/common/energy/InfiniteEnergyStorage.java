@@ -1,8 +1,8 @@
 package li.cil.oc2.common.energy;
 
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import li.cil.oc2.platform.EnergyStorage;
 
-public final class InfiniteEnergyStorage implements IEnergyStorage {
+public final class InfiniteEnergyStorage implements EnergyStorage {
     @Override
     public int getEnergyStored() {
         return Integer.MAX_VALUE;

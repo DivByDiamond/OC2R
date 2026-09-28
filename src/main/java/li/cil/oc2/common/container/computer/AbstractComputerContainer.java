@@ -16,11 +16,11 @@ import li.cil.oc2.common.network.message.computer.terminal.OpenComputerInventory
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerTerminalMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public abstract class AbstractComputerContainer extends AbstractMachineTerminalContainer {
     private final ComputerBlockEntity computer;
@@ -109,7 +109,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
     }
 
     protected static IntPrecisionContainerData createEnergyInfo(
-            final IEnergyStorage energy, final CommonDeviceBusController busController) {
+            final EnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {

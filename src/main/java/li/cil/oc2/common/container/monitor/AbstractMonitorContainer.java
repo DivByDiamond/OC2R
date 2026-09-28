@@ -11,11 +11,11 @@ import li.cil.oc2.common.container.data.IntPrecisionContainerData;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorPowerMessage;
 import li.cil.oc2.common.vm.VirtualMachine;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public abstract class AbstractMonitorContainer extends AbstractMachineContainer {
     private final MonitorBlockEntity monitor;
@@ -96,7 +96,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
     }
 
     protected static IntPrecisionContainerData createEnergyInfo(
-            final IEnergyStorage energy, final CommonDeviceBusController busController) {
+            final EnergyStorage energy, final CommonDeviceBusController busController) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {
@@ -117,7 +117,7 @@ public abstract class AbstractMonitorContainer extends AbstractMachineContainer 
         };
     }
 
-    protected static IntPrecisionContainerData createEnergyInfo(final IEnergyStorage energy) {
+    protected static IntPrecisionContainerData createEnergyInfo(final EnergyStorage energy) {
         return new IntPrecisionContainerData.Server() {
             @Override
             public int getInt(final int index) {
