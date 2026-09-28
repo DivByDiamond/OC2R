@@ -1,8 +1,6 @@
 package li.cil.oc2.platform;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.common.capabilities.Capabilities;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ItemLike;
@@ -13,15 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 /** {@link EnergyCapabilityRegistrar} wrapping NeoForge's {@link RegisterCapabilitiesEvent}. */
 public final class NeoForgeEnergyCapabilityRegistrar implements EnergyCapabilityRegistrar {
-    // Capability providers are re-queried on every device scan, but NeoForge's capability system
-    // (and our own device-bus code, via ObjectDevice/IdentityProxy) requires the exposed object to
-    // keep a stable identity across queries for the same underlying storage. Without this cache,
-    // unwrap() below would hand out a fresh IEnergyStorage instance per query, which the device bus
-    // then treats as a different device every scan, causing it to be "removed" and "re-added" on
-    // every single neighbor update — as a cascading storm of rescans across a whole test world, this
-    // was observed hanging a GameTestServer indefinitely.
-    private static final Map<EnergyStorage, IEnergyStorage> WRAPPER_CACHE = new ConcurrentHashMap<>();
-
     private final RegisterCapabilitiesEvent event;
 
     // The event is valid only for the duration of the one-shot setup callback that constructs
@@ -56,45 +45,77 @@ public final class NeoForgeEnergyCapabilityRegistrar implements EnergyCapability
                 items);
     }
 
+    // Package-private for NeoForgeEnergyCapabilityRegistrarTest.
     @Nullable
-    private static IEnergyStorage unwrap(@Nullable final EnergyStorage storage) {
+    static IEnergyStorage unwrap(@Nullable final EnergyStorage storage) {
         if (storage == null) {
             return null;
         }
-        return WRAPPER_CACHE.computeIfAbsent(storage, NeoForgeEnergyCapabilityRegistrar::wrap);
+        return new EnergyStorageWrapper(storage);
     }
 
-    private static IEnergyStorage wrap(final EnergyStorage storage) {
-        return new IEnergyStorage() {
-            @Override
-            public int receiveEnergy(final int maxReceive, final boolean simulate) {
-                return storage.receiveEnergy(maxReceive, simulate);
-            }
+    /**
+     * {@link IEnergyStorage} view over a {@link EnergyStorage} whose {@link #equals(Object)} and
+     * {@link #hashCode()} delegate to the <em>reference identity</em> of the wrapped storage.
+     *
+     * <p>Capability providers are re-queried on every device scan, and the device bus compares
+     * devices through {@code ObjectDevice} → {@code EnergyStorageDevice} (an {@code IdentityProxy})
+     * → this wrapper. Two wrappers over the same storage instance must therefore be equal, or the
+     * bus would treat the storage as a different device on every scan and re-add it on every
+     * neighbor update (observed as a cascading rescan storm hanging a GameTestServer). Wrappers
+     * over different storages must never be equal.
+     *
+     * <p>This deliberately replaces an earlier static identity cache: caching wrappers in an
+     * unbounded map leaked one entry per query (item providers build a fresh {@code EnergyStorage}
+     * per query, and entries for block/entity storages outlived their owners). Equality needs no
+     * cache: block and entity providers return a stable storage instance for their owner's
+     * lifetime, which is exactly the scope over which device identity must be stable.
+     */
+    private static final class EnergyStorageWrapper implements IEnergyStorage {
+        private final EnergyStorage storage;
 
-            @Override
-            public int extractEnergy(final int maxExtract, final boolean simulate) {
-                return storage.extractEnergy(maxExtract, simulate);
-            }
+        private EnergyStorageWrapper(final EnergyStorage storage) {
+            this.storage = storage;
+        }
 
-            @Override
-            public int getEnergyStored() {
-                return storage.getEnergyStored();
-            }
+        @Override
+        public int receiveEnergy(final int maxReceive, final boolean simulate) {
+            return storage.receiveEnergy(maxReceive, simulate);
+        }
 
-            @Override
-            public int getMaxEnergyStored() {
-                return storage.getMaxEnergyStored();
-            }
+        @Override
+        public int extractEnergy(final int maxExtract, final boolean simulate) {
+            return storage.extractEnergy(maxExtract, simulate);
+        }
 
-            @Override
-            public boolean canExtract() {
-                return storage.canExtract();
-            }
+        @Override
+        public int getEnergyStored() {
+            return storage.getEnergyStored();
+        }
 
-            @Override
-            public boolean canReceive() {
-                return storage.canReceive();
-            }
-        };
+        @Override
+        public int getMaxEnergyStored() {
+            return storage.getMaxEnergyStored();
+        }
+
+        @Override
+        public boolean canExtract() {
+            return storage.canExtract();
+        }
+
+        @Override
+        public boolean canReceive() {
+            return storage.canReceive();
+        }
+
+        @Override
+        public boolean equals(@Nullable final Object o) {
+            return o instanceof final EnergyStorageWrapper other && other.storage == storage;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(storage);
+        }
     }
 }
