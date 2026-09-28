@@ -6,20 +6,26 @@ Design: [docs/MULTILOADER.md](../MULTILOADER.md).
 
 Plan of 2026-09-15. Trigger: in 2026 Mojang moved to `YY.drop` versioning (26.1 "Tiny Takeover" in March, 26.2 "Chaos Cubed" in June; `1.21.11` is the last release of the old scheme). Both loaders already support 26.1/26.2.
 Target matrix: {1.21.1, 26.1, 26.2} x {NeoForge, Fabric}: 6 targets. Coupling to NeoForge: 236 of about 1050 java files import `net.neoforged.*` directly (registries 40, network.handling 42, capabilities 30, energy 16,
-FML/bus the rest), so a platform abstraction is required.
+FML/bus the rest), so a platform abstraction is required. After the Stage 2 network/energy migration (2026-09-28): **209 files** (common 129, client 50, data 12, gametest 9, platform 5, api 4).
 
 Stages:
-- [x] **Stage 1: registries** (branch `feat/multiloader-stage1`, implemented, **done on branch, pending merge**): module `core` (depends only on vanilla Minecraft via NeoForm, no loader) with `li.cil.oc2.platform`:
+- [x] **Stage 1: registries** (**merged** as PR #55, 2026-09-27; was `feat/multiloader-stage1`): module `core` (depends only on vanilla Minecraft via NeoForm, no loader) with `li.cil.oc2.platform`:
   `RegistryBridge` (`register`, `registerBlock/Item`, `blocks`, `addItemAlias`, `createRegistry`), `Platform` (ServiceLoader), `BlockHolder`/`ItemHolder`; implementation `NeoForgeRegistryBridge`. Migrated to the bridge:
   `Blocks`, `Items`, `BlockEntities`, `BlockCodecs`, `SoundEvents`, `RecipeSerializers`, `Entities`, `Containers`, `ItemGroup`, `DataComponents`, firmware, block-device-data, providers. Not migrated: `DeviceTypes`, `RegistryUtils` (both still on NeoForge `DeferredRegister`) and the client
   `Manuals`. The jar contains `core` classes; lint, tests and `gameTest` (15/15) are green. Deviation from the spec: sources were NOT moved into `core/`/`neoforge/` (the root project stays the NeoForge module): about 230 NeoForge files
   cannot live in `core` without NeoForge. `runData` fails on `Missing loottable 'oc2r:blocks/speaker'`, reproducible on `work` as well.
 - Note: the original stage-1 statement (`core`/`neoforge` Gradle split without behavior changes + registries as a model subsystem) is superseded by the implemented variant above.
 - [ ] **Stage 2**: a real `fabric` module + migration of capabilities/network/energy/client events by the stage-1 template.
+  - [x] **network** (PR #56, 2026-09-28): `NetworkBridge`/`MessageRegistrar`/`MessageContext` in `core`, `Network.initialize(MessageRegistrar)` replaces direct payload registration, all messages and `MessageUtils` moved off `IPayloadContext`; NeoForge impls (`NeoForgeMessageRegistrar`, `NeoForgeNetworkBridge`) bound from `Main` via ServiceLoader + `RegisterPayloadHandlersEvent`.
+  - [x] **energy** (PR #56, 2026-09-28): `EnergyStorage`/`AbstractEnergyStorage`/`EnergyBridge`/`EnergyCapabilityRegistrar` in `core`; all registration/query sites migrated (cables, charger, robots, monitors, projector, gateway, PCI cage, computer, creative energy, tooltips, gametest fixture). Fixed on the way: identity-stable capability wrapper (an unstable wrapper made the device bus re-add devices every scan — a rescan storm that hung `GameTestServer`; identity now comes from `equals`/`hashCode` on the wrapped storage, regression-tested, and the interim static wrapper cache it replaced was itself an unbounded leak) and non-thread-safe `HashSet`/`HashMap` in `DeviceTable`/`AbstractDeviceBusElement` (now `ConcurrentHashMap`-backed).
+  - [ ] **capabilities** (non-energy): ~27 files still import `net.neoforged.neoforge.capabilities` (`Capabilities.*`: device bus element/device, item handler, fluid, redstone emitter, robot) — same registrar pattern as energy.
+  - [ ] **client events / FML bus**: ~54 files on `@EventBusSubscriber`/`@SubscribeEvent`/FML; needs a loader-independent event abstraction before a Fabric entrypoint can exist.
+  - [ ] **DeferredRegister leftovers**: `RegistryUtils` and the client `Manuals` (`DeviceTypes` stays on DeferredRegister deliberately — see below).
+  - [ ] **`fabric/` module**: fabric-loom skeleton (official plugin, not Architectury — rationale in [MULTILOADER.md](../MULTILOADER.md)), entrypoint, Fabric implementations of the existing bridges (`RegistryBridge`, `NetworkBridge`/`MessageRegistrar`, `EnergyBridge`/`EnergyCapabilityRegistrar`).
 - [ ] **Stage 3**: multiversion 1.21.1/26.1/26.2 through Stonecutter, for both loaders.
 - [ ] **Stage 4**: CI/release matrix for 6 targets, CurseForge/Modrinth for each.
-- [ ] `DeviceTypes` `DeferredRegister` is not bound to the mod bus, so the registration is effectively dead: investigate.
-- [ ] `FirmwareRegistry.getKey` returns the registry name instead of the entry key: investigate and fix.
+- [x] `DeviceTypes` `DeferredRegister` is not bound to the mod bus, so the registration is effectively dead: **fixed** in `fd166127` (2026-09-27) — `initialize(modBus)` called from `Main`; deliberately left on the raw `DeferredRegister` because `DeviceType.REGISTRY` is public API created eagerly by the interface field, so routing it through `createRegistry()` would make a second, disconnected registry.
+- [x] `FirmwareRegistry.getKey` returns the registry name instead of the entry key: **fixed** in `fd166127` (2026-09-27) — it ignored its argument, so `FlashMemoryWithExternalDataItem.withFirmware()` persisted a key that `getFirmware()` later resolved to the registry-level location and silently got `null`; now delegates to `REGISTRY.getKey(firmware)`.
 
 Toolchain: separate official plugins (`net.neoforged.moddev` for NeoForge, untouched; `fabric-loom` for Fabric), NOT Architectury Loom (rationale in the doc: risk of breaking the configured NeoForge stack for a benefit needed only at stage 2).
 
