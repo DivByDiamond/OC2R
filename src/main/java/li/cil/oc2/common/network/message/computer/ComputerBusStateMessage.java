@@ -5,6 +5,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -12,7 +13,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Server-to-client snapshot of a computer's bus state, including how many elements the bus had to
@@ -48,7 +48,7 @@ public record ComputerBusStateMessage(BlockPos pos, BusState value, int overflow
     }
 
     @Override
-    public void handleMessage(final IPayloadContext context) {
+    public void handleMessage(final MessageContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 ComputerBlockEntity.class,

@@ -17,6 +17,9 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.util.world.chunk.ChunkUtils;
+import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -30,7 +33,6 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 
 @EventBusSubscriber(modid = API.MOD_ID)
@@ -98,8 +100,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlock(
-                Capabilities.EnergyStorage.BLOCK,
+        new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
                 (level, pos, state, be, side) -> {
                     if (be instanceof final ChargerBlockEntity self) {
                         return self.energy;
@@ -119,13 +120,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
         final var above = getBlockPos().above();
         final BlockEntity blockEntity = level.getBlockEntity(above);
         if (blockEntity != null) {
-            final var energy =
-                    level.getCapability(
-                            Capabilities.EnergyStorage.BLOCK,
-                            above,
-                            null,
-                            blockEntity,
-                            Direction.DOWN);
+            final EnergyStorage energy = Platform.energy().getBlockEnergy(level, above, Direction.DOWN);
             if (energy != null) charge(energy);
             final var items =
                     level.getCapability(
@@ -144,8 +139,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
         final List<Entity> entities =
                 level.getEntities((Entity) null, new AABB(getBlockPos().above()), ENTITY_PREDICATE);
         for (final Entity entity : entities) {
-            final var energy =
-                    entity.getCapability(Capabilities.EnergyStorage.ENTITY, Direction.DOWN);
+            final EnergyStorage energy = Platform.energy().getEntityEnergy(entity, Direction.DOWN);
             if (energy != null) charge(energy);
             final var items = entity.getCapability(Capabilities.ItemHandler.ENTITY, null);
             if (items != null) chargeItems(items);
@@ -156,13 +150,13 @@ public final class ChargerBlockEntity extends ModBlockEntity
         for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
             final ItemStack stack = itemHandler.getStackInSlot(slot);
             if (!stack.isEmpty()) {
-                final var energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+                final EnergyStorage energy = Platform.energy().getItemEnergy(stack);
                 if (energy != null) charge(energy);
             }
         }
     }
 
-    private void charge(final IEnergyStorage energyStorage) {
+    private void charge(final EnergyStorage energyStorage) {
         assert level != null;
 
         final int amount = Math.min(energy.getEnergyStored(), Config.chargerEnergyPerTick);

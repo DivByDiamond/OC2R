@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Set;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.integration.ic2.Ic2EuBridge;
+import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 /**
  * Moves energy between external blocks and the internal buffers of bus cables.
@@ -135,7 +135,7 @@ public final class EnergyTransferManager {
                 break;
             }
             final BlockPos neighborPos = pos.relative(side);
-            final IEnergyStorage neighbor = getExternalEnergy(level, neighborPos, side.getOpposite());
+            final EnergyStorage neighbor = getExternalEnergy(level, neighborPos, side.getOpposite());
             // Only pull from a pure source, never from a buffer or sink.
             if (neighbor == null || !neighbor.canExtract() || neighbor.canReceive()) {
                 continue;
@@ -209,7 +209,7 @@ public final class EnergyTransferManager {
             if (sourcesPulled.contains(neighborPos)) {
                 continue;
             }
-            final IEnergyStorage neighbor = getExternalEnergy(level, neighborPos, side.getOpposite());
+            final EnergyStorage neighbor = getExternalEnergy(level, neighborPos, side.getOpposite());
             if (neighbor == null || !neighbor.canReceive()) {
                 continue;
             }
@@ -310,11 +310,11 @@ public final class EnergyTransferManager {
         }
     }
 
-    private static IEnergyStorage getExternalEnergy(
+    private static EnergyStorage getExternalEnergy(
             final Level level, final BlockPos pos, final Direction side) {
         if (level.getBlockState(pos).getBlock().equals(Blocks.BUS_CABLE.get())) {
             return null;
         }
-        return level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
+        return Platform.energy().getBlockEnergy(level, pos, side);
     }
 }

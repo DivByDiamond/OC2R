@@ -5,7 +5,6 @@ import static li.cil.oc2.common.Constants.*;
 import java.util.List;
 import java.util.function.Consumer;
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.EnergyStorageItemStack;
@@ -17,6 +16,7 @@ import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -53,12 +53,9 @@ public final class RobotItem extends ModItem {
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         if (Config.robotsUseEnergy()) {
-            event.registerItem(
-                    Capabilities.EnergyStorage.ITEM,
-                    (stack, ctx) -> {
-                        return new EnergyStorageItemStack(
-                                stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME);
-                    },
+            new NeoForgeEnergyCapabilityRegistrar(event).registerItem(
+                    (stack) -> new EnergyStorageItemStack(
+                            stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME),
                     Items.ROBOT.get());
         }
     }

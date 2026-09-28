@@ -67,4 +67,13 @@
         <Class name="li.cil.oc2.bus.topology.NetworkResolver$Result" />
         <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
     </Match>
+    <!-- NeoForgeEnergyBridge forwards its own @Nullable Direction parameter into NeoForge's
+         Capabilities.EnergyStorage.BLOCK/ENTITY, whose generic context type is itself declared
+         "@Nullable Direction" in Capabilities.java. SpotBugs loses that annotation across the
+         generic type substitution and flags the forwarded null as if the callee required
+         non-null, which it does not: passing null here is exactly what an unspecified side means. -->
+    <Match>
+        <Class name="li.cil.oc2.platform.NeoForgeEnergyBridge" />
+        <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE" />
+    </Match>
 </FindBugsFilter>

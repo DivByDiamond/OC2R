@@ -4,6 +4,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.container.data.IntPrecisionContainerData;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -13,12 +14,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class ComputerTerminalContainer extends AbstractComputerContainer {
     public static void createServer(
             final ComputerBlockEntity computer,
-            final IEnergyStorage energy,
+            final EnergyStorage energy,
             final CommonDeviceBusController busController,
             final ServerPlayer player) {
         player.openMenu(

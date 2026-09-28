@@ -1,12 +1,12 @@
 package li.cil.oc2.common.energy;
 
 import li.cil.oc2.common.util.nbt.NBTUtils;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
-public final class EnergyStorageItemStack implements IEnergyStorage {
+public final class EnergyStorageItemStack implements EnergyStorage {
     private final ItemStack stack;
     private final int capacity;
     private final String[] tagPath;

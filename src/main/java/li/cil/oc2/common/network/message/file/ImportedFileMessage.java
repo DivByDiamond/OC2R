@@ -4,12 +4,12 @@ import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.bus.device.rpc.item.card.FileImportExportCardItemDevice;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ImportedFileMessage(int id, String name, byte[] data) implements AbstractMessage {
 
@@ -33,7 +33,7 @@ public record ImportedFileMessage(int id, String name, byte[] data) implements A
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         if (context.player() instanceof final ServerPlayer player) {
             FileImportExportCardItemDevice.setImportedFile(player, id, name, data);
         }

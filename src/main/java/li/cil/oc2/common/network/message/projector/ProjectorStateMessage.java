@@ -5,12 +5,12 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ProjectorStateMessage(BlockPos pos, boolean isMounted, boolean hasEnergy)
         implements AbstractMessage {
@@ -41,7 +41,7 @@ public record ProjectorStateMessage(BlockPos pos, boolean isMounted, boolean has
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 ProjectorBlockEntity.class,

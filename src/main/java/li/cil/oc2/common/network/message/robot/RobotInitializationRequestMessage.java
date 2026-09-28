@@ -7,12 +7,12 @@ import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.message.robot.state.RobotInitializationMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record RobotInitializationRequestMessage(int entityId) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, RobotInitializationRequestMessage> STREAM_CODEC =
@@ -36,7 +36,7 @@ public record RobotInitializationRequestMessage(int entityId) implements Abstrac
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         MessageUtils.withServerEntity(
                 context,
                 entityId,

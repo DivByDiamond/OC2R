@@ -5,12 +5,12 @@ import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import li.cil.oc2.common.util.nbt.Oc2rStreamCodecs;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ProjectorFramebufferMessage(
         BlockPos pos,
@@ -62,7 +62,7 @@ public record ProjectorFramebufferMessage(
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 ProjectorBlockEntity.class,

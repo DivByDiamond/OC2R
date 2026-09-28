@@ -8,6 +8,8 @@ import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -16,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 @EventBusSubscriber(modid = API.MOD_ID)
@@ -30,8 +31,7 @@ final class MonitorCapabilities {
                 MonitorCapabilities::getDevice,
                 Blocks.MONITOR.get());
         if (Config.monitorsUseEnergy()) {
-            event.registerBlock(
-                    Capabilities.EnergyStorage.BLOCK,
+            new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
                     MonitorCapabilities::getEnergy,
                     Blocks.MONITOR.get());
         }
@@ -61,7 +61,7 @@ final class MonitorCapabilities {
     }
 
     @Nullable
-    private static IEnergyStorage getEnergy(
+    private static EnergyStorage getEnergy(
             final Level level,
             final BlockPos pos,
             final BlockState state,

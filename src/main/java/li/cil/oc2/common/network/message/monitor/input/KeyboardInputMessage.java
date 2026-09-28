@@ -6,12 +6,12 @@ import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.network.util.PlayerRateLimits;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record KeyboardInputMessage(BlockPos pos, int keycode, boolean isDown)
         implements AbstractMessage {
@@ -40,7 +40,7 @@ public record KeyboardInputMessage(BlockPos pos, int keycode, boolean isDown)
     }
 
     @Override
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         MessageUtils.withNearbyServerBlockEntityForInteraction(
                 context,
                 pos,

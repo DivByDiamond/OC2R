@@ -3,6 +3,7 @@ package li.cil.oc2.common.container.monitor;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.container.data.IntPrecisionContainerData;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -12,12 +13,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class MonitorDisplayContainer extends AbstractMonitorContainer {
     public static void createServer(
             final MonitorBlockEntity monitor,
-            final IEnergyStorage energy,
+            final EnergyStorage energy,
             final ServerPlayer player) {
         player.openMenu(
                 new MenuProvider() {

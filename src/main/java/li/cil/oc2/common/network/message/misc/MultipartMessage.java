@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -20,7 +21,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -158,7 +158,7 @@ public record MultipartMessage(int messageId, int multipartMessageId, byte[] dat
         this.data = data.clone();
     }
 
-    public void handleMessage(IPayloadContext context) {
+    public void handleMessage(MessageContext context) {
         try {
             // The final part is detected by being shorter than a full payload; this
             // mirrors the sender, which appends an empty part when the message size

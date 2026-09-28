@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.DeviceBusController;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.api.bus.device.Device;
@@ -19,13 +20,13 @@ import li.cil.oc2.api.bus.device.Device;
  */
 final class DeviceTable {
     private final CommonDeviceBusController controller;
-    private final Set<Device> devices = new HashSet<>();
-    // Plain HashMap: scan() is only ever called on the server thread (see class javadoc), and
-    // getOccupiedDevices()/getDeviceIdentifiers() have no cross-thread caller currently.
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
-    private final Map<Device, Set<UUID>> deviceIds = new HashMap<>();
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
-    private final Map<Device, DeviceBusController> occupiedDevices = new HashMap<>();
+    // Concurrent: the "scan() is server-thread-only" assumption these previously relied on as a
+    // plain HashMap/HashSet turned out to not hold (a GameTestServer hang was observed spinning
+    // forever in a HashMap iterator reached from this same scan/rebuild path), so these stay
+    // concurrent-safe until that access pattern is fully understood and documented.
+    private final Set<Device> devices = ConcurrentHashMap.newKeySet();
+    private final Map<Device, Set<UUID>> deviceIds = new ConcurrentHashMap<>();
+    private final Map<Device, DeviceBusController> occupiedDevices = new ConcurrentHashMap<>();
 
     DeviceTable(final CommonDeviceBusController controller) {
         this.controller = controller;

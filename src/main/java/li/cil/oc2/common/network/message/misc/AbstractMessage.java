@@ -1,8 +1,8 @@
 package li.cil.oc2.common.network.message.misc;
 
+import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public interface AbstractMessage extends CustomPacketPayload {
-    void handleMessage(final IPayloadContext context);
+    void handleMessage(final MessageContext context);
 }

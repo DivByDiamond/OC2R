@@ -1,6 +1,5 @@
 package li.cil.oc2.common.network;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerPowerMessage;
@@ -40,92 +39,86 @@ import li.cil.oc2.common.network.message.robot.state.RobotRunStateMessage;
 import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalInputMessage;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import li.cil.oc2.platform.MessageRegistrar;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class Network {
-    private static final String PROTOCOL_VERSION = "1";
+    private Network() {
+    }
 
-    @SubscribeEvent
-    public static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
-
+    /** Registers every custom payload with {@code bridge}; called once per loader on setup. */
+    public static void initialize(final MessageRegistrar bridge) {
         // Computer
-        registrar.playToClient(ComputerTerminalDiffMessage.TYPE,
+        bridge.registerClientbound(ComputerTerminalDiffMessage.TYPE,
                 ComputerTerminalDiffMessage.STREAM_CODEC,
                 ComputerTerminalDiffMessage::handleMessage);
-        registrar.playToServer(ComputerTerminalInputMessage.TYPE,
+        bridge.registerServerbound(ComputerTerminalInputMessage.TYPE,
                 ComputerTerminalInputMessage.STREAM_CODEC,
                 ComputerTerminalInputMessage::handleMessage);
-        registrar.playToClient(ComputerRunStateMessage.TYPE,
+        bridge.registerClientbound(ComputerRunStateMessage.TYPE,
                 ComputerRunStateMessage.STREAM_CODEC,
                 ComputerRunStateMessage::handleMessage);
-        registrar.playToClient(ComputerBusStateMessage.TYPE,
+        bridge.registerClientbound(ComputerBusStateMessage.TYPE,
                 ComputerBusStateMessage.STREAM_CODEC,
                 ComputerBusStateMessage::handleMessage);
-        registrar.playToClient(ComputerBootErrorMessage.TYPE,
+        bridge.registerClientbound(ComputerBootErrorMessage.TYPE,
                 ComputerBootErrorMessage.STREAM_CODEC,
                 ComputerBootErrorMessage::handleMessage);
-        registrar.playToClient(SoundCardBeepMessage.TYPE,
+        bridge.registerClientbound(SoundCardBeepMessage.TYPE,
                 SoundCardBeepMessage.STREAM_CODEC,
                 SoundCardBeepMessage::handleMessage);
-        registrar.playToClient(SoundCardPcmMessage.TYPE,
+        bridge.registerClientbound(SoundCardPcmMessage.TYPE,
                 SoundCardPcmMessage.STREAM_CODEC,
                 SoundCardPcmMessage::handleMessage);
-        registrar.playToServer(ComputerPowerMessage.TYPE,
+        bridge.registerServerbound(ComputerPowerMessage.TYPE,
                 ComputerPowerMessage.STREAM_CODEC,
                 ComputerPowerMessage::handleMessage);
-        registrar.playToServer(MonitorPowerMessage.TYPE,
+        bridge.registerServerbound(MonitorPowerMessage.TYPE,
                 MonitorPowerMessage.STREAM_CODEC,
                 MonitorPowerMessage::handleMessage);
-        registrar.playToClient(MonitorPowerMessageForwarded.TYPE,
+        bridge.registerClientbound(MonitorPowerMessageForwarded.TYPE,
                 MonitorPowerMessageForwarded.STREAM_CODEC,
                 MonitorPowerMessageForwarded::handleMessage);
-        registrar.playToServer(OpenComputerInventoryMessage.TYPE,
+        bridge.registerServerbound(OpenComputerInventoryMessage.TYPE,
                 OpenComputerInventoryMessage.STREAM_CODEC,
                 OpenComputerInventoryMessage::handleMessage);
-        registrar.playToServer(OpenComputerTerminalMessage.TYPE,
+        bridge.registerServerbound(OpenComputerTerminalMessage.TYPE,
                 OpenComputerTerminalMessage.STREAM_CODEC,
                 OpenComputerTerminalMessage::handleMessage);
 
         // Network
-        registrar.playToServer(NetworkTunnelLinkMessage.TYPE,
+        bridge.registerServerbound(NetworkTunnelLinkMessage.TYPE,
                 NetworkTunnelLinkMessage.STREAM_CODEC,
                 NetworkTunnelLinkMessage::handleMessage);
 
         // Robot
-        registrar.playToClient(RobotTerminalDiffMessage.TYPE,
+        bridge.registerClientbound(RobotTerminalDiffMessage.TYPE,
                 RobotTerminalDiffMessage.STREAM_CODEC,
                 RobotTerminalDiffMessage::handleMessage);
-        registrar.playToServer(RobotTerminalInputMessage.TYPE,
+        bridge.registerServerbound(RobotTerminalInputMessage.TYPE,
                 RobotTerminalInputMessage.STREAM_CODEC,
                 RobotTerminalInputMessage::handleMessage);
-        registrar.playToClient(RobotRunStateMessage.TYPE,
+        bridge.registerClientbound(RobotRunStateMessage.TYPE,
                 RobotRunStateMessage.STREAM_CODEC,
                 RobotRunStateMessage::handleMessage);
-        registrar.playToClient(RobotBusStateMessage.TYPE,
+        bridge.registerClientbound(RobotBusStateMessage.TYPE,
                 RobotBusStateMessage.STREAM_CODEC,
                 RobotBusStateMessage::handleMessage);
-        registrar.playToClient(RobotBootErrorMessage.TYPE,
+        bridge.registerClientbound(RobotBootErrorMessage.TYPE,
                 RobotBootErrorMessage.STREAM_CODEC,
                 RobotBootErrorMessage::handleMessage);
-        registrar.playToServer(RobotPowerMessage.TYPE,
+        bridge.registerServerbound(RobotPowerMessage.TYPE,
                 RobotPowerMessage.STREAM_CODEC,
                 RobotPowerMessage::handleMessage);
-        registrar.playToServer(RobotInitializationRequestMessage.TYPE,
+        bridge.registerServerbound(RobotInitializationRequestMessage.TYPE,
                 RobotInitializationRequestMessage.STREAM_CODEC,
                 RobotInitializationRequestMessage::handleMessage);
-        registrar.playToClient(RobotInitializationMessage.TYPE,
+        bridge.registerClientbound(RobotInitializationMessage.TYPE,
                 RobotInitializationMessage.STREAM_CODEC,
                 RobotInitializationMessage::handleMessage);
-        registrar.playToServer(OpenRobotInventoryMessage.TYPE,
+        bridge.registerServerbound(OpenRobotInventoryMessage.TYPE,
                 OpenRobotInventoryMessage.STREAM_CODEC,
                 OpenRobotInventoryMessage::handleMessage);
-        registrar.playToServer(OpenRobotTerminalMessage.TYPE,
+        bridge.registerServerbound(OpenRobotTerminalMessage.TYPE,
                 OpenRobotTerminalMessage.STREAM_CODEC,
                 OpenRobotTerminalMessage::handleMessage);
 
@@ -133,69 +126,69 @@ public final class Network {
         // (contents ride on the block entities' update tags via sendBlockUpdated)
 
         // Bus interface (client-to-server input from the GUI)
-        registrar.playToServer(
+        bridge.registerServerbound(
                 BusInterfaceNameMessage.TYPE,
                 BusInterfaceNameMessage.STREAM_CODEC,
                 BusInterfaceNameMessage::handleServerMessage);
 
         // File import/export
-        registrar.playToClient(ExportedFileMessage.TYPE,
+        bridge.registerClientbound(ExportedFileMessage.TYPE,
                 ExportedFileMessage.STREAM_CODEC,
                 ExportedFileMessage::handleMessage);
-        registrar.playToClient(RequestImportedFileMessage.TYPE,
+        bridge.registerClientbound(RequestImportedFileMessage.TYPE,
                 RequestImportedFileMessage.STREAM_CODEC,
                 RequestImportedFileMessage::handleMessage);
-        registrar.playToServer(ImportedFileMessage.TYPE,
+        bridge.registerServerbound(ImportedFileMessage.TYPE,
                 ImportedFileMessage.STREAM_CODEC,
                 ImportedFileMessage::handleMessage);
-        registrar.playToClient(ServerCanceledImportFileMessage.TYPE,
+        bridge.registerClientbound(ServerCanceledImportFileMessage.TYPE,
                 ServerCanceledImportFileMessage.STREAM_CODEC,
                 ServerCanceledImportFileMessage::handleMessage);
-        registrar.playToServer(ClientCanceledImportFileMessage.TYPE,
+        bridge.registerServerbound(ClientCanceledImportFileMessage.TYPE,
                 ClientCanceledImportFileMessage.STREAM_CODEC,
                 ClientCanceledImportFileMessage::handleMessage);
 
         // Bus cable / Network config
-        registrar.playToServer(NetworkInterfaceCardConfigurationMessage.TYPE,
+        bridge.registerServerbound(NetworkInterfaceCardConfigurationMessage.TYPE,
                 NetworkInterfaceCardConfigurationMessage.STREAM_CODEC,
                 NetworkInterfaceCardConfigurationMessage::handleMessage);
 
         // Monitor framebuffer
-        registrar.playToServer(MonitorRequestFramebufferMessage.TYPE,
+        bridge.registerServerbound(MonitorRequestFramebufferMessage.TYPE,
                 MonitorRequestFramebufferMessage.STREAM_CODEC,
                 MonitorRequestFramebufferMessage::handleMessage);
-        registrar.playToClient(MonitorFramebufferMessage.TYPE,
+        bridge.registerClientbound(MonitorFramebufferMessage.TYPE,
                 MonitorFramebufferMessage.STREAM_CODEC,
                 MonitorFramebufferMessage::handleMessage);
 
         // Projector
-        registrar.playToServer(ProjectorRequestFramebufferMessage.TYPE,
+        bridge.registerServerbound(ProjectorRequestFramebufferMessage.TYPE,
                 ProjectorRequestFramebufferMessage.STREAM_CODEC,
                 ProjectorRequestFramebufferMessage::handleMessage);
-        registrar.playToClient(ProjectorFramebufferMessage.TYPE,
+        bridge.registerClientbound(ProjectorFramebufferMessage.TYPE,
                 ProjectorFramebufferMessage.STREAM_CODEC,
                 ProjectorFramebufferMessage::handleMessage);
-        registrar.playToClient(ProjectorStateMessage.TYPE,
+        bridge.registerClientbound(ProjectorStateMessage.TYPE,
                 ProjectorStateMessage.STREAM_CODEC,
                 ProjectorStateMessage::handleMessage);
-        registrar.playToClient(MonitorStateMessage.TYPE,
+        bridge.registerClientbound(MonitorStateMessage.TYPE,
                 MonitorStateMessage.STREAM_CODEC,
                 MonitorStateMessage::handleMessage);
 
         // Input
-        registrar.playToServer(KeyboardInputMessage.TYPE,
+        bridge.registerServerbound(KeyboardInputMessage.TYPE,
                 KeyboardInputMessage.STREAM_CODEC,
                 KeyboardInputMessage::handleMessage);
-        registrar.playToServer(MonitorInputMessage.TYPE,
+        bridge.registerServerbound(MonitorInputMessage.TYPE,
                 MonitorInputMessage.STREAM_CODEC,
                 MonitorInputMessage::handleMessage);
 
         // Multipart (client->server and server->client for large payloads)
-        registrar.playBidirectional(
+        bridge.registerBidirectional(
                 MultipartMessage.TYPE,
                 MultipartMessage.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        MultipartMessage::handleMessage, MultipartMessage::handleMessage));
+                MultipartMessage::handleMessage,
+                MultipartMessage::handleMessage);
         MultipartMessage.registerMessage(ImportedFileMessage.class, ImportedFileMessage.STREAM_CODEC);
         MultipartMessage.registerMessage(ExportedFileMessage.class, ExportedFileMessage.STREAM_CODEC);
     }
