@@ -24,7 +24,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Merge multiloader stage 1 (branch feat/multiloader-stage1) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
 - [ ] Investigate: DeviceTypes DeferredRegister is not bound to the mod bus (dead registration) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
 - [ ] Fix FirmwareRegistry.getKey returning the registry name instead of the entry key (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
-- [ ] Fabric module and capabilities/network/energy migration, multiversion, release matrix (stages 2 to 4) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
+- [ ] Fabric module, client events/FML setup events, DeferredRegister leftovers (stage 2); multiversion and release matrix (stages 3 and 4) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
 - [ ] Remove the `required = false` flag from 9 GameTests after fixing them (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
 - [ ] Terminal double-size PR-B: double width and render of `lineAttrs` (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
 - [ ] vttest golden-grid tests (layer 1) plus the 6 UTF-8/resize regressions (see docs/roadmap/terminal.md#444-vttest-automation)
