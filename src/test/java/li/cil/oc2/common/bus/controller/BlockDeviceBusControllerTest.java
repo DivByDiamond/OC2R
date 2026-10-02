@@ -28,9 +28,7 @@ class BlockDeviceBusControllerTest {
 
     @Test
     void testSetDeviceContainersChangedMarksChunksDirty() {
-        controller.setDeviceContainersChanged();
-        
-        // Should complete without exception
+        assertDoesNotThrow(controller::setDeviceContainersChanged);
     }
 
     @Test

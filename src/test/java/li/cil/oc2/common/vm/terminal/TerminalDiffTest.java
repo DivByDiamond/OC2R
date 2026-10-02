@@ -190,7 +190,7 @@ public class TerminalDiffTest {
                         snapshot.palette(),
                         snapshot.lineAttrs());
         final Terminal client = new Terminal();
-        TerminalDiff.apply(client, broken); // must not throw
+        assertDoesNotThrow(() -> TerminalDiff.apply(client, broken));
     }
 
     @Test

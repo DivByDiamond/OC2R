@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="OC2R PMD Test Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Extra rules for test sources, applied on top of ruleset.xml and ruleset-silent.xml.
+    </description>
+
+    <!-- A test without any assertion passes no matter what the code under test does. -->
+    <rule ref="category/java/bestpractices.xml/UnitTestShouldIncludeAssert"/>
+
+</ruleset>
