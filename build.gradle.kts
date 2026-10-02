@@ -665,6 +665,10 @@ tasks.register("gameTest") {
         xmlDir.mkdirs()
         File(xmlDir, "results.xml").writeText(xml, Charsets.UTF_8)
         logger.lifecycle("gameTest: ${rows.size} tests, $failures required failures, $optionalFailures optional failures")
+        // Do not rely on the server's exit code alone: a required failure must fail this task.
+        if (failures > 0) {
+            throw GradleException("gameTest: $failures required test(s) failed, see ${xmlDir.resolve("results.xml")}.")
+        }
     }
 }
 
