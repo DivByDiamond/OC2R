@@ -15,10 +15,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.common.bus.device.data.block.ResourceBlockDeviceData;
 import li.cil.oc2.common.vm.fs.LayeredFileSystem;
+import li.cil.oc2.platform.event.CommonEvents;
 import li.cil.sedna.fs.FileSystem;
 import li.cil.sedna.fs.ZipStreamFileSystem;
 import net.minecraft.resources.ResourceLocation;
@@ -26,15 +26,10 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class FileSystems {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final LayeredFileSystem LAYERED_FILE_SYSTEM = new LayeredFileSystem();
@@ -78,14 +73,10 @@ public final class FileSystems {
         BLOCK_DEVICE_DATA.clear();
     }
 
-    @SubscribeEvent
-    public static void handleAddReloadListenerEvent(final AddReloadListenerEvent event) {
-        event.addListener(ReloadListener.INSTANCE);
-    }
-
-    @SubscribeEvent
-    public static void handleServerStopped(final ServerStoppedEvent event) {
-        reset();
+    /** Subscribes to the data pack reload and server shutdown events. */
+    public static void register() {
+        CommonEvents.ADD_RELOAD_LISTENER.register(adder -> adder.accept(ReloadListener.INSTANCE));
+        CommonEvents.SERVER_STOPPED.register(server -> reset());
     }
 
     private static void reload(final ResourceManager resourceManager) {

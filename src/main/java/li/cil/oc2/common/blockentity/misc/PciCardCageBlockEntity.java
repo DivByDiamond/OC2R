@@ -1,6 +1,5 @@
 package li.cil.oc2.common.blockentity.misc;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -10,16 +9,12 @@ import li.cil.oc2.common.bus.device.vm.block.misc.PciCardCageDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
-import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class PciCardCageBlockEntity extends ModBlockEntity implements TickableBlockEntity {
 
     private static final String ENERGY_TAG_NAME = "energy";
@@ -93,10 +88,10 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
         if (Config.cardCagesUseEnergy()) {
-            new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
+registrar.registerBlock(
+                    Capabilities.EnergyStorage.BLOCK,
                     (level, pos, state, be, side) -> {
                         if (be instanceof final PciCardCageBlockEntity self) {
                             return self.energy;
@@ -106,7 +101,7 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
                     Blocks.PCI_CARD_CAGE.get());
         }
 
-        event.registerBlock(
+        registrar.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final PciCardCageBlockEntity self

@@ -5,11 +5,11 @@ import java.util.Collections;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import li.cil.oc2.platform.EnergyStorage;
 
-public final class EnergyStorageDevice extends IdentityProxy<IEnergyStorage>
+public final class EnergyStorageDevice extends IdentityProxy<EnergyStorage>
         implements NamedDevice {
-    public EnergyStorageDevice(final IEnergyStorage identity) {
+    public EnergyStorageDevice(final EnergyStorage identity) {
         super(identity);
     }
 

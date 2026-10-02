@@ -15,6 +15,7 @@ import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringUtil;
@@ -113,12 +114,14 @@ public final class BusCableBusElement extends AbstractBlockDeviceBusElement {
                                 LevelUtils.getBlockEntityIfChunkExists(world, neighborPos);
                         if (blockEntity == null) continue;
                         final var capability =
-                                world.getCapability(
-                                        Capabilities.DeviceBusElement.BLOCK,
-                                        neighborPos,
-                                        null,
-                                        blockEntity,
-                                        direction.getOpposite());
+                                Platform.capabilities()
+                                        .getBlockCapability(
+                                                Capabilities.DeviceBusElement.BLOCK,
+                                                world,
+                                                neighborPos,
+                                                null,
+                                                blockEntity,
+                                                direction.getOpposite());
                         if (capability != null) capability.scheduleScan();
                     }
                 });

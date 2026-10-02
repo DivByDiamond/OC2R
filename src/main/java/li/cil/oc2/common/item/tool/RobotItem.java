@@ -5,6 +5,7 @@ import static li.cil.oc2.common.Constants.*;
 import java.util.List;
 import java.util.function.Consumer;
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
+import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.EnergyStorageItemStack;
@@ -16,7 +17,7 @@ import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
-import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
@@ -33,8 +34,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class RobotItem extends ModItem {
@@ -50,10 +49,10 @@ public final class RobotItem extends ModItem {
         TooltipUtils.addInventoryInformation(stack, components);
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
         if (Config.robotsUseEnergy()) {
-            new NeoForgeEnergyCapabilityRegistrar(event).registerItem(
+registrar.registerItem(
+                    Capabilities.EnergyStorage.ITEM,
                     (stack) -> new EnergyStorageItemStack(
                             stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME),
                     Items.ROBOT.get());

@@ -12,6 +12,7 @@ import li.cil.oc2.common.container.computer.ComputerTerminalContainer;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
@@ -85,7 +86,7 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
 
     public void onAfterDeviceScan(final AfterDeviceScanEvent event) {
         if (event.didDevicesChange()) {
-            computer.getLevel().invalidateCapabilities(computer.getBlockPos());
+            Platform.capabilities().invalidateBlock(computer.getLevel(), computer.getBlockPos());
         }
     }
 

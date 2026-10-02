@@ -1,10 +1,10 @@
 package li.cil.oc2.common.bus.device.rpc.item.util;
 
 import java.util.List;
+import li.cil.oc2.platform.ItemHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
 
 public class InventoryHelper {
     public static List<ItemEntity> getItemsInRange(final Entity entity) {
@@ -13,7 +13,7 @@ public class InventoryHelper {
     }
 
     public static ItemStack insertStartingAt(
-            final IItemHandler handler,
+            final ItemHandler handler,
             final ItemStack stack,
             final int startSlot,
             final boolean simulate) {

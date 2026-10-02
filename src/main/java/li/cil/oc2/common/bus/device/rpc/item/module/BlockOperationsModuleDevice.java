@@ -11,6 +11,7 @@ import li.cil.oc2.common.bus.device.rpc.item.util.BlockHarvestHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.InventoryHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.RepairHelper;
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
+import li.cil.oc2.platform.NeoForgeItemHandlers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -85,7 +86,7 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
         for (final ItemEntity itemEntity : droppedItems) {
             ItemStack stack = itemEntity.getItem();
-            stack = InventoryHelper.insertStartingAt(inventory, stack, selectedSlot, false);
+            stack = InventoryHelper.insertStartingAt(NeoForgeItemHandlers.adapt(inventory), stack, selectedSlot, false);
             itemEntity.setItem(stack);
         }
 

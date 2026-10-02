@@ -14,6 +14,7 @@ import li.cil.oc2.common.bus.element.group.query.BlockEntry;
 import li.cil.oc2.common.bus.element.group.query.BlockQueryResult;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -63,10 +64,12 @@ public abstract class AbstractBlockDeviceBusElement
             }
 
             final DeviceBusElement capability =
-                    level.getCapability(
-                            Capabilities.DeviceBusElement.BLOCK,
-                            neighborPos,
-                            neighborDirection.getOpposite());
+                    Platform.capabilities()
+                            .getBlockCapability(
+                                    Capabilities.DeviceBusElement.BLOCK,
+                                    level,
+                                    neighborPos,
+                                    neighborDirection.getOpposite());
 
             if (capability != null) {
                 neighbors.add(capability);

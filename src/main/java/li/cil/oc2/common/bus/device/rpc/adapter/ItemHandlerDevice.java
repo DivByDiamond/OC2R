@@ -5,11 +5,11 @@ import java.util.Collections;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
+import li.cil.oc2.platform.ItemHandler;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
 
-public final class ItemHandlerDevice extends IdentityProxy<IItemHandler> implements NamedDevice {
-    public ItemHandlerDevice(final IItemHandler identity) {
+public final class ItemHandlerDevice extends IdentityProxy<ItemHandler> implements NamedDevice {
+    public ItemHandlerDevice(final ItemHandler identity) {
         super(identity);
     }
 

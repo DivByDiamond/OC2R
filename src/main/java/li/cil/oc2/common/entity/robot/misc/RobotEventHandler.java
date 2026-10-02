@@ -4,17 +4,17 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.world.level.ChunkPos;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.ChunkAccess;
 
 public final class RobotEventHandler {
     private final Robot robot;
     private final AbstractVirtualMachine virtualMachine;
 
-    private final Consumer<ChunkEvent.Unload> chunkUnloadListener = this::handleChunkUnload;
-    private final Consumer<LevelEvent.Unload> worldUnloadListener = this::handleWorldUnload;
+    private final CommonEvents.ChunkListener chunkUnloadListener = this::handleChunkUnload;
+    private final Consumer<LevelAccessor> worldUnloadListener = this::handleWorldUnload;
 
     public RobotEventHandler(final Robot robot, final AbstractVirtualMachine virtualMachine) {
         this.robot = robot;
@@ -22,22 +22,22 @@ public final class RobotEventHandler {
     }
 
     public void register() {
-        NeoForge.EVENT_BUS.addListener(chunkUnloadListener);
-        NeoForge.EVENT_BUS.addListener(worldUnloadListener);
+        CommonEvents.CHUNK_UNLOAD.register(chunkUnloadListener);
+        CommonEvents.LEVEL_UNLOAD.register(worldUnloadListener);
     }
 
     public void unregister() {
-        NeoForge.EVENT_BUS.unregister(chunkUnloadListener);
-        NeoForge.EVENT_BUS.unregister(worldUnloadListener);
+        CommonEvents.CHUNK_UNLOAD.unregister(chunkUnloadListener);
+        CommonEvents.LEVEL_UNLOAD.unregister(worldUnloadListener);
     }
 
-    private void handleChunkUnload(final ChunkEvent.Unload event) {
-        if (!event.getLevel().equals(robot.level())) {
+    private void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
+        if (!level.equals(robot.level())) {
             return;
         }
 
         final ChunkPos chunkPos = new ChunkPos(robot.blockPosition());
-        if (!Objects.equals(chunkPos, event.getChunk().getPos())) {
+        if (!Objects.equals(chunkPos, chunk.getPos())) {
             return;
         }
 
@@ -46,8 +46,8 @@ public final class RobotEventHandler {
         virtualMachine.dispose();
     }
 
-    private void handleWorldUnload(final LevelEvent.Unload event) {
-        if (!event.getLevel().equals(robot.level())) {
+    private void handleWorldUnload(final LevelAccessor level) {
+        if (!level.equals(robot.level())) {
             return;
         }
 

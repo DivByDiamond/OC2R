@@ -15,6 +15,8 @@ import li.cil.oc2.common.energy.CableEnergyStorage;
 import li.cil.oc2.common.energy.EnergyNetworkCache;
 import li.cil.oc2.common.energy.EnergyTransferManager;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+import li.cil.oc2.platform.CapabilityInvalidationListener;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -23,7 +25,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 
 public final class BusCableBlockEntity extends ModBlockEntity implements TickableBlockEntity {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";
@@ -40,7 +41,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     final InterfaceNameManager interfaceNameManager = new InterfaceNameManager(this);
     private final BusCableModelData modelData = new BusCableModelData(this);
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
-    private final ICapabilityInvalidationListener[] neighborListeners =
+    private final CapabilityInvalidationListener[] neighborListeners =
             new NeighborListener[Constants.BLOCK_FACE_COUNT];
 
     public BusCableBlockEntity(final BlockPos pos, final BlockState state) {
@@ -103,7 +104,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             // name: the name is a synthetic device advertised behind this side, and it must not
             // outlive the configuration it was defined for.
             setInterfaceName(side, "");
-            if (level != null) level.invalidateCapabilities(getBlockPos());
+            if (level != null) Platform.capabilities().invalidateBlock(level, getBlockPos());
             // scheduleScan() below only re-walks bus TOPOLOGY (cable-to-cable/computer BFS); it
             // never re-evaluates which devices sit behind this specific side, which is cached
             // separately per side and otherwise only refreshed by the load-time scan or a
@@ -173,7 +174,9 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
             final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state
             neighborListeners[side.get3DDataValue()] = listener;
-            serverLevel.registerCapabilityListener(getBlockPos().relative(side), listener);
+            Platform.capabilities()
+                    .registerBlockCapabilityListener(
+                            serverLevel, getBlockPos().relative(side), listener);
         }
         busElement.scheduleLateLoad();
         requestModelDataUpdate();

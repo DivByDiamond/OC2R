@@ -2,26 +2,22 @@ package li.cil.oc2.common.blockentity.network.connector.interfaces;
 
 import java.util.ArrayList;
 import java.util.List;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.CapabilityRegistrar;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class NetworkConnectorLifecycle {
 
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.NetworkInterface.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final NetworkConnectorBlockEntity self
@@ -45,7 +41,9 @@ public final class NetworkConnectorLifecycle {
         final var level = (ServerLevel) entity.getLevel();
         final Direction facing = NetworkConnectorBlock.getFacing(entity.getBlockState());
         final BlockPos sourcePos = entity.getBlockPos().relative(facing.getOpposite());
-        level.registerCapabilityListener(sourcePos, entity.adjacentInterfaceListener);
+        Platform.capabilities()
+                .registerBlockCapabilityListener(
+                        level, sourcePos, entity.adjacentInterfaceListener);
     }
 
     public static void unloadServer(
@@ -87,6 +85,11 @@ public final class NetworkConnectorLifecycle {
         }
 
         entity.adjacentInterface =
-                entity.getLevel().getCapability(Capabilities.NetworkInterface.BLOCK, sourcePos, facing);
+                Platform.capabilities()
+                        .getBlockCapability(
+                                Capabilities.NetworkInterface.BLOCK,
+                                entity.getLevel(),
+                                sourcePos,
+                                facing);
     }
 }

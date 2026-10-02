@@ -145,8 +145,11 @@ public final class ComputerFixture {
 
     @Nullable
     public Object networkInterface(final Direction side) {
-        return helper.getLevel().getCapability(
-            Capabilities.NetworkInterface.BLOCK, helper.absolutePos(position), side);
+        return Platform.capabilities().getBlockCapability(
+            Capabilities.NetworkInterface.BLOCK,
+            helper.getLevel(),
+            helper.absolutePos(position),
+            side);
     }
 
     public long energy() {

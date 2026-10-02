@@ -14,12 +14,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.config.Config;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import li.cil.oc2.platform.event.CommonEvents;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +41,6 @@ import org.jetbrains.annotations.Nullable;
  * UDP receivers must tolerate anyway &mdash; this keeps frame floods on the server
  * tick thread from ever blocking it (docs/roadmap/done.md §38 Sh3).
  */
-@EventBusSubscriber(modid = API.MOD_ID)
 public class TunnelManager {
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -79,6 +75,7 @@ public class TunnelManager {
     }
 
     public static void initialize() {
+        CommonEvents.SERVER_STOPPING.register(server -> onServerStopping());
         LOGGER.info("Initializing outernet tunnel manager");
 
         try {
@@ -273,8 +270,7 @@ public class TunnelManager {
     }
 
     /** Stops the receive loop on server shutdown instead of leaking the bound port. */
-    @SubscribeEvent
-    public static void onServerStopping(final ServerStoppingEvent event) {
+    private static void onServerStopping() {
         if (managerInstance != null) {
             managerInstance.shutdown();
             managerInstance = null;

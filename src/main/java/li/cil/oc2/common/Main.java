@@ -16,6 +16,7 @@ import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
+import li.cil.oc2.common.event.CommonEventListeners;
 import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
@@ -75,6 +76,8 @@ public final class Main {
         FirmwareRegistry.initialize(modBus);
 
         RegistryUtils.finish(modBus);
+
+        CommonEventListeners.register();
 
         modBus.register(CommonSetup.class);
         if (FMLLoader.getDist() == Dist.CLIENT) {

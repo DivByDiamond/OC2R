@@ -17,6 +17,8 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.network.switches.host.LuaHostEntry;
 import li.cil.oc2.common.blockentity.network.switches.port.PortSettings;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.BlockCapabilityCache;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,7 +27,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 
 public final class NetworkSwitchBlockEntity extends ModBlockEntity
         implements NamedDevice, DocumentedDevice, NetworkInterface, TickableBlockEntity {
@@ -36,7 +37,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     private int tickCount = 0;
     final NetworkInterface[] adjacentBlockInterfaces =
             new NetworkInterface[Constants.BLOCK_FACE_COUNT];
-    private BlockCapabilityCache<NetworkInterface, Direction>[] adjacentBlockCaches = null;
+    private BlockCapabilityCache<NetworkInterface>[] adjacentBlockCaches = null;
     private boolean haveAdjacentBlocksChanged = true;
     private final SwitchPacketForwarder packetForwarder = new SwitchPacketForwarder(this);
 
@@ -50,12 +51,13 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
         super.loadServer();
         final BlockPos pos = getBlockPos();
         @SuppressWarnings("unchecked") // generic array of a parameterized type is not expressible
-        final BlockCapabilityCache<NetworkInterface, Direction>[] caches =
-                (BlockCapabilityCache<NetworkInterface, Direction>[])
-                        new BlockCapabilityCache<?, ?>[Constants.BLOCK_FACE_COUNT];
+        final BlockCapabilityCache<NetworkInterface>[] caches =
+                (BlockCapabilityCache<NetworkInterface>[])
+                        new BlockCapabilityCache<?>[Constants.BLOCK_FACE_COUNT];
         for (final Direction side : Constants.DIRECTIONS) {
             caches[side.get3DDataValue()] =
-                    BlockCapabilityCache.create(
+                    Platform.capabilities()
+                            .createBlockCapabilityCache(
                             Capabilities.NetworkInterface.BLOCK,
                             (ServerLevel) level,
                             pos.relative(side),
@@ -175,7 +177,7 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
             return;
         }
         for (int i = 0; i < adjacentBlockCaches.length; i++) {
-            adjacentBlockInterfaces[i] = adjacentBlockCaches[i].getCapability();
+            adjacentBlockInterfaces[i] = adjacentBlockCaches[i].get();
         }
     }
 

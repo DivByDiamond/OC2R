@@ -1,6 +1,5 @@
 package li.cil.oc2.common.blockentity.monitor.misc;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
@@ -8,30 +7,26 @@ import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import li.cil.oc2.platform.EnergyStorage;
-import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.jetbrains.annotations.Nullable;
 
-@EventBusSubscriber(modid = API.MOD_ID)
-final class MonitorCapabilities {
+public final class MonitorCapabilities {
     private MonitorCapabilities() {}
 
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.Device.BLOCK,
                 MonitorCapabilities::getDevice,
                 Blocks.MONITOR.get());
         if (Config.monitorsUseEnergy()) {
-            new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
+registrar.registerBlock(
+                    Capabilities.EnergyStorage.BLOCK,
                     MonitorCapabilities::getEnergy,
                     Blocks.MONITOR.get());
         }

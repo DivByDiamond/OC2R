@@ -8,6 +8,7 @@ import li.cil.oc2.common.bus.device.rpc.item.module.BlockOperationsModuleDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
+import li.cil.oc2.platform.Platform;
 
 public final class BlockOperationsModuleDeviceProvider extends AbstractItemDeviceProvider {
     public BlockOperationsModuleDeviceProvider() {
@@ -19,7 +20,12 @@ public final class BlockOperationsModuleDeviceProvider extends AbstractItemDevic
         return query.getContainerEntity()
                 .flatMap(
                         entity ->
-                                Optional.ofNullable(entity.getCapability(Capabilities.Robot.ENTITY))
+                                Optional.ofNullable(
+                                                Platform.capabilities()
+                                                        .getEntityCapability(
+                                                                Capabilities.Robot.ENTITY,
+                                                                entity,
+                                                                null))
                                         .map(
                                                 robot ->
                                                         new BlockOperationsModuleDevice(

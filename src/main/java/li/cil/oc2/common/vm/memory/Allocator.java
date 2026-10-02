@@ -5,11 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.Config;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import li.cil.oc2.platform.event.CommonEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +16,6 @@ import org.apache.logging.log4j.Logger;
  * <p>Call sites must be cooperative and only free claimed memory when actually being sure the
  * allocated memory associated with the claim will be garbage collected.
  */
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class Allocator {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -90,9 +86,9 @@ public final class Allocator {
         allocated = 0;
     }
 
-    @SubscribeEvent
-    public static void handleServerStopped(final ServerStoppedEvent event) {
-        resetAndCheckLeaks();
+    /** Subscribes to the server shutdown event to report leaked allocations. */
+    public static void register() {
+        CommonEvents.SERVER_STOPPED.register(server -> resetAndCheckLeaks());
     }
 
     private static boolean checkArgs(final UUID handle, final int size) {

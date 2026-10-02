@@ -1,20 +1,15 @@
 package li.cil.oc2.common.event;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.util.async.AsyncExecutorHelper;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.server.MinecraftServer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
  * Handles Forge lifecycle events to ensure proper initialization and cleanup of async operations.
  */
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class ForgeEventHandlers {
     private static final Logger LOGGER = LogManager.getLogger();
     private static MinecraftServer server;
@@ -29,14 +24,18 @@ public final class ForgeEventHandlers {
         return server;
     }
 
-    @SubscribeEvent
-    public static void handleServerAboutToStart(final ServerAboutToStartEvent event) {
-        server = event.getServer();
+    /** Subscribes to the server lifecycle events this class tracks. */
+    public static void register() {
+        CommonEvents.SERVER_ABOUT_TO_START.register(ForgeEventHandlers::handleServerAboutToStart);
+        CommonEvents.SERVER_STOPPED.register(stoppedServer -> handleServerStopped());
+    }
+
+    private static void handleServerAboutToStart(final MinecraftServer startingServer) {
+        server = startingServer;
         LOGGER.info("Server starting, initializing async components");
     }
 
-    @SubscribeEvent
-    public static void handleServerStopped(final ServerStoppedEvent event) {
+    private static void handleServerStopped() {
         LOGGER.info("Server stopped, cleaning up async components");
         try {
             AsyncExecutorHelper.shutdown();

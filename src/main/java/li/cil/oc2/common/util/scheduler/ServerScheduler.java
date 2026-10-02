@@ -4,15 +4,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.util.event.ListenerCollection;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraft.world.level.chunk.ChunkAccess;
 
 public final class ServerScheduler {
     private static final TickScheduler globalTickScheduler = new TickScheduler();
@@ -26,7 +22,12 @@ public final class ServerScheduler {
             chunkUnloadSchedulers = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void initialize() {
-        NeoForge.EVENT_BUS.register(EventHandler.class);
+        CommonEvents.SERVER_STOPPED.register(server -> EventHandler.handleServerStopped());
+        CommonEvents.LEVEL_UNLOAD.register(EventHandler::handleLevelUnload);
+        CommonEvents.CHUNK_LOAD.register(EventHandler::handleChunkLoad);
+        CommonEvents.CHUNK_UNLOAD.register(EventHandler::handleChunkUnload);
+        CommonEvents.SERVER_TICK_START.register(server -> EventHandler.handleServerTick());
+        CommonEvents.LEVEL_TICK_START.register(EventHandler::handleLevelTick);
     }
 
     public static void schedule(final Runnable runnable) {
@@ -121,9 +122,7 @@ public final class ServerScheduler {
     }
 
     private static final class EventHandler {
-        @SubscribeEvent
-        @SuppressWarnings("UnusedVariable")
-        public static void handleServerStoppedEvent(final ServerStoppedEvent event) {
+        private static void handleServerStopped() {
             globalTickScheduler.clear();
             levelTickSchedulers.clear();
             levelUnloadSchedulers.clear();
@@ -131,9 +130,7 @@ public final class ServerScheduler {
             chunkUnloadSchedulers.clear();
         }
 
-        @SubscribeEvent
-        public static void handleLevelUnload(final LevelEvent.Unload event) {
-            final LevelAccessor level = event.getLevel();
+        private static void handleLevelUnload(final LevelAccessor level) {
 
             levelTickSchedulers.remove(level);
             chunkLoadSchedulers.remove(level);
@@ -145,37 +142,33 @@ public final class ServerScheduler {
             }
         }
 
-        @SubscribeEvent
-        public static void handleChunkLoad(final ChunkEvent.Load event) {
+        private static void handleChunkLoad(final LevelAccessor level, final ChunkAccess chunk) {
             final Map<ChunkPos, ListenerCollection> chunkMap =
-                    chunkLoadSchedulers.get(event.getLevel());
+                    chunkLoadSchedulers.get(level);
             if (chunkMap == null) {
                 return;
             }
 
-            final ListenerCollection listeners = chunkMap.get(event.getChunk().getPos());
+            final ListenerCollection listeners = chunkMap.get(chunk.getPos());
             if (listeners != null) {
                 listeners.run();
             }
         }
 
-        @SubscribeEvent
-        public static void handleChunkUnload(final ChunkEvent.Unload event) {
+        private static void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
             final Map<ChunkPos, ListenerCollection> chunkMap =
-                    chunkUnloadSchedulers.get(event.getLevel());
+                    chunkUnloadSchedulers.get(level);
             if (chunkMap == null) {
                 return;
             }
 
-            final ListenerCollection listeners = chunkMap.get(event.getChunk().getPos());
+            final ListenerCollection listeners = chunkMap.get(chunk.getPos());
             if (listeners != null) {
                 listeners.run();
             }
         }
 
-        @SubscribeEvent
-        @SuppressWarnings("UnusedVariable")
-        public static void handleServerTick(final ServerTickEvent.Pre event) {
+        private static void handleServerTick() {
             globalTickScheduler.tick();
 
             // values() of a synchronizedMap must be iterated under the map's lock; snapshot it so
@@ -189,11 +182,10 @@ public final class ServerScheduler {
             }
         }
 
-        @SubscribeEvent
-        public static void handleLevelTick(final LevelTickEvent.Pre event) {
+        private static void handleLevelTick(final Level level) {
             globalTickScheduler.processQueue();
 
-            final TickScheduler scheduler = levelTickSchedulers.get(event.getLevel());
+            final TickScheduler scheduler = levelTickSchedulers.get(level);
             if (scheduler != null) {
                 scheduler.processQueue();
             }

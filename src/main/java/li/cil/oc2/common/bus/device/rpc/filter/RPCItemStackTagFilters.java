@@ -6,20 +6,16 @@ import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import li.cil.oc2.api.API;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class RPCItemStackTagFilters {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final List<RPCItemStackTagFilter> FILTERS = new ArrayList<>();
@@ -36,9 +32,9 @@ public final class RPCItemStackTagFilters {
         return result;
     }
 
-    @SubscribeEvent
-    public static void handleAddReloadListenerEvent(final AddReloadListenerEvent event) {
-        event.addListener(ReloadListener.INSTANCE);
+    /** Subscribes to the data pack reload event. */
+    public static void register() {
+        CommonEvents.ADD_RELOAD_LISTENER.register(adder -> adder.accept(ReloadListener.INSTANCE));
     }
 
     private static final class ReloadListener extends SimpleJsonResourceReloadListener {

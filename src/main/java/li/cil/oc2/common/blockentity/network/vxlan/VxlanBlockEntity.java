@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
@@ -13,14 +12,12 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.vxlan.TunnelManager;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +31,6 @@ import org.apache.logging.log4j.Logger;
  * {@link #packetQueue} and are injected into the local network during
  * {@link #serverTick()}, once per game tick.
  */
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class VxlanBlockEntity extends ModBlockEntity
         implements NetworkInterface, TickableBlockEntity {
 
@@ -198,9 +194,8 @@ public final class VxlanBlockEntity extends ModBlockEntity
         adjacentInterfaces.registerListeners(level, getBlockPos());
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.NetworkInterface.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final VxlanBlockEntity self) {

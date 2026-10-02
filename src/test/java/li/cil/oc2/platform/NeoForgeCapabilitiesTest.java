@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.junit.jupiter.api.Test;
 
-class NeoForgeEnergyCapabilityRegistrarTest {
+class NeoForgeCapabilitiesTest {
     @Test
     void unwrapNullStorageReturnsNull() {
-        assertNull(NeoForgeEnergyCapabilityRegistrar.unwrap(null));
+        assertNull(NeoForgeCapabilities.toNeoForge(EnergyStorage.class, null, null));
     }
 
     // Device-bus identity (ObjectDevice -> EnergyStorageDevice/IdentityProxy) is defined via
@@ -25,8 +25,8 @@ class NeoForgeEnergyCapabilityRegistrarTest {
     @Test
     void wrappersOverSameStorageAreEqual() {
         final StubStorage storage = new StubStorage(100);
-        final IEnergyStorage first = NeoForgeEnergyCapabilityRegistrar.unwrap(storage);
-        final IEnergyStorage second = NeoForgeEnergyCapabilityRegistrar.unwrap(storage);
+        final IEnergyStorage first = wrap(storage);
+        final IEnergyStorage second = wrap(storage);
 
         assertNotNull(first);
         assertNotNull(second);
@@ -38,8 +38,8 @@ class NeoForgeEnergyCapabilityRegistrarTest {
 
     @Test
     void wrappersOverDifferentStoragesAreNotEqual() {
-        final IEnergyStorage first = NeoForgeEnergyCapabilityRegistrar.unwrap(new StubStorage(100));
-        final IEnergyStorage second = NeoForgeEnergyCapabilityRegistrar.unwrap(new StubStorage(100));
+        final IEnergyStorage first = wrap(new StubStorage(100));
+        final IEnergyStorage second = wrap(new StubStorage(100));
 
         assertNotNull(first);
         assertNotNull(second);
@@ -51,7 +51,7 @@ class NeoForgeEnergyCapabilityRegistrarTest {
     void wrapperDelegatesToUnderlyingStorage() {
         final StubStorage storage = new StubStorage(100);
         storage.stored = 40;
-        final IEnergyStorage wrapper = NeoForgeEnergyCapabilityRegistrar.unwrap(storage);
+        final IEnergyStorage wrapper = wrap(storage);
 
         assertNotNull(wrapper);
         assertEquals(40, wrapper.getEnergyStored());
@@ -64,6 +64,10 @@ class NeoForgeEnergyCapabilityRegistrarTest {
         assertEquals(60, wrapper.getEnergyStored());
         assertEquals(0, wrapper.extractEnergy(10, false));
         assertEquals(60, wrapper.getEnergyStored());
+    }
+
+    private static IEnergyStorage wrap(final EnergyStorage storage) {
+        return (IEnergyStorage) NeoForgeCapabilities.toNeoForge(EnergyStorage.class, storage, null);
     }
 
     // Named Stub* rather than Test*: PMD's TestClassWithoutTestCases would flag a Test* inner class.

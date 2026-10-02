@@ -5,11 +5,11 @@ import java.util.Collections;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import li.cil.oc2.platform.FluidHandler;
+import li.cil.oc2.platform.FluidStack;
 
-public final class FluidHandlerDevice extends IdentityProxy<IFluidHandler> implements NamedDevice {
-    public FluidHandlerDevice(final IFluidHandler identity) {
+public final class FluidHandlerDevice extends IdentityProxy<FluidHandler> implements NamedDevice {
+    public FluidHandlerDevice(final FluidHandler identity) {
         super(identity);
     }
 
