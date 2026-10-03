@@ -1,4 +1,4 @@
-package li.cil.oc2.common.util.text;
+package li.cil.oc2.client.gui.util;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;

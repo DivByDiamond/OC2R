@@ -10,6 +10,7 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -71,8 +72,9 @@ public final class BusInterfaceItem extends ModBlockItem {
     @Override
     public void registerBlocks(final Map<Block, Item> map, final Item item) {}
 
-    @Override
-    @SuppressWarnings("removal") // intentional empty override to keep the bus interface mapped
+    // Not annotated with @Override: the method only exists in NeoForge's patched BlockItem. It is
+    // an intentionally empty override to keep the bus interface mapped there; other loaders never call it.
+    @SuppressWarnings({"removal", "PMD.MissingOverride"})
     public void removeFromBlockToItemMap(final Map<Block, Item> map, final Item item) {}
 
     @Nullable
@@ -108,7 +110,7 @@ public final class BusInterfaceItem extends ModBlockItem {
         }
 
         LevelUtils.playSound(
-                level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
+                level, pos, Platform.hooks().getSoundType(state, level, pos, player), SoundType::getPlaceSound);
 
         if (player == null || !player.getAbilities().instabuild) {
             stack.shrink(1);

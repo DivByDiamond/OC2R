@@ -1,9 +1,16 @@
 package li.cil.oc2.common.hooks;
 
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
+import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
+import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Entry points from common code into client-only behaviour (screens, file choosers, sound). Common
@@ -32,6 +39,42 @@ public interface ClientProxy {
 
     /** Streams PCM audio of a sound card at {@code pos}. */
     default void streamPcm(final BlockPos pos, final byte[] pcm) {}
+
+    /** Registers a network connector with the cable renderer. */
+    default void addNetworkConnector(final NetworkConnectorBlockEntity entity) {}
+
+    /** Makes the cable renderer rebuild its cached network connections. */
+    default void invalidateNetworkCableConnections() {}
+
+    /** Opens the bus interface screen of {@code blockEntity} for {@code side}. */
+    default void openBusInterfaceScreen(final BusCableBlockEntity blockEntity, final Direction side) {}
+
+    /** Starts or stops the looping running sound of a computer after its run state changed. */
+    default void handleComputerRunStateChange(
+            final BlockEntity blockEntity, final VMRunState state, final Level level, final int maxRunningSoundDelay) {}
+
+    /** Creates the GUI renderer of a monitor; the type is opaque to common code. */
+    default Object createMonitorRenderer() {
+        return null;
+    }
+
+    /**
+     * Render model data is loader specific and client only, so common code passes it around as an opaque
+     * object. The empty value to start from.
+     */
+    default Object emptyModelData() {
+        return null;
+    }
+
+    /** Computes the bus cable render model data from {@code current}, see {@link #emptyModelData()}. */
+    default Object computeBusCableModelData(final BusCableBlockEntity owner, final Object current) {
+        return current;
+    }
+
+    /** Computes the monitor render model data for {@code state}, see {@link #emptyModelData()}. */
+    default Object computeMonitorModelData(final BlockState state) {
+        return emptyModelData();
+    }
 
     /** The proxy in use. */
     static ClientProxy get() {

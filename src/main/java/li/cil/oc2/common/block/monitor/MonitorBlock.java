@@ -186,15 +186,27 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
         return super.playerWillDestroy(level, pos, state, player);
     }
 
-    @Override
-    public BlockState rotate(final BlockState state, final net.minecraft.world.level.LevelAccessor level, final BlockPos pos, final net.minecraft.world.level.block.Rotation rotation) {
-        // Rotating a single block of a multiblock with a wrench would change its FACING and
-        // break the multiblock structure. Refuse to rotate when this block is part of a
-        // multiblock larger than 1x1.
+    // Not annotated with @Override: this is NeoForge's world-aware rotate hook (what wrenches call),
+    // which does not exist in vanilla. See Platform.hooks().rotate for the other loaders.
+    @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
+    public BlockState rotate(
+            final BlockState state,
+            final net.minecraft.world.level.LevelAccessor level,
+            final BlockPos pos,
+            final net.minecraft.world.level.block.Rotation rotation) {
+        return rotateWithWrench(state, rotation);
+    }
+
+    /**
+     * Rotating a single block of a multiblock with a wrench would change its FACING and break the
+     * multiblock structure. Refuses to rotate when this block is part of a multiblock larger than 1x1.
+     */
+    public static BlockState rotateWithWrench(
+            final BlockState state, final net.minecraft.world.level.block.Rotation rotation) {
         if (state.getValue(WIDTH) > 1 || state.getValue(HEIGHT) > 1) {
             return state;
         }
-        return super.rotate(state, level, pos, rotation);
+        return state.rotate(rotation);
     }
 
     // EntityBlock

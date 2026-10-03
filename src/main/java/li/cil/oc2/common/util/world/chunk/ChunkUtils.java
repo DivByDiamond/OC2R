@@ -3,7 +3,6 @@ package li.cil.oc2.common.util.world.chunk;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
-import li.cil.oc2.common.mixin.ServerChunkCacheMixin;
 import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -14,7 +13,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 public final class ChunkUtils {
     /**
      * All chunks marked for lazy saving. The lazy unsaved state will be applied when chunks unload
-     * and when chunks get explicitly saved, via the {@link ServerChunkCacheMixin}.
+     * and when chunks get explicitly saved, via the {@code ServerChunkCacheMixin}.
      */
     private static final Set<ChunkAccess> UNSAVED_CHUNKS =
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));

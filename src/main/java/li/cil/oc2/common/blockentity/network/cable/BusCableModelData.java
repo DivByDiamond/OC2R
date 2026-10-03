@@ -1,36 +1,26 @@
 package li.cil.oc2.common.blockentity.network.cable;
 
-import java.util.function.BiFunction;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.platform.Platform;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
+/**
+ * Holds the render model data of a bus cable. The data type is loader specific and client only, so it is
+ * handled as an opaque object here; the client computes it through {@link ClientProxy}.
+ */
 final class BusCableModelData {
-    // A method reference to a Dist.CLIENT class is safe in common code as long as it is never
-    // invoked off-client (invokedynamic resolves the target lazily, on first call) — same
-    // pattern as MonitorStateManager#createMonitorSupplier. Wiring it once here avoids the
-    // Class.forName/getMethod/invoke reflection this used to redo on every render frame.
-    private static final BiFunction<BusCableBlockEntity, ModelData, ModelData> COMPUTE_MODEL_DATA =
-            createComputeModelData();
     private final BusCableBlockEntity owner;
-    private ModelData currentModelData;
+    private Object currentModelData;
 
     BusCableModelData(final BusCableBlockEntity owner) {
         this.owner = owner;
-        this.currentModelData = Platform.environment().isClient() ? ModelData.EMPTY : null;
+        this.currentModelData = Platform.environment().isClient() ? ClientProxy.get().emptyModelData() : null;
     }
 
-    private static BiFunction<BusCableBlockEntity, ModelData, ModelData> createComputeModelData() {
-        if (Platform.environment().isClient()) {
-            return li.cil.oc2.client.hooks.BusCableModelHooks::computeModelData;
-        }
-        return (owner, current) -> ModelData.EMPTY;
-    }
-
-    ModelData getModelData() {
+    Object getModelData() {
         if (!Platform.environment().isClient()) {
-            return ModelData.EMPTY;
+            return null;
         }
-        currentModelData = COMPUTE_MODEL_DATA.apply(owner, currentModelData);
+        currentModelData = ClientProxy.get().computeBusCableModelData(owner, currentModelData);
         return currentModelData;
     }
 }

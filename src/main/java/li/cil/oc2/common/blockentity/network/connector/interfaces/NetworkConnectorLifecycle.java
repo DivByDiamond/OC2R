@@ -6,6 +6,7 @@ import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.platform.CapabilityRegistrar;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
@@ -31,7 +32,7 @@ public final class NetworkConnectorLifecycle {
 
     public static void loadClient(final NetworkConnectorBlockEntity entity) {
         if (Platform.environment().isClient()) {
-            li.cil.oc2.client.hooks.NetworkCableRendererHooks.addNetworkConnector(entity);
+            ClientProxy.get().addNetworkConnector(entity);
         }
     }
 

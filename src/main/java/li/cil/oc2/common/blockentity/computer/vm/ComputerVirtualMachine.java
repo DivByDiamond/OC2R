@@ -7,6 +7,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerVMRunner;
 import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.network.message.computer.ComputerBootErrorMessage;
 import li.cil.oc2.common.network.message.computer.ComputerBusStateMessage;
 import li.cil.oc2.common.network.message.computer.ComputerRunStateMessage;
@@ -43,7 +44,7 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
         if (Platform.environment().isClient()) {
             final Level level = owner.getLevel();
-            li.cil.oc2.client.hooks.ComputerSoundHooks.handleRunStateChange(owner, value, level, MAX_RUNNING_SOUND_DELAY);
+            ClientProxy.get().handleComputerRunStateChange(owner, value, level, MAX_RUNNING_SOUND_DELAY);
         }
     }
 

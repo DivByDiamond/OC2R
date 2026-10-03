@@ -97,13 +97,13 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Registry<T> createRegistry(final String registryId, final String namespace) {
+    public <T> Registry<T> createRegistry(final String registryId, final String namespace, final boolean synced) {
         final String key = registryId + '|' + namespace;
         lock.lock();
         try {
             final DeferredRegister<Object> register = registers.computeIfAbsent(key,
                     k -> DeferredRegister.create(ResourceLocation.parse(registryId), namespace));
-            return (Registry<T>) register.makeRegistry(builder -> {});
+            return (Registry<T>) register.makeRegistry(builder -> builder.sync(synced));
         } finally {
             lock.unlock();
         }

@@ -35,6 +35,6 @@ public abstract class AbstractTypedDeviceItemStackHandler extends AbstractDevice
     }
 
     public void saveItems(RestrictedContainer container) {
-        container.items().put(this.deviceType.getTag(), NonNullList.copyOf(this.stacks));
+        container.items().put(this.deviceType.getTag(), NonNullList.of(ItemStack.EMPTY, this.stacks.toArray(new ItemStack[0])));
     }
 }

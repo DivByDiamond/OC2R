@@ -2,6 +2,7 @@ package li.cil.oc2.common.container.slot;
 
 import li.cil.oc2.platform.ItemHandler;
 import li.cil.oc2.platform.ItemHandlerSlot;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.world.item.ItemStack;
 
 public final class RobotSlot extends ItemHandlerSlot {
@@ -15,6 +16,6 @@ public final class RobotSlot extends ItemHandlerSlot {
 
     @Override
     public boolean mayPlace(final ItemStack stack) {
-        return super.mayPlace(stack) && stack.canFitInsideContainerItems();
+        return super.mayPlace(stack) && Platform.hooks().canFitInsideContainerItems(stack);
     }
 }

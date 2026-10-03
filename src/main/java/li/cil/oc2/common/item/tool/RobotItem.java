@@ -3,8 +3,6 @@ package li.cil.oc2.common.item.tool;
 import static li.cil.oc2.common.Constants.*;
 
 import java.util.List;
-import java.util.function.Consumer;
-import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
@@ -18,8 +16,6 @@ import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.CapabilityRegistrar;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -34,7 +30,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class RobotItem extends ModItem {
     @Override
@@ -108,22 +103,8 @@ registrar.registerItem(
     }
 
     @Override
-    public boolean canFitInsideContainerItems(final ItemStack stack) {
+    public boolean canFitInsideContainerItems() {
         return false;
-    }
-
-    @Override
-    @SuppressWarnings("removal") // required to provide a custom block-entity renderer for the robot
-    public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(
-                new IClientItemExtensions() {
-                    @Override
-                    public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                        return new RobotWithoutLevelRenderer(
-                                Minecraft.getInstance().getBlockEntityRenderDispatcher(),
-                                Minecraft.getInstance().getEntityModels());
-                    }
-                });
     }
 
     public static ItemStack getRobotWithFlash() {

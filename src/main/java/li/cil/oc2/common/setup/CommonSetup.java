@@ -5,16 +5,17 @@ import li.cil.oc2.common.inet.internet.InternetManagerImpl;
 import li.cil.oc2.common.integration.Integrations;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.vxlan.TunnelManager;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public final class CommonSetup {
-    @SubscribeEvent
-    public static void handleSetupEvent(final FMLCommonSetupEvent event) {
+    /** Runs once all mods are constructed; the loaders call this from their setup event or initializer. */
+    public static void run() {
         Integrations.initialize();
         InternetManagerImpl.initialize();
         RPCMethodParameterTypeAdapters.initialize();
         ServerScheduler.initialize();
         TunnelManager.initialize();
+    }
+
+    private CommonSetup() {
     }
 }

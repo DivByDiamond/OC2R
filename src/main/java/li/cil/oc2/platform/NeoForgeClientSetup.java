@@ -4,8 +4,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.model.BusCableModelLoader;
 import li.cil.oc2.client.model.monitor.MonitorModelLoader;
+import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.item.Items;
 import li.cil.oc2.platform.event.ClientEvents;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -15,6 +19,8 @@ import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
@@ -37,6 +43,21 @@ public final class NeoForgeClientSetup {
     public static void onRegisterGeometryLoaders(final RegisterGeometryLoaders event) {
         event.register(Blocks.BUS_CABLE.getId(), new BusCableModelLoader());
         event.register(Blocks.MONITOR.getId(), new MonitorModelLoader());
+    }
+
+    @SubscribeEvent
+    public static void onRegisterClientExtensions(final RegisterClientExtensionsEvent event) {
+        // The robot item renders its entity model instead of a flat item model.
+        event.registerItem(
+                new IClientItemExtensions() {
+                    @Override
+                    public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                        return new RobotWithoutLevelRenderer(
+                                Minecraft.getInstance().getBlockEntityRenderDispatcher(),
+                                Minecraft.getInstance().getEntityModels());
+                    }
+                },
+                Items.ROBOT.get());
     }
 
     @SubscribeEvent

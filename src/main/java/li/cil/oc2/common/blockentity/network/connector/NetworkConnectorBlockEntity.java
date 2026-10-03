@@ -14,6 +14,7 @@ import li.cil.oc2.common.blockentity.network.connector.interfaces.NetworkConnect
 import li.cil.oc2.common.blockentity.network.connector.interfaces.NetworkConnectorLifecycle;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.NullNetworkInterface;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.platform.CapabilityInvalidationListener;
 import li.cil.oc2.platform.Platform;
@@ -96,7 +97,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         // Live updates arrive via this tag instead of a custom message; the cable
         // renderer caches connections, so it must rebuild after positions change.
         if (Platform.environment().isClient()) {
-            li.cil.oc2.client.hooks.NetworkCableRendererHooks.invalidateConnections();
+            ClientProxy.get().invalidateNetworkCableConnections();
         }
     }
 

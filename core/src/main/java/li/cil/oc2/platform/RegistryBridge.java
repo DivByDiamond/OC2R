@@ -43,5 +43,13 @@ public interface RegistryBridge {
      * Creates a new custom registry {@code registryId} owned by {@code namespace}. Must be called before
      * entries are registered into it through {@link #register} and before the loader binds registries.
      */
-    <T> Registry<T> createRegistry(String registryId, String namespace);
+    default <T> Registry<T> createRegistry(final String registryId, final String namespace) {
+        return createRegistry(registryId, namespace, false);
+    }
+
+    /**
+     * Same as {@link #createRegistry(String, String)}; a {@code synced} registry has its content sent to
+     * connecting clients, which is needed for registries that ids are exchanged over the network for.
+     */
+    <T> Registry<T> createRegistry(String registryId, String namespace, boolean synced);
 }

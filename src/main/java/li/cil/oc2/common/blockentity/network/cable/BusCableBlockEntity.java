@@ -122,7 +122,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     }
 
     @Override
-    public net.neoforged.neoforge.client.model.data.ModelData getModelData() {
+    protected Object getCustomModelData() {
         return modelData.getModelData();
     }
 

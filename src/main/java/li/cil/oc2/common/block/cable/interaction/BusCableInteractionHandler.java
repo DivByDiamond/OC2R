@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeType;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.item.ItemStackUtils;
@@ -208,14 +209,14 @@ public final class BusCableInteractionHandler {
                                 entity.playerTouch(player);
                             });
         }
-        LevelUtils.playSound(level, pos, state.getSoundType(level, pos, null), SoundType::getBreakSound);
+        LevelUtils.playSound(level, pos, Platform.hooks().getSoundType(state, level, pos, null), SoundType::getBreakSound);
     }
 
     @OnlyIn(Dist.CLIENT)
     private static void openBusInterfaceScreen(
             final BusCableBlockEntity blockEntity, final Direction side) {
         if (Platform.environment().isClient()) {
-            li.cil.oc2.client.hooks.BusInterfaceScreenHooks.openBusInterfaceScreen(blockEntity, side);
+            ClientProxy.get().openBusInterfaceScreen(blockEntity, side);
         }
     }
 

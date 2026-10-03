@@ -1,13 +1,13 @@
 package li.cil.oc2.api.bus.device;
 
 import li.cil.oc2.api.API;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.RegistryBuilder;
 
 /**
  * Implementations describe individual slot types. Slot types are only used for item devices, and
@@ -23,7 +23,7 @@ public interface DeviceType {
                     ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "device_type"));
 
     @SuppressWarnings("unused")
-    Registry<DeviceType> REGISTRY = new RegistryBuilder<>(REGISTRY_KEY).sync(true).create();
+    Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(REGISTRY_KEY.location().toString(), API.MOD_ID, true);
 
     /**
      * The tag representing this device type.

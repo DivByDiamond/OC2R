@@ -3,10 +3,10 @@ package li.cil.oc2.common.util.misc;
 import com.mojang.authlib.GameProfile;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
 public final class FakePlayerUtils {
     private static final String FAKE_PLAYER_NAME = "[" + API.MOD_ID + "]";
@@ -22,7 +22,7 @@ public final class FakePlayerUtils {
     }
 
     public static ServerPlayer getFakePlayer(final ServerLevel level) {
-        return FakePlayerFactory.get(level, getFakePlayerProfile());
+        return Platform.hooks().getFakePlayer(level, getFakePlayerProfile());
     }
 
     public static GameProfile getFakePlayerProfile() {

@@ -28,11 +28,8 @@ class ClientImportGuardTest {
             Pattern.MULTILINE);
 
     private static final Set<String> LEGACY_OFFENDERS = Set.of(
-            "li/cil/oc2/common/blockentity/monitor/MonitorBlockEntity.java",
-            "li/cil/oc2/common/blockentity/network/cable/BusCableModelData.java",
             "li/cil/oc2/common/integration/jei/ExtraGuiAreasJEIPlugin.java",
             "li/cil/oc2/common/item/tool/ManualItem.java",
-            "li/cil/oc2/common/item/tool/RobotItem.java",
             "li/cil/oc2/common/item/tool/WrenchItem.java",
             "li/cil/oc2/common/Main.java",
             "li/cil/oc2/common/mixin/FrustumMixin.java",
@@ -40,7 +37,6 @@ class ClientImportGuardTest {
             "li/cil/oc2/common/mixin/MinecraftMixin.java",
             "li/cil/oc2/common/network/util/ClientBlockEntityLookup.java",
             "li/cil/oc2/common/network/util/MessageUtils.java",
-            "li/cil/oc2/common/util/text/TooltipRenderer.java",
             "li/cil/oc2/common/vm/terminal/fonts/FontAtlas.java",
             "li/cil/oc2/common/vm/terminal/render/overlay/TerminalCursorRenderer.java",
             "li/cil/oc2/common/vm/terminal/render/TerminalRenderer.java",

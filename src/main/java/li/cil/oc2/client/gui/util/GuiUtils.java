@@ -8,7 +8,6 @@ import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.widget.Sprite;
 import li.cil.oc2.common.container.slot.DeviceTypeSlotItemHandler;
-import li.cil.oc2.common.util.text.TooltipRenderer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

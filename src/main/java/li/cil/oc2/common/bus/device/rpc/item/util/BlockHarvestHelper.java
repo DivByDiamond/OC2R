@@ -2,6 +2,7 @@ package li.cil.oc2.common.bus.device.rpc.item.util;
 
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,8 +17,6 @@ import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.StructureBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.event.EventHooks;
 
 public class BlockHarvestHelper {
     public static boolean tryHarvestBlock(
@@ -42,8 +41,7 @@ public class BlockHarvestHelper {
         damage += 1;
         identity.setDamageValue(damage);
 
-        if (!blockState.onDestroyedByPlayer(
-                level, blockPos, player, true, level.getFluidState(blockPos))) {
+        if (!Platform.hooks().destroyBlockAsPlayer(level, blockPos, blockState, player, true)) {
             return false;
         }
 
@@ -60,10 +58,7 @@ public class BlockHarvestHelper {
             final ServerPlayer player,
             final BlockPos blockPos,
             final BlockState blockState) {
-        final var breakEvent =
-                CommonHooks.fireBlockBreak(
-                        level, GameType.DEFAULT_MODE, player, blockPos, blockState);
-        if (breakEvent.isCanceled()) {
+        if (!Platform.hooks().mayBreakBlock(level, player, blockPos, blockState)) {
             return false;
         }
 
@@ -85,7 +80,7 @@ public class BlockHarvestHelper {
             return false;
         }
 
-        return EventHooks.doPlayerHarvestCheck(player, blockState, level, blockPos);
+        return Platform.hooks().canHarvest(player, blockState, level, blockPos);
     }
 
     private static Tier getToolTier() {

@@ -3,30 +3,18 @@ package li.cil.oc2.common.bus.device;
 import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.common.bus.device.util.info.DeviceTypeImpl;
 import li.cil.oc2.common.tags.ItemTags;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NewRegistryEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class DeviceTypes {
-    // Still goes through NeoForge's DeferredRegister directly instead of the core
-    // RegistryBridge (docs/roadmap/multiloader.md §42): DeviceType.REGISTRY is public API,
-    // already created eagerly by the interface field below, so switching this to
-    // Platform.registries().createRegistry() would create a second, disconnected registry
-    // instead of reusing it. Pending a real migration that also touches the api/ field.
-    private static final DeferredRegister<DeviceType> DEVICE_TYPES =
-            DeferredRegister.create(DeviceType.REGISTRY, API.MOD_ID);
-
     // MUST be declared before the DeviceType fields below: register() is invoked by the
     // static initializers and reads this map.
     private static final Map<String, String> SLOT_ICON_CATEGORIES = Map.ofEntries(
@@ -50,15 +38,14 @@ public final class DeviceTypes {
     public static final DeviceType CPU = register(ItemTags.DEVICES_CPU);
     public static final DeviceType GPU = register(ItemTags.DEVICES_GPU);
 
-    @SubscribeEvent // on the mod event bus
-    public static void registerRegistries(NewRegistryEvent event) {
-        event.register(DeviceType.REGISTRY);
-    }
-
-    /** Binds {@link #DEVICE_TYPES} to the mod bus; without this call its entries are never
-     * actually inserted into {@link DeviceType#REGISTRY} (see the field's comment). */
-    public static void initialize(final IEventBus modBus) {
-        DEVICE_TYPES.register(modBus);
+    /**
+     * Makes sure {@link DeviceType#REGISTRY} exists and the entries above are queued before the loader
+     * binds the registries. The registry itself is created by the {@link DeviceType} interface field
+     * (public API), the entries are registered into it by id.
+     */
+    public static void initialize() {
+        // Touching the field creates the registry through the platform bridge.
+        Objects.requireNonNull(DeviceType.REGISTRY, "Device type registry missing");
     }
 
     private static DeviceType register(final TagKey<Item> tag) {
@@ -70,7 +57,7 @@ public final class DeviceTypes {
                                 tag,
                                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, iconPath),
                                 text("gui.{mod}.device_type." + id));
-        DEVICE_TYPES.register(id, supplier);
+        Platform.registries().register(DeviceType.REGISTRY_KEY.location().toString(), API.MOD_ID, id, supplier);
         return supplier.get();
     }
 }

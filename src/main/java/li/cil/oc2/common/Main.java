@@ -19,6 +19,8 @@ import li.cil.oc2.common.config.common.CommonSpec;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.event.CommonEventListeners;
+import li.cil.oc2.common.integration.Integrations;
+import li.cil.oc2.common.integration.projectred.BundledCableHandler;
 import li.cil.oc2.common.item.ItemGroup;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.crafting.RecipeSerializers;
@@ -39,11 +41,14 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(API.MOD_ID)
 public final class Main {
+    // The lambda is deliberate: a method reference would load BundledCableHandler (and fail without ProjectRed).
+    @SuppressWarnings("PMD.LambdaCanBeMethodReference")
     public Main(IEventBus modBus, ModContainer container) {
         Ceres.initialize();
         Sedna.initialize();
@@ -69,13 +74,15 @@ public final class Main {
 
         ProviderRegistry.initialize();
 
-        DeviceTypes.initialize(modBus);
+        DeviceTypes.initialize();
         BlockDeviceDataRegistry.initialize();
         FirmwareRegistry.initialize();
 
+        Integrations.registerModIntegration("projectred_transmission", () -> BundledCableHandler.initialize());
+
         CommonEventListeners.register();
 
-        modBus.register(CommonSetup.class);
+        modBus.addListener((FMLCommonSetupEvent event) -> CommonSetup.run());
         if (FMLLoader.getDist() == Dist.CLIENT) {
             Manuals.initialize();
             ClientEventListeners.register();

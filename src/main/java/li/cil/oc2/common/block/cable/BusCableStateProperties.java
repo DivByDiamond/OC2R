@@ -7,6 +7,7 @@ import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -126,7 +127,7 @@ public final class BusCableStateProperties {
         LevelUtils.playSound(
                 level,
                 pos,
-                soundsSource.getSoundType(level, pos, null),
+                Platform.hooks().getSoundType(soundsSource, level, pos, null),
                 value ? SoundType::getPlaceSound : SoundType::getBreakSound);
     }
 

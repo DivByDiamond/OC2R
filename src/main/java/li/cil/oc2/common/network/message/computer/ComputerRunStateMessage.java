@@ -5,20 +5,20 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.ClientBlockEntityLookup;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.network.StreamCodecs;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 public record ComputerRunStateMessage(BlockPos pos, VMRunState value) implements AbstractMessage {
     public static final StreamCodec<FriendlyByteBuf, ComputerRunStateMessage> STREAM_CODEC =
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC,
                     ComputerRunStateMessage::pos,
-                    NeoForgeStreamCodecs.enumCodec(VMRunState.class),
+                    StreamCodecs.enumCodec(VMRunState.class),
                     ComputerRunStateMessage::value,
                     ComputerRunStateMessage::new);
 

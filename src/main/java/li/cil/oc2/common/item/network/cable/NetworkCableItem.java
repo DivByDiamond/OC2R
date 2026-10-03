@@ -7,6 +7,7 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult;
 import li.cil.oc2.common.item.ModItem;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -32,7 +33,7 @@ public final class NetworkCableItem extends ModItem {
             final Level level, final Player player, final InteractionHand hand) {
         if (player.isShiftKeyDown()) {
             if (!level.isClientSide()) {
-                final CompoundTag persistentData = player.getPersistentData();
+                final CompoundTag persistentData = Platform.hooks().getPersistentData(player);
                 persistentData.remove(LINK_START_TAG_NAME);
             }
 
@@ -75,7 +76,7 @@ public final class NetworkCableItem extends ModItem {
             final BlockPos currentPos,
             final NetworkConnectorBlockEntity currentConnector,
             final ItemStack stack) {
-        final CompoundTag persistentData = player.getPersistentData();
+        final CompoundTag persistentData = Platform.hooks().getPersistentData(player);
         final Optional<BlockPos> startPos =
                 NbtUtils.readBlockPos(persistentData, LINK_START_TAG_NAME);
         persistentData.remove(LINK_START_TAG_NAME);

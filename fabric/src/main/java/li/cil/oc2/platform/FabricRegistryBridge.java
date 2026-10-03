@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -107,10 +108,15 @@ public final class FabricRegistryBridge implements RegistryBridge {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Registry<T> createRegistry(final String registryId, final String namespace) {
-        return (Registry<T>) customRegistries.computeIfAbsent(registryId, id ->
-                FabricRegistryBuilder.createSimple(ResourceKey.<T>createRegistryKey(ResourceLocation.parse(id)))
-                        .buildAndRegister());
+    public <T> Registry<T> createRegistry(final String registryId, final String namespace, final boolean synced) {
+        return (Registry<T>) customRegistries.computeIfAbsent(registryId, id -> {
+            final FabricRegistryBuilder<T, ? extends MappedRegistry<T>> builder =
+                    FabricRegistryBuilder.createSimple(ResourceKey.<T>createRegistryKey(ResourceLocation.parse(id)));
+            if (synced) {
+                builder.attribute(RegistryAttribute.SYNCED);
+            }
+            return builder.buildAndRegister();
+        });
     }
 
     /** Registers everything queued so far, in queue order; called once from the mod initializer. */

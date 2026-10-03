@@ -4,25 +4,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
 import net.minecraft.Util;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.InterModComms;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@EventBusSubscriber(modid = API.MOD_ID)
+/**
+ * Handles inter-mod messages. Loader-independent: NeoForge feeds it from {@code InterModComms}, other
+ * loaders have no such mechanism and simply never call {@link #handleMessages}.
+ */
 public final class IMC {
+    /** A loader-independent inter-mod message. */
+    public record Message(String senderModId, String method, Supplier<?> messageSupplier) {
+    }
+
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final Map<String, Consumer<InterModComms.IMCMessage>> METHODS =
+    private static final Map<String, Consumer<Message>> METHODS =
             Util.make(
                     () -> {
-                        Map<String, Consumer<InterModComms.IMCMessage>> map = new ConcurrentHashMap<>();
+                        Map<String, Consumer<Message>> map = new ConcurrentHashMap<>();
 
                         map.put(
                                 API.IMC_ADD_RPC_METHOD_PARAMETER_TYPE_ADAPTER,
@@ -31,12 +36,11 @@ public final class IMC {
                         return map;
                     });
 
-    @SubscribeEvent
-    private static void handleIMCMessages(final InterModProcessEvent event) {
-        event.getIMCStream()
+    public static void handleMessages(final Stream<Message> messages) {
+        messages
                 .forEach(
                         message -> {
-                            final Consumer<InterModComms.IMCMessage> method =
+                            final Consumer<Message> method =
                                     METHODS.get(message.method());
                             if (method != null) {
                                 method.accept(message);
@@ -50,7 +54,7 @@ public final class IMC {
                         });
     }
 
-    private static void addRPCMethodParameterTypeAdapter(final InterModComms.IMCMessage message) {
+    private static void addRPCMethodParameterTypeAdapter(final Message message) {
         getMessageParameter(message, RPCMethodParameterTypeAdapter.class)
                 .ifPresent(
                         value -> {
@@ -69,7 +73,7 @@ public final class IMC {
 
     @SuppressWarnings({"unchecked", "SameParameterValue"})
     private static <T> Optional<T> getMessageParameter(
-            final InterModComms.IMCMessage message, final Class<T> type) {
+            final Message message, final Class<T> type) {
         final Object value = message.messageSupplier().get();
         if (type.isInstance(value)) {
             return Optional.of((T) value);

@@ -3,6 +3,7 @@ package li.cil.oc2.common.item.tool;
 import java.util.Objects;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.tags.BlockTags;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,9 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class WrenchItem extends ModItem {
-    @Override
+    // Not annotated with @Override: onItemUseFirst only exists in NeoForge's patched Item; other loaders
+    // call it from their own use-block hook.
+    @SuppressWarnings("PMD.MissingOverride")
     public InteractionResult onItemUseFirst(final ItemStack stack, final UseOnContext context) {
         final Level level = context.getLevel();
         final BlockPos pos = context.getClickedPos();
@@ -26,7 +29,8 @@ public final class WrenchItem extends ModItem {
         if (face == Direction.UP || face == Direction.DOWN) {
             final BlockState blockState = level.getBlockState(pos);
             final BlockState rotatedState =
-                    blockState.rotate(
+                    Platform.hooks().rotate(
+                            blockState,
                             level,
                             pos,
                             face == Direction.UP
@@ -38,7 +42,7 @@ public final class WrenchItem extends ModItem {
             }
         }
 
-        return super.onItemUseFirst(stack, context);
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -71,7 +75,8 @@ public final class WrenchItem extends ModItem {
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    @Override
+    // Not annotated with @Override: NeoForge-only Item hook, see onItemUseFirst.
+    @SuppressWarnings("PMD.MissingOverride")
     public boolean doesSneakBypassUse(
             final ItemStack stack,
             final LevelReader level,

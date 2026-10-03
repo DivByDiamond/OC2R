@@ -11,6 +11,7 @@ public final class Platform {
     private static final Object CAPABILITIES_INIT_LOCK = new Object();
     private static final Object ENVIRONMENT_INIT_LOCK = new Object();
     private static final Object MENU_INIT_LOCK = new Object();
+    private static final Object HOOKS_INIT_LOCK = new Object();
 
     private static volatile RegistryBridge bridge;
     private static volatile NetworkBridge networkBridge;
@@ -18,6 +19,7 @@ public final class Platform {
     private static volatile CapabilityBridge capabilityBridge;
     private static volatile PlatformEnvironment environmentBridge;
     private static volatile MenuBridge menuBridge;
+    private static volatile GameHooks gameHooks;
 
     private Platform() {}
 
@@ -103,6 +105,20 @@ public final class Platform {
                 result = menuBridge;
                 if (result == null) {
                     menuBridge = result = load(MenuBridge.class);
+                }
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static GameHooks hooks() {
+        GameHooks result = gameHooks;
+        if (result == null) {
+            synchronized (HOOKS_INIT_LOCK) {
+                result = gameHooks;
+                if (result == null) {
+                    gameHooks = result = load(GameHooks.class);
                 }
             }
         }

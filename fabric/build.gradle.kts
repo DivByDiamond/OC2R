@@ -9,6 +9,7 @@ val minecraft_version: String = providers.gradleProperty("minecraft_version").ge
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
 val team_reborn_energy_version: String = providers.gradleProperty("team_reborn_energy_version").get()
 val forge_config_api_port_version: String = providers.gradleProperty("forge_config_api_port_version").get()
+val includeSharedCode = providers.gradleProperty("fabric.common").orNull != "false"
 val night_config_version: String = providers.gradleProperty("night_config_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
@@ -44,7 +45,7 @@ dependencies {
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     // @OnlyIn/Dist annotations used by shared code; missing annotation classes are ignored at runtime.
     compileOnly("net.neoforged:mergetool:2.0.0:api")
-    if (providers.gradleProperty("fabric.common").orNull == "true") {
+    if (includeSharedCode) {
         compileOnly(fileTree(rootProject.file("libs")) { include("**/*.jar") })
     }
 }
@@ -53,19 +54,32 @@ dependencies {
 // its sources as part of this module instead, so Loom remaps them together with the Fabric code.
 sourceSets.main {
     java.srcDir(project(":core").file("src/main/java"))
-    // Work in progress (docs/roadmap/multiloader.md §42): compiles the shared mod code too.
-    // Off by default until it builds; enable with -Pfabric.common=true to see what is left.
-    if (providers.gradleProperty("fabric.common").orNull == "true") {
-        java.srcDir(rootProject.file("src/main/java"))
-        java.exclude(
+    // Compiles the shared mod code (src/main/java of the root project) too, see docs/roadmap/multiloader.md §42.
+    // -Pfabric.common=false compiles the Fabric module alone (it then no longer builds, the Fabric glue uses
+    // shared classes).
+    if (includeSharedCode) {
+        // A separate source set so the excludes apply to the shared sources only: some excluded NeoForge
+        // classes have a Fabric counterpart with the same path under fabric/src/main/java.
+        val shared = objects.sourceDirectorySet("sharedMod", "Shared mod code")
+        shared.srcDir(rootProject.file("src/main/java"))
+        shared.exclude(
             "li/cil/oc2/client/**",
             "li/cil/oc2/gametest/**",
             "li/cil/oc2/data/**",
             "li/cil/oc2/platform/NeoForge*",
             "li/cil/oc2/common/Main.java",
+            // NeoForge implementations of classes that this module provides itself (same name and API).
+            // PlatformBlockEntity: NeoForge's patched BlockEntity hooks vs. Fabric glue.
+            "li/cil/oc2/common/blockentity/PlatformBlockEntity.java",
+            // ManualItem is built on the NeoForge-only Markdown Manual library; Fabric has a plain item.
+            "li/cil/oc2/common/item/tool/ManualItem.java",
+            // Mixins for the NeoForge mixin config (client rendering of the projector, server chunk
+            // cache); the Fabric module has its own mixin config with counterparts.
+            "li/cil/oc2/common/mixin/**",
             // JEI/ProjectRed/Create integrations are NeoForge-specific for now.
             "li/cil/oc2/common/integration/jei/**",
             "li/cil/oc2/common/integration/projectred/**")
+        java.source(shared)
     }
 }
 
