@@ -10,6 +10,8 @@
       "li.cil.oc2.fabric.gametest.FabricNetworkTests",
       "li.cil.oc2.fabric.gametest.FabricInteractionTests",
       "li.cil.oc2.fabric.gametest.FabricHookTests",
+      "li.cil.oc2.fabric.gametest.FabricRobotTests",
+      "li.cil.oc2.fabric.gametest.FabricManualTests",
       "li.cil.oc2.gametest.DeviceBusTests",
       "li.cil.oc2.gametest.NetworkCableItemTests",
       "li.cil.oc2.gametest.NetworkConnectorTests",

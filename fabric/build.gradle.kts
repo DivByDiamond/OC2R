@@ -14,6 +14,8 @@ val night_config_version: String = providers.gradleProperty("night_config_versio
 val ceres_version: String = providers.gradleProperty("ceres_version").get()
 val sedna_version: String = providers.gradleProperty("sedna_version").get()
 val sedna_buildroot_version: String = providers.gradleProperty("sedna_buildroot_version").get()
+val markdown_manual_fabric_version: String = providers.gradleProperty("markdown_manual_fabric_version").get()
+val architectury_fabric_version: String = providers.gradleProperty("architectury_fabric_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
@@ -46,6 +48,9 @@ dependencies {
     implementation("com.electronwill.night-config:toml:$night_config_version")
     include("com.electronwill.night-config:core:$night_config_version")
     include("com.electronwill.night-config:toml:$night_config_version")
+    // The in-game manual: the original Markdown Manual has Fabric builds (it needs Architectury API).
+    modImplementation("maven.modrinth:markdownmanual:$markdown_manual_fabric_version")
+    modImplementation("maven.modrinth:architectury-api:$architectury_fabric_version")
     modImplementation("teamreborn:energy:$team_reborn_energy_version")
     include("teamreborn:energy:$team_reborn_energy_version")
 
@@ -75,10 +80,7 @@ sourceSets.main {
         shared.srcDir(rootProject.file("src/main/java"))
         shared.exclude(
             "li/cil/oc2/gametest/**",
-            // The Markdown Manual library is NeoForge only (see ManualItem below); the manual client code,
-            // its font renderer and the (unused) NeoForge menu screen registry are left out.
-            "li/cil/oc2/client/manual/**",
-            "li/cil/oc2/client/renderer/font/MonospaceFontRenderer.java",
+            // The (unused) NeoForge menu screen registry.
             "li/cil/oc2/client/gui/ScreenRegistry.java",
             // NeoForge geometry loaders and IDynamicBakedModel/ModelData based models; Fabric has its own
             // (fabric/src/main/java/li/cil/oc2/client/model).
@@ -100,8 +102,6 @@ sourceSets.main {
             // NeoForge implementations of classes that this module provides itself (same name and API).
             // PlatformBlockEntity: NeoForge's patched BlockEntity hooks vs. Fabric glue.
             "li/cil/oc2/common/blockentity/PlatformBlockEntity.java",
-            // ManualItem is built on the NeoForge-only Markdown Manual library; Fabric has a plain item.
-            "li/cil/oc2/common/item/tool/ManualItem.java",
             // Mixins for the NeoForge mixin config (client rendering of the projector, server chunk
             // cache); the Fabric module has its own mixin config with counterparts.
             "li/cil/oc2/common/mixin/**",

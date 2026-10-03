@@ -164,8 +164,17 @@ public final class FabricRegistryBridge implements RegistryBridge {
 
     private void enqueueLocked(final Entry<?> entry) {
         if (bound) {
-            throw new IllegalStateException(
-                    "Registration of " + entry.id() + " after registries were bound");
+            // Registries that other mods create later (the Markdown Manual's, from its client
+            // initializer) take registrations immediately; vanilla ones are frozen by then.
+            final Registry<?> existing = customRegistries.get(entry.registryId) != null
+                    ? customRegistries.get(entry.registryId)
+                    : BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(entry.registryId));
+            if (existing == null || entry.registryId.startsWith("minecraft:")) {
+                throw new IllegalStateException(
+                        "Registration of " + entry.id() + " after registries were bound");
+            }
+            entry.registerInto(resolve(entry.registryId));
+            return;
         }
         queue.add(entry);
     }
