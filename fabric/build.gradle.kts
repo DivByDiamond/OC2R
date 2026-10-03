@@ -7,6 +7,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 val minecraft_version: String = providers.gradleProperty("minecraft_version").get()
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
+val team_reborn_energy_version: String = providers.gradleProperty("team_reborn_energy_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
@@ -19,6 +20,9 @@ dependencies {
     mappings(loom.officialMojangMappings())
     modImplementation("net.fabricmc:fabric-loader:$fabric_loader_version")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api_version")
+    // Energy standard on Fabric (the counterpart of NeoForge's FE capability).
+    modImplementation("teamreborn:energy:$team_reborn_energy_version")
+    include("teamreborn:energy:$team_reborn_energy_version")
 
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
 }

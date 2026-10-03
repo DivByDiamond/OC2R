@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "li.cil.oc2.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["LevelChunkMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
