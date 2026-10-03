@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -117,6 +118,32 @@ public final class FabricHookTests implements FabricGameTest {
         target.handleUpdateTag(tag, helper.getLevel().registryAccess());
         if (!target.getFacade().is(net.minecraft.world.item.Items.STONE)) {
             helper.fail("facade was not restored from the update tag: " + target.getFacade());
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Vanilla only sends block entity data with a block update when the block entity supplies a packet;
+     * without it a facade set on a loaded cable never reached the clients that were already tracking it.
+     */
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void facadeIsSentWithTheBlockUpdate(final GameTestHelper helper) {
+        helper.setBlock(POS, Blocks.BUS_CABLE.get().defaultBlockState());
+        final BusCableBlockEntity source = (BusCableBlockEntity) helper.getBlockEntity(POS);
+        source.setFacade(new ItemStack(net.minecraft.world.item.Items.STONE));
+
+        final ClientboundBlockEntityDataPacket packet = source.getUpdatePacket();
+        if (packet == null) {
+            helper.fail("the cable supplies no block entity data packet");
+            return;
+        }
+
+        final BlockPos otherPos = POS.east(2);
+        helper.setBlock(otherPos, Blocks.BUS_CABLE.get().defaultBlockState());
+        final BusCableBlockEntity target = (BusCableBlockEntity) helper.getBlockEntity(otherPos);
+        target.handleUpdateTag(packet.getTag(), helper.getLevel().registryAccess());
+        if (!target.getFacade().is(net.minecraft.world.item.Items.STONE)) {
+            helper.fail("the packet did not carry the facade: " + target.getFacade());
         }
         helper.succeed();
     }

@@ -22,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -132,6 +133,15 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
         tag.put(FACADE_TAG_NAME, facadeManager.serialize());
         return tag;
+    }
+
+    /**
+     * Vanilla sends no block entity data on block updates unless this returns a packet; without it a
+     * facade set or removed on a loaded cable only reached clients that (re)loaded the chunk.
+     */
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
