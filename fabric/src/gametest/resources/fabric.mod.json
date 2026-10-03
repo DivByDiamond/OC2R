@@ -18,7 +18,8 @@
       "li.cil.oc2.gametest.RecipeTests",
       "li.cil.oc2.gametest.RedstoneInterfaceTests",
       "li.cil.oc2.gametest.RegistrationTests",
-      "li.cil.oc2.gametest.TerminalTests"
+      "li.cil.oc2.gametest.TerminalTests",
+      "li.cil.oc2.gametest.RobotTests"
     ]
   },
   "depends": {
