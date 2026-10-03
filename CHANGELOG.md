@@ -7,6 +7,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Fabric**: a `fabric/` module (Fabric Loom, Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual) that runs the whole mod on Fabric 1.21.1: registry, network, menu, capability, energy, environment and game-event bridges in `core`, Fabric client (models, shaders, renderers, manual), and Fabric GameTests (`:fabric:runGameTest`) that run the shared NeoForge game tests on a Fabric server
+- **Platform layer**: loader-independent `core` contracts for registries, network, menus, capabilities, item handlers, energy, client registration and client events, so shared code no longer names NeoForge for these
 - **Terminal**: ENQ (ANSI 0x05) transmits the answerback message (xterm `XTerm*answerbackString` semantics — empty by default, immediate no-op reply instead of silence); ENQ mid-CSI stays ignored per the existing deliberate C0-during-CSI divergence
 - **Terminal**: United Kingdom charset (`ESC ( A` / `ESC ) A`) — `#` renders as `£`, matching xterm's `nrc_British`; alternate-ROM designators remain documented no-ops
 - **Terminal**: medium shade glyph (`DEC Special Graphics 'a'` → U+2592) via an updated Monocraft font build (upstream HEAD + the shade matrix patched in), replacing .notdef tofu for the most-used missing glyph; the shade fills the cell edge-to-edge as a real VT renders it
@@ -14,6 +16,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **Sound card**: the first tone or PCM stream crashed the JVM (SIGSEGV in `alBufferData`) because the audio streams handed OpenAL heap buffers; they are now direct, little-endian and flipped
+- **Bus cable**: a facade set or removed on a loaded cable was not sent to tracking clients until the chunk reloaded; grass and mycelium facades rendered black on NeoForge
+- **Keyboard**: the block now lies flat on the floor with a matching hitbox instead of standing like a wall panel
 - **Terminal**: every incoming network diff yanked a scrolled-back (mouse-wheel) view back to the bottom, making scrollback review impossible while output streamed; scroll position is now a per-viewer preference anchored to absolute content rows — window slides leave the view put, shift operations move it with the content, and a reset snapshot re-glues to the bottom
 - **Terminal**: the client render thread could crash with a `NullPointerException` when a frame capture raced a terminal resize (both seqlock attempts landing inside the commit stretch); such a frame is now dropped and repainted next frame
 - **Terminal**: a malformed network diff carrying a negative row count decoded as an unnamed `NegativeArraySizeException`; it is now rejected with a diagnostic before allocation
