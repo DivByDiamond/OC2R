@@ -2,6 +2,7 @@ package li.cil.oc2.client.audio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import javax.sound.sampled.AudioFormat;
 import net.minecraft.client.sounds.AudioStream;
 
@@ -39,13 +40,15 @@ public final class ToneAudioStream implements AudioStream {
             return null;
         }
         if (size <= 0) {
-            return ByteBuffer.allocate(0);
+            return ByteBuffer.allocateDirect(0);
         }
 
         int bytesToWrite = (int) Math.min(size, totalBytes - position);
         bytesToWrite -= bytesToWrite & 1;
 
-        final ByteBuffer buffer = ByteBuffer.allocate(bytesToWrite);
+        // OpenAL reads the samples through their native address, so the buffer must be direct (a heap
+        // buffer crashes the JVM in alBufferData), little endian like the format above, and flipped.
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(bytesToWrite).order(ByteOrder.LITTLE_ENDIAN);
         final int samplesToWrite = bytesToWrite / 2;
         final long startSample = position / 2;
         for (int i = 0; i < samplesToWrite; i++) {
@@ -59,6 +62,7 @@ public final class ToneAudioStream implements AudioStream {
             buffer.putShort(sample);
         }
         position += bytesToWrite;
+        buffer.flip();
         return buffer;
     }
 
