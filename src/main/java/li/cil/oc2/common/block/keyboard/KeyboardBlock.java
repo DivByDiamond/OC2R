@@ -24,18 +24,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final VoxelShape NEG_Z_SHAPE =
-            Shapes.or(
-                    Block.box(0, 0, 0, 16, 8, 16), // main body
-                    Block.box(0, 8, 8, 16, 12, 16) // top
-                    );
+    private static final VoxelShape NEG_Z_SHAPE = Block.box(1, 4, 15, 15, 12, 16);
     private static final VoxelShape NEG_X_SHAPE =
             VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
     private static final VoxelShape POS_Z_SHAPE =
