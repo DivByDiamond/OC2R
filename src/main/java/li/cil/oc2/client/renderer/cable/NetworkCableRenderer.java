@@ -4,22 +4,18 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.*;
 import java.util.Collections;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
+import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.CommonEvents;
+import li.cil.oc2.platform.event.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
-@EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class NetworkCableRenderer {
     private static final Set<NetworkConnectorBlockEntity> connectors =
             Collections.newSetFromMap(Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
@@ -42,6 +38,7 @@ public final class NetworkCableRenderer {
     public static void registerEvents() {
         CommonEvents.CHUNK_UNLOAD.register(NetworkCableRenderer::handleChunkUnload);
         CommonEvents.LEVEL_UNLOAD.register(NetworkCableRenderer::handleLevelUnload);
+        ClientEvents.RENDER_LEVEL.register(NetworkCableRenderer::handleRenderWorld);
     }
 
     private static void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
@@ -75,9 +72,8 @@ public final class NetworkCableRenderer {
         }
     }
 
-    @SubscribeEvent
-    public static void handleRenderWorld(final RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
+    private static void handleRenderWorld(final LevelRenderContext event) {
+        if (event.stage() != LevelRenderContext.Stage.AFTER_CUTOUT_BLOCKS) {
             return;
         }
 
@@ -94,20 +90,20 @@ public final class NetworkCableRenderer {
             return;
         }
 
-        final PoseStack stack = event.getPoseStack();
+        final PoseStack stack = event.poseStack();
 
-        final Vec3 eye = event.getCamera().getPosition();
+        final Vec3 eye = event.camera().getPosition();
 
-        final var frustumMatrix = new Matrix4f(event.getModelViewMatrix());
+        final var frustumMatrix = new Matrix4f(event.modelViewMatrix());
         frustumMatrix.mul(stack.last().pose());
-        final Frustum frustum = new Frustum(frustumMatrix, event.getProjectionMatrix());
+        final Frustum frustum = new Frustum(frustumMatrix, event.projectionMatrix());
         frustum.prepare(eye.x, eye.y, eye.z);
 
         stack.pushPose();
         stack.translate(-eye.x, -eye.y, -eye.z);
 
         RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().set(event.getModelViewMatrix());
+        RenderSystem.getModelViewStack().set(event.modelViewMatrix());
         RenderSystem.applyModelViewMatrix();
 
         CableRenderUtils.renderCables(level, stack, eye, connections, frustum::isVisible);
