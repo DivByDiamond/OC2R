@@ -5,18 +5,23 @@ import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /**
  * {@link ClientRegistrar} for NeoForge. NeoForge only offers each registration point during its own
@@ -35,6 +40,7 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
             new ArrayList<>();
     private final List<java.util.function.Consumer<RegisterColorHandlersEvent.Item>> itemColors =
             new ArrayList<>();
+    private final List<java.util.function.Consumer<RegisterMenuScreensEvent>> screens = new ArrayList<>();
     private final List<Runnable> queuedSetupTasks = new ArrayList<>();
 
     private NeoForgeClientRegistrar() {}
@@ -78,6 +84,12 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
     }
 
     @Override
+    public <M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> void registerScreen(
+            final Supplier<? extends MenuType<M>> type, final ScreenFactory<M, S> constructor) {
+        screens.add(event -> event.register(type.get(), constructor::create));
+    }
+
+    @Override
     public void enqueueSetup(final Runnable task) {
         queuedSetupTasks.add(task);
     }
@@ -100,6 +112,10 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
 
     void applyItemColors(final RegisterColorHandlersEvent.Item event) {
         itemColors.forEach(registration -> registration.accept(event));
+    }
+
+    void applyScreens(final RegisterMenuScreensEvent event) {
+        screens.forEach(registration -> registration.accept(event));
     }
 
     List<Runnable> setupTasks() {

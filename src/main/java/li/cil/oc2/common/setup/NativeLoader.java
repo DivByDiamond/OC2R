@@ -11,12 +11,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import joptsimple.util.InetAddressConverter;
-import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 
 public final class NativeLoader {
+    /** Whether the native networking library was loaded and passed its probe. */
+    public static boolean LoadedLibrary = false;
+
     private static final Map<String, String> supportedArch = new ConcurrentHashMap<>();
     private static boolean officiallySupported = true;
     private static final String LOOPBACK_IP = String.format("%d.%d.%d.%d", 127, 0, 0, 1);
@@ -37,22 +39,22 @@ public final class NativeLoader {
         try {
             Path tempFile = extractToTemp(resourcePath);
             System.load(tempFile.toAbsolutePath().toString());
-            Main.LoadedLibrary = true;
+            LoadedLibrary = true;
             probeLoopback();
         } catch (FileNotFoundException fileNotFoundException) {
             if (officiallySupported) {
-                Main.LoadedLibrary = false;
+                LoadedLibrary = false;
                 LogManager.getLogger()
                         .warn(
                                 "Failed to load native library, jar file is corrupted or build"
                                         + " failed, attempted to load from path: {}",
                                 resourcePath);
             } else {
-                Main.LoadedLibrary = false;
+                LoadedLibrary = false;
                 LogManager.getLogger().warn("Unsupported architecture: {}", arch);
             }
         } catch (IOException e) {
-            Main.LoadedLibrary = false;
+            LoadedLibrary = false;
             LogManager.getLogger().warn("Failed to load native library: {}", resourcePath, e);
         } catch (UnsatisfiedLinkError linkError) {
             // System.load() succeeded, but the native library does not export
@@ -62,7 +64,7 @@ public final class NativeLoader {
             // moved and the corresponding JNIEXPORT symbol name changed).
             // Falling back to the JVM UDP implementation is the intended
             // behaviour here; rethrowing would crash mod construction.
-            Main.LoadedLibrary = false;
+            LoadedLibrary = false;
             LogManager.getLogger()
                     .warn(
                             "Native library was loaded but does not expose the expected JNI"
@@ -73,7 +75,7 @@ public final class NativeLoader {
         } catch (NoClassDefFoundError classError) {
             // Defensive: any class-resolution issue triggered by the probe
             // call should not take down the whole mod.
-            Main.LoadedLibrary = false;
+            LoadedLibrary = false;
             LogManager.getLogger()
                     .warn(
                             "Native library probe failed due to a missing class ({}); falling"
@@ -113,11 +115,11 @@ public final class NativeLoader {
                             .error(
                                     "ICMP data does not match, falling back to JVM UDP"
                                             + " implementation");
-                    Main.LoadedLibrary = false;
+                    LoadedLibrary = false;
                 }
             }
         } else {
-            Main.LoadedLibrary = false;
+            LoadedLibrary = false;
             LogManager.getLogger()
                     .error(
                             "Loaded native library successfully but ICMP still failed, falling"

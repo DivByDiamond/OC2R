@@ -144,7 +144,7 @@ registrar.registerItem(
                 .items()
                 .put(ItemTags.DEVICES_HARD_DRIVE, NonNullList.withSize(2, ItemStack.EMPTY));
 
-        robot.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        robot.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
 
         return robot;
     }

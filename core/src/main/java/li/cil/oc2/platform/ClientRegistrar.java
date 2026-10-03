@@ -4,12 +4,16 @@ import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -41,6 +45,10 @@ public interface ClientRegistrar {
 
     /** Tints {@code items} with {@code color}. */
     void registerItemColor(ItemColor color, List<? extends Supplier<? extends Item>> items);
+
+    /** Opens {@code constructor}'s screen for menus of {@code type}. */
+    <M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> void registerScreen(
+            Supplier<? extends MenuType<M>> type, ScreenFactory<M, S> constructor);
 
     /** Runs {@code task} on the main thread once client setup has completed. */
     void enqueueSetup(Runnable task);

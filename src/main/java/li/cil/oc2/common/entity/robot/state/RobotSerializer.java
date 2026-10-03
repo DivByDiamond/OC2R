@@ -58,7 +58,7 @@ public final class RobotSerializer {
     public static void exportToItemStack(final Robot robot, final ItemStack stack) {
         final var container = new RestrictedContainer();
         robot.getRobotInventory().saveItems(container);
-        stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
         CustomData.update(
                 DataComponents.CUSTOM_DATA,
                 stack,
@@ -73,7 +73,7 @@ public final class RobotSerializer {
     public static void importFromItemStack(final Robot robot, final ItemStack stack) {
         final var provider = robot.registryAccess();
         final var container =
-                stack.get(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER);
+                stack.get(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get());
         final CompoundTag itemsTag = NBTUtils.getChildTag(stack, MOD_TAG_NAME, ITEMS_TAG_NAME);
         if (container != null) {
             robot.getRobotInventory().loadItems(provider, container);

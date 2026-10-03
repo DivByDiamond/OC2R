@@ -56,13 +56,17 @@ sourceSets.main {
             "li/cil/oc2/gametest/**",
             "li/cil/oc2/data/**",
             "li/cil/oc2/platform/NeoForge*",
-            "li/cil/oc2/common/Main.java")
+            "li/cil/oc2/common/Main.java",
+            // JEI/ProjectRed/Create integrations are NeoForge-specific for now.
+            "li/cil/oc2/common/integration/jei/**",
+            "li/cil/oc2/common/integration/projectred/**")
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "utf-8"
     options.release = 21
+    options.compilerArgs.addAll(listOf("-Xmaxerrs", "5000"))
 }
 
 tasks.processResources {

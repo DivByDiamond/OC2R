@@ -8,6 +8,7 @@ import li.cil.oc2.common.container.slot.DeviceTypeSlot;
 import li.cil.oc2.common.container.slot.LockedSlot;
 import li.cil.oc2.common.item.network.NetworkTunnelItem;
 import li.cil.oc2.common.tags.ItemTags;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class NetworkTunnelContainer extends AbstractContainer {
     public static void createServer(final ServerPlayer player, final InteractionHand hand) {
-        player.openMenu(
+        Platform.menus().openMenu(player, 
                 new MenuProvider() {
                     @Override
                     public Component getDisplayName() {

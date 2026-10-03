@@ -44,8 +44,6 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(API.MOD_ID)
 public final class Main {
-    public static boolean LoadedLibrary = false;
-
     public Main(IEventBus modBus, ModContainer container) {
         Ceres.initialize();
         Sedna.initialize();

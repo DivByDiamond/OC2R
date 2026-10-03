@@ -100,7 +100,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
     @Override
     protected void applyImplicitComponents(final DataComponentInput componentInput) {
         super.applyImplicitComponents(componentInput);
-        var container = componentInput.get(DataComponents.RESTRICTED_CONTAINER);
+        var container = componentInput.get(DataComponents.RESTRICTED_CONTAINER.get());
         if (container != null) {
             deviceItems.loadItems(getLevel().registryAccess(), container);
         } else {
@@ -117,7 +117,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
         super.collectImplicitComponents(components);
         var container = new RestrictedContainer();
         deviceItems.saveItems(container);
-        components.set(DataComponents.RESTRICTED_CONTAINER, container);
+        components.set(DataComponents.RESTRICTED_CONTAINER.get(), container);
     }
 
     @Override
@@ -149,7 +149,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
         var container = new RestrictedContainer();
         deviceItems.exportDeviceDataToItemStacks();
         deviceItems.saveItems(container);
-        stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
     }
 
     @Override

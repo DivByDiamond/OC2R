@@ -10,12 +10,14 @@ public final class Platform {
     private static final Object ENERGY_INIT_LOCK = new Object();
     private static final Object CAPABILITIES_INIT_LOCK = new Object();
     private static final Object ENVIRONMENT_INIT_LOCK = new Object();
+    private static final Object MENU_INIT_LOCK = new Object();
 
     private static volatile RegistryBridge bridge;
     private static volatile NetworkBridge networkBridge;
     private static volatile EnergyBridge energyBridge;
     private static volatile CapabilityBridge capabilityBridge;
     private static volatile PlatformEnvironment environmentBridge;
+    private static volatile MenuBridge menuBridge;
 
     private Platform() {}
 
@@ -87,6 +89,20 @@ public final class Platform {
                 result = environmentBridge;
                 if (result == null) {
                     environmentBridge = result = load(PlatformEnvironment.class);
+                }
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static MenuBridge menus() {
+        MenuBridge result = menuBridge;
+        if (result == null) {
+            synchronized (MENU_INIT_LOCK) {
+                result = menuBridge;
+                if (result == null) {
+                    menuBridge = result = load(MenuBridge.class);
                 }
             }
         }

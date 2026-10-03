@@ -8,6 +8,7 @@ import li.cil.oc2.common.container.slot.RobotSlot;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.platform.ItemStackHandler;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,7 +24,7 @@ public final class RobotTerminalContainer extends AbstractRobotContainer {
             final FixedEnergyStorage energy,
             final CommonDeviceBusController busController,
             final ServerPlayer player) {
-        player.openMenu(
+        Platform.menus().openMenu(player, 
                 new MenuProvider() {
                     @Override
                     public Component getDisplayName() {

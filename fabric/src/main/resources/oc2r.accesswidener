@@ -2,3 +2,6 @@ accessWidener v2 named
 
 # MessageContext.connection() needs the player's network connection, which is protected in vanilla.
 accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;
+
+# MenuScreens.register takes this non-public functional interface.
+accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor

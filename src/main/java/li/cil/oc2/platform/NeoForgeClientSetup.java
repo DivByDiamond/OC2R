@@ -13,6 +13,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -57,6 +58,11 @@ public final class NeoForgeClientSetup {
     @SubscribeEvent
     public static void onRegisterItemColors(final RegisterColorHandlersEvent.Item event) {
         NeoForgeClientRegistrar.instance().applyItemColors(event);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterMenuScreens(final RegisterMenuScreensEvent event) {
+        NeoForgeClientRegistrar.instance().applyScreens(event);
     }
 
     @SubscribeEvent

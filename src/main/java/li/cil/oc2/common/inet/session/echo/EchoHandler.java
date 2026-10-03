@@ -9,9 +9,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.EchoSession;
 import li.cil.oc2.api.inet.session.Session;
-import li.cil.oc2.common.Main;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
+import li.cil.oc2.common.setup.NativeLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +69,7 @@ public final class EchoHandler {
             final byte[] payload,
             final int size,
             final AtomicReference<EchoResponse> echoResponse) {
-        if (Main.LoadedLibrary) {
+        if (NativeLoader.LoadedLibrary) {
             handleIcmpNative(session, address, payload, size, echoResponse);
         } else {
             handleIcmpFallback(session, address, fallbackData, echoResponse);

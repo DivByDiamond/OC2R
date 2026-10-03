@@ -3,7 +3,6 @@ package li.cil.oc2.common.vm.terminal.fonts;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import li.cil.oc2.common.Main;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -49,7 +48,7 @@ public class FontHandling {
     }
 
     public static Font loadFont(String path, float size) {
-        try (InputStream is = Main.class.getResourceAsStream(path)) {
+        try (InputStream is = FontHandling.class.getResourceAsStream(path)) {
             if (is == null) {
                 return new Font("Arial", Font.PLAIN, (int) size);
             }
