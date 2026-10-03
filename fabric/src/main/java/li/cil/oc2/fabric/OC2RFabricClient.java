@@ -11,5 +11,6 @@ public final class OC2RFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         FabricClientEvents.register();
+        FabricClientBlockEntityHooks.register();
     }
 }

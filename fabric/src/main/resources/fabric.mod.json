@@ -6,7 +6,10 @@
   "description": "Virtual computers with RISC-V emulation.",
   "license": "GPL-3.0-only",
   "environment": "*",
-  "mixins": ["oc2r.fabric.mixins.json"],
+  "mixins": [
+    "oc2r.fabric.mixins.json",
+    { "config": "oc2r.fabric.client.mixins.json", "environment": "client" }
+  ],
   "accessWidener": "oc2r.accesswidener",
   "entrypoints": {
     "main": ["li.cil.oc2.fabric.OC2RFabric"],

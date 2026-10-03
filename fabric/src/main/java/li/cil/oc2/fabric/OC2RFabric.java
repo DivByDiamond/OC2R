@@ -10,6 +10,7 @@ public final class OC2RFabric implements ModInitializer {
     public void onInitialize() {
         FabricRegistryBridge.instance().bind();
         FabricCommonEvents.register();
+        FabricBlockEntityHooks.register();
         // Energy and capability bridges are wired in by later steps.
     }
 }

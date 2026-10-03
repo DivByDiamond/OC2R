@@ -1,0 +1,9 @@
+{
+  "required": false,
+  "package": "li.cil.oc2.fabric.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["ClientPacketListenerMixin", "LevelChunkClientMixin"],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
