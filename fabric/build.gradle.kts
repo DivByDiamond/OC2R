@@ -9,6 +9,7 @@ val minecraft_version: String = providers.gradleProperty("minecraft_version").ge
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
 val team_reborn_energy_version: String = providers.gradleProperty("team_reborn_energy_version").get()
 val forge_config_api_port_version: String = providers.gradleProperty("forge_config_api_port_version").get()
+val night_config_version: String = providers.gradleProperty("night_config_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
@@ -32,6 +33,11 @@ dependencies {
     // Energy standard on Fabric (the counterpart of NeoForge's FE capability).
     modImplementation("maven.modrinth:forge-config-api-port:$forge_config_api_port_version")
     include("maven.modrinth:forge-config-api-port:$forge_config_api_port_version")
+    // The Modrinth artifact carries no transitive dependencies; Forge Config API Port needs these.
+    implementation("com.electronwill.night-config:core:$night_config_version")
+    implementation("com.electronwill.night-config:toml:$night_config_version")
+    include("com.electronwill.night-config:core:$night_config_version")
+    include("com.electronwill.night-config:toml:$night_config_version")
     modImplementation("teamreborn:energy:$team_reborn_energy_version")
     include("teamreborn:energy:$team_reborn_energy_version")
 
@@ -78,4 +84,16 @@ tasks.processResources {
 
 loom {
     accessWidenerPath = file("src/main/resources/oc2r.accesswidener")
+}
+
+// Runs the Fabric GameTests (`./gradlew :fabric:runGametest`): they exercise the Fabric bridges on a
+// real dedicated server, since the shared mod code does not build for Fabric yet.
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "oc2r_gametest"
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
 }

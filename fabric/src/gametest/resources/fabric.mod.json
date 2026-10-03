@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "oc2r_gametest",
+  "version": "1.0.0",
+  "name": "OC2R Fabric GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": ["li.cil.oc2.fabric.gametest.FabricBridgeTests"]
+  },
+  "depends": {
+    "oc2r": "*"
+  }
+}
