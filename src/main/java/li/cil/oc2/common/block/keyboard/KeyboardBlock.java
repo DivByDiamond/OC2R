@@ -30,7 +30,9 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final VoxelShape NEG_Z_SHAPE = Block.box(1, 4, 15, 15, 12, 16);
+    // The model is a wall panel rotated by the blockstate (x: -90) so it lies flat on the floor;
+    // this is the same slab, 14x8 wide and 1 high, in block space.
+    private static final VoxelShape NEG_Z_SHAPE = Block.box(1, 0, 4, 15, 1, 12);
     private static final VoxelShape NEG_X_SHAPE =
             VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
     private static final VoxelShape POS_Z_SHAPE =
