@@ -11,10 +11,17 @@ val team_reborn_energy_version: String = providers.gradleProperty("team_reborn_e
 val forge_config_api_port_version: String = providers.gradleProperty("forge_config_api_port_version").get()
 val includeSharedCode = providers.gradleProperty("fabric.common").orNull != "false"
 val night_config_version: String = providers.gradleProperty("night_config_version").get()
+val ceres_version: String = providers.gradleProperty("ceres_version").get()
+val sedna_version: String = providers.gradleProperty("sedna_version").get()
+val sedna_buildroot_version: String = providers.gradleProperty("sedna_buildroot_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
     mavenCentral()
+    // ceres/sedna/sedna-buildroot are fetched into libs/ by scripts/download-libs.sh.
+    maven(rootProject.file("libs")) {
+        content { includeGroup("li.cil.ceres"); includeGroup("li.cil.sedna") }
+    }
     // Only for the dist-marker annotations (published inside mergetool).
     // Forge Config API Port: ships NeoForge's ModConfigSpec so the shared config code compiles on Fabric.
     maven("https://api.modrinth.com/maven") {
@@ -45,9 +52,13 @@ dependencies {
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     // @OnlyIn/Dist annotations used by shared code; missing annotation classes are ignored at runtime.
     compileOnly("net.neoforged:mergetool:2.0.0:api")
-    if (includeSharedCode) {
-        compileOnly(fileTree(rootProject.file("libs")) { include("**/*.jar") })
-    }
+    // Emulator and serialization libraries, shipped inside the mod jar like on NeoForge.
+    implementation("li.cil.ceres:ceres:$ceres_version")
+    implementation("li.cil.sedna:sedna:$sedna_version")
+    implementation("li.cil.sedna:sedna-buildroot:$sedna_buildroot_version")
+    include("li.cil.ceres:ceres:$ceres_version")
+    include("li.cil.sedna:sedna:$sedna_version")
+    include("li.cil.sedna:sedna-buildroot:$sedna_buildroot_version")
 }
 
 // core is built against NeoForm, not Loom, so its jar cannot be remapped for production. Compile
@@ -87,6 +98,21 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "utf-8"
     options.release = 21
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "5000"))
+}
+
+// Assets, data packs, natives and the OnyxOS images live in the root project's resources. Only the
+// loader-independent parts are shared: META-INF (NeoForge service files, mods.toml) must not leak in.
+tasks.processResources {
+    from(rootProject.file("src/main/resources")) {
+        include("assets/**", "data/**", "natives/**", "onyxos/**", "pack.mcmeta")
+    }
+    from(rootProject.file("src/generated/resources")) {
+        include("assets/**", "data/**")
+    }
+    // The guest scripts archive is built by the root project.
+    from(rootProject.tasks.named("packageScripts")) {
+        into("data/oc2r/file_systems")
+    }
 }
 
 tasks.processResources {
