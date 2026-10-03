@@ -10,7 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
 
-public final class ToneSoundInstance extends AbstractSoundInstance {
+public final class ToneSoundInstance extends AbstractSoundInstance
+        implements CustomAudioStreamSoundInstance {
     private static final int ATTENUATION_DISTANCE = 16;
 
     private final float frequency;

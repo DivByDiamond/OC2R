@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import li.cil.oc2.api.API;
+import li.cil.oc2.client.ClientCompat;
 import li.cil.oc2.client.renderer.stage.ColorCompositingStage;
 import li.cil.oc2.client.renderer.stage.DepthBufferStage;
 import li.cil.oc2.client.renderer.stage.DepthOnlyRenderTarget;
@@ -23,18 +23,10 @@ import li.cil.oc2.platform.event.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.common.util.TriState;
 import org.joml.Matrix4f;
 
-@EventBusSubscriber(modid = API.MOD_ID, value = Dist.CLIENT)
 public final class ProjectorDepthRenderer {
     public record VisibleProjector(ProjectorBlockEntity projector, Vec3 worldPos, float yRot) {}
 
@@ -99,9 +91,9 @@ public final class ProjectorDepthRenderer {
             MAIN_CAMERA_DEPTH.resize(
                     mainRenderTarget.width, mainRenderTarget.height, Minecraft.ON_OSX);
         }
-        if (mainRenderTarget.isStencilEnabled()) {
-            MAIN_CAMERA_DEPTH.enableStencil();
-        } else if (MAIN_CAMERA_DEPTH.isStencilEnabled()) {
+        if (ClientCompat.isStencilEnabled(mainRenderTarget)) {
+            ClientCompat.enableStencil(MAIN_CAMERA_DEPTH);
+        } else if (ClientCompat.isStencilEnabled(MAIN_CAMERA_DEPTH)) {
             MAIN_CAMERA_DEPTH.destroyBuffers();
             MAIN_CAMERA_DEPTH =
                     new DepthOnlyRenderTarget(mainRenderTarget.width, mainRenderTarget.height);
@@ -147,20 +139,6 @@ public final class ProjectorDepthRenderer {
         } finally {
             VISIBLE_PROJECTORS.clear();
             Arrays.fill(PROJECTOR_COLOR_TARGETS, null);
-        }
-    }
-
-    @SubscribeEvent
-    public static void handleFog(final ViewportEvent.RenderFog event) {
-        if (isRenderingProjectorDepth) {
-            FogRenderer.setupNoFog();
-        }
-    }
-
-    @SubscribeEvent
-    public static void handleNameplate(final RenderNameTagEvent event) {
-        if (isRenderingProjectorDepth) {
-            event.setCanRender(TriState.FALSE);
         }
     }
 

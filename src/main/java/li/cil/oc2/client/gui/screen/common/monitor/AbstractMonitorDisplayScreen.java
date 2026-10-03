@@ -3,8 +3,8 @@ package li.cil.oc2.client.gui.screen.common.monitor;
 import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
+import li.cil.oc2.client.ClientCompat;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.monitor.MonitorInputCaptureButton;
@@ -15,6 +15,7 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.container.monitor.AbstractMonitorContainer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
@@ -52,8 +53,8 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
             return true;
         }
 
-        final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+        return ClientCompat.isActiveAndMatches(
+                        Minecraft.getInstance().options.keyInventory, keyCode, scanCode)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -63,8 +64,8 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
             return true;
         }
 
-        final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+        return ClientCompat.isActiveAndMatches(
+                        Minecraft.getInstance().options.keyInventory, keyCode, scanCode)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
 

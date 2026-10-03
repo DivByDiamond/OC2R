@@ -1,21 +1,13 @@
 package li.cil.oc2.client.renderer.stage.shader;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import java.io.IOException;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import org.joml.Matrix4f;
 
-@SuppressWarnings("unused")
-@EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class ModShaders {
     // Bumped from 3 to 8 — when projectors are scattered across multiple
     // physical builds (Create: Aeronautics airships, VS2 ships, mixed
@@ -92,19 +84,13 @@ public final class ModShaders {
         }
     }
 
-    /**
-     * Registers the projectors shader on the shader registration event.
-     *
-     * @param event the shader registration event.
-     * @throws IOException if the shader cannot be loaded.
-     */
-    @SubscribeEvent
-    public static void handleRegisterShaders(final RegisterShadersEvent event) throws IOException {
-        event.registerShader(
-                new ShaderInstance(
-                        event.getResourceProvider(),
-                        PROJECTORS_SHADER_LOCATION,
-                        DefaultVertexFormat.POSITION_TEX),
-                instance -> projectorsShader = instance);
+    /** The location of the projectors shader program. */
+    public static ResourceLocation projectorsShaderLocation() {
+        return PROJECTORS_SHADER_LOCATION;
+    }
+
+    /** Called by the loader once the projectors shader has been (re)loaded. */
+    public static void setProjectorsShader(final ShaderInstance instance) {
+        projectorsShader = instance;
     }
 }

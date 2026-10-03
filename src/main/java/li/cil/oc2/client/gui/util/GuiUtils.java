@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+import li.cil.oc2.client.ClientCompat;
 import li.cil.oc2.client.gui.widget.Sprite;
 import li.cil.oc2.common.container.slot.DeviceTypeSlotItemHandler;
 import net.minecraft.Util;
@@ -46,8 +47,8 @@ public final class GuiUtils {
                         slot ->
                                 icon.draw(
                                         graphics,
-                                        screen.getGuiLeft() + slot.x - 1 + RELATIVE_ICON_POSITION,
-                                        screen.getGuiTop() + slot.y - 1 + RELATIVE_ICON_POSITION));
+                                        ClientCompat.guiLeft(screen) + slot.x - 1 + RELATIVE_ICON_POSITION,
+                                        ClientCompat.guiTop(screen) + slot.y - 1 + RELATIVE_ICON_POSITION));
     }
 
     public static <T extends AbstractContainerMenu> void renderMissingDeviceInfoTooltip(
@@ -72,7 +73,7 @@ public final class GuiUtils {
             final int mouseY,
             final DeviceType type,
             final Component tooltip) {
-        final Minecraft minecraft = screen.getMinecraft();
+        final Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
             return;
         }
@@ -82,7 +83,7 @@ public final class GuiUtils {
             return;
         }
 
-        final Slot hoveredSlot = screen.getSlotUnderMouse();
+        final Slot hoveredSlot = ClientCompat.slotUnderMouse(screen);
         if (hoveredSlot != null && hoveredSlot.hasItem()) {
             return;
         }

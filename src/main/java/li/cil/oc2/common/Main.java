@@ -7,12 +7,14 @@ import li.cil.oc2.client.manual.Manuals;
 import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.integration.Integrations;
 import li.cil.oc2.common.integration.projectred.BundledCableHandler;
 import li.cil.oc2.common.network.Network;
 import li.cil.oc2.common.setup.CommonSetup;
 import li.cil.oc2.common.setup.ModBootstrap;
 import li.cil.oc2.common.setup.NativeLoader;
+import li.cil.oc2.platform.NeoForgeClientProxy;
 import li.cil.oc2.platform.NeoForgeClientRegistrar;
 import li.cil.oc2.platform.NeoForgeMessageRegistrar;
 import li.cil.oc2.platform.NeoForgeRegistryBridge;
@@ -46,6 +48,7 @@ public final class Main {
         if (FMLLoader.getDist() == Dist.CLIENT) {
             Manuals.initialize();
             ClientEventListeners.register();
+            ClientProxy.set(new NeoForgeClientProxy());
             ClientSetup.register(NeoForgeClientRegistrar.instance());
         }
 

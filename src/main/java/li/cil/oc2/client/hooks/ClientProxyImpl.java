@@ -14,14 +14,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
-/** The client-side {@link ClientProxy}, delegating to the client hook classes. */
+/**
+ * The loader independent part of the client-side {@link ClientProxy}, delegating to the client hook
+ * classes. The loader specific render model data hooks are added by the loader modules.
+ */
 @OnlyIn(Dist.CLIENT)
-public final class ClientProxyImpl implements ClientProxy {
+public class ClientProxyImpl implements ClientProxy {
     @Override
     public void openKeyboardScreen(final KeyboardBlockEntity keyboard) {
         Minecraft.getInstance().setScreen(new KeyboardScreen(keyboard));
@@ -81,20 +82,5 @@ public final class ClientProxyImpl implements ClientProxy {
     @Override
     public Object createMonitorRenderer() {
         return MonitorRendererHooks.createMonitorGUIRenderer();
-    }
-
-    @Override
-    public Object emptyModelData() {
-        return ModelData.EMPTY;
-    }
-
-    @Override
-    public Object computeBusCableModelData(final BusCableBlockEntity owner, final Object current) {
-        return BusCableModelHooks.computeModelData(owner, (ModelData) current);
-    }
-
-    @Override
-    public Object computeMonitorModelData(final BlockState state) {
-        return MonitorModelHooks.getModelData(state);
     }
 }

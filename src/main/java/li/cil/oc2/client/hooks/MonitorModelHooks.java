@@ -1,6 +1,6 @@
 package li.cil.oc2.client.hooks;
 
-import li.cil.oc2.client.model.monitor.MonitorModelTypes;
+import li.cil.oc2.client.model.monitor.MonitorModelData;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -11,6 +11,6 @@ public final class MonitorModelHooks {
     private MonitorModelHooks() {}
 
     public static ModelData getModelData(final BlockState state) {
-        return MonitorModelTypes.fromState(state);
+        return MonitorModelData.fromState(state);
     }
 }

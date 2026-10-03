@@ -70,7 +70,6 @@ class FileChooserController {
     void updateButtons() {
         okButton.active = false;
         okButton.setMessage(isLoad ? FileChooserScreen.LOAD_TEXT : FileChooserScreen.SAVE_TEXT);
-        okButton.clearFGColor();
 
         if (isParentPath()) {
             okButton.active = true;
@@ -85,8 +84,8 @@ class FileChooserController {
                             } else {
                                 okButton.active = true;
                                 if (Files.isRegularFile(path)) {
-                                    okButton.setMessage(FileChooserScreen.OVERWRITE_TEXT);
-                                    okButton.setFGColor(0xFF0000);
+                                    okButton.setMessage(
+                                            FileChooserScreen.OVERWRITE_TEXT.copy().withStyle(style -> style.withColor(0xFF0000)));
                                 }
                             }
                         });

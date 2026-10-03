@@ -1,6 +1,7 @@
 package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.BusCableModelTypes;
+import li.cil.oc2.client.model.BusCableModelUtils;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
@@ -48,7 +49,7 @@ public final class BusCableModelHooks {
         final BlockPos pos = owner.getBlockPos();
         Direction supportSide = null;
         for (final Direction direction : Constants.DIRECTIONS) {
-            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
+            if (BusCableModelUtils.isNeighborInDirectionSolid(level, pos, direction)) {
                 final EnumProperty<ConnectionType> property =
                         BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
                 if (state.hasProperty(property)

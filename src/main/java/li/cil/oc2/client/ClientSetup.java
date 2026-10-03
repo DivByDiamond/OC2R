@@ -8,7 +8,6 @@ import li.cil.oc2.client.gui.screen.monitor.MonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.network.NetworkTunnelScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotContainerScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotTerminalScreen;
-import li.cil.oc2.client.hooks.ClientProxyImpl;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.renderer.BusInterfaceNameRenderer;
@@ -25,17 +24,17 @@ import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
-import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.platform.ClientRegistrar;
 import li.cil.oc2.platform.event.ClientEvents;
 
 public final class ClientSetup {
     private ClientSetup() {}
 
-    /** Describes all client registrations; the loader module applies them from its setup hooks. */
+    /**
+     * Describes all client registrations; the loader module applies them from its setup hooks. The loader
+     * module installs the {@link li.cil.oc2.common.hooks.ClientProxy} before calling this.
+     */
     public static void register(final ClientRegistrar registrar) {
-        ClientProxy.set(new ClientProxyImpl());
-
         registrar.enqueueSetup(BusInterfaceNameRenderer::initialize);
         registrar.enqueueSetup(CustomItemModelProperties::initialize);
 

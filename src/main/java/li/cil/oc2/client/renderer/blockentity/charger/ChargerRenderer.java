@@ -82,7 +82,8 @@ public final class ChargerRenderer implements BlockEntityRenderer<ChargerBlockEn
         consumer.addVertex(matrix, 0.5f, 0, -0.5f).setUv(1, 0);
     }
 
-    @Override
+    // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
+    @SuppressWarnings("PMD.MissingOverride")
     public AABB getRenderBoundingBox(ChargerBlockEntity block) {
         return block.getRenderBoundingBox();
     }
