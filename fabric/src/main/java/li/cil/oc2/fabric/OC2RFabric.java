@@ -43,6 +43,7 @@ public final class OC2RFabric implements ModInitializer {
 
         FabricCommonEvents.register();
         FabricBlockEntityHooks.register();
+        FabricInteractionHooks.register();
 
         CommonSetup.run();
     }
