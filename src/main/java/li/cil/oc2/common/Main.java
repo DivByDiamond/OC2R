@@ -3,6 +3,7 @@ package li.cil.oc2.common;
 import li.cil.ceres.Ceres;
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.ClientEventListeners;
+import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.client.manual.Manuals;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.common.Blocks;
@@ -29,6 +30,7 @@ import li.cil.oc2.common.tags.BlockTags;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
+import li.cil.oc2.platform.NeoForgeClientRegistrar;
 import li.cil.oc2.platform.NeoForgeMessageRegistrar;
 import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.sedna.Sedna;
@@ -79,6 +81,7 @@ public final class Main {
         if (FMLLoader.getDist() == Dist.CLIENT) {
             Manuals.initialize();
             ClientEventListeners.register();
+            ClientSetup.register(NeoForgeClientRegistrar.instance());
         }
 
         NeoForgeRegistryBridge.instance().bind(modBus);
