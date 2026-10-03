@@ -100,6 +100,16 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "5000"))
 }
 
+val packageScripts = tasks.register<Zip>("packageScripts") {
+    archiveFileName = "scripts.zip"
+    destinationDirectory = layout.buildDirectory.dir("generated/scripts")
+    from(rootProject.file("src/main/scripts"))
+    from(rootProject.file("src/main/resources/onyxos")) {
+        include("fw_jump.bin")
+        into("firmware_files")
+    }
+}
+
 // Assets, data packs, natives and the OnyxOS images live in the root project's resources. Only the
 // loader-independent parts are shared: META-INF (NeoForge service files, mods.toml) must not leak in.
 tasks.processResources {
@@ -109,8 +119,8 @@ tasks.processResources {
     from(rootProject.file("src/generated/resources")) {
         include("assets/**", "data/**")
     }
-    // The guest scripts archive is built by the root project.
-    from(rootProject.tasks.named("packageScripts")) {
+    // The guest scripts archive (same content as the root project's packageScripts task).
+    from(packageScripts) {
         into("data/oc2r/file_systems")
     }
 }
@@ -136,4 +146,33 @@ fabricApi {
         enableClientGameTests = false
         eula = true
     }
+}
+
+// The NeoForge game tests (src/main/java/.../gametest) also run on Fabric. They use two NeoForge-only
+// annotations and a NeoForge-patched @GameTest attribute, so the sources are copied with those
+// lines rewritten into vanilla form before the gametest source set compiles them.
+val sharedGameTestsDir = layout.buildDirectory.dir("generated/sharedGameTests")
+val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
+    from(rootProject.file("src/main/java/li/cil/oc2/gametest")) {
+        exclude("GameTestResultReporter.java")
+        filter { line: String ->
+            when {
+                line.contains("GameTestHolder") || line.contains("PrefixGameTestTemplate") -> ""
+                else -> line
+                    .replace(
+                        "template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE",
+                        "template = TestSupport.TEMPLATE_NAMESPACE + \":\" + TestSupport.TEMPLATE")
+                    .replace(Regex("private (\\w+Tests)\\(\\)"), "public \$1()")
+            }
+        }
+    }
+    into(sharedGameTestsDir.map { it.dir("li/cil/oc2/gametest") })
+}
+
+sourceSets.named("gametest") {
+    java.srcDir(sharedGameTestsDir)
+}
+
+tasks.named("compileGametestJava") {
+    dependsOn(sharedGameTestSources)
 }

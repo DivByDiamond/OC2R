@@ -5,8 +5,17 @@
   "name": "OC2R Fabric GameTests",
   "environment": "*",
   "entrypoints": {
-    "fabric-gametest": ["li.cil.oc2.fabric.gametest.FabricBridgeTests",
-      "li.cil.oc2.fabric.gametest.FabricNetworkTests"]
+    "fabric-gametest": [
+      "li.cil.oc2.fabric.gametest.FabricBridgeTests",
+      "li.cil.oc2.fabric.gametest.FabricNetworkTests",
+      "li.cil.oc2.gametest.DeviceBusTests",
+      "li.cil.oc2.gametest.NetworkCableItemTests",
+      "li.cil.oc2.gametest.NetworkConnectorTests",
+      "li.cil.oc2.gametest.RecipeTests",
+      "li.cil.oc2.gametest.RedstoneInterfaceTests",
+      "li.cil.oc2.gametest.RegistrationTests",
+      "li.cil.oc2.gametest.TerminalTests"
+    ]
   },
   "depends": {
     "oc2r": "*"
