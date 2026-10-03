@@ -15,10 +15,8 @@ import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
 import li.cil.oc2.common.container.robot.RobotTerminalContainer;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -56,8 +54,8 @@ public final class Containers {
                             "network_tunnel",
                             () -> IMenuTypeExtension.create(NetworkTunnelContainer::createClient));
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     @SubscribeEvent

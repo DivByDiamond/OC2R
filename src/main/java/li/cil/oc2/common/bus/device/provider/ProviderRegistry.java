@@ -31,10 +31,8 @@ import li.cil.oc2.common.bus.device.rpc.block.BlockStateObjectDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.EnergyStorageBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.FluidHandlerBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.ItemHandlerBlockDeviceProvider;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
-import net.neoforged.bus.api.IEventBus;
 
 public final class ProviderRegistry {
     private static final String BLOCK_DEVICE_PROVIDERS =
@@ -57,9 +55,7 @@ public final class ProviderRegistry {
         Platform.registries().register(BLOCK_DEVICE_PROVIDERS, API.MOD_ID, name, factory);
     }
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
-
+    public static void initialize() {
         registerItemProvider("memory", MemoryItemDeviceProvider::new);
         registerItemProvider("hard_drive", HardDriveItemDeviceProvider::new);
         registerItemProvider(

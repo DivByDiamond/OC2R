@@ -58,22 +58,22 @@ public final class Main {
 
         ItemTags.initialize();
         BlockTags.initialize();
-        DataComponents.initialize(modBus);
-        Blocks.initialize(modBus);
-        BlockCodecs.initialize(modBus);
-        Items.initialize(modBus);
+        DataComponents.initialize();
+        Blocks.initialize();
+        BlockCodecs.initialize();
+        Items.initialize();
         ItemGroup.initialize();
-        BlockEntities.initialize(modBus);
-        Entities.initialize(modBus);
-        Containers.initialize(modBus);
-        RecipeSerializers.initialize(modBus);
-        SoundEvents.initialize(modBus);
+        BlockEntities.initialize();
+        Entities.initialize();
+        Containers.initialize();
+        RecipeSerializers.initialize();
+        SoundEvents.initialize();
 
-        ProviderRegistry.initialize(modBus);
+        ProviderRegistry.initialize();
 
         DeviceTypes.initialize(modBus);
-        BlockDeviceDataRegistry.initialize(modBus);
-        FirmwareRegistry.initialize(modBus);
+        BlockDeviceDataRegistry.initialize();
+        FirmwareRegistry.initialize();
 
         CommonEventListeners.register();
 

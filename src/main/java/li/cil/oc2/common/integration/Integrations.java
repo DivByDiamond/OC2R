@@ -1,7 +1,7 @@
 package li.cil.oc2.common.integration;
 
 import li.cil.oc2.common.integration.projectred.BundledCableHandler;
-import net.neoforged.fml.ModList;
+import li.cil.oc2.platform.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,12 +24,11 @@ public class Integrations {
     private static boolean sableLoaded;
 
     public static void initialize() {
-        final ModList modList = ModList.get();
-
-        createLoaded = modList.isLoaded(CREATE);
-        createAeronauticsLoaded = modList.isLoaded(CREATE_AERONAUTICS);
-        valkyrienSkiesLoaded = modList.isLoaded(VALKYRIEN_SKIES);
-        sableLoaded = modList.isLoaded(SABLE);
+        
+        createLoaded = Platform.environment().isModLoaded(CREATE);
+        createAeronauticsLoaded = Platform.environment().isModLoaded(CREATE_AERONAUTICS);
+        valkyrienSkiesLoaded = Platform.environment().isModLoaded(VALKYRIEN_SKIES);
+        sableLoaded = Platform.environment().isModLoaded(SABLE);
 
         if (createLoaded) {
             LOGGER.info(
@@ -53,7 +52,7 @@ public class Integrations {
                             + " capabilities.");
         }
 
-        if (modList.isLoaded("projectred_transmission")) {
+        if (Platform.environment().isModLoaded("projectred_transmission")) {
             BundledCableHandler.initialize();
         }
     }

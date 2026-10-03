@@ -16,12 +16,11 @@ import li.cil.oc2.common.blockentity.network.connector.interfaces.NullNetworkInt
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.platform.CapabilityInvalidationListener;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLLoader;
 
 public final class NetworkConnectorBlockEntity extends ModBlockEntity
         implements TickableBlockEntity {
@@ -96,7 +95,7 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
                 connectionManager.dirtyConnectors);
         // Live updates arrive via this tag instead of a custom message; the cable
         // renderer caches connections, so it must rebuild after positions change.
-        if (FMLLoader.getDist() == Dist.CLIENT) {
+        if (Platform.environment().isClient()) {
             li.cil.oc2.client.hooks.NetworkCableRendererHooks.invalidateConnections();
         }
     }

@@ -11,8 +11,6 @@ import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLLoader;
 
 public final class NetworkConnectorLifecycle {
 
@@ -32,7 +30,7 @@ public final class NetworkConnectorLifecycle {
     }
 
     public static void loadClient(final NetworkConnectorBlockEntity entity) {
-        if (FMLLoader.getDist() == Dist.CLIENT) {
+        if (Platform.environment().isClient()) {
             li.cil.oc2.client.hooks.NetworkCableRendererHooks.addNetworkConnector(entity);
         }
     }

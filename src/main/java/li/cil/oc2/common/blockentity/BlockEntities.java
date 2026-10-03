@@ -22,12 +22,10 @@ import li.cil.oc2.common.blockentity.network.switches.NetworkSwitchBlockEntity;
 import li.cil.oc2.common.blockentity.network.vxlan.VxlanBlockEntity;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.platform.BlockHolder;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
 
 @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
 public final class BlockEntities {
@@ -71,8 +69,8 @@ public final class BlockEntities {
     public static final Supplier<BlockEntityType<SpeakerBlockEntity>>
             SPEAKER = register(Blocks.SPEAKER, SpeakerBlockEntity::new);
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     @SuppressWarnings("ConstantConditions") // .build(null) is fine

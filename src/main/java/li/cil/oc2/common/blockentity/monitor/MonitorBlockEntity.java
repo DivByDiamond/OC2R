@@ -9,13 +9,12 @@ import li.cil.oc2.common.blockentity.monitor.misc.MonitorContraptionHelper;
 import li.cil.oc2.common.blockentity.monitor.video.MonitorVideoController;
 import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 public final class MonitorBlockEntity extends ModBlockEntity
@@ -42,7 +41,7 @@ public final class MonitorBlockEntity extends ModBlockEntity
      */
     @Override
     public ModelData getModelData() {
-        if (FMLLoader.getDist() == Dist.CLIENT) {
+        if (Platform.environment().isClient()) {
             return li.cil.oc2.client.hooks.MonitorModelHooks.getModelData(getBlockState());
         }
         return ModelData.EMPTY;

@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import li.cil.oc2.api.bus.device.data.Firmware;
+import li.cil.oc2.platform.Platform;
 import li.cil.sedna.api.memory.MemoryMap;
 import li.cil.sedna.memory.MemoryMaps;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,7 +55,7 @@ public final class OnyxOSFirmware implements Firmware {
 
     private static InputStream openOverride(final String fileName, final String resourcePath)
             throws IOException {
-        final Path override = FMLPaths.CONFIGDIR.get().resolve("oc2r").resolve(fileName);
+        final Path override = Platform.environment().configDir().resolve("oc2r").resolve(fileName);
         if (Files.isRegularFile(override)) {
             LOGGER.info("OnyxOS: using override {}", override);
             return Files.newInputStream(override);

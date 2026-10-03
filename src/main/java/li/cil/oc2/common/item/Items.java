@@ -28,13 +28,11 @@ import li.cil.oc2.common.item.tool.RobotItem;
 import li.cil.oc2.common.item.tool.WrenchItem;
 import li.cil.oc2.platform.BlockHolder;
 import li.cil.oc2.platform.ItemHolder;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
 
 @SuppressWarnings("unused")
 public final class Items {
@@ -170,12 +168,11 @@ public final class Items {
             register("raw_silicon_wafer", ModItem::new);
     public static final ItemHolder<Item> CIRCUIT_BOARD = register("circuit_board", ModItem::new);
 
-    public static void initialize(IEventBus modBus) {
+    public static void initialize() {
         Platform.registries().addItemAlias(
                 API.MOD_ID,
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_memory_buildroot"),
                 FLASH_MEMORY_CUSTOM.getId());
-        NeoForgeRegistryBridge.instance().bind(modBus);
     }
 
     private static ItemHolder<Item> register(final String name) {

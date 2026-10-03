@@ -9,11 +9,13 @@ public final class Platform {
     private static final Object NETWORK_INIT_LOCK = new Object();
     private static final Object ENERGY_INIT_LOCK = new Object();
     private static final Object CAPABILITIES_INIT_LOCK = new Object();
+    private static final Object ENVIRONMENT_INIT_LOCK = new Object();
 
     private static volatile RegistryBridge bridge;
     private static volatile NetworkBridge networkBridge;
     private static volatile EnergyBridge energyBridge;
     private static volatile CapabilityBridge capabilityBridge;
+    private static volatile PlatformEnvironment environmentBridge;
 
     private Platform() {}
 
@@ -71,6 +73,20 @@ public final class Platform {
                 result = capabilityBridge;
                 if (result == null) {
                     capabilityBridge = result = load(CapabilityBridge.class);
+                }
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // double-checked init lock, not a hot path
+    public static PlatformEnvironment environment() {
+        PlatformEnvironment result = environmentBridge;
+        if (result == null) {
+            synchronized (ENVIRONMENT_INIT_LOCK) {
+                result = environmentBridge;
+                if (result == null) {
+                    environmentBridge = result = load(PlatformEnvironment.class);
                 }
             }
         }

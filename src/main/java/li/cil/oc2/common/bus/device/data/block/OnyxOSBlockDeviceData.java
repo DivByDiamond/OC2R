@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import li.cil.oc2.api.bus.device.data.BlockDeviceData;
+import li.cil.oc2.platform.Platform;
 import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
 
     static {
         ByteBufferBlockDevice instance;
-        final Path override = FMLPaths.CONFIGDIR.get().resolve("oc2r").resolve("onyxfs.img");
+        final Path override = Platform.environment().configDir().resolve("oc2r").resolve("onyxfs.img");
         try {
             if (Files.isRegularFile(override)) {
                 LOGGER.info("OnyxOS: using override {}", override);
