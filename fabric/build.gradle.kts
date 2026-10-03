@@ -74,8 +74,26 @@ sourceSets.main {
         val shared = objects.sourceDirectorySet("sharedMod", "Shared mod code")
         shared.srcDir(rootProject.file("src/main/java"))
         shared.exclude(
-            "li/cil/oc2/client/**",
             "li/cil/oc2/gametest/**",
+            // The Markdown Manual library is NeoForge only (see ManualItem below); the manual client code,
+            // its font renderer and the (unused) NeoForge menu screen registry are left out.
+            "li/cil/oc2/client/manual/**",
+            "li/cil/oc2/client/renderer/font/MonospaceFontRenderer.java",
+            "li/cil/oc2/client/gui/ScreenRegistry.java",
+            // NeoForge geometry loaders and IDynamicBakedModel/ModelData based models; Fabric has its own
+            // (fabric/src/main/java/li/cil/oc2/client/model).
+            "li/cil/oc2/client/model/BusCableModelLoader.java",
+            "li/cil/oc2/client/model/BusCableModel.java",
+            "li/cil/oc2/client/model/BusCableBakedModel.java",
+            "li/cil/oc2/client/model/BusCableModelTypes.java",
+            "li/cil/oc2/client/model/monitor/MonitorModelLoader.java",
+            "li/cil/oc2/client/model/monitor/MonitorModel.java",
+            "li/cil/oc2/client/model/monitor/MonitorBakedModel.java",
+            "li/cil/oc2/client/model/monitor/MonitorModelData.java",
+            "li/cil/oc2/client/hooks/BusCableModelHooks.java",
+            "li/cil/oc2/client/hooks/MonitorModelHooks.java",
+            // Same name and API as the Fabric counterparts (see PlatformBlockEntity).
+            "li/cil/oc2/client/ClientCompat.java",
             "li/cil/oc2/data/**",
             "li/cil/oc2/platform/NeoForge*",
             "li/cil/oc2/common/Main.java",
