@@ -6,6 +6,7 @@
   "description": "Virtual computers with RISC-V emulation.",
   "license": "GPL-3.0-only",
   "environment": "*",
+  "accessWidener": "oc2r.accesswidener",
   "entrypoints": {
     "main": ["li.cil.oc2.fabric.OC2RFabric"]
   },

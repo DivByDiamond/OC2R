@@ -1,0 +1,4 @@
+accessWidener v2 named
+
+# MessageContext.connection() needs the player's network connection, which is protected in vanilla.
+accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;

@@ -40,3 +40,7 @@ tasks.processResources {
         expand("version" to project.version)
     }
 }
+
+loom {
+    accessWidenerPath = file("src/main/resources/oc2r.accesswidener")
+}
