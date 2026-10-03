@@ -5,7 +5,6 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.platform.CapabilityRegistrar;
-import li.cil.oc2.platform.NeoForgeItemHandlers;
 
 public final class ComputerBlockEntityCapabilities {
     public static void registerCapabilities(final CapabilityRegistrar registrar) {
@@ -13,7 +12,7 @@ public final class ComputerBlockEntityCapabilities {
                 Capabilities.ItemHandler.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final ComputerBlockEntity self) {
-                        return NeoForgeItemHandlers.adapt(self.deviceItems.combinedItemHandlers);
+                        return self.deviceItems.combinedItemHandlers;
                     }
                     return null;
                 },

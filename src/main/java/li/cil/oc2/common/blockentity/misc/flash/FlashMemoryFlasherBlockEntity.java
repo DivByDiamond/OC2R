@@ -16,7 +16,6 @@ import li.cil.oc2.common.util.item.LocationSupplierUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.sound.ThrottledSoundEmitter;
 import li.cil.oc2.platform.CapabilityRegistrar;
-import li.cil.oc2.platform.NeoForgeItemHandlers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -101,7 +100,7 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
                 Capabilities.ItemHandler.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final FlashMemoryFlasherBlockEntity self) {
-                        return NeoForgeItemHandlers.adapt(self.itemHandler);
+                        return self.itemHandler;
                     }
                     return null;
                 },

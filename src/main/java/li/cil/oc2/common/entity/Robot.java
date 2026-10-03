@@ -20,6 +20,7 @@ import li.cil.oc2.common.entity.robot.state.RobotSerializer;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -31,7 +32,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public final class Robot extends AbstractRobotEntity
         implements li.cil.oc2.api.capabilities.Robot,

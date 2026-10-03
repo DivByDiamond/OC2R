@@ -1,6 +1,6 @@
 package li.cil.oc2.api.capabilities;
 
-import net.neoforged.neoforge.items.ItemStackHandler;
+import li.cil.oc2.platform.ItemStackHandler;
 
 /**
  * This interface may be implemented by entities hosting devices to allow modules installed in them

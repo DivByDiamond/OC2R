@@ -2,10 +2,10 @@ package li.cil.oc2.common.vm.handler;
 
 import java.util.Optional;
 import li.cil.oc2.api.bus.device.DeviceType;
-import net.neoforged.neoforge.items.IItemHandler;
+import li.cil.oc2.platform.ItemHandler;
 
 public interface VMItemStackHandlers {
-    Optional<IItemHandler> getItemHandler(DeviceType deviceType);
+    Optional<ItemHandler> getItemHandler(DeviceType deviceType);
 
     boolean isEmpty();
 

@@ -17,6 +17,7 @@ import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.ItemHandler;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,7 +27,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
 
 public final class ComputerFixture {
     private final GameTestHelper helper;
@@ -107,7 +107,7 @@ public final class ComputerFixture {
 
     // --------------------------------------------------------------------- //
 
-    public IItemHandler handler(final DeviceType type) {
+    public ItemHandler handler(final DeviceType type) {
         return blockEntity().getItemStackHandlers().getItemHandler(type)
             .orElseThrow(() -> new GameTestAssertException("no item handler for " + type));
     }
@@ -117,7 +117,7 @@ public final class ComputerFixture {
     }
 
     public ComputerFixture install(final DeviceType type, final ItemStack stack) {
-        final IItemHandler handler = handler(type);
+        final ItemHandler handler = handler(type);
         for (int slot = 0; slot < handler.getSlots(); slot++) {
             if (handler.insertItem(slot, stack, false).isEmpty()) {
                 return this;

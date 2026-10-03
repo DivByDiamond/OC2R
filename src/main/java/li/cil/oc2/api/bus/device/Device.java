@@ -1,11 +1,11 @@
 package li.cil.oc2.api.bus.device;
 
 import li.cil.oc2.api.bus.DeviceBus;
+import li.cil.oc2.platform.NbtSerializable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 
 /**
  * Base interface for objects that can be registered as devices on a {@link DeviceBus}.
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
  * <p>Note that it is strongly encouraged for implementations to provide an overloaded {@link
  * Object#equals(Object)} and {@link Object#hashCode()} so that identical devices can be detected.
  */
-public interface Device extends INBTSerializable<CompoundTag> {
+public interface Device extends NbtSerializable<CompoundTag> {
     /**
      * Called to dispose this device.
      *

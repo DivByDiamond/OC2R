@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.platform.ItemHandler;
-import li.cil.oc2.platform.NeoForgeItemHandlers;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,7 +31,7 @@ final class InventoryOperationsHelper {
 
     int takeFromWorld(final int count) {
         final int selectedSlot = robot.getSelectedSlot();
-        final ItemHandler inventory = NeoForgeItemHandlers.adapt(robot.getInventory());
+        final ItemHandler inventory = robot.getInventory();
 
         int remaining = count;
         for (final ItemEntity itemEntity : getItemsInRange()) {
@@ -57,7 +56,7 @@ final class InventoryOperationsHelper {
 
     int takeFromInventories(final int count, final List<ItemHandler> handlers) {
         final int selectedSlot = robot.getSelectedSlot();
-        final ItemHandler inventory = NeoForgeItemHandlers.adapt(robot.getInventory());
+        final ItemHandler inventory = robot.getInventory();
 
         int remaining = count;
         for (final ItemHandler handler : handlers) {
@@ -93,7 +92,7 @@ final class InventoryOperationsHelper {
     }
 
     int takeFromInventory(final int count, final ItemHandler handler, final int slot) {
-        final ItemHandler inventory = NeoForgeItemHandlers.adapt(robot.getInventory());
+        final ItemHandler inventory = robot.getInventory();
         final int selectedSlot = robot.getSelectedSlot();
 
         ItemStack extracted = handler.extractItem(slot, count, true);

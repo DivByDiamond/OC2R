@@ -1,12 +1,12 @@
 package li.cil.oc2.common.container.slot;
 
+import li.cil.oc2.platform.ItemHandler;
+import li.cil.oc2.platform.ItemHandlerSlot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
 
-public final class RobotSlot extends SlotItemHandler {
+public final class RobotSlot extends ItemHandlerSlot {
     public RobotSlot(
-            final IItemHandler itemHandler,
+            final ItemHandler itemHandler,
             final int index,
             final int xPosition,
             final int yPosition) {

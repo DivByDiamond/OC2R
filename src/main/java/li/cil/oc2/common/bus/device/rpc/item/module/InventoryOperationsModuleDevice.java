@@ -11,10 +11,10 @@ import li.cil.oc2.api.util.RobotOperationSide;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.platform.ItemHandler;
 import li.cil.oc2.platform.ItemHandlers;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice {
     private final Entity entity;

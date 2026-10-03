@@ -14,10 +14,10 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.state.RobotDevice;
 import li.cil.oc2.common.vm.handler.AbstractVMItemStackHandlers;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class RobotInventory {
     public static final int INVENTORY_SIZE = 12;
