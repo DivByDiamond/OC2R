@@ -8,7 +8,8 @@
   "environment": "*",
   "accessWidener": "oc2r.accesswidener",
   "entrypoints": {
-    "main": ["li.cil.oc2.fabric.OC2RFabric"]
+    "main": ["li.cil.oc2.fabric.OC2RFabric"],
+    "client": ["li.cil.oc2.fabric.OC2RFabricClient"]
   },
   "depends": {
     "fabricloader": ">=0.16.14",

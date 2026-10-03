@@ -1,5 +1,6 @@
 package li.cil.oc2.fabric;
 
+import li.cil.oc2.platform.FabricCommonEvents;
 import li.cil.oc2.platform.FabricRegistryBridge;
 import net.fabricmc.api.ModInitializer;
 
@@ -8,6 +9,7 @@ public final class OC2RFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         FabricRegistryBridge.instance().bind();
-        // Remaining bridges (registry, network, energy, capabilities, events) are wired in by later steps.
+        FabricCommonEvents.register();
+        // Energy and capability bridges are wired in by later steps.
     }
 }
