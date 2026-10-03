@@ -1,7 +1,6 @@
 package li.cil.oc2.common.container.robot;
 
 import java.nio.ByteBuffer;
-import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.container.base.AbstractMachineContainer;
@@ -14,6 +13,7 @@ import li.cil.oc2.common.network.message.robot.inventory.OpenRobotInventoryMessa
 import li.cil.oc2.common.network.message.robot.state.RobotPowerMessage;
 import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalInputMessage;
+import li.cil.oc2.common.util.GlobalInputCapture;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.world.entity.player.Player;
@@ -69,7 +69,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
         return switch (Config.captureInputMode) {
             case PER_BLOCK -> robot.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
-            case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
+            case GLOBAL_CAPTURE -> GlobalInputCapture.isCaptured();
             default -> throw new AssertionError(Config.captureInputMode);
         };
     }
@@ -79,7 +79,7 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
         switch (Config.captureInputMode) {
             case PER_BLOCK -> robot.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
-            case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
+            case GLOBAL_CAPTURE -> GlobalInputCapture.set(state);
             default -> throw new AssertionError(Config.captureInputMode);
         }
     }

@@ -6,14 +6,13 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
-import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -25,8 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public final class NetworkInterfaceCardItem extends ModItem {
     private static final String SIDE_CONFIGURATION_TAG_NAME = "sides";
@@ -115,8 +112,7 @@ public final class NetworkInterfaceCardItem extends ModItem {
         return InteractionResultHolder.sidedSuccess(itemStack, player.level().isClientSide());
     }
 
-    @OnlyIn(Dist.CLIENT)
     private void openConfigurationScreen(final Player player, final InteractionHand hand) {
-        Minecraft.getInstance().setScreen(new NetworkInterfaceCardScreen(player, hand));
+        ClientProxy.get().openNetworkInterfaceCardScreen(player, hand);
     }
 }

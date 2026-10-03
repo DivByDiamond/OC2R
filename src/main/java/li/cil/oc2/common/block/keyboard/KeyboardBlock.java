@@ -1,12 +1,11 @@
 package li.cil.oc2.common.block.keyboard;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -25,8 +24,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -104,9 +101,7 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         builder.add(FACING);
     }
 
-    @OnlyIn(Dist.CLIENT)
     private static void openKeyboardScreen(final KeyboardBlockEntity keyboard) {
-        final KeyboardScreen screen = new KeyboardScreen(keyboard);
-        Minecraft.getInstance().setScreen(screen);
+        ClientProxy.get().openKeyboardScreen(keyboard);
     }
 }

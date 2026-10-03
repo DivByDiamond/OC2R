@@ -1,7 +1,7 @@
 package li.cil.oc2.common.network.message.computer;
 
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.hooks.SoundCardMessageHooks;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
@@ -31,6 +31,6 @@ public record SoundCardPcmMessage(BlockPos pos, byte[] pcm) implements AbstractM
 
     @Override
     public void handleMessage(final MessageContext context) {
-        context.enqueueWork(() -> SoundCardMessageHooks.streamPcm(pos, pcm));
+        context.enqueueWork(() -> ClientProxy.get().streamPcm(pos, pcm));
     }
 }

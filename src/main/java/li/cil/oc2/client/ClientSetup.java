@@ -8,6 +8,7 @@ import li.cil.oc2.client.gui.screen.monitor.MonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.network.NetworkTunnelScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotContainerScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotTerminalScreen;
+import li.cil.oc2.client.hooks.ClientProxyImpl;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.renderer.BusInterfaceNameRenderer;
@@ -22,20 +23,19 @@ import li.cil.oc2.client.renderer.entity.RobotRenderer;
 import li.cil.oc2.client.renderer.entity.model.RobotModel;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.platform.ClientRegistrar;
 import li.cil.oc2.platform.event.ClientEvents;
-import org.jetbrains.annotations.Nullable;
 
 public final class ClientSetup {
-    @Nullable private static Boolean captureInputState = null;
-
     private ClientSetup() {}
 
     /** Describes all client registrations; the loader module applies them from its setup hooks. */
     public static void register(final ClientRegistrar registrar) {
+        ClientProxy.set(new ClientProxyImpl());
+
         registrar.enqueueSetup(BusInterfaceNameRenderer::initialize);
         registrar.enqueueSetup(CustomItemModelProperties::initialize);
 
@@ -61,27 +61,5 @@ public final class ClientSetup {
         CustomItemColors.initialize(registrar);
 
         ClientEvents.HIDE_HOTBAR.register(() -> KeyboardScreen.hideHotbar);
-    }
-
-    /**
-     * Gets the capture input state.
-     *
-     * @return the capture input state.
-     */
-    public static boolean getCaptureInputState() { // NOPMD getter API consumed across client/server
-        if (captureInputState == null) {
-            captureInputState = Config.captureInputDefaultState;
-        }
-
-        return captureInputState;
-    }
-
-    /**
-     * Sets the capture input state.
-     *
-     * @param value the new capture input state.
-     */
-    public static void setCaptureInputState(final boolean value) {
-        captureInputState = value;
     }
 }

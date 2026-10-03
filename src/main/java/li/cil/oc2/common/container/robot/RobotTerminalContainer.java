@@ -1,6 +1,6 @@
 package li.cil.oc2.common.container.robot;
 
-import li.cil.oc2.client.gui.Sprites;
+import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.container.data.IntPrecisionContainerData;
@@ -63,8 +63,8 @@ public final class RobotTerminalContainer extends AbstractRobotContainer {
         // It's kinda dumb we need to access technically-client-side stuff here, but that's the
         // nature of containers
         // needing to specify display positions for some reason.
-        final int terminalScreenWidth = Sprites.TERMINAL_SCREEN.width;
-        final int terminalScreenHeight = Sprites.TERMINAL_SCREEN.height;
+        final int terminalScreenWidth = Constants.TERMINAL_SCREEN_WIDTH;
+        final int terminalScreenHeight = Constants.TERMINAL_SCREEN_HEIGHT;
 
         final ItemStackHandler inventory = robot.getInventory();
         for (int slot = 0; slot < inventory.getSlots(); slot++) {

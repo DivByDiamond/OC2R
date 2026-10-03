@@ -77,4 +77,9 @@ public final class Constants {
     public static final String CONNECTOR_LINK_STARTED = key("message.{mod}.connector.link_started");
     public static final String CONNECTOR_CONNECTED = key("message.{mod}.connector.connected");
     public static final String CONNECTOR_DISCONNECTED = key("message.{mod}.connector.disconnected");
+
+    /** Size of the terminal screen texture; menus need it to place their slots on the server too. */
+    public static final int TERMINAL_SCREEN_WIDTH = 336;
+
+    public static final int TERMINAL_SCREEN_HEIGHT = 208;
 }
