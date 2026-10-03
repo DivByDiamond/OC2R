@@ -126,6 +126,47 @@ public final class FabricBridgeTests implements FabricGameTest {
         helper.succeed();
     }
 
+    /** Operations in one transaction must see each other's effect, then commit together. */
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void energyTransactionAccountsForPendingOperations(final GameTestHelper helper) {
+        final BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos, Blocks.DIAMOND_BLOCK);
+        final team.reborn.energy.api.EnergyStorage exposed =
+                team.reborn.energy.api.EnergyStorage.SIDED.find(helper.getLevel(), helper.absolutePos(pos), null);
+        if (exposed == null) {
+            helper.fail("storage not exposed");
+            return;
+        }
+        STORAGE.stored = 950;
+        long first;
+        long second;
+        try (Transaction transaction = Transaction.openOuter()) {
+            first = exposed.insert(30, transaction);
+            // Only 20 of the 50 free units are left after the first insert.
+            second = exposed.insert(30, transaction);
+            transaction.commit();
+        }
+        if (first != 30 || second != 20) {
+            helper.fail("expected 30 then 20 accepted, got " + first + " and " + second);
+        }
+        if (STORAGE.stored != 1000) {
+            helper.fail("expected a full storage after the commit, got " + STORAGE.stored);
+        }
+        try (Transaction transaction = Transaction.openOuter()) {
+            final long removed = exposed.extract(600, transaction);
+            final long more = exposed.extract(600, transaction);
+            if (removed != 600 || more != 400) {
+                helper.fail("expected 600 then 400 extracted, got " + removed + " and " + more);
+            }
+            // aborted: nothing may change
+        }
+        if (STORAGE.stored != 1000) {
+            helper.fail("an aborted extraction changed the storage to " + STORAGE.stored);
+        }
+        STORAGE.stored = 0;
+        helper.succeed();
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void menuTypeCanBeCreated(final GameTestHelper helper) {
         if (Platform.menus().createMenuType((id, inventory, data) -> null) == null) {

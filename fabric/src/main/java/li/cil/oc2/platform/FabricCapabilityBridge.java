@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,6 +31,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class FabricCapabilityBridge implements CapabilityBridge {
     private static final Map<Long, List<Listener>> LISTENERS = new ConcurrentHashMap<>();
+    private static final int SWEEP_INTERVAL = 1024;
+    private static final AtomicLong registrations = new AtomicLong();
 
     @Override
     @Nullable
@@ -108,9 +112,35 @@ public final class FabricCapabilityBridge implements CapabilityBridge {
     @Override
     public boolean registerBlockCapabilityListener(
             final ServerLevel level, final BlockPos pos, final CapabilityInvalidationListener listener) {
-        LISTENERS.computeIfAbsent(pos.asLong(), k -> new CopyOnWriteArrayList<>())
-                .add(new Listener(new WeakReference<>(level), new WeakReference<>(listener)));
+        final List<Listener> listeners = LISTENERS.computeIfAbsent(pos.asLong(), k -> new CopyOnWriteArrayList<>());
+        listeners.removeIf(FabricCapabilityBridge::isDead);
+        listeners.add(new Listener(new WeakReference<>(level), new WeakReference<>(listener)));
+        // Entries whose position is never invalidated again would otherwise stay forever.
+        if (registrations.incrementAndGet() % SWEEP_INTERVAL == 0) {
+            sweep();
+        }
         return true;
+    }
+
+    private static boolean isDead(final Listener entry) {
+        return entry.listener().get() == null || entry.level().get() == null;
+    }
+
+    private static void sweep() {
+        LISTENERS.entrySet().removeIf(entry -> {
+            entry.getValue().removeIf(FabricCapabilityBridge::isDead);
+            return entry.getValue().isEmpty();
+        });
+    }
+
+    /** Invalidates every position in {@code chunk}, like NeoForge does when a chunk loads or unloads. */
+    public static void invalidateChunk(final Level level, final ChunkPos chunk) {
+        for (final Long key : List.copyOf(LISTENERS.keySet())) {
+            final BlockPos pos = BlockPos.of(key);
+            if ((pos.getX() >> 4) == chunk.x && (pos.getZ() >> 4) == chunk.z) {
+                invalidate(level, pos);
+            }
+        }
     }
 
     /** Notifies the listeners registered for {@code pos} in {@code level}; used by the chunk mixin too. */

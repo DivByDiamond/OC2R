@@ -3,6 +3,7 @@ package li.cil.oc2.platform;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import li.cil.oc2.platform.event.CommonEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -39,10 +40,19 @@ public final class FabricCommonEvents {
                 CommonEvents.LEVEL_TICK_START.fire(listener -> listener.accept(level)));
         ServerWorldEvents.UNLOAD.register((server, level) ->
                 CommonEvents.LEVEL_UNLOAD.fire(listener -> listener.accept(level)));
-        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) ->
-                CommonEvents.CHUNK_LOAD.fire(listener -> listener.onChunk(level, chunk)));
-        ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) ->
-                CommonEvents.CHUNK_UNLOAD.fire(listener -> listener.onChunk(level, chunk)));
+        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
+            FabricCapabilityBridge.invalidateChunk(level, chunk.getPos());
+            CommonEvents.CHUNK_LOAD.fire(listener -> listener.onChunk(level, chunk));
+        });
+        ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> {
+            FabricCapabilityBridge.invalidateChunk(level, chunk.getPos());
+            CommonEvents.CHUNK_UNLOAD.fire(listener -> listener.onChunk(level, chunk));
+        });
+        // NeoForge also invalidates when a block entity appears or goes away without a block change.
+        ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register((blockEntity, level) ->
+                FabricCapabilityBridge.invalidate(level, blockEntity.getBlockPos()));
+        ServerBlockEntityEvents.BLOCK_ENTITY_UNLOAD.register((blockEntity, level) ->
+                FabricCapabilityBridge.invalidate(level, blockEntity.getBlockPos()));
 
         // Fabric registers reload listeners once, by id, rather than per reload like NeoForge's
         // AddReloadListenerEvent; listeners handed to the event are therefore registered right away.

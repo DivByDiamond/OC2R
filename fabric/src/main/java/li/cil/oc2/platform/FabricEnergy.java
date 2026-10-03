@@ -1,7 +1,11 @@
 package li.cil.oc2.platform;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -17,6 +21,10 @@ final class FabricEnergy {
     private static final BlockCapability<li.cil.oc2.platform.EnergyStorage> ENERGY_KEY =
             BlockCapability.createSided(
                     FabricCapabilityBridge.standardId("energy"), li.cil.oc2.platform.EnergyStorage.class);
+
+    /** Pending amounts per mod storage; weak so storages of unloaded blocks can be collected. */
+    private static final Map<li.cil.oc2.platform.EnergyStorage, Pending> PENDING =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     private FabricEnergy() {}
 
@@ -111,40 +119,39 @@ final class FabricEnergy {
     }
 
     /**
-     * The mod's storage seen by other mods. Changes are applied when the surrounding transaction
-     * commits; the returned amount is what would fit right now.
+     * The mod's storage seen by other mods. Changes are applied when the outermost transaction
+     * commits. Until then they are tracked as pending amounts, so several operations inside one
+     * transaction see each other's effect instead of all claiming the same free space or charge.
      */
     private static final class ToTeamReborn implements EnergyStorage {
+        private final Pending pending;
         private final li.cil.oc2.platform.EnergyStorage delegate;
 
         ToTeamReborn(final li.cil.oc2.platform.EnergyStorage delegate) {
             this.delegate = delegate;
+            this.pending = PENDING.computeIfAbsent(delegate, Pending::new);
         }
 
         @Override
         public long insert(final long maxAmount, final TransactionContext transaction) {
-            final int amount = delegate.receiveEnergy(clamp(maxAmount), true);
-            if (amount > 0) {
-                transaction.addCloseCallback((context, result) -> {
-                    if (result.wasCommitted()) {
-                        delegate.receiveEnergy(amount, false);
-                    }
-                });
+            final long space = delegate.receiveEnergy(Integer.MAX_VALUE, true) - pending.in;
+            final long accepted = Math.max(0, Math.min(maxAmount, space));
+            if (accepted > 0) {
+                pending.updateSnapshots(transaction);
+                pending.in += accepted;
             }
-            return amount;
+            return accepted;
         }
 
         @Override
         public long extract(final long maxAmount, final TransactionContext transaction) {
-            final int amount = delegate.extractEnergy(clamp(maxAmount), true);
-            if (amount > 0) {
-                transaction.addCloseCallback((context, result) -> {
-                    if (result.wasCommitted()) {
-                        delegate.extractEnergy(amount, false);
-                    }
-                });
+            final long available = delegate.extractEnergy(Integer.MAX_VALUE, true) - pending.out;
+            final long removed = Math.max(0, Math.min(maxAmount, available));
+            if (removed > 0) {
+                pending.updateSnapshots(transaction);
+                pending.out += removed;
             }
-            return amount;
+            return removed;
         }
 
         @Override
@@ -165,6 +172,42 @@ final class FabricEnergy {
         @Override
         public boolean supportsExtraction() {
             return delegate.canExtract();
+        }
+    }
+
+    /** Per-storage amounts inserted and extracted inside transactions that have not committed yet. */
+    private static final class Pending extends SnapshotParticipant<long[]> {
+        private final li.cil.oc2.platform.EnergyStorage target;
+        long in;
+        long out;
+
+        Pending(final li.cil.oc2.platform.EnergyStorage target) {
+            this.target = target;
+        }
+
+        @Override
+        protected long[] createSnapshot() {
+            return new long[] {in, out};
+        }
+
+        @Override
+        protected void readSnapshot(final long[] snapshot) {
+            in = snapshot[0];
+            out = snapshot[1];
+        }
+
+        @Override
+        protected void onFinalCommit() {
+            final long inserted = in;
+            final long extracted = out;
+            in = 0;
+            out = 0;
+            if (inserted > 0) {
+                target.receiveEnergy(clamp(inserted), false);
+            }
+            if (extracted > 0) {
+                target.extractEnergy(clamp(extracted), false);
+            }
         }
     }
 }
