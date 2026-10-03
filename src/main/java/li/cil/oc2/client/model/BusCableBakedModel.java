@@ -24,6 +24,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
@@ -53,7 +54,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             final BusCableModelTypes.BusCableFacade facade = extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
             if (facade != null) {
                 return facade.model().getQuads(
-                        facade.blockState(), side, rand, facade.data(), RenderType.solid());
+                        facade.blockState(), side, rand, facade.data(), renderType);
             } else {
                 return Collections.emptyList();
             }
@@ -84,6 +85,21 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         }
 
         return quads;
+    }
+
+    /**
+     * A facade is drawn in the layers of the block it imitates: blocks with a transparent overlay
+     * (grass, mycelium) need their cutout layer, otherwise the overlay's transparent pixels cover the
+     * block in black.
+     */
+    @Override
+    public ChunkRenderTypeSet getRenderTypes(
+            final BlockState state, final RandomSource rand, final ModelData data) {
+        final BusCableModelTypes.BusCableFacade facade = data.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
+        if (facade != null) {
+            return facade.model().getRenderTypes(facade.blockState(), rand, facade.data());
+        }
+        return IDynamicBakedModel.super.getRenderTypes(state, rand, data);
     }
 
     @Override
