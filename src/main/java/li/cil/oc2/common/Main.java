@@ -2,6 +2,7 @@ package li.cil.oc2.common;
 
 import li.cil.ceres.Ceres;
 import li.cil.oc2.api.API;
+import li.cil.oc2.client.ClientEventListeners;
 import li.cil.oc2.client.manual.Manuals;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.common.Blocks;
@@ -77,6 +78,7 @@ public final class Main {
         modBus.register(CommonSetup.class);
         if (FMLLoader.getDist() == Dist.CLIENT) {
             Manuals.initialize();
+            ClientEventListeners.register();
         }
 
         NeoForgeRegistryBridge.instance().bind(modBus);

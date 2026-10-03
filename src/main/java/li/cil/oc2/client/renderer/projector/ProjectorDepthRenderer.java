@@ -18,6 +18,7 @@ import li.cil.oc2.client.renderer.stage.DepthOnlyRenderTarget;
 import li.cil.oc2.client.renderer.stage.shader.ModShaders;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.misc.ProjectorDevice;
+import li.cil.oc2.platform.event.ClientEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,7 +28,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
@@ -165,9 +165,10 @@ public final class ProjectorDepthRenderer {
         }
     }
 
-    @SubscribeEvent
-    public static void handleClientTick(final ClientTickEvent.Pre event) {
-        RENDER_INFO.cleanUp();
+    public static void registerEvents() {
+        ClientEvents.CLIENT_TICK_START.register(() -> {
+            RENDER_INFO.cleanUp();
+        });
     }
 
     public static DynamicTexture getColorBuffer(final ProjectorBlockEntity projector) {

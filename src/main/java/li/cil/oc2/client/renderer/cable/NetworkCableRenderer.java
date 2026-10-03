@@ -6,17 +6,17 @@ import java.util.*;
 import java.util.Collections;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
 import org.joml.Matrix4f;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
@@ -39,10 +39,14 @@ public final class NetworkCableRenderer {
         isDirty = true;
     }
 
-    @SubscribeEvent
-    public static void handleChunkUnloadEvent(final ChunkEvent.Unload event) {
-        if (event.getLevel().isClientSide()) {
-            final ChunkPos chunkPos = event.getChunk().getPos();
+    public static void registerEvents() {
+        CommonEvents.CHUNK_UNLOAD.register(NetworkCableRenderer::handleChunkUnload);
+        CommonEvents.LEVEL_UNLOAD.register(NetworkCableRenderer::handleLevelUnload);
+    }
+
+    private static void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
+        if (level.isClientSide()) {
+            final ChunkPos chunkPos = chunk.getPos();
 
             final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
@@ -57,10 +61,8 @@ public final class NetworkCableRenderer {
         }
     }
 
-    @SubscribeEvent
-    public static void handleWorldUnloadEvent(final LevelEvent.Unload event) {
-        if (event.getLevel().isClientSide()) {
-            final LevelAccessor level = event.getLevel();
+    private static void handleLevelUnload(final LevelAccessor level) {
+        if (level.isClientSide()) {
 
             final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {

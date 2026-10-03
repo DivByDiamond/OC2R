@@ -13,6 +13,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+import li.cil.oc2.platform.event.ClientEvents;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -20,14 +21,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.joml.Matrix4f;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlockEntity> {
     public static final ResourceLocation OVERLAY_POWER_LOCATION =
             ResourceLocation.fromNamespaceAndPath(
@@ -164,9 +160,10 @@ public final class ComputerRenderer implements BlockEntityRenderer<ComputerBlock
         }
     }
 
-    @SubscribeEvent
-    public static void updateCache(final ClientTickEvent.Pre event) {
-        rendererViews.cleanUp();
+    public static void registerEvents() {
+        ClientEvents.CLIENT_TICK_START.register(() -> {
+            rendererViews.cleanUp();
+        });
     }
 
     static void handleNoLongerRendering(
