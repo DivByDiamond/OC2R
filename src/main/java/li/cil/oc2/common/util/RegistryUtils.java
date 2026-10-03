@@ -1,68 +1,15 @@
 package li.cil.oc2.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
-@SuppressWarnings("unused")
-// Pending migration (docs/roadmap/multiloader.md §42): this helper creates NeoForge
-// DeferredRegisters directly instead of going through the core RegistryBridge like Blocks/Items.
 public abstract class RegistryUtils {
-    private enum Phase {
-        PRE_INIT,
-        INIT,
-        POST_INIT,
-    }
-
-    private static final List<DeferredRegister<?>> ENTRIES = new ArrayList<>();
-    private static Phase phase = Phase.PRE_INIT;
-
-    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(
-            final ResourceKey<Registry<T>> key) {
-        if (phase != Phase.INIT) throw new IllegalStateException();
-
-        final DeferredRegister<T> entry = DeferredRegister.create(key, API.MOD_ID);
-        ENTRIES.add(entry);
-        return entry;
-    }
-
-    public static <T extends Registry<T>> DeferredRegister<T> getInitializerFor(
-            final Registry<T> registry) {
-        if (phase != Phase.INIT) throw new IllegalStateException();
-
-        final DeferredRegister<T> entry = DeferredRegister.create(registry, API.MOD_ID);
-        ENTRIES.add(entry);
-        return entry;
-    }
-
-    public static void begin() {
-        if (phase != Phase.PRE_INIT) throw new IllegalStateException();
-        phase = Phase.INIT;
-    }
-
-    public static void finish(IEventBus modBus) {
-        if (phase != Phase.INIT) throw new IllegalStateException();
-        phase = Phase.POST_INIT;
-
-        for (final DeferredRegister<?> register : ENTRIES) {
-            register.register(modBus);
-        }
-
-        ENTRIES.clear();
-    }
-
     public static String key(final DeviceType registryEntry) {
         return Objects.requireNonNull(registryEntry.getName()).toString();
     }

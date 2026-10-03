@@ -26,7 +26,6 @@ import li.cil.oc2.common.setup.CommonSetup;
 import li.cil.oc2.common.setup.NativeLoader;
 import li.cil.oc2.common.tags.BlockTags;
 import li.cil.oc2.common.tags.ItemTags;
-import li.cil.oc2.common.util.RegistryUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
 import li.cil.oc2.platform.NeoForgeMessageRegistrar;
@@ -54,8 +53,6 @@ public final class Main {
         container.registerConfig(ModConfig.Type.CLIENT, ClientSpec.CLIENT_CONFIG_SPEC);
         container.registerConfig(ModConfig.Type.SERVER, AsyncConfig.SERVER_SPEC);
 
-        RegistryUtils.begin();
-
         ItemTags.initialize();
         BlockTags.initialize();
         DataComponents.initialize(modBus);
@@ -75,13 +72,11 @@ public final class Main {
         BlockDeviceDataRegistry.initialize(modBus);
         FirmwareRegistry.initialize(modBus);
 
-        RegistryUtils.finish(modBus);
-
         CommonEventListeners.register();
 
         modBus.register(CommonSetup.class);
         if (FMLLoader.getDist() == Dist.CLIENT) {
-            Manuals.initialize(modBus);
+            Manuals.initialize();
         }
 
         NeoForgeRegistryBridge.instance().bind(modBus);
