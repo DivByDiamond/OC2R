@@ -5,7 +5,8 @@
   "name": "OC2R Fabric GameTests",
   "environment": "*",
   "entrypoints": {
-    "fabric-gametest": ["li.cil.oc2.fabric.gametest.FabricBridgeTests"]
+    "fabric-gametest": ["li.cil.oc2.fabric.gametest.FabricBridgeTests",
+      "li.cil.oc2.fabric.gametest.FabricNetworkTests"]
   },
   "depends": {
     "oc2r": "*"
