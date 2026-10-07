@@ -1,5 +1,6 @@
 package li.cil.oc2.common.hooks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
@@ -82,6 +83,11 @@ public interface ClientProxy {
     }
 
     /** Installs the client implementation. */
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_STATIC_REP2",
+            justification =
+                    "installed exactly once during client setup; the holder exists to expose the"
+                            + " swap, not to guard it")
     static void set(final ClientProxy proxy) {
         Holder.proxy = proxy;
     }

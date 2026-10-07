@@ -69,7 +69,7 @@ public final class EchoHandler {
             final byte[] payload,
             final int size,
             final AtomicReference<EchoResponse> echoResponse) {
-        if (NativeLoader.LoadedLibrary) {
+        if (NativeLoader.isLoadedLibrary()) {
             handleIcmpNative(session, address, payload, size, echoResponse);
         } else {
             handleIcmpFallback(session, address, fallbackData, echoResponse);

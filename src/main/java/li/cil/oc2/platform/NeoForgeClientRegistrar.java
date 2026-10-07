@@ -1,5 +1,6 @@
 package li.cil.oc2.platform;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -45,6 +46,11 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
 
     private NeoForgeClientRegistrar() {}
 
+    @SuppressFBWarnings(
+            value = "MS_EXPOSE_REP",
+            justification =
+                    "accessor for the private singleton; returning SHARED by reference is the"
+                            + " point of the holder")
     public static NeoForgeClientRegistrar instance() {
         return SHARED;
     }

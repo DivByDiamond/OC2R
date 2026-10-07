@@ -1,6 +1,7 @@
 package li.cil.oc2.client.renderer.stage.shader;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -90,6 +91,11 @@ public final class ModShaders {
     }
 
     /** Called by the loader once the projectors shader has been (re)loaded. */
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_STATIC_REP2",
+            justification =
+                    "the loader owns the ShaderInstance; storing its reference here is how a"
+                            + " reloaded program reaches the renderer")
     public static void setProjectorsShader(final ShaderInstance instance) {
         projectorsShader = instance;
     }

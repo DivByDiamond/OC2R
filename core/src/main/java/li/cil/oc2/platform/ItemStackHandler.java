@@ -1,5 +1,6 @@
 package li.cil.oc2.platform;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,11 @@ public class ItemStackHandler implements ItemHandler, NbtSerializable<CompoundTa
         stacks = NonNullList.withSize(size, ItemStack.EMPTY);
     }
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification =
+                    "the handler deliberately operates on the caller's NonNullList; copying would"
+                            + " break shared backing stores")
     public ItemStackHandler(final NonNullList<ItemStack> stacks) {
         this.stacks = stacks;
     }

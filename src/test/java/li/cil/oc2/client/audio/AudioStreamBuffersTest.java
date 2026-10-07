@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -32,6 +33,9 @@ class AudioStreamBuffersTest {
     }
 
     @Test
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "read returns null once the tone ends; the null check terminates the loop")
     void toneEndsAfterItsDuration() throws IOException {
         final ToneAudioStream stream = new ToneAudioStream(440f, 20);
         int total = 0;

@@ -1,6 +1,7 @@
 package li.cil.oc2.platform.event;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import org.joml.Matrix4f;
@@ -15,6 +16,11 @@ import org.joml.Matrix4f;
  * @param modelViewMatrix the model-view matrix of the level render
  * @param projectionMatrix the projection matrix of the level render
  */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        justification =
+                "per-frame render tuple: components are borrowed for one render pass and never"
+                        + " retained past it")
 public record LevelRenderContext(
         Stage stage,
         PoseStack poseStack,

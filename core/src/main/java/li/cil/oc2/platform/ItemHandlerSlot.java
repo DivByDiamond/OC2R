@@ -1,5 +1,6 @@
 package li.cil.oc2.platform;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -7,6 +8,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** A menu {@link Slot} backed by one slot of an {@link ItemHandler}. */
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        justification =
+                "the slot wraps the live ItemHandler it serves; exposing it is how menu code"
+                        + " reaches the handler it edits")
 public class ItemHandlerSlot extends Slot {
     private static final Container EMPTY_CONTAINER = new SimpleContainer(0);
 

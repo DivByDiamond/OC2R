@@ -67,6 +67,19 @@
         <Class name="li.cil.oc2.bus.topology.NetworkResolver$Result" />
         <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
     </Match>
+    <!-- Same detector limitation as NetworkResolver$Result: ItemHandlerSlot's class-level
+         @SuppressFBWarnings(EI_EXPOSE_REP/REP2) really does suppress the handler getter and
+         constructor findings, and LevelRenderContext (a record) needs the annotation on the type
+         because its components are borrowed per render frame. Removing either annotation
+         resurfaces the EI_ findings on the next :core:spotbugsMain run. -->
+    <Match>
+        <Class name="li.cil.oc2.platform.ItemHandlerSlot" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.platform.event.LevelRenderContext" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
     <!-- NeoForgeEnergyBridge forwards its own @Nullable Direction parameter into NeoForge's
          Capabilities.EnergyStorage.BLOCK/ENTITY, whose generic context type is itself declared
          "@Nullable Direction" in Capabilities.java. SpotBugs loses that annotation across the
