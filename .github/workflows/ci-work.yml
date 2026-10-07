@@ -109,12 +109,14 @@ jobs:
           done
 
       # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
-      # builds the mod jar so the job still guards packaging regressions.
+      # builds the mod jar so the job still guards packaging regressions. Gradle's `test`
+      # lifecycle also pulls in loom's :fabric:runGameTest, which needs xvfb-run; the Fabric
+      # game tests have their own step in the gametest job, so skip them here.
       - name: Unit tests and jar assembly
         run: |
-          ./gradlew test assemble || {
+          ./gradlew test assemble -x :fabric:runGameTest || {
             echo "::warning::First test gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew test assemble --refresh-dependencies
+            ./gradlew test assemble -x :fabric:runGameTest --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
