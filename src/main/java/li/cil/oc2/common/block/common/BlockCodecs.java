@@ -20,10 +20,8 @@ import li.cil.oc2.common.block.network.NetworkHubBlock;
 import li.cil.oc2.common.block.network.NetworkSwitchBlock;
 import li.cil.oc2.common.block.network.VxlanBlock;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
 
 public final class BlockCodecs {
     private static final String REGISTRY_ID = "minecraft:block_type";
@@ -68,7 +66,7 @@ public final class BlockCodecs {
     public static final Supplier<MapCodec<SpeakerBlock>> SPEAKER =
             register("speaker", () -> MapCodec.unit(SpeakerBlock::new));
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 }

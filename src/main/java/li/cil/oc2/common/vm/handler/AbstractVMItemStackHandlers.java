@@ -14,12 +14,11 @@ import li.cil.oc2.common.bus.element.AbstractItemDeviceBusElement;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.container.handler.AbstractDeviceItemStackHandler;
 import li.cil.oc2.common.container.handler.AbstractTypedDeviceItemStackHandler;
+import li.cil.oc2.platform.CombinedItemHandler;
+import li.cil.oc2.platform.ItemHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 
 public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers {
     public record GroupDefinition(DeviceType deviceType, int count) {}
@@ -35,7 +34,7 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     private final Map<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
             Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
 
-    public final IItemHandler combinedItemHandlers;
+    public final ItemHandler combinedItemHandlers;
 
     public AbstractVMItemStackHandlers(
             Supplier<HolderLookup.Provider> providerSupplier, final GroupDefinition... groups) {
@@ -47,12 +46,12 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
         }
 
         combinedItemHandlers =
-                new CombinedInvWrapper(
-                        itemHandlers.values().toArray(new IItemHandlerModifiable[0]));
+                new CombinedItemHandler(
+                        itemHandlers.values().toArray(new ItemHandler[0]));
     }
 
     @Override
-    public Optional<IItemHandler> getItemHandler(final DeviceType deviceType) {
+    public Optional<ItemHandler> getItemHandler(final DeviceType deviceType) {
         return Optional.ofNullable(itemHandlers.get(deviceType));
     }
 

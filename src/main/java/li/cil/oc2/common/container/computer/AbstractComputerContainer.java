@@ -1,7 +1,6 @@
 package li.cil.oc2.common.container.computer;
 
 import java.nio.ByteBuffer;
-import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
@@ -14,6 +13,7 @@ import li.cil.oc2.common.network.message.computer.ComputerPowerMessage;
 import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalInputMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerTerminalMessage;
+import li.cil.oc2.common.util.GlobalInputCapture;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.EnergyStorage;
@@ -68,7 +68,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         return switch (Config.captureInputMode) {
             case PER_BLOCK -> computer.terminalManager.getCaptureInputState();
             case SHARED_BETWEEN_TYPE -> captureInputState;
-            case GLOBAL_CAPTURE -> ClientSetup.getCaptureInputState();
+            case GLOBAL_CAPTURE -> GlobalInputCapture.isCaptured();
             default -> throw new AssertionError(Config.captureInputMode);
         };
     }
@@ -78,7 +78,7 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
         switch (Config.captureInputMode) {
             case PER_BLOCK -> computer.terminalManager.setCaptureInputState(state);
             case SHARED_BETWEEN_TYPE -> captureInputState = state;
-            case GLOBAL_CAPTURE -> ClientSetup.setCaptureInputState(state);
+            case GLOBAL_CAPTURE -> GlobalInputCapture.set(state);
             default -> throw new AssertionError(Config.captureInputMode);
         }
     }

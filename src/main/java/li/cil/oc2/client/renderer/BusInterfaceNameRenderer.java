@@ -6,6 +6,8 @@ import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
+import li.cil.oc2.platform.event.ClientEvents;
+import li.cil.oc2.platform.event.LevelRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,21 +20,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 
 public enum BusInterfaceNameRenderer {
     INSTANCE;
 
     public static void initialize() {
-        NeoForge.EVENT_BUS.register(INSTANCE);
+        ClientEvents.RENDER_LEVEL.register(INSTANCE::handleRenderLastEvent);
     }
 
-    @SubscribeEvent
-    public void handleRenderLastEvent(final RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+    private void handleRenderLastEvent(final LevelRenderContext event) {
+        if (event.stage() != LevelRenderContext.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             return;
         }
 
@@ -69,7 +67,7 @@ public enum BusInterfaceNameRenderer {
             return;
         }
 
-        final PoseStack stack = event.getPoseStack();
+        final PoseStack stack = event.poseStack();
         stack.pushPose();
 
         stack.translate(0.5, 1, 0.5);

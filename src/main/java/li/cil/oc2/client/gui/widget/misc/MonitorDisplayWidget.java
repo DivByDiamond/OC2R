@@ -152,7 +152,7 @@ public final class MonitorDisplayWidget {
     }
 
     private Minecraft getClient() {
-        return parent.getMinecraft();
+        return Minecraft.getInstance();
     }
 
     private boolean shouldCaptureInput() {

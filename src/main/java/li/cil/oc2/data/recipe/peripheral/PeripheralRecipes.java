@@ -1,8 +1,8 @@
 package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.crafting.WrenchRecipe;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
+import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -70,6 +70,6 @@ public final class PeripheralRecipes {
                         "has_book",
                         ModRecipesProvider.inventoryChange(net.minecraft.world.item.Items.BOOK))
                 .unlockedBy("has_wrench", ModRecipesProvider.inventoryChange(Items.WRENCH.get()))
-                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+                .save(new WrenchRecipeOutputAdapter(consumer));
     }
 }

@@ -2,7 +2,7 @@ package li.cil.oc2.common.network.message.file;
 
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.hooks.FileTransferHooks;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -30,6 +30,6 @@ public record ExportedFileMessage(String name, byte[] data) implements AbstractM
 
     @Override
     public void handleMessage(MessageContext context) {
-        FileTransferHooks.saveExportedFile(name, data);
+        ClientProxy.get().saveExportedFile(name, data);
     }
 }

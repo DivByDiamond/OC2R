@@ -3,12 +3,10 @@ package li.cil.oc2.common.entity;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.neoforged.bus.api.IEventBus;
 
 public final class Entities {
     public static final Supplier<EntityType<Robot>> ROBOT =
@@ -18,8 +16,8 @@ public final class Entities {
                     MobCategory.MISC,
                     b -> b.sized(14f / 16f, 14f / 16f).fireImmune().noSummon());
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     @SuppressWarnings("SameParameterValue")

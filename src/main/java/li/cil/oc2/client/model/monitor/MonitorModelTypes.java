@@ -1,17 +1,16 @@
 package li.cil.oc2.client.model.monitor;
 
 import java.util.List;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
 
 /**
- * Texture tables and model data for the fragment-based monitor model, ported from
+ * Texture tables and model data types for the fragment-based monitor model, ported from
  * OpenComputers' {@code Textures.Block.Screen} and {@code ScreenModel}.
  * <p>
  * Fragment textures live in {@code textures/block/monitor_oc/}. The tables below mirror the
@@ -20,8 +19,6 @@ import net.neoforged.neoforge.client.model.data.ModelProperty;
  * growing down).
  */
 public final class MonitorModelTypes {
-    public static final ModelProperty<MonitorData> MONITOR_PROPERTY = new ModelProperty<>();
-
     /** Multiblock position of a single monitor block, derived from its BlockState. */
     public record MonitorData(int width, int height, int offsetX, int offsetY, Direction facing) {}
 
@@ -63,7 +60,7 @@ public final class MonitorModelTypes {
     };
 
     /** All fragment textures referenced by the tables, resolved into the atlas at bake time. */
-    static final List<String> TEXTURE_NAMES =
+    public static final List<String> TEXTURE_NAMES =
             List.of(
                     "b", "b2",
                     "bvt", "bvm", "bvb2",
@@ -74,19 +71,22 @@ public final class MonitorModelTypes {
                     "ftr", "ftm", "ftl", "fmr", "fmm", "fml", "fbr2", "fbm2", "fbl2");
 
     /** The particle icon texture. */
-    static final String PARTICLE_TEXTURE = "bmm";
+    public static final String PARTICLE_TEXTURE = "bmm";
 
     private MonitorModelTypes() {}
 
-    public static ModelData fromState(final BlockState state) {
-        return ModelData.of(
-                MONITOR_PROPERTY,
-                new MonitorData(
-                        state.getValue(MonitorBlock.WIDTH),
-                        state.getValue(MonitorBlock.HEIGHT),
-                        state.getValue(MonitorBlock.ORIGIN_OFFSET_X),
-                        state.getValue(MonitorBlock.ORIGIN_OFFSET_Y),
-                        state.getValue(MonitorBlock.FACING)));
+    /** The multiblock position of the monitor block {@code state}, or null if it is not a monitor. */
+    @Nullable
+    public static MonitorData dataFromState(@Nullable final BlockState state) {
+        if (state != null && state.getBlock() instanceof MonitorBlock) {
+            return new MonitorData(
+                    state.getValue(MonitorBlock.WIDTH),
+                    state.getValue(MonitorBlock.HEIGHT),
+                    state.getValue(MonitorBlock.ORIGIN_OFFSET_X),
+                    state.getValue(MonitorBlock.ORIGIN_OFFSET_Y),
+                    state.getValue(MonitorBlock.FACING));
+        }
+        return null;
     }
 
     public static ResourceLocation texture(final String name) {

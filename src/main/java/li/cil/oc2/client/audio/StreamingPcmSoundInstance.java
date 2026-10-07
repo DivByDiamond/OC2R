@@ -10,7 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
 
-public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstance {
+public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstance
+        implements CustomAudioStreamSoundInstance {
     private static final long STALE_TIMEOUT_MS = 2000;
     private static final int ATTENUATION_DISTANCE = 16;
 

@@ -52,8 +52,8 @@ public final class KeyboardScreen extends Screen {
 
         final Vec3 keyboardCenter = Vec3.atCenterOf(keyboard.getBlockPos());
         if (!keyboard.isValid()
-                || getMinecraft().player == null
-                || getMinecraft().player.distanceToSqr(keyboardCenter) > 8 * 8) {
+                || Minecraft.getInstance().player == null
+                || Minecraft.getInstance().player.distanceToSqr(keyboardCenter) > 8 * 8) {
             onClose();
         }
     }
@@ -147,7 +147,7 @@ public final class KeyboardScreen extends Screen {
     }
 
     private void swingArm() {
-        final Minecraft minecraft = getMinecraft();
+        final Minecraft minecraft = Minecraft.getInstance();
         final LocalPlayer player = minecraft.player;
         if (player != null) {
             final RandomSource random = player.getRandom();

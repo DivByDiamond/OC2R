@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "oc2r",
+  "version": "${version}",
+  "name": "OC2R",
+  "description": "Virtual computers with RISC-V emulation.",
+  "license": "GPL-3.0-only",
+  "environment": "*",
+  "mixins": [
+    "oc2r.fabric.mixins.json",
+    { "config": "oc2r.fabric.client.mixins.json", "environment": "client" }
+  ],
+  "accessWidener": "oc2r.accesswidener",
+  "entrypoints": {
+    "main": ["li.cil.oc2.fabric.OC2RFabric"],
+    "client": ["li.cil.oc2.fabric.OC2RFabricClient"],
+    "markdown_manual:registration": ["li.cil.oc2.fabric.OC2RManualRegistration"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "markdown_manual": ">=1.2.1",
+    "architectury": ">=13.0.0"
+  }
+}

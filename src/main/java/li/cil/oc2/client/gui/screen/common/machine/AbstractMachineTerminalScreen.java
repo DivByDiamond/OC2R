@@ -1,7 +1,7 @@
 package li.cil.oc2.client.gui.screen.common.machine;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
+import li.cil.oc2.client.ClientCompat;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.common.MachineTerminalEnergyTooltip;
@@ -11,6 +11,7 @@ import li.cil.oc2.client.gui.screen.widget.PowerButton;
 import li.cil.oc2.client.gui.screen.widget.SidebarAreas;
 import li.cil.oc2.client.gui.widget.terminal.MachineTerminalWidget;
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.Rect2i;
@@ -81,8 +82,8 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
             return true;
         }
 
-        final InputConstants.Key input = InputConstants.getKey(keyCode, scanCode);
-        return getMinecraft().options.keyInventory.isActiveAndMatches(input)
+        return ClientCompat.isActiveAndMatches(
+                        Minecraft.getInstance().options.keyInventory, keyCode, scanCode)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
 

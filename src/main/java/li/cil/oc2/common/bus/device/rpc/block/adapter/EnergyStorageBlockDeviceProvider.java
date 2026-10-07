@@ -7,18 +7,18 @@ import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractBlockEntityCapabilityDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.adapter.EnergyStorageDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.EnergyStorage;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class EnergyStorageBlockDeviceProvider
-        extends AbstractBlockEntityCapabilityDeviceProvider<IEnergyStorage, BlockEntity> {
+        extends AbstractBlockEntityCapabilityDeviceProvider<EnergyStorage, BlockEntity> {
     public EnergyStorageBlockDeviceProvider() {
         super(() -> Capabilities.EnergyStorage.BLOCK);
     }
 
     @Override
     protected Optional<Device> getBlockDevice(
-            final BlockDeviceQuery query, final IEnergyStorage value) {
+            final BlockDeviceQuery query, final EnergyStorage value) {
         return Optional.of(new ObjectDevice(new EnergyStorageDevice(value)));
     }
 }

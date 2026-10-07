@@ -167,7 +167,8 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
         }
     }
 
-    @Override
+    // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
+    @SuppressWarnings("PMD.MissingOverride")
     public AABB getRenderBoundingBox(InternetGateWayBlockEntity block) {
         return block.getRenderBoundingBox();
     }

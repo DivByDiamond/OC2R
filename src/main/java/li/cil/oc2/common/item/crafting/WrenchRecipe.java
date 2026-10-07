@@ -3,22 +3,16 @@ package li.cil.oc2.common.item.crafting;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import li.cil.oc2.common.integration.Wrenches;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.neoforged.neoforge.common.conditions.ICondition;
-import org.jetbrains.annotations.Nullable;
 
 public final class WrenchRecipe extends ShapelessRecipe {
     public WrenchRecipe(final ShapelessRecipe recipe) {
@@ -35,8 +29,9 @@ public final class WrenchRecipe extends ShapelessRecipe {
 
         for (int slot = 0; slot < input.size(); slot++) {
             final ItemStack stack = input.getItem(slot);
-            if (stack.hasCraftingRemainingItem()) {
-                result.set(slot, stack.getCraftingRemainingItem());
+            final ItemStack remainder = Platform.hooks().getCraftingRemainder(stack);
+            if (!remainder.isEmpty()) {
+                result.set(slot, remainder);
             } else if (Wrenches.isWrench(stack)) {
                 final ItemStack copy = stack.copy();
                 copy.setCount(1);
@@ -67,34 +62,6 @@ public final class WrenchRecipe extends ShapelessRecipe {
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, WrenchRecipe> streamCodec() {
             return STREAM_CODEC_INSTANCE;
-        }
-    }
-
-    public static final class WrenchRecipeOutputAdapter implements RecipeOutput {
-        private final RecipeOutput inner;
-
-        public WrenchRecipeOutputAdapter(RecipeOutput inner) {
-            this.inner = inner;
-        }
-
-        @Override
-        public Advancement.Builder advancement() {
-            return inner.advancement();
-        }
-
-        @Override
-        public void accept(
-                final ResourceLocation resourceLocation,
-                final Recipe<?> recipe,
-                @Nullable final AdvancementHolder advancementHolder,
-                final ICondition... iConditions) {
-            if (!(recipe instanceof ShapelessRecipe shapeless)) {
-                throw new IllegalStateException(
-                        "WrenchRecipeOutputAdapter can only be used on shapeless recipes");
-            }
-
-            inner.accept(
-                    resourceLocation, new WrenchRecipe(shapeless), advancementHolder, iConditions);
         }
     }
 }

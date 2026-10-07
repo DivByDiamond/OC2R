@@ -7,10 +7,12 @@ import javax.annotation.Nullable;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.facade.FacadeType;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -26,7 +28,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.loading.FMLLoader;
 
 public final class BusCableInteractionHandler {
     @Nullable
@@ -208,14 +209,14 @@ public final class BusCableInteractionHandler {
                                 entity.playerTouch(player);
                             });
         }
-        LevelUtils.playSound(level, pos, state.getSoundType(level, pos, null), SoundType::getBreakSound);
+        LevelUtils.playSound(level, pos, Platform.hooks().getSoundType(state, level, pos, null), SoundType::getBreakSound);
     }
 
     @OnlyIn(Dist.CLIENT)
     private static void openBusInterfaceScreen(
             final BusCableBlockEntity blockEntity, final Direction side) {
-        if (FMLLoader.getDist() == Dist.CLIENT) {
-            li.cil.oc2.client.hooks.BusInterfaceScreenHooks.openBusInterfaceScreen(blockEntity, side);
+        if (Platform.environment().isClient()) {
+            ClientProxy.get().openBusInterfaceScreen(blockEntity, side);
         }
     }
 

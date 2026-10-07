@@ -2,11 +2,10 @@ package li.cil.oc2.common.blockentity;
 
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-public abstract class ModBlockEntity extends BlockEntity {
+public abstract class ModBlockEntity extends PlatformBlockEntity {
     private final Runnable unloadHandler = this::onWorldUnloaded;
     private boolean needsWorldUnloadEvent;
     private boolean isUnloaded;

@@ -8,7 +8,10 @@ public final class Textures {
     public static final Texture ROBOT_CONTAINER_TEXTURE =
             new Texture("textures/gui/widget/robot_container.png", 176, 197);
     public static final Texture TERMINAL_SCREEN_TEXTURE =
-            new Texture("textures/gui/widget/terminal_screen.png", 336, 208);
+            new Texture(
+                            "textures/gui/widget/terminal_screen.png",
+                            li.cil.oc2.common.Constants.TERMINAL_SCREEN_WIDTH,
+                            li.cil.oc2.common.Constants.TERMINAL_SCREEN_HEIGHT);
     public static final Texture MONITOR_SCREEN_TEXTURE =
             new Texture("textures/gui/widget/monitor_screen.png", 265, 208);
     public static final Texture BUS_INTERFACE_SCREEN_TEXTURE =

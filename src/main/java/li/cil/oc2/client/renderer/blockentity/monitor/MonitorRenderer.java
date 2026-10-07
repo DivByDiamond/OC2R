@@ -2,11 +2,11 @@ package li.cil.oc2.client.renderer.blockentity.monitor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.misc.MonitorContraptionHelper;
+import li.cil.oc2.platform.event.ClientEvents;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -14,14 +14,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.joml.Matrix4f;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(value = Dist.CLIENT, modid = API.MOD_ID)
 public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEntity> {
     private final Font font;
 
@@ -107,8 +102,9 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         }
     }
 
-    @SubscribeEvent
-    public static void updateCache(final ClientTickEvent.Pre event) {
-        MonitorTextRenderer.cleanUp();
+    public static void registerEvents() {
+        ClientEvents.CLIENT_TICK_START.register(() -> {
+            MonitorTextRenderer.cleanUp();
+        });
     }
 }

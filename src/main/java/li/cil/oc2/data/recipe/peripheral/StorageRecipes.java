@@ -1,8 +1,8 @@
 package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.crafting.WrenchRecipe;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
+import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -172,7 +172,7 @@ public final class StorageRecipes {
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
-                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+                .save(new WrenchRecipeOutputAdapter(consumer));
 
         // Chained onto FLASH_MEMORY_CUSTOM rather than the raw FLASH_MEMORY: both used to
         // require plain FLASH_MEMORY with no other distinguishing ingredient, so the crafting
@@ -184,7 +184,7 @@ public final class StorageRecipes {
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
-                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+                .save(new WrenchRecipeOutputAdapter(consumer));
 
         // Wrench-flashed onto an existing HARD_DRIVE_MEDIUM instead of a standalone shaped
         // recipe: the shaped recipe used to be byte-for-byte identical to HARD_DRIVE_MEDIUM's
@@ -195,6 +195,6 @@ public final class StorageRecipes {
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
-                .save(new WrenchRecipe.WrenchRecipeOutputAdapter(consumer));
+                .save(new WrenchRecipeOutputAdapter(consumer));
     }
 }

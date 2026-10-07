@@ -1,29 +1,25 @@
 package li.cil.oc2.common.serialization;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import li.cil.oc2.platform.event.CommonEvents;
 
-@EventBusSubscriber(modid = API.MOD_ID)
-final class BlobStorageEvents {
-    @SubscribeEvent
-    public static void handleServerAboutToStart(final ServerAboutToStartEvent event) {
-        BlobStorage.setServer(event.getServer());
+public final class BlobStorageEvents {
+    private BlobStorageEvents() {}
+
+    /** Subscribes to the server lifecycle events the blob storage follows. */
+    public static void register() {
+        CommonEvents.SERVER_ABOUT_TO_START.register(BlobStorage::setServer);
+        CommonEvents.SERVER_STARTED.register(server -> handleServerStarted());
+        CommonEvents.SERVER_STOPPED.register(server -> handleServerStopped());
     }
 
-    @SubscribeEvent
-    public static void handleServerStarted(final ServerStartedEvent event) {
+    private static void handleServerStarted() {
         ServerScheduler.schedule(
                 BlobStorage::cleanupOrphaned, Constants.SECONDS_TO_TICKS * 5);
     }
 
-    @SubscribeEvent
-    public static void handleServerStopped(final ServerStoppedEvent event) {
+    private static void handleServerStopped() {
         BlobStorage.close();
     }
 }

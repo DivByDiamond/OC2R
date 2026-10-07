@@ -7,18 +7,18 @@ import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.common.bus.device.provider.util.AbstractBlockEntityCapabilityDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.adapter.ItemHandlerDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.ItemHandler;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.IItemHandler;
 
 public final class ItemHandlerBlockDeviceProvider
-        extends AbstractBlockEntityCapabilityDeviceProvider<IItemHandler, BlockEntity> {
+        extends AbstractBlockEntityCapabilityDeviceProvider<ItemHandler, BlockEntity> {
     public ItemHandlerBlockDeviceProvider() {
         super(() -> Capabilities.ItemHandler.BLOCK);
     }
 
     @Override
     protected Optional<Device> getBlockDevice(
-            final BlockDeviceQuery query, final IItemHandler value) {
+            final BlockDeviceQuery query, final ItemHandler value) {
         return Optional.of(new ObjectDevice(new ItemHandlerDevice(value)));
     }
 }

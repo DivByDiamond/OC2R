@@ -2,11 +2,11 @@ package li.cil.oc2.common.container.handler;
 
 import java.util.List;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class FixedSizeItemStackHandler extends ItemStackHandler {
     private static final String SIZE_TAG_NAME = "Size";

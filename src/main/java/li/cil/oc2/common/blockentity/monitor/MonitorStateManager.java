@@ -8,11 +8,11 @@ import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
+import li.cil.oc2.common.hooks.ClientProxy;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLLoader;
 
 public final class MonitorStateManager {
     public final DeviceGroup deviceGroup;
@@ -24,8 +24,8 @@ public final class MonitorStateManager {
     private final Object monitorCache;
 
     private static Supplier<Object> createMonitorSupplier() {
-        if (FMLLoader.getDist() == Dist.CLIENT) {
-            return li.cil.oc2.client.hooks.MonitorRendererHooks::createMonitorGUIRenderer;
+        if (Platform.environment().isClient()) {
+            return () -> ClientProxy.get().createMonitorRenderer();
         }
         return () -> null;
     }

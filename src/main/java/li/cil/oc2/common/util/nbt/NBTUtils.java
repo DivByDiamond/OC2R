@@ -2,6 +2,7 @@ package li.cil.oc2.common.util.nbt;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -9,7 +10,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public final class NBTUtils {
     public static <T extends Enum<T>> void putEnum(

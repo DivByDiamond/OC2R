@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<ruleset name="OC2R PMD Silent Failure Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Rules against tests that can pass while hiding a failure. Applied to src/test and to the
+        in-game test sources (src/main/java/li/cil/oc2/gametest).
+    </description>
+
+    <rule name="SilentCatchInTest"
+          language="java"
+          message="A catch block in a test must rethrow, assert/fail, or record the exception; otherwise the failure is silently ignored"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            A catch block whose body neither throws, nor calls an assert*/fail method, nor records the
+            exception (a call to add or set, e.g. into a failure list or AtomicReference that the test
+            asserts on later) lets a test keep going after an error. Intentional fallbacks need a
+            NOPMD comment that says why.
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+//CatchClause[
+    not(.//ThrowStatement)
+    and not(.//MethodCall[starts-with(@MethodName, 'assert') or @MethodName = 'fail'
+                          or @MethodName = 'add' or @MethodName = 'set'])
+]
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="NoDisabledOrAssumedTests"
+          language="java"
+          message="Tests must not be disabled or skipped through assumptions; fix or delete them"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>
+            @Disabled and Assumptions.assume* turn a failing or unrunnable test into a silent skip that
+            still shows up green. Track broken tests in the roadmap instead.
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+//Annotation[@SimpleName = 'Disabled']
+| //MethodCall[starts-with(@MethodName, 'assume')]
+                </value>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

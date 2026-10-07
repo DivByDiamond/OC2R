@@ -5,6 +5,7 @@ import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.container.data.IntPrecisionContainerData;
 import li.cil.oc2.platform.EnergyStorage;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -21,7 +22,7 @@ public final class ComputerTerminalContainer extends AbstractComputerContainer {
             final EnergyStorage energy,
             final CommonDeviceBusController busController,
             final ServerPlayer player) {
-        player.openMenu(
+        Platform.menus().openMenu(player, 
                 new MenuProvider() {
                     @Override
                     public Component getDisplayName() {

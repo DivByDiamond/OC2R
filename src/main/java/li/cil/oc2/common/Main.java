@@ -1,84 +1,55 @@
 package li.cil.oc2.common;
 
-import li.cil.ceres.Ceres;
 import li.cil.oc2.api.API;
+import li.cil.oc2.client.ClientEventListeners;
+import li.cil.oc2.client.ClientSetup;
 import li.cil.oc2.client.manual.Manuals;
-import li.cil.oc2.common.block.common.BlockCodecs;
-import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.blockentity.BlockEntities;
-import li.cil.oc2.common.bus.device.DeviceTypes;
-import li.cil.oc2.common.bus.device.data.BlockDeviceDataRegistry;
-import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
-import li.cil.oc2.common.bus.device.provider.ProviderRegistry;
-import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.config.AsyncConfig;
 import li.cil.oc2.common.config.client.ClientSpec;
 import li.cil.oc2.common.config.common.CommonSpec;
-import li.cil.oc2.common.container.Containers;
-import li.cil.oc2.common.entity.Entities;
-import li.cil.oc2.common.item.ItemGroup;
-import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.crafting.RecipeSerializers;
+import li.cil.oc2.common.hooks.ClientProxy;
+import li.cil.oc2.common.integration.Integrations;
+import li.cil.oc2.common.integration.projectred.BundledCableHandler;
 import li.cil.oc2.common.network.Network;
-import li.cil.oc2.common.serialization.ceres.Serializers;
 import li.cil.oc2.common.setup.CommonSetup;
+import li.cil.oc2.common.setup.ModBootstrap;
 import li.cil.oc2.common.setup.NativeLoader;
-import li.cil.oc2.common.tags.BlockTags;
-import li.cil.oc2.common.tags.ItemTags;
-import li.cil.oc2.common.util.RegistryUtils;
-import li.cil.oc2.common.util.sound.SoundEvents;
-import li.cil.oc2.common.vm.provider.DeviceTreeProviders;
+import li.cil.oc2.platform.NeoForgeClientProxy;
+import li.cil.oc2.platform.NeoForgeClientRegistrar;
 import li.cil.oc2.platform.NeoForgeMessageRegistrar;
 import li.cil.oc2.platform.NeoForgeRegistryBridge;
-import li.cil.sedna.Sedna;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(API.MOD_ID)
 public final class Main {
-    public static boolean LoadedLibrary = false;
-
+    // The lambda is deliberate: a method reference would load BundledCableHandler (and fail without ProjectRed).
+    @SuppressWarnings("PMD.LambdaCanBeMethodReference")
     public Main(IEventBus modBus, ModContainer container) {
-        Ceres.initialize();
-        Sedna.initialize();
-        DeviceTreeProviders.initialize();
-        Serializers.initialize();
+        ModBootstrap.initializeLibraries();
 
         container.registerConfig(ModConfig.Type.COMMON, CommonSpec.CONFIG_SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, ClientSpec.CLIENT_CONFIG_SPEC);
         container.registerConfig(ModConfig.Type.SERVER, AsyncConfig.SERVER_SPEC);
 
-        RegistryUtils.begin();
+        ModBootstrap.queueRegistrations();
 
-        ItemTags.initialize();
-        BlockTags.initialize();
-        DataComponents.initialize(modBus);
-        Blocks.initialize(modBus);
-        BlockCodecs.initialize(modBus);
-        Items.initialize(modBus);
-        ItemGroup.initialize();
-        BlockEntities.initialize(modBus);
-        Entities.initialize(modBus);
-        Containers.initialize(modBus);
-        RecipeSerializers.initialize(modBus);
-        SoundEvents.initialize(modBus);
+        Integrations.registerModIntegration("projectred_transmission", () -> BundledCableHandler.initialize());
 
-        ProviderRegistry.initialize(modBus);
+        ModBootstrap.registerListeners();
 
-        DeviceTypes.initialize(modBus);
-        BlockDeviceDataRegistry.initialize(modBus);
-        FirmwareRegistry.initialize(modBus);
-
-        RegistryUtils.finish(modBus);
-
-        modBus.register(CommonSetup.class);
+        modBus.addListener((FMLCommonSetupEvent event) -> CommonSetup.run());
         if (FMLLoader.getDist() == Dist.CLIENT) {
-            Manuals.initialize(modBus);
+            Manuals.initialize();
+            ClientEventListeners.register();
+            ClientProxy.set(new NeoForgeClientProxy());
+            ClientSetup.register(NeoForgeClientRegistrar.instance());
         }
 
         NeoForgeRegistryBridge.instance().bind(modBus);

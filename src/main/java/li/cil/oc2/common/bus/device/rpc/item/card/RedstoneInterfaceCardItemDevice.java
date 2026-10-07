@@ -1,7 +1,6 @@
 package li.cil.oc2.common.bus.device.rpc.item.card;
 
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.Parameter;
@@ -13,6 +12,7 @@ import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.block.HorizontalBlockUtils;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -22,11 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         implements DocumentedDevice {
     private static final String OUTPUT_TAG_NAME = "output";
@@ -53,9 +49,8 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         }
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.RedstoneEmitter.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (side == null) return null;

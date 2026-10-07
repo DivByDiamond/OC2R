@@ -20,11 +20,8 @@ import li.cil.oc2.common.inet.internet.connection.TaskImpl;
 import li.cil.oc2.common.inet.layer.LayerParametersImpl;
 import li.cil.oc2.common.inet.util.InetUtils;
 import li.cil.oc2.common.inet.util.Ipv4Space;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.nbt.Tag;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStoppingEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -63,7 +60,8 @@ public final class InternetManagerImpl implements InternetManager {
         }
         executor = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "Internet"));
         ipSpace = InetUtils.computeIpSpace(Config.deniedHosts, Config.allowedHosts);
-        NeoForge.EVENT_BUS.register(this);
+        CommonEvents.SERVER_TICK_START.register(server -> onTick());
+        CommonEvents.SERVER_STOPPING.register(server -> onStopping());
     }
 
     public static void initialize() {
@@ -188,8 +186,7 @@ public final class InternetManagerImpl implements InternetManager {
      * the internet thread is skipped entirely: a pointless cross-thread round trip with fresh
      * list allocations every tick would otherwise run even on servers without any internet card.
      */
-    @SubscribeEvent
-    public void onTick(final ServerTickEvent.Pre event) {
+    private void onTick() {
         if (connections.isEmpty() && tasks.isEmpty()) {
             return;
         }
@@ -211,8 +208,7 @@ public final class InternetManagerImpl implements InternetManager {
         executor.execute(() -> runOnInternetThread(connectionsToStop, connectionsToProcess));
     }
 
-    @SubscribeEvent
-    public void onStopping(final ServerStoppingEvent event) {
+    private void onStopping() {
         connections.clear();
     }
 }

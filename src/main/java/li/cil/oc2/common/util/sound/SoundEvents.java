@@ -2,11 +2,9 @@ package li.cil.oc2.common.util.sound;
 
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.bus.api.IEventBus;
 
 public final class SoundEvents {
     public static final Supplier<SoundEvent> COMPUTER_RUNNING =
@@ -31,8 +29,8 @@ public final class SoundEvents {
     public static final Supplier<SoundEvent> SOUND_CARD_BEEP =
             register("sound_card_beep");
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     private static Supplier<SoundEvent> register(final String name) {

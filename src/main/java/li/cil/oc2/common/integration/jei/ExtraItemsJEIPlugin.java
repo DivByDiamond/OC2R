@@ -44,7 +44,7 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
         public String apply(final ItemStack ingredient, final UidContext context) {
             var container =
                     ingredient.get(
-                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER);
+                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get());
             return container == null ? NONE : stableRestrictedContainerToString(container);
         }
     }
@@ -55,7 +55,7 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
         public String apply(final ItemStack ingredient, final UidContext context) {
             var container =
                     ingredient.get(
-                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER);
+                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get());
             return container == null ? NONE : stableRestrictedContainerToString(container);
         }
     }

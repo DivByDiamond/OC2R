@@ -20,10 +20,8 @@ import li.cil.oc2.common.block.network.NetworkSwitchBlock;
 import li.cil.oc2.common.block.network.VxlanBlock;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.platform.BlockHolder;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
 
 public final class Blocks {
     public static final BlockHolder<BusCableBlock> BUS_CABLE =
@@ -67,7 +65,7 @@ public final class Blocks {
         return Platform.registries().registerBlock(API.MOD_ID, name, factory);
     }
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 }

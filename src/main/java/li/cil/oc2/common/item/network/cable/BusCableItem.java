@@ -6,6 +6,7 @@ import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -68,7 +69,7 @@ public final class BusCableItem extends ModBlockItem {
         }
 
         LevelUtils.playSound(
-                level, pos, state.getSoundType(level, pos, player), SoundType::getPlaceSound);
+                level, pos, Platform.hooks().getSoundType(state, level, pos, player), SoundType::getPlaceSound);
 
         if (player == null || !player.getAbilities().instabuild) {
             stack.shrink(1);

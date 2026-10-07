@@ -91,19 +91,19 @@ class VMRunnerTest {
     @Test
     void testTickSchedulesWork() {
         when(board.isRunning()).thenReturn(true);
-        runner.tick();
+        assertDoesNotThrow(runner::tick);
     }
 
     @Test
     void testTickDoesNotScheduleWhenNotRunning() {
         when(board.isRunning()).thenReturn(false);
-        runner.tick();
+        assertDoesNotThrow(runner::tick);
     }
 
     @Test
     void testJoinWaitsForCompletion() throws Exception {
         when(board.isRunning()).thenReturn(false);
-        runner.tick();
+        assertDoesNotThrow(runner::tick);
         runner.join();
     }
 

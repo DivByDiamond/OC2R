@@ -443,6 +443,25 @@ tasks.withType<Pmd>().configureEach {
     exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
 }
 
+// Test sources get extra rules against tests that can pass while hiding a failure
+// (swallowed exceptions, disabled/assumed tests, tests without assertions).
+tasks.named<Pmd>("pmdTest") {
+    ruleSetConfig = null
+    ruleSetFiles = files("config/pmd/ruleset.xml", "config/pmd/ruleset-test.xml", "config/pmd/ruleset-silent.xml")
+}
+
+// The in-game tests live in the main source set (excluded from pmdMain), so they get only the
+// silent-failure rules, which matter there: a swallowed exception makes the suite pass vacuously.
+tasks.register<Pmd>("pmdGameTest") {
+    group = "verification"
+    description = "Checks the in-game test sources for swallowed failures."
+    source = fileTree("src/main/java/li/cil/oc2/gametest") { include("**/*.java") }
+    classpath = sourceSets.main.get().compileClasspath + sourceSets.main.get().output
+    ruleSetConfig = null
+    ruleSetFiles = files("config/pmd/ruleset-silent.xml")
+    dependsOn("classes")
+}
+
 /* ── Static analysis: SpotBugs ──────────────────────────────────────────────── */
 
 spotbugs {
@@ -536,7 +555,7 @@ tasks.register("lintRatchet") {
     // tasks from here so a lone `lintRatchet` (and the CI lint job) always has fresh reports,
     // and count them below so a single ratchet run covers both source sets.
     dependsOn(
-        "checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest",
+        "checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest", "pmdGameTest",
         ":core:checkstyleMain", ":core:checkstyleTest", ":core:pmdMain", ":core:pmdTest",
         ":core:spotbugsMain", ":core:spotbugsTest",
     )
@@ -665,6 +684,10 @@ tasks.register("gameTest") {
         xmlDir.mkdirs()
         File(xmlDir, "results.xml").writeText(xml, Charsets.UTF_8)
         logger.lifecycle("gameTest: ${rows.size} tests, $failures required failures, $optionalFailures optional failures")
+        // Do not rely on the server's exit code alone: a required failure must fail this task.
+        if (failures > 0) {
+            throw GradleException("gameTest: $failures required test(s) failed, see ${xmlDir.resolve("results.xml")}.")
+        }
     }
 }
 

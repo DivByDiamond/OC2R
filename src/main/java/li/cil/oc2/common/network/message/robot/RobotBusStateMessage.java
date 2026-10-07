@@ -5,20 +5,20 @@ import li.cil.oc2.common.bus.controller.BusState;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.network.StreamCodecs;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 public record RobotBusStateMessage(int entityId, BusState value) implements AbstractMessage {
     public static final StreamCodec<FriendlyByteBuf, RobotBusStateMessage> STREAM_CODEC =
             StreamCodec.composite(
                     ByteBufCodecs.INT,
                     RobotBusStateMessage::entityId,
-                    NeoForgeStreamCodecs.enumCodec(BusState.class),
+                    StreamCodecs.enumCodec(BusState.class),
                     RobotBusStateMessage::value,
                     RobotBusStateMessage::new);
 

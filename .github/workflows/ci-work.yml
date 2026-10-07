@@ -167,6 +167,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # Exercises the Fabric bridges (registry/network/events/capabilities/energy) on a real
+      # dedicated server; fails the job when a required Fabric game test fails.
+      - name: Run Fabric game tests
+        run: ./gradlew :fabric:runGameTest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       # The gameTest task fails on a vacuous run and always emits
       # build/test-results/gameTest/results.xml; missing XML therefore means
       # the task did not run at all -- upload with `error` so that is visible.

@@ -8,12 +8,13 @@ import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.util.world.level.LevelUtils;
+import li.cil.oc2.platform.CapabilityInvalidationListener;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 
 class AdjacentBlockInterfaces {
     private static final int TUNNEL_INDEX = 0;
@@ -23,11 +24,12 @@ class AdjacentBlockInterfaces {
     private boolean haveChanged = true;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final ICapabilityInvalidationListener listener =
-            () -> {
-                haveChanged = true;
-                return true;
-            };
+    private final CapabilityInvalidationListener listener =
+            new CapabilityInvalidationListener(
+                    () -> {
+                        haveChanged = true;
+                        return true;
+                    });
 
     private final BlockEntity blockEntity;
 
@@ -50,7 +52,8 @@ class AdjacentBlockInterfaces {
 
     void registerListeners(final ServerLevel level, final BlockPos pos) {
         for (final Direction side : Constants.DIRECTIONS) {
-            level.registerCapabilityListener(pos.relative(side), listener);
+            Platform.capabilities()
+                    .registerBlockCapabilityListener(level, pos.relative(side), listener);
         }
         haveChanged = true;
     }
@@ -82,12 +85,14 @@ class AdjacentBlockInterfaces {
             final BlockEntity neighbor = LevelUtils.getBlockEntityIfChunkExists(level, neighborPos);
             if (neighbor != null) {
                 final NetworkInterface iface =
-                        level.getCapability(
-                                Capabilities.NetworkInterface.BLOCK,
-                                neighborPos,
-                                null,
-                                neighbor,
-                                side.getOpposite());
+                        Platform.capabilities()
+                                .getBlockCapability(
+                                        Capabilities.NetworkInterface.BLOCK,
+                                        level,
+                                        neighborPos,
+                                        null,
+                                        neighbor,
+                                        side.getOpposite());
                 if (iface != null) {
                     interfaces[side.get3DDataValue() + 1] = iface;
                 }

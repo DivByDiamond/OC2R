@@ -1,7 +1,8 @@
 package li.cil.oc2.common.integration;
 
-import li.cil.oc2.common.integration.projectred.BundledCableHandler;
-import net.neoforged.fml.ModList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import li.cil.oc2.platform.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,13 +24,22 @@ public class Integrations {
     private static boolean valkyrienSkiesLoaded;
     private static boolean sableLoaded;
 
-    public static void initialize() {
-        final ModList modList = ModList.get();
+    // Loader specific integrations that link against the other mod; each runs only if that mod is present.
+    private static final Map<String, Runnable> MOD_INTEGRATIONS = new ConcurrentHashMap<>();
 
-        createLoaded = modList.isLoaded(CREATE);
-        createAeronauticsLoaded = modList.isLoaded(CREATE_AERONAUTICS);
-        valkyrienSkiesLoaded = modList.isLoaded(VALKYRIEN_SKIES);
-        sableLoaded = modList.isLoaded(SABLE);
+    /**
+     * Registers an integration to run during {@link #initialize()} if {@code modId} is loaded. The runnable
+     * must reference the integration classes lazily (inside a lambda body), they may be missing otherwise.
+     */
+    public static void registerModIntegration(final String modId, final Runnable integration) {
+        MOD_INTEGRATIONS.put(modId, integration);
+    }
+
+    public static void initialize() {
+        createLoaded = Platform.environment().isModLoaded(CREATE);
+        createAeronauticsLoaded = Platform.environment().isModLoaded(CREATE_AERONAUTICS);
+        valkyrienSkiesLoaded = Platform.environment().isModLoaded(VALKYRIEN_SKIES);
+        sableLoaded = Platform.environment().isModLoaded(SABLE);
 
         if (createLoaded) {
             LOGGER.info(
@@ -53,9 +63,11 @@ public class Integrations {
                             + " capabilities.");
         }
 
-        if (modList.isLoaded("projectred_transmission")) {
-            BundledCableHandler.initialize();
-        }
+        MOD_INTEGRATIONS.forEach((modId, integration) -> {
+            if (Platform.environment().isModLoaded(modId)) {
+                integration.run();
+            }
+        });
     }
 
     public static boolean isCreateLoaded() {

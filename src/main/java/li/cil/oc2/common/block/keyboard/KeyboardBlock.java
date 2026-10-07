@@ -1,12 +1,11 @@
 package li.cil.oc2.common.block.keyboard;
 
 import com.mojang.serialization.MapCodec;
-import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -24,18 +23,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 public final class KeyboardBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final VoxelShape NEG_Z_SHAPE =
-            Shapes.or(
-                    Block.box(0, 0, 0, 16, 8, 16), // main body
-                    Block.box(0, 8, 8, 16, 12, 16) // top
-                    );
+    // The model is a wall panel rotated by the blockstate (x: -90) so it lies flat on the floor;
+    // this is the same slab, 14x8 wide and 1 high, in block space.
+    private static final VoxelShape NEG_Z_SHAPE = Block.box(1, 0, 4, 15, 1, 12);
     private static final VoxelShape NEG_X_SHAPE =
             VoxelShapeUtils.rotateHorizontalClockwise(NEG_Z_SHAPE);
     private static final VoxelShape POS_Z_SHAPE =
@@ -107,9 +101,7 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         builder.add(FACING);
     }
 
-    @OnlyIn(Dist.CLIENT)
     private static void openKeyboardScreen(final KeyboardBlockEntity keyboard) {
-        final KeyboardScreen screen = new KeyboardScreen(keyboard);
-        Minecraft.getInstance().setScreen(screen);
+        ClientProxy.get().openKeyboardScreen(keyboard);
     }
 }

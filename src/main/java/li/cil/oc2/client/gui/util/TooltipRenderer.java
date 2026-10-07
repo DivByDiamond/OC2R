@@ -1,6 +1,7 @@
-package li.cil.oc2.common.util.text;
+package li.cil.oc2.client.gui.util;
 
 import java.util.List;
+import li.cil.oc2.client.ClientCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.ClientHooks;
 
 public final class TooltipRenderer {
     public static void drawTooltip(
@@ -44,12 +44,12 @@ public final class TooltipRenderer {
 
         final int availableWidth = Math.max(x, screen.width - x);
         final int targetWidth = Math.min(availableWidth, widthHint);
-        final Font font = ClientHooks.getTooltipFont(itemStack, minecraft.font);
+        final Font font = ClientCompat.tooltipFont(itemStack, minecraft.font);
 
         final boolean needsWrapping =
                 tooltip.stream().anyMatch(line -> font.width(line) > targetWidth);
         if (!needsWrapping) {
-            graphics.renderComponentTooltip(font, tooltip, x, y, itemStack);
+            ClientCompat.renderTooltip(graphics, font, tooltip, x, y, itemStack);
         } else {
             final StringSplitter splitter = font.getSplitter();
             final List<? extends FormattedText> wrappedTooltip =
@@ -60,7 +60,7 @@ public final class TooltipRenderer {
                                                     .splitLines(line, targetWidth, Style.EMPTY)
                                                     .stream())
                             .toList();
-            graphics.renderComponentTooltip(font, wrappedTooltip, x, y, itemStack);
+            ClientCompat.renderTooltip(graphics, font, wrappedTooltip, x, y, itemStack);
         }
     }
 }

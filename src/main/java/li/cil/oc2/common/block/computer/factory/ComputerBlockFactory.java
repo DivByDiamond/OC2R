@@ -31,7 +31,7 @@ public final class ComputerBlockFactory {
                 .items()
                 .get(ItemTags.DEVICES_FLASH_MEMORY)
                 .set(0, new ItemStack(Items.FLASH_MEMORY_CUSTOM.get()));
-        computer.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        computer.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
         return computer;
     }
 
@@ -55,7 +55,7 @@ public final class ComputerBlockFactory {
                 .items()
                 .get(ItemTags.DEVICES_HARD_DRIVE)
                 .set(0, new ItemStack(Items.HARD_DRIVE_LARGE.get()));
-        computer.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        computer.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
         computer.set(DataComponents.CUSTOM_NAME, text("block.{mod}.computer.preconfigured"));
         return computer;
     }

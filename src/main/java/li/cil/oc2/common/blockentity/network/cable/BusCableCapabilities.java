@@ -1,20 +1,14 @@
 package li.cil.oc2.common.blockentity.network.cable;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.capabilities.Capabilities;
-import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import li.cil.oc2.platform.CapabilityRegistrar;
 
-@EventBusSubscriber(modid = API.MOD_ID)
-final class BusCableCapabilities {
+public final class BusCableCapabilities {
 
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.DeviceBusElement.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final BusCableBlockEntity self
@@ -25,7 +19,8 @@ final class BusCableCapabilities {
                     return null;
                 },
                 li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get());
-        new NeoForgeEnergyCapabilityRegistrar(event).registerBlock(
+registrar.registerBlock(
+                Capabilities.EnergyStorage.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final BusCableBlockEntity self) {
                         return self.energy;

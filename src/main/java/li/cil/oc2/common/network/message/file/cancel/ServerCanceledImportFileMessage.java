@@ -2,7 +2,7 @@ package li.cil.oc2.common.network.message.file.cancel;
 
 import io.netty.buffer.ByteBuf;
 import li.cil.oc2.api.API;
-import li.cil.oc2.client.hooks.FileTransferHooks;
+import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -32,6 +32,6 @@ public record ServerCanceledImportFileMessage(int id) implements AbstractMessage
         // The server notifies the client that an import request was fulfilled (or aborted on the
         // server side), so the client should close an open file chooser for that import without
         // sending a cancellation back to the server.
-        FileTransferHooks.closeFileChooser();
+        ClientProxy.get().closeFileChooser();
     }
 }

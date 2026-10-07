@@ -4,18 +4,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.time.Duration;
 import java.util.*;
-import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.api.bus.device.vm.context.VMContext;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.bus.device.vm.item.AbstractNetworkInterfaceDevice;
 import li.cil.oc2.common.item.network.NetworkTunnelItem;
 import li.cil.oc2.common.util.tick.TickUtils;
+import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
     public NetworkTunnelDevice(final ItemStack identity) {
@@ -32,13 +28,17 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
         return result;
     }
 
+    /** Subscribes the tunnel pump to the server tick and shutdown events. */
+    public static void registerEvents() {
+        TunnelManager.register();
+    }
+
     @Override
     public void unmount() {
         super.unmount();
         TunnelManager.unregisterEndpoint(getNetworkInterface());
     }
 
-    @EventBusSubscriber(modid = API.MOD_ID)
     private static final class TunnelManager {
         private static final int BYTES_PER_TICK =
                 32 * 1024 / TickUtils.toTicks(Duration.ofSeconds(1)); // bytes / sec -> bytes / tick
@@ -57,16 +57,9 @@ public final class NetworkTunnelDevice extends AbstractNetworkInterfaceDevice {
             }
         }
 
-        @SubscribeEvent
-        @SuppressWarnings("UnusedVariable")
-        public static void handleServerTick(final ServerTickEvent.Pre event) {
-            pumpMessages();
-        }
-
-        @SubscribeEvent
-        @SuppressWarnings("UnusedVariable")
-        public static void handleServerStopped(final ServerStoppedEvent event) {
-            TUNNELS.clear();
+        static void register() {
+            CommonEvents.SERVER_TICK_START.register(server -> pumpMessages());
+            CommonEvents.SERVER_STOPPED.register(server -> TUNNELS.clear());
         }
 
         private static void pumpMessages() {

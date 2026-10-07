@@ -3,8 +3,7 @@ package li.cil.oc2.common.item.tool;
 import static li.cil.oc2.common.Constants.*;
 
 import java.util.List;
-import java.util.function.Consumer;
-import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
+import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.components.RestrictedContainer;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.EnergyStorageItemStack;
@@ -16,9 +15,7 @@ import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
-import li.cil.oc2.platform.NeoForgeEnergyCapabilityRegistrar;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -33,9 +30,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class RobotItem extends ModItem {
     @Override
@@ -50,10 +44,10 @@ public final class RobotItem extends ModItem {
         TooltipUtils.addInventoryInformation(stack, components);
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
         if (Config.robotsUseEnergy()) {
-            new NeoForgeEnergyCapabilityRegistrar(event).registerItem(
+registrar.registerItem(
+                    Capabilities.EnergyStorage.ITEM,
                     (stack) -> new EnergyStorageItemStack(
                             stack, Config.robotEnergyStorage, MOD_TAG_NAME, ENERGY_TAG_NAME),
                     Items.ROBOT.get());
@@ -109,22 +103,8 @@ public final class RobotItem extends ModItem {
     }
 
     @Override
-    public boolean canFitInsideContainerItems(final ItemStack stack) {
+    public boolean canFitInsideContainerItems() {
         return false;
-    }
-
-    @Override
-    @SuppressWarnings("removal") // required to provide a custom block-entity renderer for the robot
-    public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(
-                new IClientItemExtensions() {
-                    @Override
-                    public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                        return new RobotWithoutLevelRenderer(
-                                Minecraft.getInstance().getBlockEntityRenderDispatcher(),
-                                Minecraft.getInstance().getEntityModels());
-                    }
-                });
     }
 
     public static ItemStack getRobotWithFlash() {
@@ -145,7 +125,7 @@ public final class RobotItem extends ModItem {
                 .items()
                 .put(ItemTags.DEVICES_HARD_DRIVE, NonNullList.withSize(2, ItemStack.EMPTY));
 
-        robot.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER, container);
+        robot.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
 
         return robot;
     }

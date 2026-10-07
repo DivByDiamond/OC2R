@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.ItemHandler;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -12,8 +14,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 final class InventoryOperationsHelper {
     private final Entity entity;
@@ -24,14 +24,14 @@ final class InventoryOperationsHelper {
         this.robot = robot;
     }
 
-    Stream<IItemHandler> getItemStackHandlersInDirection(final Direction direction) {
+    Stream<ItemHandler> getItemStackHandlersInDirection(final Direction direction) {
         return getItemStackHandlersAt(
                 entity.blockPosition().relative(direction), direction.getOpposite());
     }
 
     int takeFromWorld(final int count) {
         final int selectedSlot = robot.getSelectedSlot();
-        final ItemStackHandler inventory = robot.getInventory();
+        final ItemHandler inventory = robot.getInventory();
 
         int remaining = count;
         for (final ItemEntity itemEntity : getItemsInRange()) {
@@ -54,12 +54,12 @@ final class InventoryOperationsHelper {
         return count - remaining;
     }
 
-    int takeFromInventories(final int count, final List<IItemHandler> handlers) {
+    int takeFromInventories(final int count, final List<ItemHandler> handlers) {
         final int selectedSlot = robot.getSelectedSlot();
-        final ItemStackHandler inventory = robot.getInventory();
+        final ItemHandler inventory = robot.getInventory();
 
         int remaining = count;
-        for (final IItemHandler handler : handlers) {
+        for (final ItemHandler handler : handlers) {
             for (int fromSlot = 0; fromSlot < handler.getSlots(); fromSlot++) {
                 ItemStack extracted = handler.extractItem(fromSlot, remaining, true);
                 ItemStack overflow = insertStartingAt(inventory, extracted, selectedSlot, true);
@@ -91,8 +91,8 @@ final class InventoryOperationsHelper {
         return count - remaining;
     }
 
-    int takeFromInventory(final int count, final IItemHandler handler, final int slot) {
-        final ItemStackHandler inventory = robot.getInventory();
+    int takeFromInventory(final int count, final ItemHandler handler, final int slot) {
+        final ItemHandler inventory = robot.getInventory();
         final int selectedSlot = robot.getSelectedSlot();
 
         ItemStack extracted = handler.extractItem(slot, count, true);
@@ -114,7 +114,7 @@ final class InventoryOperationsHelper {
     }
 
     private ItemStack insertStartingAt(
-            final IItemHandler handler,
+            final ItemHandler handler,
             final ItemStack stack,
             final int startSlot,
             final boolean simulate) {
@@ -130,26 +130,27 @@ final class InventoryOperationsHelper {
         return remaining;
     }
 
-    private Stream<IItemHandler> getItemStackHandlersAt(
+    private Stream<ItemHandler> getItemStackHandlersAt(
             final BlockPos blockPos, final Direction side) {
         return Stream.concat(
                 getEntityItemHandlersAt(blockPos), getBlockItemHandlersAt(blockPos, side));
     }
 
-    private Stream<IItemHandler> getEntityItemHandlersAt(final BlockPos blockPos) {
+    private Stream<ItemHandler> getEntityItemHandlersAt(final BlockPos blockPos) {
         var position = Vec3.atCenterOf(blockPos);
         final AABB bounds = AABB.unitCubeFromLowerCorner(position.subtract(0.5, 0.5, 0.5));
         return entity.level().getEntities(entity, bounds).stream()
-                .map(e -> e.getCapability(Capabilities.ItemHandler.ENTITY))
+                .map(e -> Platform.capabilities().getEntityCapability(Capabilities.ItemHandler.ENTITY, e, null))
                 .filter(Objects::nonNull);
     }
 
-    private Stream<IItemHandler> getBlockItemHandlersAt(
+    private Stream<ItemHandler> getBlockItemHandlersAt(
             final BlockPos blockPos, final Direction side) {
         var level = entity.level();
 
-        final IItemHandler capability =
-                level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, side);
+        final ItemHandler capability =
+                Platform.capabilities()
+                        .getBlockCapability(Capabilities.ItemHandler.BLOCK, level, blockPos, side);
         return Stream.ofNullable(capability);
     }
 

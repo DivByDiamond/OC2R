@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
-public final class BundledCableHandler implements IBundledTileInteraction {
+public final class BundledCableHandler implements IBundledTileInteraction, BundledRedstone.Handler {
     private final ITransmissionAPI transmissionAPI;
 
     public static void initialize() {
@@ -52,6 +52,7 @@ public final class BundledCableHandler implements IBundledTileInteraction {
         }
     }
 
+    @Override
     public byte[] getBundledInput(
             final Level level, final BlockPos blockPos, final Direction direction) {
         return transmissionAPI.getBundledInput(level, blockPos, direction);

@@ -1,20 +1,16 @@
 package li.cil.oc2.common.blockentity.keyboard;
 
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.KeyboardDevice;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class KeyboardBlockEntity extends ModBlockEntity {
     private final KeyboardDevice<BlockEntity> keyboardDevice = new KeyboardDevice<>(this);
 
@@ -26,9 +22,8 @@ public final class KeyboardBlockEntity extends ModBlockEntity {
         keyboardDevice.sendKeyEvent(keycode, isDown);
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (side == Direction.DOWN && be instanceof final KeyboardBlockEntity self) {

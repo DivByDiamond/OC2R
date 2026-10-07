@@ -8,11 +8,9 @@ import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.api.util.Registries;
 import li.cil.oc2.common.bus.device.data.block.BuildrootBlockDeviceData;
 import li.cil.oc2.common.bus.device.data.block.OnyxOSBlockDeviceData;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
 
 @SuppressWarnings("unused")
 public final class BlockDeviceDataRegistry {
@@ -29,8 +27,8 @@ public final class BlockDeviceDataRegistry {
             Platform.registries().register(
                     REGISTRY_ID, API.MOD_ID, "onyxos-base", OnyxOSBlockDeviceData::new);
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     @Nullable

@@ -4,6 +4,7 @@ import java.util.Optional;
 import li.cil.oc2.api.capabilities.RedstoneEmitter;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.capabilities.Capabilities;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -17,12 +18,14 @@ public final class ComputerBlockRedstone {
             var level = blockEntity.getLevel();
             if (level != null) {
                 var cap =
-                        level.getCapability(
-                                Capabilities.RedstoneEmitter.BLOCK,
-                                blockEntity.getBlockPos(),
-                                null,
-                                blockEntity,
-                                side.getOpposite());
+                        Platform.capabilities()
+                                .getBlockCapability(
+                                        Capabilities.RedstoneEmitter.BLOCK,
+                                        level,
+                                        blockEntity.getBlockPos(),
+                                        null,
+                                        blockEntity,
+                                        side.getOpposite());
                 return Optional.ofNullable(cap).map(RedstoneEmitter::getRedstoneOutput).orElse(0);
             }
         }

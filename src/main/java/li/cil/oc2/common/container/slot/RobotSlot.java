@@ -1,12 +1,13 @@
 package li.cil.oc2.common.container.slot;
 
+import li.cil.oc2.platform.ItemHandler;
+import li.cil.oc2.platform.ItemHandlerSlot;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
 
-public final class RobotSlot extends SlotItemHandler {
+public final class RobotSlot extends ItemHandlerSlot {
     public RobotSlot(
-            final IItemHandler itemHandler,
+            final ItemHandler itemHandler,
             final int index,
             final int xPosition,
             final int yPosition) {
@@ -15,6 +16,6 @@ public final class RobotSlot extends SlotItemHandler {
 
     @Override
     public boolean mayPlace(final ItemStack stack) {
-        return super.mayPlace(stack) && stack.canFitInsideContainerItems();
+        return super.mayPlace(stack) && Platform.hooks().canFitInsideContainerItems(stack);
     }
 }

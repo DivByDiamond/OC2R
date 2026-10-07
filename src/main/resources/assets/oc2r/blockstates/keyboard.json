@@ -1,18 +1,22 @@
 {
   "variants": {
+    "facing=north": {
+      "model": "oc2r:block/keyboard",
+      "x": -90
+    },
     "facing=east": {
       "model": "oc2r:block/keyboard",
+      "x": -90,
       "y": 90
-    },
-    "facing=north": {
-      "model": "oc2r:block/keyboard"
     },
     "facing=south": {
       "model": "oc2r:block/keyboard",
+      "x": -90,
       "y": 180
     },
     "facing=west": {
       "model": "oc2r:block/keyboard",
+      "x": -90,
       "y": 270
     }
   }

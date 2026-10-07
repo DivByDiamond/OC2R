@@ -8,11 +8,9 @@ import li.cil.oc2.api.bus.device.data.Firmware;
 import li.cil.oc2.api.util.Registries;
 import li.cil.oc2.common.bus.device.data.firmware.MinuxFirmware;
 import li.cil.oc2.common.bus.device.data.firmware.OnyxOSFirmware;
-import li.cil.oc2.platform.NeoForgeRegistryBridge;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
 
 public final class FirmwareRegistry {
     private static final String REGISTRY_ID = Registries.FIRMWARE.location().toString();
@@ -31,8 +29,8 @@ public final class FirmwareRegistry {
     public static final Supplier<OnyxOSFirmware> ONYXOS =
             Platform.registries().register(REGISTRY_ID, API.MOD_ID, "onyxos", OnyxOSFirmware::new);
 
-    public static void initialize(IEventBus modBus) {
-        NeoForgeRegistryBridge.instance().bind(modBus);
+    public static void initialize() {
+        // Calling this loads the class, which queues its registrations on the bridge.
     }
 
     @Nullable

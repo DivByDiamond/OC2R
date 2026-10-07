@@ -2,13 +2,14 @@ package li.cil.oc2.client.item;
 
 import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
+import java.util.List;
 import java.util.Map;
 import li.cil.oc2.common.item.Items;
+import li.cil.oc2.platform.ClientRegistrar;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 
 @SuppressWarnings("unused")
 public final class CustomItemColors {
@@ -51,16 +52,17 @@ public final class CustomItemColors {
                     Map.entry(DyeColor.RED, RED),
                     Map.entry(DyeColor.BLACK, BLACK));
 
-    public static void initialize(final RegisterColorHandlersEvent.Item event) {
-        event.register(
+    public static void initialize(final ClientRegistrar registrar) {
+        registrar.registerItemColor(
                 (stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
-                Items.HARD_DRIVE_SMALL.get(),
-                Items.HARD_DRIVE_MEDIUM.get(),
-                Items.HARD_DRIVE_LARGE.get(),
-                Items.HARD_DRIVE_EXTRA_LARGE.get(),
-                Items.HARD_DRIVE_ONYXOS.get(),
-                Items.FLOPPY.get(),
-                Items.FLOPPY_MODERN.get());
+                List.of(
+                        Items.HARD_DRIVE_SMALL,
+                        Items.HARD_DRIVE_MEDIUM,
+                        Items.HARD_DRIVE_LARGE,
+                        Items.HARD_DRIVE_EXTRA_LARGE,
+                        Items.HARD_DRIVE_ONYXOS,
+                        Items.FLOPPY,
+                        Items.FLOPPY_MODERN));
     }
 
     public static int getColorByDye(final DyeColor dye) {

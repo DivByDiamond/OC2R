@@ -8,6 +8,7 @@ import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.network.StreamCodecs;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -17,7 +18,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 public record RobotInitializationMessage(
         int entityId,
@@ -31,9 +31,9 @@ public record RobotInitializationMessage(
                     StreamCodec.composite(
                             ByteBufCodecs.INT,
                             RobotInitializationMessage::entityId,
-                            NeoForgeStreamCodecs.enumCodec(BusState.class),
+                            StreamCodecs.enumCodec(BusState.class),
                             RobotInitializationMessage::busState,
-                            NeoForgeStreamCodecs.enumCodec(VMRunState.class),
+                            StreamCodecs.enumCodec(VMRunState.class),
                             RobotInitializationMessage::runState,
                             ComponentSerialization.STREAM_CODEC,
                             RobotInitializationMessage::bootError,

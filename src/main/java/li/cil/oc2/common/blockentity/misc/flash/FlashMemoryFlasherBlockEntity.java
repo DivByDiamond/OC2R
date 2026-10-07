@@ -2,7 +2,6 @@ package li.cil.oc2.common.blockentity.misc.flash;
 
 import java.time.Duration;
 import javax.annotation.Nullable;
-import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.disk.FlashMemoryFlasherBlock;
@@ -16,6 +15,7 @@ import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.item.LocationSupplierUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.sound.ThrottledSoundEmitter;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,11 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-@EventBusSubscriber(modid = API.MOD_ID)
 public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         implements FlashMemoryFlasherContainer {
     private final FlashMemoryItemStackHandler itemHandler = new FlashMemoryItemStackHandler(this);
@@ -99,9 +95,8 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         itemHandler.setStackInSlot(0, stack);
     }
 
-    @SubscribeEvent
-    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
                 Capabilities.ItemHandler.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final FlashMemoryFlasherBlockEntity self) {
@@ -110,7 +105,7 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
                     return null;
                 },
                 Blocks.FLASH_MEMORY_FLASHER.get());
-        event.registerBlock(
+        registrar.registerBlock(
                 Capabilities.Device.BLOCK,
                 (level, pos, state, be, side) -> {
                     if (be instanceof final FlashMemoryFlasherBlockEntity self

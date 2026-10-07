@@ -27,7 +27,7 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
             final int y,
             final int height,
             final int slotHeight) {
-        super(screen.getMinecraft(), width, height, y, slotHeight);
+        super(Minecraft.getInstance(), width, height, y, slotHeight);
         this.screen = screen;
         this.font = Minecraft.getInstance().font;
     }

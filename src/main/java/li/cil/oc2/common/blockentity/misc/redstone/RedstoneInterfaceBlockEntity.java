@@ -17,6 +17,7 @@ import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.misc.redstone.state.RedstoneInterfaceDocs;
 import li.cil.oc2.common.blockentity.misc.redstone.state.RedstoneInterfaceState;
 import li.cil.oc2.common.util.block.HorizontalBlockUtils;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -24,7 +25,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.fml.ModList;
 
 @SuppressWarnings("unused")
 public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
@@ -118,7 +118,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Nullable
     @Callback(name = GET_BUNDLED_INPUT)
     public byte[] getBundledInput(@Parameter(SIDE) @Nullable final Side side) {
-        if (!ModList.get().isLoaded("projectred_transmission")) {
+        if (!Platform.environment().isModLoaded("projectred_transmission")) {
             throw new IllegalStateException();
         }
         if (side == null) {
@@ -129,7 +129,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
 
     @Callback(name = GET_BUNDLED_OUTPUT)
     public byte[] getBundledOutput(@Parameter(SIDE) @Nullable final Side side) {
-        if (!ModList.get().isLoaded("projectred_transmission")) {
+        if (!Platform.environment().isModLoaded("projectred_transmission")) {
             throw new IllegalStateException();
         }
         if (side == null) {
@@ -143,7 +143,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
             @Parameter(SIDE) @Nullable final Side side,
             @Parameter(VALUE) final int value,
             @Parameter(COLOUR) final int color) {
-        if (!ModList.get().isLoaded("projectred_transmission")) {
+        if (!Platform.environment().isModLoaded("projectred_transmission")) {
             throw new IllegalStateException();
         }
         if (side == null) {
@@ -161,7 +161,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Callback(name = SET_BUNDLED_OUTPUTS)
     public void setBundledOutputs(
             @Parameter(SIDE) @Nullable final Side side, @Parameter(VALUES) final int... values) {
-        if (!ModList.get().isLoaded("projectred_transmission")) {
+        if (!Platform.environment().isModLoaded("projectred_transmission")) {
             throw new IllegalStateException();
         }
         if (side == null) {

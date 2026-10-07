@@ -1,7 +1,7 @@
 package li.cil.oc2.common.blockentity.misc.redstone.state;
 
 import li.cil.oc2.api.bus.device.object.DocumentedDevice;
-import net.neoforged.fml.ModList;
+import li.cil.oc2.platform.Platform;
 
 public final class RedstoneInterfaceDocs {
     private static final String GET_REDSTONE_INPUT = "getRedstoneInput";
@@ -45,7 +45,7 @@ public final class RedstoneInterfaceDocs {
                 .parameterDescription(
                         VALUE, "the output level to set, will be clamped to [0, 15].");
 
-        if (ModList.get().isLoaded("projectred_transmission")) {
+        if (Platform.environment().isModLoaded("projectred_transmission")) {
             visitor.visitCallback(GET_BUNDLED_INPUT)
                     .description("Get the current bundled level received on the specified side.")
                     .parameterDescription(SIDE, "the side to read the bundled input level from");

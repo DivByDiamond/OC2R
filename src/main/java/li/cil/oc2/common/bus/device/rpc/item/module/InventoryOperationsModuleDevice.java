@@ -9,12 +9,12 @@ import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.capabilities.Robot;
 import li.cil.oc2.api.util.RobotOperationSide;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
+import li.cil.oc2.platform.ItemHandler;
+import li.cil.oc2.platform.ItemHandlers;
+import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice {
     private final Entity entity;
@@ -76,10 +76,10 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
 
         final int originalStackSize = stack.getCount();
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
-        final List<IItemHandler> itemHandlers =
+        final List<ItemHandler> itemHandlers =
                 helper.getItemStackHandlersInDirection(direction).toList();
-        for (final IItemHandler handler : itemHandlers) {
-            stack = ItemHandlerHelper.insertItemStacked(handler, stack, false);
+        for (final ItemHandler handler : itemHandlers) {
+            stack = ItemHandlers.insertItemStacked(handler, stack, false);
 
             if (stack.isEmpty()) {
                 break;
@@ -123,7 +123,7 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
 
         final int originalStackSize = stack.getCount();
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
-        final Optional<IItemHandler> optional =
+        final Optional<ItemHandler> optional =
                 helper.getItemStackHandlersInDirection(direction).findFirst();
         if (optional.isPresent()) {
             stack = optional.get().insertItem(intoSlot, stack, false);
@@ -156,7 +156,7 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
         }
 
         final Direction direction = RobotOperationSide.toGlobal(entity, side);
-        final List<IItemHandler> handlers =
+        final List<ItemHandler> handlers =
                 helper.getItemStackHandlersInDirection(direction).collect(Collectors.toList());
         if (handlers.isEmpty()) {
             return helper.takeFromWorld(count);

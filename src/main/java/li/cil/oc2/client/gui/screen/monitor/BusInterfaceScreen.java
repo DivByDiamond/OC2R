@@ -10,6 +10,7 @@ import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.network.BusInterfaceNameMessage;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -118,8 +119,8 @@ public final class BusInterfaceScreen extends Screen {
 
         final Vec3 busCableCenter = Vec3.atCenterOf(busCable.getBlockPos());
         if (!busCable.isValid()
-                || getMinecraft().player == null
-                || getMinecraft().player.distanceToSqr(busCableCenter) > 8 * 8) {
+                || Minecraft.getInstance().player == null
+                || Minecraft.getInstance().player.distanceToSqr(busCableCenter) > 8 * 8) {
             onClose();
         }
     }

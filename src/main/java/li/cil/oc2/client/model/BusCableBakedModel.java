@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
-import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.client.Minecraft;
@@ -25,7 +24,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
@@ -55,7 +54,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             final BusCableModelTypes.BusCableFacade facade = extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
             if (facade != null) {
                 return facade.model().getQuads(
-                        facade.blockState(), side, rand, facade.data(), RenderType.solid());
+                        facade.blockState(), side, rand, facade.data(), renderType);
             } else {
                 return Collections.emptyList();
             }
@@ -69,7 +68,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
 
         for (int i = 0; i < Constants.AXES.length; i++) {
             final Direction.Axis axis = Constants.AXES[i];
-            if (BusCableModelTypes.isStraightAlongAxis(state, axis)) {
+            if (BusCableModelUtils.isStraightAlongAxis(state, axis)) {
                 return straightModelByAxis[i].getQuads(
                         state, side, rand, extraData, RenderType.solid());
             }
@@ -86,6 +85,21 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         }
 
         return quads;
+    }
+
+    /**
+     * A facade is drawn in the layers of the block it imitates: blocks with a transparent overlay
+     * (grass, mycelium) need their cutout layer, otherwise the overlay's transparent pixels cover the
+     * block in black.
+     */
+    @Override
+    public ChunkRenderTypeSet getRenderTypes(
+            final BlockState state, final RandomSource rand, final ModelData data) {
+        final BusCableModelTypes.BusCableFacade facade = data.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
+        if (facade != null) {
+            return facade.model().getRenderTypes(facade.blockState(), rand, facade.data());
+        }
+        return IDynamicBakedModel.super.getRenderTypes(state, rand, data);
     }
 
     @Override
@@ -136,7 +150,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             return getFacadeModelData(level, pos, blockEntityData);
         }
 
-        final Direction supportSide = getSupportSide(level, pos, state);
+        final Direction supportSide = BusCableModelUtils.getSupportSide(level, pos, state);
         if (supportSide != null) {
             return ModelData.builder()
                     .with(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY, new BusCableModelTypes.BusCableSupportSide(supportSide))
@@ -170,26 +184,5 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         return ModelData.builder()
                 .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
                 .build();
-    }
-
-    @Nullable
-    private Direction getSupportSide(
-            final BlockAndTintGetter level, final BlockPos pos, final BlockState state) {
-        Direction supportSide = null;
-        for (final Direction direction : Constants.DIRECTIONS) {
-            if (BusCableModelTypes.isNeighborInDirectionSolid(level, pos, direction)) {
-                final EnumProperty<ConnectionType> property =
-                        BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction);
-                if (state.hasProperty(property)
-                        && state.getValue(property) == ConnectionType.INTERFACE) {
-                    return null; // Plug is already supporting us, bail.
-                }
-
-                if (supportSide == null) { // Prefer vertical supports.
-                    supportSide = direction;
-                }
-            }
-        }
-        return supportSide;
     }
 }

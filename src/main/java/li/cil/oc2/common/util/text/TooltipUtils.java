@@ -105,7 +105,7 @@ public final class TooltipUtils {
             final ItemStack stack, final List<Component> tooltip) {
         var container =
                 stack.getOrDefault(
-                        li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER,
+                        li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(),
                         new RestrictedContainer());
         addInventoryInformation(container, tooltip);
     }

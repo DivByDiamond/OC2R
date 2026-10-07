@@ -29,7 +29,7 @@ public final class ItemGroup {
                     API.MOD_ID,
                     "common",
                     () ->
-                            CreativeModeTab.builder()
+                            Platform.hooks().creativeTabBuilder()
                                     // Set name of tab to display
                                     .title(
                                             Component.translatable(

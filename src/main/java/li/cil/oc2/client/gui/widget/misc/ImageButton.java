@@ -84,7 +84,7 @@ public abstract class ImageButton extends AbstractButton {
                     getMessage(),
                     getX() + width / 2,
                     getY() + (height - 8) / 2,
-                    getFGColor() | Mth.ceil(alpha * 255) << 24);
+                    (active ? 0xFFFFFF : 0xA0A0A0) | Mth.ceil(alpha * 255) << 24);
         }
     }
 
