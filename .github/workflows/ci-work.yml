@@ -169,6 +169,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # Loom starts the Fabric game test server through xvfb-run, which the stock
+      # actions-runner container image does not ship.
+      - name: Install xvfb
+        run: |
+          command -v xvfb-run >/dev/null || {
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends xvfb
+          }
+
       # Exercises the Fabric bridges (registry/network/events/capabilities/energy) on a real
       # dedicated server; fails the job when a required Fabric game test fails.
       - name: Run Fabric game tests
