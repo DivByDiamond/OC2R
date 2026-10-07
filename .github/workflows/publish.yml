@@ -33,10 +33,12 @@ jobs:
       - name: Build artifacts
         # Transient Maven 5xx (e.g. maven.neoforged.net 502) aborts Gradle
         # resolution; one retry keeps the release publish path reliable.
+        # Qualified to the 1.21.1 release nodes (multiversion): a bare `build`
+        # would also resolve the 26.x nodes, which Stage 3 does not release.
         run: |
-          ./gradlew -Psemver='${{ github.event.release.tag_name }}' build || {
+          ./gradlew -Psemver='${{ github.event.release.tag_name }}' :1.21.1:build :fabric:1.21.1:build || {
             echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
-            ./gradlew -Psemver='${{ github.event.release.tag_name }}' build --refresh-dependencies
+            ./gradlew -Psemver='${{ github.event.release.tag_name }}' :1.21.1:build :fabric:1.21.1:build --refresh-dependencies
           }
         env:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
@@ -46,7 +48,7 @@ jobs:
       # a failure here must not prevent the CurseForge upload below.
       - name: Publish to GitHub Packages
         continue-on-error: true
-        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} publishGprPublicationToGitHubPackagesRepository
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} :1.21.1:publishGprPublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -56,7 +58,7 @@ jobs:
       - name: Resolve artifact path
         id: artifact
         run: |
-          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-*.jar | grep -v -- '-api\.jar' | head -n1)
+          FILE=$(ls versions/1.21.1/build/libs/oc2r-1.21.1-neoforge-*.jar | grep -v -- '-api\.jar' | head -n1)
           echo "path=$FILE" >> "$GITHUB_OUTPUT"
 
       - name: Add Artifacts to Github Release
@@ -64,7 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./build/libs/*.jar"]'
+          asset_paths: '["./versions/1.21.1/build/libs/*.jar"]'
 
       - name: Upload to CurseForge
         uses: Kir-Antipov/mc-publish@v3.3

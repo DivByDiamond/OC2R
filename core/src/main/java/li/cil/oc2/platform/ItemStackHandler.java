@@ -143,9 +143,17 @@ public class ItemStackHandler implements ItemHandler, NbtSerializable<CompoundTa
         final ListTag items = new ListTag();
         for (int i = 0; i < stacks.size(); i++) {
             if (!stacks.get(i).isEmpty()) {
+                //? if >=26.1 {
+                /*final var ops = provider.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
+                final CompoundTag itemTag = new CompoundTag(); // NOPMD: one tag per stored slot
+                itemTag.putInt(SLOT_TAG, i);
+                itemTag.merge((CompoundTag) ItemStack.CODEC.encodeStart(ops, stacks.get(i)).getOrThrow());
+                items.add(itemTag);
+                *///?} else {
                 final CompoundTag itemTag = new CompoundTag(); // NOPMD: one tag per stored slot
                 itemTag.putInt(SLOT_TAG, i);
                 items.add(stacks.get(i).save(provider, itemTag));
+                //?}
             }
         }
         final CompoundTag tag = new CompoundTag();
@@ -156,13 +164,30 @@ public class ItemStackHandler implements ItemHandler, NbtSerializable<CompoundTa
 
     @Override
     public void deserializeNBT(final HolderLookup.Provider provider, final CompoundTag nbt) {
+        //? if >=26.1 {
+        /*setSize(nbt.getIntOr(SIZE_TAG, stacks.size()));
+        final ListTag items = nbt.getListOrEmpty(ITEMS_TAG);
+        *///?} else {
         setSize(nbt.contains(SIZE_TAG, Tag.TAG_INT) ? nbt.getInt(SIZE_TAG) : stacks.size());
         final ListTag items = nbt.getList(ITEMS_TAG, Tag.TAG_COMPOUND);
+        //?}
         for (int i = 0; i < items.size(); i++) {
+            //? if >=26.1 {
+            /*final CompoundTag itemTag = items.getCompoundOrEmpty(i);
+            final int slot = itemTag.getIntOr(SLOT_TAG, 0);
+            *///?} else {
             final CompoundTag itemTag = items.getCompound(i);
             final int slot = itemTag.getInt(SLOT_TAG);
+            //?}
             if (slot >= 0 && slot < stacks.size()) {
+                //? if >=26.1 {
+                /*ItemStack.CODEC
+                        .decode(provider.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), itemTag)
+                        .resultOrPartial()
+                        .ifPresent(result -> stacks.set(slot, result.getFirst()));
+                *///?} else {
                 ItemStack.parse(provider, itemTag).ifPresent(stack -> stacks.set(slot, stack));
+                //?}
             }
         }
         onLoad();

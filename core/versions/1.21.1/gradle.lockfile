@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-# To regenerate this file, run: ./gradlew :core:dependencies --write-locks
+# To regenerate this file, run: ./gradlew :core:1.21.1:dependencies --write-locks
 ca.weblite:java-objc-bridge:1.1=compileClasspath,neoFormRuntimeDependenciesCompileClasspath
 com.github.oowekyala.ooxml:nice-xml-messages:3.1=pmd
 com.github.oshi:oshi-core:6.4.10=additionalRuntimeClasspath,compileClasspath,neoFormRuntimeDependenciesCompileClasspath,neoFormRuntimeDependenciesRuntimeClasspath,runtimeClasspath
@@ -66,14 +66,14 @@ net.neoforged.installertools:installertools:2.1.2=neoFormRuntimeDependenciesNeoF
 net.neoforged.installertools:installertools:4.0.12=neoFormRuntimeExternalTools
 net.neoforged.javadoctor:gson-io:2.0.17=neoFormRuntimeExternalTools
 net.neoforged.javadoctor:spec:2.0.17=neoFormRuntimeExternalTools
-net.neoforged.jst:jst-cli-bundle:2.0.10=neoFormRuntimeExternalTools
+net.neoforged.jst:jst-cli-bundle:2.0.11=neoFormRuntimeExternalTools
 net.neoforged:AutoRenamingTool:2.0.17=neoFormRuntimeExternalTools
 net.neoforged:AutoRenamingTool:2.0.3=neoFormRuntimeDependenciesNeoForgeClasses
 net.neoforged:DevLaunch:1.0.2=devLaunchConfig
 net.neoforged:accesstransformers:13.0.1=neoFormRuntimeExternalTools
 net.neoforged:mergetool:2.0.3=compileClasspath,neoFormRuntimeDependenciesCompileClasspath,neoFormRuntimeDependenciesNeoForgeClasses
 net.neoforged:minecraft-dependencies:1.21.1=additionalRuntimeClasspath,compileClasspath,neoFormRuntimeDependenciesCompileClasspath,neoFormRuntimeDependenciesRuntimeClasspath,runtimeClasspath
-net.neoforged:neoform-runtime:2.0.24=neoFormRuntimeExternalTools,neoFormRuntimeTool
+net.neoforged:neoform-runtime:2.0.31=neoFormRuntimeExternalTools,neoFormRuntimeTool
 net.neoforged:neoform:1.21.1-20240808.144430=additionalRuntimeClasspath,compileClasspath,neoFormRuntimeDependenciesCompileClasspath,neoFormRuntimeDependenciesNeoForgeClasses,neoFormRuntimeDependenciesRuntimeClasspath,runtimeClasspath
 net.neoforged:srgutils:1.0.0=neoFormRuntimeExternalTools
 net.sf.jopt-simple:jopt-simple:5.0.4=additionalRuntimeClasspath,compileClasspath,neoFormRuntimeDependenciesCompileClasspath,neoFormRuntimeDependenciesRuntimeClasspath,runtimeClasspath

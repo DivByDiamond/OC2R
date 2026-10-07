@@ -2,22 +2,12 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
-import org.apache.commons.io.IOUtils
 import net.ltgt.gradle.errorprone.errorprone
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("commons-io:commons-io:2.21.0")
-    }
-}
 
 plugins {
     id("idea")
     id("maven-publish")
-    id("net.neoforged.moddev") version "2.0.144"
+    id("net.neoforged.moddev") version "2.0.148"
 
     id("checkstyle")
     id("pmd")
@@ -70,8 +60,8 @@ val debug_embeddium_plus_plus: String get() = property("debug_embeddium_plus_plu
 val debug_oculus: String get() = property("debug_oculus") as String
 
 gradle.projectsEvaluated {
-    project.configurations.named("jarJar") {
-        val nativeLibsDir = file("src/main/resources/natives")
+    configurations.matching { it.name == "jarJar" }.configureEach {
+        val nativeLibsDir = rootProject.file("src/main/resources/natives")
         val nativeNetworkingBaseUrl = "https://github.com/${native_networking_repo}/releases/download/${network_lib_version}/"
 
         val targets = listOf(
@@ -95,7 +85,7 @@ gradle.projectsEvaluated {
                 val url = URI("${nativeNetworkingBaseUrl}${fileName}").toURL()
                 println("Downloading ${url} → ${targetFile}")
                 targetFile.outputStream().use { out ->
-                    url.openStream().use { stream -> IOUtils.copy(stream, out) }
+                    url.openStream().use { stream -> stream.copyTo(out) }
                 }
             }
 
@@ -104,18 +94,10 @@ gradle.projectsEvaluated {
     }
 }
 
-allprojects {
-    gradle.projectsEvaluated {
-        tasks.withType<JavaCompile>().configureEach {
-            options.compilerArgs.addAll(listOf("-Xmaxerrs", "1000", "-h", layout.buildDirectory.get().toString().replace("\\", "/") + "/c"))
-        }
-    }
-}
-
 version = if (System.getenv("RELEASE_TYPE") == "release") semver.trimStart('v') else "${semver.trimStart('v')}+${getGitRef()}"
 group = "li.cil.oc2"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
 
 dependencyLocking {
     lockAllConfigurations()
@@ -172,16 +154,19 @@ repositories {
     }
     maven {
         name = "localLibs"
-        url = uri("libs")
+        url = uri(rootProject.file("libs"))
     }
 }
 
 neoForge {
     version = neo_version
 
-    parchment {
-        mappingsVersion = parchment_mappings_version
-        minecraftVersion = parchment_minecraft_version
+    // Parchment publishes mappings only for 1.x Minecraft versions.
+    if (minecraft_version.startsWith("1.")) {
+        parchment {
+            mappingsVersion = parchment_mappings_version
+            minecraftVersion = parchment_minecraft_version
+        }
     }
 
     runs {
@@ -203,7 +188,7 @@ neoForge {
 
         register("data") {
             data()
-            programArguments.addAll("--mod", modId, "--all", "--output", file("src/generated/resources/").absolutePath, "--existing", file("src/main/resources/").absolutePath)
+            programArguments.addAll("--mod", modId, "--all", "--output", rootProject.file("src/generated/resources/").absolutePath, "--existing", rootProject.file("src/main/resources/").absolutePath)
         }
 
         configureEach {
@@ -217,7 +202,7 @@ neoForge {
         register(modId) {
             sourceSet(sourceSets.main.get())
             // core classes must live in the same mod module as the loader code that uses them.
-            sourceSet(project(":core").sourceSets["main"])
+            sourceSet(project(":core:${sc.current.version}").sourceSets["main"])
         }
     }
 }
@@ -230,35 +215,46 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
     implementation("li.cil.ceres:ceres:${ceres_version}")
-    add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
-
     implementation("li.cil.sedna:sedna:${sedna_version}")
-    add("jarJar", "li.cil.sedna:sedna:${sedna_version}")
-
     implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
-    add("jarJar", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
 
-    add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    if ("jarJar" in configurations.names) {
+        add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
+        add("jarJar", "li.cil.sedna:sedna:${sedna_version}")
+        add("jarJar", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    }
 
-    implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
-    implementation("maven.modrinth:13P81Hg3:1.3.1")
+    // MDG only wires an additional run classpath for 1.x Minecraft; on 26.x the configuration
+    // still exists but rejects dependencies ("no additional classpath anymore").
+    if (minecraft_version.startsWith("1.") && "additionalRuntimeClasspath" in configurations.names) {
+        add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
+        add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
+        add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    }
+
+    // Markdown Manual and Architectury API have no 26.x builds (roadmap multiversion-26-neoforge §3).
+    if (minecraft_version.startsWith("1.")) {
+        implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
+        implementation("maven.modrinth:13P81Hg3:1.3.1")
+    }
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}-api:${jei_version}")
 
     runtimeOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}:${jei_version}")
 
-    compileOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:api")
-    runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}") {
-        version { strictly("1.21.1-4.6.1.529") }
+    // ProjectRed/CodeChickenLib/CBMultipart are 1.21.1-only builds (roadmap multiversion-26-neoforge §3).
+    if (minecraft_version.startsWith("1.")) {
+        compileOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:api")
+        runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}") {
+            version { strictly("1.21.1-4.6.1.529") }
+        }
+        runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}") {
+            version { strictly("1.21.1-3.5.0.161") }
+        }
+        runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:core")
+        runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:transmission")
     }
-    runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}") {
-        version { strictly("1.21.1-3.5.0.161") }
-    }
-    runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:core")
-    runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:transmission")
 
     if (debug_embeddium.toBoolean()) {
         runtimeOnly("curse.maven:embeddium-${embeddium_project_id}:${embeddium_file_id}")
@@ -273,7 +269,7 @@ dependencies {
     }
 
     // Loader-independent module; its classes are packed into the mod jar below (docs/MULTILOADER.md).
-    implementation(project(":core"))
+    implementation(project(":core:${sc.current.version}"))
 
     testImplementation("org.mockito:mockito-core:${mockito_version}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
@@ -299,20 +295,24 @@ configurations.named("testRuntimeClasspath") {
     extendsFrom(configurations.runtimeClasspath.get())
 }
 
-System.setProperty("line.separator", "\n")
+val archiveBaseName = "oc2r-${minecraft_version}-${minecraft_sdk}"
+
+extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
+    archivesName.set(archiveBaseName)
+}
 
 tasks.register<Zip>("packageScripts") {
     archiveFileName = "scripts.zip"
     destinationDirectory = file("${layout.buildDirectory.get()}/resources/main/data/oc2r/file_systems")
-    from("src/main/scripts")
-    from("src/main/resources/onyxos") {
+    from(rootProject.file("src/main/scripts"))
+    from(rootProject.file("src/main/resources/onyxos")) {
         include("fw_jump.bin")
         into("firmware_files")
     }
 }
 
 tasks.register<Copy>("copyLicensesToResources") {
-    from(".")
+    from(rootProject.projectDir)
     into(file("${layout.buildDirectory.get()}/resources/main"))
     include("LICENSE*")
 }
@@ -322,16 +322,14 @@ tasks.processResources {
     dependsOn("copyLicensesToResources")
 }
 
-tasks.named("jarJar") { }
-
 tasks.register<Copy>("copyGeneratedResources") {
-    from("src/generated")
-    into("src/main")
+    from(rootProject.file("src/generated"))
+    into(rootProject.file("src/main"))
     exclude("resources/.cache")
 }
 
 tasks.jar {
-    from(project(":core").sourceSets["main"].output)
+    from(project(":core:${sc.current.version}").sourceSets["main"].output)
     manifest {
         attributes(
             mapOf(
@@ -339,7 +337,7 @@ tasks.jar {
                 "Specification-Title" to "oc2r",
                 "Specification-Vendor" to "North Western Development (Originally by Sangar)",
                 "Specification-Version" to "1",
-                "Implementation-Title" to project.name,
+                "Implementation-Title" to archiveBaseName,
                 "Implementation-Version" to semver.trimStart('v'),
                 "Implementation-Vendor" to "North Western Development (Originally by Sangar)",
                 "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
@@ -357,7 +355,7 @@ java {
 tasks.named<Jar>("sourcesJar") {
     // Published sources must cover the loader-independent core module too; the mod jar
     // packs core classes (see tasks.jar above), so the sources jar has to as well.
-    from(project(":core").sourceSets["main"].allSource)
+    from(project(":core:${sc.current.version}").sourceSets["main"].allSource)
 }
 
 val apiJar = tasks.register<Jar>("apiJar") {
@@ -370,7 +368,7 @@ val apiJar = tasks.register<Jar>("apiJar") {
 idea {
     module {
         for (exclude in listOf("assets", "run", "out", "logs", "src/generated")) {
-            excludeDirs.add(file(exclude))
+            excludeDirs.add(rootProject.file(exclude))
         }
         isDownloadSources = true
         isDownloadJavadoc = true
@@ -385,6 +383,7 @@ publishing {
         register<MavenPublication>("gpr") {
             from(components["java"])
             artifact(tasks["apiJar"])
+            artifactId = archiveBaseName
             pom {
                 name = "OC2R"
                 description = "OpenComputers 2 Rewrite"
@@ -407,16 +406,6 @@ publishing {
                 password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
-    }
-}
-
-allprojects {
-    tasks.withType<JavaCompile>().configureEach {
-        options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-classfile", "-Xlint:-processing", "-Xlint:-path", "-Xlint:-this-escape", "-Xlint:-serial", "-Xlint:-auxiliaryclass"))
-        // Preserve parameter names in bytecode so reflection (e.g. RPCParameter.getName()
-        // in li.cil.oc2.api.bus.device.object.Callbacks) can recover them at runtime without
-        // requiring every @Callback-annotated method to also use @Parameter annotations.
-        options.compilerArgs.add("-parameters")
     }
 }
 
@@ -447,7 +436,7 @@ tasks.withType<Pmd>().configureEach {
 // (swallowed exceptions, disabled/assumed tests, tests without assertions).
 tasks.named<Pmd>("pmdTest") {
     ruleSetConfig = null
-    ruleSetFiles = files("config/pmd/ruleset.xml", "config/pmd/ruleset-test.xml", "config/pmd/ruleset-silent.xml")
+    ruleSetFiles = rootProject.files("config/pmd/ruleset.xml", "config/pmd/ruleset-test.xml", "config/pmd/ruleset-silent.xml")
 }
 
 // The in-game tests live in the main source set (excluded from pmdMain), so they get only the
@@ -455,10 +444,10 @@ tasks.named<Pmd>("pmdTest") {
 tasks.register<Pmd>("pmdGameTest") {
     group = "verification"
     description = "Checks the in-game test sources for swallowed failures."
-    source = fileTree("src/main/java/li/cil/oc2/gametest") { include("**/*.java") }
+    source = rootProject.fileTree("src/main/java/li/cil/oc2/gametest") { include("**/*.java") }
     classpath = sourceSets.main.get().compileClasspath + sourceSets.main.get().output
     ruleSetConfig = null
-    ruleSetFiles = files("config/pmd/ruleset-silent.xml")
+    ruleSetFiles = rootProject.files("config/pmd/ruleset-silent.xml")
     dependsOn("classes")
 }
 
@@ -556,8 +545,9 @@ tasks.register("lintRatchet") {
     // and count them below so a single ratchet run covers both source sets.
     dependsOn(
         "checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest", "pmdGameTest",
-        ":core:checkstyleMain", ":core:checkstyleTest", ":core:pmdMain", ":core:pmdTest",
-        ":core:spotbugsMain", ":core:spotbugsTest",
+        ":core:${sc.current.version}:checkstyleMain", ":core:${sc.current.version}:checkstyleTest",
+        ":core:${sc.current.version}:pmdMain", ":core:${sc.current.version}:pmdTest",
+        ":core:${sc.current.version}:spotbugsMain", ":core:${sc.current.version}:spotbugsTest",
     )
 
     val baseline = Properties()
@@ -580,10 +570,10 @@ tasks.register("lintRatchet") {
             "pmdMain" to count(layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
             "pmdTest" to count(layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
             // core module reports (core/build.gradle.kts applies the same tool configs).
-            "coreCheckstyleMain" to count(file("core/build/reports/checkstyle/main.xml"), "error"),
-            "coreCheckstyleTest" to count(file("core/build/reports/checkstyle/test.xml"), "error"),
-            "corePmdMain" to count(file("core/build/reports/pmd/main.xml"), "violation"),
-            "corePmdTest" to count(file("core/build/reports/pmd/test.xml"), "violation"),
+            "coreCheckstyleMain" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/main.xml"), "error"),
+            "coreCheckstyleTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/test.xml"), "error"),
+            "corePmdMain" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/main.xml"), "violation"),
+            "corePmdTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/test.xml"), "violation"),
         )
 
         var failed = false
@@ -615,6 +605,10 @@ tasks.register("qodana") {
 
 tasks.test {
     useJUnitPlatform()
+    // Multiversion: this script is evaluated by the versions/<v>/ node, but the tests resolve
+    // repo-root-relative paths (ClientImportGuardTest walks src/main/java/...) exactly as they
+    // did when the source root was the project dir (Stage 2). Pin the CWD back to it.
+    workingDir = rootProject.layout.projectDirectory.asFile
     // The vttest harness regen mode (-Dvttest.regen=true) must reach the test worker JVM; a
     // command-line -D only lands on the Gradle daemon, so forward it explicitly.
     System.getProperty("vttest.regen")?.let { systemProperty("vttest.regen", it) }

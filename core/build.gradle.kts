@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("net.neoforged.moddev") version "2.0.144"
+    id("net.neoforged.moddev") version "2.0.148"
     id("checkstyle")
     id("pmd")
     id("com.github.spotbugs") version "6.5.10"
@@ -8,15 +8,16 @@ plugins {
 
 // Vanilla Minecraft only (NeoForm, no loader): lets core declare Minecraft-typed bridge APIs.
 // neoform (vanilla mappings) and neo_version (loader) track different artifacts, so each has
-// its own gradle.properties key.
+// its own gradle.properties key. Per-version overrides live in versions/<v>/gradle.properties
+// and are read with property() (providers.gradleProperty ignores project-dir files).
 neoForge {
-    neoFormVersion = providers.gradleProperty("neoform_version").get()
+    neoFormVersion = property("neoform_version").toString()
 }
 
 // Loader-independent module: it must never depend on the NeoForge or Fabric loader APIs (see
 // docs/MULTILOADER.md, Stage 1); Minecraft types come from NeoForm above. Loader modules
 // implement the bridge interfaces defined here.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
 
 dependencyLocking {
     lockAllConfigurations()
@@ -41,6 +42,9 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.test {
     useJUnitPlatform()
+    // Multiversion: the node lives in core/versions/<v>/ but the branch's source root (and the
+    // Stage-2 test CWD) is core/.
+    workingDir = rootProject.layout.projectDirectory.dir("core").asFile
 }
 
 /* ── Static analysis: same tool versions and configs as the root project ──── */

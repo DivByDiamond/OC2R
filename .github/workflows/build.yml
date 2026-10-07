@@ -40,10 +40,13 @@ jobs:
         # 5xx from any configured Maven repo aborts Gradle resolution (unlike 404,
         # it is not treated as "not found"), which broke the beta.3.1 release via a
         # transient 502 from maven.neoforged.net. One retry recovers on its own.
+        # Qualified to the 1.21.1 release nodes plus the 26.x core compile check:
+        # a bare `build` would also resolve the 26.x root nodes (neoforge module),
+        # which Stage 3 does not build yet.
         run: |
-          ./gradlew build || {
+          ./gradlew :1.21.1:build :fabric:1.21.1:build :core:26.1.2:compileJava :core:26.2:compileJava || {
             echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
-            ./gradlew build --refresh-dependencies
+            ./gradlew :1.21.1:build :fabric:1.21.1:build :core:26.1.2:compileJava :core:26.2:compileJava --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -52,7 +55,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: oc2r-artifacts
-          path: build/libs/*.jar
+          path: |
+            versions/1.21.1/build/libs/*.jar
+            fabric/versions/1.21.1/build/libs/*.jar
 
       # The self-hosted pool does not guarantee gh is present: a beta.3.1 rerun
       # landed on a runner without gh and Create Release failed with exit 127.
@@ -81,7 +86,7 @@ jobs:
               --title "${{ github.ref_name }}" \
               --generate-notes \
               "${ARGS[@]}" \
-              build/libs/*.jar
+              versions/1.21.1/build/libs/*.jar
           else
             echo "Release already exists, skipping creation."
           fi

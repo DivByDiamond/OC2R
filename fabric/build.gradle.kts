@@ -3,7 +3,7 @@ plugins {
     id("fabric-loom") version "1.14.10"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
 
 val minecraft_version: String = providers.gradleProperty("minecraft_version").get()
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
@@ -69,7 +69,7 @@ dependencies {
 // core is built against NeoForm, not Loom, so its jar cannot be remapped for production. Compile
 // its sources as part of this module instead, so Loom remaps them together with the Fabric code.
 sourceSets.main {
-    java.srcDir(project(":core").file("src/main/java"))
+    java.srcDir(rootProject.file("core/src/main/java"))
     // Compiles the shared mod code (src/main/java of the root project) too, see docs/roadmap/multiloader.md §42.
     // -Pfabric.common=false compiles the Fabric module alone (it then no longer builds, the Fabric glue uses
     // shared classes).
@@ -130,12 +130,11 @@ val packageScripts = tasks.register<Zip>("packageScripts") {
 
 // Assets, data packs, natives and the OnyxOS images live in the root project's resources. Only the
 // loader-independent parts are shared: META-INF (NeoForge service files, mods.toml) must not leak in.
+// src/generated is a gitignored datagen workdir whose content is synced into src/main/resources by
+// copyGeneratedResources (CI never has it): including it here only ever produced duplicates.
 tasks.processResources {
     from(rootProject.file("src/main/resources")) {
         include("assets/**", "data/**", "natives/**", "onyxos/**", "pack.mcmeta")
-    }
-    from(rootProject.file("src/generated/resources")) {
-        include("assets/**", "data/**")
     }
     // The guest scripts archive (same content as the root project's packageScripts task).
     from(packageScripts) {
@@ -151,7 +150,7 @@ tasks.processResources {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/oc2r.accesswidener")
+    accessWidenerPath = rootProject.file("fabric/src/main/resources/oc2r.accesswidener")
 }
 
 // Runs the Fabric GameTests (`./gradlew :fabric:runGametest`): they exercise the Fabric bridges on a

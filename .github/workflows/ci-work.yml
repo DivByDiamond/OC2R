@@ -57,10 +57,12 @@ jobs:
       - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
         # Transient 5xx from maven.neoforged.net aborts Gradle resolution (unlike 404
         # it is not treated as "not found"); one retry recovers the same way build.yml does.
+        # Tasks are qualified to the active multiversion node (1.21.1): bare names would
+        # also resolve the 26.x nodes, which this job neither builds nor caches.
         run: |
-          ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet || {
+          ./gradlew :1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet || {
             echo "::warning::First lint gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet --refresh-dependencies
+            ./gradlew :1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -71,9 +73,12 @@ jobs:
         with:
           name: lint-reports
           path: |
-            build/reports/pmd/
-            build/reports/checkstyle/
-            build/reports/spotbugs/
+            versions/1.21.1/build/reports/pmd/
+            versions/1.21.1/build/reports/checkstyle/
+            versions/1.21.1/build/reports/spotbugs/
+            core/versions/1.21.1/build/reports/pmd/
+            core/versions/1.21.1/build/reports/checkstyle/
+            core/versions/1.21.1/build/reports/spotbugs/
           if-no-files-found: ignore
           retention-days: 1
 
@@ -110,13 +115,14 @@ jobs:
 
       # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
       # builds the mod jar so the job still guards packaging regressions. Gradle's `test`
-      # lifecycle also pulls in loom's :fabric:runGameTest, which needs xvfb-run; the Fabric
+      # lifecycle also pulls in loom's :fabric:1.21.1:runGameTest, which needs xvfb-run; the Fabric
       # game tests have their own step in the gametest job, so skip them here.
+      # Qualified to the 1.21.1 nodes: bare names would also resolve the 26.x nodes.
       - name: Unit tests and jar assembly
         run: |
-          ./gradlew test assemble -x :fabric:runGameTest || {
+          ./gradlew :1.21.1:test :1.21.1:assemble :core:1.21.1:test :fabric:1.21.1:test :fabric:1.21.1:assemble -x :fabric:1.21.1:runGameTest || {
             echo "::warning::First test gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew test assemble -x :fabric:runGameTest --refresh-dependencies
+            ./gradlew :1.21.1:test :1.21.1:assemble :core:1.21.1:test :fabric:1.21.1:test :fabric:1.21.1:assemble -x :fabric:1.21.1:runGameTest --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -126,14 +132,19 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results
-          path: build/test-results/test/*.xml
+          path: |
+            versions/1.21.1/build/test-results/test/*.xml
+            core/versions/1.21.1/build/test-results/test/*.xml
+            fabric/versions/1.21.1/build/test-results/test/*.xml
           if-no-files-found: error
           retention-days: 1
 
       - uses: actions/upload-artifact@v7
         with:
           name: oc2r-dev-jar
-          path: build/libs/*.jar
+          path: |
+            versions/1.21.1/build/libs/*.jar
+            fabric/versions/1.21.1/build/libs/*.jar
 
   gametest:
     permissions:
@@ -162,9 +173,9 @@ jobs:
 
       - name: Run game tests
         run: |
-          ./gradlew gameTest || {
+          ./gradlew :1.21.1:gameTest || {
             echo "::warning::First gameTest gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew gameTest --refresh-dependencies
+            ./gradlew :1.21.1:gameTest --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -181,19 +192,19 @@ jobs:
       # Exercises the Fabric bridges (registry/network/events/capabilities/energy) on a real
       # dedicated server; fails the job when a required Fabric game test fails.
       - name: Run Fabric game tests
-        run: ./gradlew :fabric:runGameTest
+        run: ./gradlew :fabric:1.21.1:runGameTest
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       # The gameTest task fails on a vacuous run and always emits
-      # build/test-results/gameTest/results.xml; missing XML therefore means
-      # the task did not run at all -- upload with `error` so that is visible.
+      # versions/1.21.1/build/test-results/gameTest/results.xml; missing XML therefore
+      # means the task did not run at all -- upload with `error` so that is visible.
       - name: Upload game test results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: gametest-results
-          path: 'build/test-results/gameTest/*.xml'
+          path: 'versions/1.21.1/build/test-results/gameTest/*.xml'
           if-no-files-found: error
           retention-days: 1
 

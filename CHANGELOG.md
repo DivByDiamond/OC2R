@@ -7,6 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Multiversion**: the build now multiplexes Minecraft 1.21.1 / 26.1.2 / 26.2 through Stonecutter 0.9.8 — `versions/<v>` nodes with per-version `gradle.properties`, a `ResourceLocation`→`Identifier` source replacement on 26.x with `//? if` conditionals for the API breaks, `core` compiling against NeoForm 26.1.2/26.2 (Java 25 toolchains), per-node dependency lockfiles and CI tasks qualified to `:1.21.1:`/`:fabric:1.21.1:`; Fabric remains on 1.21.1 (Loom does not remap 26.x)
 - **Fabric**: a `fabric/` module (Fabric Loom, Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual) that runs the whole mod on Fabric 1.21.1: registry, network, menu, capability, energy, environment and game-event bridges in `core`, Fabric client (models, shaders, renderers, manual), and Fabric GameTests (`:fabric:runGameTest`) that run the shared NeoForge game tests on a Fabric server
 - **Platform layer**: loader-independent `core` contracts for registries, network, menus, capabilities, item handlers, energy, client registration and client events, so shared code no longer names NeoForge for these
 - **Terminal**: ENQ (ANSI 0x05) transmits the answerback message (xterm `XTerm*answerbackString` semantics — empty by default, immediate no-op reply instead of silence); ENQ mid-CSI stays ignored per the existing deliberate C0-during-CSI divergence
