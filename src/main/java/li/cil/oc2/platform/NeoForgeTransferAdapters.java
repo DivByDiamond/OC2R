@@ -227,31 +227,56 @@ final class NeoForgeTransferAdapters {
     // Items
     // ---------------------------------------------------------------------------------------
 
+    // One journal per handler, shared by every wrapper over it: wrappers are created per query, and
+    // two journals over the same handler would restore their snapshots in the wrong order on abort
+    // (the later snapshot already contains the earlier wrapper's changes).
+    private static final Map<ItemHandler, ItemJournal> ITEM_JOURNALS = new WeakHashMap<>();
+
+    private static ItemJournal itemJournal(final ItemHandler handler) {
+        synchronized (ITEM_JOURNALS) {
+            return ITEM_JOURNALS.computeIfAbsent(handler, ItemJournal::new);
+        }
+    }
+
+    private static final class ItemJournal extends SnapshotJournal<ItemStack[]> {
+        private final WeakReference<ItemHandler> handler;
+
+        private ItemJournal(final ItemHandler handler) {
+            this.handler = new WeakReference<>(handler);
+        }
+
+        @Override
+        protected ItemStack[] createSnapshot() {
+            final ItemHandler target = handler.get();
+            final ItemStack[] slots = new ItemStack[target == null ? 0 : target.getSlots()];
+            for (int i = 0; i < slots.length; i++) {
+                slots[i] = target.getStackInSlot(i).copy();
+            }
+            return slots;
+        }
+
+        @Override
+        protected void revertToSnapshot(final ItemStack[] snapshot) {
+            final ItemHandler target = handler.get();
+            if (target == null) {
+                return;
+            }
+            for (int i = 0; i < snapshot.length; i++) {
+                if (!ItemStack.matches(target.getStackInSlot(i), snapshot[i])) {
+                    target.setStackInSlot(i, snapshot[i].copy());
+                }
+            }
+        }
+    }
+
     // NeoForge {@code ResourceHandler<ItemResource>} over a core {@link ItemHandler}.
     static final class ItemResourceHandlerWrapper implements ResourceHandler<ItemResource> {
         private final ItemHandler handler;
-        private final SnapshotJournal<ItemStack[]> journal = new SnapshotJournal<>() {
-            @Override
-            protected ItemStack[] createSnapshot() {
-                final ItemStack[] slots = new ItemStack[handler.getSlots()];
-                for (int i = 0; i < slots.length; i++) {
-                    slots[i] = handler.getStackInSlot(i).copy();
-                }
-                return slots;
-            }
-
-            @Override
-            protected void revertToSnapshot(final ItemStack[] snapshot) {
-                for (int i = 0; i < snapshot.length; i++) {
-                    if (!ItemStack.matches(handler.getStackInSlot(i), snapshot[i])) {
-                        handler.setStackInSlot(i, snapshot[i].copy());
-                    }
-                }
-            }
-        };
+        private final ItemJournal journal;
 
         ItemResourceHandlerWrapper(final ItemHandler handler) {
             this.handler = handler;
+            this.journal = itemJournal(handler);
         }
 
         ItemHandler delegate() {
