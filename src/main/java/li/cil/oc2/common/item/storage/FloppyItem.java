@@ -13,7 +13,11 @@ public final class FloppyItem extends AbstractStorageItem {
                 new Item.Properties()
                         .component(
                                 DataComponents.DYED_COLOR,
+                                //? if >=26.1 {
+                                /*new DyedItemColor(DEFAULT_COLOR)),
+                                *///?} else {
                                 new DyedItemColor(DEFAULT_COLOR, true)),
+                                //?}
                 capacity);
     }
 }

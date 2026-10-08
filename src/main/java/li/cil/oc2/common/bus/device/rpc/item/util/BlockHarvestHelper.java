@@ -8,8 +8,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?} else {
 import net.minecraft.world.item.Tier;
+//?}
+//? if <26.1 {
 import net.minecraft.world.item.Tiers;
+//?}
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CommandBlock;
@@ -75,7 +81,11 @@ public class BlockHarvestHelper {
             return false;
         }
 
+        //? if >=26.1 {
+        /*final Tiers toolTier = getToolTier();
+        *///?} else {
         final Tier toolTier = getToolTier();
+        //?}
         if (toolTier == null || blockState.is(toolTier.getIncorrectBlocksForDrops())) {
             return false;
         }
@@ -83,7 +93,11 @@ public class BlockHarvestHelper {
         return Platform.hooks().canHarvest(player, blockState, level, blockPos);
     }
 
+    //? if >=26.1 {
+    /*private static Tiers getToolTier() {
+    *///?} else {
     private static Tier getToolTier() {
+    //?}
         try {
             return Tiers.valueOf(Config.blockOperationsModuleToolTier);
         } catch (final IllegalArgumentException e) {

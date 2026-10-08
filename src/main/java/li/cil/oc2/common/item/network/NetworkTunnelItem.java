@@ -17,7 +17,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.InteractionResultHolder;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -34,8 +38,13 @@ public final class NetworkTunnelItem extends ModItem {
 
     public static Optional<UUID> getTunnelId(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
+        //? if >=26.1 {
+        /*if (tag.read(TUNNEL_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            return Optional.of(tag.read(TUNNEL_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow());
+        *///?} else {
         if (tag.hasUUID(TUNNEL_ID_TAG_NAME)) {
             return Optional.of(tag.getUUID(TUNNEL_ID_TAG_NAME));
+        //?}
         } else {
             return Optional.empty();
         }
@@ -46,7 +55,11 @@ public final class NetworkTunnelItem extends ModItem {
                 DataComponents.CUSTOM_DATA,
                 stack,
                 (nbt) -> {
+                    //? if >=26.1 {
+                    /*ItemStackUtils.getOrCreateModDataTag(nbt).store(TUNNEL_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, value);
+                    *///?} else {
                     ItemStackUtils.getOrCreateModDataTag(nbt).putUUID(TUNNEL_ID_TAG_NAME, value);
+                    //?}
                 });
     }
 
@@ -72,14 +85,22 @@ public final class NetworkTunnelItem extends ModItem {
     }
 
     @Override
+    //? if >=26.1 {
+    /*public InteractionResult use(
+    *///?} else {
     public InteractionResultHolder<ItemStack> use(
+    //?}
             final Level level, final Player player, final InteractionHand hand) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             openContainerScreen(serverPlayer, hand);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResultHolder.sidedSuccess(
                 player.getItemInHand(hand), level.isClientSide());
+        //?}
     }
 
     private void openContainerScreen(final ServerPlayer player, final InteractionHand hand) {

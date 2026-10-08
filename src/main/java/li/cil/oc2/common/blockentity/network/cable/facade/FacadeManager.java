@@ -35,7 +35,11 @@ public final class FacadeManager {
         final var level = owner.getLevel();
         if (level == null
                 || state.getRenderShape() != RenderShape.MODEL
+                //? if >=26.1 {
+                /*|| !state.isSolidRender()
+                *///?} else {
                 || !state.isSolidRender(level, owner.getBlockPos())
+                //?}
                 || state.getBlock() instanceof EntityBlock) {
             return FacadeType.INVALID_BLOCK;
         }

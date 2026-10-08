@@ -110,7 +110,11 @@ public abstract class AbstractItemDeviceBusElement
             final String dataKey, final CompoundTag tag, @Nullable final ItemDeviceQuery query) {
         super.onEntryRemoved(dataKey, tag, query);
         final Registry<ItemDeviceProvider> registry = Providers.itemDeviceProviderRegistry();
+        //? if >=26.1 {
+        /*final ItemDeviceProvider provider = registry.getValue(ResourceLocation.parse(dataKey));
+        *///?} else {
         final ItemDeviceProvider provider = registry.get(ResourceLocation.parse(dataKey));
+        //?}
         if (provider != null) {
             provider.unmount(query, tag);
         }

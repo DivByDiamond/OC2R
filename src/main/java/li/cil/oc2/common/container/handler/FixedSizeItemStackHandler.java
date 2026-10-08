@@ -31,7 +31,11 @@ public class FixedSizeItemStackHandler extends ItemStackHandler {
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
         // Our size is fixed, don't trust NBT data we're loading.
+        //? if >=26.1 {
+        /*if (tag.contains(SIZE_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(SIZE_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             final CompoundTag safeTag = tag.copy();
             safeTag.remove(SIZE_TAG_NAME);
             super.deserializeNBT(provider, safeTag);

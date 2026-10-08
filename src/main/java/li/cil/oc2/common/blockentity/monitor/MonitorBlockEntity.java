@@ -187,7 +187,11 @@ public final class MonitorBlockEntity extends ModBlockEntity
         // a multiblock merge, and we want to carry its deviceId/energy across the transition.
         stateManager.loadPersistent(tag, registries);
         if (tag.contains("capture_input")) {
+            //? if >=26.1 {
+            /*stateManager.captureInputState = tag.getBooleanOr("capture_input", false);
+            *///?} else {
             stateManager.captureInputState = tag.getBoolean("capture_input");
+            //?}
         }
     }
 
@@ -213,7 +217,11 @@ public final class MonitorBlockEntity extends ModBlockEntity
     public void loadStateFromTransfer(final CompoundTag tag, final HolderLookup.Provider registries) {
         stateManager.loadPersistent(tag, registries);
         if (tag.contains("capture_input")) {
+            //? if >=26.1 {
+            /*stateManager.captureInputState = tag.getBooleanOr("capture_input", false);
+            *///?} else {
             stateManager.captureInputState = tag.getBoolean("capture_input");
+            //?}
         }
         setChanged();
     }

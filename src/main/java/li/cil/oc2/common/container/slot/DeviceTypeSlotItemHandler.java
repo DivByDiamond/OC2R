@@ -25,6 +25,17 @@ public final class DeviceTypeSlotItemHandler extends ItemHandlerSlot {
         return deviceType;
     }
 
+    //? if >=26.1 {
+    /*@Nullable
+    @Override
+    public ResourceLocation getNoItemIcon() {
+        if (hasItem()) {
+            return super.getNoItemIcon();
+        } else {
+            return deviceType.getBackgroundIcon();
+        }
+    }
+    *///?} else {
     @Nullable
     @Override
     public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
@@ -34,4 +45,5 @@ public final class DeviceTypeSlotItemHandler extends ItemHandlerSlot {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, deviceType.getBackgroundIcon());
         }
     }
+    //?}
 }

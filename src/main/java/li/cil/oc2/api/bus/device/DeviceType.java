@@ -23,7 +23,11 @@ public interface DeviceType {
                     ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "device_type"));
 
     @SuppressWarnings("unused")
+    //? if >=26.1 {
+    /*Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(REGISTRY_KEY.identifier().toString(), API.MOD_ID, true);
+    *///?} else {
     Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(REGISTRY_KEY.location().toString(), API.MOD_ID, true);
+    //?}
 
     /**
      * The tag representing this device type.

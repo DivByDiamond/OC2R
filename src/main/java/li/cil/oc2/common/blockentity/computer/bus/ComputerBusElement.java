@@ -83,15 +83,24 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     @Override
     public CompoundTag save(final HolderLookup.Provider registries) {
         final CompoundTag tag = super.save(registries);
+        //? if >=26.1 {
+        /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
+        *///?} else {
         tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
+        //?}
         return tag;
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
             deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
+        //?}
         }
     }
 }

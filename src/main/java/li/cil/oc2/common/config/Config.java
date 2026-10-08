@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.config.client.GUISpec;
+//? if <26.1 {
 import net.minecraft.world.item.Tiers;
+//?}
 
 @SuppressWarnings("FieldMayBeFinal")
 public final class Config {

@@ -13,7 +13,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 
 public final class FirmwareRegistry {
+    //? if >=26.1 {
+    /*private static final String REGISTRY_ID = Registries.FIRMWARE.identifier().toString();
+    *///?} else {
     private static final String REGISTRY_ID = Registries.FIRMWARE.location().toString();
+    //?}
 
     private static final Registry<Firmware> REGISTRY =
             Platform.registries().createRegistry(REGISTRY_ID, API.MOD_ID);
@@ -40,7 +44,11 @@ public final class FirmwareRegistry {
 
     @Nullable
     public static Firmware getValue(final ResourceLocation location) {
+        //? if >=26.1 {
+        /*return REGISTRY.getValue(location);
+        *///?} else {
         return REGISTRY.get(location);
+        //?}
     }
 
     public static Stream<Firmware> values() {

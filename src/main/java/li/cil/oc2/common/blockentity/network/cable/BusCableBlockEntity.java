@@ -147,8 +147,13 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     @Override
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
         interfaceNameManager.deserialize(
+                //? if >=26.1 {
+                /*tag.getListOrEmpty(INTERFACE_NAMES_TAG_NAME));
+        facadeManager.deserialize(tag.getCompoundOrEmpty(FACADE_TAG_NAME));
+                *///?} else {
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
+                //?}
         // Model data is built from the facade; a client that starts tracking must
         // rebuild it, otherwise the cable renders without the facade.
         requestModelDataUpdate();
@@ -166,11 +171,20 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*busElement.loadAdditional(tag.getCompoundOrEmpty(BUS_ELEMENT_TAG_NAME), registries);
+        *///?} else {
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
+        //?}
         faceOverrides.load(tag, FACE_OVERRIDES_TAG_NAME);
         interfaceNameManager.deserialize(
+                //? if >=26.1 {
+                /*tag.getListOrEmpty(INTERFACE_NAMES_TAG_NAME));
+        facadeManager.deserialize(tag.getCompoundOrEmpty(FACADE_TAG_NAME));
+                *///?} else {
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
+                //?}
         requestModelDataUpdate();
     }
 

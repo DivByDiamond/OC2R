@@ -34,7 +34,11 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {
+        //? if >=26.1 {
+        /*super(Blocks.BUS_CABLE.get(), new Properties());
+        *///?} else {
         super(Blocks.BUS_CABLE.get());
+        //?}
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -52,7 +56,11 @@ public final class BusInterfaceItem extends ModBlockItem {
     public InteractionResult useOn(final UseOnContext context) {
         final Vec3 localHitPos =
                 context.getClickLocation().subtract(Vec3.atCenterOf(context.getClickedPos()));
+        //? if >=26.1 {
+        /*final Direction side = Direction.getApproximateNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        *///?} else {
         final Direction side = Direction.getNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        //?}
         final InteractionResult result = tryAddToBlock(context, side);
         return result.consumesAction() ? result : super.useOn(context);
     }
@@ -64,10 +72,12 @@ public final class BusInterfaceItem extends ModBlockItem {
         return result.consumesAction() ? result : super.place(context);
     }
 
+    //? if <26.1 {
     @Override
     public String getDescriptionId() {
         return getOrCreateDescriptionId();
     }
+    //?}
 
     @Override
     public void registerBlocks(final Map<Block, Item> map, final Item item) {}
@@ -116,6 +126,10 @@ public final class BusInterfaceItem extends ModBlockItem {
             stack.shrink(1);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 }

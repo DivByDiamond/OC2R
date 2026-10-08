@@ -52,8 +52,16 @@ final class SwitchHostTable {
             CompoundTag host = (CompoundTag) host_;
             // NOPMD: entry depends on per-iteration host data
             hostTable.put(
+                    //? if >=26.1 {
+                    /*host.getLongOr("mac", 0L),
+                    *///?} else {
                     host.getLong("mac"),
+                    //?}
+                    //? if >=26.1 {
+                    /*new HostEntry(host.getIntOr("side", 0), host.getLongOr("timestamp", 0L))); // NOPMD allocation depends on loop iteration / per-item state
+                    *///?} else {
                     new HostEntry(host.getInt("side"), host.getLong("timestamp"))); // NOPMD allocation depends on loop iteration / per-item state
+                    //?}
         }
     }
 }

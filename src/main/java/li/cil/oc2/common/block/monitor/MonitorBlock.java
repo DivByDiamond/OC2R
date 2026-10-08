@@ -103,6 +103,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
         return BlockCodecs.MONITOR.get();
     }
 
+    //? if <26.1 {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void appendHoverText(
@@ -112,6 +113,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final TooltipFlag advanced) {
         super.appendHoverText(stack, context, tooltip, advanced);
     }
+    //?}
 
     @Override
     public VoxelShape getShape(
@@ -158,7 +160,11 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
                 monitor.openTerminalScreen(serverPlayer);
             }
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     @Override

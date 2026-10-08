@@ -78,7 +78,11 @@ public final class NBTToJsonConverter {
     private static JsonElement convertCompound(final Tag tag) {
         final JsonObject json = new JsonObject();
         final CompoundTag compoundTag = (CompoundTag) tag;
+        //? if >=26.1 {
+        /*for (final String key : compoundTag.keySet()) {
+        *///?} else {
         for (final String key : compoundTag.getAllKeys()) {
+        //?}
             json.add(key, convert(compoundTag.get(key)));
         }
         return json;

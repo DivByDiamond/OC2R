@@ -43,7 +43,11 @@ public final class EnergyStorageItemStack implements EnergyStorage {
     @Override
     public int getEnergyStored() {
         var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        //? if >=26.1 {
+        /*return NBTUtils.getChildTag(tag, tagPath).getIntOr(FixedEnergyStorage.STORED_TAG_NAME, 0);
+        *///?} else {
         return NBTUtils.getChildTag(tag, tagPath).getInt(FixedEnergyStorage.STORED_TAG_NAME);
+        //?}
     }
 
     @Override

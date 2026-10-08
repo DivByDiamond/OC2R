@@ -46,14 +46,22 @@ public final class NBTReferenceArraySerializers {
                     }
                 }
             } else if (tag instanceof final ListTag listTag) {
+                //? if >=26.1 {
+                /*if (!listTag.isEmpty() && !(listTag.get(0) instanceof net.minecraft.nbt.StringTag)) {
+                *///?} else {
                 if (!listTag.isEmpty() && listTag.getElementType() != NBTTagIds.TAG_STRING) {
+                //?}
                     return data;
                 }
                 if (data == null || data.length != listTag.size()) {
                     data = (Enum<?>[]) Array.newInstance(componentType, listTag.size());
                 }
                 for (int i = 0; i < listTag.size(); i++) {
+                    //? if >=26.1 {
+                    /*final String name = listTag.getStringOr(i, "");
+                    *///?} else {
                     final String name = listTag.getString(i);
+                    //?}
                     if (name.isEmpty()) {
                         data[i] = null;
                         continue;
@@ -95,14 +103,22 @@ public final class NBTReferenceArraySerializers {
                 return data;
             }
             final ListTag serializedData = (ListTag) tag;
+            //? if >=26.1 {
+            /*if (!serializedData.isEmpty() && !(serializedData.get(0) instanceof net.minecraft.nbt.StringTag)) {
+            *///?} else {
             if (!serializedData.isEmpty() && serializedData.getElementType() != NBTTagIds.TAG_STRING) {
+            //?}
                 return data;
             }
             if (data == null || data.length != serializedData.size()) {
                 data = new String[serializedData.size()];
             }
             for (int i = 0; i < serializedData.size(); i++) {
+                //? if >=26.1 {
+                /*data[i] = serializedData.getStringOr(i, "");
+                *///?} else {
                 data[i] = serializedData.getString(i);
+                //?}
             }
             return data;
         }
@@ -133,7 +149,11 @@ public final class NBTReferenceArraySerializers {
                 data = new UUID[serializedData.size()];
             }
             for (int i = 0; i < serializedData.size(); i++) {
+                //? if >=26.1 {
+                /*data[i] = UUID.fromString(serializedData.getStringOr(i, ""));
+                *///?} else {
                 data[i] = UUID.fromString(serializedData.getString(i));
+                //?}
             }
             return data;
         }
@@ -147,7 +167,11 @@ public final class NBTReferenceArraySerializers {
             for (var x : input) {
                 values.add(ColorDataSerializer.toInt(x));
             }
+            //? if >=26.1 {
+            /*return new IntArrayTag(values.toIntArray());
+            *///?} else {
             return new IntArrayTag(values);
+            //?}
         }
 
         @Override

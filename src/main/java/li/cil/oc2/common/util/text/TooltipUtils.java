@@ -43,7 +43,11 @@ public final class TooltipUtils {
     private static void addTranslatedDescription(
             final ItemStack stack, final List<Component> tooltip) {
         final String translationKey =
+                //? if >=26.1 {
+                /*stack.getItem().getDescriptionId() + Constants.TOOLTIP_DESCRIPTION_SUFFIX;
+                *///?} else {
                 stack.getDescriptionId() + Constants.TOOLTIP_DESCRIPTION_SUFFIX;
+                //?}
         if (Language.getInstance().has(translationKey)) {
             tooltip.add(withFormat(Component.translatable(translationKey), ChatFormatting.GRAY));
         }

@@ -55,7 +55,11 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
     private Tag withDeviceId(@Nullable final Tag adapterState) {
         final CompoundTag tag =
                 adapterState instanceof final CompoundTag compound ? compound : new CompoundTag();
+        //? if >=26.1 {
+        /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, getOrCreateDeviceId());
+        *///?} else {
         tag.putUUID(DEVICE_ID_TAG_NAME, getOrCreateDeviceId());
+        //?}
         return tag;
     }
 
@@ -93,8 +97,13 @@ public final class InternetCardDevice extends AbstractNetworkInterfaceDevice {
         super.deserializeNBT(provider, tag);
         internetAdapterState = tag.get(Constants.INTERNET_ADAPTER_TAG_NAME);
         if (internetAdapterState instanceof final CompoundTag compound
+                //? if >=26.1 {
+                /*&& compound.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = compound.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+                *///?} else {
                 && compound.hasUUID(DEVICE_ID_TAG_NAME)) {
             deviceId = compound.getUUID(DEVICE_ID_TAG_NAME);
+                //?}
         }
     }
 

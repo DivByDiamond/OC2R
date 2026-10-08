@@ -22,8 +22,13 @@ public final class NBTUtils {
     @Nullable
     public static <T extends Enum<T>> T getEnum(
             final CompoundTag compound, final String key, final Class<T> enumType) {
+        //? if >=26.1 {
+        /*if (compound.contains(key)) {
+            final String name = compound.getStringOr(key, "");
+        *///?} else {
         if (compound.contains(key, net.minecraft.nbt.Tag.TAG_STRING)) {
             final String name = compound.getString(key);
+        //?}
             try {
                 return Enum.valueOf(enumType, name);
             } catch (final IllegalArgumentException ignored) {
@@ -31,8 +36,13 @@ public final class NBTUtils {
             }
         }
 
+        //? if >=26.1 {
+        /*if (compound.contains(key)) {
+            final int ordinal = compound.getIntOr(key, 0);
+        *///?} else {
         if (compound.contains(key, NBTTagIds.TAG_INT)) {
             final int ordinal = compound.getInt(key);
+        //?}
             final T[] constants = enumType.getEnumConstants();
             if (ordinal >= 0 && ordinal < constants.length) {
                 return constants[ordinal];
@@ -65,10 +75,18 @@ public final class NBTUtils {
 
         CompoundTag childTag = tag;
         for (final String tagName : path) {
+            //? if >=26.1 {
+            /*if (!childTag.contains(tagName)) {
+            *///?} else {
             if (!childTag.contains(tagName, NBTTagIds.TAG_COMPOUND)) {
+            //?}
                 return new CompoundTag();
             }
+            //? if >=26.1 {
+            /*childTag = childTag.getCompoundOrEmpty(tagName);
+            *///?} else {
             childTag = childTag.getCompound(tagName);
+            //?}
         }
 
         return childTag;
@@ -77,11 +95,19 @@ public final class NBTUtils {
     public static CompoundTag getOrCreateChildTag(final CompoundTag tag, final String... path) {
         CompoundTag childTag = tag;
         for (final String tagName : path) {
+            //? if >=26.1 {
+            /*if (!childTag.contains(tagName)) {
+            *///?} else {
             if (!childTag.contains(tagName, NBTTagIds.TAG_COMPOUND)) {
+            //?}
                 // NOPMD: each child tag is a distinct node stored in the tree
                 childTag.put(tagName, new CompoundTag()); // NOPMD allocation depends on loop iteration / per-item state
             }
+            //? if >=26.1 {
+            /*childTag = childTag.getCompoundOrEmpty(tagName);
+            *///?} else {
             childTag = childTag.getCompound(tagName);
+            //?}
         }
         return childTag;
     }
@@ -93,9 +119,17 @@ public final class NBTUtils {
 
     /// Tries to read an older format read/writeBlockPos used to use
     public static Optional<BlockPos> readBlockPosLegacy(CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (!tag.contains("X") || !tag.contains("Y") || !tag.contains("Z")) {
+        *///?} else {
         if (!tag.contains("X", 99) || !tag.contains("Y", 99) || !tag.contains("Z", 99)) {
+        //?}
             return Optional.empty();
         }
+        //? if >=26.1 {
+        /*return Optional.of(new BlockPos(tag.getIntOr("X", 0), tag.getIntOr("Y", 0), tag.getIntOr("Z", 0)));
+        *///?} else {
         return Optional.of(new BlockPos(tag.getInt("X"), tag.getInt("Y"), tag.getInt("Z")));
+        //?}
     }
 }

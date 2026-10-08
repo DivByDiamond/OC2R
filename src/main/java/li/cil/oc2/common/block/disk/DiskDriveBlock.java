@@ -9,7 +9,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -56,7 +60,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected InteractionResult useItemOn(
+    *///?} else {
     protected ItemInteractionResult useItemOn(
+    //?}
             final ItemStack stack,
             final BlockState state,
             final Level level,
@@ -73,7 +81,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
             if (!level.isClientSide()) {
                 player.setItemInHand(hand, diskDrive.insert(stack, player));
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -95,7 +107,11 @@ public final class DiskDriveBlock extends HorizontalDirectionalBlock implements 
             if (!level.isClientSide()) {
                 diskDrive.eject(player);
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return InteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         }
 
         return super.useWithoutItem(state, level, pos, player, hitResult);

@@ -38,42 +38,74 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
 
     @Override
     public boolean getBoolean(final String name) {
+        //? if >=26.1 {
+        /*return tag.getBooleanOr(name, false);
+        *///?} else {
         return tag.getBoolean(name);
+        //?}
     }
 
     @Override
     public byte getByte(final String name) {
+        //? if >=26.1 {
+        /*return tag.getByteOr(name, (byte) 0);
+        *///?} else {
         return tag.getByte(name);
+        //?}
     }
 
     @Override
     public char getChar(final String name) {
+        //? if >=26.1 {
+        /*return (char) tag.getIntOr(name, 0);
+        *///?} else {
         return (char) tag.getInt(name);
+        //?}
     }
 
     @Override
     public short getShort(final String name) {
+        //? if >=26.1 {
+        /*return tag.getShortOr(name, (short) 0);
+        *///?} else {
         return tag.getShort(name);
+        //?}
     }
 
     @Override
     public int getInt(final String name) {
+        //? if >=26.1 {
+        /*return tag.getIntOr(name, 0);
+        *///?} else {
         return tag.getInt(name);
+        //?}
     }
 
     @Override
     public long getLong(final String name) {
+        //? if >=26.1 {
+        /*return tag.getLongOr(name, 0L);
+        *///?} else {
         return tag.getLong(name);
+        //?}
     }
 
     @Override
     public float getFloat(final String name) {
+        //? if >=26.1 {
+        /*return tag.getFloatOr(name, 0.0F);
+        *///?} else {
         return tag.getFloat(name);
+        //?}
     }
 
     @Override
     public double getDouble(final String name) {
+        //? if >=26.1 {
+        /*return tag.getDoubleOr(name, 0.0);
+        *///?} else {
         return tag.getDouble(name);
+        //?}
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -94,13 +126,25 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
             assert arrayTag != null;
             return getArray(arrayTag, type, into);
         } else if (type.isEnum()) {
+            //? if >=26.1 {
+            /*return Enum.valueOf((Class) type, tag.getStringOr(name, ""));
+            *///?} else {
             return Enum.valueOf((Class) type, tag.getString(name));
+            //?}
         } else if (type == String.class) {
             return tag.getString(name);
         } else if (type == UUID.class) {
+            //? if >=26.1 {
+            /*return tag.getCompoundOrEmpty(name).read(name, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+            *///?} else {
             return tag.getCompound(name).getUUID(name);
+            //?}
         } else {
+            //? if >=26.1 {
+            /*final CompoundTag valueTag = tag.getCompoundOrEmpty(name);
+            *///?} else {
             final CompoundTag valueTag = tag.getCompound(name);
+            //?}
             return Ceres.getSerializer(type)
                     .deserialize(new NBTDeserializerImpl(valueTag), (Class) type, into);
         }
@@ -112,7 +156,11 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
     }
 
     private boolean isNull(final String name) {
+        //? if >=26.1 {
+        /*return tag.getCompoundOrEmpty(name).getBooleanOr(IS_NULL_KEY, false);
+        *///?} else {
         return tag.getCompound(name).getBoolean(IS_NULL_KEY);
+        //?}
     }
 
     @Nullable
@@ -140,7 +188,11 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
         } else if (tag instanceof CompoundTag) {
             final CompoundTag compoundTag = (CompoundTag) tag;
             listTag = (ListTag) compoundTag.get("value");
+            //? if >=26.1 {
+            /*nulls = compoundTag.getIntArray("nulls").orElse(new int[0]);
+            *///?} else {
             nulls = compoundTag.getIntArray("nulls");
+            //?}
         } else {
             return (Object[]) into;
         }

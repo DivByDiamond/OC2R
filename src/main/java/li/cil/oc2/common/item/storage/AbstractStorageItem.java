@@ -26,11 +26,19 @@ public abstract class AbstractStorageItem extends ModItem {
 
     public int getCapacity(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
+        //? if >=26.1 {
+        /*if (!tag.contains(CAPACITY_TAG_NAME)) {
+        *///?} else {
         if (!tag.contains(CAPACITY_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             return defaultCapacity;
         }
 
+        //? if >=26.1 {
+        /*return tag.getIntOr(CAPACITY_TAG_NAME, 0);
+        *///?} else {
         return tag.getInt(CAPACITY_TAG_NAME);
+        //?}
     }
 
     public ItemStack withCapacity(final ItemStack stack, final int capacity) {

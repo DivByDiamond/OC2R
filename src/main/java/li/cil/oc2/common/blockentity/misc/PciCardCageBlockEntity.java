@@ -71,7 +71,11 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
 
+        //? if >=26.1 {
+        /*energyPresent = tag.getBooleanOr(HAS_ENERGY_TAG_NAME, false);
+        *///?} else {
         energyPresent = tag.getBoolean(HAS_ENERGY_TAG_NAME);
+        //?}
     }
 
     @Override
@@ -85,7 +89,11 @@ public final class PciCardCageBlockEntity extends ModBlockEntity implements Tick
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
+        *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
+        //?}
     }
 
     public static void registerCapabilities(final CapabilityRegistrar registrar) {

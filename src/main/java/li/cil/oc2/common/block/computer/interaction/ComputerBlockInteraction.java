@@ -8,7 +8,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -19,7 +23,11 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public final class ComputerBlockInteraction {
 
+    //? if >=26.1 {
+    /*public static InteractionResult useItemOn(
+    *///?} else {
     public static ItemInteractionResult useItemOn(
+    //?}
             final ItemStack stack,
             final BlockState state,
             final Level level,
@@ -29,19 +37,35 @@ public final class ComputerBlockInteraction {
             final BlockHitResult hitResult,
             @Nullable final ComputerBlockEntity computer) {
         if (computer == null) {
+            //? if >=26.1 {
+            /*return InteractionResult.TRY_WITH_EMPTY_HAND;
+            *///?} else {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            //?}
         }
 
         if (!Wrenches.isWrench(stack)) {
+            //? if >=26.1 {
+            /*return InteractionResult.TRY_WITH_EMPTY_HAND;
+            *///?} else {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            //?}
         }
         if (player.isShiftKeyDown()) {
+            //? if >=26.1 {
+            /*return InteractionResult.PASS;
+            *///?} else {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            //?}
         }
         if (!level.isClientSide() && player instanceof final ServerPlayer serverPlayer) {
             computer.terminalManager.openInventoryScreen(serverPlayer);
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     public static InteractionResult useWithoutItem(
@@ -67,7 +91,11 @@ public final class ComputerBlockInteraction {
             }
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     public static BlockState playerWillDestroy(

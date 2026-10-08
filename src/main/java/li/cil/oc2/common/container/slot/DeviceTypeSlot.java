@@ -32,6 +32,17 @@ public final class DeviceTypeSlot extends Slot {
         return super.mayPlace(stack) && stack.is(deviceType.getTag());
     }
 
+    //? if >=26.1 {
+    /*@Nullable
+    @Override
+    public ResourceLocation getNoItemIcon() {
+        if (hasItem()) {
+            return super.getNoItemIcon();
+        } else {
+            return deviceType.getBackgroundIcon();
+        }
+    }
+    *///?} else {
     @Nullable
     @Override
     public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
@@ -41,4 +52,5 @@ public final class DeviceTypeSlot extends Slot {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, deviceType.getBackgroundIcon());
         }
     }
+    //?}
 }

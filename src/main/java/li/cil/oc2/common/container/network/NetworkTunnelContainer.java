@@ -27,7 +27,11 @@ public final class NetworkTunnelContainer extends AbstractContainer {
                 new MenuProvider() {
                     @Override
                     public Component getDisplayName() {
+                        //? if >=26.1 {
+                        /*return player.getItemInHand(hand).getItem().getName(player.getItemInHand(hand));
+                        *///?} else {
                         return player.getItemInHand(hand).getItem().getDescription();
+                        //?}
                     }
 
                     @Override

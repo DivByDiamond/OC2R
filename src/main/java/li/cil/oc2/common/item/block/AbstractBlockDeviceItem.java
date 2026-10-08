@@ -5,7 +5,11 @@ import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.common.bus.device.data.BlockDeviceDataRegistry;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if >=26.1 {
+/*import net.minecraft.IdentifierException;
+*///?} else {
 import net.minecraft.ResourceLocationException;
+//?}
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -38,13 +42,21 @@ public abstract class AbstractBlockDeviceItem extends ModItem {
             return null;
         }
 
+        //? if >=26.1 {
+        /*final String registryName = ItemStackUtils.getModDataTag(stack).getStringOr(DATA_TAG_NAME, "");
+        *///?} else {
         final String registryName = ItemStackUtils.getModDataTag(stack).getString(DATA_TAG_NAME);
+        //?}
 
         ResourceLocation location = defaultData;
         if (!StringUtil.isNullOrEmpty(registryName)) {
             try {
                 location = ResourceLocation.parse(registryName);
+            //? if >=26.1 {
+            /*} catch (final IdentifierException ignored) {
+            *///?} else {
             } catch (final ResourceLocationException ignored) {
+            //?}
                 LOGGER.trace("Invalid registry name: {}", registryName, ignored);
             }
         }

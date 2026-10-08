@@ -56,7 +56,11 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         internetState = tag.get(Constants.INTERNET_ADAPTER_TAG_NAME);
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ENERGY_TAG_NAME));
+        *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(Constants.ENERGY_TAG_NAME));
+        //?}
     }
 
     @Override
@@ -81,6 +85,7 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
         return tag;
     }
 
+    //? if <26.1 {
     @Override
     public void onDataPacket(
             Connection net,
@@ -91,11 +96,17 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
             handleUpdateTag(compoundtag, lookupProvider);
         }
     }
+    //?}
 
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
+        //? if >=26.1 {
+        /*animation.inboundCount = tag.getIntOr("inbound_count", 0);
+        animation.outboundCount = tag.getIntOr("outbound_count", 0);
+        *///?} else {
         animation.inboundCount = tag.getInt("inbound_count");
         animation.outboundCount = tag.getInt("outbound_count");
+        //?}
         animation.handledInboundCount =
                 Math.max(animation.handledInboundCount, animation.inboundCount - 128);
         animation.handledOutboundCount =
@@ -156,7 +167,11 @@ public class InternetGateWayBlockEntity extends ModBlockEntity
                 for (final ServerPlayer player :
                         serverLevel.getChunkSource()
                                 .chunkMap
+                                //? if >=26.1 {
+                                /*.getPlayers(ChunkPos.containing(getBlockPos()), false)) {
+                                *///?} else {
                                 .getPlayers(new ChunkPos(getBlockPos()), false)) {
+                                //?}
                     player.connection.send(ClientboundBlockEntityDataPacket.create(this));
                 }
             }

@@ -125,9 +125,17 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*final List<Tag> hosts = tag.getListOrEmpty("hosts");
+        *///?} else {
         final List<Tag> hosts = tag.getList("hosts", Tag.TAG_COMPOUND);
+        //?}
         hostTable.load(hosts);
+        //? if >=26.1 {
+        /*final List<Tag> ports = tag.getListOrEmpty("ports");
+        *///?} else {
         final List<Tag> ports = tag.getList("ports", Tag.TAG_COMPOUND);
+        //?}
         portManager.load(ports);
     }
 

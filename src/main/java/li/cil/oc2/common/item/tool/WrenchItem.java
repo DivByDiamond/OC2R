@@ -38,7 +38,11 @@ public final class WrenchItem extends ModItem {
                                     : Rotation.COUNTERCLOCKWISE_90);
             if (!Objects.equals(blockState, rotatedState)) {
                 level.setBlockAndUpdate(pos, rotatedState);
+                //? if >=26.1 {
+                /*return InteractionResult.SUCCESS;
+                *///?} else {
                 return InteractionResult.sidedSuccess(level.isClientSide());
+                //?}
             }
         }
 
@@ -72,7 +76,11 @@ public final class WrenchItem extends ModItem {
             serverPlayer.gameMode.destroyBlock(pos);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     // Not annotated with @Override: NeoForge-only Item hook, see onItemUseFirst.

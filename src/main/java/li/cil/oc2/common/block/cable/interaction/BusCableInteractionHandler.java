@@ -16,10 +16,18 @@ import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+//? if >=26.1 {
+/*import net.minecraft.world.level.gamerules.GameRules;
+*///?} else {
 import net.minecraft.world.level.GameRules;
+//?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,7 +39,11 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public final class BusCableInteractionHandler {
     @Nullable
+    //? if >=26.1 {
+    /*public static InteractionResult handleUseItemOn(
+    *///?} else {
     public static ItemInteractionResult handleUseItemOn(
+    //?}
             final ItemStack heldItem,
             final BlockState state,
             final Level level,
@@ -41,7 +53,11 @@ public final class BusCableInteractionHandler {
             final BlockHitResult hitResult) {
         if (heldItem.getItem().equals(Items.BUS_CABLE.get())
                 || heldItem.getItem().equals(Items.BUS_INTERFACE.get())) {
+            //? if >=26.1 {
+            /*return InteractionResult.PASS;
+            *///?} else {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            //?}
         }
 
         final BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -62,7 +78,11 @@ public final class BusCableInteractionHandler {
         return null;
     }
 
+    //? if >=26.1 {
+    /*private static InteractionResult handleWrench(
+    *///?} else {
     private static ItemInteractionResult handleWrench(
+    //?}
             final BlockState state,
             final Level level,
             final BlockPos pos,
@@ -81,12 +101,20 @@ public final class BusCableInteractionHandler {
         if (getPartCount(state) > 1
                 && (tryRemoveInterface(state, level, pos, player, hitResult)
                         || tryRemoveCable(state, level, pos, player))) {
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         }
         return null;
     }
 
+    //? if >=26.1 {
+    /*private static InteractionResult handleWrenchNonShift(
+    *///?} else {
     private static ItemInteractionResult handleWrenchNonShift(
+    //?}
             final BlockState state,
             final Level level,
             final BlockPos pos,
@@ -99,10 +127,18 @@ public final class BusCableInteractionHandler {
         if (level.isClientSide()) {
             openBusInterfaceScreen(busCableBlockEntity, side);
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
+    //? if >=26.1 {
+    /*private static InteractionResult handleFacadeRemoval(
+    *///?} else {
     private static ItemInteractionResult handleFacadeRemoval(
+    //?}
             final Level level,
             final BlockPos pos,
             final Player player,
@@ -111,8 +147,14 @@ public final class BusCableInteractionHandler {
             final ItemStack facadeItem) {
         if (!level.isClientSide()) {
             busCableBlockEntity.removeFacade();
+            //? if >=26.1 {
+            /*if (!player.isCreative()
+                    && level instanceof final net.minecraft.server.level.ServerLevel serverLevel
+                    && serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
+            *///?} else {
             if (!player.isCreative()
                     && level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+            //?}
                 ItemStackUtils.spawnAsEntity(
                                 level, pos, facadeItem, hitResult.getDirection())
                         .ifPresent(
@@ -122,10 +164,18 @@ public final class BusCableInteractionHandler {
                                 });
             }
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
+    //? if >=26.1 {
+    /*private static InteractionResult handleFacadePlacement(
+    *///?} else {
     private static ItemInteractionResult handleFacadePlacement(
+    //?}
             final ItemStack heldItem,
             final Level level,
             final Player player,
@@ -133,19 +183,36 @@ public final class BusCableInteractionHandler {
         final var facadeType = busCableBlockEntity.getFacadeType(heldItem);
         if (facadeType == FacadeType.INVALID_BLOCK) {
             if (!level.isClientSide()) {
+                //? if >=26.1 {
+                /*player.sendOverlayMessage(
+                        text("message.{mod}.invalid_facade_block"));
+                *///?} else {
                 player.displayClientMessage(
                         text("message.{mod}.invalid_facade_block"), true);
+                //?}
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         } else if (facadeType == FacadeType.VALID_BLOCK) {
             if (level.isClientSide()) {
+                //? if >=26.1 {
+                /*return InteractionResult.SUCCESS;
+                *///?} else {
                 return ItemInteractionResult.sidedSuccess(true);
+                //?}
             }
             busCableBlockEntity.setFacade(heldItem);
             if (!player.getAbilities().instabuild) {
                 heldItem.shrink(1);
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return ItemInteractionResult.sidedSuccess(false);
+            //?}
         }
         return null;
     }
@@ -201,7 +268,13 @@ public final class BusCableInteractionHandler {
             final ItemStack drop,
             final boolean neighborConnectionChanged) {
         onConnectionTypeChanged(level, pos, side, neighborConnectionChanged);
+        //? if >=26.1 {
+        /*if (!player.isCreative()
+                && level instanceof final net.minecraft.server.level.ServerLevel serverLevel
+                && serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
+        *///?} else {
         if (!player.isCreative() && level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+        //?}
             ItemStackUtils.spawnAsEntity(level, pos, drop, side)
                     .ifPresent(
                             entity -> {

@@ -66,7 +66,11 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
         public String apply(final ItemStack ingredient, final UidContext context) {
             final String registryName =
                     ItemStackUtils.getModDataTag(ingredient)
+                            //? if >=26.1 {
+                            /*.getStringOr(AbstractBlockDeviceItem.DATA_TAG_NAME, "");
+                            *///?} else {
                             .getString(AbstractBlockDeviceItem.DATA_TAG_NAME);
+                            //?}
             return Strings.isNullOrEmpty(registryName) ? NONE : registryName;
         }
     }

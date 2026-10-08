@@ -170,8 +170,14 @@ public final class Robot extends AbstractRobotEntity
         return RobotInteractionHandler.skipAttackInteraction(this, entity);
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public InteractionResult interact(
+            final Player player, final InteractionHand hand, final net.minecraft.world.phys.Vec3 location) {
+    *///?} else {
     @Override
     public InteractionResult interact(final Player player, final InteractionHand hand) {
+    //?}
         return RobotInteractionHandler.interact(this, player, hand);
     }
 

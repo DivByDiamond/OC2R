@@ -43,7 +43,11 @@ final class RobotActionProcessorSerialization {
         processor.queue.clear();
         processor.results.clear();
 
+        //? if >=26.1 {
+        /*final List<Tag> queueTag = tag.getListOrEmpty(QUEUE_TAG_NAME);
+        *///?} else {
         final List<Tag> queueTag = tag.getList(QUEUE_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        //?}
         for (int i = 0; i < Math.min(queueTag.size(), maxActions - 1); i++) {
             final AbstractRobotAction action =
                     RobotActions.deserialize((CompoundTag) queueTag.get(i));
@@ -52,9 +56,17 @@ final class RobotActionProcessorSerialization {
             }
         }
 
+        //? if >=26.1 {
+        /*processor.action = RobotActions.deserialize(tag.getCompoundOrEmpty(ACTION_TAG_NAME));
+        *///?} else {
         processor.action = RobotActions.deserialize(tag.getCompound(ACTION_TAG_NAME));
+        //?}
 
+        //? if >=26.1 {
+        /*final List<Tag> resultsTag = tag.getListOrEmpty(RESULTS_TAG_NAME);
+        *///?} else {
         final List<Tag> resultsTag = tag.getList(RESULTS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        //?}
         for (int i = 0; i < Math.min(resultsTag.size(), RobotActionProcessor.MAX_QUEUED_RESULTS); i++) {
             final RobotActionProcessorResult result =
                     new RobotActionProcessorResult((CompoundTag) resultsTag.get(i)); // NOPMD per-result data
@@ -63,6 +75,10 @@ final class RobotActionProcessorSerialization {
             }
         }
 
+        //? if >=26.1 {
+        /*processor.lastActionId = tag.getIntOr(LAST_ACTION_ID_TAG_NAME, 0);
+        *///?} else {
         processor.lastActionId = tag.getInt(LAST_ACTION_ID_TAG_NAME);
+        //?}
     }
 }

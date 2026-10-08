@@ -80,6 +80,10 @@ public final class BlockEntities {
                     final BlockEntityType.BlockEntitySupplier<T> factory) {
         return Platform.registries().register("minecraft:block_entity_type", API.MOD_ID, 
                 block.getId().getPath(),
+                //? if >=26.1 {
+                /*() -> new BlockEntityType<>(factory, block.get()));
+                *///?} else {
                 () -> BlockEntityType.Builder.of(factory, block.get()).build(null));
+                //?}
     }
 }

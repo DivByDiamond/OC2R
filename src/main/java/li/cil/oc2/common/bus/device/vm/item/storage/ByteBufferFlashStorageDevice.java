@@ -91,7 +91,11 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*final byte[] data = tag.getByteArray(DATA_TAG_NAME).orElse(new byte[0]);
+        *///?} else {
         final byte[] data = tag.getByteArray(DATA_TAG_NAME);
+        //?}
         final ByteBuffer bufferData = ByteBuffer.allocate(size);
         bufferData.clear();
         bufferData.put(data, 0, Math.min(bufferData.limit(), data.length));
@@ -107,9 +111,15 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
             try {
                 data = ByteBuffer.allocate(size);
                 data.clear();
+                //? if >=26.1 {
+                /*CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompoundOrEmpty(DATA_TAG_NAME);
+                if (tag.read("blob", net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+                    BlobStorage.getOrOpenAsync(tag.read("blob", net.minecraft.core.UUIDUtil.CODEC).orElseThrow()).join().read(data, 0);
+                *///?} else {
                 CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompound(DATA_TAG_NAME);
                 if (tag.hasUUID("blob")) {
                     BlobStorage.getOrOpenAsync(tag.getUUID("blob")).join().read(data, 0);
+                //?}
                 }
             } catch (Exception e) {
                 LOGGER.warn("Failed to load flash storage data", e);

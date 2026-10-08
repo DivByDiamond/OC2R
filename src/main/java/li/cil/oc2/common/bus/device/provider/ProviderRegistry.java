@@ -36,12 +36,20 @@ import net.minecraft.core.Registry;
 
 public final class ProviderRegistry {
     private static final String BLOCK_DEVICE_PROVIDERS =
+            //? if >=26.1 {
+            /*Registries.BLOCK_DEVICE_PROVIDER.identifier().toString();
+            *///?} else {
             Registries.BLOCK_DEVICE_PROVIDER.location().toString();
+            //?}
     public static final Registry<BlockDeviceProvider> BLOCK_DEVICE_PROVIDER_REGISTRY =
             Platform.registries().createRegistry(BLOCK_DEVICE_PROVIDERS, API.MOD_ID);
 
     private static final String ITEM_DEVICE_PROVIDERS =
+            //? if >=26.1 {
+            /*Registries.ITEM_DEVICE_PROVIDER.identifier().toString();
+            *///?} else {
             Registries.ITEM_DEVICE_PROVIDER.location().toString();
+            //?}
     public static final Registry<ItemDeviceProvider> ITEM_DEVICE_PROVIDER_REGISTRY =
             Platform.registries().createRegistry(ITEM_DEVICE_PROVIDERS, API.MOD_ID);
 

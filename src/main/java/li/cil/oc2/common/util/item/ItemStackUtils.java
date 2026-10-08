@@ -86,7 +86,11 @@ public final class ItemStackUtils {
             return spawnAsEntity(level, pos, stack);
         }
 
+        //? if >=26.1 {
+        /*if (level.isClientSide() || stack.isEmpty()) {
+        *///?} else {
         if (level.isClientSide || stack.isEmpty()) {
+        //?}
             return Optional.empty();
         }
 

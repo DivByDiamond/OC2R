@@ -110,13 +110,25 @@ public final class RobotMovementAction extends AbstractRobotAction {
 
         NBTUtils.putEnum(tag, DIRECTION_TAG_NAME, direction);
         if (origin != null) {
+            //? if >=26.1 {
+            /*tag.store(ORIGIN_TAG_NAME, BlockPos.CODEC, origin);
+            *///?} else {
             tag.put(ORIGIN_TAG_NAME, NbtUtils.writeBlockPos(origin));
+            //?}
         }
         if (start != null) {
+            //? if >=26.1 {
+            /*tag.store(START_TAG_NAME, BlockPos.CODEC, start);
+            *///?} else {
             tag.put(START_TAG_NAME, NbtUtils.writeBlockPos(start));
+            //?}
         }
         if (target != null) {
+            //? if >=26.1 {
+            /*tag.store(TARGET_TAG_NAME, BlockPos.CODEC, target);
+            *///?} else {
             tag.put(TARGET_TAG_NAME, NbtUtils.writeBlockPos(target));
+            //?}
         }
 
         return tag;
@@ -129,14 +141,38 @@ public final class RobotMovementAction extends AbstractRobotAction {
         direction = NBTUtils.getEnum(tag, DIRECTION_TAG_NAME, MovementDirection.class);
         if (direction == null) direction = MovementDirection.FORWARD;
         direction = direction.resolve();
+        //? if >=26.1 {
+        /*if (tag.contains(ORIGIN_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(ORIGIN_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
+        //?}
+            //? if >=26.1 {
+            /*origin = tag.read(ORIGIN_TAG_NAME, BlockPos.CODEC).orElseThrow();
+            *///?} else {
             origin = NbtUtils.readBlockPos(tag, ORIGIN_TAG_NAME).orElseThrow();
+            //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(START_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(START_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
+        //?}
+            //? if >=26.1 {
+            /*start = tag.read(START_TAG_NAME, BlockPos.CODEC).orElseThrow();
+            *///?} else {
             start = NbtUtils.readBlockPos(tag, START_TAG_NAME).orElseThrow();
+            //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(TARGET_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(TARGET_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
+        //?}
+            //? if >=26.1 {
+            /*target = tag.read(TARGET_TAG_NAME, BlockPos.CODEC).orElseThrow();
+            *///?} else {
             target = NbtUtils.readBlockPos(tag, TARGET_TAG_NAME).orElseThrow();
+            //?}
             targetPos = getTargetPositionInBlock(target);
         }
     }

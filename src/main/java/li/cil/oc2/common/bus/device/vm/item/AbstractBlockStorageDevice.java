@@ -93,14 +93,23 @@ public abstract class AbstractBlockStorageDevice<B extends BlockDevice, I>
     @Override
     public void exportToItemStack(final CompoundTag nbt) {
         if (blobHandle != null) {
+            //? if >=26.1 {
+            /*nbt.store(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, blobHandle);
+            *///?} else {
             nbt.putUUID(BLOB_HANDLE_TAG_NAME, blobHandle);
+            //?}
         }
     }
 
     @Override
     public void importFromItemStack(final CompoundTag nbt) {
+        //? if >=26.1 {
+        /*if (nbt.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            blobHandle = nbt.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         if (nbt.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             blobHandle = nbt.getUUID(BLOB_HANDLE_TAG_NAME);
+        //?}
         }
     }
 
@@ -109,7 +118,11 @@ public abstract class AbstractBlockStorageDevice<B extends BlockDevice, I>
         final CompoundTag tag = new CompoundTag();
 
         if (blobHandle != null) {
+            //? if >=26.1 {
+            /*tag.store(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, blobHandle);
+            *///?} else {
             tag.putUUID(BLOB_HANDLE_TAG_NAME, blobHandle);
+            //?}
         }
 
         if (device != null) {
@@ -130,24 +143,49 @@ public abstract class AbstractBlockStorageDevice<B extends BlockDevice, I>
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            blobHandle = tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             blobHandle = tag.getUUID(BLOB_HANDLE_TAG_NAME);
+        //?}
         }
 
+        //? if >=26.1 {
+        /*if (tag.contains(DEVICE_TAG_NAME)) {
+            deviceTag = tag.getCompoundOrEmpty(DEVICE_TAG_NAME);
+        *///?} else {
         if (tag.contains(DEVICE_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
             deviceTag = tag.getCompound(DEVICE_TAG_NAME);
+        //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(ADDRESS_TAG_NAME)) {
+            address.set(tag.getLongOr(ADDRESS_TAG_NAME, 0L));
+        *///?} else {
         if (tag.contains(ADDRESS_TAG_NAME, NBTTagIds.TAG_LONG)) {
             address.set(tag.getLong(ADDRESS_TAG_NAME));
+        //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(INTERRUPT_TAG_NAME)) {
+            interrupt.set(tag.getIntOr(INTERRUPT_TAG_NAME, 0));
+        *///?} else {
         if (tag.contains(INTERRUPT_TAG_NAME, NBTTagIds.TAG_INT)) {
             interrupt.set(tag.getInt(INTERRUPT_TAG_NAME));
+        //?}
         }
     }
 
     public static void unmount(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            BlobStorageCloseHelper.closeBlob(LOGGER, tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow());
+        *///?} else {
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             BlobStorageCloseHelper.closeBlob(LOGGER, tag.getUUID(BLOB_HANDLE_TAG_NAME));
+        //?}
         }
     }
 

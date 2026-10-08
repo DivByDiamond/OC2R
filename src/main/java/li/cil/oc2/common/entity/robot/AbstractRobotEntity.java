@@ -66,11 +66,32 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         builder.define(SELECTED_SLOT, (byte) 0);
     }
 
+    //? if >=26.1 {
+    /*// Minecraft 26.x saves entities through ValueOutput/ValueInput; the robot keeps its tag based serialization.
+    @Override
+    protected final void addAdditionalSaveData(final net.minecraft.world.level.storage.ValueOutput output) {
+        final CompoundTag tag = new CompoundTag();
+        addAdditionalSaveData(tag);
+        output.store(tag);
+    }
+
+    @Override
+    protected final void readAdditionalSaveData(final net.minecraft.world.level.storage.ValueInput input) {
+        readAdditionalSaveData(
+                input.read(com.mojang.serialization.MapCodec.assumeMapUnsafe(CompoundTag.CODEC))
+                        .orElseGet(CompoundTag::new));
+    }
+
+    protected abstract void addAdditionalSaveData(final CompoundTag tag);
+
+    protected abstract void readAdditionalSaveData(final CompoundTag tag);
+    *///?} else {
     @Override
     protected abstract void addAdditionalSaveData(final CompoundTag tag);
 
     @Override
     protected abstract void readAdditionalSaveData(final CompoundTag tag);
+    //?}
 
     @Override
     public boolean isPickable() {
@@ -85,10 +106,17 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
     @Override
     public void push(final Entity entity) {}
 
+    //? if >=26.1 {
+    /*@Override
+    public boolean canBeCollidedWith(@javax.annotation.Nullable final Entity other) {
+        return true;
+    }
+    *///?} else {
     @Override
     public boolean canBeCollidedWith() {
         return true;
     }
+    //?}
 
     @Override
     public boolean canSpawnSprintParticle() {
@@ -100,8 +128,15 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         return Entity.MovementEmission.NONE;
     }
 
+    //? if >=26.1 {
+    /*@Override
+    protected boolean isAffectedByBlocks() {
+        return false;
+    }
+    *///?} else {
     @Override
     protected void checkInsideBlocks() {}
+    //?}
 
     @Override
     protected Vec3 limitPistonMovement(final Vec3 pos) {

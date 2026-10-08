@@ -83,7 +83,11 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
             openKeyboardScreen(keyboard);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     // EntityBlock

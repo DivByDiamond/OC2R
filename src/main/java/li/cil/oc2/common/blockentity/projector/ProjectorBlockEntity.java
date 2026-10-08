@@ -119,15 +119,24 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         final CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("projecting", projectorState.isMounted);
         tag.putBoolean("has_energy", projectorState.hasEnergy);
+        //? if >=26.1 {
+        /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
+        *///?} else {
         tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
+        //?}
         return tag;
     }
 
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
+        //? if >=26.1 {
+        /*projectorState.applyClient(tag.getBooleanOr("projecting", false), tag.getBooleanOr("has_energy", false));
+        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         projectorState.applyClient(tag.getBoolean("projecting"), tag.getBoolean("has_energy"));
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
+        //?}
         ProjectorContraptionHelper.registerInClientRegistry(this);
     }
 
@@ -147,14 +156,23 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     protected void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(ENERGY_TAG_NAME, energy.serializeNBT(registries));
+        //? if >=26.1 {
+        /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
+        *///?} else {
         tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
+        //?}
     }
 
     @Override
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
+        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
+        //?}
     }
 
     public AABB getRenderBoundingBox() {

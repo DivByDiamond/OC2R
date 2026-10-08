@@ -96,8 +96,13 @@ public final class ChunkUtils {
      * @param chunkPos the position of the chunk.
      */
     public static void setLazyUnsaved(final LevelAccessor level, final ChunkPos chunkPos) {
+        //? if >=26.1 {
+        /*final int chunkX = chunkPos.x();
+        final int chunkZ = chunkPos.z();
+        *///?} else {
         final int chunkX = chunkPos.x;
         final int chunkZ = chunkPos.z;
+        //?}
         if (level.hasChunk(chunkX, chunkZ)) {
             setLazyUnsaved(level.getChunk(chunkX, chunkZ));
         }
@@ -109,9 +114,15 @@ public final class ChunkUtils {
      */
     public static void applyChunkLazyUnsaved() {
         for (final ChunkAccess chunk : UNSAVED_CHUNKS) {
+            //? if >=26.1 {
+            /*chunk.markUnsaved();
+        }
+        UNSAVED_CHUNKS.clear();
+            *///?} else {
             chunk.setUnsaved(true);
         }
         UNSAVED_CHUNKS.clear();
+            //?}
     }
 
     /** Subscribes to chunk unloads so lazily-unsaved chunks are flagged before they are saved. */
@@ -120,8 +131,13 @@ public final class ChunkUtils {
     }
 
     private static void handleChunkUnload(final ChunkAccess chunk) {
+        //? if >=26.1 {
+        /*if (UNSAVED_CHUNKS.remove(chunk)) {
+            chunk.markUnsaved();
+        *///?} else {
         if (UNSAVED_CHUNKS.remove(chunk)) {
             chunk.setUnsaved(true);
+        //?}
         }
     }
 }

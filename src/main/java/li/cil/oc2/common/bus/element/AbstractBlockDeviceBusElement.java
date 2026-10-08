@@ -53,8 +53,13 @@ public abstract class AbstractBlockDeviceBusElement
             final BlockPos neighborPos = getPosition().relative(neighborDirection);
 
             final ChunkPos chunkPos =
+                    //? if >=26.1 {
+                    /*ChunkPos.containing(neighborPos); // NOPMD: depends on loop direction
+            if (!level.hasChunk(chunkPos.x(), chunkPos.z())) {
+                    *///?} else {
                     new ChunkPos(neighborPos); // NOPMD: depends on loop direction
             if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+                    //?}
                 return Optional.empty();
             }
 
@@ -167,7 +172,11 @@ public abstract class AbstractBlockDeviceBusElement
         super.onEntryRemoved(dataKey, tag, query);
         assert query != null : "Passed null query for block device bus element.";
         final Registry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();
+        //? if >=26.1 {
+        /*final BlockDeviceProvider provider = registry.getValue(ResourceLocation.parse(dataKey));
+        *///?} else {
         final BlockDeviceProvider provider = registry.get(ResourceLocation.parse(dataKey));
+        //?}
         if (provider != null) {
             provider.unmount(query, tag);
         }

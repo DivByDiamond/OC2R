@@ -28,7 +28,11 @@ public final class RobotActionProcessorResult {
     }
 
     public void deserialize(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*actionId = tag.getIntOr(ACTION_ID_TAG_NAME, 0);
+        *///?} else {
         actionId = tag.getInt(ACTION_ID_TAG_NAME);
+        //?}
         result = NBTUtils.getEnum(tag, RESULT_TAG_NAME, RobotActionResult.class);
     }
 }

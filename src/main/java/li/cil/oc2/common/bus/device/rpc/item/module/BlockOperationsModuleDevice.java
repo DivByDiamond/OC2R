@@ -24,7 +24,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?} else {
 import net.minecraft.world.item.Tier;
+//?}
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -123,7 +127,11 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         final BlockHitResult hit =
                 new BlockHitResult(
                         Vec3.atCenterOf(blockPos)
+                                //? if >=26.1 {
+                                /*.add(Vec3.atCenterOf(oppositeDirection.getUnitVec3i()).scale(0.5)),
+                                *///?} else {
                                 .add(Vec3.atCenterOf(oppositeDirection.getNormal()).scale(0.5)),
+                                //?}
                         oppositeDirection,
                         blockPos,
                         false);
@@ -167,7 +175,11 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
         final ItemStack extracted = inventory.extractItem(selectedSlot, 1, true);
 
+        //? if >=26.1 {
+        /*final Tiers tier = RepairHelper.getRepairItemTier(extracted);
+        *///?} else {
         final Tier tier = RepairHelper.getRepairItemTier(extracted);
+        //?}
         if (tier == null) {
             return false;
         }

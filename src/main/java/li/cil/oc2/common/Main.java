@@ -45,7 +45,11 @@ public final class Main {
         ModBootstrap.registerListeners();
 
         modBus.addListener((FMLCommonSetupEvent event) -> CommonSetup.run());
+        //? if >=26.1 {
+        /*if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {
+        *///?} else {
         if (FMLLoader.getDist() == Dist.CLIENT) {
+        //?}
             Manuals.initialize();
             ClientEventListeners.register();
             ClientProxy.set(new NeoForgeClientProxy());

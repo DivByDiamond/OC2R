@@ -72,7 +72,11 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
                     (nbt) -> {
                         final CompoundTag tag =
                                 ItemStackUtils.getOrCreateModDataTag(nbt)
+                                        //? if >=26.1 {
+                                        /*.getCompoundOrEmpty(DATA_TAG_NAME);
+                                        *///?} else {
                                         .getCompound(DATA_TAG_NAME);
+                                        //?}
                         owner.device.updateBlockDevice(tag);
                     });
         }

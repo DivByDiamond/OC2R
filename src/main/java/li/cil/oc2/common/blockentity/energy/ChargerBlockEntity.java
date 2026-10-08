@@ -80,7 +80,11 @@ public final class ChargerBlockEntity extends ModBlockEntity
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ENERGY_TAG_NAME));
+        *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(Constants.ENERGY_TAG_NAME));
+        //?}
     }
 
     @Callback
@@ -161,7 +165,11 @@ registrar.registerBlock(
         assert level != null;
 
         final int amount = Math.min(energy.getEnergyStored(), Config.chargerEnergyPerTick);
+        //? if >=26.1 {
+        /*final boolean simulate = level.isClientSide();
+        *///?} else {
         final boolean simulate = level.isClientSide;
+        //?}
         if (energy.extractEnergy(energyStorage.receiveEnergy(amount, simulate), simulate) > 0) {
             charging = true;
         }

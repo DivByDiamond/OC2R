@@ -27,8 +27,13 @@ public final class CreativeEnergyBlockEntity extends ModBlockEntity implements T
         for (final Direction side : SIDES) {
             final BlockPos neighborPos = getBlockPos().relative(side);
             final ChunkPos neighborChunkPos =
+                    //? if >=26.1 {
+                    /*ChunkPos.containing(neighborPos); // NOPMD: depends on loop side
+            if (level.hasChunk(neighborChunkPos.x(), neighborChunkPos.z())) {
+                    *///?} else {
                     new ChunkPos(neighborPos); // NOPMD: depends on loop side
             if (level.hasChunk(neighborChunkPos.x, neighborChunkPos.z)) {
+                    //?}
                 final EnergyStorage energy =
                         Platform.energy().getBlockEnergy(level, neighborPos, side.getOpposite());
                 if (energy != null) {

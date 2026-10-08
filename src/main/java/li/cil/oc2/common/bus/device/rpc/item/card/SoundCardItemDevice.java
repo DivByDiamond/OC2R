@@ -104,7 +104,11 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
         gameTimeCooldownExpiresAt = gameTime + COOLDOWN_IN_TICKS;
 
         final SoundEvent soundEvent =
+                //? if >=26.1 {
+                /*BuiltInRegistries.SOUND_EVENT.getValue(ResourceLocation.parse(name));
+                *///?} else {
                 BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(name));
+                //?}
         if (soundEvent == null) throw new IllegalArgumentException("Sound not found.");
         serverLevel.playSound(
                 null,

@@ -134,7 +134,11 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override
@@ -148,7 +152,11 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override

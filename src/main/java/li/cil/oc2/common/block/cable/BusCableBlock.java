@@ -17,7 +17,11 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -116,7 +120,11 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected InteractionResult useItemOn(
+    *///?} else {
     protected ItemInteractionResult useItemOn(
+    //?}
             final ItemStack heldItem,
             final BlockState state,
             final Level level,
@@ -124,7 +132,11 @@ public final class BusCableBlock extends BaseEntityBlock {
             final Player player,
             final InteractionHand hand,
             final BlockHitResult hitResult) {
+        //? if >=26.1 {
+        /*final InteractionResult result =
+        *///?} else {
         final ItemInteractionResult result =
+        //?}
                 BusCableInteractionHandler.handleUseItemOn(
                         heldItem, state, level, pos, player, hand, hitResult);
         return result != null

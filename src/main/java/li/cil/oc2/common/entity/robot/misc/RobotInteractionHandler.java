@@ -31,7 +31,11 @@ public final class RobotInteractionHandler {
                 }
             }
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(robot.level().isClientSide());
+        //?}
     }
 
     public static boolean skipAttackInteraction(final Robot robot, final Entity entity) {
@@ -47,7 +51,11 @@ public final class RobotInteractionHandler {
         }
         final ItemStack stack = new ItemStack(Items.ROBOT.get());
         robot.exportToItemStack(stack);
+        //? if >=26.1 {
+        /*robot.spawnAtLocation((net.minecraft.server.level.ServerLevel) robot.level(), stack);
+        *///?} else {
         robot.spawnAtLocation(stack);
+        //?}
         robot.discard();
         LevelUtils.playSound(
                 robot.level(), robot.blockPosition(), SoundType.METAL, SoundType::getBreakSound);

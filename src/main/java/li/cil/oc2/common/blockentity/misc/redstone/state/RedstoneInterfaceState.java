@@ -24,13 +24,25 @@ public final class RedstoneInterfaceState {
     }
 
     public void loadAdditional(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME).orElse(new byte[0]);
+        *///?} else {
         final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME);
+        //?}
         System.arraycopy(
                 serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
 
+        //? if >=26.1 {
+        /*final CompoundTag bundledTag = tag.getCompoundOrEmpty(BUNDLED_TAG_NAME);
+        *///?} else {
         final CompoundTag bundledTag = tag.getCompound(BUNDLED_TAG_NAME);
+        //?}
         for (final Direction dir : Direction.values()) {
+            //? if >=26.1 {
+            /*final byte[] serializedBundled = bundledTag.getByteArray(dir.getName()).orElse(new byte[0]);
+            *///?} else {
             final byte[] serializedBundled = bundledTag.getByteArray(dir.getName());
+            //?}
             final byte[] dest = bundledOutput[dir.get3DDataValue()];
             System.arraycopy(
                     serializedBundled, 0, dest, 0, Math.min(serializedBundled.length, dest.length));

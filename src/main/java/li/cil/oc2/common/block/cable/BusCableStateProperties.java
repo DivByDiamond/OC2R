@@ -8,7 +8,11 @@ import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?} else {
 import net.minecraft.Util;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -72,7 +76,11 @@ public final class BusCableStateProperties {
 
     public static Direction getHitSide(final BlockPos pos, final BlockHitResult hit) {
         final Vec3 localHitPos = hit.getLocation().subtract(Vec3.atCenterOf(pos));
+        //? if >=26.1 {
+        /*return Direction.getApproximateNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        *///?} else {
         return Direction.getNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        //?}
     }
 
     public static boolean addInterface(

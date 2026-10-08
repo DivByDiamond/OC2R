@@ -9,7 +9,11 @@ import java.util.stream.Stream;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.imc.RPCMethodParameterTypeAdapter;
 import li.cil.oc2.common.bus.device.rpc.RPCMethodParameterTypeAdapters;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?} else {
 import net.minecraft.Util;
+//?}
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

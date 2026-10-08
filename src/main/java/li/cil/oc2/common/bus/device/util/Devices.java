@@ -53,8 +53,13 @@ public final class Devices {
     }
 
     public static Optional<List<BlockDeviceInfo>> getDevices(final BlockDeviceQuery query) {
+        //? if >=26.1 {
+        /*final ChunkPos queryChunk = ChunkPos.containing(query.getQueryPosition());
+        if (!query.getLevel().hasChunk(queryChunk.x(), queryChunk.z())) {
+        *///?} else {
         final ChunkPos queryChunk = new ChunkPos(query.getQueryPosition());
         if (!query.getLevel().hasChunk(queryChunk.x, queryChunk.z)) {
+        //?}
             return Optional.empty();
         }
 

@@ -29,7 +29,11 @@ public class GroupManager<E extends GroupEntry, Q> {
 
             // NOPMD: a distinct sideTag per group is required as each is added to the list
             final CompoundTag sideTag = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
+            //? if >=26.1 {
+            /*sideTag.store(GROUP_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, element.groupIds[i]);
+            *///?} else {
             sideTag.putUUID(GROUP_ID_TAG_NAME, element.groupIds[i]);
+            //?}
             sideTag.put(GROUP_DATA_TAG_NAME, element.groupData[i]);
 
             listTag.add(sideTag);
@@ -41,17 +45,31 @@ public class GroupManager<E extends GroupEntry, Q> {
     }
 
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+        //? if >=26.1 {
+        /*final List<Tag> listTag = tag.getListOrEmpty(GROUPS_TAG_NAME);
+        *///?} else {
         final List<Tag> listTag = tag.getList(GROUPS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        //?}
 
         final int count = Math.min(element.groupCount, listTag.size());
         for (int i = 0; i < count; i++) {
             final CompoundTag sideTag = (CompoundTag) listTag.get(i);
 
+            //? if >=26.1 {
+            /*if (sideTag.read(GROUP_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+                element.groupIds[i] = sideTag.read(GROUP_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+            *///?} else {
             if (sideTag.hasUUID(GROUP_ID_TAG_NAME)) {
                 element.groupIds[i] = sideTag.getUUID(GROUP_ID_TAG_NAME);
+            //?}
             }
+            //? if >=26.1 {
+            /*if (sideTag.contains(GROUP_DATA_TAG_NAME)) {
+                element.groupData[i] = sideTag.getCompoundOrEmpty(GROUP_DATA_TAG_NAME);
+            *///?} else {
             if (sideTag.contains(GROUP_DATA_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
                 element.groupData[i] = sideTag.getCompound(GROUP_DATA_TAG_NAME);
+            //?}
             }
 
             for (final E entry : element.groups.get(i)) {
@@ -143,11 +161,20 @@ public class GroupManager<E extends GroupEntry, Q> {
             return;
         }
 
+        //? if >=26.1 {
+        /*final Iterator<String> iterator = devicesTag.keySet().iterator();
+        *///?} else {
         final Iterator<String> iterator = devicesTag.getAllKeys().iterator();
+        //?}
         while (iterator.hasNext()) {
             final String dataKey = iterator.next();
+            //? if >=26.1 {
+            /*if (devicesTag.contains(dataKey)) {
+                final CompoundTag tag = devicesTag.getCompoundOrEmpty(dataKey);
+            *///?} else {
             if (devicesTag.contains(dataKey, NBTTagIds.TAG_COMPOUND)) {
                 final CompoundTag tag = devicesTag.getCompound(dataKey);
+            //?}
                 element.onEntryRemoved(dataKey, tag, query);
             }
             iterator.remove();
@@ -179,16 +206,28 @@ public class GroupManager<E extends GroupEntry, Q> {
             entry.getDeviceDataKey().ifPresent(devicesTag::remove);
         }
 
+        //? if >=26.1 {
+        /*final Set<String> invalidDataKeys = new HashSet<>(devicesTag.keySet());
+        *///?} else {
         final Set<String> invalidDataKeys = new HashSet<>(devicesTag.getAllKeys());
+        //?}
         for (final E entry : addedEntries) {
             entry.getDeviceDataKey()
                     .ifPresent(
                             key -> {
                                 invalidDataKeys.remove(key);
+                                //? if >=26.1 {
+                                /*if (devicesTag.contains(key)) {
+                                *///?} else {
                                 if (devicesTag.contains(key, NBTTagIds.TAG_COMPOUND)) {
+                                //?}
                                     entry.getDevice()
                                             .deserializeNBT(
+                                                    //? if >=26.1 {
+                                                    /*registries, devicesTag.getCompoundOrEmpty(key));
+                                                    *///?} else {
                                                     registries, devicesTag.getCompound(key));
+                                                    //?}
                                 } else {
                                     devicesTag.remove(key);
                                     entry.getLegacyDeviceDataKey()
@@ -204,8 +243,13 @@ public class GroupManager<E extends GroupEntry, Q> {
         }
 
         for (final String invalidDataKey : invalidDataKeys) {
+            //? if >=26.1 {
+            /*if (devicesTag.contains(invalidDataKey)) {
+                final CompoundTag tag = devicesTag.getCompoundOrEmpty(invalidDataKey);
+            *///?} else {
             if (devicesTag.contains(invalidDataKey, NBTTagIds.TAG_COMPOUND)) {
                 final CompoundTag tag = devicesTag.getCompound(invalidDataKey);
+            //?}
                 element.onEntryRemoved(invalidDataKey, tag, query);
             }
             devicesTag.remove(invalidDataKey);

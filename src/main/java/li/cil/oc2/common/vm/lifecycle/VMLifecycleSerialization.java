@@ -23,9 +23,17 @@ final class VMLifecycleSerialization {
     }
 
     static void deserialize(final AbstractVirtualMachine vm, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (tag.contains(VMLifecycle.RUNNER_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(VMLifecycle.RUNNER_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
+        //?}
             vm.runner = vm.createRunner();
+            //? if >=26.1 {
+            /*NBTSerialization.deserialize(tag.getCompoundOrEmpty(VMLifecycle.RUNNER_TAG_NAME), vm.runner);
+            *///?} else {
             NBTSerialization.deserialize(tag.getCompound(VMLifecycle.RUNNER_TAG_NAME), vm.runner);
+            //?}
             vm.runState = VMRunState.LOADING_DEVICES;
         } else {
             vm.runState =
@@ -38,8 +46,13 @@ final class VMLifecycleSerialization {
             }
         }
 
+        //? if >=26.1 {
+        /*if (tag.contains(VMLifecycle.STATE_TAG_NAME)) {
+            NBTSerialization.deserialize(tag.getCompoundOrEmpty(VMLifecycle.STATE_TAG_NAME), vm.state);
+        *///?} else {
         if (tag.contains(VMLifecycle.STATE_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
             NBTSerialization.deserialize(tag.getCompound(VMLifecycle.STATE_TAG_NAME), vm.state);
+        //?}
         }
     }
 }

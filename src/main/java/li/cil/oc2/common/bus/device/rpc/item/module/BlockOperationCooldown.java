@@ -29,6 +29,10 @@ class BlockOperationCooldown {
 
     void deserializeNBT(
             final HolderLookup.Provider provider, final CompoundTag tag, final Level level) {
+        //? if >=26.1 {
+        /*lastOperation = Mth.clamp(tag.getLongOr(LAST_OPERATION_TAG_NAME, 0L), 0, level.getGameTime());
+        *///?} else {
         lastOperation = Mth.clamp(tag.getLong(LAST_OPERATION_TAG_NAME), 0, level.getGameTime());
+        //?}
     }
 }

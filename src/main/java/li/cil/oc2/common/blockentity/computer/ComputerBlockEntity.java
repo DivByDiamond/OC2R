@@ -98,7 +98,11 @@ public final class ComputerBlockEntity extends ModBlockEntity
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected void applyImplicitComponents(final net.minecraft.core.component.DataComponentGetter componentInput) {
+    *///?} else {
     protected void applyImplicitComponents(final DataComponentInput componentInput) {
+    //?}
         super.applyImplicitComponents(componentInput);
         var container = componentInput.get(DataComponents.RESTRICTED_CONTAINER.get());
         if (container != null) {
@@ -108,7 +112,11 @@ public final class ComputerBlockEntity extends ModBlockEntity
                     componentInput.get(
                             net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
             if (blockEntityData == null) return;
+            //? if >=26.1 {
+            /*blockEntityData.getUnsafe().size();
+            *///?} else {
             blockEntityData.copyTag().size();
+            //?}
         }
     }
 

@@ -28,6 +28,16 @@ public final class Entities {
             final Function<EntityType.Builder<T>, EntityType.Builder<T>> customizer) {
         return Platform.registries().register("minecraft:entity_type", API.MOD_ID, 
                 name,
+                //? if >=26.1 {
+                /*() ->
+                        customizer
+                                .apply(EntityType.Builder.of(factory, classification))
+                                .build(
+                                        net.minecraft.resources.ResourceKey.create(
+                                                net.minecraft.core.registries.Registries.ENTITY_TYPE,
+                                                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(API.MOD_ID, name))));
+                *///?} else {
                 () -> customizer.apply(EntityType.Builder.of(factory, classification)).build(name));
+                //?}
     }
 }

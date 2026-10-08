@@ -18,8 +18,13 @@ public final class LevelUtils {
     @Nullable
     public static BlockEntity getBlockEntityIfChunkExists(
             final LevelAccessor level, final BlockPos pos) {
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(pos);
+        if (!level.hasChunk(chunkPos.x(), chunkPos.z())) {
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(pos);
         if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+        //?}
             return null;
         }
 
@@ -28,8 +33,13 @@ public final class LevelUtils {
 
     @Nullable
     public static String getBlockName(final LevelAccessor level, final BlockPos pos) {
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(pos);
+        if (!level.hasChunk(chunkPos.x(), chunkPos.z())) {
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(pos);
         if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+        //?}
             return null;
         }
 

@@ -75,6 +75,10 @@ public final class BusCableItem extends ModBlockItem {
             stack.shrink(1);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 }

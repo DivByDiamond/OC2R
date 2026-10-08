@@ -32,19 +32,36 @@ public final class PortSettings {
         tag.put("untagged", ShortTag.valueOf(untagged));
         tag.put(
                 "tagged",
+                //? if >=26.1 {
+                /*new IntArrayTag(tagged.stream().mapToInt(s -> (int) s).toArray()));
+                *///?} else {
                 new IntArrayTag(tagged.stream().map(s -> (int) s).collect(Collectors.toList())));
+                //?}
         tag.put("hairpin", ByteTag.valueOf(hairpin));
         tag.put("trunkAll", ByteTag.valueOf(trunkAll));
     }
 
     public static PortSettings load(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*short untagged = tag.getShortOr("untagged", (short) 0);
+        *///?} else {
         short untagged = tag.getShort("untagged");
+        //?}
         List<Short> tagged =
+                //? if >=26.1 {
+                /*Arrays.stream(tag.getIntArray("tagged").orElse(new int[0]))
+                *///?} else {
                 Arrays.stream(tag.getIntArray("tagged"))
+                //?}
                         .mapToObj(i -> (short) i)
                         .collect(Collectors.toList());
+        //? if >=26.1 {
+        /*boolean hairpin = tag.getBooleanOr("hairpin", false);
+        boolean trunkAll = tag.getBooleanOr("trunkAll", false);
+        *///?} else {
         boolean hairpin = tag.getBoolean("hairpin");
         boolean trunkAll = tag.getBoolean("trunkAll");
+        //?}
         return new PortSettings(untagged, tagged, hairpin, trunkAll);
     }
 }

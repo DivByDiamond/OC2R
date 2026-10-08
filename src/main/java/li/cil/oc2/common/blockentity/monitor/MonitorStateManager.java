@@ -57,16 +57,28 @@ public final class MonitorStateManager {
         tag.putBoolean("projecting", isMounted);
         tag.putBoolean("has_energy", hasEnergy);
         tag.putBoolean("state", isPowered);
+        //? if >=26.1 {
+        /*tag.store("device_id", net.minecraft.core.UUIDUtil.CODEC, deviceId);
+        *///?} else {
         tag.putUUID("device_id", deviceId);
+        //?}
         return tag;
     }
 
     void readUpdateTag(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*isMounted = tag.getBooleanOr("projecting", false);
+        hasEnergy = tag.getBooleanOr("has_energy", false);
+        isPowered = tag.getBooleanOr("state", false);
+        if (tag.read("device_id", net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = tag.read("device_id", net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         isMounted = tag.getBoolean("projecting");
         hasEnergy = tag.getBoolean("has_energy");
         isPowered = tag.getBoolean("state");
         if (tag.hasUUID("device_id")) {
             deviceId = tag.getUUID("device_id");
+        //?}
         }
     }
 
@@ -74,15 +86,27 @@ public final class MonitorStateManager {
         tag.put("energy", energy.serializeNBT(registries));
         tag.putBoolean("projecting", isPowered);
         tag.putBoolean("has_energy", hasEnergy);
+        //? if >=26.1 {
+        /*tag.store("device_id", net.minecraft.core.UUIDUtil.CODEC, deviceId);
+        *///?} else {
         tag.putUUID("device_id", deviceId);
+        //?}
     }
 
     void loadPersistent(final CompoundTag tag, final HolderLookup.Provider registries) {
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty("energy"));
+        hasEnergy = tag.getBooleanOr("has_energy", false);
+        isPowered = tag.getBooleanOr("projecting", false);
+        if (tag.read("device_id", net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = tag.read("device_id", net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         energy.deserializeNBT(registries, tag.getCompound("energy"));
         hasEnergy = tag.getBoolean("has_energy");
         isPowered = tag.getBoolean("projecting");
         if (tag.hasUUID("device_id")) {
             deviceId = tag.getUUID("device_id");
+        //?}
         }
     }
 }

@@ -22,7 +22,11 @@ public final class FixedEnergyStorage extends AbstractEnergyStorage {
 
     public void deserializeNBT(HolderLookup.Provider provider, final Tag tag) {
         if (tag instanceof final CompoundTag compoundTag) {
+            //? if >=26.1 {
+            /*energy = compoundTag.getIntOr(STORED_TAG_NAME, 0);
+            *///?} else {
             energy = compoundTag.getInt(STORED_TAG_NAME);
+            //?}
         }
     }
 }

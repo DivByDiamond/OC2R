@@ -43,7 +43,11 @@ public final class RobotActions {
 
     @Nullable
     public static AbstractRobotAction deserialize(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*final int type = tag.getIntOr(ACTION_TYPE_TAG_NAME, 0);
+        *///?} else {
         final int type = tag.getInt(ACTION_TYPE_TAG_NAME);
+        //?}
         if (type < 1 || type > ACTIONS.size()) {
             return null;
         }

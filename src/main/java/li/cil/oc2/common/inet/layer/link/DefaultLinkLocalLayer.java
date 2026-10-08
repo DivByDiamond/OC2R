@@ -64,7 +64,11 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
     }
 
     private void loadIpAddress(final CompoundTag layerState) {
+        //? if >=26.1 {
+        /*final String ipAddressString = layerState.getStringOr(IPv4_ADDRESS_TAG, "");
+        *///?} else {
         final String ipAddressString = layerState.getString(IPv4_ADDRESS_TAG);
+        //?}
         if (!ipAddressString.isEmpty()) {
             try {
                 myIpV4Address = InetUtils.parseIpv4Address(ipAddressString);
@@ -82,13 +86,25 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
      * identity existed; their address changes once on the first save with an id.
      */
     private void loadMacAddress(final CompoundTag layerState) {
+        //? if >=26.1 {
+        /*if (layerState.read(DEVICE_ID_TAG, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+        *///?} else {
         if (layerState.hasUUID(DEVICE_ID_TAG)) {
+        //?}
             myMacAddress =
                     MacAddressUtils.macFromUuid(
+                            //? if >=26.1 {
+                            /*layerState.read(DEVICE_ID_TAG, net.minecraft.core.UUIDUtil.CODEC).orElseThrow(), MAC_PREFIX);
+                            *///?} else {
                             layerState.getUUID(DEVICE_ID_TAG), MAC_PREFIX);
+                            //?}
             return;
         }
+        //? if >=26.1 {
+        /*final String macAddressString = layerState.getStringOr(MAC_ADDRESS_TAG, "");
+        *///?} else {
         final String macAddressString = layerState.getString(MAC_ADDRESS_TAG);
+        //?}
         if (!macAddressString.isEmpty()) {
             try {
                 myMacAddress = MacAddressUtils.parseMacAddress(macAddressString);

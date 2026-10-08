@@ -95,7 +95,11 @@ public final class RobotRotationAction extends AbstractRobotAction {
         direction = NBTUtils.getEnum(tag, DIRECTION_TAG_NAME, RotationDirection.class);
         if (direction == null) direction = RotationDirection.LEFT;
         direction = direction.resolve();
+        //? if >=26.1 {
+        /*if (tag.contains(TARGET_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(TARGET_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             target = NBTUtils.getEnum(tag, TARGET_TAG_NAME, Direction.class);
         }
     }

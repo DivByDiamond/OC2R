@@ -25,7 +25,11 @@ public final class NetworkConnectorConnectionStore {
         final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
             final CompoundTag connectionTag = new CompoundTag(); // NOPMD per-connection data
+            //? if >=26.1 {
+            /*connectionTag.store("pos", BlockPos.CODEC, position);
+            *///?} else {
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
+            //?}
             connections.add(connectionTag);
         }
         tag.put(CONNECTIONS_TAG_NAME, (ListTag) connections);
@@ -39,10 +43,18 @@ public final class NetworkConnectorConnectionStore {
         // The update tag is the full state: links removed since the last sync must disappear.
         connectorPositions.clear();
         dirtyConnectors.clear();
+        //? if >=26.1 {
+        /*final List<Tag> connections = tag.getListOrEmpty(CONNECTIONS_TAG_NAME);
+        *///?} else {
         final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        //?}
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundTag connectionTag = (CompoundTag) connections.get(i);
+            //? if >=26.1 {
+            /*final BlockPos position = connectionTag.read("pos", BlockPos.CODEC).orElseThrow();
+            *///?} else {
             final BlockPos position = NbtUtils.readBlockPos(connectionTag, "pos").orElseThrow();
+            //?}
             connectorPositions.add(position);
             dirtyConnectors.add(position);
         }
@@ -56,7 +68,11 @@ public final class NetworkConnectorConnectionStore {
         final List<Tag> connections = new ListTag();
         for (final BlockPos position : connectorPositions) {
             final CompoundTag connectionTag = new CompoundTag(); // NOPMD per-connection data
+            //? if >=26.1 {
+            /*connectionTag.store("pos", BlockPos.CODEC, position);
+            *///?} else {
             connectionTag.put("pos", NbtUtils.writeBlockPos(position));
+            //?}
             if (ownedCables.contains(position)) {
                 connectionTag.putBoolean(IS_OWNER_TAG_NAME, true);
             }
@@ -74,16 +90,28 @@ public final class NetworkConnectorConnectionStore {
         connectorPositions.clear();
         dirtyConnectors.clear();
         ownedCables.clear();
+        //? if >=26.1 {
+        /*final List<Tag> connections = tag.getListOrEmpty(CONNECTIONS_TAG_NAME);
+        *///?} else {
         final List<Tag> connections = tag.getList(CONNECTIONS_TAG_NAME, NBTTagIds.TAG_COMPOUND);
+        //?}
         for (int i = 0; i < Math.min(connections.size(), MAX_CONNECTION_COUNT); i++) {
             final CompoundTag connectionTag = (CompoundTag) connections.get(i);
             final BlockPos position =
+                    //? if >=26.1 {
+                    /*connectionTag.read("pos", BlockPos.CODEC)
+                    *///?} else {
                     NbtUtils.readBlockPos(connectionTag, "pos")
+                    //?}
                             .or(() -> NBTUtils.readBlockPosLegacy(connectionTag))
                             .orElseThrow();
             connectorPositions.add(position);
             dirtyConnectors.add(position);
+            //? if >=26.1 {
+            /*if (connectionTag.getBooleanOr(IS_OWNER_TAG_NAME, false)) {
+            *///?} else {
             if (connectionTag.getBoolean(IS_OWNER_TAG_NAME)) {
+            //?}
                 ownedCables.add(position);
             }
         }

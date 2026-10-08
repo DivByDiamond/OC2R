@@ -130,7 +130,11 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     @Override
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override
@@ -144,7 +148,11 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override

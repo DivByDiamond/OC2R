@@ -77,7 +77,11 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME).orElse(new byte[0]);
+        *///?} else {
         final byte[] serializedOutput = tag.getByteArray(OUTPUT_TAG_NAME);
+        //?}
         System.arraycopy(
                 serializedOutput, 0, output, 0, Math.min(serializedOutput.length, output.length));
     }
@@ -97,8 +101,13 @@ public final class RedstoneInterfaceCardItemDevice extends AbstractItemRPCDevice
         assert direction != null;
 
         final BlockPos neighborPos = pos.relative(direction);
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(neighborPos);
+        if (!level.hasChunk(chunkPos.x(), chunkPos.z())) {
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(neighborPos);
         if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+        //?}
             return 0;
         }
 
