@@ -38,3 +38,15 @@ Everything user-visible from that period is **already in our tree**, so there is
 - Not applicable: the `ColorData[]` NBT serializer (`89c8ec71`) fixes a crash in upstream's terminal; ours keeps the colour tables `transient`. `Invalidatable` removal (`4a49e898`) is a refactor of upstream's own bus code that our fork already replaced.
 
 Open upstream branches worth a look only if the internet card is touched again: `InternetCardChanges-Test` (2025-07, "add cache").
+
+## 49. fnuecke/oc2 since f37735d (checked 2026-10-08)
+
+`ref/oc2` pulled from `f37735d` to `480af73` (17 commits, 2026-10-02 to 2026-10-07). None of it is in our tree yet (checked: no `Invalidatable`, `CraftingModule`, `ScannerModule` or `DeviceWithAliases` here). Planned order:
+
+- [ ] **First task after multiversion stage 3: Sedna 5.1.0.** We are on `sedna_version=4.0.1` (`gradle.properties`); upstream's `libs.versions.toml` moved from 5.0.0 to 5.1.0 and `sedna-cpm` from 0.1.2 to 0.2.0. A jump over a whole major, so read the Sedna changelog and the earlier 4.0.1 migration first, update the buildroot image (`sedna_buildroot_version`) together with it, and run the full game test suite.
+- [ ] Issue #315 (`984b831`): devices were potentially created on the client, which broke dedicated servers. Touches `ComputerBlockEntity`, `FlashStorageDeviceWithInitialData`, `HardDriveDeviceWithInitialData` and the flash memory item device provider.
+- [ ] Capability caching (`67e1e00`, `630a0ff`): incorrect capability caching led to dropping `Invalidatable` entirely, replaced by `CapabilityCache` with `CachedItemHandler`, `CachedEnergyHandler` and `CachedFluidHandler`. First check whether our `CapabilityBridge` has the same bug before porting the rework.
+- [ ] Crafting module (`b1366f9`) and scanner module (`802b8be`) for the robot, with docs, recipes and the new game tests (`ScannerModuleTests`).
+- [ ] Device naming rework (`a1527f1`, `8cf6ee3`): `DeviceWithAliases`, `SystemDevice`, `TypeNameDevice`, `RPCDeviceGroup`, id conversions moved into an always-present shared device with its own page (`device/system.md`). Touches the device bus, so after the two fixes above.
+- [ ] Robot basic localization (`3acd14a`), less jittery robot movement (`aa8c8b4`), tank module texture tweak (`22a16d0`), broken-link fix with an automated check (`083846d`).
+- Tests upstream changed along the way: VMs run directly in the tick for tests (`d153daa`), test cleanups (`cc16a81`, `ee02e3e`); look at them when we touch our game test fixtures.

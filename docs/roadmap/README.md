@@ -70,6 +70,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | 41.1 | [multiloader.md](multiloader.md#411-gametest-ci-and-cd) | GameTest CI/CD |
 | 41.2 | [upstream.md](upstream.md#412-targeted-fixes-from-the-release) | fixed items in [done.md](done.md#412-fixed-items); robot row in [robot.md](robot.md#412-robot-rows) |
 | 41.3 | [upstream.md](upstream.md#413-not-applicable-or-already-closed) | |
+| 49 | [upstream.md](upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08) | |
 | 41.4 | [multiloader.md](multiloader.md#414-dependency-updates) | |
 | 42 | [multiloader.md](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion) | stage 1 merged (PR #55); stage 2 network+energy done (PR #56), fabric module pending |
 | 43 | [network-overhaul.md](network-overhaul.md#43-cable-system-rebuild-from-scratch) | implemented part in [done.md](done.md#43-implemented-device-bus-part) |
