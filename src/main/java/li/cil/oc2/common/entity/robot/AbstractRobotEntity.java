@@ -93,8 +93,21 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
     protected abstract void readAdditionalSaveData(final CompoundTag tag);
     //?}
 
+    //? if >=26.1 {
+    /*@Override
+    public boolean hurtServer(
+            final net.minecraft.server.level.ServerLevel level,
+            final net.minecraft.world.damagesource.DamageSource source,
+            final float damage) {
+        return false;
+    }
+
     @Override
     public boolean isPickable() {
+    *///?} else {
+    @Override
+    public boolean isPickable() {
+    //?}
         return true;
     }
 

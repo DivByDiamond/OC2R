@@ -10,7 +10,11 @@ import net.neoforged.fml.loading.FMLPaths;
 public final class NeoForgeEnvironment implements PlatformEnvironment {
     @Override
     public boolean isClient() {
+        //? if >=26.1 {
+        /*return FMLLoader.getCurrent().getDist() == Dist.CLIENT;
+        *///?} else {
         return FMLLoader.getDist() == Dist.CLIENT;
+        //?}
     }
 
     @Override

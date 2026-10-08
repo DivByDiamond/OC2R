@@ -81,6 +81,20 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
+    //? if >=26.1 {
+    /*public BlockState updateShape(
+            final BlockState state,
+            final net.minecraft.world.level.LevelReader levelReader,
+            final net.minecraft.world.level.ScheduledTickAccess ticks,
+            final BlockPos currentPos,
+            final Direction facing,
+            final BlockPos facingPos,
+            final BlockState facingState,
+            final net.minecraft.util.RandomSource random) {
+        final LevelAccessor level = (LevelAccessor) levelReader;
+        final BlockState result =
+                BusCableStateProperties.recomputeConnections((Level) level, currentPos, state);
+    *///?} else {
     public BlockState updateShape(
             final BlockState state,
             final Direction facing,
@@ -90,6 +104,7 @@ public final class BusCableBlock extends BaseEntityBlock {
             final BlockPos facingPos) {
         final BlockState result =
                 BusCableStateProperties.recomputeConnections((Level) level, currentPos, state);
+    //?}
         if (!result.equals(state)) {
             for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry :
                     FACING_TO_CONNECTION_MAP.entrySet()) {
@@ -144,6 +159,20 @@ public final class BusCableBlock extends BaseEntityBlock {
                 : super.useItemOn(heldItem, state, level, pos, player, hand, hitResult);
     }
 
+    //? if >=26.1 {
+    /*// Minecraft 26.x passes no hit result to the pick-block hook, so the interface pick falls back to the cable.
+    @Override
+    public ItemStack getCloneItemStack(
+            final LevelReader level,
+            final BlockPos pos,
+            final BlockState state,
+            final boolean includeData,
+            final Player player) {
+        final ItemStack result =
+                BusCableItemHelper.getPickBlock(state, null, level, pos, player);
+        return result != null ? result : super.getCloneItemStack(level, pos, state, includeData, player);
+    }
+    *///?} else {
     // Not annotated with @Override: the five-argument overload only exists in NeoForge's patched Block
     // (the pick-block hook with the hit result and player); other loaders call it from their own hook.
     @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
@@ -157,6 +186,7 @@ public final class BusCableBlock extends BaseEntityBlock {
                 BusCableItemHelper.getPickBlock(state, hit, level, pos, player);
         return result != null ? result : super.getCloneItemStack(level, pos, state);
     }
+    //?}
 
     @Nullable
     @Override

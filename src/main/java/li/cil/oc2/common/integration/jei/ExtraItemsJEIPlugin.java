@@ -11,7 +11,11 @@ import li.cil.oc2.common.util.item.ItemStackUtils;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
+//? if >=26.1 {
+/*import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
+*///?} else {
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
+//?}
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +30,48 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
         return ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "extra_items");
     }
 
+//? if >=26.1 {
+/*    @Override
+    public void registerItemSubtypes(final ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(Items.COMPUTER.get(), new ComputerSubtypeInterpreter());
+        registration.registerSubtypeInterpreter(Items.ROBOT.get(), new RobotSubtypeInterpreter());
+        registration.registerSubtypeInterpreter(
+                Items.FLASH_MEMORY_CUSTOM.get(), new BlockDeviceSubtypeInterpreter());
+    }
+
+    private static final class ComputerSubtypeInterpreter
+            implements ISubtypeInterpreter<ItemStack> {
+        @Override
+        public Object getSubtypeData(final ItemStack ingredient, final UidContext context) {
+            var container =
+                    ingredient.get(
+                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get());
+            return container == null ? null : stableRestrictedContainerToString(container);
+        }
+    }
+
+    private static final class RobotSubtypeInterpreter
+            implements ISubtypeInterpreter<ItemStack> {
+        @Override
+        public Object getSubtypeData(final ItemStack ingredient, final UidContext context) {
+            var container =
+                    ingredient.get(
+                            li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get());
+            return container == null ? null : stableRestrictedContainerToString(container);
+        }
+    }
+
+    private static final class BlockDeviceSubtypeInterpreter
+            implements ISubtypeInterpreter<ItemStack> {
+        @Override
+        public Object getSubtypeData(final ItemStack ingredient, final UidContext context) {
+            final String registryName =
+                    ItemStackUtils.getModDataTag(ingredient)
+                            .getStringOr(AbstractBlockDeviceItem.DATA_TAG_NAME, "");
+            return Strings.isNullOrEmpty(registryName) ? null : registryName;
+        }
+    }
+*///?} else {
     @Override
     public void registerItemSubtypes(final ISubtypeRegistration registration) {
         registration.registerSubtypeInterpreter(
@@ -74,6 +120,7 @@ public class ExtraItemsJEIPlugin implements IModPlugin {
             return Strings.isNullOrEmpty(registryName) ? NONE : registryName;
         }
     }
+//?}
 
     private static String stableRestrictedContainerToString(final RestrictedContainer container) {
         final StringBuilder stringBuilder = new StringBuilder();

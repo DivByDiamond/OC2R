@@ -4,7 +4,11 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.platform.event.CommonEvents;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+//? if >=26.1 {
+/*import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+*///?} else {
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+//?}
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
@@ -67,7 +71,27 @@ public final class NeoForgeCommonEvents {
     }
 
     @SubscribeEvent
+    //? if >=26.1 {
+    /*public static void onAddReloadListener(final AddServerReloadListenersEvent event) {
+    *///?} else {
     public static void onAddReloadListener(final AddReloadListenerEvent event) {
+    //?}
+        //? if >=26.1 {
+        /*CommonEvents.ADD_RELOAD_LISTENER.fire(
+                listener ->
+                        listener.accept(
+                                reloadListener ->
+                                        event.addListener(
+                                                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                                        API.MOD_ID,
+                                                        reloadListener
+                                                                .getClass()
+                                                                .getName()
+                                                                .toLowerCase(java.util.Locale.ROOT)
+                                                                .replace('$', '_')),
+                                                reloadListener)));
+        *///?} else {
         CommonEvents.ADD_RELOAD_LISTENER.fire(listener -> listener.accept(event::addListener));
+        //?}
     }
 }

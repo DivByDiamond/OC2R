@@ -100,6 +100,16 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         return getSignal(state, level, pos, side);
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            @javax.annotation.Nullable final net.minecraft.world.level.redstone.Orientation orientation,
+            final boolean isMoving) {
+    *///?} else {
     @Override
     public void neighborChanged(
             final BlockState state,
@@ -108,6 +118,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final Block changedBlock,
             final BlockPos changedBlockPos,
             final boolean isMoving) {
+    //?}
         ComputerBlockRedstone.neighborChanged(level, pos);
     }
 

@@ -38,6 +38,16 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            @javax.annotation.Nullable final net.minecraft.world.level.redstone.Orientation orientation,
+            final boolean isMoving) {
+    *///?} else {
     @Override
     public void neighborChanged(
             final BlockState state,
@@ -46,6 +56,7 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
             final Block changedBlock,
             final BlockPos changedBlockPos,
             final boolean isMoving) {
+    //?}
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof final VxlanBlockEntity vxlanEntity) {
             vxlanEntity.handleNeighborChanged();

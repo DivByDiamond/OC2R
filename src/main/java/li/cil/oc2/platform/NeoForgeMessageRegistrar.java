@@ -6,7 +6,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
+//? if >=26.1 {
+/*
+*///?} else {
 import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
+//?}
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -60,8 +64,16 @@ public final class NeoForgeMessageRegistrar implements MessageRegistrar {
             final StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
             final BiConsumer<T, MessageContext> serverboundHandler,
             final BiConsumer<T, MessageContext> clientboundHandler) {
+        //? if >=26.1 {
+        /*registrar.playBidirectional(
+                type,
+                codec,
+                (message, context) -> serverboundHandler.accept(message, wrap(context)),
+                (message, context) -> clientboundHandler.accept(message, wrap(context)));
+        *///?} else {
         registrar.playBidirectional(type, codec, new DirectionalPayloadHandler<>(
                 (message, context) -> serverboundHandler.accept(message, wrap(context)),
                 (message, context) -> clientboundHandler.accept(message, wrap(context))));
+        //?}
     }
 }

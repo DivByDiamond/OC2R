@@ -193,6 +193,18 @@ public final class FileSystems {
     private static final class ReloadListener implements PreparableReloadListener {
         public static final ReloadListener INSTANCE = new ReloadListener();
 
+        //? if >=26.1 {
+        /*@Override
+        public CompletableFuture<Void> reload(
+                final PreparableReloadListener.SharedState currentReload,
+                final Executor backgroundExecutor,
+                final PreparableReloadListener.PreparationBarrier stage,
+                final Executor gameExecutor) {
+            return CompletableFuture.runAsync(
+                            () -> FileSystems.reload(currentReload.resourceManager()), backgroundExecutor)
+                    .thenCompose(stage::wait);
+        }
+        *///?} else {
         @Override
         public CompletableFuture<Void> reload(
                 final PreparableReloadListener.PreparationBarrier stage,
@@ -205,5 +217,6 @@ public final class FileSystems {
                             () -> FileSystems.reload(resourceManager), backgroundExecutor)
                     .thenCompose(stage::wait);
         }
+        //?}
     }
 }

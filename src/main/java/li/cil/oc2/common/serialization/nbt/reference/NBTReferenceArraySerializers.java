@@ -141,8 +141,13 @@ public final class NBTReferenceArraySerializers {
             if (!(tag instanceof ListTag)) {
                 return data;
             }
+            //? if >=26.1 {
+            /*final ListTag serializedData = (ListTag) tag;
+            if (!serializedData.isEmpty() && !(serializedData.get(0) instanceof net.minecraft.nbt.StringTag)) {
+            *///?} else {
             final ListTag serializedData = (ListTag) tag;
             if (!serializedData.isEmpty() && serializedData.getElementType() != NBTTagIds.TAG_STRING) {
+            //?}
                 return data;
             }
             if (data == null || data.length != serializedData.size()) {

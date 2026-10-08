@@ -1,5 +1,15 @@
 package li.cil.oc2.common.item.tool;
 
+//? if >=26.1 {
+/*import li.cil.oc2.common.item.ModItem;
+
+// Markdown Manual has no 26.x build (roadmap multiversion-26-neoforge section 3), so the manual item is inert there.
+public final class ManualItem extends ModItem {
+    public ManualItem() {
+        super();
+    }
+}
+*///?} else {
 import java.util.List;
 import li.cil.manual.api.ManualModel;
 import li.cil.manual.api.ManualScreenStyle;
@@ -49,3 +59,4 @@ public final class ManualItem extends AbstractManualItem {
         return ModManualScreenStyle.INSTANCE;
     }
 }
+//?}

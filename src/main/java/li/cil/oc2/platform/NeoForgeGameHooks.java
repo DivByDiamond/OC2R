@@ -57,7 +57,12 @@ public final class NeoForgeGameHooks implements GameHooks {
 
     @Override
     public ItemStack getCraftingRemainder(final ItemStack stack) {
+        //? if >=26.1 {
+        /*final var remainder = stack.getCraftingRemainder();
+        return remainder != null ? remainder.create() : ItemStack.EMPTY;
+        *///?} else {
         return stack.hasCraftingRemainingItem() ? stack.getCraftingRemainingItem() : ItemStack.EMPTY;
+        //?}
     }
 
     @Override
@@ -72,7 +77,11 @@ public final class NeoForgeGameHooks implements GameHooks {
             final BlockState state,
             final ServerPlayer player,
             final boolean willHarvest) {
+        //? if >=26.1 {
+        /*return state.onDestroyedByPlayer(level, pos, player, player.getMainHandItem(), willHarvest, level.getFluidState(pos));
+        *///?} else {
         return state.onDestroyedByPlayer(level, pos, player, willHarvest, level.getFluidState(pos));
+        //?}
     }
 
     @Override

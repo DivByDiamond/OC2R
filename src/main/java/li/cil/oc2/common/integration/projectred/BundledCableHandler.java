@@ -1,5 +1,13 @@
 package li.cil.oc2.common.integration.projectred;
 
+//? if >=26.1 {
+/*// ProjectRed has no 26.x build (roadmap multiversion-26-neoforge section 3), so there is nothing to integrate with.
+public final class BundledCableHandler {
+    public static void initialize() {}
+
+    private BundledCableHandler() {}
+}
+*///?} else {
 import li.cil.oc2.common.blockentity.misc.redstone.RedstoneInterfaceBlockEntity;
 import li.cil.oc2.common.integration.util.BundledRedstone;
 import mrtjp.projectred.api.IBundledTileInteraction;
@@ -58,3 +66,4 @@ public final class BundledCableHandler implements IBundledTileInteraction, Bundl
         return transmissionAPI.getBundledInput(level, blockPos, direction);
     }
 }
+//?}

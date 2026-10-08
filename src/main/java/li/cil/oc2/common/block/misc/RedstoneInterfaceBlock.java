@@ -68,6 +68,22 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
     }
 
     @Override
+    //? if >=26.1 {
+    /*public void neighborChanged(
+            BlockState state,
+            Level worldIn,
+            BlockPos pos,
+            Block blockIn,
+            @javax.annotation.Nullable net.minecraft.world.level.redstone.Orientation orientation,
+            boolean isMoving) {
+        // Minecraft 26.x reports no source position, so every side is checked.
+        if (worldIn.getBlockEntity(pos) instanceof final RedstoneInterfaceBlockEntity ribe) {
+            for (final Direction side : Direction.values()) {
+                ribe.neighborChanged(pos.relative(side));
+            }
+        }
+    }
+    *///?} else {
     public void neighborChanged(
             BlockState state,
             Level worldIn,
@@ -81,6 +97,7 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
             ribe.neighborChanged(fromPos);
         }
     }
+    //?}
 
     // EntityBlock
 

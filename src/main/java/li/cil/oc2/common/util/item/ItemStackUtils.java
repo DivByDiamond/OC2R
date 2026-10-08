@@ -53,7 +53,11 @@ public final class ItemStackUtils {
             return Optional.empty();
         }
 
+//? if >=26.1 {
+        /*final RandomSource rng = level.getRandom();
+        *///?} else {
         final RandomSource rng = level.random;
+        //?}
 
         final float tx = 0.5f * (rng.nextFloat() - 1.0f);
         final float ty = 0.5f * (rng.nextFloat() - 1.0f);
@@ -94,7 +98,11 @@ public final class ItemStackUtils {
             return Optional.empty();
         }
 
+//? if >=26.1 {
+        /*final RandomSource rng = level.getRandom();
+        *///?} else {
         final RandomSource rng = level.random;
+        //?}
 
         final float ox = direction.getStepX();
         final float oy = direction.getStepY();
