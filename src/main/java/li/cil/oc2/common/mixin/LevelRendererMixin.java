@@ -1,5 +1,16 @@
 package li.cil.oc2.common.mixin;
 
+// The 26.x LevelRenderer renders through a frame graph and no longer has renderLevel,
+// renderSnowAndRain, renderSky or the item entity and weather targets this mixin hooks, so the
+// projector depth pass cannot be injected there. The mixin stays registered as an empty class
+// and the pass is skipped on 26.x until the projector rendering is ported.
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.LevelRenderer;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(LevelRenderer.class)
+public abstract class LevelRendererMixin {}
+*///?} else {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
@@ -191,3 +202,4 @@ public abstract class LevelRendererMixin {
         }
     }
 }
+//?}
