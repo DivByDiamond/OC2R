@@ -8,8 +8,20 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalBackgroundRenderer;
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalCursorRenderer;
+//? if >=26.1 {
+/*import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.platform.CompareOp;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.lwjgl.system.MemoryUtil;
+*///?} else {
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
+//?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +33,25 @@ public class TerminalRenderer implements RendererModel, RendererView {
     private static final Logger RENDERER_LOGGER = LogManager.getLogger();
 
     public final Terminal terminal;
+    //? if >=26.1 {
+/*    // 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
+    // rows are replayed into one mesh drawn through RenderType each frame.
+    private record RowMesh(byte[] data, int vertexCount) {}
+
+    private static final RenderPipeline PIPELINE =
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation("pipeline/oc2r_terminal")
+                    .withCull(false)
+                    .withDepthStencilState(
+                            new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                    .build();
+
+    private static RenderType renderType;
+
+    private RowMesh[] lines = new RowMesh[Terminal.HEIGHT];
+*///?} else {
     private VertexBuffer[] lines = new VertexBuffer[Terminal.HEIGHT];
+    //?}
     public final AtomicLong dirty = new AtomicLong(-1L);
 
     // Blink phase tracking: when the blink phase changes, lines containing blink-styled
@@ -53,10 +83,14 @@ public class TerminalRenderer implements RendererModel, RendererView {
         // Dynamic height: reallocate the lines array if the terminal's height changed
         // (e.g. via TerminalDiff.apply calling resizeHeight). Close old buffers first.
         if (lines.length != frame.height()) {
+            //? if >=26.1 {
+/*            lines = new RowMesh[frame.height()];
+*///?} else {
             for (final VertexBuffer line : lines) {
                 if (line != null) line.close();
             }
             lines = new VertexBuffer[frame.height()];
+            //?}
             dirty.set(-1L);
         }
 
@@ -114,6 +148,9 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
     @Override
     public void close() {
+        //? if >=26.1 {
+/*        Arrays.fill(lines, null);
+*///?} else {
         for (int i = 0; i < lines.length; i++) {
             final VertexBuffer line = lines[i];
             if (line != null) {
@@ -121,8 +158,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
                 lines[i] = null;
             }
         }
+        //?}
     }
 
+//? if <26.1 {
     private int findLineIndex(VertexBuffer[] vba, VertexBuffer vb) {
         int i = 0;
         while (i < vba.length) {
@@ -134,6 +173,61 @@ public class TerminalRenderer implements RendererModel, RendererView {
         return -1;
     }
 
+//?}
+//? if >=26.1 {
+/*    // The projection matrix argument has no counterpart on 26.x: RenderType draws with the
+    // projection the caller has bound. The pose is applied through the model-view stack.
+    public void renderBuffer(
+            final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
+        int vertexCount = 0;
+        int byteCount = 0;
+        for (final RowMesh line : lines) {
+            if (line != null) {
+                vertexCount += line.vertexCount();
+                byteCount += line.data().length;
+            }
+        }
+        if (vertexCount == 0) {
+            return;
+        }
+
+        if (renderType == null) {
+            renderType =
+                    RenderType.create(
+                            "oc2r_terminal",
+                            RenderSetup.builder(PIPELINE)
+                                    .withTexture("Sampler0", FontHandling.getAtlas())
+                                    .createRenderSetup());
+        }
+
+        final var modelViewStack = RenderSystem.getModelViewStack();
+        modelViewStack.pushMatrix();
+        modelViewStack.mul(stack.last().pose());
+        try (ByteBufferBuilder bytes = new ByteBufferBuilder(byteCount)) {
+            final ByteBuffer target = MemoryUtil.memByteBuffer(bytes.reserve(byteCount), byteCount);
+            for (final RowMesh line : lines) {
+                if (line != null) {
+                    target.put(line.data());
+                }
+            }
+            final MeshData mesh =
+                    new MeshData(
+                            bytes.build(),
+                            new MeshData.DrawState(
+                                    DefaultVertexFormat.POSITION_TEX_COLOR,
+                                    vertexCount,
+                                    VertexFormat.Mode.QUADS.indexCount(vertexCount),
+                                    VertexFormat.Mode.QUADS,
+                                    VertexFormat.IndexType.least(vertexCount)));
+            renderType.draw(mesh);
+        } catch (final Exception e) {
+            RENDERER_LOGGER.error("Failed to draw terminal", e);
+        } finally {
+            modelViewStack.popMatrix();
+        }
+    }
+
+*///?} else {
     public void renderBuffer(
             final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
         final ShaderInstance shader = GameRenderer.getPositionTexColorShader();
@@ -181,6 +275,39 @@ public class TerminalRenderer implements RendererModel, RendererView {
         }
     }
 
+//?}
+//? if >=26.1 {
+/*    public void validateLineCache(final FrameState frame) {
+        if (dirty.get() == 0) return;
+
+        final long mask = dirty.getAndSet(0L);
+        final Matrix4f matrix = new Matrix4f();
+        // Blink phase seed: the terminal's identity, see the 1.21 branch for the reasoning.
+        final int blinkSeed = terminal.hashCode();
+        for (int row = 0; row < lines.length; row++) {
+            if ((mask & (1L << row)) == 0) continue;
+
+            BufferBuilder builder =
+                    Tesselator.getInstance()
+                            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
+
+            TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row, blinkSeed);
+            TerminalCharRenderer.renderForeground(frame, matrix, builder, row, blinkSeed);
+
+            try (MeshData rb = builder.build()) {
+                if (rb != null) {
+                    final ByteBuffer vertices = rb.vertexBuffer().duplicate();
+                    final byte[] data = new byte[vertices.remaining()];
+                    vertices.get(data);
+                    lines[row] = new RowMesh(data, rb.drawState().vertexCount());
+                } else {
+                    lines[row] = null;
+                }
+            }
+        }
+    }
+*///?} else {
     public void validateLineCache(final FrameState frame) {
         if (dirty.get() == 0) return;
 
@@ -222,4 +349,5 @@ public class TerminalRenderer implements RendererModel, RendererView {
             }
         }
     }
+//?}
 }

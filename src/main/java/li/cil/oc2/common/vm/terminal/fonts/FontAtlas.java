@@ -19,7 +19,11 @@ public class FontAtlas {
     private int atlasWidth;
     private int atlasHeight;
     public NativeImage atlasImage; // The current texture
+    //? if >=26.1 {
+/*    private DynamicTexture dynamicTexture;
+*///?} else {
     private final DynamicTexture dynamicTexture;
+    //?}
     private boolean textureIsDirty = true;
     private final List<Glyph> glyphs;
 
@@ -30,14 +34,22 @@ public class FontAtlas {
         this.atlasWidth = initialWidth;
         this.atlasHeight = initialHeight;
         this.atlasImage = new NativeImage(atlasWidth, atlasHeight, false);
+        //? if >=26.1 {
+/*        this.dynamicTexture = new DynamicTexture(() -> fontAtlasName, atlasImage);
+*///?} else {
         this.dynamicTexture = new DynamicTexture(atlasImage);
+        //?}
         this.resources = ResourceLocation.fromNamespaceAndPath("oc2r", fontAtlasName);
         Minecraft.getInstance().getTextureManager().register(resources, dynamicTexture);
         this.glyphs = new ArrayList<>();
 
         for (int x = 0; x < atlasWidth; x++) {
             for (int y = 0; y < atlasHeight; y++) {
+                //? if >=26.1 {
+/*                this.atlasImage.setPixel(x, y, 0); // transparent, ABGR==ARGB for (0,0,0,0)
+*///?} else {
                 this.atlasImage.setPixelRGBA(x, y, 0); // transparent, ABGR==ARGB for (0,0,0,0)
+                //?}
             }
         }
 
@@ -68,6 +80,10 @@ public class FontAtlas {
         // Copy the glyph into the atlas at the correct position
         for (int y = 0; y < glyph.image.getHeight(); y++) {
             for (int x = 0; x < glyph.image.getWidth(); x++) {
+                //? if >=26.1 {
+/*                // NativeImage.setPixel takes ARGB on 26.x, the same layout BufferedImage.getRGB returns.
+                atlasImage.setPixel(currentX + x, currentY + y, glyph.image.getRGB(x, y));
+*///?} else {
                 int argb = glyph.image.getRGB(x, y);
                 // BufferedImage.getRGB() returns ARGB (0xAARRGGBB),
                 // but NativeImage.setPixelRGBA() expects ABGR (0xAABBGGRR).
@@ -78,6 +94,7 @@ public class FontAtlas {
                 int b = argb & 0xFF;
                 int abgr = (a << 24) | (b << 16) | (g << 8) | r;
                 atlasImage.setPixelRGBA(currentX + x, currentY + y, abgr);
+                //?}
             }
         }
 
@@ -105,8 +122,12 @@ public class FontAtlas {
 
         for (int y = 0; y < atlasHeight; y++) {
             for (int x = 0; x < atlasWidth; x++) {
+                //? if >=26.1 {
+/*                newAtlasImage.setPixel(x, y, oldAtlasImage.getPixel(x, y));
+*///?} else {
                 int color = oldAtlasImage.getPixelRGBA(x, y);
                 newAtlasImage.setPixelRGBA(x, y, color); // already ABGR, no swap needed
+                //?}
             }
         }
         oldAtlasImage.close();
@@ -119,7 +140,14 @@ public class FontAtlas {
         this.atlasHeight = newHeight;
         this.atlasImage = newAtlasImage;
 
+        //? if >=26.1 {
+/*        // A 26.x GPU texture has a fixed size: replace it with one of the new size under the same
+        // id. Registering closes the previous texture.
+        this.dynamicTexture = new DynamicTexture(() -> resources.toString(), atlasImage);
+        Minecraft.getInstance().getTextureManager().register(resources, dynamicTexture);
+*///?} else {
         this.dynamicTexture.setPixels(atlasImage);
+        //?}
         textureIsDirty = true;
     }
 

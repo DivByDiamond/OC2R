@@ -4,7 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.rendertype.RenderTypes;
+*///?} else {
 import net.minecraft.client.renderer.GameRenderer;
+//?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
@@ -12,7 +16,9 @@ import org.joml.Matrix4f;
 @OnlyIn(Dist.CLIENT)
 public class TerminalCursorRenderer {
     public static void renderCursor(final Terminal terminal, final PoseStack stack) {
+        //? if <26.1 {
         BufferUploader.reset();
+        //?}
         if (!terminal.currentPrivateModeState.DECTCEM) return;
 
         int globalY = terminal.lastRowToDisplayMax - (terminal.height - terminal.y);
@@ -23,21 +29,28 @@ public class TerminalCursorRenderer {
             return;
         }
 
+        //? if <26.1 {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.depthMask(false);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
+        //?}
         stack.pushPose();
         stack.translate(
                 terminal.x * Terminal.CHAR_WIDTH,
                 (useAltBuffer ? terminal.y : localY) * Terminal.CHAR_HEIGHT,
                 0);
 
+        //? if >=26.1 {
+/*        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().mul(stack.last().pose());
+*///?} else {
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().mul(stack.last().pose());
         RenderSystem.applyModelViewMatrix();
+        //?}
 
         final Matrix4f matrix = new Matrix4f();
         final BufferBuilder buffer =
@@ -56,6 +69,14 @@ public class TerminalCursorRenderer {
         drawCursorShape(buffer, matrix, terminal.cursorMode, r, g, b);
 
         MeshData rb = buffer.buildOrThrow();
+        //? if >=26.1 {
+/*        // Blending, depth test without depth writes and no culling come with the debug quads
+        // pipeline, which replaces the RenderSystem state calls of the 1.21 branch.
+        RenderTypes.debugQuads().draw(rb);
+
+        RenderSystem.getModelViewStack().popMatrix();
+        stack.popPose();
+*///?} else {
         BufferUploader.drawWithShader(rb);
 
         RenderSystem.getModelViewStack().popMatrix();
@@ -64,6 +85,7 @@ public class TerminalCursorRenderer {
 
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
+        //?}
     }
 
     private static boolean isCursorVisible(
