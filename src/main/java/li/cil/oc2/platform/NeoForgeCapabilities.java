@@ -1,6 +1,8 @@
 package li.cil.oc2.platform;
 
+//? if <26.1 {
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+//?}
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.resources.ResourceLocation;
@@ -8,11 +10,19 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.EntityCapability;
 import net.neoforged.neoforge.capabilities.ItemCapability;
+//? if >=26.1 {
+/*import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+*///?} else {
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -68,13 +78,25 @@ final class NeoForgeCapabilities {
             return null;
         }
         if (type == EnergyStorage.class) {
+            //? if >=26.1 {
+            /*return new NeoForgeTransferAdapters.EnergyHandlerWrapper((EnergyStorage) value);
+            *///?} else {
             return new EnergyStorageWrapper((EnergyStorage) value);
+            //?}
         }
         if (type == ItemHandler.class) {
+            //? if >=26.1 {
+            /*return new NeoForgeTransferAdapters.ItemResourceHandlerWrapper((ItemHandler) value);
+            *///?} else {
             return new ItemHandlerWrapper((ItemHandler) value);
+            //?}
         }
         if (type == FluidHandler.class) {
+            //? if >=26.1 {
+            /*return new NeoForgeTransferAdapters.FluidResourceHandlerWrapper((FluidHandler) value);
+            *///?} else {
             return new FluidHandlerWrapper((FluidHandler) value, container);
+            //?}
         }
         return value;
     }
@@ -88,32 +110,80 @@ final class NeoForgeCapabilities {
         // Values we registered ourselves come back wrapped by NeoForge's key; hand out the
         // original so identity survives the round trip.
         if (type == EnergyStorage.class) {
+            //? if >=26.1 {
+            /*return value instanceof final NeoForgeTransferAdapters.EnergyHandlerWrapper wrapper
+                    ? wrapper.storage()
+                    : new NeoForgeTransferAdapters.EnergyStorageView((EnergyHandler) value);
+            *///?} else {
             return value instanceof final EnergyStorageWrapper wrapper
                     ? wrapper.storage
                     : new EnergyStorageView((IEnergyStorage) value);
+            //?}
         }
         if (type == ItemHandler.class) {
+            //? if >=26.1 {
+            /*return value instanceof final NeoForgeTransferAdapters.ItemResourceHandlerWrapper wrapper
+                    ? wrapper.delegate()
+                    : new NeoForgeTransferAdapters.ItemHandlerView((ResourceHandler<ItemResource>) value);
+            *///?} else {
             return value instanceof final ItemHandlerWrapper wrapper
                     ? wrapper.handler
                     : new ItemHandlerView((IItemHandler) value);
+            //?}
         }
         if (type == FluidHandler.class) {
+            //? if >=26.1 {
+            /*return value instanceof final NeoForgeTransferAdapters.FluidResourceHandlerWrapper wrapper
+                    ? wrapper.delegate()
+                    : new NeoForgeTransferAdapters.FluidHandlerView((ResourceHandler<FluidResource>) value);
+            *///?} else {
             return value instanceof final FluidHandlerWrapper wrapper
                     ? wrapper.handler
                     : new FluidHandlerView((IFluidHandler) value);
+            //?}
         }
         return value;
     }
 
+    /**
+     * The context NeoForge's item lookups expect: 26.x addresses the standard item capabilities
+     * (energy, items, fluids) through an {@code ItemAccess} over the stack, everything else, and
+     * every lookup before 26.x, uses no context.
+     */
+    @Nullable
+    static Object itemContext(final Class<?> type, final ItemStack stack) {
+//? if >=26.1 {
+/*        if (!stack.isEmpty()
+                && (type == EnergyStorage.class
+                        || type == ItemHandler.class
+                        || type == FluidHandler.class)) {
+            return ItemAccess.forStack(stack);
+        }
+*///?}
+        return null;
+    }
+
     private static Object createBlockKey(final CapKey key) {
         if (key.type == EnergyStorage.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK;
+            //?}
         }
         if (key.type == ItemHandler.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK;
+            //?}
         }
         if (key.type == FluidHandler.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK;
+            //?}
         }
         return key.sided
                 ? BlockCapability.createSided(key.id, key.type)
@@ -122,13 +192,27 @@ final class NeoForgeCapabilities {
 
     private static Object createEntityKey(final CapKey key) {
         if (key.type == EnergyStorage.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Energy.ENTITY;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ENTITY;
+            //?}
         }
         if (key.type == ItemHandler.class) {
+            //? if >=26.1 {
+            /*return key.sided
+                    ? net.neoforged.neoforge.capabilities.Capabilities.Item.ENTITY_AUTOMATION
+                    : net.neoforged.neoforge.capabilities.Capabilities.Item.ENTITY;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.ENTITY;
+            //?}
         }
         if (key.type == FluidHandler.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Fluid.ENTITY;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ENTITY;
+            //?}
         }
         return key.sided
                 ? EntityCapability.createSided(key.id, key.type)
@@ -137,13 +221,25 @@ final class NeoForgeCapabilities {
 
     private static Object createItemKey(final CapKey key) {
         if (key.type == EnergyStorage.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Energy.ITEM;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM;
+            //?}
         }
         if (key.type == ItemHandler.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Item.ITEM;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.ITEM;
+            //?}
         }
         if (key.type == FluidHandler.class) {
+            //? if >=26.1 {
+            /*return net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM;
+            *///?} else {
             return net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM;
+            //?}
         }
         return ItemCapability.createVoid(key.id, key.type);
     }
@@ -163,6 +259,7 @@ final class NeoForgeCapabilities {
         }
     }
 
+//? if <26.1 {
     /**
      * {@link IEnergyStorage} view over a core {@link EnergyStorage} whose {@link #equals(Object)}
      * and {@link #hashCode()} delegate to the reference identity of the wrapped storage.
@@ -546,4 +643,5 @@ final class NeoForgeCapabilities {
                 ? FluidHandler.FluidAction.EXECUTE
                 : FluidHandler.FluidAction.SIMULATE;
     }
+//?}
 }

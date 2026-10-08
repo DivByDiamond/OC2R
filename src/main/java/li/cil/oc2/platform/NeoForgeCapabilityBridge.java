@@ -74,7 +74,10 @@ public final class NeoForgeCapabilityBridge implements CapabilityBridge {
             final ItemCapability<T> capability, final ItemStack stack) {
         return (T)
                 NeoForgeCapabilities.fromNeoForge(
-                        capability.getType(), stack.getCapability(NeoForgeCapabilities.itemKey(capability), null));
+                        capability.getType(),
+                        stack.getCapability(
+                                NeoForgeCapabilities.itemKey(capability),
+                                NeoForgeCapabilities.itemContext(capability.getType(), stack)));
     }
 
     @Override
