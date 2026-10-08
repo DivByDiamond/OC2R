@@ -21,7 +21,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 ## Open tasks
 
 - [ ] Verify all "code ready" features in game (multi-monitor, GPU tiers, CPU tiers, codecs, disks, cables, speaker) (see docs/roadmap/qa-checklist.md)
-- [ ] Merge multiloader stage 2 (branch feat/multiloader-stage2, Fabric module + loader-independent bridges); then multiversion and release matrix (stages 3 and 4, feasibility in docs/roadmap/multiversion-26-neoforge.md and multiversion-26-fabric.md) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
+- [ ] Finish multiversion stage 3 (branch multiversion-stage3: 1.21.1 done on both loaders, the NeoForge mod still does not compile on 26.x) and then stage 4, the release matrix (feasibility in docs/roadmap/multiversion-26-neoforge.md and multiversion-26-fabric.md) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
 - [ ] Right after multiversion stage 3: update Sedna 4.0.1 to 5.1.0 (with sedna-cpm 0.2.0 and the buildroot image), then port the upstream fixes and modules from fnuecke/oc2 (see docs/roadmap/upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08)
 - [ ] Remove the `required = false` flag from 9 GameTests after fixing them (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
 - [ ] Terminal double-size PR-B: double width and render of `lineAttrs` (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
