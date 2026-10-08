@@ -1,5 +1,8 @@
 package li.cil.oc2.platform;
 
+// 26.x replaced ShaderInstance and RegisterShadersEvent with render pipelines; the projector
+// shader needs the client rendering port and is not registered there.
+//? if <26.1 {
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import java.io.IOException;
 import li.cil.oc2.api.API;
@@ -25,3 +28,4 @@ public final class NeoForgeShaderEvents {
                 ModShaders::setProjectorsShader);
     }
 }
+//?}

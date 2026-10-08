@@ -2,25 +2,35 @@ package li.cil.oc2.platform;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc2.api.API;
+//? if <26.1 {
 import li.cil.oc2.client.model.BusCableModelLoader;
 import li.cil.oc2.client.model.monitor.MonitorModelLoader;
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.item.Items;
+//?}
 import li.cil.oc2.platform.event.ClientEvents;
+//? if <26.1 {
 import net.minecraft.client.Minecraft;
+//?}
+//? if <26.1 {
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+//?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+//? if <26.1 {
 import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+//?}
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+//? if <26.1 {
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+//?}
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
@@ -39,6 +49,9 @@ public final class NeoForgeClientSetup {
         registrar.setupTasks().forEach(event::enqueueWork);
     }
 
+    // Not registered on 26.x: it has neither geometry loaders nor BlockEntityWithoutLevelRenderer, so
+    // the bus cable and monitor models and the robot item rendering wait for the client model port.
+//? if <26.1 {
     @SubscribeEvent
     public static void onRegisterGeometryLoaders(final RegisterGeometryLoaders event) {
         event.register(Blocks.BUS_CABLE.getId(), new BusCableModelLoader());
@@ -60,6 +73,7 @@ public final class NeoForgeClientSetup {
                 Items.ROBOT.get());
     }
 
+//?}
     @SubscribeEvent
     public static void onRegisterRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         NeoForgeClientRegistrar.instance().applyEntityRenderers(event);
@@ -71,6 +85,12 @@ public final class NeoForgeClientSetup {
         NeoForgeClientRegistrar.instance().applyLayers(event);
     }
 
+//? if >=26.1 {
+/*    @SubscribeEvent
+    public static void onRegisterBlockColors(final RegisterColorHandlersEvent.BlockTintSources event) {
+        NeoForgeClientRegistrar.instance().applyBlockColors(event);
+    }
+*///?} else {
     @SubscribeEvent
     public static void onRegisterBlockColors(final RegisterColorHandlersEvent.Block event) {
         NeoForgeClientRegistrar.instance().applyBlockColors(event);
@@ -80,6 +100,7 @@ public final class NeoForgeClientSetup {
     public static void onRegisterItemColors(final RegisterColorHandlersEvent.Item event) {
         NeoForgeClientRegistrar.instance().applyItemColors(event);
     }
+//?}
 
     @SubscribeEvent
     public static void onRegisterMenuScreens(final RegisterMenuScreensEvent event) {

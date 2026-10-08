@@ -7,7 +7,11 @@ import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//? if >=26.1 {
+/*import net.neoforged.neoforge.model.data.ModelData;
+*///?} else {
 import net.neoforged.neoforge.client.model.data.ModelData;
+//?}
 
 /** The NeoForge client proxy: {@link ClientProxyImpl} plus the NeoForge {@link ModelData} hooks. */
 @OnlyIn(Dist.CLIENT)

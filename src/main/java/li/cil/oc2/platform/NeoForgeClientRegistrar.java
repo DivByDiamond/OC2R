@@ -4,8 +4,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+//? if <26.1 {
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
+//?}
+//? if >=26.1 {
+/*import net.minecraft.client.color.block.BlockTintSource;
+*///?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -37,10 +42,15 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
             new ArrayList<>();
     private final List<java.util.function.Consumer<EntityRenderersEvent.RegisterLayerDefinitions>> layers =
             new ArrayList<>();
+//? if >=26.1 {
+/*    private final List<java.util.function.Consumer<RegisterColorHandlersEvent.BlockTintSources>> blockColors =
+            new ArrayList<>();
+*///?} else {
     private final List<java.util.function.Consumer<RegisterColorHandlersEvent.Block>> blockColors =
             new ArrayList<>();
     private final List<java.util.function.Consumer<RegisterColorHandlersEvent.Item>> itemColors =
             new ArrayList<>();
+//?}
     private final List<java.util.function.Consumer<RegisterMenuScreensEvent>> screens = new ArrayList<>();
     private final List<Runnable> queuedSetupTasks = new ArrayList<>();
 
@@ -58,7 +68,11 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
     @Override
     public <T extends BlockEntity> void registerBlockEntityRenderer(
             final Supplier<? extends BlockEntityType<? extends T>> type,
+            //? if >=26.1 {
+/*            final BlockEntityRendererProvider<T, ?> provider) {
+*///?} else {
             final BlockEntityRendererProvider<T> provider) {
+            //?}
         blockEntityRenderers.add(() ->
                 net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(type.get(), provider));
     }
@@ -75,6 +89,26 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
         layers.add(event -> event.registerLayerDefinition(location, definition));
     }
 
+//? if >=26.1 {
+/*    // 26.x replaced BlockColor with BlockTintSource. Colors of any other type cannot be adapted
+    // and are dropped.
+    @Override
+    public void registerBlockColor(
+            final Object color, final List<? extends Supplier<? extends Block>> blocks) {
+        if (color instanceof final BlockTintSource tintSource) {
+            blockColors.add(event ->
+                    event.register(
+                            List.of(tintSource),
+                            blocks.stream().map(Supplier::get).toArray(Block[]::new)));
+        }
+    }
+
+    // 26.x item tints are data-driven (an ItemTintSource codec referenced from the item model
+    // definition), so a lambda-style item color has no registration point here and is dropped.
+    @Override
+    public void registerItemColor(
+            final Object color, final List<? extends Supplier<? extends Item>> items) {}
+*///?} else {
     @Override
     public void registerBlockColor(
             final BlockColor color, final List<? extends Supplier<? extends Block>> blocks) {
@@ -88,6 +122,7 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
         itemColors.add(event ->
                 event.register(color, items.stream().map(Supplier::get).toArray(Item[]::new)));
     }
+//?}
 
     @Override
     public <M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> void registerScreen(
@@ -112,6 +147,11 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
         layers.forEach(registration -> registration.accept(event));
     }
 
+//? if >=26.1 {
+/*    void applyBlockColors(final RegisterColorHandlersEvent.BlockTintSources event) {
+        blockColors.forEach(registration -> registration.accept(event));
+    }
+*///?} else {
     void applyBlockColors(final RegisterColorHandlersEvent.Block event) {
         blockColors.forEach(registration -> registration.accept(event));
     }
@@ -119,6 +159,7 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
     void applyItemColors(final RegisterColorHandlersEvent.Item event) {
         itemColors.forEach(registration -> registration.accept(event));
     }
+//?}
 
     void applyScreens(final RegisterMenuScreensEvent event) {
         screens.forEach(registration -> registration.accept(event));
