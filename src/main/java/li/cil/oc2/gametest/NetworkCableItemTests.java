@@ -97,7 +97,11 @@ public final class NetworkCableItemTests {
             (TestSupport.DEVICE_POS.getX() - TestSupport.CABLE_POS.getX()) / 2,
             (TestSupport.DEVICE_POS.getY() - TestSupport.CABLE_POS.getY()) / 2,
             (TestSupport.DEVICE_POS.getZ() - TestSupport.CABLE_POS.getZ()) / 2);
+        //? if >=26.2 {
+        /*return helper.getEntities(net.minecraft.world.entity.EntityTypes.ITEM, center, 3.0).stream()
+        *///?} else {
         return helper.getEntities(EntityType.ITEM, center, 3.0).stream()
+        //?}
             .filter(item -> item.getItem().getItem() == Items.NETWORK_CABLE.get())
             .count();
     }
