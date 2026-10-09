@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.data.model;
 
 import li.cil.oc2.common.item.Items;
@@ -74,3 +75,4 @@ final class CableItemTransforms {
                 .end();
     }
 }
+//?}

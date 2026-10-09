@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.data.model;
 
 import li.cil.oc2.api.API;
@@ -85,3 +86,4 @@ public final class ModItemModelProvider extends ItemModelProvider {
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, texturePath));
     }
 }
+//?}
