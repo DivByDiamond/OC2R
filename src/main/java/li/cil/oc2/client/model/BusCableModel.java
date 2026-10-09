@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model;
 
 import static java.util.Objects.requireNonNull;
@@ -70,3 +71,4 @@ public final class BusCableModel implements IUnbakedGeometry<BusCableModel> {
         return new BusCableBakedModel(bakedBaseModel, straightModelByAxis, supportModelByFace);
     }
 }
+//?}

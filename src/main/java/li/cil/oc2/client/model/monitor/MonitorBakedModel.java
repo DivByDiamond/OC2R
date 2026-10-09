@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model.monitor;
 
 import java.util.Collections;
@@ -91,3 +92,4 @@ public final class MonitorBakedModel implements IDynamicBakedModel {
         return ItemOverrides.EMPTY;
     }
 }
+//?}

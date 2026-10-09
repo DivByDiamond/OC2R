@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model.monitor;
 
 import java.util.ArrayList;
@@ -113,3 +114,4 @@ public final class MonitorQuads {
         return data;
     }
 }
+//?}

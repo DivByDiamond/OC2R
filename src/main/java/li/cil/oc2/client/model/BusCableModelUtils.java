@@ -6,7 +6,11 @@ import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.block.BlockAndTintGetter;
+*///?} else {
 import net.minecraft.world.level.BlockAndTintGetter;
+//?}
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 

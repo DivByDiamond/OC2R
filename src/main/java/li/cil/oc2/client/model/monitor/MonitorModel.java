@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model.monitor;
 
 import java.util.Map;
@@ -32,3 +33,4 @@ public final class MonitorModel implements IUnbakedGeometry<MonitorModel> {
         return new MonitorBakedModel(sprites);
     }
 }
+//?}
