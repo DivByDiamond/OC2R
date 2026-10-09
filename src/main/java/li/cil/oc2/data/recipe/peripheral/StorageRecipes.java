@@ -2,11 +2,10 @@ package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
+import li.cil.oc2.data.recipe.RecipeBuilders;
 import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.neoforged.neoforge.common.Tags;
 
@@ -15,7 +14,7 @@ public final class StorageRecipes {
     private static final String UNLOCK_ROBOT = "has_robot";
 
     public static void build(final RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.DISK_DRIVE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.DISK_DRIVE.get())
                 .pattern("IUI")
                 .pattern("XTD")
                 .pattern("IBI")
@@ -29,7 +28,7 @@ public final class StorageRecipes {
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_SMALL.get(), 2)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEMORY_SMALL.get(), 2)
                 .pattern("ITI")
                 .pattern(" B ")
                 .define('I', Tags.Items.INGOTS_IRON)
@@ -40,7 +39,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_MEDIUM.get(), 2)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEMORY_MEDIUM.get(), 2)
                 .pattern("GTG")
                 .pattern(" B ")
                 .define('G', Tags.Items.INGOTS_GOLD)
@@ -51,7 +50,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_LARGE.get(), 2)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEMORY_LARGE.get(), 2)
                 .pattern("DTD")
                 .pattern(" B ")
                 .define('D', Tags.Items.GEMS_DIAMOND)
@@ -62,7 +61,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.MEMORY_EXTRA_LARGE.get(), 2)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEMORY_EXTRA_LARGE.get(), 2)
                 .pattern("DTD")
                 .pattern("EBE")
                 .pattern("DTD")
@@ -75,7 +74,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_SMALL.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_SMALL.get())
                 .pattern("ITI")
                 .pattern("EBE")
                 .define('I', Tags.Items.INGOTS_IRON)
@@ -87,7 +86,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_MEDIUM.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_MEDIUM.get())
                 .pattern("GTG")
                 .pattern("EBE")
                 .define('G', Tags.Items.INGOTS_GOLD)
@@ -99,7 +98,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_LARGE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_LARGE.get())
                 .pattern("DTD")
                 .pattern("EBE")
                 .define('D', Tags.Items.GEMS_DIAMOND)
@@ -111,7 +110,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_EXTRA_LARGE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.HARD_DRIVE_EXTRA_LARGE.get())
                 .pattern("ETE")
                 .pattern("DBD")
                 .pattern("EBE")
@@ -124,7 +123,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_SMALL.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_SMALL.get())
                 .pattern("ITI")
                 .pattern("RRR")
                 .pattern("   ")
@@ -136,7 +135,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_MEDIUM.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY_MEDIUM.get())
                 .pattern("ITI")
                 .pattern("I I")
                 .pattern("RBR")
@@ -149,7 +148,7 @@ public final class StorageRecipes {
                 .unlockedBy(UNLOCK_ROBOT, ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLASH_MEMORY.get())
                 .pattern("ITI")
                 .pattern("RBR")
                 .define('I', Tags.Items.INGOTS_IRON)
@@ -166,7 +165,7 @@ public final class StorageRecipes {
         // recipe collided with the plain "unflash" recipe (also just FLASH_MEMORY_CUSTOM alone,
         // see unflash.json) -- extra grid contents block a shapeless match, so the wrench also
         // disambiguates the two.
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_CUSTOM.get())
+        RecipeBuilders.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_CUSTOM.get())
                 .requires(Items.FLASH_MEMORY.get())
                 .requires(li.cil.oc2.common.tags.ItemTags.WRENCHES)
                 .unlockedBy(
@@ -178,7 +177,7 @@ public final class StorageRecipes {
         // require plain FLASH_MEMORY with no other distinguishing ingredient, so the crafting
         // grid could only ever resolve to whichever recipe the recipe manager happened to pick,
         // never the other (OC2R gametest RecipeTests.everyModItemIsCraftable caught this).
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_ONYXOS.get())
+        RecipeBuilders.shapeless(RecipeCategory.MISC, Items.FLASH_MEMORY_ONYXOS.get())
                 .requires(Items.FLASH_MEMORY_CUSTOM.get())
                 .requires(li.cil.oc2.common.tags.ItemTags.WRENCHES)
                 .unlockedBy(
@@ -190,7 +189,7 @@ public final class StorageRecipes {
         // recipe: the shaped recipe used to be byte-for-byte identical to HARD_DRIVE_MEDIUM's
         // own (same pattern and ingredients), so the two were unresolvably ambiguous in a
         // crafting table -- see the FLASH_MEMORY_ONYXOS comment above for the same class of bug.
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
+        RecipeBuilders.shapeless(RecipeCategory.MISC, Items.HARD_DRIVE_ONYXOS.get())
                 .requires(Items.HARD_DRIVE_MEDIUM.get())
                 .unlockedBy(
                         UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
