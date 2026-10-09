@@ -8,13 +8,18 @@ import li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResu
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestAssertException;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -25,7 +30,7 @@ public final class NetworkConnectorTests {
         TestSupport.placeFloor(helper, TestSupport.DEVICE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
         if (helper.getBlockState(TestSupport.DEVICE_POS).isAir()) {
-            throw new GameTestAssertException("network connector not placed at " + TestSupport.DEVICE_POS);
+            throw TestSupport.failure(helper, "network connector not placed at " + TestSupport.DEVICE_POS);
         }
         helper.succeed();
     }
@@ -53,15 +58,15 @@ public final class NetworkConnectorTests {
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
 
-        final NetworkConnectorBlockEntity first = helper.getBlockEntity(TestSupport.CABLE_POS);
-        final NetworkConnectorBlockEntity second = helper.getBlockEntity(TestSupport.DEVICE_POS);
+        final NetworkConnectorBlockEntity first = TestSupport.blockEntity(helper, TestSupport.CABLE_POS, NetworkConnectorBlockEntity.class);
+        final NetworkConnectorBlockEntity second = TestSupport.blockEntity(helper, TestSupport.DEVICE_POS, NetworkConnectorBlockEntity.class);
 
         TestSupport.assertNotNull(helper, first, "first network connector block entity at " + TestSupport.CABLE_POS);
         TestSupport.assertNotNull(helper, second, "second network connector block entity at " + TestSupport.DEVICE_POS);
 
         final ConnectionResult result = NetworkConnectorBlockEntity.connect(first, second);
         if (result != ConnectionResult.SUCCESS && result != ConnectionResult.ALREADY_CONNECTED) {
-            throw new GameTestAssertException("connecting two adjacent connectors failed: " + result);
+            throw TestSupport.failure(helper, "connecting two adjacent connectors failed: " + result);
         }
 
         TestSupport.assertTrue(helper, "first connector should see the second as connected",
@@ -81,14 +86,14 @@ public final class NetworkConnectorTests {
             TestSupport.placeFloor(helper, position);
             TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), position);
         }
-        final NetworkConnectorBlockEntity hub = helper.getBlockEntity(TestSupport.CABLE_POS);
-        final NetworkConnectorBlockEntity west = helper.getBlockEntity(TestSupport.COMPUTER_POS);
-        final NetworkConnectorBlockEntity east = helper.getBlockEntity(TestSupport.DEVICE_POS);
+        final NetworkConnectorBlockEntity hub = TestSupport.blockEntity(helper, TestSupport.CABLE_POS, NetworkConnectorBlockEntity.class);
+        final NetworkConnectorBlockEntity west = TestSupport.blockEntity(helper, TestSupport.COMPUTER_POS, NetworkConnectorBlockEntity.class);
+        final NetworkConnectorBlockEntity east = TestSupport.blockEntity(helper, TestSupport.DEVICE_POS, NetworkConnectorBlockEntity.class);
 
         final ConnectionResult a = NetworkConnectorBlockEntity.connect(hub, west);
         final ConnectionResult b = NetworkConnectorBlockEntity.connect(hub, east);
         if (a != ConnectionResult.SUCCESS || b != ConnectionResult.SUCCESS) {
-            throw new GameTestAssertException("expected two links from one connector, got " + a + " and " + b);
+            throw TestSupport.failure(helper, "expected two links from one connector, got " + a + " and " + b);
         }
         TestSupport.assertTrue(helper, "connector should hold both links", hub.getConnectedPositions().size() == 2);
         helper.succeed();
@@ -101,8 +106,8 @@ public final class NetworkConnectorTests {
         TestSupport.placeFloor(helper, TestSupport.DEVICE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.CABLE_POS);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), TestSupport.DEVICE_POS);
-        final NetworkConnectorBlockEntity first = helper.getBlockEntity(TestSupport.CABLE_POS);
-        final NetworkConnectorBlockEntity second = helper.getBlockEntity(TestSupport.DEVICE_POS);
+        final NetworkConnectorBlockEntity first = TestSupport.blockEntity(helper, TestSupport.CABLE_POS, NetworkConnectorBlockEntity.class);
+        final NetworkConnectorBlockEntity second = TestSupport.blockEntity(helper, TestSupport.DEVICE_POS, NetworkConnectorBlockEntity.class);
 
         NetworkConnectorBlockEntity.connect(first, second);
         TestSupport.assertTrue(helper, "link should exist before removal",
@@ -139,10 +144,10 @@ public final class NetworkConnectorTests {
             final ConnectionResult result = NetworkConnectorBlockEntity.connect(hub, peer);
             if (i < ports) {
                 if (result != ConnectionResult.SUCCESS && result != ConnectionResult.ALREADY_CONNECTED) {
-                    throw new GameTestAssertException("link " + (i + 1) + " should be accepted, got " + result);
+                    throw TestSupport.failure(helper, "link " + (i + 1) + " should be accepted, got " + result);
                 }
             } else if (result != ConnectionResult.FAILURE_FULL) {
-                throw new GameTestAssertException("link " + (i + 1) + " should be refused as full, got " + result);
+                throw TestSupport.failure(helper, "link " + (i + 1) + " should be refused as full, got " + result);
             }
         }
 
@@ -179,7 +184,7 @@ public final class NetworkConnectorTests {
         final GameTestHelper helper, final Player player, final BlockPos pos) {
         TestSupport.placeFloor(helper, pos);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), pos);
-        final NetworkConnectorBlockEntity connector = helper.getBlockEntity(pos);
+        final NetworkConnectorBlockEntity connector = TestSupport.blockEntity(helper, pos, NetworkConnectorBlockEntity.class);
         TestSupport.assertNotNull(helper, connector, "network connector at " + pos);
         return connector;
     }

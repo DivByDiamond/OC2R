@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,7 +30,19 @@ public final class TestSupport {
     public static final BlockPos DEVICE_POS = new BlockPos(4, WORK_Y, 2);
 
     public static GameTestAssertException failure(final GameTestHelper helper, final String message) {
+        //? if >=26.1 {
+        /*return new GameTestAssertException(net.minecraft.network.chat.Component.literal(message), (int) helper.getTick());
+        *///?} else {
         return new GameTestAssertException(message);
+        //?}
+    }
+
+    public static <T extends BlockEntity> T blockEntity(final GameTestHelper helper, final BlockPos pos, final Class<T> type) {
+        //? if >=26.1 {
+        /*return helper.getBlockEntity(pos, type);
+        *///?} else {
+        return helper.getBlockEntity(pos);
+        //?}
     }
 
     public static void assertTrue(final GameTestHelper helper, final String what, final boolean condition) {
@@ -63,7 +76,7 @@ public final class TestSupport {
     public static void place(final GameTestHelper helper, final Player player, final ItemStack stack, final BlockPos pos) {
         useOn(helper, player, stack, pos, Direction.UP);
         if (helper.getBlockState(pos).isAir()) {
-            throw new GameTestAssertException("nothing placed at " + pos + " from " + stack);
+            throw failure(helper, "nothing placed at " + pos + " from " + stack);
         }
     }
 
@@ -94,7 +107,7 @@ public final class TestSupport {
         final boolean added = li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(
             helper.getLevel(), absoluteCablePos, helper.getBlockState(cablePos), side);
         if (!added) {
-            throw new GameTestAssertException("addInterface(" + cablePos + ", " + side
+            throw failure(helper, "addInterface(" + cablePos + ", " + side
                 + ") returned false; blockState=" + helper.getBlockState(cablePos));
         }
     }
@@ -109,7 +122,7 @@ public final class TestSupport {
 
     public static void assertNotNull(final GameTestHelper helper, @Nullable final Object value, final String what) {
         if (value == null) {
-            throw new GameTestAssertException(what + " is null");
+            throw failure(helper, what + " is null");
         }
     }
 

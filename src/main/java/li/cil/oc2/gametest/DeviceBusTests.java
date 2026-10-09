@@ -6,15 +6,21 @@ import static li.cil.oc2.gametest.TestSupport.*;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestAssertException;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,9 +48,8 @@ public final class DeviceBusTests {
                 final int withNeighbor = computer.deviceCount();
                 LOGGER.info("[busTracks] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
-                    final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
-                        helper.getBlockEntity(TestSupport.CABLE_POS);
-                    throw new GameTestAssertException(
+                    final var cableBe = TestSupport.blockEntity(helper, TestSupport.CABLE_POS, BusCableBlockEntity.class);
+                    throw failure(helper,
                         "attaching a redstone interface added no device (alone=" + base[0]
                             + ", attached=" + withNeighbor + ") " + computer.describe()
                             + "; cableDevices=" + (cableBe == null ? "null" : cableBe.busElement.getLocalDevices())
@@ -56,7 +61,7 @@ public final class DeviceBusTests {
                 final int after = computer.deviceCount();
                 LOGGER.info("[busTracks] after={} base={} {}", after, base[0], computer.describe());
                 if (after != base[0]) {
-                    throw new GameTestAssertException(
+                    throw failure(helper,
                         "device count did not return to baseline after removing the neighbour: alone="
                             + base[0] + ", after=" + after + " " + computer.describe());
                 }
@@ -83,7 +88,7 @@ public final class DeviceBusTests {
                 final var secondState = second.virtualMachine().getBusState();
                 if (firstState != li.cil.oc2.common.bus.controller.BusState.READY
                     || secondState != li.cil.oc2.common.bus.controller.BusState.READY) {
-                    throw new GameTestAssertException(
+                    throw failure(helper,
                         "both computers must reach READY on a shared bus: first=" + firstState
                             + ", second=" + secondState);
                 }

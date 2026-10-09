@@ -22,7 +22,6 @@ import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
@@ -62,7 +61,7 @@ public final class ComputerFixture {
     }
 
     public ComputerBlockEntity blockEntity() {
-        return helper.getBlockEntity(position);
+        return TestSupport.blockEntity(helper, position, ComputerBlockEntity.class);
     }
 
     public VirtualMachine virtualMachine() {
@@ -84,7 +83,7 @@ public final class ComputerFixture {
     public void assertRunState(final VMRunState expected, final String what) {
         final VirtualMachine vm = virtualMachine();
         if (vm.getRunState() != expected) {
-            throw new GameTestAssertException(what + ": computer is " + vm.getRunState()
+            throw TestSupport.failure(helper, what + ": computer is " + vm.getRunState()
                 + ", expected " + expected + ", bootError=" + vm.getBootError());
         }
     }
@@ -95,13 +94,13 @@ public final class ComputerFixture {
         // failure. A blank component is "no error yet", not an error.
         final net.minecraft.network.chat.Component error = virtualMachine().getBootError();
         if (error != null && !error.getString().isEmpty()) {
-            throw new GameTestAssertException("computer reports boot error " + error);
+            throw TestSupport.failure(helper, "computer reports boot error " + error);
         }
     }
 
     public void assertNoError() {
         if (virtualMachine().getError() != null) {
-            throw new GameTestAssertException("VM reported an error: " + virtualMachine().getError());
+            throw TestSupport.failure(helper, "VM reported an error: " + virtualMachine().getError());
         }
     }
 
@@ -109,7 +108,7 @@ public final class ComputerFixture {
 
     public ItemHandler handler(final DeviceType type) {
         return blockEntity().getItemStackHandlers().getItemHandler(type)
-            .orElseThrow(() -> new GameTestAssertException("no item handler for " + type));
+            .orElseThrow(() -> TestSupport.failure(helper, "no item handler for " + type));
     }
 
     public ItemStack slot(final DeviceType type) {
@@ -123,14 +122,14 @@ public final class ComputerFixture {
                 return this;
             }
         }
-        throw new GameTestAssertException("could not install " + stack + " as " + type
+        throw TestSupport.failure(helper, "could not install " + stack + " as " + type
             + "; all " + handler.getSlots() + " slot(s) rejected it");
     }
 
     public ItemStack uninstall(final DeviceType type) {
         final ItemStack removed = handler(type).extractItem(0, 1, false);
         if (removed.isEmpty()) {
-            throw new GameTestAssertException("nothing to remove from the " + type + " slot");
+            throw TestSupport.failure(helper, "nothing to remove from the " + type + " slot");
         }
         return removed;
     }
@@ -156,7 +155,7 @@ public final class ComputerFixture {
         final EnergyStorage storage = Platform.energy()
             .getBlockEnergy(helper.getLevel(), helper.absolutePos(position), null);
         if (storage == null) {
-            throw new GameTestAssertException("computer exposes no energy storage capability");
+            throw TestSupport.failure(helper, "computer exposes no energy storage capability");
         }
         return storage.getEnergyStored();
     }
@@ -172,7 +171,12 @@ public final class ComputerFixture {
     }
 
     public void load(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*blockEntity().loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, registries(), tag));
+        *///?} else {
         blockEntity().loadWithComponents(tag, registries());
+        //?}
     }
 
     // --------------------------------------------------------------------- //
@@ -209,7 +213,7 @@ public final class ComputerFixture {
     public void assertScreenContains(final String expected, final String what) {
         final String text = screen();
         if (!text.contains(expected)) {
-            throw new GameTestAssertException(what + ": screen does not hold [" + expected + "]; "
+            throw TestSupport.failure(helper, what + ": screen does not hold [" + expected + "]; "
                 + describe() + "\n" + text);
         }
     }
@@ -228,7 +232,7 @@ public final class ComputerFixture {
         final String text = screen();
         for (final String marker : new String[]{"Kernel panic", "Oops", "BUG:", "Call Trace"}) {
             if (text.contains(marker)) {
-                throw new GameTestAssertException("guest reported '" + marker + "':\n" + text);
+                throw TestSupport.failure(helper, "guest reported '" + marker + "':\n" + text);
             }
         }
     }

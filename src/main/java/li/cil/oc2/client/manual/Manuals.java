@@ -1,5 +1,16 @@
 package li.cil.oc2.client.manual;
 
+//? if >=26.1 {
+/*import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+// Markdown Manual has no 26.x build (roadmap multiversion-26-neoforge section 3), so there is nothing to register there.
+@OnlyIn(Dist.CLIENT)
+public final class Manuals {
+    public static void initialize() {
+    }
+}
+*///?} else {
 import java.util.function.Supplier;
 import li.cil.manual.api.ManualModel;
 import li.cil.manual.api.prefab.Manual;
@@ -65,3 +76,4 @@ public final class Manuals {
         return Platform.registries().register(registryId, Constants.MOD_ID, name, factory);
     }
 }
+//?}

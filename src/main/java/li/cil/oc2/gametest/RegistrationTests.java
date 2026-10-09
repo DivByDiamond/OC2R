@@ -6,10 +6,16 @@ import static li.cil.oc2.gametest.TestSupport.assertNotNull;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
+import net.minecraft.gametest.framework.GameTestHelper;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)

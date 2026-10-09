@@ -29,8 +29,12 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 // RegisterGameTestsEvent fires on the MOD bus during mod loading, before the GAME bus (the
 // @EventBusSubscriber default) even exists — omitting bus here would silently drop this
 // subscription and turn every test run vacuously green.
+//? if >=26.1 {
+/*@EventBusSubscriber(modid = API.MOD_ID)
+*///?} else {
 @SuppressWarnings("removal") // Bus.MOD is deprecated but still the only bus RegisterGameTestsEvent fires on
 @EventBusSubscriber(modid = API.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+//?}
 public final class GameTestResultReporter implements TestReporter {
     public static final String RESULTS_FILE_NAME = "gameTestResults.tsv";
 
@@ -77,7 +81,7 @@ public final class GameTestResultReporter implements TestReporter {
 
     private void record(final GameTestInfo testInfo, final String status, final String message) {
         final String line = String.join("\t",
-            sanitize(testInfo.getTestName()), status,
+            sanitize(testName(testInfo)), status,
             testInfo.isRequired() ? "required" : "optional", sanitize(message));
         try {
             writer.write(line);
@@ -86,6 +90,14 @@ public final class GameTestResultReporter implements TestReporter {
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to write game test result", e);
         }
+    }
+
+    private static String testName(final GameTestInfo testInfo) {
+        //? if >=26.1 {
+        /*return testInfo.id().getPath();
+        *///?} else {
+        return testInfo.getTestName();
+        //?}
     }
 
     private String describe(final GameTestInfo testInfo) {
