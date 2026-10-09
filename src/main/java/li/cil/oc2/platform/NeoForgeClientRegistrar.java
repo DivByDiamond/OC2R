@@ -16,6 +16,9 @@ import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+*///?}
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -66,13 +69,15 @@ public final class NeoForgeClientRegistrar implements ClientRegistrar {
     }
 
     @Override
+    //? if >=26.1 {
+/*    public <T extends BlockEntity, S extends BlockEntityRenderState> void registerBlockEntityRenderer(
+            final Supplier<? extends BlockEntityType<? extends T>> type,
+            final BlockEntityRendererProvider<T, S> provider) {
+*///?} else {
     public <T extends BlockEntity> void registerBlockEntityRenderer(
             final Supplier<? extends BlockEntityType<? extends T>> type,
-            //? if >=26.1 {
-/*            final BlockEntityRendererProvider<T, ?> provider) {
-*///?} else {
             final BlockEntityRendererProvider<T> provider) {
-            //?}
+        //?}
         blockEntityRenderers.add(() ->
                 net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(type.get(), provider));
     }
