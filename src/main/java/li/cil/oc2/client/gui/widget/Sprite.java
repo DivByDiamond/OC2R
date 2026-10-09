@@ -1,6 +1,9 @@
 package li.cil.oc2.client.gui.widget;
 
 import net.minecraft.client.gui.GuiGraphics;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.RenderPipelines;
+*///?}
 import net.minecraft.util.Mth;
 
 public final class Sprite {
@@ -37,6 +40,19 @@ public final class Sprite {
             final int y,
             final int uOffset,
             final int vOffset) {
+        //? if >=26.1 {
+/*        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                texture.location,
+                x,
+                y,
+                (float) (u0 + uOffset),
+                (float) (v0 + vOffset),
+                width,
+                height,
+                texture.width,
+                texture.height);
+*///?} else {
         graphics.blit(
                 texture.location,
                 x,
@@ -47,10 +63,24 @@ public final class Sprite {
                 height,
                 texture.width,
                 texture.height);
+        //?}
     }
 
     public void drawFillY(final GuiGraphics graphics, final int x, final int y, final float value) {
         final int h = (int) (this.height * Mth.clamp(value, 0, 1));
+        //? if >=26.1 {
+/*        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                texture.location,
+                x,
+                y + height - h,
+                (float) u0,
+                (float) (v0 + height - h),
+                width,
+                h,
+                texture.width,
+                texture.height);
+*///?} else {
         graphics.blit(
                 texture.location,
                 x,
@@ -61,5 +91,6 @@ public final class Sprite {
                 h,
                 texture.width,
                 texture.height);
+        //?}
     }
 }

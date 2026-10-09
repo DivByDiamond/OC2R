@@ -3,7 +3,9 @@ package li.cil.oc2.client.gui.screen.common.machine;
 import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.bus.device.DeviceTypes;
@@ -18,7 +20,9 @@ import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+//? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
+//?}
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -36,6 +40,17 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
             final T container, final Inventory playerInventory, final Component title) {
         super(container, playerInventory, title);
     }
+
+    //? if >=26.1 {
+/*    public AbstractMachineInventoryScreen(
+            final T container,
+            final Inventory playerInventory,
+            final Component title,
+            final int imageWidth,
+            final int imageHeight) {
+        super(container, playerInventory, title, imageWidth, imageHeight);
+    }
+*///?}
 
     public List<Rect2i> getExtraAreas() {
         final List<Rect2i> list = new ArrayList<>();
@@ -115,8 +130,10 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
             final float partialTicks,
             final int mouseX,
             final int mouseY) {
+        //? if <26.1 {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
+        //?}
 
         Sprites.SIDEBAR_2.draw(graphics, leftPos - Sprites.SIDEBAR_2.width, topPos + CONTROLS_TOP);
 

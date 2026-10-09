@@ -3,7 +3,9 @@ package li.cil.oc2.client.gui.widget.misc;
 import static java.util.Collections.emptyList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +16,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
+//? if >=26.1 {
+/*import net.minecraft.client.input.InputWithModifiers;
+*///?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -47,16 +52,33 @@ public abstract class ImageButton extends AbstractButton {
             final Component component = tooltip.get(i);
             tooltip.set(i, withFormat(component, ChatFormatting.GRAY));
         }
+        //? if >=26.1 {
+/*        setTooltip(getTooltip());
+*///?}
         return this;
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public void onPress(final InputWithModifiers input) {
+        onPress();
+    }
+
+    public void onPress() {
+*///?} else {
     @Override
     public void onPress() {
+    //?}
         lastPressedAt = System.currentTimeMillis();
     }
 
+    //? if >=26.1 {
+/*    @Override
+    protected void extractContents(
+*///?} else {
     @Override
     public void renderWidget(
+    //?}
             final GuiGraphics graphics,
             final int mouseX,
             final int mouseY,
@@ -69,7 +91,9 @@ public abstract class ImageButton extends AbstractButton {
             final int mouseX,
             final int mouseY,
             final float partialTicks) {
+        //? if <26.1 {
         RenderSystem.enableDepthTest();
+        //?}
 
         Sprite background = baseImage;
         if ((System.currentTimeMillis() - lastPressedAt) < PRESS_DURATION) {
@@ -79,16 +103,27 @@ public abstract class ImageButton extends AbstractButton {
         background.draw(graphics, getX(), getY());
 
         if (!Objects.equals(getMessage(), Component.empty())) {
+            //? if >=26.1 {
+/*            graphics.centeredText(
+                    Minecraft.getInstance().font,
+                    getMessage(),
+                    getX() + width / 2,
+                    getY() + (height - 8) / 2,
+                    (active ? 0xFFFFFF : 0xA0A0A0) | Mth.ceil(alpha * 255) << 24);
+*///?} else {
             graphics.drawCenteredString(
                     Minecraft.getInstance().font,
                     getMessage(),
                     getX() + width / 2,
                     getY() + (height - 8) / 2,
                     (active ? 0xFFFFFF : 0xA0A0A0) | Mth.ceil(alpha * 255) << 24);
+            //?}
         }
     }
 
+    //? if <26.1 {
     @Override
+    //?}
     @Nullable
     public Tooltip getTooltip() {
         if (tooltip.stream().findFirst().isEmpty()) return null;

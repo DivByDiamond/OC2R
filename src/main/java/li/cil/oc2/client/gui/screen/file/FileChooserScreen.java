@@ -78,7 +78,11 @@ public final class FileChooserScreen extends Screen {
         }
 
         if (previousScreen != null) {
+            //? if >=26.1 {
+/*            Minecraft.getInstance().schedule(() -> Minecraft.getInstance().setScreen(previousScreen));
+*///?} else {
             Minecraft.getInstance().tell(() -> Minecraft.getInstance().setScreen(previousScreen));
+            //?}
         }
     }
 

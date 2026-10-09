@@ -16,9 +16,18 @@ public final class ComputerContainerScreen
             final ComputerInventoryContainer container,
             final Inventory inventory,
             final Component title) {
+        //? if >=26.1 {
+/*        super(
+                container,
+                inventory,
+                title,
+                Sprites.COMPUTER_CONTAINER.width,
+                Sprites.COMPUTER_CONTAINER.height);
+*///?} else {
         super(container, inventory, title);
         imageWidth = Sprites.COMPUTER_CONTAINER.width;
         imageHeight = Sprites.COMPUTER_CONTAINER.height;
+        //?}
         inventoryLabelY = imageHeight - 94;
     }
 

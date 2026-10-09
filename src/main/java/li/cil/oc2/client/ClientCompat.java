@@ -8,6 +8,9 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
+/*import net.minecraft.client.input.KeyEvent;
+*///?}
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -48,19 +51,36 @@ public final class ClientCompat {
             final int x,
             final int y,
             final ItemStack stack) {
+        //? if >=26.1 {
+/*        graphics.setComponentTooltipForNextFrame(font, tooltip, x, y, stack);
+*///?} else {
         graphics.renderComponentTooltip(font, tooltip, x, y, stack);
+        //?}
     }
 
     public static boolean isActiveAndMatches(
             final KeyMapping mapping, final int keyCode, final int scanCode) {
+        //? if >=26.1 {
+/*        return mapping.matches(new KeyEvent(keyCode, scanCode, 0));
+*///?} else {
         return mapping.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode));
+        //?}
     }
 
     public static boolean isStencilEnabled(final RenderTarget target) {
+        //? if >=26.1 {
+/*        // 26.x render targets carry no stencil toggle.
+        return false;
+*///?} else {
         return target.isStencilEnabled();
+        //?}
     }
 
     public static void enableStencil(final RenderTarget target) {
+        //? if >=26.1 {
+/*        // 26.x render targets carry no stencil toggle.
+*///?} else {
         target.enableStencil();
+        //?}
     }
 }

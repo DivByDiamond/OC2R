@@ -1,27 +1,41 @@
 package li.cil.oc2.client.gui.screen.computer;
 
+//? if <26.1 {
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//?}
 import javax.annotation.Nullable;
+//? if <26.1 {
 import li.cil.oc2.client.gui.Textures;
+//?}
 import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
+//? if <26.1 {
 import li.cil.oc2.client.gui.widget.Texture;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
+//?}
 import li.cil.oc2.common.item.Items;
+//? if <26.1 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
+//?} else {
+/*import net.minecraft.client.gui.GuiGraphics;
+*///?}
 import net.minecraft.core.Direction;
+//? if <26.1 {
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+//? if <26.1 {
 import org.joml.Matrix4fStack;
+//?}
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -29,8 +43,10 @@ public class ComputerBlockItemRenderer {
     public static final int BLOCK_RENDER_SIZE = 48;
 
     private final ItemStack computerItemStack = new ItemStack(Items.COMPUTER.get());
+    //? if <26.1 {
     private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
     private final BakedModel model = itemRenderer.getModel(computerItemStack, null, null, 0);
+    //?}
 
     @Nullable
     public Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
@@ -51,11 +67,34 @@ public class ComputerBlockItemRenderer {
 
         final AABB aabb = new AABB(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
         return aabb.clip(new Vec3(source), new Vec3(target))
+                //? if >=26.1 {
+/*                .map(hit -> Direction.getApproximateNearest(hit.x, -hit.y(), hit.z()))
+*///?} else {
                 .map(hit -> Direction.getNearest(hit.x, -hit.y(), hit.z()))
+                //?}
                 .filter(side -> side != Direction.SOUTH)
                 .orElse(null);
     }
 
+    //? if >=26.1 {
+/*    // Items cannot be drawn rotated in a 26.x GUI (extraction only supports 2D transforms), so the
+    // block is drawn upright and without the per-face overlays.
+    public void render(
+            final GuiGraphics graphics,
+            final int x,
+            final int y,
+            final Vector3f rotation,
+            @Nullable final Direction focusedSide,
+            final NetworkInterfaceCardScreen screen) {
+        final float scale = BLOCK_RENDER_SIZE / 16f * 2;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(x - 8 * scale, y - 8 * scale);
+        graphics.pose().scale(scale, scale);
+        graphics.item(computerItemStack, 0, 0);
+        graphics.pose().popMatrix();
+    }
+
+*///?} else {
     public void render(
             final int x,
             final int y,
@@ -140,6 +179,8 @@ public class ComputerBlockItemRenderer {
         }
     }
 
+    //?}
+
     private static Vector3f getSideRotation(final Direction side) {
         return switch (side) {
             case DOWN -> new Vector3f(-90, 0, 0);
@@ -151,6 +192,7 @@ public class ComputerBlockItemRenderer {
         };
     }
 
+    //? if <26.1 {
     private void renderOverlay(
             final Matrix4fStack poseStack,
             final MultiBufferSource.BufferSource bufferSource,
@@ -163,4 +205,5 @@ public class ComputerBlockItemRenderer {
         buffer.addVertex(poseStack, 1, 1, 0).setUv(1, 1);
         buffer.addVertex(poseStack, 1, 0, 0).setUv(1, 0);
     }
+    //?}
 }

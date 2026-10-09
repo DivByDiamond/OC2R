@@ -2,7 +2,9 @@ package li.cil.oc2.client.gui.screen.monitor;
 
 import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
 import li.cil.oc2.common.Constants;
@@ -15,6 +17,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=26.1 {
+/*import net.minecraft.client.input.KeyEvent;
+*///?}
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
@@ -43,7 +48,7 @@ public final class BusInterfaceScreen extends Screen {
      * @param side the side of the block.
      */
     public BusInterfaceScreen(final BusCableBlockEntity busCable, final Direction side) {
-        super(Items.BUS_INTERFACE.get().getDescription());
+        super(Component.translatable(Items.BUS_INTERFACE.get().getDescriptionId()));
         this.busCable = busCable;
         this.side = side;
     }
@@ -125,6 +130,39 @@ public final class BusInterfaceScreen extends Screen {
         }
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean keyPressed(final KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+            setInterfaceName(nameField.getValue());
+            onClose();
+            return true;
+        }
+
+        return nameField.keyPressed(event) || super.keyPressed(event);
+    }
+
+    @Override
+    public void extractBackground(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTicks);
+        Sprites.BUS_INTERFACE_SCREEN.draw(graphics, left, top);
+    }
+
+    @Override
+    public void extractRenderState(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
+
+        nameField.extractRenderState(graphics, mouseX, mouseY, partialTicks);
+    }
+*///?} else {
     @Override
     public boolean keyPressed(final int keyCode, final int scanCode, final int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
@@ -151,6 +189,7 @@ public final class BusInterfaceScreen extends Screen {
         RenderSystem.disableBlend();
         nameField.render(graphics, mouseX, mouseY, partialTicks);
     }
+    //?}
 
     @Override
     public boolean isPauseScreen() {

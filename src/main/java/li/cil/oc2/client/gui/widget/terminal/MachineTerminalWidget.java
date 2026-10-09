@@ -63,6 +63,10 @@ public final class MachineTerminalWidget {
 
     public void render(final GuiGraphics graphics, @Nullable final Component error) {
         if (container.getVirtualMachine().isRunning()) {
+            //? if >=26.1 {
+/*            // TODO: the retained terminal mesh is drawn immediately, which 26.x GUIs do not support
+            // because screens only extract render state. It needs a GuiElementRenderState.
+*///?} else {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);
             // Scale terminal rendering to fit inside the sprite's inner area. Terminal.getWidth()
@@ -80,6 +84,7 @@ public final class MachineTerminalWidget {
             final Matrix4f projectionMatrix =
                     new Matrix4f().setOrtho(0, parent.width, parent.height, 0, -10f, 10f);
             rendererView.render(terminalStack, projectionMatrix, false);
+            //?}
         } else {
             final Font font = getClient().font;
             if (error != null) {
@@ -97,6 +102,9 @@ public final class MachineTerminalWidget {
     }
 
     private void drawShadow(Font font, GuiGraphics graphics, Component text, float x, float y) {
+        //? if >=26.1 {
+/*        graphics.text(font, text, (int) x, (int) y, 0xFF000000 | 15610658, true);
+*///?} else {
         var batch = graphics.bufferSource();
         font.drawInBatch(
                 text,
@@ -110,6 +118,7 @@ public final class MachineTerminalWidget {
                 0,
                 15728880);
         batch.endBatch();
+        //?}
     }
 
     public void tick() {

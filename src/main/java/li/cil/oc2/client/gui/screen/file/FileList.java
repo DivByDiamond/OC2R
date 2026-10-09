@@ -10,6 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+//? if >=26.1 {
+/*import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import org.apache.logging.log4j.LogManager;
@@ -128,6 +131,21 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
             this.displayName = displayName;
         }
 
+        //? if >=26.1 {
+/*        @Override
+        public void extractContent(
+                final GuiGraphics graphics,
+                final int mouseX,
+                final int mouseY,
+                final boolean isHovered,
+                final float deltaTime) {
+            graphics.text(font, displayName, getContentX(), getContentY(), 0xFFFFFFFF, true);
+        }
+
+        @Override
+        public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+            final boolean isLeftClick = event.button() == 0;
+*///?} else {
         @Override
         public void render(
                 final GuiGraphics graphics,
@@ -163,6 +181,7 @@ final class FileList extends ObjectSelectionList<FileList.FileEntry> {
         @Override
         public boolean mouseClicked(final double mouseX, final double mouseY, final int button) {
             final boolean isLeftClick = button == 0;
+        //?}
             if (isLeftClick) {
                 select();
 
