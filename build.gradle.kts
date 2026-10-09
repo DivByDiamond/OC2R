@@ -107,6 +107,12 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "utf-8"
 }
 
+// MDG 2.x on 26.x scans the Stonecutter output directory in createMinecraftArtifacts; Gradle 9 rejects
+// that without a declared ordering.
+tasks.matching { it.name == "createMinecraftArtifacts" }.configureEach {
+    mustRunAfter("stonecutterGenerate")
+}
+
 val hasGithubPackageCredentials =
     (hasProperty("gpr.user") && hasProperty("gpr.key")) ||
         (System.getenv("GITHUB_ACTOR") != null && System.getenv("GITHUB_TOKEN") != null)
