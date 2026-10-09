@@ -174,7 +174,13 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
 //?}
-//? if >=26.1 {
+//? if >=26.2 {
+/*    // 26.2 removed RenderType.draw(MeshData) and the tessellator; the terminal text is not drawn
+    // there yet, so the render entry point is a no-op.
+    public void renderBuffer(
+            final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {}
+
+*///?} else if >=26.1 {
 /*    // The projection matrix argument has no counterpart on 26.x: RenderType draws with the
     // projection the caller has bound. The pose is applied through the model-view stack.
     public void renderBuffer(
@@ -276,7 +282,12 @@ public class TerminalRenderer implements RendererModel, RendererView {
     }
 
 //?}
-//? if >=26.1 {
+//? if >=26.2 {
+/*    // Nothing is drawn on 26.2 yet, so no row meshes are built; the dirty bits are just cleared.
+    public void validateLineCache(final FrameState frame) {
+        dirty.set(0L);
+    }
+*///?} else if >=26.1 {
 /*    public void validateLineCache(final FrameState frame) {
         if (dirty.get() == 0) return;
 

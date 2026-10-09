@@ -2,6 +2,7 @@ package li.cil.oc2.client.renderer;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
@@ -16,7 +17,9 @@ import net.minecraft.client.gui.Font;
 *///?} else {
 import net.minecraft.client.renderer.LightTexture;
 //?}
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 //? if <26.1 {
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //?}
@@ -73,13 +76,17 @@ public enum BusInterfaceNameRenderer {
             return;
         }
 
+        //? if >=26.2 {
+        /*// 26.2 draws world text through the submit pipeline instead of Font.drawInBatch with a
+        // buffer source; the interface name label is not drawn there yet.
+        *///?} else {
         final PoseStack stack = event.poseStack();
         stack.pushPose();
 
         stack.translate(0.5, 1, 0.5);
         stack.translate(side.getStepX() * 0.5f, 0, side.getStepZ() * 0.5f);
 
-        final Camera info = mc.gameRenderer.getMainCamera();
+        final Camera info = RenderCompat.mainCamera();
         //? if >=26.1 {
 /*        stack.translate(
                 blockPos.getX() - info.position().x,
@@ -144,5 +151,6 @@ public enum BusInterfaceNameRenderer {
         buffer.endBatch();
 
         stack.popPose();
+        //?}
     }
 }
