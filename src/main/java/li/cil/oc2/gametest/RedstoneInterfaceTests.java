@@ -3,15 +3,22 @@
 package li.cil.oc2.gametest;
 
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestAssertException;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,10 +31,10 @@ public final class RedstoneInterfaceTests {
         final Player player = TestSupport.fakePlayer(helper);
         TestSupport.place(helper, player, new ItemStack(Items.REDSTONE_INTERFACE.get()), TestSupport.DEVICE_POS);
         if (helper.getBlockState(TestSupport.DEVICE_POS).isAir()) {
-            throw new GameTestAssertException("redstone interface not placed at " + TestSupport.DEVICE_POS);
+            throw TestSupport.failure(helper, "redstone interface not placed at " + TestSupport.DEVICE_POS);
         }
         // also verify a block entity was created
-        TestSupport.assertNotNull(helper, helper.getBlockEntity(TestSupport.DEVICE_POS),
+        TestSupport.assertNotNull(helper, TestSupport.blockEntity(helper, TestSupport.DEVICE_POS, BlockEntity.class),
             "redstone interface block entity at " + TestSupport.DEVICE_POS);
         helper.succeed();
     }
@@ -51,9 +58,8 @@ public final class RedstoneInterfaceTests {
                 final int withNeighbor = computer.deviceCount();
                 LOGGER.info("[redstoneAttach] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
-                    final var cableBe = (li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity)
-                        helper.getBlockEntity(TestSupport.CABLE_POS);
-                    throw new GameTestAssertException(
+                    final var cableBe = TestSupport.blockEntity(helper, TestSupport.CABLE_POS, BusCableBlockEntity.class);
+                    throw TestSupport.failure(helper,
                         "redstone interface added no device (alone=" + base[0]
                             + ", attached=" + withNeighbor + ") " + computer.describe()
                             + "; cableDevices=" + (cableBe == null ? "null" : cableBe.busElement.getLocalDevices()));
@@ -81,7 +87,7 @@ public final class RedstoneInterfaceTests {
                 final int withNeighbor = computer.deviceCount();
                 LOGGER.info("[redstoneRemove] withNeighbor={} base={} {}", withNeighbor, base[0], computer.describe());
                 if (withNeighbor <= base[0]) {
-                    throw new GameTestAssertException(
+                    throw TestSupport.failure(helper,
                         "redstone interface added no device (alone=" + base[0]
                             + ", attached=" + withNeighbor + ") " + computer.describe());
                 }
@@ -91,7 +97,7 @@ public final class RedstoneInterfaceTests {
                 final int after = computer.deviceCount();
                 LOGGER.info("[redstoneRemove] after={} base={} {}", after, base[0], computer.describe());
                 if (after != base[0]) {
-                    throw new GameTestAssertException(
+                    throw TestSupport.failure(helper,
                         "device count did not return to baseline after removing redstone interface: alone="
                             + base[0] + ", after=" + after + " " + computer.describe());
                 }
