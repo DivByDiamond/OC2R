@@ -5,6 +5,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.client.gui.screen.file.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.file.FileChooserScreen;
 import li.cil.oc2.common.bus.device.rpc.item.card.FileImportExportCardItemDevice;
@@ -59,6 +60,9 @@ public final class FileTransferHooks {
                                 NetworkMessages.sendToServer(new ClientCanceledImportFileMessage(id));
                                 Minecraft.getInstance()
                                         .gui
+                                        //? if >=26.2 {
+                                        /*.hud
+                                        *///?}
                                         .getChat()
                                         //? if >=26.1 {
                                         /*.addClientSystemMessage(FILE_TOO_LARGE_TEXT.withStyle(
@@ -84,7 +88,7 @@ public final class FileTransferHooks {
 
     public static void closeFileChooser() {
         Minecraft.getInstance().execute(() -> {
-            if (Minecraft.getInstance().screen instanceof FileChooserScreen screen) {
+            if (RenderCompat.currentScreen() instanceof FileChooserScreen screen) {
                 screen.onClose();
             }
         });

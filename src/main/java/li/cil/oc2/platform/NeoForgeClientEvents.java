@@ -4,7 +4,8 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.LevelRenderContext;
 //? if >=26.1 {
-/*import net.minecraft.client.Minecraft;
+/*import li.cil.oc2.client.RenderCompat;
+import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 *///?}
 import net.neoforged.api.distmarker.Dist;
@@ -49,7 +50,7 @@ public final class NeoForgeClientEvents {
         final LevelRenderContext context = new LevelRenderContext(
                 stage,
                 event.getPoseStack(),
-                minecraft.gameRenderer.getMainCamera(),
+                RenderCompat.mainCamera(),
                 minecraft.getDeltaTracker(),
                 new Matrix4f(event.getModelViewMatrix()),
                 event.getLevelRenderState().cameraRenderState.projectionMatrix);
