@@ -15,7 +15,11 @@ public final class PeripheralRecipes {
                 .pattern("XTU")
                 .pattern("IBI")
                 .define('I', Tags.Items.INGOTS_IRON)
+                //? if >=26.2 {
+/*                .define('U', net.minecraft.tags.BlockItemTags.BUTTONS.item())
+*///?} else {
                 .define('U', net.minecraft.tags.ItemTags.BUTTONS)
+                //?}
                 .define('T', Items.TRANSISTOR.get())
                 .define('X', Items.BUS_INTERFACE.get())
                 .define('B', Items.CIRCUIT_BOARD.get())

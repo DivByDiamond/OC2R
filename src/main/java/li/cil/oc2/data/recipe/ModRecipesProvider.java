@@ -4,10 +4,14 @@ import java.util.concurrent.CompletableFuture;
 import li.cil.oc2.data.recipe.peripheral.PeripheralRecipes;
 import li.cil.oc2.data.recipe.peripheral.RobotRecipes;
 import li.cil.oc2.data.recipe.peripheral.StorageRecipes;
-import net.minecraft.advancements.Criterion;
-//? if >=26.1 {
-/*import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+//? if >=26.2 {
+/*import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.InventoryChangeTrigger;
+*///?} else if >=26.1 {
+/*import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 *///?} else {
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 //?}
 import net.minecraft.core.HolderLookup;

@@ -19,7 +19,11 @@ public final class StorageRecipes {
                 .pattern("XTD")
                 .pattern("IBI")
                 .define('I', Tags.Items.INGOTS_IRON)
+                //? if >=26.2 {
+/*                .define('U', net.minecraft.tags.BlockItemTags.BUTTONS.item())
+*///?} else {
                 .define('U', ItemTags.BUTTONS)
+                //?}
                 .define('T', Items.TRANSISTOR.get())
                 .define('X', Items.BUS_INTERFACE.get())
                 .define('D', net.minecraft.world.item.Items.DISPENSER)

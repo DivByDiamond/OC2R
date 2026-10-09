@@ -11,7 +11,11 @@ import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
+//? if >=26.2 {
+/*import net.minecraft.advancements.triggers.CriteriaTriggers;
+*///?} else {
 import net.minecraft.advancements.CriteriaTriggers;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
