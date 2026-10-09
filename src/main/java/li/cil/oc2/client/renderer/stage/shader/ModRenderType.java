@@ -1,6 +1,138 @@
 package li.cil.oc2.client.renderer.stage.shader;
 
-//? if >=26.1 {
+//? if >=26.2 {
+/*import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import li.cil.oc2.api.API;
+import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
+public final class ModRenderType {
+    // 26.x has no per-draw state shards: every render type is a pipeline plus a render setup.
+    // Vertex lighting through the lightmap is not available to the mod pipelines, so lit geometry
+    // bakes its light into the vertex color instead.
+    private static final RenderPipeline NETWORK_CABLE_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation("pipeline/oc2r_network_cable")
+                    .withCull(false)
+                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .build();
+
+    private static final RenderPipeline PROJECTOR_LIGHT_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation("pipeline/oc2r_projector_light")
+                    .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                    .withCull(false)
+                    .build();
+
+    private static final RenderPipeline GATEWAY_PARTICLE_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation("pipeline/oc2r_gateway_particle")
+                    .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                    .build();
+
+    private static final RenderPipeline ADDITIVE_TEXTURE_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
+                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withLocation("pipeline/oc2r_additive_texture")
+                    .withVertexShader("core/position_tex")
+                    .withFragmentShader("core/position_tex")
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                    .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                    .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .withCull(false)
+                    .build();
+
+    private static final RenderPipeline FRAMEBUFFER_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
+                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withLocation("pipeline/oc2r_framebuffer")
+                    .withVertexShader("core/position_tex")
+                    .withFragmentShader("core/position_tex")
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                    .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                    .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .withCull(false)
+                    .build();
+
+    private static final RenderType NETWORK_CABLE =
+            RenderType.create(
+                    API.MOD_ID + "/network_cable",
+                    RenderSetup.builder(NETWORK_CABLE_PIPELINE).createRenderSetup());
+
+    private static final RenderType PROJECTOR_LIGHT =
+            RenderType.create(
+                    API.MOD_ID + "/projector_light",
+                    RenderSetup.builder(PROJECTOR_LIGHT_PIPELINE).createRenderSetup());
+
+    private static final RenderType GATEWAY_PARTICLE =
+            RenderType.create(
+                    API.MOD_ID + "/gateway_particle",
+                    RenderSetup.builder(GATEWAY_PARTICLE_PIPELINE).createRenderSetup());
+
+    private static final Map<ResourceLocation, RenderType> ADDITIVE_TEXTURES =
+            new ConcurrentHashMap<>();
+
+    private static final Map<ResourceLocation, RenderType> FRAMEBUFFERS = new ConcurrentHashMap<>();
+
+    private ModRenderType() {}
+
+    public static RenderType getNetworkCable() {
+        return NETWORK_CABLE;
+    }
+
+    public static RenderType getProjectorLight() {
+        return PROJECTOR_LIGHT;
+    }
+
+    public static RenderType getUnlitBlock(final ResourceLocation location) {
+        return ADDITIVE_TEXTURES.computeIfAbsent(
+                location,
+                key ->
+                        RenderType.create(
+                                API.MOD_ID + "/unlit_block",
+                                RenderSetup.builder(ADDITIVE_TEXTURE_PIPELINE)
+                                        .withTexture("Sampler0", key)
+                                        .createRenderSetup()));
+    }
+
+    public static RenderType getOverlay(final ResourceLocation location) {
+        return getUnlitBlock(location);
+    }
+
+    // A plain, alpha-blended textured quad for the monitor framebuffer textures.
+    public static RenderType getFramebuffer(final ResourceLocation location) {
+        return FRAMEBUFFERS.computeIfAbsent(
+                location,
+                key ->
+                        RenderType.create(
+                                API.MOD_ID + "/framebuffer",
+                                RenderSetup.builder(FRAMEBUFFER_PIPELINE)
+                                        .withTexture("Sampler0", key)
+                                        .createRenderSetup()));
+    }
+
+    public static RenderType getGateWayParticle() {
+        return GATEWAY_PARTICLE;
+    }
+}
+*///?} else if >=26.1 {
 /*import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;

@@ -1,5 +1,6 @@
 package li.cil.oc2.client.hooks;
 
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
 import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
@@ -7,7 +8,6 @@ import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.vm.VMRunState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -25,12 +25,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class ClientProxyImpl implements ClientProxy {
     @Override
     public void openKeyboardScreen(final KeyboardBlockEntity keyboard) {
-        Minecraft.getInstance().setScreen(new KeyboardScreen(keyboard));
+        RenderCompat.setScreen(new KeyboardScreen(keyboard));
     }
 
     @Override
     public void openNetworkInterfaceCardScreen(final Player player, final InteractionHand hand) {
-        Minecraft.getInstance().setScreen(new NetworkInterfaceCardScreen(player, hand));
+        RenderCompat.setScreen(new NetworkInterfaceCardScreen(player, hand));
     }
 
     @Override

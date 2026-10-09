@@ -42,6 +42,103 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
     @SuppressWarnings("unchecked")
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        //? if >=26.2 {
+/*        copy(BlockTags.CABLES, CABLES);
+
+        copy(BlockTags.DEVICES, DEVICES);
+        tag(DEVICES)
+                .addTag(DEVICES_MEMORY)
+                .addTag(DEVICES_HARD_DRIVE)
+                .addTag(DEVICES_FLASH_MEMORY)
+                .addTag(DEVICES_CARD)
+                .addTag(DEVICES_ROBOT_MODULE)
+                .addTag(DEVICES_FLOPPY)
+                .addTag(DEVICES_GPU);
+        tag(DEVICES_MEMORY)
+                .add(
+                        Items.MEMORY_SMALL.key(),
+                        Items.MEMORY_MEDIUM.key(),
+                        Items.MEMORY_LARGE.key(),
+                        Items.MEMORY_EXTRA_LARGE.key());
+        tag(DEVICES_HARD_DRIVE)
+                .add(
+                        Items.HARD_DRIVE_SMALL.key(),
+                        Items.HARD_DRIVE_MEDIUM.key(),
+                        Items.HARD_DRIVE_LARGE.key(),
+                        Items.HARD_DRIVE_EXTRA_LARGE.key(),
+                        Items.HARD_DRIVE_ONYXOS.key());
+        tag(DEVICES_FLASH_MEMORY)
+                .add(
+                        Items.FLASH_MEMORY_SMALL.key(),
+                        Items.FLASH_MEMORY_MEDIUM.key(),
+                        Items.FLASH_MEMORY.key(),
+                        Items.FLASH_MEMORY_CUSTOM.key(),
+                        Items.FLASH_MEMORY_ONYXOS.key());
+        tag(DEVICES_FLOPPY).add(Items.FLOPPY.key(), Items.FLOPPY_MODERN.key());
+        tag(DEVICES_CARD)
+                .add(
+                        Items.REDSTONE_INTERFACE_CARD.key(),
+                        Items.NETWORK_INTERFACE_CARD.key(),
+                        Items.FILE_IMPORT_EXPORT_CARD.key(),
+                        Items.SOUND_CARD.key(),
+                        Items.NETWORK_TUNNEL_CARD.key(),
+                        Items.INTERNET_CARD.key());
+        tag(DEVICES_ROBOT_MODULE)
+                .add(
+                        Items.INVENTORY_OPERATIONS_MODULE.key(),
+                        Items.BLOCK_OPERATIONS_MODULE.key(),
+                        Items.NETWORK_TUNNEL_MODULE.key());
+        tag(DEVICES_NETWORK_TUNNEL)
+                .add(Items.NETWORK_TUNNEL_CARD.key(), Items.NETWORK_TUNNEL_MODULE.key());
+
+        tag(WRENCHES).add(Items.WRENCH.key());
+
+        tag(DEVICE_NEEDS_REBOOT)
+                .add(
+                        Items.DISK_DRIVE.key(),
+                        Items.FLASH_MEMORY_SMALL.key(),
+                        Items.FLASH_MEMORY_MEDIUM.key(),
+                        Items.FLASH_MEMORY.key(),
+                        Items.FLASH_MEMORY_CUSTOM.key(),
+                        Items.FLASH_MEMORY_ONYXOS.key(),
+                        Items.HARD_DRIVE_SMALL.key(),
+                        Items.HARD_DRIVE_MEDIUM.key(),
+                        Items.HARD_DRIVE_LARGE.key(),
+                        Items.HARD_DRIVE_EXTRA_LARGE.key(),
+                        Items.CPU_TIER_1.key(),
+                        Items.CPU_TIER_2.key(),
+                        Items.CPU_TIER_3.key(),
+                        Items.CPU_TIER_4.key(),
+                        Items.CPU_TIER_INF.key(),
+                        Items.GPU_TIER_1.key(),
+                        Items.GPU_TIER_2.key(),
+                        Items.GPU_TIER_3.key(),
+                        Items.GPU_TIER_4.key(),
+                        Items.KEYBOARD.key(),
+                        Items.MEMORY_SMALL.key(),
+                        Items.MEMORY_MEDIUM.key(),
+                        Items.MEMORY_LARGE.key(),
+                        Items.MEMORY_EXTRA_LARGE.key(),
+                        Items.NETWORK_INTERFACE_CARD.key(),
+                        Items.NETWORK_TUNNEL_CARD.key(),
+                        Items.NETWORK_TUNNEL_MODULE.key(),
+                        Items.PROJECTOR.key());
+
+        tag(DEVICES_CPU)
+                .add(
+                        Items.CPU_TIER_1.key(),
+                        Items.CPU_TIER_2.key(),
+                        Items.CPU_TIER_3.key(),
+                        Items.CPU_TIER_4.key(),
+                        Items.CPU_TIER_INF.key());
+
+        tag(DEVICES_GPU)
+                .add(
+                        Items.GPU_TIER_1.key(),
+                        Items.GPU_TIER_2.key(),
+                        Items.GPU_TIER_3.key(),
+                        Items.GPU_TIER_4.key());
+*///?} else {
         copy(BlockTags.CABLES, CABLES);
 
         copy(BlockTags.DEVICES, DEVICES);
@@ -137,5 +234,6 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                         Items.GPU_TIER_2.get(),
                         Items.GPU_TIER_3.get(),
                         Items.GPU_TIER_4.get());
+        //?}
     }
 }

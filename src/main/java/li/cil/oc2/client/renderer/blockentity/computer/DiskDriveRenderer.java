@@ -4,9 +4,9 @@ package li.cil.oc2.client.renderer.blockentity.computer;
 /*import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import javax.annotation.Nullable;
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.common.block.disk.DiskDriveBlock;
 import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -51,7 +51,7 @@ public final class DiskDriveRenderer
         state.facing = diskDrive.getBlockState().getValue(DiskDriveBlock.FACING);
         state.neighborLight =
                 diskDrive.getLevel() != null
-                        ? LevelRenderer.getLightCoords(
+                        ? RenderCompat.lightCoords(
                                 diskDrive.getLevel(),
                                 diskDrive.getBlockPos().relative(state.facing))
                         : state.lightCoords;

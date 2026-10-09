@@ -57,7 +57,9 @@ public final class RobotTests {
             return;
         }
         //?}
-        //? if >=26.1 {
+        //? if >=26.2 {
+        /*final var loaded = EntityType.loadEntityRecursive(tag, helper.getLevel(), new net.minecraft.world.entity.EntitySpawnRequest(net.minecraft.world.entity.EntitySpawnReason.LOAD, false), e -> e);
+        *///?} else if >=26.1 {
         /*final var loaded = EntityType.loadEntityRecursive(tag, helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.LOAD, e -> e);
         *///?} else {
         final var loaded = EntityType.loadEntityRecursive(tag, helper.getLevel(), e -> e);

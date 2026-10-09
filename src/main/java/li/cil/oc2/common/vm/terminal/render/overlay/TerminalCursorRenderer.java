@@ -15,6 +15,12 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalCursorRenderer {
+//? if >=26.2 {
+/*    // 26.2 removed RenderType.draw(MeshData) and the tessellator; the cursor is not drawn there
+    // yet, so the render entry point is a no-op.
+    public static void renderCursor(final Terminal terminal, final PoseStack stack) {}
+
+*///?} else {
     public static void renderCursor(final Terminal terminal, final PoseStack stack) {
         //? if <26.1 {
         BufferUploader.reset();
@@ -87,6 +93,7 @@ public class TerminalCursorRenderer {
         RenderSystem.defaultBlendFunc();
         //?}
     }
+//?}
 
     private static boolean isCursorVisible(
             final Terminal terminal,

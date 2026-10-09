@@ -30,6 +30,21 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        //? if >=26.2 {
+/*        tag(DEVICES)
+                .add(COMPUTER.key(), REDSTONE_INTERFACE.key(), DISK_DRIVE.key(), PROJECTOR.key());
+        tag(CABLES).add(BUS_CABLE.key());
+        tag(WRENCH_BREAKABLE)
+                .add(
+                        COMPUTER.key(),
+                        BUS_CABLE.key(),
+                        NETWORK_CONNECTOR.key(),
+                        NETWORK_HUB.key(),
+                        REDSTONE_INTERFACE.key(),
+                        DISK_DRIVE.key(),
+                        CHARGER.key(),
+                        PROJECTOR.key());
+*///?} else {
         tag(DEVICES)
                 .add(COMPUTER.get(), REDSTONE_INTERFACE.get(), DISK_DRIVE.get(), PROJECTOR.get());
         tag(CABLES).add(BUS_CABLE.get());
@@ -43,5 +58,6 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                         DISK_DRIVE.get(),
                         CHARGER.get(),
                         PROJECTOR.get());
+        //?}
     }
 }

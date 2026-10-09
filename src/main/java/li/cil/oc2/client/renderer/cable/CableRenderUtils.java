@@ -10,7 +10,10 @@ import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.util.block.Vec3Utils;
 import li.cil.oc2.network.wire.WireGeometry;
 import net.minecraft.client.Minecraft;
-//? if >=26.1 {
+//? if >=26.2 {
+/*import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.util.LightCoordsUtil;
+*///?} else if >=26.1 {
 /*import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.util.LightCoordsUtil;
@@ -54,6 +57,10 @@ final class CableRenderUtils {
             final Vec3 eye,
             final List<NetworkCableConnection> connections,
             final Predicate<AABB> filter) {
+        //? if >=26.2 {
+        /*// 26.2 removed MultiBufferSource and the immediate render buffers; drawing the cables
+        // needs the staged vertex buffer path, so they are not drawn there yet.
+        *///?} else {
         final Matrix4f viewMatrix = stack.last().pose();
 
         final RenderType renderType = ModRenderType.getNetworkCable();
@@ -143,6 +150,7 @@ final class CableRenderUtils {
 
             bufferSource.endBatch(renderType);
         }
+        //?}
     }
 
     //? if >=26.1 {
