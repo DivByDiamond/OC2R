@@ -33,7 +33,11 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
     @Override
     public Sound getSound() {
         return new Sound(
+                //? if >=26.1 {
+                /*getIdentifier(),
+                *///?} else {
                 getLocation(),
+                //?}
                 ConstantFloat.of(1.0f),
                 ConstantFloat.of(1.0f),
                 1,

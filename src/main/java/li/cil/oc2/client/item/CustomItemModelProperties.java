@@ -2,7 +2,9 @@ package li.cil.oc2.client.item;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.Items;
+//? if <26.1 {
 import net.minecraft.client.renderer.item.ItemProperties;
+//?}
 import net.minecraft.resources.ResourceLocation;
 
 public final class CustomItemModelProperties {
@@ -10,6 +12,8 @@ public final class CustomItemModelProperties {
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "color");
 
     public static void initialize() {
+        // 26.x item properties are data-driven (range_dispatch in the item definition).
+        //? if <26.1 {
         ItemProperties.register(
                 Items.HARD_DRIVE_SMALL.get(),
                 CustomItemModelProperties.COLOR_PROPERTY,
@@ -34,5 +38,6 @@ public final class CustomItemModelProperties {
                 Items.FLOPPY_MODERN.get(),
                 CustomItemModelProperties.COLOR_PROPERTY,
                 (stack, level, entity, seed) -> CustomItemColors.getColor(stack));
+        //?}
     }
 }

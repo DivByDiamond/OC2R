@@ -60,8 +60,13 @@ public final class FileTransferHooks {
                                 Minecraft.getInstance()
                                         .gui
                                         .getChat()
+                                        //? if >=26.1 {
+                                        /*.addClientSystemMessage(FILE_TOO_LARGE_TEXT.withStyle(
+                                                s -> s.withColor(TextColor.fromRgb(0xFFA0A0))));
+                                        *///?} else {
                                         .addMessage(FILE_TOO_LARGE_TEXT.withStyle(
                                                 s -> s.withColor(TextColor.fromRgb(0xFFA0A0))));
+                                        //?}
                             } else {
                                 MultipartMessage.sendToServer(new ImportedFileMessage(id, fileName, data));
                             }
@@ -78,7 +83,7 @@ public final class FileTransferHooks {
     }
 
     public static void closeFileChooser() {
-        Minecraft.getInstance().tell(() -> {
+        Minecraft.getInstance().execute(() -> {
             if (Minecraft.getInstance().screen instanceof FileChooserScreen screen) {
                 screen.onClose();
             }

@@ -1,3 +1,5 @@
+//? if <26.1 {
+
 package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.BusCableModelTypes;
@@ -69,3 +71,4 @@ public final class BusCableModelHooks {
         return current;
     }
 }
+//?}

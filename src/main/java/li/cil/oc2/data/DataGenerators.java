@@ -1,7 +1,9 @@
 package li.cil.oc2.data;
 
 import java.util.Collections;
-import java.util.List;
+//? if >=26.1 {
+/*import java.util.List;
+*///?}
 import java.util.Set;
 import li.cil.oc2.api.API;
 import li.cil.oc2.data.loot.ModLootTableProvider;

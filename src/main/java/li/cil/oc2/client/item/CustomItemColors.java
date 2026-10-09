@@ -53,6 +53,7 @@ public final class CustomItemColors {
                     Map.entry(DyeColor.BLACK, BLACK));
 
     public static void initialize(final ClientRegistrar registrar) {
+        //? if <26.1 {
         registrar.registerItemColor(
                 (stack, layer) -> layer == 1 ? getColor(stack) : NO_TINT,
                 List.of(
@@ -63,6 +64,7 @@ public final class CustomItemColors {
                         Items.HARD_DRIVE_ONYXOS,
                         Items.FLOPPY,
                         Items.FLOPPY_MODERN));
+        //?}
     }
 
     public static int getColorByDye(final DyeColor dye) {
@@ -82,9 +84,14 @@ public final class CustomItemColors {
     }
 
     public static ItemStack withColor(final ItemStack stack, final int color) {
+        //? if >=26.1 {
+        /*final DyedItemColor dyed = new DyedItemColor(color);
+        *///?} else {
+        final DyedItemColor dyed = new DyedItemColor(color, true);
+        //?}
         stack.applyComponents(
                 DataComponentPatch.builder()
-                        .set(DYED_COLOR, new DyedItemColor(color, true))
+                        .set(DYED_COLOR, dyed)
                         .build());
         return stack;
     }

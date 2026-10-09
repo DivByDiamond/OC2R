@@ -1,3 +1,5 @@
+//? if <26.1 {
+
 package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.monitor.MonitorModelData;
@@ -14,3 +16,4 @@ public final class MonitorModelHooks {
         return MonitorModelData.fromState(state);
     }
 }
+//?}

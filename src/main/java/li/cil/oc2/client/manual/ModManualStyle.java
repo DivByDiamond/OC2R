@@ -1,3 +1,5 @@
+//? if <26.1 {
+
 package li.cil.oc2.client.manual;
 
 import li.cil.manual.api.ManualStyle;
@@ -52,3 +54,4 @@ public final class ModManualStyle implements ManualStyle {
         return SoundEvents.UI_BUTTON_CLICK.value();
     }
 }
+//?}

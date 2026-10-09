@@ -1,8 +1,12 @@
 package li.cil.oc2.platform;
 
+//? if <26.1 {
 import li.cil.oc2.client.hooks.BusCableModelHooks;
+//?}
 import li.cil.oc2.client.hooks.ClientProxyImpl;
+//? if <26.1 {
 import li.cil.oc2.client.hooks.MonitorModelHooks;
+//?}
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
@@ -23,11 +27,19 @@ public final class NeoForgeClientProxy extends ClientProxyImpl {
 
     @Override
     public Object computeBusCableModelData(final BusCableBlockEntity owner, final Object current) {
+        //? if >=26.1 {
+        /*return current;
+        *///?} else {
         return BusCableModelHooks.computeModelData(owner, (ModelData) current);
+        //?}
     }
 
     @Override
     public Object computeMonitorModelData(final BlockState state) {
+        //? if >=26.1 {
+        /*return ModelData.EMPTY;
+        *///?} else {
         return MonitorModelHooks.getModelData(state);
+        //?}
     }
 }
