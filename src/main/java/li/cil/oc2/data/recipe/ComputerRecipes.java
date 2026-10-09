@@ -4,13 +4,11 @@ import li.cil.oc2.common.block.computer.factory.ComputerBlockFactory;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.neoforged.neoforge.common.Tags;
 
 final class ComputerRecipes {
     static void build(final RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ComputerBlockFactory.getComputerWithFlash())
+        RecipeBuilders.shaped(RecipeCategory.MISC, ComputerBlockFactory.getComputerWithFlash())
                 .pattern("ICI")
                 .pattern("XTX")
                 .pattern("IBI")
@@ -27,7 +25,7 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.BUS_CABLE.get(), 16)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.BUS_CABLE.get(), 16)
                 .pattern("III")
                 .pattern("GTG")
                 .pattern("III")
@@ -39,14 +37,14 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
                 .save(consumer);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.BUS_INTERFACE.get())
+        RecipeBuilders.shapeless(RecipeCategory.MISC, Items.BUS_INTERFACE.get())
                 .requires(Items.TRANSISTOR.get())
                 .requires(Items.BUS_CABLE.get())
                 .unlockedBy(
                         "has_bus_cable", ModRecipesProvider.inventoryChange(Items.BUS_CABLE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_CONNECTOR.get(), 4)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_CONNECTOR.get(), 4)
                 .pattern("IGI")
                 .pattern("ITI")
                 .define('I', Tags.Items.INGOTS_IRON)
@@ -57,7 +55,7 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_HUB.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_HUB.get())
                 .pattern("ICI")
                 .pattern("XTX")
                 .pattern("IBI")
@@ -71,7 +69,7 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.NETWORK_CONNECTOR.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.REDSTONE_INTERFACE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.REDSTONE_INTERFACE.get())
                 .pattern("ICI")
                 .pattern("XTX")
                 .pattern("IBI")
@@ -84,7 +82,7 @@ final class ComputerRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_CABLE.get(), 8)
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_CABLE.get(), 8)
                 .pattern("SSS")
                 .pattern("GTG")
                 .pattern("SSS")

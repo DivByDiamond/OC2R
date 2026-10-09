@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.data.model;
 
 import li.cil.oc2.api.API;
@@ -167,3 +168,4 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 .parent(models().getExistingFile(block.getId()));
     }
 }
+//?}

@@ -2,16 +2,15 @@ package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
+import li.cil.oc2.data.recipe.RecipeBuilders;
 import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.neoforged.neoforge.common.Tags;
 
 public final class PeripheralRecipes {
     public static void build(final RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.KEYBOARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.KEYBOARD.get())
                 .pattern("UUU")
                 .pattern("XTU")
                 .pattern("IBI")
@@ -24,7 +23,7 @@ public final class PeripheralRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.CHARGER.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.CHARGER.get())
                 .pattern("IPI")
                 .pattern("XTX")
                 .pattern("IRI")
@@ -38,7 +37,7 @@ public final class PeripheralRecipes {
                         ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.PROJECTOR.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.PROJECTOR.get())
                 .pattern("GLG")
                 .pattern("XTD")
                 .pattern("GBG")
@@ -53,7 +52,7 @@ public final class PeripheralRecipes {
                         ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.WRENCH.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.WRENCH.get())
                 .pattern("I I")
                 .pattern(" T ")
                 .pattern(" I ")
@@ -64,7 +63,7 @@ public final class PeripheralRecipes {
                         ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
                 .save(consumer);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.MANUAL.get())
+        RecipeBuilders.shapeless(RecipeCategory.MISC, Items.MANUAL.get())
                 .requires(net.minecraft.world.item.Items.BOOK)
                 .unlockedBy(
                         "has_book",

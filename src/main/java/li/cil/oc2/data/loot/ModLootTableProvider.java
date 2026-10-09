@@ -24,6 +24,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+//? if >=26.1 {
+/*import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+*///?}
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public final class ModLootTableProvider extends LootTableProvider {
@@ -87,11 +90,18 @@ public final class ModLootTableProvider extends LootTableProvider {
                                             .add(
                                                     LootItem.lootTableItem(block)
                                                             .apply(
+                                                                    //? if >=26.1 {
+                                                                    /*CopyComponentsFunction
+                                                                            .copyComponentsFromBlockEntity(
+                                                                                    LootContextParams
+                                                                                            .BLOCK_ENTITY)
+                                                                    *///?} else {
                                                                     CopyComponentsFunction
                                                                             .copyComponents(
                                                                                     CopyComponentsFunction
                                                                                             .Source
                                                                                             .BLOCK_ENTITY)
+                                                                    //?}
                                                                             .include(
                                                                                     DataComponents
                                                                                             .RESTRICTED_CONTAINER

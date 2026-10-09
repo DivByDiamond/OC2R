@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model;
 
 import java.util.ArrayList;
@@ -186,3 +187,4 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
                 .build();
     }
 }
+//?}

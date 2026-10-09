@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model.monitor;
 
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,3 +16,4 @@ public final class MonitorModelData {
         return ModelData.of(MONITOR_PROPERTY, MonitorModelTypes.dataFromState(state));
     }
 }
+//?}

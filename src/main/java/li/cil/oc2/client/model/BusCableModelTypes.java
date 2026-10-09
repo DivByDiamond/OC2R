@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model;
 
 import net.minecraft.client.resources.model.BakedModel;
@@ -16,3 +17,4 @@ public final class BusCableModelTypes {
 
     public record BusCableFacade(BlockState blockState, BakedModel model, ModelData data) {}
 }
+//?}

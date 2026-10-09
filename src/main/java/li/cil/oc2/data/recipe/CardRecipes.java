@@ -3,12 +3,11 @@ package li.cil.oc2.data.recipe;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.neoforged.neoforge.common.Tags;
 
 final class CardRecipes {
     static void build(final RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.REDSTONE_INTERFACE_CARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.REDSTONE_INTERFACE_CARD.get())
                 .pattern("IRT")
                 .pattern(" B ")
                 .define('R', net.minecraft.world.item.Items.REDSTONE_TORCH)
@@ -19,7 +18,7 @@ final class CardRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_INTERFACE_CARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_INTERFACE_CARD.get())
                 .pattern("IGT")
                 .pattern(" B ")
                 .define('G', Tags.Items.GLASS_BLOCKS)
@@ -30,7 +29,7 @@ final class CardRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_TUNNEL_CARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_TUNNEL_CARD.get())
                 .pattern("IET")
                 .pattern(" B ")
                 .define('E', Tags.Items.ENDER_PEARLS)
@@ -41,7 +40,7 @@ final class CardRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FILE_IMPORT_EXPORT_CARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FILE_IMPORT_EXPORT_CARD.get())
                 .pattern("IET")
                 .pattern(" B ")
                 .define('E', net.minecraft.world.item.Items.PAPER)
@@ -52,7 +51,7 @@ final class CardRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.SOUND_CARD.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.SOUND_CARD.get())
                 .pattern("IST")
                 .pattern(" B ")
                 .define('S', net.minecraft.world.item.Items.NOTE_BLOCK)
@@ -63,7 +62,7 @@ final class CardRecipes {
                         "has_computer", ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLOPPY.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLOPPY.get())
                 .pattern("ITI")
                 .pattern("QBQ")
                 .define('I', Tags.Items.INGOTS_IRON)
@@ -75,7 +74,7 @@ final class CardRecipes {
                         ModRecipesProvider.inventoryChange(Items.DISK_DRIVE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.FLOPPY_MODERN.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLOPPY_MODERN.get())
                 .pattern("ITI")
                 .pattern("QBQ")
                 .pattern("QBQ")

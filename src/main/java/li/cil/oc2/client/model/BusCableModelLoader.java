@@ -1,3 +1,4 @@
+//? if <26.1 {
 package li.cil.oc2.client.model;
 
 import com.google.gson.JsonDeserializationContext;
@@ -13,3 +14,4 @@ public final class BusCableModelLoader implements IGeometryLoader<BusCableModel>
         return new BusCableModel(ElementsModel.Loader.INSTANCE.read(modelContents, context));
     }
 }
+//?}
