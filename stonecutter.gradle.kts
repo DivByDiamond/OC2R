@@ -23,6 +23,14 @@ stonecutter parameters {
                 "(?<!-)\\bIdentifier\\b", "ResourceLocation",
             )
         }
+        // 26.1+ split GuiGraphics into the GuiGraphicsExtractor that screens and widgets
+        // extract their render state into.
+        regex(eval(current.version, ">=26.1")) {
+            replace(
+                "\\bGuiGraphics\\b", "GuiGraphicsExtractor",
+                "\\bGuiGraphicsExtractor\\b", "GuiGraphics",
+            )
+        }
     }
 }
 
