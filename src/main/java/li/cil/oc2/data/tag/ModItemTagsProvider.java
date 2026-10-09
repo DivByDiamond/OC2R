@@ -8,10 +8,25 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.BlockTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.world.level.block.Block;
+//? if >=26.1 {
+/*import net.minecraft.data.tags.TagsProvider.TagLookup;
+import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
+*///?} else {
+import net.minecraft.data.tags.ItemTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+//?}
 
+//? if >=26.1 {
+/*public final class ModItemTagsProvider extends BlockTagCopyingItemTagProvider {
+    public ModItemTagsProvider(
+            final PackOutput output,
+            final CompletableFuture<HolderLookup.Provider> lookupProvider,
+            final CompletableFuture<TagLookup<Block>> tagLookup,
+            final String modId) {
+        super(output, lookupProvider, tagLookup, modId);
+    }
+*///?} else {
 public final class ModItemTagsProvider extends ItemTagsProvider {
     public ModItemTagsProvider(
             final PackOutput output,
@@ -21,6 +36,7 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
             @Nullable final ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, tagLookup, modId, existingFileHelper);
     }
+//?}
 
     @SuppressWarnings("unchecked")
     @Override
@@ -29,14 +45,13 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
 
         copy(BlockTags.DEVICES, DEVICES);
         tag(DEVICES)
-                .addTags(
-                        DEVICES_MEMORY,
-                        DEVICES_HARD_DRIVE,
-                        DEVICES_FLASH_MEMORY,
-                        DEVICES_CARD,
-                        DEVICES_ROBOT_MODULE,
-                        DEVICES_FLOPPY,
-                        DEVICES_GPU);
+                .addTag(DEVICES_MEMORY)
+                .addTag(DEVICES_HARD_DRIVE)
+                .addTag(DEVICES_FLASH_MEMORY)
+                .addTag(DEVICES_CARD)
+                .addTag(DEVICES_ROBOT_MODULE)
+                .addTag(DEVICES_FLOPPY)
+                .addTag(DEVICES_GPU);
         tag(DEVICES_MEMORY)
                 .add(
                         Items.MEMORY_SMALL.get(),

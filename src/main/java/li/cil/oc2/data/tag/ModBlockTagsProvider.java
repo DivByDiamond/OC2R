@@ -9,15 +9,24 @@ import li.cil.oc2.api.API;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
+//? if <26.1 {
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+//?}
 
 public final class ModBlockTagsProvider extends BlockTagsProvider {
+    //? if >=26.1 {
+    /*public ModBlockTagsProvider(
+            final PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+        super(packOutput, lookupProvider, API.MOD_ID);
+    }
+    *///?} else {
     public ModBlockTagsProvider(
             final PackOutput packOutput,
             CompletableFuture<HolderLookup.Provider> lookupProvider,
             @Nullable final ExistingFileHelper existingFileHelper) {
         super(packOutput, lookupProvider, API.MOD_ID, existingFileHelper);
     }
+    //?}
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
