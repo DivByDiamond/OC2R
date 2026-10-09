@@ -47,8 +47,13 @@ public final class NetworkCableRenderer {
 
             final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
+                //? if >=26.1 {
+/*                final ChunkPos connectorChunkPos =
+                        ChunkPos.containing(connector.getBlockPos()); // NOPMD: depends on connector
+*///?} else {
                 final ChunkPos connectorChunkPos =
                         new ChunkPos(connector.getBlockPos()); // NOPMD: depends on connector
+                //?}
                 if (Objects.equals(connectorChunkPos, chunkPos)) {
                     connectors.remove(connector);
                 }
@@ -92,7 +97,11 @@ public final class NetworkCableRenderer {
 
         final PoseStack stack = event.poseStack();
 
+        //? if >=26.1 {
+/*        final Vec3 eye = event.camera().position();
+*///?} else {
         final Vec3 eye = event.camera().getPosition();
+        //?}
 
         final var frustumMatrix = new Matrix4f(event.modelViewMatrix());
         frustumMatrix.mul(stack.last().pose());
@@ -104,7 +113,9 @@ public final class NetworkCableRenderer {
 
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().set(event.modelViewMatrix());
+        //? if <26.1 {
         RenderSystem.applyModelViewMatrix();
+        //?}
 
         CableRenderUtils.renderCables(level, stack, eye, connections, frustum::isVisible);
 

@@ -10,12 +10,22 @@ import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.util.block.Vec3Utils;
 import li.cil.oc2.network.wire.WireGeometry;
 import net.minecraft.client.Minecraft;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.util.LightCoordsUtil;
+*///?} else {
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+//? if >=26.1 {
+/*import net.minecraft.world.level.BlockAndLightGetter;
+*///?} else {
 import net.minecraft.world.level.BlockAndTintGetter;
+//?}
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -35,7 +45,11 @@ final class CableRenderUtils {
     private CableRenderUtils() {}
 
     static void renderCables(
+            //? if >=26.1 {
+/*            final BlockAndLightGetter level,
+*///?} else {
             final BlockAndTintGetter level,
+            //?}
             final PoseStack stack,
             final Vec3 eye,
             final List<NetworkCableConnection> connections,
@@ -84,7 +98,11 @@ final class CableRenderUtils {
                 final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD allocation depends on loop iteration / per-item state
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
+                //? if >=26.1 {
+/*                final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
+*///?} else {
                 final int packedLight = LightTexture.pack(blockLight, skyLight);
+                //?}
 
                 final Vector3f v0 = p.subtract(n).toVector3f();
                 final Vector3f v1 = p.add(n).toVector3f();
@@ -96,6 +114,18 @@ final class CableRenderUtils {
                 final NetworkCablePoint pa = cablePoints.get(i);
                 final NetworkCablePoint pb = cablePoints.get(i + 1);
 
+                //? if >=26.1 {
+/*                // The 26.x cable pipeline has no lightmap, so the light is baked into the color.
+                final float light = brightness(pa.packedLight());
+                consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pa.v1().x(), pa.v1().y(), pa.v1().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pb.v1().x(), pb.v1().y(), pb.v1().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pb.v0().x(), pb.v0().y(), pb.v0().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+*///?} else {
                 consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
                         .setColor(r, g, b, 1f)
                         .setUv2(pa.packedLight(), 0);
@@ -108,12 +138,20 @@ final class CableRenderUtils {
                 consumer.addVertex(viewMatrix, pb.v0().x(), pb.v0().y(), pb.v0().z())
                         .setColor(r, g, b, 1f)
                         .setUv2(pa.packedLight(), 0);
+                //?}
             }
 
             bufferSource.endBatch(renderType);
         }
     }
 
+    //? if >=26.1 {
+/*    private static float brightness(final int packedLight) {
+        final float level = Math.max(LightCoordsUtil.block(packedLight), LightCoordsUtil.sky(packedLight));
+        return 0.25f + 0.75f * level / 15f;
+    }
+
+*///?}
     private static Vec3 lerp(final Vec3 a, final Vec3 b, final float t) {
         return a.add(b.subtract(a).scale(t));
     }

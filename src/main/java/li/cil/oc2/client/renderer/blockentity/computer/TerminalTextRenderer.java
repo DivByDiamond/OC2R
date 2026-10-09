@@ -1,5 +1,57 @@
 package li.cil.oc2.client.renderer.blockentity.computer;
 
+//? if >=26.1 {
+/*import com.google.common.cache.Cache;
+import com.mojang.blaze3d.vertex.PoseStack;
+import li.cil.oc2.client.renderer.blockentity.RendererQuadHelper;
+import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.render.RendererView;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.network.chat.Component;
+
+final class TerminalTextRenderer {
+    private final Font font;
+    private final Cache<Terminal, RendererView> rendererViews;
+
+    TerminalTextRenderer(
+            final Font font, final Cache<Terminal, RendererView> rendererViews) {
+        this.font = font;
+        this.rendererViews = rendererViews;
+    }
+
+    void renderTerminal(
+            final PoseStack stack,
+            final SubmitNodeCollector collector,
+            final Terminal terminal,
+            final double distanceToCamera) {
+        // TODO: the terminal mesh is only drawn immediately (TerminalRenderer.render), which does
+        // not work from a 26.x block entity renderer: submit only collects, and the world is
+        // drawn afterwards. Needs the terminal rows replayed through submitCustomGeometry.
+    }
+
+    void renderStatusText(
+            final PoseStack stack,
+            final SubmitNodeCollector collector,
+            final double distanceToCamera,
+            final Component bootError) {
+        if (distanceToCamera > 12f) {
+            return;
+        }
+
+        if (bootError == null) {
+            return;
+        }
+
+        stack.pushPose();
+        stack.translate(3, 3, -0.9f);
+
+        RendererQuadHelper.drawText(collector, stack, bootError, font);
+
+        stack.popPose();
+    }
+}
+*///?} else {
 import com.google.common.cache.Cache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -155,3 +207,4 @@ final class TerminalTextRenderer {
                 false);
     }
 }
+//?}

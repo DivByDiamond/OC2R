@@ -1,5 +1,79 @@
 package li.cil.oc2.client.renderer.entity.model;
 
+//? if >=26.1 {
+/*import li.cil.oc2.api.API;
+import li.cil.oc2.client.renderer.entity.RobotRenderState;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+
+public final class RobotModel extends EntityModel<RobotRenderState> {
+    public static final ModelLayerLocation ROBOT_MODEL_LAYER =
+            new ModelLayerLocation(
+                    ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "robot"), "main");
+    public static final ResourceLocation ROBOT_ENTITY_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "textures/entity/robot/robot.png");
+
+    private static final float PIXELS_PER_BLOCK = 16f;
+
+    private final ModelPart topRenderer;
+    private final ModelPart baseRenderer;
+    private final ModelPart coreRenderer;
+
+    public RobotModel(final ModelPart modelPart) {
+        super(modelPart);
+        topRenderer = modelPart.getChild("top");
+        baseRenderer = modelPart.getChild("base");
+        coreRenderer = modelPart.getChild("core");
+    }
+
+    public static LayerDefinition createRobotLayer() {
+        final MeshDefinition meshDefinition = new MeshDefinition();
+        final PartDefinition partDefinition = meshDefinition.getRoot();
+        partDefinition.addOrReplaceChild(
+                "top",
+                CubeListBuilder.create().texOffs(1, 1).addBox(-7, 8, -7, 14, 6, 14),
+                PartPose.ZERO);
+        partDefinition.addOrReplaceChild(
+                "base",
+                CubeListBuilder.create().texOffs(1, 23).addBox(-7, 0, -7, 14, 7, 14),
+                PartPose.ZERO);
+        partDefinition.addOrReplaceChild(
+                "core",
+                CubeListBuilder.create().texOffs(1, 34).addBox(-6, 7, -6, 12, 1, 12),
+                PartPose.ZERO);
+        return LayerDefinition.create(meshDefinition, 64, 64);
+    }
+
+    @Override
+    public void setupAnim(final RobotRenderState state) {
+        super.setupAnim(state);
+        topRenderer.y = state.topOffsetY * PIXELS_PER_BLOCK;
+        topRenderer.yRot = state.topRotationY * Mth.DEG_TO_RAD;
+        baseRenderer.y = state.baseOffsetY * PIXELS_PER_BLOCK;
+        coreRenderer.y = state.baseOffsetY * PIXELS_PER_BLOCK;
+    }
+
+    public ModelPart top() {
+        return topRenderer;
+    }
+
+    public ModelPart base() {
+        return baseRenderer;
+    }
+
+    public ModelPart core() {
+        return coreRenderer;
+    }
+}
+*///?} else {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import li.cil.oc2.api.API;
@@ -94,3 +168,4 @@ public final class RobotModel extends EntityModel<Robot> {
         stack.popPose();
     }
 }
+//?}

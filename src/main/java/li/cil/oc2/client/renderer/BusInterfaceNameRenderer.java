@@ -11,9 +11,15 @@ import li.cil.oc2.platform.event.LevelRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+//? if >=26.1 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?} else {
 import net.minecraft.client.renderer.LightTexture;
+//?}
 import net.minecraft.client.renderer.MultiBufferSource;
+//? if <26.1 {
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -74,6 +80,14 @@ public enum BusInterfaceNameRenderer {
         stack.translate(side.getStepX() * 0.5f, 0, side.getStepZ() * 0.5f);
 
         final Camera info = mc.gameRenderer.getMainCamera();
+        //? if >=26.1 {
+/*        stack.translate(
+                blockPos.getX() - info.position().x,
+                blockPos.getY() - info.position().y,
+                blockPos.getZ() - info.position().z);
+
+        stack.mulPose(info.rotation());
+*///?} else {
         stack.translate(
                 blockPos.getX() - info.getPosition().x,
                 blockPos.getY() - info.getPosition().y,
@@ -81,6 +95,7 @@ public enum BusInterfaceNameRenderer {
 
         final EntityRenderDispatcher renderManager = mc.getEntityRenderDispatcher();
         stack.mulPose(renderManager.cameraOrientation());
+        //?}
 
         stack.scale(0.025f, -0.025f, 0.025f);
 
@@ -93,13 +108,21 @@ public enum BusInterfaceNameRenderer {
         final float horizontalTextOffset = -font.width(name) * 0.5f;
         final float backgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
         final int backgroundColor = (int) (backgroundOpacity * 255.0F) << 24;
+        //? if >=26.1 {
+/*        final int packedLight = LightCoordsUtil.pack(15, 15);
+*///?} else {
         final int packedLight = LightTexture.pack(15, 15);
+        //?}
 
         font.drawInBatch(
                 name,
                 horizontalTextOffset,
                 0,
+                //? if >=26.1 {
+/*                0xFF000000,
+*///?} else {
                 0,
+                //?}
                 false,
                 matrix,
                 buffer,

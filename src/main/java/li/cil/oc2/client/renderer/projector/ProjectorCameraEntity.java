@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.projector;
 
+//? if <26.1 {
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -46,3 +47,4 @@ public final class ProjectorCameraEntity extends Player {
         return true;
     }
 }
+//?}

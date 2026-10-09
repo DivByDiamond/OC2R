@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.stage;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -173,3 +174,4 @@ public final class DepthBufferStage {
         return ProjectorDepthRenderer.getColorBuffer(projector);
     }
 }
+//?}

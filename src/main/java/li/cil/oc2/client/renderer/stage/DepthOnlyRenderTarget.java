@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.stage;
 
+//? if <26.1 {
 import static org.lwjgl.opengl.GL11.GL_NONE;
 import static org.lwjgl.opengl.GL11.glDrawBuffer;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
@@ -28,3 +29,4 @@ public final class DepthOnlyRenderTarget extends TextureTarget {
         }
     }
 }
+//?}

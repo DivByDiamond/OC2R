@@ -8,7 +8,15 @@ import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.misc.MonitorContraptionHelper;
 import li.cil.oc2.platform.event.ClientEvents;
 import net.minecraft.client.gui.Font;
+//? if >=26.1 {
+/*import javax.annotation.Nullable;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
@@ -17,13 +25,52 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 @SuppressWarnings("unused")
+//? if >=26.1 {
+/*public final class MonitorRenderer
+        implements BlockEntityRenderer<MonitorBlockEntity, MonitorRenderer.State> {
+*///?} else {
 public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEntity> {
+//?}
     private final Font font;
 
     public MonitorRenderer(final BlockEntityRendererProvider.Context context) {
+        //? if >=26.1 {
+/*        this.font = context.font();
+*///?} else {
         this.font = context.getFont();
+        //?}
     }
 
+    //? if >=26.1 {
+/*    public static final class State extends BlockEntityRenderState {
+        MonitorBlockEntity monitor;
+    }
+
+    @Override
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(
+            final MonitorBlockEntity monitor,
+            final State renderState,
+            final float partialTicks,
+            final Vec3 cameraPosition,
+            @Nullable final ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+        BlockEntityRenderer.super.extractRenderState(
+                monitor, renderState, partialTicks, cameraPosition, breakProgress);
+        renderState.monitor = monitor;
+    }
+
+    @Override
+    public void submit(
+            final State renderState,
+            final PoseStack stack,
+            final SubmitNodeCollector bufferSource,
+            final CameraRenderState camera) {
+        final MonitorBlockEntity monitor = renderState.monitor;
+*///?} else {
     @Override
     public void render(
             final MonitorBlockEntity monitor,
@@ -32,6 +79,7 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
             final MultiBufferSource bufferSource,
             final int light,
             final int overlay) {
+    //?}
         if (!MonitorMultiblock.isOrigin(monitor.getBlockState())) {
             return;
         }
@@ -51,7 +99,11 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
 
         final Vec3 blockCenterToCamera = blockCenterRelativeToCamera.scale(-1);
         final double projectedCameraPosition =
+                //? if >=26.1 {
+/*                blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getUnitVec3i()));
+*///?} else {
                 blockCenterToCamera.dot(Vec3.atLowerCornerOf(blockFacing.getNormal()));
+                //?}
         if (!MonitorContraptionHelper.isContraptionVirtualClone(monitor)
                 && projectedCameraPosition <= 0) {
             return;
@@ -87,7 +139,11 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
     private void renderTerminalOrStatus(
             final MonitorBlockEntity framebufferSource,
             final PoseStack stack,
+            //? if >=26.1 {
+/*            final SubmitNodeCollector bufferSource,
+*///?} else {
             final MultiBufferSource bufferSource,
+            //?}
             final double distanceToCamera,
             final int width,
             final int height) {

@@ -1,5 +1,94 @@
 package li.cil.oc2.client.renderer.blockentity.projector;
 
+//? if >=26.1 {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import javax.annotation.Nullable;
+import li.cil.oc2.common.block.projector.ProjectorBlock;
+import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+
+// The projected image (ProjectorDepthRenderer) is not ported to 26.x, so only the light cone,
+// lens and LED of the projector are rendered.
+public final class ProjectorRenderer
+        implements BlockEntityRenderer<ProjectorBlockEntity, ProjectorRenderer.State> {
+    public static final class State extends BlockEntityRenderState {
+        ProjectorBlockEntity projector;
+    }
+
+    public ProjectorRenderer(final BlockEntityRendererProvider.Context ignored) {}
+
+    @Override
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(
+            final ProjectorBlockEntity projector,
+            final State state,
+            final float partialTicks,
+            final Vec3 cameraPosition,
+            @Nullable final ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+        BlockEntityRenderer.super.extractRenderState(
+                projector, state, partialTicks, cameraPosition, breakProgress);
+        state.projector = projector;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen() {
+        return true;
+    }
+
+    @Override
+    public void submit(
+            final State state,
+            final PoseStack stack,
+            final SubmitNodeCollector collector,
+            final CameraRenderState camera) {
+        final ProjectorBlockEntity projector = state.projector;
+        final ProjectorBlockEntity framebufferSource =
+                projector.getPrimaryForContraptionRendering();
+
+        if (!framebufferSource.isProjecting()) {
+            return;
+        }
+
+        stack.pushPose();
+        alignToFrontFace(projector, stack);
+
+        if (!framebufferSource.hasEnergy()) {
+            ProjectorLightRenderer.renderMissingEnergyIndicator(stack, collector);
+        } else {
+            ProjectorLightRenderer.renderProjectorLight(stack, collector);
+        }
+
+        stack.popPose();
+    }
+
+    private void alignToFrontFace(final ProjectorBlockEntity projector, final PoseStack stack) {
+        final Direction blockFacing = projector.getBlockState().getValue(ProjectorBlock.FACING);
+        final Quaternionf rotation = Axis.YN.rotationDegrees(blockFacing.toYRot());
+        stack.translate(0.5f, 0, 0.5f);
+        stack.mulPose(rotation);
+    }
+
+    // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
+    @SuppressWarnings("PMD.MissingOverride")
+    public AABB getRenderBoundingBox(final ProjectorBlockEntity block) {
+        return block.getRenderBoundingBox();
+    }
+}
+*///?} else {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import li.cil.oc2.client.renderer.projector.ProjectorDepthRenderer;
@@ -111,3 +200,4 @@ public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlo
         return block.getRenderBoundingBox();
     }
 }
+//?}

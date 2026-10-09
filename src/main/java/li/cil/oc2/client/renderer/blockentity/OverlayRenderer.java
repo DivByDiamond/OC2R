@@ -1,5 +1,55 @@
 package li.cil.oc2.client.renderer.blockentity;
 
+//? if >=26.1 {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import li.cil.oc2.client.renderer.blockentity.computer.ComputerRenderer;
+import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.SpriteId;
+
+public final class OverlayRenderer {
+    static final SpriteId TEXTURE_POWER =
+            new SpriteId(TextureAtlas.LOCATION_BLOCKS, ComputerRenderer.OVERLAY_POWER_LOCATION);
+    static final SpriteId TEXTURE_STATUS =
+            new SpriteId(TextureAtlas.LOCATION_BLOCKS, ComputerRenderer.OVERLAY_STATUS_LOCATION);
+    static final SpriteId TEXTURE_TERMINAL =
+            new SpriteId(TextureAtlas.LOCATION_BLOCKS, ComputerRenderer.OVERLAY_TERMINAL_LOCATION);
+
+    public static void renderStatus(final PoseStack stack, final SubmitNodeCollector collector) {
+        renderStatus(stack, collector, 0);
+    }
+
+    public static void renderStatus(
+            final PoseStack stack, final SubmitNodeCollector collector, final int frequency) {
+        if (frequency <= 0 || System.currentTimeMillis() / frequency % 2 == 1) {
+            renderQuad(stack, collector, TEXTURE_STATUS);
+        }
+    }
+
+    public static void renderPower(final PoseStack stack, final SubmitNodeCollector collector) {
+        renderQuad(stack, collector, TEXTURE_POWER);
+    }
+
+    static void renderQuad(
+            final PoseStack stack, final SubmitNodeCollector collector, final SpriteId sprite) {
+        final TextureAtlasSprite atlasSprite = Minecraft.getInstance().getAtlasManager().get(sprite);
+        collector.submitCustomGeometry(
+                stack,
+                ModRenderType.getUnlitBlock(sprite.atlasLocation()),
+                (pose, buffer) -> {
+                    final VertexConsumer consumer = atlasSprite.wrap(buffer);
+                    consumer.addVertex(pose, 0, 0, 0).setUv(0, 0);
+                    consumer.addVertex(pose, 0, 16, 0).setUv(0, 1);
+                    consumer.addVertex(pose, 16, 16, 0).setUv(1, 1);
+                    consumer.addVertex(pose, 16, 0, 0).setUv(1, 0);
+                });
+    }
+}
+*///?} else {
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import li.cil.oc2.client.renderer.blockentity.computer.ComputerRenderer;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
@@ -38,3 +88,4 @@ public final class OverlayRenderer {
         consumer.addVertex(matrix, 16, 0, 0).setUv(1, 0);
     }
 }
+//?}

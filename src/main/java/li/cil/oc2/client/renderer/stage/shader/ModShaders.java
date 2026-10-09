@@ -1,13 +1,19 @@
 package li.cil.oc2.client.renderer.stage.shader;
 
+//? if <26.1 {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
+//?}
 import li.cil.oc2.api.API;
+//? if <26.1 {
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+//?}
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import org.joml.Matrix4f;
+//?}
 
 public final class ModShaders {
     // Bumped from 3 to 8 — when projectors are scattered across multiple
@@ -19,6 +25,10 @@ public final class ModShaders {
 
     private static final ResourceLocation PROJECTORS_SHADER_LOCATION =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "projectors");
+
+    private ModShaders() {}
+
+    //? if <26.1 {
     private static final String[] PROJECTOR_COLOR_NAMES = {
         "ProjectorColor0", "ProjectorColor1", "ProjectorColor2", "ProjectorColor3",
         "ProjectorColor4", "ProjectorColor5", "ProjectorColor6", "ProjectorColor7",
@@ -34,23 +44,14 @@ public final class ModShaders {
 
     private static ShaderInstance projectorsShader;
 
-    private ModShaders() {}
-
     @Nullable
     public static ShaderInstance getProjectorsShader() {
         return projectorsShader;
     }
 
-    /**
-     * Configures the projectors shader with render targets and matrices.
-     *
-     * @param target the main render target.
-     * @param inverseCameraMatrix the inverse camera matrix.
-     * @param colors the color textures for each projector.
-     * @param depths the depth render targets for each projector.
-     * @param projectorCameraMatrices the camera matrices for each projector.
-     * @param count the number of active projectors.
-     */
+    // Configures the projectors shader with render targets and matrices: the main render target,
+    // the inverse camera matrix, the color textures and depth render targets for each projector,
+    // the camera matrices for each projector and the number of active projectors.
     public static void configureProjectorsShader(
             final RenderTarget target,
             final Matrix4f inverseCameraMatrix,
@@ -85,12 +86,15 @@ public final class ModShaders {
         }
     }
 
+    //?}
+
     /** The location of the projectors shader program. */
     public static ResourceLocation projectorsShaderLocation() {
         return PROJECTORS_SHADER_LOCATION;
     }
 
-    /** Called by the loader once the projectors shader has been (re)loaded. */
+    //? if <26.1 {
+    // Called by the loader once the projectors shader has been (re)loaded.
     @SuppressFBWarnings(
             value = "EI_EXPOSE_STATIC_REP2",
             justification =
@@ -99,4 +103,5 @@ public final class ModShaders {
     public static void setProjectorsShader(final ShaderInstance instance) {
         projectorsShader = instance;
     }
+    //?}
 }
