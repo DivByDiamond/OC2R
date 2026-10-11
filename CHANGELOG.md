@@ -7,6 +7,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Robot**: localization — `GlobalPos` origin (first tick + dimension change, persisted), `getFacing`/`getPosition`/`calibratePosition` device methods with Lua/MicroPython wrappers and docs (upstream `3acd14a`, RPC-only)
+- **Robot**: scanner module — `inspect`/`scan` (7x7x7 hardness cube, 5s cooldown) / `canSeeSky`/`getScanLayer`, recipe, docs, game tests (upstream `802b8be`, RPC-only)
+- **Robot**: crafting module — `craft()` over grid slots 0-8 with output from the selected slot, recipe, docs (upstream `b1366f9`, RPC-only)
+- **Robot**: carried entities — robots lift entities standing on top when moving up and drag them otherwise; players standing on a robot count as grounded (no fly kick); client motion snaps only past thresholds (upstream `aa8c8b4`)
+- **Computer/Robot UI**: the power button now offers start, shut down, reboot (Shift) and power off (Ctrl); shut down and reboot ask the guest through the board system controller (interrupt 6) and fall back to a hard stop or restart when the guest has not enabled it (upstream `276b061`)
+- **VM**: the board system controller is published into the guest device tree; a guest-initiated reboot cycles the VM instead of wedging it in STOPPED (Sedna 5.2.0 syscon)
 - **Multiversion**: the build now multiplexes Minecraft 1.21.1 / 26.1.2 / 26.2 through Stonecutter 0.9.8 — `versions/<v>` nodes with per-version `gradle.properties`, a `ResourceLocation`→`Identifier` source replacement on 26.x with `//? if` conditionals for the API breaks, `core` compiling against NeoForm 26.1.2/26.2 (Java 25 toolchains), per-node dependency lockfiles and CI tasks qualified to `:1.21.1:`/`:fabric:1.21.1:`; Fabric remains on 1.21.1 (Loom does not remap 26.x)
 - **Fabric**: a `fabric/` module (Fabric Loom, Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual) that runs the whole mod on Fabric 1.21.1: registry, network, menu, capability, energy, environment and game-event bridges in `core`, Fabric client (models, shaders, renderers, manual), and Fabric GameTests (`:fabric:runGameTest`) that run the shared NeoForge game tests on a Fabric server
 - **Platform layer**: loader-independent `core` contracts for registries, network, menus, capabilities, item handlers, energy, client registration and client events, so shared code no longer names NeoForge for these
@@ -17,6 +23,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **VM**: item devices are no longer created on the client, which broke dedicated servers (upstream issue #315) — creation is skipped there, and hard-drive images resolve on the worker thread at mount time
 - **Sound card**: the first tone or PCM stream crashed the JVM (SIGSEGV in `alBufferData`) because the audio streams handed OpenAL heap buffers; they are now direct, little-endian and flipped
 - **Bus cable**: a facade set or removed on a loaded cable was not sent to tracking clients until the chunk reloaded; grass and mycelium facades rendered black on NeoForge
 - **Keyboard**: the block now lies flat on the floor with a matching hitbox instead of standing like a wall panel
@@ -37,6 +44,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Terminal**: scrolling reworked behind the buffer API — n-ary `shiftUp`/`shiftDown` with a batched scrollback window-growth phase (one dirty mark instead of one per row) and a total clip-discard shift primitive; the SU/SD handlers no longer reach into the scrollback window fields directly (#45)
 - **Terminal**: SGR background color resolution unified into a single `Terminal.currentBackgroundColor()` (six inline copies removed); IL/DL pass explicit clip bounds to the shift primitive and DL drops a redundant pre-clear pass
 - **Recipes**: `flash_memory_onyxos` now chains from `flash_memory_custom` + wrench and `hard_drive_onyxos` is a wrench-applied shapeless recipe from `hard_drive_medium` (both previously collided with their base recipes and could never both be crafted) (#47)
+- **Sedna**: updated to 5.2.0 (from 4.0.1) with sedna-buildroot 0.2.10 (from 0.0.72-oc2r1): the firmware is now a minimal boot ROM that loads the kernel from disk, so flash holds only `firmware.bin` and the single `rootfs.ext2` replaces the bootfs+rootfs pair (9p and `/mnt/builtin` verified working)
+- **Codebase**: all 108 `javac` warnings eliminated by fixing, not silencing (inlined deprecated-API defaults with behavior proofs, a `ValueInput`-to-tag bridge without deprecated calls, version-conditional replacements named by the deprecating patches themselves)
 
 ## [0.1.1-beta.3.1] — 2026-09-15
 

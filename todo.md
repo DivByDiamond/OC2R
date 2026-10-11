@@ -22,7 +22,8 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 
 - [ ] Verify all "code ready" features in game (multi-monitor, GPU tiers, CPU tiers, codecs, disks, cables, speaker) (see docs/roadmap/qa-checklist.md)
 - [ ] Finish multiversion stage 3 (branch multiversion-stage3: 1.21.1 done on both loaders, 26.1.2 and 26.2 compile, nothing of 26.x ran in game yet; the stubs on 26.x are listed in the roadmap page) and then stage 4, the release matrix (feasibility in docs/roadmap/multiversion-26-neoforge.md and multiversion-26-fabric.md) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
-- [ ] Right after multiversion stage 3: update Sedna 4.0.1 to 5.1.0 (with sedna-cpm 0.2.0 and the buildroot image), then port the upstream fixes and modules from fnuecke/oc2 (see docs/roadmap/upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08)
+- [x] Sedna 5.2.0 + buildroot 0.2.10 + upstream §49 ports (branch feat/sedna-5.2; upstream master moved past the 5.1.0 recorded before — ported 5.2.0/0.3.0/0.2.10 instead; see docs/roadmap/upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08)
+- [ ] Finish multiversion stage 3 (branch multiversion-stage3: 1.21.1 done on both loaders, 26.1.2 and 26.2 compile, nothing of 26.x ran in game yet; the stubs on 26.x are listed in the roadmap page) and then stage 4, the release matrix (feasibility in docs/roadmap/multiversion-26-neoforge.md and multiversion-26-fabric.md) (see docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)
 - [ ] Remove the `required = false` flag from 9 GameTests after fixing them (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
 - [ ] Terminal double-size PR-B: double width and render of `lineAttrs` (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
 - [ ] vttest golden-grid tests (layer 1) plus the 6 UTF-8/resize regressions (see docs/roadmap/terminal.md#444-vttest-automation)
@@ -50,7 +51,6 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] `flashMemorySize` config instead of hard-coded 12 MB (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)
 - [ ] OnyxOS: verify sedna FDT, PLIC/CLINT, virtio numbering, RAM needs, layout minux (see docs/roadmap/devices-storage.md#26b-onyxos-in-oc2r-s-mode-boot-onyxfs-disk-network)
 - [ ] OnyxOS repositories: release workflow, oc2r-firmware.json, README section (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)
-- [ ] Upstream #294 NeoForge startup crash, #230 projector blank display, #288 sound attenuation (needs repro) (see docs/roadmap/upstream.md#413-not-applicable-or-already-closed)
 - [ ] Wire in or delete the dead qodana task; CI upload reports `if: always()` (see docs/roadmap/quality.md#39-lint-stages)
 - [ ] Lint stage B (failBuild, checkstyle severity=error, SpotBugs baseline) and stage C (Error Prone on) (see docs/roadmap/quality.md#39-lint-stages)
 - [ ] Remove the 25 legacy client imports from common (`LEGACY_OFFENDERS`) (see docs/roadmap/quality.md#9-lint-and-static-analysis)
@@ -61,6 +61,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Lint config style items: global checkstyle suppressions, dynamic dependency versions, gametest println (see docs/roadmap/quality.md#47-audit-2026-09-17)
 - [ ] Tests for VM core, bus, inet (UDP/DHCP/DNS/TCP states) and concurrency (T1 to T4) (see docs/roadmap/quality.md#47-audit-2026-09-17)
 - [ ] InternetConnectionImpl.saveAdapterState `.get()` on the server thread; ContainedDeps and sedna-buildroot version drift (see docs/roadmap/quality.md#37-comprehensive-audit)
+- [ ] Several system architectures: a CPU item in hand belongs to RISC-V by default; sneak + right-click with it in hand switches it to Lua or Z80 (state written in the item description). Support Lua and Z80 (CP/M) machines next to RISC-V; Z80 needs sedna-cpm 0.3.0, which is not a dependency yet (idea from the user, 2026-10-11)
 - [ ] Icebox: resizable screen (#12), projector rendering ideas, buildroot image rebuild, block area enlarge (see docs/roadmap/icebox.md)
 
 ## Conventions

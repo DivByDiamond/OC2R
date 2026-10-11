@@ -20,9 +20,6 @@ Fixed items are in [done.md](done.md#412-fixed-items) (Redstone side mixed-up #1
 - Terminal fixes of v0.3.0 are covered by section 36 (M1-M5, commit f6f9d09); ours are more detailed (charset G0/G1, SGR recovery, dirty-mask overflow, ST-string ESC-abort parity).
 - Linux fdisk/swap (#47/#268), console keymaps (#147): guest Linux image, not mod Java code.
 - Block device data unification (#127, BREAKING): datapack image format (`data/oc2/block_devices/{hdd,floppy,flash}/`), needs a separate compatibility decision.
-- [ ] NeoForge startup crash (#294): needs repro.
-- [ ] Projector blank display (#230): needs repro.
-- [ ] Sound attenuation (#288): needs repro. Note: the "speaker is silent" check of [section 21](qa-checklist.md#from-section-21) may be the same problem as #288.
 
 ## 42. North-Western-Development/oc2r: what changed since 2025-09 (checked 2026-10-03)
 
@@ -39,14 +36,19 @@ Everything user-visible from that period is **already in our tree**, so there is
 
 Open upstream branches worth a look only if the internet card is touched again: `InternetCardChanges-Test` (2025-07, "add cache").
 
-## 49. fnuecke/oc2 since f37735d (checked 2026-10-08)
+## 49. fnuecke/oc2 since f37735d (checked 2026-10-08, ported 2026-10-11)
 
-`ref/oc2` pulled from `f37735d` to `480af73` (17 commits, 2026-10-02 to 2026-10-07). None of it is in our tree yet (checked: no `Invalidatable`, `CraftingModule`, `ScannerModule` or `DeviceWithAliases` here). Planned order:
+`ref/oc2` pulled from `f37735d` to `480af73` (17 commits, 2026-10-02 to 2026-10-07). Upstream master has since moved to Sedna 5.2.0 / sedna-cpm 0.3.0 / sedna-buildroot 0.2.10 (2026-10-09); that is what was ported, not the 5.1.0 recorded here before.
 
-- [ ] **First task after multiversion stage 3: Sedna 5.1.0.** We are on `sedna_version=4.0.1` (`gradle.properties`); upstream's `libs.versions.toml` moved from 5.0.0 to 5.1.0 and `sedna-cpm` from 0.1.2 to 0.2.0. A jump over a whole major, so read the Sedna changelog and the earlier 4.0.1 migration first, update the buildroot image (`sedna_buildroot_version`) together with it, and run the full game test suite.
-- [ ] Issue #315 (`984b831`): devices were potentially created on the client, which broke dedicated servers. Touches `ComputerBlockEntity`, `FlashStorageDeviceWithInitialData`, `HardDriveDeviceWithInitialData` and the flash memory item device provider.
-- [ ] Capability caching (`67e1e00`, `630a0ff`): incorrect capability caching led to dropping `Invalidatable` entirely, replaced by `CapabilityCache` with `CachedItemHandler`, `CachedEnergyHandler` and `CachedFluidHandler`. First check whether our `CapabilityBridge` has the same bug before porting the rework.
-- [ ] Crafting module (`b1366f9`) and scanner module (`802b8be`) for the robot, with docs, recipes and the new game tests (`ScannerModuleTests`).
-- [ ] Device naming rework (`a1527f1`, `8cf6ee3`): `DeviceWithAliases`, `SystemDevice`, `TypeNameDevice`, `RPCDeviceGroup`, id conversions moved into an always-present shared device with its own page (`device/system.md`). Touches the device bus, so after the two fixes above.
-- [ ] Robot basic localization (`3acd14a`), less jittery robot movement (`aa8c8b4`), tank module texture tweak (`22a16d0`), broken-link fix with an automated check (`083846d`).
-- Tests upstream changed along the way: VMs run directly in the tick for tests (`d153daa`), test cleanups (`cc16a81`, `ee02e3e`); look at them when we touch our game test fixtures.
+- [x] **Sedna 5.2.0** (`sedna_version=4.0.1` → `5.2.0`, `sedna_buildroot_version=0.0.72-oc2r1` → `0.2.10`, branch `feat/sedna-5.2`). Verified against the 4.0.1/5.2.0 API diff: `MemoryMap.setDirty` removal, `Buildroot` API swap (firmware boot ROM + single rootfs.ext2, bootfs gone), board syscon. sedna-cpm (now 0.3.0) is still not a dependency — nothing here uses it (no Z80/CP-M).
+- [x] **System controller adoption**: the board syscon is published into the guest device tree (`SystemControllerProvider`), so capable guests can reboot/power off through it; a guest-initiated reboot cycles the VM instead of wedging it in STOPPED. Host-driven `requestPowerOff`/`requestReset` stay unused on purpose — no shipped guest enables them yet and the syscon interrupt is not routed.
+- [x] Issue #315 (`984b831`): item devices are no longer created on the client (`isClientSide` on the item-stack handlers); `HardDriveDeviceWithInitialData` carries the `BlockDeviceData` and resolves the image on the worker thread; `BlockDeviceData.getCapacity()` added for the side-safe energy math.
+- [x] Capability caching (`67e1e00`, `630a0ff`): **reviewed, not ported**. There is no `Invalidatable` here and the `CapabilityBridge`/`BlockCapabilityCache` already re-resolve per call; providers return `Optional<Device>`. Same bug class cannot occur; per-call delegating wrappers remain optional hardening.
+- [x] Crafting module (`b1366f9`), RPC-only (no MLAPI layer here): `craft()` over slots 0-8 with output from the selected slot, recipe, docs, no dedicated game test (recipe tests cover it).
+- [x] Scanner module (`802b8be`), RPC-only: `inspect`/`scan` (7x7x7 hardness cube, 5s cooldown) / `canSeeSky`/`getScanLayer`, recipe, docs, `ScannerModuleTests`.
+- [x] Device naming rework (`a1527f1`, `8cf6ee3`): **skipped on purpose**. The bug it fixes (HLAPI vs MLAPI naming parity, #316) cannot occur here — there is no MLAPI/IO layer, no `SYSTEM` index-0 contract, no per-device id codecs. The synthetic display-name devices already cover the alias-like behavior.
+- [x] Robot basic localization (`3acd14a`), RPC-only: `GlobalPos` origin (first tick + dimension change, persisted), `getFacing`/`getPosition`/`calibratePosition` plus guest library wrappers, docs, `RobotTests.robotLocalizationTracksMovement`.
+- [x] Less jittery robot movement (`aa8c8b4`): `lerpTo` snap thresholds with `isComplete`, carried-entity lift/drag in `moveTowards`, `canCollideWith` via the vehicle rule with an ignore list, `ServerGamePacketListenerImplMixin` (NeoForge + Fabric) so standing on a robot counts as grounded, `RobotCarryTests`. Renderer float→double does not apply (our animation state has no absolute-time parameter). 26.x notes: `lerpTo` does not exist there (override is 1.21-only), `Boat.canVehicleCollide` is inlined per version, client `shouldMoveEntity` falls back to the server rule.
+- [x] Tank module texture tweak (`22a16d0`): nothing to port (no tank module here; take the PNG if the module is ever ported).
+- [x] Broken-link check (`083846d`): nothing to port (no in-game manual renderer here).
+- [x] Tests upstream changed along the way (`d153daa`, `cc16a81`, `ee02e3e`): reviewed. `cc16a81`/`ee02e3e` are mass cleanups of upstream's own test tree (81 and 61 files in a layout we do not have): nothing to port. `d153daa` adds `VMRunner.setLockstep(true)` for tests (VM runs inside the tick, so tick timeouts mean something; boot timeout 900k to 50k ticks). Not ported: it is a test-only behavior change in `VMRunner`; take it only if game tests start timing out nondeterministically.
