@@ -5,7 +5,8 @@
   "package": "li.cil.oc2.common.mixin",
   "refmap": "mixins.oc2r.refmap.json",
   "mixins": [
-    "ServerChunkCacheMixin"
+    "ServerChunkCacheMixin",
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
     "FrustumMixin",

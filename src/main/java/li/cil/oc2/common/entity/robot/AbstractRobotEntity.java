@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -10,6 +11,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+//? if <26.1 {
+import net.minecraft.world.entity.vehicle.Boat;
+//?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +37,7 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
 
     private long lastPistonMovement;
     public boolean captureInputState;
+    private List<Entity> ignoredColliders = List.of();
 
     protected AbstractRobotEntity(final EntityType<?> type, final Level world) {
         super(type, world);
@@ -57,6 +63,12 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
 
     public long getLastPistonMovement() {
         return lastPistonMovement;
+    }
+
+    public void move(final Vec3 delta, final List<Entity> ignoredColliders) {
+        this.ignoredColliders = ignoredColliders; // NOPMD - read by canCollideWith during move
+        move(MoverType.SELF, delta);
+        this.ignoredColliders = List.of();
     }
 
     @Override
@@ -111,11 +123,14 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
 
     @Override
     public boolean canCollideWith(final Entity entity) {
-        return !entity.equals(this);
+        //? if >=26.1 {
+        /*return !ignoredColliders.contains(entity)
+                && (entity.canBeCollidedWith(this) || entity.isPushable())
+                && !isPassengerOfSameVehicle(entity);
+        *///?} else {
+        return !ignoredColliders.contains(entity) && Boat.canVehicleCollide(this, entity);
+        //?}
     }
-
-    @Override
-    public void push(final Entity entity) {}
 
     //? if >=26.1 {
     /*@Override

@@ -15,7 +15,9 @@ import li.cil.oc2.common.entity.robot.misc.RobotBlockCollider;
 import li.cil.oc2.common.entity.robot.misc.RobotEventHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInteractionHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInventory;
+import li.cil.oc2.common.entity.robot.movement.RobotMovementAction;
 import li.cil.oc2.common.entity.robot.movement.RobotMovementController;
+import li.cil.oc2.common.entity.robot.rotation.RobotRotationAction;
 import li.cil.oc2.common.entity.robot.state.RobotAnimationState;
 import li.cil.oc2.common.entity.robot.state.RobotSerializer;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
@@ -26,6 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -50,6 +53,11 @@ public final class Robot extends AbstractRobotEntity
     private final RobotAnimationState animationState;
     private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
     @Nullable private GlobalPos origin;
+
+    //? if <26.1 {
+    private static final double MOVING_POSITION_SYNC_THRESHOLD = 1;
+    private static final float TURNING_ROTATION_SYNC_THRESHOLD = 45;
+    //?}
 
     public Robot(final EntityType<?> type, final Level world) {
         super(type, world);
@@ -162,6 +170,29 @@ public final class Robot extends AbstractRobotEntity
     public void dropSelf() {
         RobotInteractionHandler.dropSelf(this);
     }
+
+    //? if <26.1 {
+    @Override
+    public void lerpTo(
+            final double x,
+            final double y,
+            final double z,
+            final float yRot,
+            final float xRot,
+            final int steps) {
+        // Applying server position and rotation while animating (which also runs on client) causes
+        // jitter, so only snap to the authoritative values when actually relevant.
+        if (RobotMovementAction.isComplete(this)
+                || position().distanceToSqr(x, y, z)
+                        > MOVING_POSITION_SYNC_THRESHOLD * MOVING_POSITION_SYNC_THRESHOLD) {
+            setPos(x, y, z);
+        }
+        if (RobotRotationAction.isComplete(this)
+                || Mth.degreesDifferenceAbs(getYRot(), yRot) > TURNING_ROTATION_SYNC_THRESHOLD) {
+            setRot(yRot, xRot);
+        }
+    }
+    //?}
 
     @Nullable
     public GlobalPos getOrigin() {

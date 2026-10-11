@@ -40,6 +40,7 @@ public final class GameTestRegistrar {
         RecipeTests.class,
         RedstoneInterfaceTests.class,
         RegistrationTests.class,
+        RobotCarryTests.class,
         RobotTests.class,
         ScannerModuleTests.class,
         TerminalTests.class);
