@@ -9,26 +9,26 @@ import net.minecraft.resources.ResourceLocation;
  * their own properties in their constructors.
  */
 public final class RegistrationContext {
-    private static final ThreadLocal<ResourceLocation> CURRENT = new ThreadLocal<>();
+    private static final ThreadLocal<ResourceLocation> CURRENT_ID = new ThreadLocal<>();
 
     private RegistrationContext() {}
 
     public static <T> T with(final ResourceLocation id, final Supplier<T> factory) {
-        final ResourceLocation previous = CURRENT.get();
-        CURRENT.set(id);
+        final ResourceLocation previous = CURRENT_ID.get();
+        CURRENT_ID.set(id);
         try {
             return factory.get();
         } finally {
             if (previous == null) {
-                CURRENT.remove();
+                CURRENT_ID.remove();
             } else {
-                CURRENT.set(previous);
+                CURRENT_ID.set(previous);
             }
         }
     }
 
     public static ResourceLocation current() {
-        final ResourceLocation id = CURRENT.get();
+        final ResourceLocation id = CURRENT_ID.get();
         if (id == null) {
             throw new IllegalStateException("Block or item properties created outside of a registry factory");
         }
