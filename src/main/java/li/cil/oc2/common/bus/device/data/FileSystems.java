@@ -185,7 +185,7 @@ public final class FileSystems {
                 "  Adding block device [{}] with id [{}] and a size of [{}].",
                 name,
                 location,
-                formatSize(data.getBlockDevice().getCapacity()));
+                formatSize(data.getCapacity()));
         BLOCK_DEVICE_DATA.put(location, data);
         blocksByName.put(name, data);
     }

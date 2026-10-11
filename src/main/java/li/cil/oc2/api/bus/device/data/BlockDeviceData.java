@@ -28,9 +28,20 @@ public interface BlockDeviceData {
     /**
      * Gets the read-only base block device this implementation describes.
      *
+     * <p>Server-only: resolving the device may load image data. Use {@link #getCapacity()} wherever
+     * the size alone is needed, for example while scanning inventories on either side.
+     *
      * @return the block device.
      */
     BlockDevice getBlockDevice();
+
+    /**
+     * Gets the capacity of the base block device, without resolving it. Safe to call on either
+     * side.
+     *
+     * @return the capacity, in bytes.
+     */
+    long getCapacity();
 
     /**
      * The display name of this block device base. May be shown in the tooltip of item devices using

@@ -115,6 +115,11 @@ public class RobotInventory {
         }
 
         @Override
+        protected boolean isClientSide() {
+            return robot.level().isClientSide();
+        }
+
+        @Override
         protected void onChanged() {
             super.onChanged();
             if (!robot.level().isClientSide()) {

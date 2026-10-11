@@ -31,6 +31,11 @@ public final class BuildrootBlockDeviceData implements BlockDeviceData {
     }
 
     @Override
+    public long getCapacity() {
+        return INSTANCE.getCapacity();
+    }
+
+    @Override
     public Component getDisplayName() {
         return Component.literal("Sedna Linux");
     }

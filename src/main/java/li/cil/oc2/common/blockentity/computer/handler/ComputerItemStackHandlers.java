@@ -35,6 +35,12 @@ public class ComputerItemStackHandlers extends AbstractVMItemStackHandlers {
     }
 
     @Override
+    protected boolean isClientSide() {
+        final Level level = owner.getLevel();
+        return level == null || level.isClientSide();
+    }
+
+    @Override
     protected void onChanged() {
         super.onChanged();
 

@@ -58,6 +58,11 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
     }
 
     @Override
+    public long getCapacity() {
+        return INSTANCE.getCapacity();
+    }
+
+    @Override
     public Component getDisplayName() {
         return Component.literal("OnyxOS");
     }
