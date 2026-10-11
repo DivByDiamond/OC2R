@@ -138,6 +138,14 @@ public final class Robot extends AbstractRobotEntity
         if (!level().isClientSide()) virtualMachine.stop();
     }
 
+    public void shutdown() {
+        if (!level().isClientSide()) virtualMachine.shutdown();
+    }
+
+    public void reboot() {
+        if (!level().isClientSide()) virtualMachine.reboot();
+    }
+
     public void openTerminalScreen(final ServerPlayer player) {
         RobotTerminalContainer.createServer(this, energy, virtualMachine.busController, player);
     }

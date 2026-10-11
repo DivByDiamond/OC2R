@@ -9,6 +9,7 @@ import li.cil.oc2.common.container.data.IntPrecisionContainerData;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.common.network.message.robot.inventory.OpenRobotInventoryMessage;
 import li.cil.oc2.common.network.message.robot.state.RobotPowerMessage;
 import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage;
@@ -56,7 +57,12 @@ public abstract class AbstractRobotContainer extends AbstractMachineTerminalCont
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        NetworkMessages.sendToServer(new RobotPowerMessage(robot, value));
+        sendPowerActionToServer(value ? PowerAction.START : PowerAction.POWER_OFF);
+    }
+
+    @Override
+    public void sendPowerActionToServer(final PowerAction action) {
+        NetworkMessages.sendToServer(new RobotPowerMessage(robot, action));
     }
 
     @Override

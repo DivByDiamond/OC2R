@@ -10,14 +10,15 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import li.cil.oc2.common.vm.PowerAction;
 
-public record RobotPowerMessage(int entityId, boolean power) implements AbstractMessage {
+public record RobotPowerMessage(int entityId, PowerAction action) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, RobotPowerMessage> STREAM_CODEC =
             StreamCodec.composite(
                     ByteBufCodecs.INT,
                     RobotPowerMessage::entityId,
-                    ByteBufCodecs.BOOL,
-                    RobotPowerMessage::power,
+                    PowerAction.STREAM_CODEC,
+                    RobotPowerMessage::action,
                     RobotPowerMessage::new);
 
     public static final CustomPacketPayload.Type<RobotPowerMessage> TYPE =
@@ -29,8 +30,8 @@ public record RobotPowerMessage(int entityId, boolean power) implements Abstract
         return TYPE;
     }
 
-    public RobotPowerMessage(final Robot robot, final boolean power) {
-        this(robot.getId(), power);
+    public RobotPowerMessage(final Robot robot, final PowerAction action) {
+        this(robot.getId(), action);
     }
 
     @Override
@@ -40,10 +41,11 @@ public record RobotPowerMessage(int entityId, boolean power) implements Abstract
                 entityId,
                 Robot.class,
                 robot -> {
-                    if (power) {
-                        robot.start();
-                    } else {
-                        robot.stop();
+                    switch (action) {
+                        case START -> robot.start();
+                        case SHUTDOWN -> robot.shutdown();
+                        case REBOOT -> robot.reboot();
+                        case POWER_OFF -> robot.stop();
                     }
                 });
     }

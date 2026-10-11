@@ -47,6 +47,18 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
         }
     }
 
+    public void shutdown() {
+        if (computer.getLevel() != null && !computer.getLevel().isClientSide()) {
+            computer.virtualMachine.shutdown();
+        }
+    }
+
+    public void reboot() {
+        if (computer.getLevel() != null && !computer.getLevel().isClientSide()) {
+            computer.virtualMachine.reboot();
+        }
+    }
+
     public void openTerminalScreen(final ServerPlayer player) {
         ComputerTerminalContainer.createServer(computer, computer.energy, computer.virtualMachine.busController, player);
     }

@@ -16,6 +16,7 @@ import li.cil.sedna.device.serial.UART16550A;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
 import li.cil.sedna.device.virtio.VirtIOConsoleDevice;
 import li.cil.sedna.device.virtio.VirtIOFileSystemDevice;
+import li.cil.sedna.riscv.R5Board;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +29,9 @@ public final class BuiltinDevices {
     private static final int UART_INTERRUPT = 0x4;
     private static final int VFS_INTERRUPT = 0x5;
     private static final int RFS_INTERRUPT = 0x7;
+    // Free slot between the VFS and the RFS; claimed up front so dynamically allocated devices
+    // never take it, and only for VMs that do not already have a device on it.
+    private static final int SYSCON_INTERRUPT = 0x6;
 
     public final MinecraftRealTimeCounter rtcMinecraft = new MinecraftRealTimeCounter();
 
@@ -92,6 +96,14 @@ public final class BuiltinDevices {
                     "Failed to load the Buildroot rootfs block device into the VM", e);
         } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Buildroot block devices into the VM", t);
+        }
+    }
+
+    public static void connectSystemController(final GlobalVMContext context, final R5Board board) {
+        if (context.getInterruptAllocator().claimInterrupt(SYSCON_INTERRUPT)) {
+            board.getSystemController()
+                    .getInterrupt()
+                    .set(SYSCON_INTERRUPT, context.getInterruptController());
         }
     }
 
