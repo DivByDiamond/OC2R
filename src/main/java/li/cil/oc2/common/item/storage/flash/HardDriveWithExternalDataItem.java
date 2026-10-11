@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item.storage.flash;
 
+import li.cil.oc2.common.item.ItemProps;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.block.AbstractBlockDeviceItem;
@@ -20,7 +21,7 @@ public final class HardDriveWithExternalDataItem extends AbstractBlockDeviceItem
     public HardDriveWithExternalDataItem(
             final ResourceLocation defaultData, final DyeColor defaultColor) {
         super(
-                new Item.Properties()
+                ItemProps.of()
                         .component(
                                 DataComponents.DYED_COLOR,
                                 //? if >=26.1 {

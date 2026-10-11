@@ -10,6 +10,7 @@ public final class ManualItem extends ModItem {
     }
 }
 *///?} else {
+import li.cil.oc2.common.item.ItemProps;
 import java.util.List;
 import li.cil.manual.api.ManualModel;
 import li.cil.manual.api.ManualScreenStyle;
@@ -28,7 +29,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public final class ManualItem extends AbstractManualItem {
     public ManualItem() {
-        super(new Item.Properties());
+        super(ItemProps.of());
     }
 
     @OnlyIn(Dist.CLIENT)

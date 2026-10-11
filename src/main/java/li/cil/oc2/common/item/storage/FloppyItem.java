@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item.storage;
 
+import li.cil.oc2.common.item.ItemProps;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -10,7 +11,7 @@ public final class FloppyItem extends AbstractStorageItem {
 
     public FloppyItem(final int capacity) {
         super(
-                new Item.Properties()
+                ItemProps.of()
                         .component(
                                 DataComponents.DYED_COLOR,
                                 //? if >=26.1 {

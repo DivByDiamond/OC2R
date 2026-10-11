@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item.storage;
 
+import li.cil.oc2.common.item.ItemProps;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.API;
 //? if >=26.1 {
@@ -18,7 +19,7 @@ public final class HardDriveItem extends AbstractStorageItem {
 
     public HardDriveItem(final int capacity, final DyeColor defaultColor) {
         super(
-                new Item.Properties()
+                ItemProps.of()
                         .component(
                                 DataComponents.DYED_COLOR,
                                 //? if >=26.1 {

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item.network.cable;
 
+import li.cil.oc2.common.item.ItemProps;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -39,7 +40,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {
         //? if >=26.1 {
-        /*super(Blocks.BUS_CABLE.get(), new Properties());
+        /*super(Blocks.BUS_CABLE.get(), ItemProps.of());
         *///?} else {
         super(Blocks.BUS_CABLE.get());
         //?}

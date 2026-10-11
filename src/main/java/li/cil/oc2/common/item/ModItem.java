@@ -59,6 +59,6 @@ public class ModItem extends Item {
     //?}
 
     protected static Properties createProperties() {
-        return new Properties();
+        return ItemProps.of();
     }
 }

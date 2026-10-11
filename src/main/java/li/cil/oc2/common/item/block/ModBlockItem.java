@@ -1,5 +1,6 @@
 package li.cil.oc2.common.item.block;
 
+import li.cil.oc2.common.item.ItemProps;
 import java.util.List;
 //? if >=26.1 {
 /*import li.cil.oc2.common.block.BlockTooltipProvider;
@@ -67,11 +68,11 @@ public class ModBlockItem extends BlockItem {
 
     //? if >=26.1 {
     /*protected static Properties createProperties() {
-        return new Properties().useBlockDescriptionPrefix();
+        return ItemProps.of().useBlockDescriptionPrefix();
     }
     *///?} else {
     protected static Properties createProperties() {
-        return new Properties();
+        return ItemProps.of();
     }
     //?}
 }
