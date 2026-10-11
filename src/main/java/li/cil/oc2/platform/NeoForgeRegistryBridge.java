@@ -52,7 +52,8 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
         try {
             final DeferredBlock<B> deferred = blockRegisters
                     .computeIfAbsent(namespace, DeferredRegister::createBlocks)
-                    .register(name, factory);
+                    .register(name, () -> RegistrationContext.with(
+                            ResourceLocation.fromNamespaceAndPath(namespace, name), factory));
             final BlockHolder<B> holder = new BlockHolder<>() {
                 @Override
                 public ResourceLocation getId() {
@@ -78,7 +79,8 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
         try {
             final DeferredItem<I> deferred = itemRegisters
                     .computeIfAbsent(namespace, DeferredRegister::createItems)
-                    .register(name, factory);
+                    .register(name, () -> RegistrationContext.with(
+                            ResourceLocation.fromNamespaceAndPath(namespace, name), factory));
             return new ItemHolder<>() {
                 @Override
                 public ResourceLocation getId() {

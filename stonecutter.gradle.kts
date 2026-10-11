@@ -31,6 +31,13 @@ stonecutter parameters {
                 "\\bGuiGraphicsExtractor\\b", "GuiGraphics",
             )
         }
+        // 26.1+ blocks need their id in the properties; BlockProps reads it from the registration context.
+        regex(eval(current.version, ">=26.1")) {
+            replace(
+                "(?<![.\\w])Properties\\.of\\(\\)", "li.cil.oc2.common.block.BlockProps.of()",
+                "li\\.cil\\.oc2\\.common\\.block\\.BlockProps\\.of\\(\\)", "Properties.of()",
+            )
+        }
     }
 }
 

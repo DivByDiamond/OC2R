@@ -128,7 +128,7 @@ repositories {
     maven {
         name = "Jared's maven"
         url = uri("https://maven.blamejared.com/")
-        content { includeGroupByRegex("mezz\\..*") }
+        content { includeGroupByRegex("mezz\\..*|net\\.mezzdev(\\..*)?") }
     }
     maven {
         url = uri("https://maven.covers1624.net/")
@@ -220,8 +220,18 @@ dependencies {
     // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
     errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
-    implementation("li.cil.ceres:ceres:${ceres_version}")
-    implementation("li.cil.sedna:sedna:${sedna_version}")
+    implementation("li.cil.ceres:ceres:${ceres_version}") {
+        // NeoForge 26.x pins ASM strictly (9.9.1) while ceres declares 9.10.1; the pinned one is enough at runtime.
+        if (!minecraft_version.startsWith("1.")) {
+            exclude(group = "org.ow2.asm")
+        }
+    }
+    implementation("li.cil.sedna:sedna:${sedna_version}") {
+        // sedna pulls ceres (and its ASM 9.10.1) transitively.
+        if (!minecraft_version.startsWith("1.")) {
+            exclude(group = "org.ow2.asm")
+        }
+    }
     implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
 
     if ("jarJar" in configurations.names) {
@@ -326,6 +336,32 @@ tasks.register<Copy>("copyLicensesToResources") {
 tasks.processResources {
     dependsOn("packageScripts")
     dependsOn("copyLicensesToResources")
+
+    if (!minecraft_version.startsWith("1.")) {
+        // The manifest is written for 1.21.1: retarget the Minecraft/NeoForge ranges and make the
+        // Markdown Manual optional, it has no 26.x build (roadmap multiversion-26-neoforge section 3).
+        val neoMajor = (project.property("neo_version") as String).split(".").take(2).joinToString(".")
+        val mcVersion = minecraft_version
+        inputs.property("modsTomlRetarget", "$mcVersion/$neoMajor")
+        filesMatching("META-INF/neoforge.mods.toml") {
+            var dependency = ""
+            filter { line: String ->
+                val trimmed = line.trim()
+                if (trimmed.startsWith("modId")) {
+                    dependency = trimmed.substringAfter("=").trim().trim('"')
+                }
+                when {
+                    dependency == "minecraft" && trimmed.startsWith("versionRange") ->
+                        "versionRange = \"[$mcVersion]\""
+                    dependency == "neoforge" && trimmed.startsWith("versionRange") ->
+                        "versionRange = \"[$neoMajor,)\""
+                    dependency == "markdown_manual" && trimmed.startsWith("type") ->
+                        "type = \"optional\""
+                    else -> line
+                }
+            }
+        }
+    }
 }
 
 tasks.register<Copy>("copyGeneratedResources") {
