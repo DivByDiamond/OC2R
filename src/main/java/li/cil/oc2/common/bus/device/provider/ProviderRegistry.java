@@ -11,7 +11,9 @@ import li.cil.oc2.common.bus.device.provider.item.ItemStackCapabilityDeviceProvi
 import li.cil.oc2.common.bus.device.provider.item.energy.EnergyStorageItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.energy.FluidHandlerItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.module.BlockOperationsModuleDeviceProvider;
+import li.cil.oc2.common.bus.device.provider.item.module.CraftingModuleDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.module.InventoryOperationsModuleDeviceProvider;
+import li.cil.oc2.common.bus.device.provider.item.module.ScannerModuleDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.module.card.FileImportExportCardItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.module.card.RedstoneInterfaceCardItemDeviceProvider;
 import li.cil.oc2.common.bus.device.provider.item.module.card.SoundCardItemDeviceProvider;
@@ -83,6 +85,8 @@ public final class ProviderRegistry {
                 "inventory_operations_module", InventoryOperationsModuleDeviceProvider::new);
         registerItemProvider(
                 "block_operations_module", BlockOperationsModuleDeviceProvider::new);
+        registerItemProvider("scanner_module", ScannerModuleDeviceProvider::new);
+        registerItemProvider("crafting_module", CraftingModuleDeviceProvider::new);
         registerItemProvider(
                 "network_tunnel_module", NetworkTunnelModuleItemDeviceProvider::new);
 

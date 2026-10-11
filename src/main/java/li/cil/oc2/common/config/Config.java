@@ -65,6 +65,8 @@ public final class Config {
     public static int soundCardEnergyPerTick = 1;
     public static int blockOperationsModuleEnergyPerTick = 2;
     public static int inventoryOperationsModuleEnergyPerTick = 1;
+    public static int scannerModuleEnergyPerTick = 2;
+    public static int craftingModuleEnergyPerTick = 1;
     public static int networkTunnelEnergyPerTick = 2;
 
     public static String blockOperationsModuleToolTier = Tiers.DIAMOND.name();

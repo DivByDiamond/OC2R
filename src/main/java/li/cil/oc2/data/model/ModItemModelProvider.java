@@ -70,6 +70,8 @@ public final class ModItemModelProvider extends ItemModelProvider {
 
         simple(Items.INVENTORY_OPERATIONS_MODULE, "item/modules/inventory_operations_module");
         simple(Items.BLOCK_OPERATIONS_MODULE, "item/modules/block_operations_module");
+        simple(Items.SCANNER_MODULE, "item/modules/scanner_module");
+        simple(Items.CRAFTING_MODULE, "item/modules/crafting_module");
         simple(Items.NETWORK_TUNNEL_MODULE, "item/modules/network_tunnel_module");
 
         simple(Items.TRANSISTOR, "item/components/materials/transistor");

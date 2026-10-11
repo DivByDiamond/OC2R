@@ -87,6 +87,8 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
                 .add(
                         Items.INVENTORY_OPERATIONS_MODULE.key(),
                         Items.BLOCK_OPERATIONS_MODULE.key(),
+                        Items.SCANNER_MODULE.key(),
+                        Items.CRAFTING_MODULE.key(),
                         Items.NETWORK_TUNNEL_MODULE.key());
         tag(DEVICES_NETWORK_TUNNEL)
                 .add(Items.NETWORK_TUNNEL_CARD.key(), Items.NETWORK_TUNNEL_MODULE.key());
