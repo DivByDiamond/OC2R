@@ -47,15 +47,6 @@ public final class ManagedMemoryMap implements MemoryMap {
     }
 
     @Override
-    public void setDirty(final MemoryRange range, final int offset) {
-        if (!isValid) {
-            throw new IllegalStateException();
-        }
-
-        memoryMap.setDirty(range, offset);
-    }
-
-    @Override
     public long load(final long address, final int sizeLog2) throws MemoryAccessException {
         if (!isValid) {
             throw new IllegalStateException();

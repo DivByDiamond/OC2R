@@ -27,7 +27,6 @@ public final class BuiltinDevices {
     public static final int RPC_INTERRUPT = 0x3;
     private static final int UART_INTERRUPT = 0x4;
     private static final int VFS_INTERRUPT = 0x5;
-    private static final int BFS_INTERRUPT = 0x6;
     private static final int RFS_INTERRUPT = 0x7;
 
     public final MinecraftRealTimeCounter rtcMinecraft = new MinecraftRealTimeCounter();
@@ -35,7 +34,11 @@ public final class BuiltinDevices {
     @Serialized public VirtIOConsoleDevice rpcSerialDevice;
     @Serialized public UART16550A uart;
     @Serialized public VirtIOFileSystemDevice vfs;
-    @Serialized public VirtIOBlockDevice bfs;
+    // Legacy bootfs device (sedna-buildroot < 0.2.x served bootfs.squashfs
+    // next to rootfs.cramfs). The 0.2.x image line ships a single
+    // rootfs.ext2; the field stays so pre-5.2 worlds still deserialize, but
+    // new VMs never attach it.
+    @Deprecated @Serialized public VirtIOBlockDevice bfs;
     @Serialized public VirtIOBlockDevice rfs;
 
     public BuiltinDevices(final GlobalVMContext context) {
@@ -65,27 +68,11 @@ public final class BuiltinDevices {
                                 FileSystems.getLayeredFileSystem()),
                         VFS_INTERRUPT,
                         VirtIOFileSystemDevice::getInterrupt);
-        try (InputStream ris = Buildroot.getRootFilesystem();
-             InputStream bis = Buildroot.getBootFilesystem()) {
+        try (InputStream ris = Buildroot.getRootFilesystem()) {
             if (ris == null) {
                 LOGGER.error(
-                        "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"
+                        "Buildroot root filesystem (generated/rootfs.ext2) is missing from"
                                 + " sedna-buildroot.jar — VM will boot but have no rootfs.");
-            }
-            if (bis == null) {
-                LOGGER.error(
-                        "Buildroot boot filesystem (generated/bootfs.squashfs) is missing from"
-                                + " sedna-buildroot.jar — VM will boot but have no bootfs.");
-            }
-            if (bis != null) {
-                bfs =
-                        initialize(
-                                context,
-                                new VirtIOBlockDevice(
-                                        context.getMemoryMap(),
-                                        ByteBufferBlockDevice.createFromStream(bis, true)),
-                                BFS_INTERRUPT,
-                                VirtIOBlockDevice::getInterrupt);
             }
             if (ris != null) {
                 rfs =
@@ -102,8 +89,7 @@ public final class BuiltinDevices {
             // failure mode invisible in production. Log it properly so users
             // can actually tell why their computer "appears on but does nothing".
             LOGGER.error(
-                    "Failed to load one of the Buildroot block devices (bootfs/rootfs) into the VM",
-                    e);
+                    "Failed to load the Buildroot rootfs block device into the VM", e);
         } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Buildroot block devices into the VM", t);
         }

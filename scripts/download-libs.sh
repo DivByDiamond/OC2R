@@ -79,11 +79,11 @@ EOF
 
 # Versions must match build.gradle / gradle.properties
 CERES_VERSION="0.0.7"
-SEDNA_VERSION="4.0.1"
-# Custom build: minux 0.0.71 + kernel 6.12.104 with CONFIG_9P_FS=y (from minux
-# master, commit a49110a1). Hosted on the OC2R "bundled-deps" release until a
-# fixed upstream minux release (>= 0.0.72) is published.
-SEDNA_BUILDROOT_VERSION="0.0.72-oc2r1"
+SEDNA_VERSION="5.2.0"
+# Upstream fnuecke line (was: custom minux 0.0.71 + kernel 6.12.104 with
+# CONFIG_9P_FS=y as 0.0.72-oc2r1, hosted on the OC2R "bundled-deps" release).
+# Verify /mnt/builtin (9p) still mounts in game after the switch.
+SEDNA_BUILDROOT_VERSION="0.2.10"
 
 install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
     "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"
@@ -92,9 +92,11 @@ install_maven "li/cil/sedna" "sedna" "${SEDNA_VERSION}" \
     "https://github.com/fnuecke/sedna/releases/download/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}.jar"
 
 install_maven "li/cil/sedna" "sedna-buildroot" "${SEDNA_BUILDROOT_VERSION}" \
-    "https://github.com/TumRedSun/OC2R/releases/download/bundled-deps/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}.jar"
+    "https://fnuecke.github.io/maven/li/cil/sedna/sedna-buildroot/${SEDNA_BUILDROOT_VERSION}/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}.jar"
 
-# Upstream URL to switch back to once minux ships 9p again:
+# Previous custom build (retired with the 0.2.x switch): minux 0.0.71 + kernel
+# 6.12.104 with CONFIG_9P_FS=y, was hosted on the OC2R "bundled-deps" release.
+# Upstream minux URL pattern (NWD releases, needs %2Bunknown suffix):
 #   "https://github.com/North-Western-Development/minux/releases/download/${SEDNA_BUILDROOT_VERSION}/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}%2Bunknown.jar"
 
 echo

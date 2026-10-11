@@ -42,11 +42,6 @@ public final class GlobalMemoryMap implements MemoryMap {
     }
 
     @Override
-    public void setDirty(final MemoryRange range, final int offset) {
-        memoryMap.setDirty(range, offset);
-    }
-
-    @Override
     public long load(final long address, final int sizeLog2) throws MemoryAccessException {
         return memoryMap.load(address, sizeLog2);
     }
