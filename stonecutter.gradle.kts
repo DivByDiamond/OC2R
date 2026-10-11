@@ -38,6 +38,14 @@ stonecutter parameters {
                 "li\\.cil\\.oc2\\.common\\.block\\.BlockProps\\.of\\(\\)", "Properties.of()",
             )
         }
+        // 26.x NeoForge no longer strips members by @OnlyIn and warns on every use at startup;
+        // the annotated classes are only referenced from client code, so drop the marker there.
+        regex(eval(current.version, ">=26.1")) {
+            replace(
+                "@OnlyIn\\(Dist\\.CLIENT\\)", "@li.cil.oc2.common.util.ClientOnly",
+                "@li\\.cil\\.oc2\\.common\\.util\\.ClientOnly", "@OnlyIn(Dist.CLIENT)",
+            )
+        }
     }
 }
 

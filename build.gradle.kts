@@ -361,6 +361,42 @@ tasks.processResources {
                 }
             }
         }
+        inputs.property("modelLoaderStrip", "v4")
+        // The cable and monitor geometry loaders do not exist on 26.x (stubbed, see the roadmap
+        // page): drop the loader key so the plain model JSON loads instead of failing to parse.
+        doLast {
+            listOf("cable_base", "monitor").forEach { name ->
+                val model = destinationDir.resolve("assets/oc2r/models/block/$name.json")
+                model.writeText(
+                    model.readText().replace(Regex(",\\s*\"loader\"\\s*:\\s*\"oc2r:[a-z_]+\""), ""))
+            }
+            // 26.x resolves item models through assets/<ns>/items/<id>.json definitions; point each
+            // item at the model JSON it already has.
+            val itemModels = destinationDir.resolve("assets/oc2r/models/item")
+            val itemDefinitions = destinationDir.resolve("assets/oc2r/items")
+            itemDefinitions.mkdirs()
+            itemModels.listFiles { f -> f.extension == "json" }?.forEach { model ->
+                val definition = itemDefinitions.resolve(model.name)
+                if (!definition.exists()) {
+                    definition.writeText(
+                        "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"oc2r:item/${model.nameWithoutExtension}\"}}")
+                }
+            }
+            // 26.x rejects air as an item entry; the blocks that use it simply drop nothing.
+            destinationDir.resolve("data/oc2r/loot_table/blocks").listFiles { f -> f.extension == "json" }?.forEach { table ->
+                table.writeText(
+                    table.readText().replace(
+                        Regex("\\{\\s*\"type\"\\s*:\\s*\"minecraft:item\"\\s*,\\s*\"name\"\\s*:\\s*\"minecraft:air\"\\s*\\}"), ""))
+            }
+            // 26.x ingredients are plain strings ("ns:item" or "#ns:tag"), the {"item"|"tag": ...} objects
+            // of 1.21 no longer parse.
+            destinationDir.resolve("data/oc2r/recipe").listFiles { f -> f.extension == "json" }?.forEach { recipe ->
+                recipe.writeText(
+                    recipe.readText()
+                        .replace(Regex("\\{\\s*\"item\"\\s*:\\s*(\"[^\"]+\")\\s*\\}"), "$1")
+                        .replace(Regex("\\{\\s*\"tag\"\\s*:\\s*\"([^\"]+)\"\\s*\\}"), "\"#$1\""))
+            }
+        }
     }
 }
 

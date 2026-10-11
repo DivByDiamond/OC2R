@@ -47,6 +47,12 @@ public final class GameTestRegistrar {
 
     @SubscribeEvent
     public static void onRegisterGameTests(final RegisterGameTestsEvent event) {
+        // The tests are reflective instances without a registered instance type, which the client
+        // cannot receive when joining a world; so they only exist on the game test server.
+        if (!net.neoforged.neoforge.server.loading.ServerModLoader.isGameTestServer()) {
+            return;
+        }
+
         final Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(
             Identifier.fromNamespaceAndPath(API.MOD_ID, "default"),
             new TestEnvironmentDefinition.AllOf());
@@ -84,7 +90,7 @@ public final class GameTestRegistrar {
                 0,
                 true);
             event.registerTest(
-                Identifier.fromNamespaceAndPath(holder.value(), method.getName()),
+                Identifier.fromNamespaceAndPath(holder.value(), toIdentifierPath(method.getName())),
                 new ReflectiveTest(data, method));
         }
     }
@@ -149,6 +155,11 @@ public final class GameTestRegistrar {
     @Target(ElementType.TYPE)
     public @interface PrefixGameTestTemplate {
         boolean value();
+    }
+
+    // Identifier paths only allow [a-z0-9/._-], test methods are camelCase.
+    private static String toIdentifierPath(final String methodName) {
+        return methodName.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT);
     }
 
     private GameTestRegistrar() {
