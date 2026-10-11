@@ -361,7 +361,7 @@ tasks.processResources {
                 }
             }
         }
-        inputs.property("modelLoaderStrip", "v5")
+        inputs.property("modelLoaderStrip", "v6")
         // The cable and monitor geometry loaders do not exist on 26.x: drop the loader key so the
         // plain model JSON loads. Their dynamic geometry comes from the custom block state models
         // registered as oc2r:bus_cable / oc2r:monitor (NeoForgeClientSetup), which the blockstates
@@ -389,6 +389,13 @@ tasks.processResources {
                     "\"down\":\"oc2r:block/monitor_oc/b\",\"up\":\"oc2r:block/monitor_oc/b\"," +
                     "\"north\":\"oc2r:block/monitor_oc/f\",\"south\":\"oc2r:block/monitor_oc/b2\"," +
                     "\"east\":\"oc2r:block/monitor_oc/b2\",\"west\":\"oc2r:block/monitor_oc/b2\"}}")
+            // Empty-slot background icons are looked up in the GUI atlas on 26.x, which only stitches
+            // what its atlas definition lists; add the slot icon textures (item/<category>/<id>_slot).
+            destinationDir.resolve("assets/minecraft/atlases").let { atlases ->
+                atlases.mkdirs()
+                atlases.resolve("gui.json").writeText(
+                    "{\"sources\":[{\"type\":\"minecraft:directory\",\"source\":\"item\",\"prefix\":\"item/\"}]}")
+            }
             // 26.x resolves item models through assets/<ns>/items/<id>.json definitions; point each
             // item at the model JSON it already has.
             val itemModels = destinationDir.resolve("assets/oc2r/models/item")

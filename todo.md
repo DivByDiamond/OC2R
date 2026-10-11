@@ -49,6 +49,8 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] 3D floppy model for DiskDriveRenderer (see docs/roadmap/devices-storage.md#22-disks-cleanup-tiers-3d-models-dead-code)
 - [ ] Flash/OS image writer: flasher GUI + OS Loader block with two sources (config file and URL manifest) (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)
 - [ ] `flashMemorySize` config instead of hard-coded 12 MB (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)
+- [ ] Bug on 26.1.2 client: the computer screen (monitor view) stays completely black, nothing is output at all (found in the first in-game run, 2026-10-11)
+- [ ] Bug on 26.1.2 client: network cables are not visible, the connection sounds play but there is no cable model (the new dynamic bus cable block state model does not render); also after re-entering the world old items stopped working until they were taken out and replaced with fresh ones (not reproduced yet, 2026-10-11)
 - [ ] OnyxOS: verify sedna FDT, PLIC/CLINT, virtio numbering, RAM needs, layout minux (see docs/roadmap/devices-storage.md#26b-onyxos-in-oc2r-s-mode-boot-onyxfs-disk-network)
 - [ ] OnyxOS repositories: release workflow, oc2r-firmware.json, README section (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)
 - [ ] Wire in or delete the dead qodana task; CI upload reports `if: always()` (see docs/roadmap/quality.md#39-lint-stages)
