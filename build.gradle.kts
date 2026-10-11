@@ -429,7 +429,7 @@ publishing {
             pom {
                 name = "OC2R"
                 description = "OpenComputers 2 Rewrite"
-                url = "https://github.com/TumRedSun/OC2R"
+                url = "https://github.com/DivByDiamond/OC2R"
                 licenses {
                     license {
                         name = "GNU General Public License v3.0"

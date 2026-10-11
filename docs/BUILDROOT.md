@@ -51,7 +51,7 @@ devices over `/dev/hvc0`; examples: `redstone_blink.c`, `note_block_player.c`,
 - `gradle.properties` → `sedna_buildroot_version=0.0.72-oc2r1`
 - `build.gradle.kts` → `implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")`
 - `scripts/download-libs.sh` → downloads the jar from the OC2R
-  [bundled-deps release](https://github.com/TumRedSun/OC2R/releases/tag/bundled-deps)
+  [bundled-deps release](https://github.com/DivByDiamond/OC2R/releases/tag/bundled-deps)
 
 ## Custom image: 0.0.72-oc2r1
 

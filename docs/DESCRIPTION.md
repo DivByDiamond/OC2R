@@ -6,7 +6,7 @@ Works out of the box with **Create: Aeronautics** - computers keep running on yo
 
 Like the original OC2, the computers are based on a 64-bit RISC-V emulation layer called [Sedna](https://github.com/fnuecke/sedna), written entirely in Java. Our fork keeps the same solid foundation but adds a full VT100-compliant terminal, tiered hardware, restored recipes and dozens of upstream bug fixes.
 
-[GitHub](https://github.com/TumRedSun/OC2R)
+[GitHub](https://github.com/DivByDiamond/OC2R)
 
 ## **Features**
 
@@ -87,7 +87,7 @@ Computers can be configured using various device items. Shared device types incl
 
 ## **Bug Reports**
 
-Found a bug? Report it on our [GitHub repository](https://github.com/TumRedSun/OC2R/issues)
+Found a bug? Report it on our [GitHub repository](https://github.com/DivByDiamond/OC2R/issues)
 
 ## **License**
 
