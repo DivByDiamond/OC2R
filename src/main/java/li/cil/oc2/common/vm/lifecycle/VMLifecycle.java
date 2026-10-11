@@ -148,7 +148,15 @@ public final class VMLifecycle {
         }
 
         if (!vm.state.board.isRunning()) {
-            stopRunnerAndReset();
+            if (vm.state.board.isRestarting()) {
+                // Guest-initiated reboot through the syscon (Sedna 5.2.0): cycle the VM so it
+                // boots again instead of wedging in STOPPED. Same path as the device-change
+                // restart in VirtualMachineTicker; startBoard clears the restarting flag.
+                vm.stop();
+                vm.start();
+            } else {
+                stopRunnerAndReset();
+            }
             return;
         }
 
