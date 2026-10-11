@@ -1,5 +1,33 @@
-//? if <26.1 {
+//? if >=26.1 {
+/*package li.cil.oc2.client.hooks;
 
+import li.cil.oc2.client.model.BusCableModelTypes;
+import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
+import li.cil.oc2.common.util.item.ItemStackUtils;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.model.data.ModelData;
+
+@OnlyIn(Dist.CLIENT)
+public final class BusCableModelHooks {
+    private BusCableModelHooks() {}
+
+    // The support side is derived from the neighbours while the section is meshed, so the block
+    // entity only has to hand over the facade block; the data changes with requestModelDataUpdate.
+    public static ModelData computeModelData(final BusCableBlockEntity owner, final ModelData current) {
+        final ItemStack facadeItem = owner.getFacade();
+        if (!facadeItem.isEmpty()) {
+            final BlockState facadeState = ItemStackUtils.getBlockState(facadeItem);
+            if (facadeState != null) {
+                return ModelData.of(BusCableModelTypes.BUS_CABLE_FACADE_STATE_PROPERTY, facadeState);
+            }
+        }
+        return ModelData.EMPTY;
+    }
+}
+*///?} else {
 package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.BusCableModelTypes;

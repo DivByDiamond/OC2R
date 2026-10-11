@@ -361,15 +361,34 @@ tasks.processResources {
                 }
             }
         }
-        inputs.property("modelLoaderStrip", "v4")
-        // The cable and monitor geometry loaders do not exist on 26.x (stubbed, see the roadmap
-        // page): drop the loader key so the plain model JSON loads instead of failing to parse.
+        inputs.property("modelLoaderStrip", "v5")
+        // The cable and monitor geometry loaders do not exist on 26.x: drop the loader key so the
+        // plain model JSON loads. Their dynamic geometry comes from the custom block state models
+        // registered as oc2r:bus_cable / oc2r:monitor (NeoForgeClientSetup), which the blockstates
+        // reference through "type" instead of the plain "model" of 1.21.
         doLast {
             listOf("cable_base", "monitor").forEach { name ->
                 val model = destinationDir.resolve("assets/oc2r/models/block/$name.json")
                 model.writeText(
                     model.readText().replace(Regex(",\\s*\"loader\"\\s*:\\s*\"oc2r:[a-z_]+\""), ""))
             }
+            val blockstates = destinationDir.resolve("assets/oc2r/blockstates")
+            blockstates.resolve("bus_cable.json").let { state ->
+                state.writeText(
+                    state.readText().replace("\"model\": \"oc2r:block/cable_base\"", "\"type\": \"oc2r:bus_cable\""))
+            }
+            blockstates.resolve("monitor.json").let { state ->
+                state.writeText(
+                    state.readText().replace("\"model\": \"oc2r:block/monitor\"", "\"type\": \"oc2r:monitor\""))
+            }
+            // The monitor model JSON is only the item's look now (the block draws through the
+            // dynamic model): a plain cube showing the single monitor's fragment textures.
+            destinationDir.resolve("assets/oc2r/models/block/monitor.json").writeText(
+                "{\"parent\":\"minecraft:block/cube\",\"textures\":{" +
+                    "\"particle\":\"oc2r:block/monitor_oc/bmm\"," +
+                    "\"down\":\"oc2r:block/monitor_oc/b\",\"up\":\"oc2r:block/monitor_oc/b\"," +
+                    "\"north\":\"oc2r:block/monitor_oc/f\",\"south\":\"oc2r:block/monitor_oc/b2\"," +
+                    "\"east\":\"oc2r:block/monitor_oc/b2\",\"west\":\"oc2r:block/monitor_oc/b2\"}}")
             // 26.x resolves item models through assets/<ns>/items/<id>.json definitions; point each
             // item at the model JSON it already has.
             val itemModels = destinationDir.resolve("assets/oc2r/models/item")

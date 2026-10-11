@@ -1,5 +1,163 @@
-//? if <26.1 {
+//? if >=26.1 {
+/*package li.cil.oc2.client.model;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
+import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
+import net.neoforged.neoforge.model.data.ModelData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+// The bus cable: centre piece, a straight piece when it only runs along one axis, a support stub
+// towards a solid neighbour, or the facade block's model when it is camouflaged. Everything is
+// derived from the block state, the neighbours and the facade handed over through model data.
+public final class BusCableBakedModel implements DynamicBlockStateModel {
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final AtomicBoolean FAILURE_LOGGED = new AtomicBoolean();
+
+    private final BlockStateModelPart base;
+    private final BlockStateModelPart[] straightModelByAxis;
+    private final BlockStateModelPart[] supportModelByFace;
+    @BakedQuad.MaterialFlags
+    private final int materialFlags;
+
+    BusCableBakedModel(
+            final BlockStateModelPart base,
+            final BlockStateModelPart[] straightModelByAxis,
+            final BlockStateModelPart[] supportModelByFace) {
+        this.base = base;
+        this.straightModelByAxis = straightModelByAxis.clone();
+        this.supportModelByFace = supportModelByFace.clone();
+
+        int flags = base.materialFlags();
+        for (final BlockStateModelPart part : this.straightModelByAxis) {
+            flags |= part.materialFlags();
+        }
+        for (final BlockStateModelPart part : this.supportModelByFace) {
+            flags |= part.materialFlags();
+        }
+        this.materialFlags = flags;
+    }
+
+    @Override
+    public void collectParts(
+            final BlockAndTintGetter level,
+            final BlockPos pos,
+            final BlockState state,
+            final RandomSource random,
+            final List<BlockStateModelPart> parts) {
+        try {
+            if (isFacade(state)) {
+                final BlockState facadeState = getFacadeState(level, pos);
+                final BlockStateModel facadeModel = getFacadeModel(facadeState);
+                if (facadeModel != null) {
+                    facadeModel.collectParts(level, pos, facadeState, random, parts);
+                }
+                return;
+            }
+
+            if (!state.hasProperty(BusCableStateProperties.HAS_CABLE)
+                    || !state.getValue(BusCableStateProperties.HAS_CABLE)) {
+                return;
+            }
+
+            for (int i = 0; i < Constants.AXES.length; i++) {
+                if (BusCableModelUtils.isStraightAlongAxis(state, Constants.AXES[i])) {
+                    parts.add(straightModelByAxis[i]);
+                    return;
+                }
+            }
+
+            parts.add(base);
+
+            final Direction supportSide = BusCableModelUtils.getSupportSide(level, pos, state);
+            if (supportSide != null) {
+                parts.add(supportModelByFace[supportSide.get3DDataValue()]);
+            }
+        } catch (final RuntimeException e) {
+            // Never throw into the chunk mesher; render nothing for this block and say why once.
+            if (FAILURE_LOGGED.compareAndSet(false, true)) {
+                LOGGER.error("Failed to collect bus cable model parts at {} for {}", pos, state, e);
+            }
+        }
+    }
+
+    @Override
+    @Deprecated
+    public Material.Baked particleMaterial() {
+        return base.particleMaterial();
+    }
+
+    @Override
+    public Material.Baked particleMaterial(
+            final BlockAndTintGetter level, final BlockPos pos, final BlockState state) {
+        if (isFacade(state)) {
+            final BlockState facadeState = getFacadeState(level, pos);
+            final BlockStateModel facadeModel = getFacadeModel(facadeState);
+            if (facadeModel != null) {
+                return facadeModel.particleMaterial(level, pos, facadeState);
+            }
+        }
+        return base.particleMaterial();
+    }
+
+    @Override
+    @Deprecated
+    @BakedQuad.MaterialFlags
+    public int materialFlags() {
+        return materialFlags;
+    }
+
+    @Override
+    @BakedQuad.MaterialFlags
+    public int materialFlags(
+            final BlockAndTintGetter level, final BlockPos pos, final BlockState state) {
+        if (isFacade(state)) {
+            final BlockState facadeState = getFacadeState(level, pos);
+            final BlockStateModel facadeModel = getFacadeModel(facadeState);
+            if (facadeModel != null) {
+                return materialFlags | facadeModel.materialFlags(level, pos, facadeState);
+            }
+        }
+        return materialFlags;
+    }
+
+    private static boolean isFacade(final BlockState state) {
+        return state.hasProperty(BusCableStateProperties.HAS_FACADE)
+                && state.getValue(BusCableStateProperties.HAS_FACADE);
+    }
+
+    private static BlockState getFacadeState(final BlockAndTintGetter level, final BlockPos pos) {
+        final ModelData data = level.getModelData(pos);
+        final BlockState facadeState =
+                data.has(BusCableModelTypes.BUS_CABLE_FACADE_STATE_PROPERTY)
+                        ? data.get(BusCableModelTypes.BUS_CABLE_FACADE_STATE_PROPERTY)
+                        : null;
+        return facadeState != null ? facadeState : Blocks.IRON_BLOCK.defaultBlockState();
+    }
+
+    @Nullable
+    private BlockStateModel getFacadeModel(final BlockState facadeState) {
+        final BlockStateModel model =
+                Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(facadeState);
+        return model == this ? null : model; // A cable as its own facade would recurse forever.
+    }
+}
+*///?} else {
 package li.cil.oc2.client.model;
 
 import java.util.ArrayList;

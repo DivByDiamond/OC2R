@@ -1,5 +1,47 @@
-//? if <26.1 {
+//? if >=26.1 {
+/*package li.cil.oc2.client.model.monitor;
 
+import com.mojang.serialization.MapCodec;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
+
+// Referenced from the blockstate as {"type": "oc2r:monitor"} (the build rewrites the 1.21
+// "model" reference on 26.x). Resolves every fragment texture and bakes the dynamic model.
+public final class MonitorModel implements CustomUnbakedBlockStateModel {
+    public static final MonitorModel INSTANCE = new MonitorModel();
+    public static final MapCodec<MonitorModel> CODEC = MapCodec.unit(INSTANCE);
+
+    private static final ModelDebugName DEBUG_NAME = () -> "oc2r:monitor";
+
+    private MonitorModel() {}
+
+    @Override
+    public MapCodec<MonitorModel> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public void resolveDependencies(final Resolver resolver) {
+        // Only sprites from the block atlas are used, there are no model dependencies.
+    }
+
+    @Override
+    public BlockStateModel bake(final ModelBaker baker) {
+        final Map<String, Material.Baked> materials = new HashMap<>();
+        for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
+            materials.put(
+                    name,
+                    baker.materials().get(new Material(MonitorModelTypes.texture(name)), DEBUG_NAME));
+        }
+        return new MonitorBakedModel(materials);
+    }
+}
+*///?} else {
 package li.cil.oc2.client.model.monitor;
 
 import java.util.Map;

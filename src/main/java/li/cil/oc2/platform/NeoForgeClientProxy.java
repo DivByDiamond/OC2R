@@ -1,8 +1,6 @@
 package li.cil.oc2.platform;
 
-//? if <26.1 {
 import li.cil.oc2.client.hooks.BusCableModelHooks;
-//?}
 import li.cil.oc2.client.hooks.ClientProxyImpl;
 //? if <26.1 {
 import li.cil.oc2.client.hooks.MonitorModelHooks;
@@ -27,11 +25,7 @@ public final class NeoForgeClientProxy extends ClientProxyImpl {
 
     @Override
     public Object computeBusCableModelData(final BusCableBlockEntity owner, final Object current) {
-        //? if >=26.1 {
-        /*return current;
-        *///?} else {
         return BusCableModelHooks.computeModelData(owner, (ModelData) current);
-        //?}
     }
 
     @Override

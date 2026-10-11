@@ -2,9 +2,15 @@ package li.cil.oc2.platform;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc2.api.API;
-//? if <26.1 {
+//? if >=26.1 {
+/*import li.cil.oc2.client.model.BusCableModel;
+import li.cil.oc2.client.model.monitor.MonitorModel;
+import net.minecraft.resources.ResourceLocation;
+*///?} else {
 import li.cil.oc2.client.model.BusCableModelLoader;
 import li.cil.oc2.client.model.monitor.MonitorModelLoader;
+//?}
+//? if <26.1 {
 import li.cil.oc2.client.renderer.entity.RobotWithoutLevelRenderer;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.item.Items;
@@ -21,7 +27,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-//? if <26.1 {
+//? if >=26.1 {
+/*import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
+*///?} else {
 import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 //?}
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -49,8 +57,18 @@ public final class NeoForgeClientSetup {
         registrar.setupTasks().forEach(event::enqueueWork);
     }
 
-    // Not registered on 26.x: it has neither geometry loaders nor BlockEntityWithoutLevelRenderer, so
-    // the bus cable and monitor models and the robot item rendering wait for the client model port.
+    // 26.x has neither geometry loaders nor BlockEntityWithoutLevelRenderer: the bus cable and
+    // monitor register as custom block state models, the robot item rendering waits for its port.
+//? if >=26.1 {
+    /*@SubscribeEvent
+    public static void onRegisterBlockStateModels(final RegisterBlockStateModels event) {
+        event.registerModel(
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "bus_cable"), BusCableModel.CODEC);
+        event.registerModel(
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "monitor"), MonitorModel.CODEC);
+    }
+
+*///?}
 //? if <26.1 {
     @SubscribeEvent
     public static void onRegisterGeometryLoaders(final RegisterGeometryLoaders event) {
