@@ -394,11 +394,33 @@ tasks.processResources {
             val itemModels = destinationDir.resolve("assets/oc2r/models/item")
             val itemDefinitions = destinationDir.resolve("assets/oc2r/items")
             itemDefinitions.mkdirs()
+            // Storage items are dyed on 1.21.1 by a colour handler that only tints layer 1 (the generated
+            // model gives each layerN quad tint index N). Mirror that with dye tint sources: index 0 stays
+            // white, index 1 takes the DYED_COLOR component, falling back to the item's default colour.
+            val dyedItemDefaults = mapOf(
+                "floppy" to 0xFF745C42.toInt(),
+                "floppy_modern" to 0xFF745C42.toInt(),
+                "hard_drive_small" to 0xFF9D9D97.toInt(),
+                "hard_drive_medium" to 0xFF5E7C16.toInt(),
+                "hard_drive_large" to 0xFF169C9C.toInt(),
+                "hard_drive_extra_large" to 0xFFFED83D.toInt(),
+            )
+            // The robot is drawn by the oc2r:robot special model renderer (RobotSpecialModelRenderer) on 26.x.
+            itemDefinitions.resolve("robot.json").writeText(
+                "{\"model\":{\"type\":\"minecraft:special\",\"base\":\"oc2r:item/robot\",\"model\":{\"type\":\"oc2r:robot\"}}}")
             itemModels.listFiles { f -> f.extension == "json" }?.forEach { model ->
                 val definition = itemDefinitions.resolve(model.name)
                 if (!definition.exists()) {
+                    val modelRef = "\"model\":\"oc2r:item/${model.nameWithoutExtension}\""
+                    val defaultColor = dyedItemDefaults[model.nameWithoutExtension]
                     definition.writeText(
-                        "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"oc2r:item/${model.nameWithoutExtension}\"}}")
+                        if (defaultColor == null) {
+                            "{\"model\":{\"type\":\"minecraft:model\",$modelRef}}"
+                        } else {
+                            "{\"model\":{\"type\":\"minecraft:model\",$modelRef,\"tints\":[" +
+                                "{\"type\":\"minecraft:constant\",\"value\":-1}," +
+                                "{\"type\":\"minecraft:dye\",\"default\":$defaultColor}]}}"
+                        })
                 }
             }
             // 26.x rejects air as an item entry; the blocks that use it simply drop nothing.

@@ -35,6 +35,10 @@ import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+//? if >=26.1 {
+/*import li.cil.oc2.client.renderer.entity.RobotSpecialModelRenderer;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
+*///?}
 //? if <26.1 {
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -105,6 +109,11 @@ public final class NeoForgeClientSetup {
 
 //? if >=26.1 {
 /*    @SubscribeEvent
+    public static void onRegisterSpecialModelRenderers(final RegisterSpecialModelRendererEvent event) {
+        event.register(RobotSpecialModelRenderer.ID, RobotSpecialModelRenderer.Unbaked.MAP_CODEC);
+    }
+
+    @SubscribeEvent
     public static void onRegisterBlockColors(final RegisterColorHandlersEvent.BlockTintSources event) {
         NeoForgeClientRegistrar.instance().applyBlockColors(event);
     }
