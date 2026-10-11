@@ -107,16 +107,6 @@ public final class ComputerBlockEntity extends ModBlockEntity
         var container = componentInput.get(DataComponents.RESTRICTED_CONTAINER.get());
         if (container != null) {
             deviceItems.loadItems(getLevel().registryAccess(), container);
-        } else {
-            var blockEntityData =
-                    componentInput.get(
-                            net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
-            if (blockEntityData == null) return;
-            //? if >=26.1 {
-            /*blockEntityData.getUnsafe().size();
-            *///?} else {
-            blockEntityData.copyTag().size();
-            //?}
         }
     }
 

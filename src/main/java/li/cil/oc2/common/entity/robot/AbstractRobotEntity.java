@@ -77,9 +77,7 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
 
     @Override
     protected final void readAdditionalSaveData(final net.minecraft.world.level.storage.ValueInput input) {
-        readAdditionalSaveData(
-                input.read(com.mojang.serialization.MapCodec.assumeMapUnsafe(CompoundTag.CODEC))
-                        .orElseGet(CompoundTag::new));
+        readAdditionalSaveData(li.cil.oc2.common.util.nbt.NBTUtils.toTag(input));
     }
 
     protected abstract void addAdditionalSaveData(final CompoundTag tag);

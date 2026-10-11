@@ -27,8 +27,13 @@ public final class ChargerRenderer
     public static final ResourceLocation EFFECT_LOCATION =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/charger/effect");
 
-    private static final SpriteId TEXTURE_EFFECT =
-            new SpriteId(TextureAtlas.LOCATION_BLOCKS, EFFECT_LOCATION);
+    // TextureAtlas.LOCATION_BLOCKS is deprecated on 26.x without a runtime replacement; the blocks
+    // atlas texture path is still the SpriteId lookup key (the atlas manager stitches by texture id).
+    // This sits in the outer >=26.1 branch, so no nested conditional is needed here.
+    private static final ResourceLocation ATLAS_BLOCKS =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/atlas/blocks.png");
+
+    private static final SpriteId TEXTURE_EFFECT = new SpriteId(ATLAS_BLOCKS, EFFECT_LOCATION);
 
     private static final int EFFECT_LAYERS = 3;
     private static final float EFFECT_HEIGHT = 0.5f;
@@ -106,7 +111,7 @@ public final class ChargerRenderer
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(ChargerBlockEntity block) {
         return block.getRenderBoundingBox();
     }
@@ -195,7 +200,7 @@ public final class ChargerRenderer implements BlockEntityRenderer<ChargerBlockEn
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(ChargerBlockEntity block) {
         return block.getRenderBoundingBox();
     }

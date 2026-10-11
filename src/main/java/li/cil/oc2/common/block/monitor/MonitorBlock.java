@@ -194,7 +194,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
 
     // Not annotated with @Override: this is NeoForge's world-aware rotate hook (what wrenches call),
     // which does not exist in vanilla. See Platform.hooks().rotate for the other loaders.
-    @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"}) // NeoForge-only hook, see above
     public BlockState rotate(
             final BlockState state,
             final net.minecraft.world.level.LevelAccessor level,
@@ -206,13 +206,20 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     /**
      * Rotating a single block of a multiblock with a wrench would change its FACING and break the
      * multiblock structure. Refuses to rotate when this block is part of a multiblock larger than 1x1.
+     *
+     * <p>Only meaningful for states of this block; every caller upholds that.
      */
     public static BlockState rotateWithWrench(
             final BlockState state, final net.minecraft.world.level.block.Rotation rotation) {
         if (state.getValue(WIDTH) > 1 || state.getValue(HEIGHT) > 1) {
             return state;
         }
-        return state.rotate(rotation);
+        // Inlined default of the deprecated BlockStateBase.rotate(Rotation) (body: getBlock().rotate,
+        // per the NeoForge patch). Spelled with a MonitorBlock-typed receiver because
+        // BlockBehaviour.rotate is protected: through a Block-typed receiver it is not accessible
+        // here, and the suggested BlockState#rotate(LevelAccessor, BlockPos, Rotation) is
+        // NeoForge-only, so it cannot be used from this shared source set.
+        return ((MonitorBlock) state.getBlock()).rotate(state, rotation);
     }
 
     // EntityBlock

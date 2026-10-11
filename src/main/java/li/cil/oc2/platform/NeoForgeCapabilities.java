@@ -124,7 +124,9 @@ final class NeoForgeCapabilities {
             //? if >=26.1 {
             /*return value instanceof final NeoForgeTransferAdapters.ItemResourceHandlerWrapper wrapper
                     ? wrapper.delegate()
-                    : new NeoForgeTransferAdapters.ItemHandlerView((ResourceHandler<ItemResource>) value);
+                    : new NeoForgeTransferAdapters.ItemHandlerView(
+                            NeoForgeCapabilities.<ResourceHandler<ItemResource>>checkType(
+                                    value, ResourceHandler.class, "an item handler"));
             *///?} else {
             return value instanceof final ItemHandlerWrapper wrapper
                     ? wrapper.handler
@@ -135,7 +137,9 @@ final class NeoForgeCapabilities {
             //? if >=26.1 {
             /*return value instanceof final NeoForgeTransferAdapters.FluidResourceHandlerWrapper wrapper
                     ? wrapper.delegate()
-                    : new NeoForgeTransferAdapters.FluidHandlerView((ResourceHandler<FluidResource>) value);
+                    : new NeoForgeTransferAdapters.FluidHandlerView(
+                            NeoForgeCapabilities.<ResourceHandler<FluidResource>>checkType(
+                                    value, ResourceHandler.class, "a fluid handler"));
             *///?} else {
             return value instanceof final FluidHandlerWrapper wrapper
                     ? wrapper.handler
@@ -144,6 +148,19 @@ final class NeoForgeCapabilities {
         }
         return value;
     }
+
+    //? if >=26.1 {
+    /*// NeoForge's capability keys yield precisely typed values, but our bridge erases them to Object.
+    // Re-check the raw type here so a mismatch fails fast with context instead of somewhere inside a view.
+    @SuppressWarnings("unchecked")
+    private static <T> T checkType(final Object value, final Class<?> rawType, final String expected) {
+        if (!rawType.isInstance(value)) {
+            throw new IllegalArgumentException(
+                    "Expected " + expected + " from NeoForge, got " + value);
+        }
+        return (T) value;
+    }
+    *///?}
 
     /**
      * The context NeoForge's item lookups expect: 26.x addresses the standard item capabilities

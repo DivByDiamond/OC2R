@@ -10,8 +10,6 @@ public final class API {
 
     public static final String MOD_ID = "oc2r";
 
-    ///////////////////////////////////////////////////////////////////
-
     /**
      * IMC message for registering Gson type adapters for method parameter serialization and
      * deserialization.

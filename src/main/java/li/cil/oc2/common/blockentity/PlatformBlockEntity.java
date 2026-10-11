@@ -2,13 +2,13 @@ package li.cil.oc2.common.blockentity;
 
 import net.minecraft.core.BlockPos;
 //? if >=26.1 {
-/*import com.mojang.serialization.MapCodec;
-import net.minecraft.core.HolderLookup;
+/*import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import li.cil.oc2.common.util.nbt.NBTUtils;
 *///?}
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -80,12 +80,12 @@ public abstract class PlatformBlockEntity extends BlockEntity {
     @Override
     protected final void loadAdditional(final ValueInput input) {
         super.loadAdditional(input);
-        loadAdditional(toTag(input), input.lookup());
+        loadAdditional(NBTUtils.toTag(input), registries());
     }
 
     @Override
     public final void handleUpdateTag(final ValueInput input) {
-        handleUpdateTag(toTag(input), input.lookup());
+        handleUpdateTag(NBTUtils.toTag(input), registries());
     }
 
     @Override
@@ -93,8 +93,9 @@ public abstract class PlatformBlockEntity extends BlockEntity {
         handleUpdateTag(input);
     }
 
-    private static CompoundTag toTag(final ValueInput input) {
-        return input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+    private HolderLookup.Provider registries() {
+        final Level level = getLevel();
+        return level != null ? level.registryAccess() : RegistryAccess.EMPTY;
     }
     *///?}
 }

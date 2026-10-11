@@ -36,6 +36,9 @@ public class ModBlockItem extends BlockItem {
         }
     }
 
+    // Overrides the deprecated five-argument hook on purpose: it is still the entry point the game
+    // calls for tooltip lines on 26.x, bridged here onto the list based hook below.
+    @SuppressWarnings("deprecation")
     @OnlyIn(Dist.CLIENT)
     @Override
     public final void appendHoverText(
@@ -44,7 +47,7 @@ public class ModBlockItem extends BlockItem {
             final net.minecraft.world.item.component.TooltipDisplay display,
             final java.util.function.Consumer<Component> adder,
             final TooltipFlag flag) {
-        super.appendHoverText(stack, context, display, adder, flag);
+        // No super call: vanilla's five-argument hook is deprecated and empty on 26.x.
         final List<Component> tooltip = new java.util.ArrayList<>();
         appendHoverText(stack, context, tooltip, flag);
         tooltip.forEach(adder);

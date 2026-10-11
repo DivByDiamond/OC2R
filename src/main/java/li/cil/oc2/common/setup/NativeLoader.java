@@ -34,6 +34,12 @@ public final class NativeLoader {
         return loadedLibrary;
     }
 
+    // "restricted" is the only applicable suppression here, not a dodge: loading a library from an
+    // absolute path has no unrestricted API (System/Runtime load/loadLibrary are all restricted since
+    // JDK 24, JEP 472). The remedy is a JVM flag owned by the launcher, not this code: Minecraft 26.x
+    // itself runs on Java 25 with native access enabled, and if access is ever denied this method
+    // already falls back to the JVM UDP implementation (loadedLibrary stays false).
+    @SuppressWarnings("restricted")
     public static void loadLibrary() {
         Platform platform = getPlatformName();
         String arch = getArchString();

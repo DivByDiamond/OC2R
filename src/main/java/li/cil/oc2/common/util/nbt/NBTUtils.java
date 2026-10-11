@@ -3,6 +3,11 @@ package li.cil.oc2.common.util.nbt;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import li.cil.oc2.platform.ItemStackHandler;
+//? if >=26.1 {
+/*import com.mojang.serialization.Codec;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueInput;
+*///?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -132,4 +137,22 @@ public final class NBTUtils {
         return Optional.of(new BlockPos(tag.getInt("X"), tag.getInt("Y"), tag.getInt("Z")));
         //?}
     }
+
+    //? if >=26.1 {
+    /*// Rebuilds the whole tag behind a ValueInput without the deprecated ValueInput.read(MapCodec):
+    // every top-level entry is read back through the pass-through codec and unwrapped to its raw
+    // Tag. Sound because vanilla's TagValueInput always runs on NbtOps, where a Tag already is the
+    // native value carried by the resulting Dynamic.
+    public static CompoundTag toTag(final ValueInput input) {
+        final CompoundTag tag = new CompoundTag();
+        for (final String key : input.keySet()) {
+            input.read(key, Codec.PASSTHROUGH).ifPresent(value -> {
+                if (value.getValue() instanceof final Tag child) {
+                    tag.put(key, child);
+                }
+            });
+        }
+        return tag;
+    }
+    *///?}
 }

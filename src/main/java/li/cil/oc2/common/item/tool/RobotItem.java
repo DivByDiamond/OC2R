@@ -114,6 +114,9 @@ registrar.registerItem(
         //?}
     }
 
+    // Intentionally overrides the deprecated method: the IItemExtension default delegates to it,
+    // and this shared source set cannot name the NeoForge-only extension (it also compiles on Fabric).
+    @SuppressWarnings("deprecation")
     @Override
     public boolean canFitInsideContainerItems() {
         return false;

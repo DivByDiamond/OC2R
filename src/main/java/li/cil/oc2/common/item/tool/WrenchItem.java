@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class WrenchItem extends ModItem {
     // Not annotated with @Override: onItemUseFirst only exists in NeoForge's patched Item; other loaders
     // call it from their own use-block hook.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public InteractionResult onItemUseFirst(final ItemStack stack, final UseOnContext context) {
         final Level level = context.getLevel();
         final BlockPos pos = context.getClickedPos();
@@ -84,7 +84,7 @@ public final class WrenchItem extends ModItem {
     }
 
     // Not annotated with @Override: NeoForge-only Item hook, see onItemUseFirst.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public boolean doesSneakBypassUse(
             final ItemStack stack,
             final LevelReader level,

@@ -83,7 +83,7 @@ public final class ProjectorRenderer
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(final ProjectorBlockEntity block) {
         return block.getRenderBoundingBox();
     }
@@ -195,7 +195,7 @@ public final class ProjectorRenderer implements BlockEntityRenderer<ProjectorBlo
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(final ProjectorBlockEntity block) {
         return block.getRenderBoundingBox();
     }

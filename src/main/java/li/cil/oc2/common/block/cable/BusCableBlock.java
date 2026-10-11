@@ -175,7 +175,7 @@ public final class BusCableBlock extends BaseEntityBlock {
     *///?} else {
     // Not annotated with @Override: the five-argument overload only exists in NeoForge's patched Block
     // (the pick-block hook with the hit result and player); other loaders call it from their own hook.
-    @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"}) // NeoForge-only hook, see above
     public ItemStack getCloneItemStack(
             final BlockState state,
             final HitResult hit,
@@ -184,7 +184,10 @@ public final class BusCableBlock extends BaseEntityBlock {
             final Player player) {
         final ItemStack result =
                 BusCableItemHelper.getPickBlock(state, hit, level, pos, player);
-        return result != null ? result : super.getCloneItemStack(level, pos, state);
+        // Inlined default of the deprecated Block.getCloneItemStack(LevelReader, BlockPos, BlockState)
+        // (NeoForge patch confirms the body is just this); calling it warns, and the interface default
+        // is NeoForge-only, so it cannot be used from this shared source set.
+        return result != null ? result : new ItemStack(this);
     }
     //?}
 

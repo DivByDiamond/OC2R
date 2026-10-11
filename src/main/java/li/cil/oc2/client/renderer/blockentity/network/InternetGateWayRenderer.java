@@ -207,7 +207,7 @@ public class InternetGateWayRenderer
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(InternetGateWayBlockEntity block) {
         return block.getRenderBoundingBox();
     }
@@ -381,7 +381,7 @@ public class InternetGateWayRenderer implements BlockEntityRenderer<InternetGate
     }
 
     // NeoForge BlockEntityRenderer hook; vanilla (and Fabric) has no such method, so no @Override.
-    @SuppressWarnings("PMD.MissingOverride")
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"})
     public AABB getRenderBoundingBox(InternetGateWayBlockEntity block) {
         return block.getRenderBoundingBox();
     }

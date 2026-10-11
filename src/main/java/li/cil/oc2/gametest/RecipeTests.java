@@ -192,8 +192,8 @@ public final class RecipeTests {
 
         final Ingredient ingredient = slot.get();
         //? if >=26.1 {
-        /*return ingredient.items().findFirst()
-            .map(item -> new ItemStack(item))
+        /*return ingredient.getValues().stream().findFirst()
+            .map(holder -> new ItemStack(holder.value()))
             .orElseThrow(() -> failure(helper, id + " has an ingredient no item satisfies"));
         *///?} else {
         final ItemStack[] candidates = ingredient.getItems();

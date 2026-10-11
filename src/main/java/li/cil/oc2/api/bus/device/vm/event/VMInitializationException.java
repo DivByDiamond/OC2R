@@ -10,8 +10,6 @@ import net.minecraft.network.chat.Component;
 public final class VMInitializationException extends RuntimeException {
     private final Component message;
 
-    ///////////////////////////////////////////////////////////////
-
     /**
      * Creates a new initialization exception with the given message.
      *
@@ -27,8 +25,6 @@ public final class VMInitializationException extends RuntimeException {
         super();
         this.message = null;
     }
-
-    ///////////////////////////////////////////////////////////////
 
     /**
      * The error message indicating why initialization failed.

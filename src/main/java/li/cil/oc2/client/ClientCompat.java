@@ -27,6 +27,22 @@ import net.neoforged.neoforge.client.ClientHooks;
 public final class ClientCompat {
     private ClientCompat() {}
 
+    //? if >=26.1 {
+    /*// The getGuiLeft/getGuiTop/getSlotUnderMouse shims are deprecated for removal on 26.x; the
+    // patch that deprecated them points at these vanilla replacements.
+    public static int guiLeft(final AbstractContainerScreen<?> screen) {
+        return screen.getLeftPos();
+    }
+
+    public static int guiTop(final AbstractContainerScreen<?> screen) {
+        return screen.getTopPos();
+    }
+
+    @Nullable
+    public static Slot slotUnderMouse(final AbstractContainerScreen<?> screen) {
+        return screen.getHoveredSlot();
+    }
+    *///?} else {
     public static int guiLeft(final AbstractContainerScreen<?> screen) {
         return screen.getGuiLeft();
     }
@@ -39,6 +55,7 @@ public final class ClientCompat {
     public static Slot slotUnderMouse(final AbstractContainerScreen<?> screen) {
         return screen.getSlotUnderMouse();
     }
+    //?}
 
     public static Font tooltipFont(final ItemStack stack, final Font font) {
         return ClientHooks.getTooltipFont(stack, font);

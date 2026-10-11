@@ -24,8 +24,6 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     private final List<RPCMethodGroup> methods;
     private final String className;
 
-    ///////////////////////////////////////////////////////////////////
-
     /**
      * Creates a new object device with methods in the specified object and the specified list of
      * type names.
@@ -78,8 +76,6 @@ public final class ObjectDevice implements RPCDevice, ItemDevice {
     public ObjectDevice(final Object object) {
         this(object, emptyList());
     }
-
-    ///////////////////////////////////////////////////////////////////
 
     /**
      * Gets the object as an {@link RPCEventSource} if it implements that interface.

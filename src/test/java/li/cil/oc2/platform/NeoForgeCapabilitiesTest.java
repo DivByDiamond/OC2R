@@ -1,14 +1,20 @@
 package li.cil.oc2.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+//? if <26.1 {
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+//?}
+//? if >=26.1 {
+/*import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+*///?} else {
 import net.neoforged.neoforge.energy.IEnergyStorage;
+//?}
 import org.junit.jupiter.api.Test;
 
 class NeoForgeCapabilitiesTest {
@@ -25,8 +31,8 @@ class NeoForgeCapabilitiesTest {
     @Test
     void wrappersOverSameStorageAreEqual() {
         final StubStorage storage = new StubStorage(100);
-        final IEnergyStorage first = wrap(storage);
-        final IEnergyStorage second = wrap(storage);
+        final Object first = wrap(storage);
+        final Object second = wrap(storage);
 
         assertNotNull(first);
         assertNotNull(second);
@@ -38,8 +44,8 @@ class NeoForgeCapabilitiesTest {
 
     @Test
     void wrappersOverDifferentStoragesAreNotEqual() {
-        final IEnergyStorage first = wrap(new StubStorage(100));
-        final IEnergyStorage second = wrap(new StubStorage(100));
+        final Object first = wrap(new StubStorage(100));
+        final Object second = wrap(new StubStorage(100));
 
         assertNotNull(first);
         assertNotNull(second);
@@ -51,7 +57,30 @@ class NeoForgeCapabilitiesTest {
     void wrapperDelegatesToUnderlyingStorage() {
         final StubStorage storage = new StubStorage(100);
         storage.stored = 40;
-        final IEnergyStorage wrapper = wrap(storage);
+        //? if >=26.1 {
+        /*// The transfer API has no canExtract/canReceive and no simulate flag; movement goes
+        // through explicit transactions instead (see EnergyStorageView for the inverse mapping).
+        final EnergyHandler wrapper = (EnergyHandler) wrap(storage);
+
+        assertNotNull(wrapper);
+        assertEquals(40, wrapper.getAmountAsInt());
+        assertEquals(100, wrapper.getCapacityAsInt());
+        try (Transaction insert = Transaction.openRoot()) {
+            assertEquals(20, wrapper.insert(20, insert));
+            insert.commit();
+        }
+        assertEquals(60, wrapper.getAmountAsInt());
+        try (Transaction simulate = Transaction.openRoot()) {
+            assertEquals(40, wrapper.insert(50, simulate));
+        }
+        assertEquals(60, wrapper.getAmountAsInt());
+        try (Transaction extract = Transaction.openRoot()) {
+            assertEquals(0, wrapper.extract(10, extract));
+            extract.commit();
+        }
+        assertEquals(60, wrapper.getAmountAsInt());
+        *///?} else {
+        final IEnergyStorage wrapper = (IEnergyStorage) wrap(storage);
 
         assertNotNull(wrapper);
         assertEquals(40, wrapper.getEnergyStored());
@@ -64,10 +93,11 @@ class NeoForgeCapabilitiesTest {
         assertEquals(60, wrapper.getEnergyStored());
         assertEquals(0, wrapper.extractEnergy(10, false));
         assertEquals(60, wrapper.getEnergyStored());
+        //?}
     }
 
-    private static IEnergyStorage wrap(final EnergyStorage storage) {
-        return (IEnergyStorage) NeoForgeCapabilities.toNeoForge(EnergyStorage.class, storage, null);
+    private static Object wrap(final EnergyStorage storage) {
+        return NeoForgeCapabilities.toNeoForge(EnergyStorage.class, storage, null);
     }
 
     // Named Stub* rather than Test*: PMD's TestClassWithoutTestCases would flag a Test* inner class.
