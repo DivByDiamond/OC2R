@@ -60,6 +60,14 @@ These methods are available on the underlying robot device. Note that the librar
 *getActionResult(actionId:number):string* returns the result of the action with the specified id. Action ids can be obtained from *getLastActionId()*. Only a limited number of past action results are available.
 - Returns the result for the specified action id, or nothing if unavailable. When available, possible values are: *INCOMPLETE*, *SUCCESS* and *FAILURE*.
 
+*getFacing():string* returns the compass direction the robot is facing: *north*, *south*, *east* or *west*.
+- Returns the facing direction name.
+
+*getPosition():table* returns the body position relative to the localization origin, as a table with *x* (east), *y* (up) and *z* (south) fields. The origin is set when the robot is first placed and recalibrated with *calibratePosition()*; crossing into another dimension resets it.
+- Returns the relative position table.
+
+*calibratePosition()* resets the localization origin to the robot's current body position, so *getPosition()* reads *(0, 0, 0)* again.
+
 ### Library API
 - Library name: *robot*
 

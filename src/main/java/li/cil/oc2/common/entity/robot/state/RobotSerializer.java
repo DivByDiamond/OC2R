@@ -7,8 +7,10 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -21,6 +23,7 @@ public final class RobotSerializer {
     private static final String INVENTORY_TAG_NAME = "inventory";
     private static final String SELECTED_SLOT_TAG_NAME = "selected_slot";
     private static final String ENERGY_TAG_NAME = "energy";
+    private static final String ORIGIN_TAG_NAME = "origin";
 
     public static void save(final Robot robot, final CompoundTag tag) {
         final var provider = robot.registryAccess();
@@ -38,6 +41,12 @@ public final class RobotSerializer {
                 INVENTORY_TAG_NAME,
                 robot.getRobotInventory().getInventory().serializeNBT(provider));
         tag.putByte(SELECTED_SLOT_TAG_NAME, (byte) robot.getSelectedSlot());
+        if (robot.getOrigin() != null) {
+            GlobalPos.CODEC
+                    .encodeStart(NbtOps.INSTANCE, robot.getOrigin())
+                    .result()
+                    .ifPresent(originTag -> tag.put(ORIGIN_TAG_NAME, originTag));
+        }
     }
 
     public static void load(final Robot robot, final CompoundTag tag) {
@@ -68,6 +77,11 @@ public final class RobotSerializer {
                 .deserializeNBT(provider, tag.getCompound(INVENTORY_TAG_NAME));
         robot.setSelectedSlot(tag.getByte(SELECTED_SLOT_TAG_NAME));
                 //?}
+        robot.setOrigin(
+                GlobalPos.CODEC
+                        .parse(NbtOps.INSTANCE, NBTUtils.getChildTag(tag, ORIGIN_TAG_NAME))
+                        .result()
+                        .orElse(null));
     }
 
     public static void exportToItemStack(final Robot robot, final ItemStack stack) {

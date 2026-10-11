@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity;
 
 import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
@@ -21,6 +22,8 @@ import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.ItemStackHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -46,6 +49,7 @@ public final class Robot extends AbstractRobotEntity
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.robotEnergyStorage);
     private final RobotAnimationState animationState;
     private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
+    @Nullable private GlobalPos origin;
 
     public Robot(final EntityType<?> type, final Level world) {
         super(type, world);
@@ -158,6 +162,50 @@ public final class Robot extends AbstractRobotEntity
     public void dropSelf() {
         RobotInteractionHandler.dropSelf(this);
     }
+
+    @Nullable
+    public GlobalPos getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(@Nullable final GlobalPos origin) {
+        this.origin = origin;
+    }
+
+    /** Body block position (entity center), the anchor for {@link #getPosition()}. */
+    public BlockPos getBodyPosition() {
+        return BlockPos.containing(getBoundingBox().getCenter());
+    }
+
+    /** Points the localization origin at the current body position if unset or in another dimension. */
+    public void updateOrigin() {
+        if (origin == null || !origin.dimension().equals(level().dimension())) {
+            calibratePosition();
+        }
+    }
+
+    /** Resets the localization origin to the current body position. */
+    public void calibratePosition() {
+        origin = new GlobalPos(level().dimension(), getBodyPosition());
+    }
+
+    /** Compass name of the direction the robot is facing (north, south, east, west). */
+    public String getFacing() {
+        return getDirection().getSerializedName();
+    }
+
+    /** Body position relative to the localization origin (east/x, up/y, south/z). */
+    public Position getPosition() {
+        if (origin == null) {
+            calibratePosition();
+        }
+        final BlockPos body = getBodyPosition();
+        final BlockPos base = origin.pos();
+        return new Position(
+                body.getX() - base.getX(), body.getY() - base.getY(), body.getZ() - base.getZ());
+    }
+
+    public record Position(int x, int y, int z) {}
 
     @Override
     public void tick() {

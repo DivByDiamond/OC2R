@@ -71,6 +71,57 @@ public final class RobotTests {
         helper.succeed();
     }
 
+    /** The localization origin tracks the body until calibrated, and survives save/load. */
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void robotLocalizationTracksMovement(final GameTestHelper helper) {
+        //? if >=26.1 {
+        /*final Robot robot = Entities.ROBOT.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        *///?} else {
+        final Robot robot = Entities.ROBOT.get().create(helper.getLevel());
+        //?}
+        if (robot == null) {
+            helper.fail("EntityType.create returned null");
+            return;
+        }
+        final Vec3 pos = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
+        //? if >=26.1 {
+        /*robot.snapTo(pos.x, pos.y, pos.z, 90, 0);
+        *///?} else {
+        robot.moveTo(pos.x, pos.y, pos.z, 90, 0);
+        //?}
+        RobotActions.initializeData(robot);
+
+        robot.updateOrigin();
+        if (!robot.getPosition().equals(new Robot.Position(0, 0, 0))) {
+            helper.fail("fresh origin is not (0,0,0): " + robot.getPosition());
+            return;
+        }
+        final String expectedFacing =
+                net.minecraft.core.Direction.fromYRot(90).getSerializedName();
+        if (!robot.getFacing().equals(expectedFacing)) {
+            helper.fail("facing is " + robot.getFacing() + ", expected " + expectedFacing);
+            return;
+        }
+
+        final Vec3 moved = helper.absoluteVec(new Vec3(3.5, 2, 1.5));
+        //? if >=26.1 {
+        /*robot.snapTo(moved.x, moved.y, moved.z, 90, 0);
+        *///?} else {
+        robot.moveTo(moved.x, moved.y, moved.z, 90, 0);
+        //?}
+        if (!robot.getPosition().equals(new Robot.Position(2, 0, 0))) {
+            helper.fail("moved robot is not at (2,0,0): " + robot.getPosition());
+            return;
+        }
+
+        robot.calibratePosition();
+        if (!robot.getPosition().equals(new Robot.Position(0, 0, 0))) {
+            helper.fail("calibrated robot is not (0,0,0): " + robot.getPosition());
+            return;
+        }
+        helper.succeed();
+    }
+
     private RobotTests() {
     }
 }

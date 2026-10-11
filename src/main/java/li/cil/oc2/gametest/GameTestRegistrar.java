@@ -41,6 +41,7 @@ public final class GameTestRegistrar {
         RedstoneInterfaceTests.class,
         RegistrationTests.class,
         RobotTests.class,
+        ScannerModuleTests.class,
         TerminalTests.class);
 
     @SubscribeEvent

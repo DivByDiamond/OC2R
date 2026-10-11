@@ -26,6 +26,7 @@ public final class RobotTickHandler {
         }
 
         if (!isClient) {
+            robot.updateOrigin();
             robot.getVirtualMachine().tick();
         }
 
