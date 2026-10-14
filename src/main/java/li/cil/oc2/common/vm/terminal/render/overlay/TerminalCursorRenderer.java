@@ -50,7 +50,7 @@ public class TerminalCursorRenderer {
                 0);
 
         //? if >=26.1 {
-/*        RenderSystem.getModelViewStack().pushMatrix();
+        /*RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().mul(stack.last().pose());
 *///?} else {
         RenderSystem.getModelViewStack().pushMatrix();
@@ -76,7 +76,7 @@ public class TerminalCursorRenderer {
 
         MeshData rb = buffer.buildOrThrow();
         //? if >=26.1 {
-/*        // Blending, depth test without depth writes and no culling come with the debug quads
+        /*// Blending, depth test without depth writes and no culling come with the debug quads
         // pipeline, which replaces the RenderSystem state calls of the 1.21 branch.
         RenderTypes.debugQuads().draw(rb);
 
@@ -95,6 +95,36 @@ public class TerminalCursorRenderer {
     }
 //?}
 
+//? if >=26.1 {
+    /*// Cursor quads for a GUI element (POSITION_COLOR); `base` maps terminal pixels to the GUI.
+    public static void buildCursor(
+            final Terminal terminal, final VertexConsumer consumer, final Matrix4f base) {
+        if (!terminal.currentPrivateModeState.DECTCEM) return;
+
+        final int globalY = terminal.lastRowToDisplayMax - (terminal.height - terminal.y);
+        final int localY = terminal.height + globalY - terminal.lastRowToDisplay;
+        final boolean useAltBuffer = terminal.currentPrivateModeState.isAltBufferEnabled();
+        if (!isCursorVisible(terminal, useAltBuffer, globalY, localY)) {
+            return;
+        }
+
+        final int foreground = terminal.currentPrivateModeState.DECSCNM
+                ? TerminalColors.defaultBackgroundRgb()
+                : TerminalColors.defaultForegroundRgb(false);
+        final Matrix4f matrix = new Matrix4f(base).translate(
+                terminal.x * Terminal.CHAR_WIDTH,
+                (useAltBuffer ? terminal.y : localY) * Terminal.CHAR_HEIGHT,
+                0);
+        drawCursorShape(
+                consumer,
+                matrix,
+                terminal.cursorMode,
+                ((foreground >> 16) & 0xFF) / 255f,
+                ((foreground >> 8) & 0xFF) / 255f,
+                (foreground & 0xFF) / 255f);
+    }
+
+*///?}
     private static boolean isCursorVisible(
             final Terminal terminal,
             final boolean useAltBuffer,
@@ -110,7 +140,7 @@ public class TerminalCursorRenderer {
     }
 
     private static void drawCursorShape(
-            final BufferBuilder buffer,
+            final VertexConsumer buffer,
             final Matrix4f matrix,
             final int cursorMode,
             final float r,

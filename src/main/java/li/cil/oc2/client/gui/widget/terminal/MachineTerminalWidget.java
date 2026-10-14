@@ -8,12 +8,15 @@ import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineTerminalScreen
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
@@ -64,8 +67,37 @@ public final class MachineTerminalWidget {
     public void render(final GuiGraphics graphics, @Nullable final Component error) {
         if (container.getVirtualMachine().isRunning()) {
             //? if >=26.1 {
-/*            // TODO: the retained terminal mesh is drawn immediately, which 26.x GUIs do not support
-            // because screens only extract render state. It needs a GuiElementRenderState.
+            /*if (rendererView == null) {
+                rendererView = terminal.getRenderer();
+            }
+            if (rendererView instanceof final TerminalRenderer renderer) {
+                final TerminalRenderer.GuiSnapshot snapshot = renderer.captureForGui();
+                if (snapshot != null) {
+                    // Same fit as the 1.21 path: scale the terminal pixels to the sprite's inner area.
+                    final Matrix3x2f pose = new Matrix3x2f(graphics.pose())
+                            .translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y)
+                            .scale(
+                                    getInnerWidth() / (float) terminal.getWidth(),
+                                    TERMINAL_HEIGHT / (float) terminal.getHeight());
+                    final ScreenRectangle scissor = graphics.peekScissorStack();
+                    final ScreenRectangle area = new ScreenRectangle(
+                                    leftPos + TERMINAL_X,
+                                    topPos + TERMINAL_Y,
+                                    getInnerWidth(),
+                                    TERMINAL_HEIGHT)
+                            .transformMaxBounds(graphics.pose());
+                    final ScreenRectangle bounds = scissor == null ? area : area.intersection(scissor);
+
+                    if (snapshot.vertexCount() > 0) {
+                        graphics.submitGuiElementRenderState(new TerminalGuiElement.Text(
+                                snapshot, pose, TerminalGuiElement.fontTexture(), bounds, scissor));
+                    }
+                    if (snapshot.cursorVisible()) {
+                        graphics.submitGuiElementRenderState(
+                                new TerminalGuiElement.Cursor(terminal, snapshot, pose, bounds, scissor));
+                    }
+                }
+            }
 *///?} else {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);

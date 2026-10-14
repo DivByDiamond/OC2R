@@ -34,7 +34,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
     public final Terminal terminal;
     //? if >=26.1 {
-/*    // 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
+    /*// 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
     // rows are replayed into one mesh drawn through RenderType each frame.
     private record RowMesh(byte[] data, int vertexCount) {}
 
@@ -62,10 +62,98 @@ public class TerminalRenderer implements RendererModel, RendererView {
         this.terminal = terminal;
     }
 
+//? if >=26.1 {
+    /*// GUIs on 26.x only extract render state, so the terminal cannot be drawn immediately: the
+    // screen takes this snapshot while extracting and replays it when the GUI is rendered.
+    public record GuiSnapshot(byte[] data, int vertexCount, boolean cursorVisible) {
+        private static final int VERTEX_SIZE = 24; // POSITION_TEX_COLOR: 3 + 2 floats, 1 int
+
+        public void replayText(final VertexConsumer consumer, final org.joml.Matrix3x2fc pose) {
+            final java.nio.ByteBuffer buffer =
+                    java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.nativeOrder());
+            final org.joml.Vector2f position = new org.joml.Vector2f();
+            for (int i = 0; i < vertexCount; i++) {
+                final int base = i * VERTEX_SIZE;
+                pose.transformPosition(buffer.getFloat(base), buffer.getFloat(base + 4), position);
+                final int abgr = buffer.getInt(base + 20);
+                consumer.addVertex(position.x, position.y, 0f)
+                        .setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16))
+                        .setColor(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF, abgr >>> 24);
+            }
+        }
+
+        public void replayCursor(
+                final Terminal terminal,
+                final VertexConsumer consumer,
+                final org.joml.Matrix3x2fc pose) {
+            if (cursorVisible) {
+                TerminalCursorRenderer.buildCursor(
+                        terminal,
+                        consumer,
+                        new Matrix4f()
+                                .m00(pose.m00())
+                                .m01(pose.m01())
+                                .m10(pose.m10())
+                                .m11(pose.m11())
+                                .m30(pose.m20())
+                                .m31(pose.m21()));
+            }
+        }
+    }
+
+    // Null if nothing is to be drawn this frame (frame dropped, application sync or empty).
+    @javax.annotation.Nullable
+    public GuiSnapshot captureForGui() {
+        if (!prepareFrame()) {
+            return null;
+        }
+
+        int vertexCount = 0;
+        int byteCount = 0;
+        for (final RowMesh line : lines) {
+            if (line != null) {
+                vertexCount += line.vertexCount();
+                byteCount += line.data().length;
+            }
+        }
+
+        final byte[] data = new byte[byteCount];
+        int offset = 0;
+        for (final RowMesh line : lines) {
+            if (line != null) {
+                System.arraycopy(line.data(), 0, data, offset, line.data().length);
+                offset += line.data().length;
+            }
+        }
+
+        return new GuiSnapshot(data, vertexCount, isCursorPhaseVisible());
+    }
+*///?}
+
     @Override
-    public void render(final PoseStack stack, // NOPMD: blink phase tracking + render dispatch
+    public void render(final PoseStack stack,
             final Matrix4f projectionMatrix, boolean renderingToBlock) {
-        if (terminal.currentPrivateModeState.APPLICATION_SYNC) return;
+        if (!prepareFrame()) {
+            return;
+        }
+
+        renderBuffer(stack, projectionMatrix, renderingToBlock);
+
+        if (isCursorPhaseVisible()) {
+            TerminalCursorRenderer.renderCursor(terminal, stack);
+        }
+    }
+
+    private boolean isCursorPhaseVisible() {
+        final boolean steady = terminal.cursorMode == TerminalColors.CursorMode.STEADY_BLOCK
+                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_UNDERLINE
+                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_BAR_LINE;
+        return steady || Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500;
+    }
+
+    // Captures the frame and rebuilds the dirty rows; false if the frame was dropped.
+    private boolean prepareFrame() { // NOPMD: blink phase tracking + frame capture
+        if (terminal.currentPrivateModeState.APPLICATION_SYNC) return false;
 
         // One consistent frame capture under the geometry seqlock (§36 M4): the resize paths
         // bump the version around each commit stretch, so an even version before AND after the
@@ -77,14 +165,14 @@ public class TerminalRenderer implements RendererModel, RendererView {
         // exactly that fallback — it never existed, and the two-probe code could NPE here).
         final FrameState frame = captureFrame();
         if (frame == null) {
-            return; // resize storm: skip this frame entirely; nothing has been mutated yet
+            return false; // resize storm: skip this frame entirely; nothing has been mutated yet
         }
 
         // Dynamic height: reallocate the lines array if the terminal's height changed
         // (e.g. via TerminalDiff.apply calling resizeHeight). Close old buffers first.
         if (lines.length != frame.height()) {
             //? if >=26.1 {
-/*            lines = new RowMesh[frame.height()];
+            /*lines = new RowMesh[frame.height()];
 *///?} else {
             for (final VertexBuffer line : lines) {
                 if (line != null) line.close();
@@ -122,15 +210,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
         }
 
         validateLineCache(frame);
-        renderBuffer(stack, projectionMatrix, renderingToBlock);
-
-        boolean steady = terminal.cursorMode == TerminalColors.CursorMode.STEADY_BLOCK
-                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_UNDERLINE
-                || terminal.cursorMode == TerminalColors.CursorMode.STEADY_BAR_LINE;
-
-        if (steady || Math.floorMod(System.currentTimeMillis() + terminal.hashCode(), 1000) > 500) {
-            TerminalCursorRenderer.renderCursor(terminal, stack);
-        }
+        return true;
     }
 
     /**
@@ -149,7 +229,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
     @Override
     public void close() {
         //? if >=26.1 {
-/*        Arrays.fill(lines, null);
+        /*Arrays.fill(lines, null);
 *///?} else {
         for (int i = 0; i < lines.length; i++) {
             final VertexBuffer line = lines[i];
@@ -181,7 +261,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {}
 
 *///?} else if >=26.1 {
-/*    // The projection matrix argument has no counterpart on 26.x: RenderType draws with the
+    /*// The projection matrix argument has no counterpart on 26.x: RenderType draws with the
     // projection the caller has bound. The pose is applied through the model-view stack.
     public void renderBuffer(
             final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {
@@ -288,7 +368,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
         dirty.set(0L);
     }
 *///?} else if >=26.1 {
-/*    public void validateLineCache(final FrameState frame) {
+    /*public void validateLineCache(final FrameState frame) {
         if (dirty.get() == 0) return;
 
         final long mask = dirty.getAndSet(0L);
