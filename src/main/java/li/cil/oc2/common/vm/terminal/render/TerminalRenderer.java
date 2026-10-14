@@ -82,6 +82,25 @@ public class TerminalRenderer implements RendererModel, RendererView {
             }
         }
 
+        // World replay: a 26.x block entity renderer only collects geometry, so the rows are
+        // handed to a SubmitNodeCollector instead of a GUI element. Same bytes, but transformed
+        // by the pose captured when the node was submitted (3D, includes the block face pose).
+        public void replayText(final PoseStack.Pose pose, final VertexConsumer consumer) {
+            final java.nio.ByteBuffer buffer =
+                    java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.nativeOrder());
+            for (int i = 0; i < vertexCount; i++) {
+                final int base = i * VERTEX_SIZE;
+                final int abgr = buffer.getInt(base + 20);
+                consumer.addVertex(
+                                pose,
+                                buffer.getFloat(base),
+                                buffer.getFloat(base + 4),
+                                buffer.getFloat(base + 8))
+                        .setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16))
+                        .setColor(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF, abgr >>> 24);
+            }
+        }
+
         public void replayCursor(
                 final Terminal terminal,
                 final VertexConsumer consumer,

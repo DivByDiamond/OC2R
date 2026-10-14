@@ -6,10 +6,12 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -71,6 +73,23 @@ public final class ModRenderType {
                     .withCull(false)
                     .build();
 
+    // Terminal glyphs on a block face: the font atlas, alpha blended, depth tested but without
+    // depth writes, matching the immediate 1.21.1 path (enableDepthTest + depthMask(false)).
+    private static final RenderPipeline TERMINAL_TEXT_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation("pipeline/oc2r_terminal_text")
+                    .withCull(false)
+                    .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                    .build();
+
+    // The cursor is untextured colored quads: the debug filled pipeline already is exactly
+    // that (alpha blended, depth test without depth writes, no culling once asked for).
+    private static final RenderPipeline TERMINAL_CURSOR_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation("pipeline/oc2r_terminal_cursor")
+                    .withCull(false)
+                    .build();
+
     private static final RenderType NETWORK_CABLE =
             RenderType.create(
                     API.MOD_ID + "/network_cable",
@@ -86,10 +105,19 @@ public final class ModRenderType {
                     API.MOD_ID + "/gateway_particle",
                     RenderSetup.builder(GATEWAY_PARTICLE_PIPELINE).createRenderSetup());
 
+    private static final RenderType TERMINAL_CURSOR =
+            RenderType.create(
+                    API.MOD_ID + "/terminal_cursor",
+                    RenderSetup.builder(TERMINAL_CURSOR_PIPELINE).createRenderSetup());
+
     private static final Map<ResourceLocation, RenderType> ADDITIVE_TEXTURES =
             new ConcurrentHashMap<>();
 
     private static final Map<ResourceLocation, RenderType> FRAMEBUFFERS = new ConcurrentHashMap<>();
+
+    // The font atlas texture only exists after the client built it, so this one is created on
+    // first use, like the framebuffers above.
+    private static RenderType terminalText;
 
     private ModRenderType() {}
 
@@ -131,17 +159,37 @@ public final class ModRenderType {
     public static RenderType getGateWayParticle() {
         return GATEWAY_PARTICLE;
     }
+
+    // Terminal rows in the world: the font atlas with alpha blending, depth tested without
+    // depth writes, like the immediate 1.21.1 path (enableDepthTest + depthMask(false)).
+    public static RenderType getTerminalText() {
+        if (terminalText == null) {
+            terminalText =
+                    RenderType.create(
+                            API.MOD_ID + "/terminal_text",
+                            RenderSetup.builder(TERMINAL_TEXT_PIPELINE)
+                                    .withTexture("Sampler0", FontHandling.getAtlas())
+                                    .createRenderSetup());
+        }
+        return terminalText;
+    }
+
+    public static RenderType getTerminalCursor() {
+        return TERMINAL_CURSOR;
+    }
 }
 *///?} else if >=26.1 {
 /*import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -198,6 +246,23 @@ public final class ModRenderType {
                     .withCull(false)
                     .build();
 
+    // Terminal glyphs on a block face: the font atlas, alpha blended, depth tested but without
+    // depth writes, matching the immediate 1.21.1 path (enableDepthTest + depthMask(false)).
+    private static final RenderPipeline TERMINAL_TEXT_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation("pipeline/oc2r_terminal_text")
+                    .withCull(false)
+                    .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                    .build();
+
+    // The cursor is untextured colored quads: the debug filled pipeline already is exactly
+    // that (alpha blended, depth test without depth writes, no culling once asked for).
+    private static final RenderPipeline TERMINAL_CURSOR_PIPELINE =
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation("pipeline/oc2r_terminal_cursor")
+                    .withCull(false)
+                    .build();
+
     private static final RenderType NETWORK_CABLE =
             RenderType.create(
                     API.MOD_ID + "/network_cable",
@@ -213,10 +278,19 @@ public final class ModRenderType {
                     API.MOD_ID + "/gateway_particle",
                     RenderSetup.builder(GATEWAY_PARTICLE_PIPELINE).createRenderSetup());
 
+    private static final RenderType TERMINAL_CURSOR =
+            RenderType.create(
+                    API.MOD_ID + "/terminal_cursor",
+                    RenderSetup.builder(TERMINAL_CURSOR_PIPELINE).createRenderSetup());
+
     private static final Map<ResourceLocation, RenderType> ADDITIVE_TEXTURES =
             new ConcurrentHashMap<>();
 
     private static final Map<ResourceLocation, RenderType> FRAMEBUFFERS = new ConcurrentHashMap<>();
+
+    // The font atlas texture only exists after the client built it, so this one is created on
+    // first use, like the framebuffers above.
+    private static RenderType terminalText;
 
     private ModRenderType() {}
 
@@ -257,6 +331,24 @@ public final class ModRenderType {
 
     public static RenderType getGateWayParticle() {
         return GATEWAY_PARTICLE;
+    }
+
+    // Terminal rows in the world: the font atlas with alpha blending, depth tested without
+    // depth writes, like the immediate 1.21.1 path (enableDepthTest + depthMask(false)).
+    public static RenderType getTerminalText() {
+        if (terminalText == null) {
+            terminalText =
+                    RenderType.create(
+                            API.MOD_ID + "/terminal_text",
+                            RenderSetup.builder(TERMINAL_TEXT_PIPELINE)
+                                    .withTexture("Sampler0", FontHandling.getAtlas())
+                                    .createRenderSetup());
+        }
+        return terminalText;
+    }
+
+    public static RenderType getTerminalCursor() {
+        return TERMINAL_CURSOR;
     }
 }
 *///?} else {

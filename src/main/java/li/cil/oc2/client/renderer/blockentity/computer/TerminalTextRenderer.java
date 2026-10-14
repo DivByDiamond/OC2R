@@ -3,12 +3,17 @@ package li.cil.oc2.client.renderer.blockentity.computer;
 //? if >=26.1 {
 /*import com.google.common.cache.Cache;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.concurrent.ExecutionException;
 import li.cil.oc2.client.renderer.blockentity.RendererQuadHelper;
+import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
+import li.cil.oc2.common.vm.terminal.render.overlay.TerminalCursorRenderer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
+import org.joml.Matrix4f;
 
 final class TerminalTextRenderer {
     private final Font font;
@@ -25,9 +30,68 @@ final class TerminalTextRenderer {
             final SubmitNodeCollector collector,
             final Terminal terminal,
             final double distanceToCamera) {
-        // TODO: the terminal mesh is only drawn immediately (TerminalRenderer.render), which does
-        // not work from a 26.x block entity renderer: submit only collects, and the world is
-        // drawn afterwards. Needs the terminal rows replayed through submitCustomGeometry.
+        // Render terminal content if close enough (same 6 block range as on 1.21.1).
+        if (distanceToCamera >= 6f) {
+            return;
+        }
+
+        // A 26.x block entity renderer only collects: the frame is captured here and replayed
+        // when the submitted node is drawn, because the world is rendered after extraction.
+        final TerminalRenderer.GuiSnapshot snapshot = captureFrame(terminal);
+        if (snapshot == null) {
+            return;
+        }
+        // On 26.2 the row meshes are not built yet (no tessellator), so only the cursor shows.
+        if (snapshot.vertexCount() == 0 && !snapshot.cursorVisible()) {
+            return;
+        }
+
+        stack.pushPose();
+        stack.translate(2, 2, -0.9f);
+
+        final float textScaleX = 12f / terminal.getWidth();
+        final float textScaleY = 7f / terminal.getHeight();
+        // Preserve the pre-DECCOLM uniform scale as the baseline so the 80-column
+        // rendering is pixel-identical to before. At 132 cols textScaleX shrinks below
+        // the uniform floor, so characters squish horizontally like a real VT100.
+        final float scaleX = Math.min(textScaleX, textScaleY) * 0.95f;
+        final float scaleY = textScaleY * 0.95f;
+
+        // Center the terminal in the block face.
+        stack.translate(
+                terminal.getWidth() * (textScaleX - scaleX) * 0.5f,
+                terminal.getHeight() * (textScaleY - scaleY) * 0.5f,
+                0f);
+
+        stack.scale(scaleX, scaleY, 1f);
+
+        if (snapshot.vertexCount() > 0) {
+            collector.submitCustomGeometry(
+                    stack, ModRenderType.getTerminalText(), snapshot::replayText);
+        }
+        if (snapshot.cursorVisible()) {
+            collector.submitCustomGeometry(
+                    stack,
+                    ModRenderType.getTerminalCursor(),
+                    (pose, buffer) ->
+                            TerminalCursorRenderer.buildCursor(
+                                    terminal, buffer, new Matrix4f(pose.pose())));
+        }
+
+        stack.popPose();
+    }
+
+    @javax.annotation.Nullable
+    private TerminalRenderer.GuiSnapshot captureFrame(final Terminal terminal) {
+        try {
+            final RendererView view = rendererViews.get(terminal, terminal::getRenderer);
+            if (view instanceof final TerminalRenderer renderer) {
+                return renderer.captureForGui();
+            }
+        } catch (final ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     void renderStatusText(
