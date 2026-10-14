@@ -76,3 +76,27 @@ Done, see PR `ci/gametest-parallel` (2026-09-16). GameTest had never actually ru
 report, closes vacuous-green), `ci-work.yml` split into `lint`/`test`/`gametest`.
 
 - [ ] Remaining: 9 tests are marked `required = false` (reasons in git/PR history); remove the flag after fixing; run the vttest pages through GameTest layer 2 ([section 44.4](terminal.md#444-vttest-automation)) on top of the live infrastructure.
+
+## 58. Addon API on both loaders
+
+Goal: an addon author writes a device provider, a robot upgrade or a bus element once and it works on NeoForge and Fabric.
+
+How it should work: provider and device registries stay in the public API, but registration goes through a loader-independent call (a `ProviderRegistrar` in `core`, bound like the other platform bridges) instead of the NeoForge `DeferredRegister` shown in `api/README.md`. Documentation shows one example and notes the thin loader entrypoint.
+
+Pros: one artifact of API for every target; no second port of every addon; the docs stop being NeoForge-only.
+
+- [ ] Add `ProviderRegistrar` to `core/platform`, with NeoForge and Fabric implementations.
+- [ ] Move the built-in providers in `Providers.java` onto it, keeping `DeferredRegister` out of the public API.
+- [ ] Update `api/README.md`, `DEVICES.md` and the javadoc of `BlockDeviceProvider`/`ItemDeviceProvider`.
+- [ ] Keep binary compatibility notes for existing NeoForge addons.
+
+### 26.x rendering notes (2026-10-14)
+
+State of the client rendering on the 26.1.2 node, from the code and the first in-game run of 2026-10-11:
+- **Ported, not verified**: the monitor block (`MonitorRenderer` with `extractRenderState`/`submit`, framebuffer drawn by `submitCustomGeometry` with `ModRenderType.getFramebuffer(texture)`, texture registered by `RenderInfo`), the bus cable and monitor block state models (`DynamicBlockStateModel`), the wire renderer (`NetworkCableRenderer`/`CableRenderUtils`, 26.1 only; on 26.2 it is still not drawn).
+- **Deliberately not drawn yet**: the terminal in the computer, robot and keyboard GUIs (`MachineTerminalWidget.render`, `// TODO` branch for `>=26.1`): GUIs on 26.x only extract state, so the retained terminal mesh has to become a `GuiElementRenderState` element. This is the black "screen".
+- **Known bug, cause not found**: bus cables do not render although the connection sounds play; items placed before re-entering the world stop working.
+- **Reference**: the CC: Tweaked branch `mc-26.1` (checked out in `ref/CC-Tweaked`, read only) uses the same two techniques: the world monitor goes through `SubmitNodeCollector.submitCustomGeometry` with a text pipeline, and the GUI terminal through `GuiGraphicsExtractor.guiRenderState.addGuiElement(...)` with a record implementing `GuiElementRenderState` (background and text as two elements, scissor and pose captured at extract time). Its code is MPL-2.0 (file level) and its assets CCPL, so it is used for understanding the approach only; nothing is copied.
+- [ ] Draw the terminal in the GUIs through `GuiElementRenderState` (computer, robot, keyboard, monitor screen).
+- [ ] Find why the bus cable model does not render on 26.1.2 (check the baked quads, render type/layer and the model registration order).
+- [ ] Verify the world monitor on 26.1.2 once the GUI terminal works (same texture path).

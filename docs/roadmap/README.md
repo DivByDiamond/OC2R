@@ -84,3 +84,12 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | 46 | [done.md](done.md#46-terminal-sweep-follow-ups) | done |
 | 47 | [quality.md](quality.md#47-audit-2026-09-17) | terminal items in [terminal.md](terminal.md#47-terminal-items), network items in [network-inet.md](network-inet.md#47-network-items), bus items in [cables-bus-energy.md](cables-bus-energy.md#47-bus-items); closed in [done.md](done.md#47-closed-items) |
 | 48 | [network-overhaul.md](network-overhaul.md#48-network-overhaul-wires-towers-tablet-create-radars) | |
+| 50 | [devices-storage.md](devices-storage.md#50-driver-layer-every-device-reachable-without-lua) | driver layer: RPC and native faces |
+| 51 | [network-overhaul.md](network-overhaul.md#51-wireless-networking-and-positioning) | wireless card, positioning |
+| 52 | [devices-storage.md](devices-storage.md#52-pocket-computer) | pocket computer |
+| 53 | [robot.md](robot.md#53-robot-as-a-full-worker) | fuel, tools, upgrades, actions |
+| 54 | [devices-storage.md](devices-storage.md#54-more-peripherals) | printer, media player, relay, command computer |
+| 55 | [devices-storage.md](devices-storage.md#55-uniform-block-access-inventory-fluid-energy) | generic block devices |
+| 56 | [devices-storage.md](devices-storage.md#56-software-shipped-with-the-image) | bundled programs and help |
+| 57 | [icebox.md](icebox.md#57-oc2r-outside-minecraft) | standalone / browser runner |
+| 58 | [multiloader.md](multiloader.md#58-addon-api-on-both-loaders) | addon API on both loaders |

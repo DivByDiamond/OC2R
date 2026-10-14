@@ -25,3 +25,14 @@ Vague ideas, no owner (see also [video-gpu.md](video-gpu.md)):
 - [ ] Gamma correction after the YUV->RGB conversion.
 - [ ] Try YUV444 instead of YUV420 (less blurred colors).
 - [ ] Increase the depth map from 256x256 to 512x512.
+
+## 57. OC2R outside Minecraft
+
+Idea: run the same bundled images (Sedna, device models, terminal) in a browser or a standalone window with simulated game devices, so people can learn the system, write programs and test OS images without a Minecraft install.
+
+How it could work: a small module reusing `core` and the VM code with stub devices (a fake inventory, redstone and monitor) and a web or desktop frontend. Sedna is plain Java, so a standalone JVM app is the cheaper first step; a browser version needs a Java-to-JS/WASM path and is a separate decision.
+
+Pros: faster iteration for script and OS authors, a public demo, easier bug reproduction, CI can run programs against the stubs.
+
+- [ ] Decide the form (standalone JVM first) and what the stub devices cover.
+- [ ] Split the VM/terminal code from Minecraft classes where it still depends on them (see the layering lints in [quality.md](quality.md#9-lint-and-static-analysis)).
