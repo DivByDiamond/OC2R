@@ -1,5 +1,6 @@
 # Source Code Structure
 
+- [Modules and versions](#modules-and-versions) — `core`, root (NeoForge), `fabric`, `versions/`
 - [API](#api) — public interfaces for addon development
 - [Common](#common) — core logic: blocks, entities, VM, networking
 - [Client](#client) — rendering, GUI, audio
@@ -7,6 +8,19 @@
 - [Resources](#resources) — textures, models, sounds, localisation
 - [Scripts](#scripts) — guest VM scripts (Lua, MicroPython, C)
 - [Tests](#tests) — JUnit 5 test suites
+
+---
+
+## Modules and versions
+
+| Module | Path | Contents |
+|--------|------|----------|
+| `core` | `core/src/` | Loader-independent code, no NeoForge/Fabric imports: `platform/` bridges (registries, network, menus, capabilities, item handlers, energy, common and client events, environment), `bus/` topology, `network/` wire geometry. Tests in `core/src/test` |
+| root (NeoForge) | `src/` | The mod itself: `api`, `common`, `client`, `data`, `gametest`, `jcodec`, NeoForge `platform/` implementations, resources, guest scripts |
+| `fabric` | `fabric/src/` | Fabric entrypoints, bridge implementations, Fabric mixins and client models; also compiles the shared `common`/`client` sources from the root project. `src/gametest` holds Fabric-only GameTests |
+| versions | `versions/<mc>/`, `core/versions/<mc>/`, `fabric/versions/1.21.1/` | Stonecutter nodes with per-version `gradle.properties` |
+
+Supported nodes: `1.21.1` (NeoForge and Fabric, released), `26.1.2` and `26.2` (NeoForge only, in development; Java 25). Version differences inside shared sources are marked with Stonecutter `//? if` conditionals, and on 26.x `ResourceLocation` is replaced by `Identifier`. See [MULTILOADER.md](MULTILOADER.md) and [roadmap/multiloader.md](roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion).
 
 ---
 
@@ -109,7 +123,7 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 | `network/` | Network messages, load balancers (monitor/projector) |
 | `serialization/` | Ceres, Gson, NBT serializers |
 | `config/` | Configuration specs (common, client, energy, VM, VXLAN) |
-| `mixin/` | 4 mixins (Frustum, LevelRenderer, Minecraft, ChunkCache) |
+| `mixin/` | 5 NeoForge-side mixins (Frustum, LevelRenderer, Minecraft, ServerChunkCache, ServerGamePacketListenerImpl); Fabric has its own set in `fabric/` |
 | `integration/` | JEI, ProjectRed, wrench support |
 | `util/` | Scheduler, NBT utils, sound, text, world helpers |
 
@@ -121,7 +135,7 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 
 | Package | Description |
 |---------|-------------|
-| `ClientSetup.java` | Registers renderers, model loaders, color handlers |
+| `ClientSetup.java` | Registers renderers, model loaders, color handlers through the `ClientRegistrar` bridge |
 | `renderer/blockentity/` | Computer, monitor, charger, projector, gateway, disk drive renders |
 | `renderer/entity/` | `RobotRenderer` + `RobotModel` |
 | `renderer/font/` | `MonospaceFontRenderer` |
@@ -153,9 +167,9 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 
 | Path | Contents |
 |------|----------|
-| `assets/oc2r/blockstates/` | 16 block state JSONs |
+| `assets/oc2r/blockstates/` | 17 block state JSONs |
 | `assets/oc2r/models/block/` | Block models (cable variants + OBJ monitor) |
-| `assets/oc2r/models/item/` | 50+ item models |
+| `assets/oc2r/models/item/` | 60+ item models |
 | `assets/oc2r/textures/` | Block textures, item sprites, GUI widgets |
 | `assets/oc2r/sounds/` | Computer, floppy, HDD `.ogg` sounds |
 | `assets/oc2r/fonts/` | Monocraft TTF (Minecraft-style monospace) |
@@ -175,7 +189,7 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 
 | Path | Contents |
 |------|----------|
-| `bin/` | Lua/shell utilities: `export.lua`, `flash.sh`, `redstone.lua`, `setup-network.lua` |
+| `bin/` | Lua/shell utilities: `export.lua`, `import.lua`, `flash.sh`, `lsdev.lua`, `redstone.lua`, `setup-network.lua`, `swconfig.lua`, plus terminal colour test scripts |
 | `lib/lua/` | Lua device API (`devices.lua`, `robot.lua`) |
 | `lib/micropython/` | MicroPython device API (`devices.py`, `robot.py`) |
 | `lib/rpc/` | C library for RPC protocol (`rpc.c`, `rpc.h`, Makefile) + examples (`redstone_blink.c`, `note_block_player.c`) and a C++ RAII wrapper (`rpc_raii.hpp`, `example_raii.cpp`) |
@@ -185,16 +199,20 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 
 ## Tests
 
-`src/test/java/` — JUnit 5 + Mockito.
+JUnit 5 + Mockito. Run `./gradlew :1.21.1:test :core:1.21.1:test :fabric:1.21.1:test`; GameTests: `:1.21.1:gameTest` and `:fabric:1.21.1:runGameTest`.
 
-| Package | Tests |
-|---------|-------|
-| `inet/protocol/` | `ArpProtocolTest` |
-| `inet/tcp/` | `TcpHeaderTest` |
-| `inet/util/` | `InetUtilsTest`, `Rfc1071ChecksumTest` |
-| `inet/` | `Ipv4SpaceTest`, `Ipv4SpaceExtendedTest` |
-| `util/` | `IntegerSpaceTest`, `IntegerSpaceExtendedTest` |
-| `vm/terminal/` | `TerminalBufferTest` |
+| Location | Tests |
+|----------|-------|
+| `src/test/.../common/inet/` | ARP, TCP header, sessions, layers, `Ipv4Space`, checksums and other utils |
+| `src/test/.../common/bus/` | `CommonDeviceBusController`, `BlockDeviceBusController`, RPC item devices |
+| `src/test/.../common/blockentity/network/` | cable face overrides, switch `PacketProcessor` |
+| `src/test/.../common/vm/` | `VMRunner`, terminal (`TerminalBuffer`, vttest golden-grid harness), video |
+| `src/test/.../common/util/` | `IntegerSpace` and misc utils |
+| `src/test/.../client/audio/` | audio stream buffers |
+| `src/test/.../common/ClientImportGuardTest` | guards against new client imports in `common` |
+| `src/test/.../platform/` | NeoForge capability bridge |
+| `core/src/test/` | `PlatformTest`, bus topology, wire geometry |
+| `src/main/java/.../gametest/`, `fabric/src/gametest/` | in-world GameTests |
 
 ---
 
@@ -203,4 +221,5 @@ Full TCP/IP implementation. See [NETWORKING.md](NETWORKING.md).
 - [Architecture Overview](ARCHITECTURE.md) — device bus, VM lifecycle, threading
 - [Device System](DEVICES.md) — VMDevice, RPCDevice, ObjectDevice, providers
 - [Networking Stack](NETWORKING.md) — TCP/IP, VXLAN, native library
+- [Multiloader / multiversion](MULTILOADER.md) — module split and Stonecutter
 - [Buildroot image](BUILDROOT.md) — guest OS image sourcing, TCC, rebuilding

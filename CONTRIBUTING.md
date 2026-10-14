@@ -7,33 +7,42 @@
 - **Comments**: `//` comments are allowed for complex logic, tricky edge cases, and important modules where intent is not obvious. Keep them concise and meaningful; avoid redundant or obvious comments.
 - **JavaDoc** on public API methods
 - **No SPDX headers**
-- **Build before commit**: `./gradlew build`
+- **Build before commit**: `./gradlew :1.21.1:build :fabric:1.21.1:build`
 
 ## Project Layout
 
+The build is multi-module and multi-version (Stonecutter, nodes in `versions/<mc-version>`):
+
 ```
 core/src/main/java/li/cil/oc2/
-  platform/  - Loader-independent registry/platform bridge (no NeoForge/Fabric dependency)
+  platform/  - Loader-independent bridges (registries, network, menus, capabilities, energy, events, client registration)
   bus/       - Loader-independent device bus topology
   network/   - Loader-independent network geometry/math
 
-src/main/java/li/cil/oc2/
+src/main/java/li/cil/oc2/        (root project = NeoForge module)
   api/       - Public API (do not change without discussion!)
   client/    - Client-side only (rendering, GUI)
   common/    - Shared logic (blocks, entities, VM, networking, bus)
   data/      - Data generators (blockstates, recipes, loot tables)
+  gametest/  - GameTests shared with the Fabric module
   jcodec/    - Bundled H.264 library (do not touch)
-  platform/  - NeoForge implementation of the core/platform bridge
+  platform/  - NeoForge implementation of the core/platform bridges
+
+fabric/src/main/java/li/cil/oc2/ - Fabric implementation of the bridges, entrypoints, mixins (compiles the shared common/client code too)
+fabric/src/gametest/             - Fabric-only GameTests
+versions/<mc-version>/           - per-version gradle.properties (1.21.1, 26.1.2, 26.2)
 ```
 
-See [docs/SRC_STRUCTURE.md](docs/SRC_STRUCTURE.md) for a full breakdown, and [docs/MULTILOADER.md](docs/MULTILOADER.md) for why `core` exists.
+Version-specific code in shared sources is guarded with Stonecutter `//? if` conditionals. Keep the working tree on the `1.21.1` node when committing (`./gradlew "Reset active project"`).
+
+See [docs/SRC_STRUCTURE.md](docs/SRC_STRUCTURE.md) for a full breakdown, and [docs/MULTILOADER.md](docs/MULTILOADER.md) for why `core` exists. Open work lives in [todo.md](todo.md) and [docs/roadmap/](docs/roadmap/README.md).
 
 ## PR Process
 
 1. Fork the repository
-2. Create a branch from `work`
+2. Create a branch from `work` (multiversion work goes on top of `multiversion-stage3` until it is merged)
 3. Make changes with meaningful commits
-4. Ensure `./gradlew build` passes
+4. Ensure `./gradlew :1.21.1:build :fabric:1.21.1:build` passes
 5. Open a Pull Request targeting `work`
 
 ## Commit Messages
@@ -62,7 +71,7 @@ This is not a reason to reject a PR - it just needs review with that in mind, th
 
 ## Before Submitting
 
-- `./gradlew build` passes
+- `./gradlew :1.21.1:build :fabric:1.21.1:build` passes
 - `//` comments only where they explain complex logic or important modules
 - Public API has JavaDoc
 - ≤200 lines per file, ≤4 files per folder
