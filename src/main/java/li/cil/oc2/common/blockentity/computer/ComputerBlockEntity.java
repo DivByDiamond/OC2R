@@ -162,6 +162,7 @@ public final class ComputerBlockEntity extends ModBlockEntity
         super.loadServer();
         assert level != null;
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(level);
+        virtualMachine.busController.scheduleBusScan();
     }
 
     @Override
