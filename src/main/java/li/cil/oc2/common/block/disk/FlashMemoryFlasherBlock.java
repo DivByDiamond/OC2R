@@ -101,6 +101,12 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             //?}
         }
 
+        if (!player.isShiftKeyDown()) {
+            if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                li.cil.oc2.common.firmware.FlashWriterService.open(serverPlayer, diskDrive);
+            }
+            return InteractionResult.SUCCESS;
+        }
         return super.useWithoutItem(state, level, pos, player, hitResult);
     }
 

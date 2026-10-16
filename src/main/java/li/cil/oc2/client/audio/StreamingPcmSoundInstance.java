@@ -6,6 +6,7 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
@@ -19,7 +20,13 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
 
     public StreamingPcmSoundInstance(
             final double x, final double y, final double z, final PcmSoundBuffer buffer) {
-        super(SoundEvents.SOUND_CARD_BEEP.get(), SoundSource.BLOCKS, RandomSource.create());
+        this(x, y, z, buffer, SoundEvents.SOUND_CARD_BEEP.get());
+    }
+
+    StreamingPcmSoundInstance(
+            final double x, final double y, final double z, final PcmSoundBuffer buffer,
+            final SoundEvent soundEvent) {
+        super(soundEvent, SoundSource.BLOCKS, RandomSource.create());
         this.x = x;
         this.y = y;
         this.z = z;
@@ -27,6 +34,9 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
         this.pitch = 1.0f;
         this.attenuation = Attenuation.LINEAR;
         looping = true;
+        // A streamed source can underrun during a slow client frame. A positive delay asks
+        // SoundEngine to reopen it through its manual-loop path, retaining this PCM buffer.
+        delay = 1;
         this.buffer = buffer;
     }
 
@@ -58,6 +68,15 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
         if (buffer.isStale(STALE_TIMEOUT_MS)) {
             stop();
         }
+    }
+
+    @Override
+    public boolean canPlaySound() {
+        return !isStopped();
+    }
+
+    void stopStreaming() {
+        stop();
     }
 
     @Override

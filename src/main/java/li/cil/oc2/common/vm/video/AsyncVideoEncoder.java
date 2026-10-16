@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +29,8 @@ import org.apache.logging.log4j.Logger;
  *
  * <p>Buffer ownership is exclusive at any point in time: a buffer is either held by the
  * producer, sitting in the inbox, owned by the worker while encoding, waiting in the
- * outbox or back in the pool. Dropping frames (full inbox/outbox) always recycles the
- * dropped buffer. Because {@code FrameCodec.encode} may return its input array as-is
+ * outbox or back in the pool. Replacing an unclaimed raw frame recycles its buffer. Encoded frames
+ * are kept in order: a full outbox pauses that stream until the consumer catches up. Because {@code FrameCodec.encode} may return its input array as-is
  * (RAW passthrough and overflow fallback), a completed frame's data must only be read
  * up to {@link #recycle}; network chunks are copied by {@code FrameChunker.slice}.
  *
@@ -39,9 +41,7 @@ import org.apache.logging.log4j.Logger;
 public final class AsyncVideoEncoder {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final int INBOX_CAPACITY = 1;
     private static final int OUTBOX_CAPACITY = 8;
-    private static final long IDLE_POLL_MS = 500;
 
     /** A raw RGB565 frame waiting to be encoded. */
     @SuppressWarnings("ArrayRecordComponent")
@@ -51,12 +51,13 @@ public final class AsyncVideoEncoder {
     @SuppressWarnings("ArrayRecordComponent")
     public record CompletedFrame(FrameCodec.EncodedFrame frame, byte[] buffer, int width, int height) {}
 
-    // Static queues so every instance shares a single daemon worker regardless of how
-    // many monitors/projectors exist; jobs are self-contained so instances cannot
-    // interfere beyond competing for encode time.
-    private static final ArrayBlockingQueue<PendingFrame> INBOX = new ArrayBlockingQueue<>(INBOX_CAPACITY);
-    private static final ArrayBlockingQueue<CompletedFrame> OUTBOX = new ArrayBlockingQueue<>(OUTBOX_CAPACITY);
+    // Each device owns its pending frame and ordered completions. Only the ready queue and
+    // worker are shared: another monitor/projector must never evict or consume this stream.
+    private static final LinkedBlockingQueue<AsyncVideoEncoder> READY = new LinkedBlockingQueue<>();
     private static final ConcurrentLinkedQueue<byte[]> BUFFER_POOL = new ConcurrentLinkedQueue<>();
+    private final AtomicReference<PendingFrame> pending = new AtomicReference<>();
+    private final AtomicBoolean scheduled = new AtomicBoolean();
+    private final ArrayBlockingQueue<CompletedFrame> outbox = new ArrayBlockingQueue<>(OUTBOX_CAPACITY);
 
     @Nullable private static Thread worker;
 
@@ -88,12 +89,19 @@ public final class AsyncVideoEncoder {
      * of the device were already consumed and any further change produces a new frame.
      */
     public void offer(final FrameCodec codec, final VideoCodec codecType, final byte[] rgb565, final int width, final int height) {
-        final PendingFrame evicted = INBOX.poll();
-        if (evicted != null) {
-            recycle(evicted.rgb565());
-        }
-        INBOX.offer(new PendingFrame(codec, codecType, rgb565, width, height));
+        final PendingFrame evicted = pending.getAndSet(new PendingFrame(codec, codecType, rgb565, width, height));
+        if (evicted != null) recycle(evicted.rgb565());
+        scheduleIfPending();
         ensureWorker();
+    }
+
+    private void scheduleIfPending() {
+        // A full outbox must not advance a stateful codec and then discard its output. Retain
+        // the latest raw input until the owning device polls a completion and frees a slot.
+        if (pending.get() != null && outbox.remainingCapacity() > 0
+                && scheduled.compareAndSet(false, true)) {
+            READY.add(this);
+        }
     }
 
     /**
@@ -101,7 +109,9 @@ public final class AsyncVideoEncoder {
      */
     @Nullable
     public CompletedFrame poll() {
-        return OUTBOX.poll();
+        final CompletedFrame completed = outbox.poll();
+        scheduleIfPending();
+        return completed;
     }
 
     /**
@@ -126,18 +136,28 @@ public final class AsyncVideoEncoder {
 
     private static void runWorker() {
         while (true) {
-            final PendingFrame job;
+            final AsyncVideoEncoder encoder;
             try {
-                job = INBOX.poll(IDLE_POLL_MS, TimeUnit.MILLISECONDS);
+                encoder = READY.take();
             } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return;
             }
-            if (job == null) continue;
-            encodeJob(job);
+            try {
+                if (encoder.outbox.remainingCapacity() > 0) {
+                    final PendingFrame job = encoder.pending.getAndSet(null);
+                    if (job != null) encoder.encodeJob(job);
+                }
+            } finally {
+                encoder.scheduled.set(false);
+                // Process at most one frame per device per turn, so busy displays cannot
+                // starve the other ready streams. offer()/poll() may also schedule this turn.
+                encoder.scheduleIfPending();
+            }
         }
     }
 
-    private static void encodeJob(final PendingFrame job) {
+    private void encodeJob(final PendingFrame job) {
         FrameCodec.EncodedFrame result = null;
         try {
             result = job.codec().encode(job.codecType(), job.rgb565(), job.width(), job.height());
@@ -154,11 +174,9 @@ public final class AsyncVideoEncoder {
         publish(completed);
     }
 
-    private static void publish(final CompletedFrame completed) {
-        while (!OUTBOX.offer(completed)) {
-            final CompletedFrame dropped = OUTBOX.poll();
-            if (dropped == null) continue;
-            BUFFER_POOL.add(dropped.buffer());
-        }
+    private void publish(final CompletedFrame completed) {
+        // Only the shared worker produces completions. It reserves a free slot before
+        // encoding, and concurrent consumers can only increase available capacity.
+        outbox.add(completed);
     }
 }

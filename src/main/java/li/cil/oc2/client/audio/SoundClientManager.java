@@ -26,12 +26,15 @@ public final class SoundClientManager {
             if (instance == null || instance.isStopped()) {
                 stopStream(pos);
                 final PcmSoundBuffer buffer = new PcmSoundBuffer();
+                // The audio executor may prime the stream as soon as play() is called.
+                buffer.write(pcm);
                 final Vec3 center = Vec3.atCenterOf(pos);
                 instance = new StreamingPcmSoundInstance(center.x, center.y, center.z, buffer);
                 PCM_STREAMS.put(pos, instance);
                 Minecraft.getInstance().getSoundManager().play(instance);
+            } else {
+                instance.getBuffer().write(pcm);
             }
-            instance.getBuffer().write(pcm);
         } catch (final RuntimeException ignored) {
             stopStream(pos);
         }
@@ -40,6 +43,7 @@ public final class SoundClientManager {
     public static void stopStream(final BlockPos pos) {
         final StreamingPcmSoundInstance instance = PCM_STREAMS.remove(pos);
         if (instance != null) {
+            instance.stopStreaming();
             Minecraft.getInstance().getSoundManager().stop(instance);
         }
     }

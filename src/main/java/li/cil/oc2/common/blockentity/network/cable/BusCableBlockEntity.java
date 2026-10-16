@@ -2,6 +2,7 @@ package li.cil.oc2.common.blockentity.network.cable;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -25,6 +26,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class BusCableBlockEntity extends ModBlockEntity implements TickableBlockEntity {
@@ -194,6 +196,15 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         assert level != null;
         EnergyNetworkCache.invalidate();
         final ServerLevel serverLevel = (ServerLevel) level;
+        final BlockState state = getBlockState();
+        if (!state.getValue(BusCableStateProperties.HAS_CABLE)) {
+            // Old saves could infer half-links without owning a cable. With HAS_CABLE=false,
+            // recomputation preserves interfaces and never queries or loads neighboring chunks.
+            final BlockState repaired = BusCableStateProperties.recomputeConnections(level, getBlockPos(), state);
+            if (repaired != state) {
+                level.setBlock(getBlockPos(), repaired, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            }
+        }
         for (final var side : Direction.values()) {
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
             final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state

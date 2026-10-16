@@ -24,6 +24,10 @@ public final class FirmwareFlashStorageDevice extends IdentityProxy<ItemStack>
         this.firmware = firmware;
     }
 
+    public Firmware getFirmware() {
+        return firmware;
+    }
+
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
         memoryMap = context.getMemoryMap();

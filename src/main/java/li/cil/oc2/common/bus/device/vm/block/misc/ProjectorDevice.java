@@ -50,8 +50,12 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
     }
 
     public boolean copyFrame(final ByteBuffer dst) {
+        return copyFrame(dst, false);
+    }
+
+    public boolean copyFrame(final ByteBuffer dst, final boolean force) {
         final SimpleFramebufferDevice framebufferDevice = device;
-        return framebufferDevice != null && framebufferDevice.copyFrame(dst);
+        return framebufferDevice != null && framebufferDevice.copyFrame(dst, force);
     }
 
     @Override

@@ -81,6 +81,13 @@ Problem: writing custom firmware currently needs the guest OS and `flash.sh` (no
 
 ## 26b. OnyxOS in OC2R: S-mode boot, OnyxFS disk, network
 
+2026-10-16 update: the Onyx firmware now selects an automatic per-computer
+writable root image, so an HDD item is optional. Rebuilt Onyx boots at 64 MiB
+in Sedna and exposes independent `/dev/fbN` devices. FDT traversal, framebuffer
+devfs writes, standard-stream redirection and VirtIO disk capacity were fixed.
+Current build, usage and verification details are in [ONYXOS.md](../ONYXOS.md).
+The notes below retain the earlier integration history.
+
 (Original number 26; the first section 26 is now [26a](video-gpu.md#26a-video-codec-switchable-raw-and-h264).)
 
 Goal: run OnyxKernel (github.com/loki5512344/OnyxKernel) inside an OC2R VM as an alternative to Minux. Status 2026-09-15: all three former blockers are closed and OnyxOS really boots in OC2R.
@@ -113,12 +120,14 @@ Part of the combined item described in [section 25](#25-flash-builder-gui-reposi
 Why: OnyxOS images are currently baked into the jar (or read from `config/oc2r/`). The player should be able to "flash their own OS" in game: insert a flash/disk, point to an image source, get an item.
 No mod rebuild for a new OS, no server permissions (the player works with items in their own world).
 
-- [ ] Block (like `FlashMemoryFlasher` / `DiskDrive`): GUI with slots "image source" (file in `config/oc2r/` or a path in the world folder) and "flash/disk".
-- [ ] Input UI: text field for the path to `.bin`/`.img` (for example `config/oc2r/onyx-kernel.bin`, `config/oc2r/onyxfs.img`) + a "Write" button.
-- [ ] Output: `flash_memory_onyxos` (flash with firmware=onyxos but the kernel from the given file) or `hard_drive_onyxos` (disk with rootfs from the file).
-- [ ] The "external images" mechanism already exists: `OnyxOSFirmware`/`OnyxOSBlockDeviceData` read `config/oc2r/*` with a jar fallback (commit `0b90b3b`). The block must use the same source but with a chosen file.
-- [ ] Alternative/extension (the URL source): download over the network (from `inet/`) into `config/oc2r/` and flash.
-- [ ] Build + in-game check: flash from a file, insert into a computer, OnyxOS boots with a custom kernel/rootfs.
+- [x] Reuse the flash writer block: normal empty-hand use opens its GUI; shift-use ejects the medium.
+- [x] Select a local flat RISC-V `.bin` or raw disk `.img` inside Minecraft, without a datapack or server file path.
+- [x] Write a blank flash chip or writable HDD via bounded 16 KiB chunks, acknowledgments and final SHA-256 verification; keep the original on failure.
+- [x] Select bundled Minux/Onyx firmware directly. Onyx provides its private persistent root disk automatically.
+- [x] Persist image bytes as world-local blobs with NBT references; exclude simultaneous guest mounting and item extraction while writing.
+- [x] Server GameTest covers authorization, transfer, lease, NBT restoration and reopened blob contents (26.1.2).
+- [x] Real Minecraft GUI/file chooser, raw Minux flash boot, built-in Onyx boot, capacity errors, cancelled upload retaining the previous image, and written media surviving reload in the player inventory.
+- [ ] URL/manifest sources remain a separate extension; local-file import does not require them.
 
 ## 50. Driver layer: every device reachable without Lua
 

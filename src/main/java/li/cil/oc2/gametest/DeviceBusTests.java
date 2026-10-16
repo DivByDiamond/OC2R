@@ -111,6 +111,119 @@ public final class DeviceBusTests {
             .thenSucceed();
     }
 
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void installedInterfacesSurviveCableNeighborChanges(final GameTestHelper helper) {
+        final var world = helper.getLevel();
+        final var cable = li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get();
+        for (final Direction side : Direction.values()) {
+            final var pos = helper.absolutePos(new net.minecraft.core.BlockPos(2 + (side.get3DDataValue() % 3) * 2, 3, 2 + (side.get3DDataValue() / 3) * 3));
+            final var neighbor = pos.relative(side);
+            final var property = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side);
+            world.setBlockAndUpdate(pos, cable.defaultBlockState().setValue(property,
+                    li.cil.oc2.common.block.types.ConnectionType.INTERFACE));
+            world.setBlockAndUpdate(neighbor, cable.defaultBlockState());
+            assertTrue(helper, "Cable fixture missing on " + side, world.getBlockState(pos).is(cable));
+            assertTrue(helper, "Neighbor cable fixture missing on " + side, world.getBlockState(neighbor).is(cable));
+            assertTrue(helper, "Installed interface replaced by adjacent cable on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
+            assertEquals(helper, "Interface must remain an owned/droppable part on " + side, 2,
+                    li.cil.oc2.common.block.cable.BusCableStateProperties.getPartCount(world.getBlockState(pos)));
+            world.setBlockAndUpdate(neighbor, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            assertTrue(helper, "Removing neighbor deleted installed interface on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
+
+            // Ordinary inferred links still appear and disappear with the neighboring cable.
+            world.setBlockAndUpdate(pos, cable.defaultBlockState());
+            world.setBlockAndUpdate(neighbor, cable.defaultBlockState());
+            assertTrue(helper, "Cable fixture missing on " + side, world.getBlockState(pos).is(cable));
+            assertTrue(helper, "Neighbor cable fixture missing on " + side, world.getBlockState(neighbor).is(cable));
+            assertTrue(helper, "Missing inferred cable connection on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.CABLE);
+            world.setBlockAndUpdate(neighbor, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            assertTrue(helper, "Phantom cable connection after removal on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.NONE);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void interfaceWithoutCableDoesNotCreateHalfConnections(final GameTestHelper helper) {
+        final var world = helper.getLevel();
+        final var cable = li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get();
+        for (final Direction side : Direction.values()) {
+            final var pos = helper.absolutePos(new net.minecraft.core.BlockPos(2 + (side.get3DDataValue() % 3) * 2, 3, 2 + (side.get3DDataValue() / 3) * 3));
+            final var neighbor = pos.relative(side);
+            final var property = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side);
+            final var opposite = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side.getOpposite());
+            world.setBlockAndUpdate(pos, cable.defaultBlockState()
+                    .setValue(li.cil.oc2.common.block.cable.BusCableStateProperties.HAS_CABLE, false)
+                    .setValue(opposite, li.cil.oc2.common.block.types.ConnectionType.INTERFACE));
+            world.setBlockAndUpdate(neighbor, cable.defaultBlockState());
+            assertTrue(helper, "Cable fixture missing on " + side, world.getBlockState(pos).is(cable));
+            assertTrue(helper, "Neighbor cable fixture missing on " + side, world.getBlockState(neighbor).is(cable));
+            assertTrue(helper, "Interface-only block created a phantom half-cable on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.NONE);
+            assertTrue(helper, "Cable connected to an absent cable core on " + side,
+                    world.getBlockState(neighbor).getValue(opposite)
+                            == li.cil.oc2.common.block.types.ConnectionType.NONE);
+            assertTrue(helper, "Unable to add cable to interface-only block on " + side,
+                    li.cil.oc2.common.block.cable.BusCableStateProperties.addCable(world, pos, world.getBlockState(pos)));
+            assertTrue(helper, "Adding cable did not connect both ends on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.CABLE
+                    && world.getBlockState(neighbor).getValue(opposite)
+                            == li.cil.oc2.common.block.types.ConnectionType.CABLE);
+            world.setBlockAndUpdate(pos, world.getBlockState(pos)
+                    .setValue(li.cil.oc2.common.block.cable.BusCableStateProperties.HAS_CABLE, false));
+            assertTrue(helper, "Removing cable left a phantom half-cable on " + side,
+                    world.getBlockState(pos).getValue(property)
+                            == li.cil.oc2.common.block.types.ConnectionType.NONE
+                    && world.getBlockState(neighbor).getValue(opposite)
+                            == li.cil.oc2.common.block.types.ConnectionType.NONE);
+            assertEquals(helper, "Removing cable lost the interface part on " + side, 1,
+                    li.cil.oc2.common.block.cable.BusCableStateProperties.getPartCount(world.getBlockState(pos)));
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void loadingInterfaceOnlyBlockRepairsLegacyHalfConnections(final GameTestHelper helper) {
+        final var world = helper.getLevel();
+        final var cable = li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get();
+        for (final Direction side : Direction.values()) {
+            final var pos = helper.absolutePos(new net.minecraft.core.BlockPos(2 + (side.get3DDataValue() % 3) * 2, 3, 2 + (side.get3DDataValue() / 3) * 3));
+            final var property = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side);
+            final var opposite = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side.getOpposite());
+            // Reproduce a saved pre-fix state, without a neighbor update that could repair it.
+            world.setBlock(pos, cable.defaultBlockState()
+                    .setValue(li.cil.oc2.common.block.cable.BusCableStateProperties.HAS_CABLE, false)
+                    .setValue(opposite, li.cil.oc2.common.block.types.ConnectionType.INTERFACE)
+                    .setValue(property, li.cil.oc2.common.block.types.ConnectionType.CABLE),
+                    net.minecraft.world.level.block.Block.UPDATE_CLIENTS
+                            | net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+        }
+        helper.startSequence().thenExecuteAfter(2, () -> {
+            for (final Direction side : Direction.values()) {
+                final var pos = helper.absolutePos(new net.minecraft.core.BlockPos(2 + (side.get3DDataValue() % 3) * 2, 3, 2 + (side.get3DDataValue() / 3) * 3));
+                final var state = world.getBlockState(pos);
+                assertTrue(helper, "Cable fixture missing after load on " + side, state.is(cable));
+                final var property = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side);
+                final var opposite = li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(side.getOpposite());
+                assertTrue(helper, "Load retained legacy half-cable on " + side,
+                        state.getValue(property) == li.cil.oc2.common.block.types.ConnectionType.NONE);
+                assertTrue(helper, "Load deleted the installed interface on " + side,
+                        state.getValue(opposite) == li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
+                assertEquals(helper, "Load changed owned parts on " + side, 1,
+                        li.cil.oc2.common.block.cable.BusCableStateProperties.getPartCount(state));
+            }
+        }).thenSucceed();
+    }
+
     // --------------------------------------------------------------------- //
 
     private static ComputerFixture placeComputerAndCable(final GameTestHelper helper) {

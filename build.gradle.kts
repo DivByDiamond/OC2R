@@ -467,7 +467,7 @@ tasks.jar {
                 "Implementation-Version" to semver.trimStart('v'),
                 "Implementation-Vendor" to "North Western Development (Originally by Sangar)",
                 "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
-                "MixinConfigs" to "mixins.oc2r.json",
+                "MixinConfigs" to "mixins.oc2r.json,mixins.oc2r.client.json",
                 "ContainedDeps" to "commons-collections4-4.4.jar"
             )
         )

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.lifecycle;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 import li.cil.oc2.api.bus.device.vm.FirmwareLoader;
@@ -8,6 +9,8 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
 import li.cil.oc2.common.bus.controller.event.DevicesChangedEvent;
 import li.cil.oc2.common.bus.device.rpc.item.CPUItemDevice;
+import li.cil.oc2.common.bus.device.data.firmware.OnyxOSFirmware;
+import li.cil.oc2.common.bus.device.vm.item.storage.FirmwareFlashStorageDevice;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
@@ -68,6 +71,17 @@ public final class VMLifecycle {
         }
 
         assert vm.runner == null : "Runner active while still in load phase.";
+
+        try {
+            vm.state.builtinDevices.selectRootFilesystem(vm.busController.getDevices().stream()
+                    .anyMatch(device -> device instanceof FirmwareFlashStorageDevice flash
+                            && flash.getFirmware() instanceof OnyxOSFirmware));
+        } catch (final IOException e) {
+            LOGGER.error("Failed to select firmware root filesystem", e);
+            vm.error(Component.translatable(Constants.COMPUTER_ERROR_UNKNOWN), false);
+            loadDevicesDelay = DEVICE_LOAD_RETRY_INTERVAL;
+            return;
+        }
 
         if (!mountDevices()) {
             return;

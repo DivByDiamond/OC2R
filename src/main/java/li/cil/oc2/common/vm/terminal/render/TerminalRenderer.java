@@ -36,7 +36,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
     //? if >=26.1 {
     /*// 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
     // rows are replayed into one mesh drawn through RenderType each frame.
-    private record RowMesh(byte[] data, int vertexCount) {}
+    private record RowMesh(byte[] data, int vertexCount, int backgroundVertexCount) {}
 
     private static final RenderPipeline PIPELINE =
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
@@ -65,20 +65,41 @@ public class TerminalRenderer implements RendererModel, RendererView {
 //? if >=26.1 {
     /*// GUIs on 26.x only extract render state, so the terminal cannot be drawn immediately: the
     // screen takes this snapshot while extracting and replays it when the GUI is rendered.
-    public record GuiSnapshot(byte[] data, int vertexCount, boolean cursorVisible) {
+    public record GuiSnapshot(
+            byte[] data, int vertexCount, int backgroundVertexCount, byte[] cursorData) {
+        public boolean cursorVisible() {
+            return cursorData.length > 0;
+        }
+
+        public int textVertexCount() {
+            return vertexCount - backgroundVertexCount;
+        }
+
+        public void replayBackground(final VertexConsumer consumer, final org.joml.Matrix3x2fc pose) {
+            replayGui(consumer, pose, 0, backgroundVertexCount, false);
+        }
+
         private static final int VERTEX_SIZE = 24; // POSITION_TEX_COLOR: 3 + 2 floats, 1 int
 
         public void replayText(final VertexConsumer consumer, final org.joml.Matrix3x2fc pose) {
+            replayGui(consumer, pose, backgroundVertexCount, vertexCount, true);
+        }
+
+        private void replayGui(
+                final VertexConsumer consumer, final org.joml.Matrix3x2fc pose,
+                final int start, final int end, final boolean textured) {
             final java.nio.ByteBuffer buffer =
                     java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.nativeOrder());
             final org.joml.Vector2f position = new org.joml.Vector2f();
-            for (int i = 0; i < vertexCount; i++) {
+            for (int i = start; i < end; i++) {
                 final int base = i * VERTEX_SIZE;
                 pose.transformPosition(buffer.getFloat(base), buffer.getFloat(base + 4), position);
                 final int abgr = buffer.getInt(base + 20);
                 consumer.addVertex(position.x, position.y, 0f)
-                        .setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16))
                         .setColor(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF, abgr >>> 24);
+                if (textured) {
+                    consumer.setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16));
+                }
             }
         }
 
@@ -86,9 +107,18 @@ public class TerminalRenderer implements RendererModel, RendererView {
         // handed to a SubmitNodeCollector instead of a GUI element. Same bytes, but transformed
         // by the pose captured when the node was submitted (3D, includes the block face pose).
         public void replayText(final PoseStack.Pose pose, final VertexConsumer consumer) {
+            replayWorld(pose, consumer, backgroundVertexCount, vertexCount, true);
+        }
+
+        public void replayBackground(final PoseStack.Pose pose, final VertexConsumer consumer) {
+            replayWorld(pose, consumer, 0, backgroundVertexCount, false);
+        }
+
+        private void replayWorld(final PoseStack.Pose pose, final VertexConsumer consumer,
+                final int start, final int end, final boolean textured) {
             final java.nio.ByteBuffer buffer =
                     java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.nativeOrder());
-            for (int i = 0; i < vertexCount; i++) {
+            for (int i = start; i < end; i++) {
                 final int base = i * VERTEX_SIZE;
                 final int abgr = buffer.getInt(base + 20);
                 consumer.addVertex(
@@ -96,26 +126,33 @@ public class TerminalRenderer implements RendererModel, RendererView {
                                 buffer.getFloat(base),
                                 buffer.getFloat(base + 4),
                                 buffer.getFloat(base + 8))
-                        .setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16))
                         .setColor(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF, abgr >>> 24);
+                if (textured) {
+                    consumer.setUv(buffer.getFloat(base + 12), buffer.getFloat(base + 16));
+                }
             }
         }
 
         public void replayCursor(
-                final Terminal terminal,
                 final VertexConsumer consumer,
                 final org.joml.Matrix3x2fc pose) {
-            if (cursorVisible) {
-                TerminalCursorRenderer.buildCursor(
-                        terminal,
-                        consumer,
-                        new Matrix4f()
-                                .m00(pose.m00())
-                                .m01(pose.m01())
-                                .m10(pose.m10())
-                                .m11(pose.m11())
-                                .m30(pose.m20())
-                                .m31(pose.m21()));
+            replayCursor(new Matrix4f()
+                    .m00(pose.m00()).m01(pose.m01())
+                    .m10(pose.m10()).m11(pose.m11())
+                    .m30(pose.m20()).m31(pose.m21()), consumer);
+        }
+
+        public void replayCursor(final PoseStack.Pose pose, final VertexConsumer consumer) {
+            replayCursor(pose.pose(), consumer);
+        }
+
+        private void replayCursor(final Matrix4f pose, final VertexConsumer consumer) {
+            final ByteBuffer buffer = java.nio.ByteBuffer.wrap(cursorData)
+                    .order(java.nio.ByteOrder.nativeOrder());
+            for (int base = 0; base < cursorData.length; base += 16) {
+                final int abgr = buffer.getInt(base + 12);
+                consumer.addVertex(pose, buffer.getFloat(base), buffer.getFloat(base + 4), buffer.getFloat(base + 8))
+                        .setColor(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF, abgr >>> 24);
             }
         }
     }
@@ -137,15 +174,48 @@ public class TerminalRenderer implements RendererModel, RendererView {
         }
 
         final byte[] data = new byte[byteCount];
+        int backgroundVertexCount = 0;
         int offset = 0;
+        // Backgrounds use a solid-color GUI pipeline; keep them before all glyphs so the GUI
+        // renderer can batch each pass without sampling the font atlas for background colors.
         for (final RowMesh line : lines) {
             if (line != null) {
-                System.arraycopy(line.data(), 0, data, offset, line.data().length);
-                offset += line.data().length;
+                final int size = line.backgroundVertexCount() * GuiSnapshot.VERTEX_SIZE;
+                System.arraycopy(line.data(), 0, data, offset, size);
+                offset += size;
+                backgroundVertexCount += line.backgroundVertexCount();
+            }
+        }
+        for (final RowMesh line : lines) {
+            if (line != null) {
+                final int start = line.backgroundVertexCount() * GuiSnapshot.VERTEX_SIZE;
+                final int size = line.data().length - start;
+                System.arraycopy(line.data(), start, data, offset, size);
+                offset += size;
             }
         }
 
-        return new GuiSnapshot(data, vertexCount, isCursorPhaseVisible());
+        byte[] cursorData = new byte[0];
+        if (isCursorPhaseVisible()) {
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) {
+                //? if >=26.2 {
+                final BufferBuilder builder = new BufferBuilder(bytes, com.mojang.blaze3d.PrimitiveTopology.QUADS,
+                        DefaultVertexFormat.POSITION_COLOR);
+                //?} else {
+                final BufferBuilder builder = new BufferBuilder(bytes, VertexFormat.Mode.QUADS,
+                        DefaultVertexFormat.POSITION_COLOR);
+                //?}
+                TerminalCursorRenderer.buildCursor(terminal, builder, new Matrix4f());
+                try (MeshData mesh = builder.build()) {
+                    if (mesh != null) {
+                        final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
+                        cursorData = new byte[vertices.remaining()];
+                        vertices.get(cursorData);
+                    }
+                }
+            }
+        }
+        return new GuiSnapshot(data, vertexCount, backgroundVertexCount, cursorData);
     }
 *///?}
 
@@ -403,16 +473,28 @@ public class TerminalRenderer implements RendererModel, RendererView {
             matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
             TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row, blinkSeed);
+            byte[] background = new byte[0];
+            int backgroundVertices = 0;
+            try (MeshData mesh = builder.build()) {
+                if (mesh != null) {
+                    final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
+                    background = new byte[vertices.remaining()];
+                    vertices.get(background);
+                    backgroundVertices = mesh.drawState().vertexCount();
+                }
+            }
+            builder = Tesselator.getInstance()
+                    .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             TerminalCharRenderer.renderForeground(frame, matrix, builder, row, blinkSeed);
 
             try (MeshData rb = builder.build()) {
                 if (rb != null) {
                     final ByteBuffer vertices = rb.vertexBuffer().duplicate();
-                    final byte[] data = new byte[vertices.remaining()];
-                    vertices.get(data);
-                    lines[row] = new RowMesh(data, rb.drawState().vertexCount());
+                    final byte[] data = Arrays.copyOf(background, background.length + vertices.remaining());
+                    vertices.get(data, background.length, vertices.remaining());
+                    lines[row] = new RowMesh(data, backgroundVertices + rb.drawState().vertexCount(), backgroundVertices);
                 } else {
-                    lines[row] = null;
+                    lines[row] = backgroundVertices == 0 ? null : new RowMesh(background, backgroundVertices, backgroundVertices);
                 }
             }
         }

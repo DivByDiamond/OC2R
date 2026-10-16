@@ -105,6 +105,7 @@ sourceSets.main {
             // Mixins for the NeoForge mixin config (client rendering of the projector, server chunk
             // cache); the Fabric module has its own mixin config with counterparts.
             "li/cil/oc2/common/mixin/**",
+            "li/cil/oc2/client/mixin/**",
             // JEI/ProjectRed/Create integrations are NeoForge-specific for now.
             "li/cil/oc2/common/integration/jei/**",
             "li/cil/oc2/common/integration/projectred/**")

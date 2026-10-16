@@ -2,12 +2,21 @@ package li.cil.oc2.platform;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.platform.event.ClientEvents;
+import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
 import li.cil.oc2.platform.event.LevelRenderContext;
+
 //? if >=26.1 {
 /*import li.cil.oc2.client.RenderCompat;
 import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 *///?}
+//? if >=26.2 {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+*///?}
+
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,8 +33,24 @@ public final class NeoForgeClientEvents {
         ClientEvents.CLIENT_TICK_START.fire(Runnable::run);
     }
 
-//? if >=26.1 {
-/*    // 26.x split the stage event into one class per stage; the mapping follows the old stage
+    //? if >=26.2 {
+    /*    @SubscribeEvent
+    public static void onSubmitCustomGeometry(final SubmitCustomGeometryEvent event) {
+        final PoseStack poseStack = event.getPoseStack();
+        final Vec3 cameraPos = event.getLevelRenderState().cameraRenderState.pos;
+        final Minecraft minecraft = Minecraft.getInstance();
+        final Level level = minecraft.level;
+        if (level == null) {
+            return;
+        }
+        final LevelGeometrySubmitContext context = new LevelGeometrySubmitContext(
+                event.getSubmitNodeCollector(), poseStack, level, cameraPos);
+        ClientEvents.SUBMIT_LEVEL_GEOMETRY.fire(listener -> listener.accept(context));
+    }
+    *///?}
+
+    //? if >=26.1 {
+    /*    // 26.x split the stage event into one class per stage; the mapping follows the old stage
     // names (cutout blocks are the opaque blocks pass, particles the translucent particles pass).
     @SubscribeEvent
     public static void onAfterOpaqueBlocks(final RenderLevelStageEvent.AfterOpaqueBlocks event) {
@@ -56,7 +81,7 @@ public final class NeoForgeClientEvents {
                 event.getLevelRenderState().cameraRenderState.projectionMatrix);
         ClientEvents.RENDER_LEVEL.fire(listener -> listener.accept(context));
     }
-*///?} else {
+    *///?} else {
     @SubscribeEvent
     public static void onRenderLevelStage(final RenderLevelStageEvent event) {
         final LevelRenderContext.Stage stage = stageOf(event.getStage());
@@ -85,5 +110,5 @@ public final class NeoForgeClientEvents {
         }
         return null;
     }
-//?}
+    //?}
 }

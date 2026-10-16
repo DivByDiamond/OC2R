@@ -6,7 +6,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
-import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.render.TerminalRenderer.GuiSnapshot;
 import net.minecraft.client.Minecraft;
@@ -17,7 +16,7 @@ import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2f;
 
 // The terminal as GUI render state (26.x GUIs are extracted first and drawn later): one element
-// for the glyph quads and one for the cursor, both replayed from a snapshot taken at extraction.
+// each for solid backgrounds, textured glyphs and the cursor, replayed from an extraction snapshot.
 final class TerminalGuiElement {
     private TerminalGuiElement() {}
 
@@ -28,6 +27,28 @@ final class TerminalGuiElement {
                         .getTexture(FontHandling.getAtlas())
                         .getTextureView(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+    }
+
+    record Background(
+            GuiSnapshot snapshot,
+            Matrix3x2f pose,
+            @Nullable ScreenRectangle bounds,
+            @Nullable ScreenRectangle scissorArea)
+            implements GuiElementRenderState {
+        @Override
+        public void buildVertices(final VertexConsumer consumer) {
+            snapshot.replayBackground(consumer, pose);
+        }
+
+        @Override
+        public RenderPipeline pipeline() {
+            return RenderPipelines.GUI;
+        }
+
+        @Override
+        public TextureSetup textureSetup() {
+            return TextureSetup.noTexture();
+        }
     }
 
     record Text(
@@ -49,7 +70,6 @@ final class TerminalGuiElement {
     }
 
     record Cursor(
-            Terminal terminal,
             GuiSnapshot snapshot,
             Matrix3x2f pose,
             @Nullable ScreenRectangle bounds,
@@ -57,7 +77,7 @@ final class TerminalGuiElement {
             implements GuiElementRenderState {
         @Override
         public void buildVertices(final VertexConsumer consumer) {
-            snapshot.replayCursor(terminal, consumer, pose);
+            snapshot.replayCursor(consumer, pose);
         }
 
         @Override

@@ -63,8 +63,8 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     public static final IntegerProperty ORIGIN_OFFSET_Y =
             IntegerProperty.create("mb_oy", 0, MonitorMultiblock.MAX_HEIGHT - 1);
 
-    // We bake the "screen" indent on the front into the collision shape, to prevent stuff being
-    // placeable on that side, such as network connectors, torches, etc.
+    // Support geometry deliberately has an inset front: connectors and torches must not attach
+    // to the display. Collision and selection use the actual full-cube fragment model below.
     private static final VoxelShape NEG_Z_SHAPE =
             Shapes.or(
                     Block.box(0, 0, 1, 16, 16, 16), // main body
@@ -121,6 +121,12 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final BlockGetter level,
             final BlockPos pos,
             final CollisionContext context) {
+        return Shapes.block();
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(
+            final BlockState state, final BlockGetter level, final BlockPos pos) {
         return switch (state.getValue(FACING)) {
             case NORTH -> NEG_Z_SHAPE;
             case SOUTH -> POS_Z_SHAPE;

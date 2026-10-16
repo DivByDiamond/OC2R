@@ -31,6 +31,7 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     private final FlashMemoryItemStackHandler itemHandler = new FlashMemoryItemStackHandler(this);
     final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device =
             new FlashMemoryFlasherDevice<>(this);
+    private volatile boolean writing;
     private final ThrottledSoundEmitter insertSoundEmitter;
     private final ThrottledSoundEmitter ejectSoundEmitter;
 
@@ -48,7 +49,8 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     }
 
     public boolean canInsert(final ItemStack stack) {
-        return !stack.isEmpty() && stack.is(ItemTags.DEVICES_FLASH_MEMORY);
+        return !writing && !stack.isEmpty() && (stack.is(ItemTags.DEVICES_FLASH_MEMORY)
+                || stack.getItem() instanceof li.cil.oc2.common.item.storage.HardDriveItem);
     }
 
     public ItemStack insert(final ItemStack stack, @Nullable final Player player) {
@@ -62,12 +64,31 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         return itemHandler.insertItem(0, stack, false);
     }
 
+    @Override
+    public boolean isWriting() {
+        return writing;
+    }
+
+    public synchronized boolean beginWriting() {
+        if (writing || device.isMounted()) return false;
+        writing = true;
+        return true;
+    }
+
+    public synchronized void endWriting() {
+        writing = false;
+    }
+
+    public void replaceWrittenItem(final ItemStack stack) {
+        itemHandler.setStackInSlot(0, stack);
+    }
+
     public boolean canEject() {
-        return !itemHandler.extractItem(0, 1, true).isEmpty();
+        return !writing && !itemHandler.extractItem(0, 1, true).isEmpty();
     }
 
     public void eject(@Nullable final Player player) {
-        if (level == null) {
+        if (level == null || writing) {
             return;
         }
 

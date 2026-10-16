@@ -1,15 +1,48 @@
 package li.cil.oc2.common.mixin;
 
-// The 26.x LevelRenderer renders through a frame graph and no longer has renderLevel,
-// renderSnowAndRain, renderSky or the item entity and weather targets this mixin hooks, so the
-// projector depth pass cannot be injected there. The mixin stays registered as an empty class
-// and the pass is skipped on 26.x until the projector rendering is ported.
 //? if >=26.1 {
 /*import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
+//? if <26.2 {
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.framegraph.FramePass;
+import li.cil.oc2.client.renderer.projector.ProjectorPipelineRenderer;
+import net.minecraft.client.renderer.ViewArea;
+import net.minecraft.client.renderer.LevelTargetBundle;
+import org.spongepowered.asm.mixin.Final;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.joml.Matrix4fc;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//?}
 
 @Mixin(LevelRenderer.class)
-public abstract class LevelRendererMixin {}
+public abstract class LevelRendererMixin {
+    //? if <26.2 {
+    @Shadow(remap = false) private ViewArea viewArea;
+    @Shadow(remap = false) @Final private LevelTargetBundle targets;
+
+    @Inject(method = "addLateDebugPass", at = @At("HEAD"), remap = false)
+    private void renderProjectors(
+            final FrameGraphBuilder frame, final CameraRenderState camera,
+            final GpuBufferSlice fog, final Matrix4fc view, final CallbackInfo ci) {
+        // World depth must be sampled before late_debug clears it for always-on-top gizmos.
+        // Reading and writing the main target puts this pass after the world's passes and
+        // keeps it alive in the frame graph even when no other target reads its output.
+        final FramePass pass = frame.addPass("oc2r_projectors");
+        targets.main = pass.readsAndWrites(targets.main);
+        pass.executes(() -> {
+            if (viewArea != null) {
+                ProjectorPipelineRenderer.render(
+                        (LevelRenderer) (Object) this, camera, view, viewArea.sections);
+            }
+        });
+    }
+    //?}
+}
 *///?} else {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;

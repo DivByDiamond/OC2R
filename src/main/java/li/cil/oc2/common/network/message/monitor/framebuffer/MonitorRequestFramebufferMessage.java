@@ -43,7 +43,7 @@ public record MonitorRequestFramebufferMessage(BlockPos pos) implements Abstract
                     // Legitimate clients re-request at most once per second (keep-alive
                     // interval); anything faster is spam that keeps watcher entries alive
                     // and forces the server to keep encoding for nobody.
-                    if (!PlayerRateLimits.allowThrottled(player, 250)) return;
+                    if (!PlayerRateLimits.allowThrottled(player, monitor, 250)) return;
                     monitor.video.handleWatchedBy(player);
                 });
     }

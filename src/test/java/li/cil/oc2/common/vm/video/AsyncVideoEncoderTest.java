@@ -1,12 +1,15 @@
 package li.cil.oc2.common.vm.video;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -72,7 +75,93 @@ final class AsyncVideoEncoderTest {
         assertNull(encoder.poll());
     }
 
+    @Test
+    void unrelatedDeviceCannotConsumeCompletedFrame() throws Exception {
+        final AsyncVideoEncoder unrelated = new AsyncVideoEncoder();
+        final byte[] frame = new byte[16 * 16 * 2];
+        encoder.offer(codec, VideoCodec.RAW, frame, 16, 16);
+        final long deadline = System.currentTimeMillis() + 10_000;
+        AsyncVideoEncoder.CompletedFrame completed = null;
+        while (completed == null && System.currentTimeMillis() < deadline) {
+            assertNull(unrelated.poll(), "A different display stole this stream's completion");
+            completed = encoder.poll();
+            Thread.sleep(1);
+        }
+        assertNotNull(completed);
+        assertSame(frame, completed.buffer());
+    }
+
+    @Test
+    void pendingFramesOfDifferentDevicesCannotEvictEachOther() throws Exception {
+        final GatedCodec gate = new GatedCodec();
+        encoder.offer(gate, VideoCodec.RAW, new byte[512], 16, 16);
+        assertTrue(gate.entered.await(10, TimeUnit.SECONDS));
+        final AsyncVideoEncoder second = new AsyncVideoEncoder();
+        final AsyncVideoEncoder third = new AsyncVideoEncoder();
+        final byte[] secondFrame = new byte[512];
+        final byte[] thirdFrame = new byte[512];
+        try {
+            second.offer(new FrameCodec(), VideoCodec.RAW, secondFrame, 16, 16);
+            third.offer(new FrameCodec(), VideoCodec.RAW, thirdFrame, 16, 16);
+        } finally {
+            gate.release.countDown();
+        }
+        assertNotNull(pollUntilCompleted(encoder));
+        assertSame(secondFrame, pollUntilCompleted(second).buffer());
+        assertSame(thirdFrame, pollUntilCompleted(third).buffer());
+    }
+
+    @Test
+    void fullOutboxKeepsDeltaHistoryAndOnlyReplacesUnencodedInput() throws Exception {
+        final CountingCodec counting = new CountingCodec();
+        final FrameCodec decoder = new FrameCodec();
+        for (int index = 0; index < 8; index++) {
+            encoder.offer(counting, VideoCodec.DELTA, solidFrame(index), 16, 16);
+            awaitEncoded(counting, index + 1);
+        }
+        encoder.offer(counting, VideoCodec.DELTA, solidFrame(8), 16, 16);
+        encoder.offer(counting, VideoCodec.DELTA, solidFrame(9), 16, 16);
+        Thread.sleep(100);
+        assertEquals(8, counting.encoded.get(), "Full outbox must not advance the delta baseline");
+        for (int index = 0; index < 8; index++) {
+            final var completed = pollUntilCompleted(encoder);
+            assertArrayEquals(solidFrame(index), decoder.decode(VideoCodec.DELTA,
+                    completed.frame().data(), 16, 16).orElseThrow());
+        }
+        final var latest = pollUntilCompleted(encoder);
+        assertArrayEquals(solidFrame(9), decoder.decode(VideoCodec.DELTA,
+                latest.frame().data(), 16, 16).orElseThrow());
+        assertEquals(9, counting.encoded.get());
+    }
+
+    private static byte[] solidFrame(final int value) {
+        final byte[] frame = new byte[512];
+        Arrays.fill(frame, (byte) value);
+        return frame;
+    }
+
+    private static void awaitEncoded(final CountingCodec codec, final int expected) throws Exception {
+        final long deadline = System.currentTimeMillis() + 10_000;
+        while (codec.encoded.get() < expected && System.currentTimeMillis() < deadline) Thread.sleep(1);
+        assertEquals(expected, codec.encoded.get());
+    }
+
+    private static final class CountingCodec extends FrameCodec {
+        final AtomicInteger encoded = new AtomicInteger();
+
+        @Override
+        public EncodedFrame encode(final VideoCodec type, final byte[] frame, final int width, final int height) {
+            final EncodedFrame result = super.encode(type, frame, width, height);
+            encoded.incrementAndGet();
+            return result;
+        }
+    }
+
     private AsyncVideoEncoder.CompletedFrame pollUntilCompleted() throws Exception {
+        return pollUntilCompleted(encoder);
+    }
+
+    private static AsyncVideoEncoder.CompletedFrame pollUntilCompleted(final AsyncVideoEncoder encoder) throws Exception {
         final long deadline = System.currentTimeMillis() + 10_000;
         while (System.currentTimeMillis() < deadline) {
             final AsyncVideoEncoder.CompletedFrame completed = encoder.poll();

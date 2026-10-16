@@ -64,10 +64,15 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     public boolean copyFrame(final ByteBuffer dst) {
+        return copyFrame(dst, false);
+    }
+
+    /** Copies a clean framebuffer too when a newly watching client needs a baseline. */
+    public boolean copyFrame(final ByteBuffer dst, final boolean force) {
         lock.lock();
         try {
 
-            if (length == 0 || dirtyLines.isEmpty()) {
+            if (length == 0 || (!force && dirtyLines.isEmpty())) {
                 return false;
             }
 

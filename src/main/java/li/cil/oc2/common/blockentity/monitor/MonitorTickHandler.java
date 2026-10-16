@@ -45,13 +45,21 @@ final class MonitorTickHandler {
     private boolean shouldOfferFrame() {
         return blockEntity.stateManager.hasEnergy
                 && blockEntity.stateManager.isPowered
-                && blockEntity.stateManager.monitorDevice.hasChanges();
+                && (blockEntity.stateManager.monitorDevice.hasChanges()
+                        || blockEntity.video.hasPendingFullFrame());
     }
 
     void updateMonitorState(final boolean newIsMounted, final boolean newHasEnergy) {
+        updateMonitorState(newIsMounted, newHasEnergy, blockEntity.stateManager.isPowered);
+    }
+
+    void updateMonitorState(
+            final boolean newIsMounted, final boolean newHasEnergy, final boolean newIsPowered) {
         if (!blockEntity.isOrigin()) return;
         final MonitorStateManager state = blockEntity.stateManager;
-        if ((newIsMounted == state.isMounted && newHasEnergy == state.hasEnergy)
+        if ((newIsMounted == state.isMounted
+                        && newHasEnergy == state.hasEnergy
+                        && newIsPowered == state.isPowered)
                 || !blockEntity.isValid()) {
             return;
         }
@@ -60,12 +68,17 @@ final class MonitorTickHandler {
         }
         state.isMounted = newIsMounted;
         state.hasEnergy = newHasEnergy;
+        if (state.isPowered != newIsPowered) {
+            state.isPowered = newIsPowered;
+            blockEntity.setChanged();
+        }
         blockEntity.getLevel().setBlock(
                 blockEntity.getBlockPos(),
                 blockEntity.getBlockState().setValue(MonitorBlock.LIT, newIsMounted),
                 Block.UPDATE_CLIENTS);
         NetworkMessages.sendToClientsTrackingBlockEntity(
-                new MonitorStateMessage(blockEntity, newIsMounted, newHasEnergy), blockEntity);
+                new MonitorStateMessage(blockEntity, newIsMounted, newHasEnergy, newIsPowered),
+                blockEntity);
     }
 
     private boolean shouldApplyState() {

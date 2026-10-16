@@ -154,10 +154,12 @@ public final class BusCableStateProperties {
             final EnumProperty<ConnectionType> property = entry.getValue();
             final BlockPos neighborPos = pos.relative(side);
             final ConnectionType next;
-            if (canHaveCableTo(level.getBlockState(neighborPos), side.getOpposite())) {
-                next = ConnectionType.CABLE;
-            } else if (state.getValue(property) == ConnectionType.INTERFACE) {
+            if (state.getValue(property) == ConnectionType.INTERFACE) {
+                // An installed interface is a real part, not an inferred cable connection.
                 next = ConnectionType.INTERFACE;
+            } else if (state.getValue(HAS_CABLE)
+                    && canHaveCableTo(level.getBlockState(neighborPos), side.getOpposite())) {
+                next = ConnectionType.CABLE;
             } else {
                 next = ConnectionType.NONE;
             }

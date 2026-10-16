@@ -17,6 +17,9 @@ This mod uses the Terminus Font under the Open Font License. The full license ca
 [[mixins]]
 config="mixins.oc2r.json"
 
+[[mixins]]
+config="mixins.oc2r.client.json"
+
 [[dependencies.oc2r]]
 modId = "neoforge"
 type = "required"

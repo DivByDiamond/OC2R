@@ -25,6 +25,23 @@ class PlayerRateLimitsTest {
     }
 
     @Test
+    void framebufferRequestsAreIndependentForEachPlayerAndDevice() {
+        final Object firstPlayer = new Object();
+        final Object secondPlayer = new Object();
+        final Object monitor = new Object();
+        final Object projector = new Object();
+
+        assertTrue(PlayerRateLimits.allowThrottled(firstPlayer, monitor, 10_000));
+        assertTrue(PlayerRateLimits.allowThrottled(firstPlayer, projector, 10_000),
+                "a monitor keep-alive must not suppress the same player's projector request");
+        assertFalse(PlayerRateLimits.allowThrottled(firstPlayer, monitor, 10_000));
+        assertFalse(PlayerRateLimits.allowThrottled(firstPlayer, projector, 10_000));
+        assertTrue(PlayerRateLimits.allowThrottled(secondPlayer, monitor, 10_000),
+                "another player must be able to subscribe to the same display");
+        assertTrue(PlayerRateLimits.allowThrottled(secondPlayer, projector, 10_000));
+    }
+
+    @Test
     void eventWindowDropsExcessAndResets() throws Exception {
         final Object key = new Object();
         assertTrue(PlayerRateLimits.allowEvents(key, 2));

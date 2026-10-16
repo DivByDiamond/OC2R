@@ -161,6 +161,10 @@ public final class ComputerBlockEntity extends ModBlockEntity
     protected void loadServer() {
         super.loadServer();
         assert level != null;
+        // Chunk NBT is loaded before setLevel, so item-device providers were deferred.
+        // Recollect now; empty groups retain their saved IDs and pending device data.
+        final HolderLookup.Provider registries = level.registryAccess();
+        deviceItems.loadItems(registries, deviceItems.saveItems(registries));
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(level);
         virtualMachine.busController.scheduleBusScan();
     }

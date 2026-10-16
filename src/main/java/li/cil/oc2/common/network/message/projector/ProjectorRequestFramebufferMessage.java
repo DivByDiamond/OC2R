@@ -42,7 +42,7 @@ public record ProjectorRequestFramebufferMessage(BlockPos pos) implements Abstra
                 (player, projector) -> {
                     // Same rationale as MonitorRequestFramebufferMessage: legitimate
                     // clients re-request at most once per second.
-                    if (!PlayerRateLimits.allowThrottled(player, 250)) return;
+                    if (!PlayerRateLimits.allowThrottled(player, projector, 250)) return;
                     projector.handleWatchedBy(player);
                 });
     }

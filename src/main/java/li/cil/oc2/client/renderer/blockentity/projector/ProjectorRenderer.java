@@ -17,8 +17,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
-// The projected image (ProjectorDepthRenderer) is not ported to 26.x, so only the light cone,
-// lens and LED of the projector are rendered.
+// 26.1 collects the projector for a GPU depth/compositing pass after the level frame graph.
 public final class ProjectorRenderer
         implements BlockEntityRenderer<ProjectorBlockEntity, ProjectorRenderer.State> {
     public static final class State extends BlockEntityRenderState {
@@ -69,6 +68,15 @@ public final class ProjectorRenderer
         if (!framebufferSource.hasEnergy()) {
             ProjectorLightRenderer.renderMissingEnergyIndicator(stack, collector);
         } else {
+            //? if <26.2 {
+            final org.joml.Matrix4f matrix = stack.last().pose();
+            final org.joml.Vector4f origin = new org.joml.Vector4f(0, 0.5f, 7 / 16f, 1).mul(matrix);
+            final org.joml.Vector4f direction = new org.joml.Vector4f(0, 0, 1, 0).mul(matrix);
+            final Vec3 position = camera.pos.add(origin.x(), origin.y(), origin.z());
+            final float yRot = (float) Math.toDegrees(Math.atan2(-direction.x(), direction.z()));
+            li.cil.oc2.client.renderer.projector.ProjectorDepthRenderer.addProjector(
+                    framebufferSource, position, yRot);
+            //?}
             ProjectorLightRenderer.renderProjectorLight(stack, collector);
         }
 

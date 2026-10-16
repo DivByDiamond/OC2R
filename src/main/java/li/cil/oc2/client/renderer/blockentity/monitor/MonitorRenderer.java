@@ -1,7 +1,6 @@
 package li.cil.oc2.client.renderer.blockentity.monitor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
@@ -120,15 +119,7 @@ public final class MonitorRenderer implements BlockEntityRenderer<MonitorBlockEn
         // framebuffer across the full W x H area.
         stack.pushPose();
 
-        stack.translate(0.5f, 0, 0.5f);
-        stack.mulPose(Axis.YN.rotationDegrees(blockFacing.toYRot() + 180));
-        stack.translate(-0.5f, 0, -0.5f);
-
-        stack.translate(1, 1, 0);
-        stack.scale(-1, -1, -1);
-
-        final float pixelScale = 1 / 16f;
-        stack.scale(pixelScale * width, pixelScale * height, pixelScale);
+        MonitorScreenGeometry.orient(stack, blockFacing, width, height);
 
         renderTerminalOrStatus(
                 framebufferSource, stack, bufferSource, distanceToCamera, width, height);

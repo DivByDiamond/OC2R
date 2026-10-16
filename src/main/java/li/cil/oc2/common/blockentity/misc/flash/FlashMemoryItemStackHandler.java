@@ -20,6 +20,39 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
         this.owner = owner;
     }
 
+    @Override
+    protected void onLoad() {
+        super.onLoad();
+        // Deserialization does not call onContentsChanged. Restore the backing handle now,
+        // before a later update-tag/export can overwrite the item's data with an empty handle.
+        // This only imports metadata: levels are not necessarily attached yet, and clients
+        // must not open or close server world blob files while receiving an update tag.
+        final ItemStack stack = getStackInSlotRaw(0);
+        if (!stack.isEmpty()) {
+            //? if >=26.1 {
+            /*owner.device.importFromItemStack(ItemStackUtils.getModDataTag(stack).getCompoundOrEmpty(DATA_TAG_NAME));
+            *///?} else {
+            owner.device.importFromItemStack(ItemStackUtils.getModDataTag(stack).getCompound(DATA_TAG_NAME));
+            //?}
+        }
+    }
+
+    @Override
+    public boolean isItemValid(final int slot, final ItemStack stack) {
+        return !owner.isWriting() && !stack.isEmpty()
+                && (stack.is(ItemTags.DEVICES_FLASH_MEMORY)
+                    || stack.getItem() instanceof li.cil.oc2.common.item.storage.HardDriveItem);
+    }
+
+    @Override
+    public ItemStack extractItem(final int slot, final int amount, final boolean simulate) {
+        if (owner.isWriting()) return ItemStack.EMPTY;
+        if (slot == 0 && !simulate && amount > 0) {
+            exportDeviceDataToItemStack(getStackInSlotRaw(0));
+        }
+        return super.extractItem(slot, amount, simulate);
+    }
+
     public ItemStack getStackInSlotRaw(final int slot) {
         return super.getStackInSlot(slot);
     }
@@ -30,16 +63,6 @@ class FlashMemoryItemStackHandler extends TypedItemStackHandler {
         final ItemStack stack = getStackInSlotRaw(slot);
         exportDeviceDataToItemStack(stack);
         return stack;
-    }
-
-    @Override
-    @Nonnull
-    public ItemStack extractItem(final int slot, final int amount, final boolean simulate) {
-        if (slot == 0 && !simulate && amount > 0) {
-            exportDeviceDataToItemStack(getStackInSlotRaw(0));
-        }
-
-        return super.extractItem(slot, amount, simulate);
     }
 
     @Override

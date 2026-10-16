@@ -26,12 +26,12 @@ public final class SimpleFramebufferDeviceProvider implements DeviceTreeProvider
                 memoryMap.getMemoryRange((MemoryMappedDevice) device);
         return range.map(
                 r -> {
-                    final DeviceTree chosen = root.find("/chosen");
-                    chosen.addProp(DevicePropertyNames.RANGES)
-                            .addProp("#address-cells", 2)
-                            .addProp("#size-cells", 2);
-
-                    return chosen.getChild(deviceName, r.address());
+                    // These are independently mapped display devices, not a single boot
+                    // display. Linux only instantiates the first simple-framebuffer under
+                    // /chosen; publishing them on the board's existing simple-bus lets it
+                    // enumerate every monitor/projector. R5Board already supplies /soc's
+                    // address/size cells and identity ranges, so leave shared properties alone.
+                    return root.find("/soc").getChild(deviceName, r.address());
                 });
     }
 

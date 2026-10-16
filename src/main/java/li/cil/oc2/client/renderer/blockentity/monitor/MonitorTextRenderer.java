@@ -29,14 +29,6 @@ final class MonitorTextRenderer {
         // border/bezel of Config.monitorBorder px around the display area. Dividing border by
         // width/height keeps it a fixed pixel amount regardless of multiblock size. The terminal
         // framebuffer is stretched to fill this visible area edge-to-edge (non-uniform scale).
-        //
-        // Origin correction: the origin block sits at the top-right of the multiblock, but the
-        // renderer's R(Y,180) flips X (not Y), so the X component of translate(1,1,0) lands at
-        // the LEFT edge of the origin block (x~0) instead of the RIGHT edge of the multiblock
-        // (x~1). This leaves the screen shifted right by (width-1) blocks. Shift it back
-        // leftward, auto-computed from width so no manual offset is needed for any size.
-        final float originShiftX = -16f * (width - 1) / width;
-        stack.translate(originShiftX, 0f, 0f);
 
         final float border = Config.monitorBorder;
         final float borderX = border / width;
@@ -53,7 +45,7 @@ final class MonitorTextRenderer {
 
         final float scaleX = visibleX / framebufferWidth;
         final float scaleY = visibleY / framebufferHeight;
-        stack.translate(borderX, borderY, 0.7f);
+        MonitorScreenGeometry.translateToSurface(stack, borderX, borderY);
         stack.scale(scaleX, scaleY, 1f);
 
         final ResourceLocation texture = MonitorRendererCache.getRendererView(terminal, monitor).getTexture();
@@ -87,14 +79,10 @@ final class MonitorTextRenderer {
                 Component.translatable(Constants.COMPUTER_ERROR_NOT_ENOUGH_ENERGY);
 
         stack.pushPose();
-        // Same origin correction as renderTerminal: R(Y,180) flips X, shifting the screen right
-        // by (width-1) blocks. Shift it back so the text lands in the visible area.
-        final float originShiftX = -16f * (width - 1) / width;
-        stack.translate(originShiftX, 0f, 0f);
         // Coordinates here are normalized so the multiblock screen is always 16x16 units.
         // drawText centers the line horizontally (X is already at the screen center); nudge it
         // down to the vertical center so it doesn't hug the top edge.
-        stack.translate(3, 7.5f, 0.7f);
+        MonitorScreenGeometry.translateToSurface(stack, 3, 7.5f);
 
         RendererQuadHelper.drawText(collector, stack, bootError, font);
 
@@ -103,6 +91,7 @@ final class MonitorTextRenderer {
 
     static void cleanUp() {
         MonitorRendererCache.cleanUp();
+        MonitorGUIRenderer.cleanUp();
     }
 }
 *///?} else {
@@ -133,14 +122,6 @@ final class MonitorTextRenderer {
         // border/bezel of Config.monitorBorder px around the display area. Dividing border by
         // width/height keeps it a fixed pixel amount regardless of multiblock size. The terminal
         // framebuffer is stretched to fill this visible area edge-to-edge (non-uniform scale).
-        //
-        // Origin correction: the origin block sits at the top-right of the multiblock, but the
-        // renderer's R(Y,180) flips X (not Y), so the X component of translate(1,1,0) lands at
-        // the LEFT edge of the origin block (x~0) instead of the RIGHT edge of the multiblock
-        // (x~1). This leaves the screen shifted right by (width-1) blocks. Shift it back
-        // leftward, auto-computed from width so no manual offset is needed for any size.
-        final float originShiftX = -16f * (width - 1) / width;
-        stack.translate(originShiftX, 0f, 0f);
 
         final float border = Config.monitorBorder;
         final float borderX = border / width;
@@ -157,7 +138,7 @@ final class MonitorTextRenderer {
 
         final float scaleX = visibleX / framebufferWidth;
         final float scaleY = visibleY / framebufferHeight;
-        stack.translate(borderX, borderY, 0.7f);
+        MonitorScreenGeometry.translateToSurface(stack, borderX, borderY);
         stack.scale(scaleX, scaleY, 1f);
 
         RenderSystem.enableBlend();
@@ -193,14 +174,10 @@ final class MonitorTextRenderer {
                 Component.translatable(Constants.COMPUTER_ERROR_NOT_ENOUGH_ENERGY);
 
         stack.pushPose();
-        // Same origin correction as renderTerminal: R(Y,180) flips X, shifting the screen right
-        // by (width-1) blocks. Shift it back so the text lands in the visible area.
-        final float originShiftX = -16f * (width - 1) / width;
-        stack.translate(originShiftX, 0f, 0f);
         // Coordinates here are normalized so the multiblock screen is always 16x16 units.
         // drawText centers the line horizontally (X is already at the screen center); nudge it
         // down to the vertical center so it doesn't hug the top edge.
-        stack.translate(3, 7.5f, 0.7f);
+        MonitorScreenGeometry.translateToSurface(stack, 3, 7.5f);
 
         RendererQuadHelper.drawText(bufferSource, stack, bootError, font);
 
@@ -209,6 +186,7 @@ final class MonitorTextRenderer {
 
     static void cleanUp() {
         MonitorRendererCache.cleanUp();
+        MonitorGUIRenderer.cleanUp();
     }
 }
 //?}

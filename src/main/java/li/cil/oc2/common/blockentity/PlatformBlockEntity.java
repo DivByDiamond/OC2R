@@ -80,12 +80,14 @@ public abstract class PlatformBlockEntity extends BlockEntity {
     @Override
     protected final void loadAdditional(final ValueInput input) {
         super.loadAdditional(input);
-        loadAdditional(NBTUtils.toTag(input), registries());
+        // loadStatic restores block entities before setLevel(), so their registry context
+        // must come from the input. An empty level-derived lookup silently drops ItemStacks.
+        loadAdditional(NBTUtils.toTag(input), input.lookup());
     }
 
     @Override
     public final void handleUpdateTag(final ValueInput input) {
-        handleUpdateTag(NBTUtils.toTag(input), registries());
+        handleUpdateTag(NBTUtils.toTag(input), input.lookup());
     }
 
     @Override
@@ -93,9 +95,5 @@ public abstract class PlatformBlockEntity extends BlockEntity {
         handleUpdateTag(input);
     }
 
-    private HolderLookup.Provider registries() {
-        final Level level = getLevel();
-        return level != null ? level.registryAccess() : RegistryAccess.EMPTY;
-    }
     *///?}
 }

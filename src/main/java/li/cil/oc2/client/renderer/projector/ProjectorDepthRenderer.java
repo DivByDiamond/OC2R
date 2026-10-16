@@ -6,10 +6,8 @@ import java.util.List;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-// The projected image needs a second depth pass over the level and a custom compositing shader,
-// neither of which exists on 26.x yet (render pipelines replaced ShaderInstance and the level
-// render is a frame graph). Until that is ported the projector only renders its light cone and
-// no image; this class keeps the entry points the mixins and block entity renderer call.
+// 26.1 delegates depth/compositing to ProjectorPipelineRenderer after the level frame graph.
+// 26.2 retains the light-only path until its bind-group rendering API is supported.
 public final class ProjectorDepthRenderer {
     public record VisibleProjector(ProjectorBlockEntity projector, Vec3 worldPos, float yRot) {}
 
@@ -20,7 +18,9 @@ public final class ProjectorDepthRenderer {
 
     public static void addProjector(
             final ProjectorBlockEntity projector, final Vec3 worldPos, final float yRot) {
-        // No image is composited on 26.x, so there is nothing to collect.
+        //? if <26.2 {
+        VISIBLE_PROJECTORS.add(new VisibleProjector(projector, worldPos, yRot));
+        //?}
     }
 
     public static boolean willRenderProjectorDepth() {
@@ -33,7 +33,11 @@ public final class ProjectorDepthRenderer {
 
     public static void captureMainCameraDepth() {}
 
-    public static void registerEvents() {}
+    public static void registerEvents() {
+        //? if <26.2 {
+        li.cil.oc2.platform.event.ClientEvents.CLIENT_TICK_START.register(ProjectorPipelineRenderer::cleanUp);
+        //?}
+    }
 }
 *///?} else {
 import com.google.common.cache.Cache;

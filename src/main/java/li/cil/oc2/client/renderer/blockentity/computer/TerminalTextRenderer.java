@@ -9,11 +9,9 @@ import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
 import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
-import li.cil.oc2.common.vm.terminal.render.overlay.TerminalCursorRenderer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
-import org.joml.Matrix4f;
 
 final class TerminalTextRenderer {
     private final Font font;
@@ -65,17 +63,19 @@ final class TerminalTextRenderer {
 
         stack.scale(scaleX, scaleY, 1f);
 
-        if (snapshot.vertexCount() > 0) {
-            collector.submitCustomGeometry(
+        if (snapshot.backgroundVertexCount() > 0) {
+            collector.order(0).submitCustomGeometry(
+                    stack, ModRenderType.getTerminalCursor(), snapshot::replayBackground);
+        }
+        if (snapshot.textVertexCount() > 0) {
+            collector.order(1).submitCustomGeometry(
                     stack, ModRenderType.getTerminalText(), snapshot::replayText);
         }
         if (snapshot.cursorVisible()) {
-            collector.submitCustomGeometry(
+            collector.order(2).submitCustomGeometry(
                     stack,
                     ModRenderType.getTerminalCursor(),
-                    (pose, buffer) ->
-                            TerminalCursorRenderer.buildCursor(
-                                    terminal, buffer, new Matrix4f(pose.pose())));
+                    snapshot::replayCursor);
         }
 
         stack.popPose();

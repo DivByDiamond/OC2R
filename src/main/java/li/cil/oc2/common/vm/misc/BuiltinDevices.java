@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.util.function.Function;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.bus.device.data.FileSystems;
+import li.cil.oc2.common.bus.device.data.block.OnyxOSBlockDeviceData;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.sedna.api.Interrupt;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.buildroot.Buildroot;
-import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import li.cil.sedna.device.rtc.GoldfishRTC;
 import li.cil.sedna.device.rtc.SystemTimeRealTimeCounter;
 import li.cil.sedna.device.serial.UART16550A;
@@ -44,6 +44,11 @@ public final class BuiltinDevices {
     // new VMs never attach it.
     @Deprecated @Serialized public VirtIOBlockDevice bfs;
     @Serialized public VirtIOBlockDevice rfs;
+    // VirtIOBlockDevice does not serialize its backing BlockDevice. Persist the COW overlay
+    // separately, restoring into the same instance already attached to rfs during construction.
+    @Serialized public BuiltinRootFilesystem rootFilesystem;
+    @Serialized public BuiltinRootFilesystem onyxRootFilesystem;
+    private BuiltinRootFilesystem attachedRootFilesystem;
 
     public BuiltinDevices(final GlobalVMContext context) {
         initialize(
@@ -79,12 +84,14 @@ public final class BuiltinDevices {
                                 + " sedna-buildroot.jar — VM will boot but have no rootfs.");
             }
             if (ris != null) {
+                rootFilesystem = new BuiltinRootFilesystem(ris);
+                attachedRootFilesystem = rootFilesystem;
                 rfs =
                         initialize(
                                 context,
                                 new VirtIOBlockDevice(
                                         context.getMemoryMap(),
-                                        ByteBufferBlockDevice.createFromStream(ris, true)),
+                                        rootFilesystem),
                                 RFS_INTERRUPT,
                                 VirtIOBlockDevice::getInterrupt);
             }
@@ -96,6 +103,21 @@ public final class BuiltinDevices {
                     "Failed to load the Buildroot rootfs block device into the VM", e);
         } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Buildroot block devices into the VM", t);
+        }
+    }
+
+    /** Switch only while the VM worker is stopped; retain both OS overlays across firmware changes. */
+    public void selectRootFilesystem(final boolean onyx) throws IOException {
+        if (rfs == null) throw new IOException("Built-in root disk is unavailable");
+        if (onyx && onyxRootFilesystem == null) {
+            final var image = new OnyxOSBlockDeviceData().getBlockDevice();
+            if (image.getCapacity() == 0) throw new IOException("OnyxOS root image is unavailable");
+            onyxRootFilesystem = new BuiltinRootFilesystem(image);
+        }
+        final BuiltinRootFilesystem selected = onyx ? onyxRootFilesystem : rootFilesystem;
+        if (selected != attachedRootFilesystem) {
+            rfs.setBlock(selected);
+            attachedRootFilesystem = selected;
         }
     }
 

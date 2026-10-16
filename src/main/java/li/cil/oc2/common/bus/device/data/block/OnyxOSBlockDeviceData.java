@@ -33,7 +33,9 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
         try {
             if (Files.isRegularFile(override)) {
                 LOGGER.info("OnyxOS: using override {}", override);
-                instance = ByteBufferBlockDevice.createFromStream(Files.newInputStream(override), true);
+                try (InputStream stream = Files.newInputStream(override)) {
+                    instance = ByteBufferBlockDevice.createFromStream(stream, true);
+                }
             } else {
                 try (InputStream stream =
                         OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs.img")) {

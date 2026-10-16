@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
@@ -39,7 +40,8 @@ public final class MonitorVideoController {
     private final Map<ServerPlayer, Long> watchers = new WeakHashMap<>();
     private final ReentrantLock watchersLock = new ReentrantLock();
     private final FrameChunker.Reassembler reassembler = new FrameChunker.Reassembler();
-    private final FrameCodec codec = new FrameCodec();
+    private FrameCodec codec = new FrameCodec();
+    private final AtomicBoolean fullFrameRequested = new AtomicBoolean();
     private final AsyncVideoEncoder encoder = new AsyncVideoEncoder();
     // Resolution of the last frame received on the client; used by renderers that need
     // the aspect ratio before/without a texture. Defaults to the legacy resolution.
@@ -67,6 +69,10 @@ public final class MonitorVideoController {
         this.frameConsumer = consumer;
     }
 
+    public boolean hasPendingFullFrame() {
+        return fullFrameRequested.get();
+    }
+
     public void sendFrame(final MonitorDevice device) {
         final long now = System.currentTimeMillis();
         if (now - lastSentAt < 1000 / Config.monitorFps) return;
@@ -81,11 +87,19 @@ public final class MonitorVideoController {
             return;
         }
         final byte[] frame = encoder.obtainBuffer((int) frameBytes);
-        if (!device.copyFrame(ByteBuffer.wrap(frame))) {
+        final boolean fullFrame = fullFrameRequested.getAndSet(false);
+        if (!device.copyFrame(ByteBuffer.wrap(frame), fullFrame)) {
+            if (fullFrame) fullFrameRequested.set(true);
             encoder.recycle(frame);
             return;
         }
         lastSentAt = now;
+        if (fullFrame) {
+            // Already queued jobs retain their old codec and finish before this baseline.
+            // A fresh codec makes its first actually encoded job an IDR/DELTA keyframe,
+            // even if this pending raw frame is superseded before the worker picks it up.
+            codec = new FrameCodec();
+        }
 
         encoder.offer(codec, VideoCodec.fromId(Config.videoCodec), frame, width, height);
     }
@@ -145,7 +159,11 @@ public final class MonitorVideoController {
     public void handleWatchedBy(final ServerPlayer player) {
         watchersLock.lock();
         try {
-            watchers.put(player, System.currentTimeMillis());
+            final long now = System.currentTimeMillis();
+            final Long previous = watchers.put(player, now);
+            if (previous == null || now - previous > WATCHER_TIMEOUT_MS) {
+                fullFrameRequested.set(true);
+            }
         } finally {
             watchersLock.unlock();
         }

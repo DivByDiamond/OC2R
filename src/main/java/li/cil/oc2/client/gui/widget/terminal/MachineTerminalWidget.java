@@ -88,13 +88,20 @@ public final class MachineTerminalWidget {
                             .transformMaxBounds(graphics.pose());
                     final ScreenRectangle bounds = scissor == null ? area : area.intersection(scissor);
 
-                    if (snapshot.vertexCount() > 0) {
+                    if (bounds == null) {
+                        return;
+                    }
+                    if (snapshot.backgroundVertexCount() > 0) {
+                        graphics.submitGuiElementRenderState(new TerminalGuiElement.Background(
+                                snapshot, pose, bounds, bounds));
+                    }
+                    if (snapshot.textVertexCount() > 0) {
                         graphics.submitGuiElementRenderState(new TerminalGuiElement.Text(
-                                snapshot, pose, TerminalGuiElement.fontTexture(), bounds, scissor));
+                                snapshot, pose, TerminalGuiElement.fontTexture(), bounds, bounds));
                     }
                     if (snapshot.cursorVisible()) {
                         graphics.submitGuiElementRenderState(
-                                new TerminalGuiElement.Cursor(terminal, snapshot, pose, bounds, scissor));
+                                new TerminalGuiElement.Cursor(snapshot, pose, bounds, bounds));
                     }
                 }
             }
@@ -170,6 +177,8 @@ public final class MachineTerminalWidget {
         return true;
     }
 
+    // Error Prone 2.50's text-block suggestion crashes on these octal ESC literals.
+    @SuppressWarnings("StringConcatToTextBlock")
     public void mouseMoved(double x, double y) {
         if (isMouseOverTerminal((int) x, (int) y)) {
             if (!isOver && terminal.currentPrivateModeState.FOCUS_IN_FOCUS_OUT) {

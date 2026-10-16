@@ -48,6 +48,10 @@ public class MonitorGUIRenderer {
         }
     }
 
+    public static void cleanUp() {
+        Renderer.RENDER_INFO.cleanUp();
+    }
+
     private interface RendererModel {
         void close();
     }
@@ -159,6 +163,10 @@ public class MonitorGUIRenderer {
         if (renderInfo != null) {
             renderInfo.close();
         }
+    }
+
+    public static void cleanUp() {
+        Renderer.RENDER_INFO.cleanUp();
     }
 
     private interface RendererModel {

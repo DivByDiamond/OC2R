@@ -17,6 +17,9 @@ public final class ClientEvents {
     /** Level rendering reached one of the {@link LevelRenderContext.Stage stages}; fired once per stage. */
     public static final Event<Consumer<LevelRenderContext>> RENDER_LEVEL = new Event<>();
 
+    /** Submits custom geometry to the level render stage, outside of block entity renderers. */
+    public static final Event<Consumer<LevelGeometrySubmitContext>> SUBMIT_LEVEL_GEOMETRY = new Event<>();
+
     /** Asked before the hotbar is drawn; if any listener returns {@code true} the hotbar is hidden. */
     public static final Event<BooleanSupplier> HIDE_HOTBAR = new Event<>();
 

@@ -132,7 +132,11 @@ public record NBTDeserializerImpl(CompoundTag tag) implements DeserializationVis
             return Enum.valueOf((Class) type, tag.getString(name));
             //?}
         } else if (type == String.class) {
+            //? if >=26.1 {
+            /*return tag.getStringOr(name, "");
+            *///?} else {
             return tag.getString(name);
+            //?}
         } else if (type == UUID.class) {
             //? if >=26.1 {
             /*return tag.getCompoundOrEmpty(name).read(name, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();

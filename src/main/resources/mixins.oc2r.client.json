@@ -1,0 +1,13 @@
+{
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_21",
+  "required": true,
+  "package": "li.cil.oc2.client.mixin",
+  "refmap": "mixins.oc2r.refmap.json",
+  "client": [
+    "ProjectorProjectionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

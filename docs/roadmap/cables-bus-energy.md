@@ -26,3 +26,16 @@ The Redstone Interface side index bug is treated as fixed (commit ec49a41, "reds
 
 Bus items of the 2026-09-17 audit: B3 (`RPCDeviceBusAdapter` handoff `volatile`) is closed ([done.md](done.md#47-closed-items)). Open bus/VM items (P4 `BusElementManager` `scanDelay` off-by-one,
 A2 package cycles `blockentity <-> bus.provider` and `vm <-> bus.device.vm`) are tracked in [quality.md](quality.md#47-audit-2026-09-17).
+
+### Cable geometry and connection verification (2026-10-16)
+
+Removed decorative support rods toward solid neighbors on NeoForge and Fabric;
+these caused isolated pixels extending into floors. Installed interfaces take
+precedence over inferred links, and inferred cable connections require a cable
+on both ends. Loading repairs legacy cable-only states without a local cable,
+preserving installed interfaces and avoiding neighbor chunk queries.
+
+Three GameTests cover six directions, interface priority, symmetric link removal,
+and legacy state repair. Real 26.1.2 baked-model and world checks confirm the
+support rod is gone and occupied faces retain their interface. Before/after
+screenshots and reports are in `build/reports/cable-qa/`.

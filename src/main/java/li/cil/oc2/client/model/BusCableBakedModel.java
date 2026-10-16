@@ -22,9 +22,8 @@ import net.neoforged.neoforge.model.data.ModelData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// The bus cable: centre piece, a straight piece when it only runs along one axis, a support stub
-// towards a solid neighbour, or the facade block's model when it is camouflaged. Everything is
-// derived from the block state, the neighbours and the facade handed over through model data.
+// Cable geometry follows explicit block-state connections. A neighboring solid block alone
+// must not create a visible connection; model data only supplies camouflage.
 public final class BusCableBakedModel implements DynamicBlockStateModel {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final AtomicBoolean FAILURE_LOGGED = new AtomicBoolean();
@@ -83,11 +82,6 @@ public final class BusCableBakedModel implements DynamicBlockStateModel {
             }
 
             parts.add(base);
-
-            final Direction supportSide = BusCableModelUtils.getSupportSide(level, pos, state);
-            if (supportSide != null) {
-                parts.add(supportModelByFace[supportSide.get3DDataValue()]);
-            }
         } catch (final RuntimeException e) {
             // Never throw into the chunk mesher; render nothing for this block and say why once.
             if (FAILURE_LOGGED.compareAndSet(false, true)) {
@@ -160,7 +154,6 @@ public final class BusCableBakedModel implements DynamicBlockStateModel {
 *///?} else {
 package li.cil.oc2.client.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -191,13 +184,11 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel proxy;
     private final BakedModel[] straightModelByAxis;
-    private final BakedModel[] supportModelByFace;
 
     BusCableBakedModel(
             BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel... supportModelByFace) {
         this.proxy = proxy;
         this.straightModelByAxis = straightModelByAxis.clone();
-        this.supportModelByFace = supportModelByFace.clone();
     }
 
     @Override
@@ -234,17 +225,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             }
         }
 
-        final List<BakedQuad> quads =
-                new ArrayList<>(proxy.getQuads(state, side, rand, extraData, RenderType.solid()));
-
-        final BusCableModelTypes.BusCableSupportSide supportSide = extraData.get(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY);
-        if (supportSide != null) {
-            quads.addAll(
-                    supportModelByFace[supportSide.value().get3DDataValue()].getQuads(
-                            state, side, rand, extraData, RenderType.solid()));
-        }
-
-        return quads;
+        return proxy.getQuads(state, side, rand, extraData, RenderType.solid());
     }
 
     /**
@@ -310,14 +291,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
             return getFacadeModelData(level, pos, blockEntityData);
         }
 
-        final Direction supportSide = BusCableModelUtils.getSupportSide(level, pos, state);
-        if (supportSide != null) {
-            return ModelData.builder()
-                    .with(BusCableModelTypes.BUS_CABLE_SUPPORT_PROPERTY, new BusCableModelTypes.BusCableSupportSide(supportSide))
-                    .build();
-        }
-
-        return blockEntityData;
+        // Neighbouring solid blocks do not imply a cable or interface connection.
+        return ModelData.EMPTY;
     }
 
     @Nullable

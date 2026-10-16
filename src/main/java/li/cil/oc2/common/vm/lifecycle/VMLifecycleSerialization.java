@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.lifecycle;
 
+import java.io.IOException;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 import li.cil.oc2.common.util.nbt.NBTUtils;
@@ -48,11 +49,30 @@ final class VMLifecycleSerialization {
 
         //? if >=26.1 {
         /*if (tag.contains(VMLifecycle.STATE_TAG_NAME)) {
-            NBTSerialization.deserialize(tag.getCompoundOrEmpty(VMLifecycle.STATE_TAG_NAME), vm.state);
+            final CompoundTag savedState = tag.getCompoundOrEmpty(VMLifecycle.STATE_TAG_NAME);
+            prepareRootFilesystem(vm, savedState);
+            NBTSerialization.deserialize(savedState, vm.state);
         *///?} else {
         if (tag.contains(VMLifecycle.STATE_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
-            NBTSerialization.deserialize(tag.getCompound(VMLifecycle.STATE_TAG_NAME), vm.state);
+            final CompoundTag savedState = tag.getCompound(VMLifecycle.STATE_TAG_NAME);
+            prepareRootFilesystem(vm, savedState);
+            NBTSerialization.deserialize(savedState, vm.state);
         //?}
+        }
+    }
+
+    private static void prepareRootFilesystem(final AbstractVirtualMachine vm, final CompoundTag state) {
+        // Ceres restores sparse pages into an existing backing image. Construct that image first;
+        // otherwise an Onyx overlay could be restored without its immutable packaged base.
+        final var devices = state.get("builtinDevices");
+        if (devices instanceof CompoundTag saved
+                && saved.get("onyxRootFilesystem") instanceof CompoundTag root
+                && root.contains("overlay")) {
+            try {
+                vm.state.builtinDevices.selectRootFilesystem(true);
+            } catch (final IOException e) {
+                throw new IllegalStateException("Cannot restore the saved OnyxOS root filesystem", e);
+            }
         }
     }
 }

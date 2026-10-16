@@ -49,6 +49,13 @@ public class ClientProxyImpl implements ClientProxy {
     }
 
     @Override
+    public void handleFlashWriterStatus(final BlockPos pos, final java.util.UUID session,
+            final String state, final int offset, final int capacity, final String detail) {
+        li.cil.oc2.client.gui.screen.firmware.FlashWriterScreen.receive(
+                pos, session, state, offset, capacity, detail);
+    }
+
+    @Override
     public void playTone(final BlockPos pos, final float frequency, final int durationMs) {
         SoundCardMessageHooks.playTone(pos, frequency, durationMs);
     }
