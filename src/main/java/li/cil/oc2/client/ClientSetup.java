@@ -25,7 +25,9 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.platform.ClientRegistrar;
+import li.cil.oc2.client.audio.SoundClientManager;
 import li.cil.oc2.platform.event.ClientEvents;
+import li.cil.oc2.platform.event.CommonEvents;
 
 public final class ClientSetup {
     private ClientSetup() {}
@@ -60,5 +62,10 @@ public final class ClientSetup {
         CustomItemColors.initialize(registrar);
 
         ClientEvents.HIDE_HOTBAR.register(() -> KeyboardScreen.hideHotbar);
+        CommonEvents.LEVEL_UNLOAD.register(level -> {
+            if (level.isClientSide()) {
+                SoundClientManager.stopAll();
+            }
+        });
     }
 }

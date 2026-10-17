@@ -23,7 +23,7 @@ public final class SoundClientManager {
     public static void streamPcm(final BlockPos pos, final byte[] pcm) {
         try {
             StreamingPcmSoundInstance instance = PCM_STREAMS.get(pos);
-            if (instance == null || instance.isStopped()) {
+            if (instance == null || !instance.isDrivenByEngine(System.currentTimeMillis())) {
                 stopStream(pos);
                 final PcmSoundBuffer buffer = new PcmSoundBuffer();
                 // The audio executor may prime the stream as soon as play() is called.
@@ -45,6 +45,13 @@ public final class SoundClientManager {
         if (instance != null) {
             instance.stopStreaming();
             Minecraft.getInstance().getSoundManager().stop(instance);
+        }
+    }
+
+    /** Drops every cached stream, used when the client leaves a world so no stale instance survives. */
+    public static void stopAll() {
+        for (final BlockPos pos : PCM_STREAMS.keySet().toArray(new BlockPos[0])) {
+            stopStream(pos);
         }
     }
 }

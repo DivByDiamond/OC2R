@@ -41,6 +41,19 @@ class StreamingPcmSoundInstanceTest {
         assertFalse(instance.canPlaySound());
     }
 
+    @Test
+    void instanceDroppedByTheEngineIsNotReused() {
+        final PcmSoundBuffer buffer = new PcmSoundBuffer();
+        buffer.write(new byte[]{1, 2});
+        final StreamingPcmSoundInstance instance = instance(buffer);
+        final long now = System.currentTimeMillis();
+
+        assertTrue(instance.isDrivenByEngine(now));
+        assertFalse(instance.isDrivenByEngine(now + StreamingPcmSoundInstance.UNTICKED_TIMEOUT_MS + 1000));
+        instance.tick();
+        assertTrue(instance.isDrivenByEngine(System.currentTimeMillis()));
+    }
+
     private static StreamingPcmSoundInstance instance(final PcmSoundBuffer buffer) {
         final SoundEvent sound = SoundEvent.createVariableRangeEvent(
                 ResourceLocation.fromNamespaceAndPath("oc2r", "pcm_test"));

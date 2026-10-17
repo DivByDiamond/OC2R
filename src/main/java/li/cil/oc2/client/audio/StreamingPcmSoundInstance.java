@@ -16,7 +16,11 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
     private static final long STALE_TIMEOUT_MS = 2000;
     private static final int ATTENUATION_DISTANCE = 16;
 
+    /** Ticks arrive every client tick while the engine owns the instance; a long gap means it was dropped. */
+    static final long UNTICKED_TIMEOUT_MS = 1500;
+
     private final PcmSoundBuffer buffer;
+    private volatile long lastTickMs = System.currentTimeMillis();
 
     public StreamingPcmSoundInstance(
             final double x, final double y, final double z, final PcmSoundBuffer buffer) {
@@ -65,6 +69,7 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
 
     @Override
     public void tick() {
+        lastTickMs = System.currentTimeMillis();
         if (buffer.isStale(STALE_TIMEOUT_MS)) {
             stop();
         }
@@ -73,6 +78,14 @@ public final class StreamingPcmSoundInstance extends AbstractTickableSoundInstan
     @Override
     public boolean canPlaySound() {
         return !isStopped();
+    }
+
+    /**
+     * Whether the sound engine still drives this instance. A sound reload or a world change
+     * silently drops playing instances without notifying them, so they stop ticking.
+     */
+    boolean isDrivenByEngine(final long nowMs) {
+        return !isStopped() && nowMs - lastTickMs <= UNTICKED_TIMEOUT_MS;
     }
 
     void stopStreaming() {
