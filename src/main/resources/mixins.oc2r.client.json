@@ -6,6 +6,7 @@
   "refmap": "mixins.oc2r.refmap.json",
   "client": [
     "ParticleEngineAccessor",
+    "ParticleGroupAccessor",
     "ProjectorProjectionMixin"
   ],
   "injectors": {

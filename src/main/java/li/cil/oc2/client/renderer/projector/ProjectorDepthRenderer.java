@@ -6,8 +6,7 @@ import java.util.List;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-// 26.1 delegates depth/compositing to ProjectorPipelineRenderer after the level frame graph.
-// 26.2 retains the light-only path until its bind-group rendering API is supported.
+// 26.x delegates depth/compositing to ProjectorPipelineRenderer after the level frame graph.
 public final class ProjectorDepthRenderer {
     public record VisibleProjector(ProjectorBlockEntity projector, Vec3 worldPos, float yRot) {}
 
@@ -18,9 +17,7 @@ public final class ProjectorDepthRenderer {
 
     public static void addProjector(
             final ProjectorBlockEntity projector, final Vec3 worldPos, final float yRot) {
-        //? if <26.2 {
         VISIBLE_PROJECTORS.add(new VisibleProjector(projector, worldPos, yRot));
-        //?}
     }
 
     public static boolean willRenderProjectorDepth() {
@@ -34,9 +31,7 @@ public final class ProjectorDepthRenderer {
     public static void captureMainCameraDepth() {}
 
     public static void registerEvents() {
-        //? if <26.2 {
         li.cil.oc2.platform.event.ClientEvents.CLIENT_TICK_START.register(ProjectorPipelineRenderer::cleanUp);
-        //?}
     }
 }
 *///?} else {
