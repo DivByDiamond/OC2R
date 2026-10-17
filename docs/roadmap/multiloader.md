@@ -75,7 +75,8 @@ Checked 2026-09-07.
 Done, see PR `ci/gametest-parallel` (2026-09-16). GameTest had never actually run (neither locally nor in CI, a silent exit 0). Fixed: `@GameTestHolder`, own `empty.nbt`, `GameTestResultReporter` (fails on an empty/missing
 report, closes vacuous-green), `ci-work.yml` split into `lint`/`test`/`gametest`.
 
-- [ ] Remaining: 9 tests are marked `required = false` (reasons in git/PR history); remove the flag after fixing; run the vttest pages through GameTest layer 2 ([section 44.4](terminal.md#444-vttest-automation)) on top of the live infrastructure.
+- [x] The 9 tests marked `required = false` were fixed and the flag removed in `db7abe14` (bus cable interface wiring, fixture fixes, timeouts); verified 2026-10-17: `:1.21.1:gameTest` runs 35 tests, 0 required and 0 optional failures. On 26.1.2 `GameTestRegistrar` does register and start all 35 tests, but `:26.1.2:runGameTestServer` crashes in the first computer test (`Payload oc2r:computer_bus_state_message may not be sent to the client!`, network payload not registered on the game test server), so 26.x has no result yet.
+- [ ] Remaining: run the vttest pages through GameTest layer 2 ([section 44.4](terminal.md#444-vttest-automation)) on top of the live infrastructure.
 
 ## 58. Addon API on both loaders
 

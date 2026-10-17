@@ -31,7 +31,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
   - [x] Port 26.2 network cable rendering to the level submit pipeline; both 26.1.2 and 26.2 compile.
   - [x] Verify 26.2 network cables and terminal backgrounds/glyphs/cursor in game (2026-10-16). Fixed the terminal text pipeline's forward-depth comparison for 26.2 reversed-Z; the in-world screen now shows glyphs, colored text/background and the blinking cursor. Screenshot: `build/reports/render-qa/26.2-terminal-world-after-depth-fix.png`.
 - [x] Sedna 5.2.0 + buildroot 0.2.10 + upstream §49 ports (branch feat/sedna-5.2; upstream master moved past the 5.1.0 recorded before — ported 5.2.0/0.3.0/0.2.10 instead; see docs/roadmap/upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08)
-- [ ] Remove the `required = false` flag from 9 GameTests after fixing them (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
+- [x] Remove the `required = false` flag from 9 GameTests after fixing them: already done in `db7abe14` (2026-09-16); verified 2026-10-17, `:1.21.1:gameTest` runs 35 tests, all required, 0 failures (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
 - [ ] Terminal double-size PR-B: double width and render of `lineAttrs` (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
 - [ ] vttest golden-grid tests (layer 1) plus the 6 UTF-8/resize regressions (see docs/roadmap/terminal.md#444-vttest-automation)
 - [ ] Line-drawing glyphs in the font, then drop the procedural quads (see docs/roadmap/terminal.md#445-remaining-tofu-glyphs)
