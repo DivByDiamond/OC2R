@@ -452,9 +452,69 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
 //?}
 //? if >=26.2 {
-/*    // Nothing is drawn on 26.2 yet, so no row meshes are built; the dirty bits are just cleared.
+/*    // 26.2 removed Tesselator, but BufferBuilder can still produce CPU-side mesh data. Cache each
+    // dirty row as bytes; the block renderer replays those bytes through its submit pipeline.
     public void validateLineCache(final FrameState frame) {
-        dirty.set(0L);
+        if (dirty.get() == 0) return;
+
+        final long mask = dirty.getAndSet(0L);
+        final Matrix4f matrix = new Matrix4f();
+        final int blinkSeed = terminal.hashCode();
+        for (int row = 0; row < lines.length; row++) {
+            if ((mask & (1L << row)) == 0) continue;
+
+            matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
+            final byte[] background;
+            final int backgroundVertices;
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) {
+                final BufferBuilder builder = new BufferBuilder(
+                        bytes,
+                        com.mojang.blaze3d.PrimitiveTopology.QUADS,
+                        DefaultVertexFormat.POSITION_TEX_COLOR);
+                TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row, blinkSeed);
+                try (MeshData mesh = builder.build()) {
+                    if (mesh != null) {
+                        final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
+                        background = new byte[vertices.remaining()];
+                        vertices.get(background);
+                        backgroundVertices = mesh.drawState().vertexCount();
+                    } else {
+                        background = new byte[0];
+                        backgroundVertices = 0;
+                    }
+                }
+            }
+
+            final byte[] text;
+            final int textVertices;
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) {
+                final BufferBuilder builder = new BufferBuilder(
+                        bytes,
+                        com.mojang.blaze3d.PrimitiveTopology.QUADS,
+                        DefaultVertexFormat.POSITION_TEX_COLOR);
+                TerminalCharRenderer.renderForeground(frame, matrix, builder, row, blinkSeed);
+                try (MeshData mesh = builder.build()) {
+                    if (mesh != null) {
+                        final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
+                        text = new byte[vertices.remaining()];
+                        vertices.get(text);
+                        textVertices = mesh.drawState().vertexCount();
+                    } else {
+                        text = new byte[0];
+                        textVertices = 0;
+                    }
+                }
+            }
+
+            if (backgroundVertices + textVertices == 0) {
+                lines[row] = null;
+            } else {
+                final byte[] data = Arrays.copyOf(background, background.length + text.length);
+                System.arraycopy(text, 0, data, background.length, text.length);
+                lines[row] = new RowMesh(
+                        data, backgroundVertices + textVertices, backgroundVertices);
+            }
+        }
     }
 *///?} else if >=26.1 {
     /*public void validateLineCache(final FrameState frame) {

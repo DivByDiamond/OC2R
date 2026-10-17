@@ -26,17 +26,20 @@ public abstract class MinecraftMixin implements MinecraftExt {
      * <p>Some things in level rendering may try to re-bind the main render target, so we catch that
      * and ensure we bind the projector depth buffer again.
      */
+    //? if <26.2 {
     @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true, remap = false)
     private void getMainRenderTargetOverride(final CallbackInfoReturnable<RenderTarget> cir) {
         if (mainRenderTargetOverride != null) {
             cir.setReturnValue(mainRenderTargetOverride);
         }
     }
+    //?}
 
     /**
      * Avoid access to render targets that are null while rendering projector depth to skip some
      * work.
      */
+    //? if <26.2 {
     @Inject(method = "useShaderTransparency", at = @At("HEAD"), cancellable = true, remap = false)
     private static void noTransparencyWhileRenderingProjectorDepth(
             final CallbackInfoReturnable<Boolean> cir) {
@@ -45,4 +48,5 @@ public abstract class MinecraftMixin implements MinecraftExt {
             cir.setReturnValue(false);
         }
     }
+    //?}
 }

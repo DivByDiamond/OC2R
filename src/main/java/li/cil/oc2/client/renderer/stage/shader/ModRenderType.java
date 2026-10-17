@@ -79,7 +79,7 @@ public final class ModRenderType {
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation("pipeline/oc2r_terminal_text")
                     .withCull(false)
-                    .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                     .build();
 
     // The cursor is untextured colored quads: the debug filled pipeline already is exactly

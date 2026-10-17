@@ -39,7 +39,7 @@ final class TerminalTextRenderer {
         if (snapshot == null) {
             return;
         }
-        // On 26.2 the row meshes are not built yet (no tessellator), so only the cursor shows.
+        // Empty rows have no mesh; cursor-only frames are still submitted independently.
         if (snapshot.vertexCount() == 0 && !snapshot.cursorVisible()) {
             return;
         }

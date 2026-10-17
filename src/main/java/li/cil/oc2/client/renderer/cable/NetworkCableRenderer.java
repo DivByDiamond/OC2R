@@ -8,6 +8,9 @@ import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEnti
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.CommonEvents;
 import li.cil.oc2.platform.event.LevelRenderContext;
+//? if >=26.2 {
+/*import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
+*///?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -38,7 +41,11 @@ public final class NetworkCableRenderer {
     public static void registerEvents() {
         CommonEvents.CHUNK_UNLOAD.register(NetworkCableRenderer::handleChunkUnload);
         CommonEvents.LEVEL_UNLOAD.register(NetworkCableRenderer::handleLevelUnload);
+        //? if >=26.2 {
+/*        ClientEvents.SUBMIT_LEVEL_GEOMETRY.register(NetworkCableRenderer::handleSubmitGeometry);
+        *///?} else {
         ClientEvents.RENDER_LEVEL.register(NetworkCableRenderer::handleRenderWorld);
+        //?}
     }
 
     private static void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
@@ -77,6 +84,7 @@ public final class NetworkCableRenderer {
         }
     }
 
+    //? if <26.2 {
     private static void handleRenderWorld(final LevelRenderContext event) {
         if (event.stage() != LevelRenderContext.Stage.AFTER_CUTOUT_BLOCKS) {
             return;
@@ -123,6 +131,25 @@ public final class NetworkCableRenderer {
 
         stack.popPose();
     }
+    //?}
+
+    //? if >=26.2 {
+/*    private static void handleSubmitGeometry(final LevelGeometrySubmitContext event) {
+        validateConnectors();
+        validatePairs();
+        if (connections.isEmpty()) {
+            return;
+        }
+
+        CableRenderUtils.renderCables(
+                event.level(),
+                event.poseStack(),
+                event.cameraPosition(),
+                connections,
+                unused -> true,
+                event.collector());
+    }
+    *///?}
 
     private static void validateConnectors() {
         final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
