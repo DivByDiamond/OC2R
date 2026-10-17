@@ -58,6 +58,7 @@ public abstract class LevelRendererMixin {
     @Shadow(remap = false) private ViewArea viewArea;
     @Shadow(remap = false) @Final private LevelTargetBundle targets;
 
+    @SuppressWarnings("UnusedVariable") // fog and ci only exist to match the injection target
     @Inject(method = "addLateDebugPass", at = @At("HEAD"), remap = false)
     private void renderProjectors(
             final FrameGraphBuilder frame, final CameraRenderState camera,

@@ -1,7 +1,9 @@
 package li.cil.oc2.common.item.storage.flash;
 
 import li.cil.oc2.common.item.ItemProps;
+//? if <26.1 {
 import javax.annotation.Nullable;
+//?}
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.item.block.AbstractBlockDeviceItem;
 //? if >=26.1 {
@@ -16,7 +18,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.DyedItemColor;
 
 public final class HardDriveWithExternalDataItem extends AbstractBlockDeviceItem {
-    @Nullable private String descriptionId;
 
     public HardDriveWithExternalDataItem(
             final ResourceLocation defaultData, final DyeColor defaultColor) {
@@ -36,6 +37,8 @@ public final class HardDriveWithExternalDataItem extends AbstractBlockDeviceItem
     }
 
     //? if <26.1 {
+    @Nullable private String descriptionId;
+
     @Override
     protected String getOrCreateDescriptionId() {
         if (descriptionId == null) {

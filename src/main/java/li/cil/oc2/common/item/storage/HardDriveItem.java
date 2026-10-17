@@ -1,7 +1,9 @@
 package li.cil.oc2.common.item.storage;
 
 import li.cil.oc2.common.item.ItemProps;
+//? if <26.1 {
 import javax.annotation.Nullable;
+//?}
 import li.cil.oc2.api.API;
 //? if >=26.1 {
 /*import net.minecraft.util.Util;
@@ -15,7 +17,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.DyedItemColor;
 
 public final class HardDriveItem extends AbstractStorageItem {
-    @Nullable private String descriptionId;
 
     public HardDriveItem(final int capacity, final DyeColor defaultColor) {
         super(
@@ -34,6 +35,8 @@ public final class HardDriveItem extends AbstractStorageItem {
     }
 
     //? if <26.1 {
+    @Nullable private String descriptionId;
+
     @Override
     protected String getOrCreateDescriptionId() {
         if (descriptionId == null) {

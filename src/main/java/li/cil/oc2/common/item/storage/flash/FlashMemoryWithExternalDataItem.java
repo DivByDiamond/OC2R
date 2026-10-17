@@ -28,7 +28,6 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
     public static final String FIRMWARE_TAG_NAME = "firmware";
 
     private final ResourceLocation defaultData;
-    @Nullable private String descriptionId;
 
     public FlashMemoryWithExternalDataItem(final ResourceLocation defaultData) {
         //? if >=26.1 {
@@ -109,6 +108,8 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
     }
 
     //? if <26.1 {
+    @Nullable private String descriptionId;
+
     @Override
     protected String getOrCreateDescriptionId() {
         if (descriptionId == null) {
