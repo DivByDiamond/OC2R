@@ -13,12 +13,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements MinecraftExt {
+    //? if <26.2 {
     private RenderTarget mainRenderTargetOverride;
 
     @Override
     public void setMainRenderTargetOverride(@Nullable final RenderTarget renderTarget) {
         mainRenderTargetOverride = renderTarget;
     }
+    //?} else {
+    /*// 26.2 renders the projector depth pass through its own targets, nothing is redirected.
+    @Override
+    public void setMainRenderTargetOverride(@Nullable final RenderTarget renderTarget) {}
+    *///?}
 
     /**
      * Redirect everything into the correct buffer while rendering projector depth.

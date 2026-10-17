@@ -9,14 +9,18 @@ import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalBackgroundRenderer;
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalCursorRenderer;
 //? if >=26.1 {
-/*import com.mojang.blaze3d.pipeline.RenderPipeline;
+/*//? if <26.2 {
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.platform.CompareOp;
+//?}
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+//? if <26.2 {
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+//?}
 import org.lwjgl.system.MemoryUtil;
 *///?} else {
 import net.minecraft.client.renderer.GameRenderer;
@@ -24,20 +28,25 @@ import net.minecraft.client.renderer.ShaderInstance;
 //?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//? if <26.2 {
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+//?}
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalRenderer implements RendererModel, RendererView {
+    //? if <26.2 {
     private static final Logger RENDERER_LOGGER = LogManager.getLogger();
 
+    //?}
     public final Terminal terminal;
     //? if >=26.1 {
     /*// 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
     // rows are replayed into one mesh drawn through RenderType each frame.
     private record RowMesh(byte[] data, int vertexCount, int backgroundVertexCount) {}
 
+    //? if <26.2 {
     private static final RenderPipeline PIPELINE =
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation("pipeline/oc2r_terminal")
@@ -48,6 +57,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
     private static RenderType renderType;
 
+    //?}
     private RowMesh[] lines = new RowMesh[Terminal.HEIGHT];
 *///?} else {
     private VertexBuffer[] lines = new VertexBuffer[Terminal.HEIGHT];
@@ -344,7 +354,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
 //?}
 //? if >=26.2 {
-/*    // 26.2 removed RenderType.draw(MeshData) and the tessellator; the terminal text is not drawn
+    /*// 26.2 removed RenderType.draw(MeshData) and the tessellator; the terminal text is not drawn
     // there yet, so the render entry point is a no-op.
     public void renderBuffer(
             final PoseStack stack, final Matrix4f projectionMatrix, boolean renderingToBlock) {}
@@ -452,7 +462,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
 //?}
 //? if >=26.2 {
-/*    // 26.2 removed Tesselator, but BufferBuilder can still produce CPU-side mesh data. Cache each
+    /*// 26.2 removed Tesselator, but BufferBuilder can still produce CPU-side mesh data. Cache each
     // dirty row as bytes; the block renderer replays those bytes through its submit pipeline.
     public void validateLineCache(final FrameState frame) {
         if (dirty.get() == 0) return;

@@ -23,8 +23,8 @@ public abstract class LevelRendererMixin {
 
     @Inject(method = "addAlwaysOnTopPass", at = @At("HEAD"), remap = false)
     private void renderProjectors(
-            final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame featureFrame,
-            final GpuBufferSlice fog, final CallbackInfo ci) {
+            final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame unusedFeatureFrame,
+            final GpuBufferSlice unusedFog, final CallbackInfo unusedCi) {
         // World depth must be sampled before always_on_top clears it for gizmos drawn over the world.
         // Reading and writing the main target puts this pass after the world's passes and
         // keeps it alive in the frame graph even when no other target reads its output.
@@ -58,11 +58,10 @@ public abstract class LevelRendererMixin {
     @Shadow(remap = false) private ViewArea viewArea;
     @Shadow(remap = false) @Final private LevelTargetBundle targets;
 
-    @SuppressWarnings("UnusedVariable") // fog and ci only exist to match the injection target
     @Inject(method = "addLateDebugPass", at = @At("HEAD"), remap = false)
     private void renderProjectors(
             final FrameGraphBuilder frame, final CameraRenderState camera,
-            final GpuBufferSlice fog, final Matrix4fc view, final CallbackInfo ci) {
+            final GpuBufferSlice unusedFog, final Matrix4fc view, final CallbackInfo unusedCi) {
         // World depth must be sampled before late_debug clears it for always-on-top gizmos.
         // Reading and writing the main target puts this pass after the world's passes and
         // keeps it alive in the frame graph even when no other target reads its output.

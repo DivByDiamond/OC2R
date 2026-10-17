@@ -44,13 +44,15 @@ final class CableRenderUtils {
     private static final Vector3f CABLE_COLOR = new Vector3f(0.15f, 0.4f, 0.9f);
     private static final int MAX_RENDER_DISTANCE = 100;
 
+    //? if <26.2 {
     private static final List<NetworkCablePoint> cablePoints = new ArrayList<>();
 
+    //?}
     private CableRenderUtils() {}
 
     static void renderCables(
             //? if >=26.1 {
-/*            final BlockAndLightGetter level,
+            /*final BlockAndLightGetter level,
 *///?} else {
             final BlockAndTintGetter level,
             //?}
@@ -59,7 +61,7 @@ final class CableRenderUtils {
             final List<NetworkCableConnection> connections,
             final Predicate<AABB> filter
             //? if >=26.2 {
-/*            , final SubmitNodeCollector collector
+            /*, final SubmitNodeCollector collector
             *///?}
             ) {
         //? if >=26.2 {
@@ -174,7 +176,7 @@ final class CableRenderUtils {
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
                 //? if >=26.1 {
-/*                final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
+                /*final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
 *///?} else {
                 final int packedLight = LightTexture.pack(blockLight, skyLight);
                 //?}
@@ -190,7 +192,7 @@ final class CableRenderUtils {
                 final NetworkCablePoint pb = cablePoints.get(i + 1);
 
                 //? if >=26.1 {
-/*                // The 26.x cable pipeline has no lightmap, so the light is baked into the color.
+                /*// The 26.x cable pipeline has no lightmap, so the light is baked into the color.
                 final float light = brightness(pa.packedLight());
                 consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
                         .setColor(r * light, g * light, b * light, 1f);
@@ -222,11 +224,11 @@ final class CableRenderUtils {
     }
 
     //? if >=26.2 {
-/*    private record CableVertex(float x, float y, float z, float r, float g, float b) {}
+    /*private record CableVertex(float x, float y, float z, float r, float g, float b) {}
     *///?}
 
     //? if >=26.1 {
-/*    private static float brightness(final int packedLight) {
+    /*private static float brightness(final int packedLight) {
         final float level = Math.max(LightCoordsUtil.block(packedLight), LightCoordsUtil.sky(packedLight));
         return 0.25f + 0.75f * level / 15f;
     }
