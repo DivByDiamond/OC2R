@@ -83,6 +83,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Printer and paper, media player, redstone relay, command computer (see docs/roadmap/devices-storage.md#54-more-peripherals)
 - [ ] Uniform inventory/fluid/energy devices with push/pull and stable method names (see docs/roadmap/devices-storage.md#55-uniform-block-access-inventory-fluid-energy)
 - [ ] Software shipped with the image: help, everyday tools, robot programs, first-run hint (see docs/roadmap/devices-storage.md#56-software-shipped-with-the-image)
+- [ ] Fix `:26.1.2:runGameTestServer` crashing in the first computer test with `Payload oc2r:computer_bus_state_message may not be sent to the client!` (mod payloads apparently not registered on the 26.x game-test server; see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
 - [ ] Addon API registration without `DeferredRegister`, working on both loaders (see docs/roadmap/multiloader.md#58-addon-api-on-both-loaders)
 - [ ] Icebox: OC2R outside Minecraft, standalone or browser runner (see docs/roadmap/icebox.md#57-oc2r-outside-minecraft)
 - [ ] Icebox: resizable screen (#12), projector rendering ideas, buildroot image rebuild, block area enlarge (see docs/roadmap/icebox.md)

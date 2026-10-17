@@ -76,6 +76,7 @@ Done, see PR `ci/gametest-parallel` (2026-09-16). GameTest had never actually ru
 report, closes vacuous-green), `ci-work.yml` split into `lint`/`test`/`gametest`.
 
 - [x] The 9 tests marked `required = false` were fixed and the flag removed in `db7abe14` (bus cable interface wiring, fixture fixes, timeouts); verified 2026-10-17: `:1.21.1:gameTest` runs 35 tests, 0 required and 0 optional failures. On 26.1.2 `GameTestRegistrar` does register and start all 35 tests, but `:26.1.2:runGameTestServer` crashes in the first computer test (`Payload oc2r:computer_bus_state_message may not be sent to the client!`, network payload not registered on the game test server), so 26.x has no result yet.
+- [ ] 26.1.2 GameTest server: register the mod network payloads on the 26.x game test server so `:26.1.2:runGameTestServer` gets past the first computer test (`UnsupportedOperationException: Payload oc2r:computer_bus_state_message may not be sent to the client!`; crash report in `versions/26.1.2/run/crash-reports/`), then get the 35 tests green on 26.x.
 - [ ] Remaining: run the vttest pages through GameTest layer 2 ([section 44.4](terminal.md#444-vttest-automation)) on top of the live infrastructure.
 
 ## 58. Addon API on both loaders
