@@ -1,14 +1,12 @@
 # File Import/Export Card
-![Tear down this wall!](item:oc2r:file_import_export_card)
+![Between host and guest](item:oc2r:file_import_export_card)
 
-The file import/export card allows breaking the fourth wall. It allows:
-- uploading files from your real computer into a virtual [computer](../block/computer.md).
-- downloading files from a virtual computer onto your real computer.
+This RPC device, named *file_import_export*, transfers files between the guest and players currently using its terminal. Upload uses the first responding player; downloads are offered to all current terminal users. With no users present, an import request returns false.
 
-For added convenience, the default Linux distribution provides two utility scripts for these operations, *import.lua* and *export.lua*.
+The old *import.lua* and *export.lua* helpers are not bundled in the current package. Use the device API from a guest program, or provide your own wrappers. See [scripting](../scripting.md) for Lua setup and discovery.
 
-*import.lua* will, when run, prompt for a file to upload to the virtual computer. The file will be stored in the current working directory. If a file with the name of the imported file already exists, the option to provide an alternative name will be offered.
+## API
 
-*export.lua* takes as its parameter the path to a file in a virtual computer. It then downloads this file to your real computer and offers a save dialog, offering the choice of where to save the downloaded file, or to cancel the operation.
+*beginExportFile(name)* starts an export; *writeExportFile(data)* appends numeric byte arrays; *finishExportFile()* opens the players' save dialogs. The export limit is 1048575 bytes.
 
-Both scripts will prompt all users currently interacting with the computer's terminal. For upload operations (*import.lua*), the first uploaded file will be used. The prompts on other clients will be canceled. For download operations all clients will be offered to save the exported file.
+*requestImportFile():boolean* opens an upload dialog. Poll *beginImportFile()* until it returns file metadata (*name*, *size*), then call *readImportFile()* for numeric byte chunks until an empty array marks the end. Cancellation raises an error. Calls must follow this order; overlapping transfers are rejected.

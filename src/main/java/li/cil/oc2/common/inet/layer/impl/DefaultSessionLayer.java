@@ -156,13 +156,21 @@ public final class DefaultSessionLayer implements SessionLayer {
             final SocketChannel channel = SessionChannelHelper.getChannel(streamSession);
             final ByteBuffer stream = receiver.receive(streamSession);
             assert stream != null;
+            if (streamSession instanceof StreamSessionImpl pending && pending.isInputEnded()) return true;
             // Non-blocking channel: read until EAGAIN (0), end of stream (-1)
             // or the session buffer is full to make use of the whole window.
             for (;;) {
                 final int read = channel.read(stream);
                 if (read <= 0) {
                     if (read == -1) {
-                        SessionChannelHelper.closeSession(streamSession);
+                        if (streamSession instanceof StreamSessionImpl pending) {
+                            // The same read loop may have received the complete response before EOF.
+                            // Keep its bytes available until the guest ACKs them, then send FIN.
+                            channel.close();
+                            pending.endOfInput();
+                        } else {
+                            SessionChannelHelper.closeSession(streamSession);
+                        }
                         break;
                     }
                     break;
@@ -187,7 +195,7 @@ public final class DefaultSessionLayer implements SessionLayer {
             final StreamSessionImpl stream = iterator.next();
             if (stream.isClosed() || !stream.getState().equals(Session.States.ESTABLISHED)) {
                 iterator.remove();
-            } else if (stream.receiveBuffer.position() > stream.nextSegmentMark) {
+            } else if (stream.receiveBuffer.position() > stream.nextSegmentMark || stream.hasPendingFin()) {
                 receiver.receive(stream);
                 return;
             }

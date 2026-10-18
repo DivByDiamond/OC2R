@@ -3,7 +3,7 @@
 
 The random access memory (RAM) device provides working memory to [computers](../block/computer.md) and [robots](robot.md).
 
-As opposed to [hard drives](hard_drive.md), this memory is volatile and will be cleared when a computer powers down. It is theoretically possible for computers to function without RAM, by software only using the stack for data storage. However, typically software requires RAM to function. In particular, the [firmware](flash_memory.md) contained in newly obtained computers requires a decent amount to function.
+As opposed to [hard drives](hard_drive.md), this memory is volatile and will be cleared when a computer powers down. RAM is required by the bundled firmware and Linux. Modules provide 2, 4, 8 or 16 MiB each.
 
 Also see the [getting started](../getting_started.md) manual entry.
 

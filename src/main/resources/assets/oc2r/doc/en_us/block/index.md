@@ -15,3 +15,6 @@ To quickly access the manual entry for a block in the world, simply use this [ma
 - [Network Hub](network_hub.md)
 - [Projector](projector.md)
 - [Redstone Interface](redstone_interface.md)
+
+- [Speaker](speaker.md)
+- [Internet Gateway](internet_gateway.md)

@@ -1,28 +1,16 @@
 package li.cil.oc2.client.manual;
 
-//? if >=26.1 {
-/*import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-
-// Markdown Manual has no 26.x build (roadmap multiversion-26-neoforge section 3), so there is nothing to register there.
-@OnlyIn(Dist.CLIENT)
-public final class Manuals {
-    public static void initialize() {
-    }
-}
-*///?} else {
 import java.util.function.Supplier;
-import li.cil.manual.api.ManualModel;
-import li.cil.manual.api.prefab.Manual;
-import li.cil.manual.api.prefab.provider.NamespaceDocumentProvider;
-import li.cil.manual.api.prefab.provider.NamespacePathProvider;
-import li.cil.manual.api.prefab.tab.ItemStackTab;
-import li.cil.manual.api.prefab.tab.TextureTab;
-import li.cil.manual.api.util.Constants;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.platform.Platform;
+import li.cil.oc2.manual.api.ManualModel;
+import li.cil.oc2.manual.api.prefab.Manual;
+import li.cil.oc2.manual.api.prefab.provider.NamespaceDocumentProvider;
+import li.cil.oc2.manual.api.prefab.provider.NamespacePathProvider;
+import li.cil.oc2.manual.api.prefab.tab.ItemStackTab;
+import li.cil.oc2.manual.api.prefab.tab.TextureTab;
+import li.cil.oc2.manual.api.util.Constants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -31,15 +19,16 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public final class Manuals {
-    private static final String MANUAL_REGISTRY = Constants.MANUAL_REGISTRY.location().toString();
-    private static final String PATH_PROVIDERS = Constants.PATH_PROVIDER_REGISTRY.location().toString();
+    private static final String MANUAL_REGISTRY = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.MANUAL_REGISTRY).toString();
+    private static final String PATH_PROVIDERS = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.PATH_PROVIDER_REGISTRY).toString();
     private static final String CONTENT_PROVIDERS =
-            Constants.DOCUMENT_PROVIDER_REGISTRY.location().toString();
-    private static final String TABS = Constants.TAB_REGISTRY.location().toString();
+            li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.DOCUMENT_PROVIDER_REGISTRY).toString();
+    private static final String TABS = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.TAB_REGISTRY).toString();
 
     public static final Supplier<Manual> MANUAL = register(MANUAL_REGISTRY, "manual", Manual::new);
 
     public static void initialize() {
+        li.cil.oc2.manual.client.ClientSetup.initialize();
         register(PATH_PROVIDERS, "path_provider", () -> new NamespacePathProvider(API.MOD_ID));
         register(
                 CONTENT_PROVIDERS, "content_provider", () -> new NamespaceDocumentProvider(API.MOD_ID, "doc"));
@@ -73,7 +62,6 @@ public final class Manuals {
 
     private static <T> Supplier<T> register(
             final String registryId, final String name, final Supplier<? extends T> factory) {
-        return Platform.registries().register(registryId, Constants.MOD_ID, name, factory);
+        return li.cil.oc2.manual.client.util.RegistryUtils.register(registryId, API.MOD_ID, name, factory);
     }
 }
-//?}

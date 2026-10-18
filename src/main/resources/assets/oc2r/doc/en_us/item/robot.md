@@ -36,9 +36,8 @@ These methods are available on the underlying robot device. Note that the librar
 *getSelectedSlot():number* returns the currently selected robot inventory slot. This is used by many modules as an implicit input.
 - Returns the index of the selected inventory slot.
 
-*setSelectedSlot(slot:number):number* sets the currently selected robot inventory slot. This is used by many modules as an implicit input.
+*setSelectedSlot(slot:number)* sets the currently selected robot inventory slot. This is used by many modules as an implicit input.
 - *slot* is the index of the inventory slot to select.
-- Returns the index of the newly selected slot. This may differ from *slot* if the specified value was invalid.
 
 *getStackInSlot(slot:number):table* gets a description of the item in the specified slot.
 - *slot* is the index of the slot to get the item description for.
@@ -106,3 +105,7 @@ This is a Lua library. It can be used in the default Linux distribution. For exa
 
 *turnAsync(direction)* tries to asynchronously turn into the specified direction. Blocks until the action was successfully enqueued.
 - *direction* is the direction to turn towards.
+
+Inventory indices start at zero. The direct *setSelectedSlot* call returns no value; read *getSelectedSlot()* afterwards. The Lua *robot.slot(value)* wrapper returns the resulting selected slot.
+
+The Lua library also provides *facing()*, *position()* and *calibrate()* as wrappers for the corresponding device methods.

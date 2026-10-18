@@ -1,9 +1,8 @@
-//? if <26.1 {
 
 package li.cil.oc2.client.manual;
 
-import li.cil.manual.api.ManualScreenStyle;
 import li.cil.oc2.api.API;
+import li.cil.oc2.manual.api.ManualScreenStyle;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -60,4 +59,3 @@ public final class ModManualScreenStyle implements ManualScreenStyle {
         return 0;
     }
 }
-//?}

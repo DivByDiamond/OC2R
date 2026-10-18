@@ -1,33 +1,13 @@
 # Getting Started
 
-This article describes the steps required to get a [computer](block/computer.md) up and running, and gives an example of how it can be used to interact with devices.
+Start with a [computer](block/computer.md), one [CPU](item/cpu.md), and four 8 MiB [memory](item/memory.md) modules (32 MiB total is a practical starting configuration). The survival computer recipe includes a Linux [firmware chip](item/flash_memory.md); a plain computer obtained in another way may need that chip installed separately.
 
-## Building
+Place the computer and use a [scrench](item/wrench.md) to open its inventory. Install the CPU, RAM and firmware in their dedicated slots. The preconfigured creative computer already contains components. Supply energy and check the energy bar's tooltip for stored energy and consumption. Then open the terminal and press its power button. Wait for the login prompt and log in as *root*.
 
-First things first, you need an actual computer, plus a couple of components. If you haven't already, craft these first:
+The bundled Linux boots from a built-in writable root filesystem. An extra hard drive and the old wrench-prepared "Linux disk" are not required. Extra [hard drives](item/hard_drive.md) are data disks; formatting them erases their contents. The firmware loads the kernel from the built-in root disk.
 
-- 1x [computer](block/computer.md)
-- 1x **Linux** [hard drive](item/hard_drive.md) (regular 8M hard drive, then craft it with a [wrench](item/wrench.md))
-- 3x 8M [Memory](item/memory.md)
+The computer's own terminal works without a GPU. For a [monitor](block/monitor.md), install a [GPU](item/gpu.md), connect the monitor through [bus interfaces](block/bus_interface.md) and [cables](block/bus_cable.md), and power the display. A [projector](block/projector.md) is a separate fixed-resolution framebuffer device.
 
-![The basics](../img/getting_started_basics.png)
+Shut down before replacing native components. If boot fails, check CPU, RAM, firmware, energy and the error shown in the terminal. Changing the server's component/energy settings can change the required setup.
 
-Once you got all this, place down the computer. Open its inventory screen using a wrench. Alternatively, open the terminal screen, then use the toggle button to the left to switch to the inventory screen. Here, place the crafted hard drive and memory into the computer.
-
-![Computer inventory](../img/getting_started_inventory.png)
-
-## Starting
-
-To power up your freshly build computer, you'll usually need to supply it with some power. Have a look at the energy bar to the left of the terminal or inventory screen. Its tooltip informs you of the current amount of energy stored in the computer, and the amount of energy it requires per tick to keep running.
-
-![Computer energy info](../img/getting_started_energy.png)
-
-When you've ensured the required amount of energy is available, switch to the terminal screen and hit the power button to the top left. Alternatively use the computer while sneaking. The computer should now boot! Wait until you're prompted for a login.
-
-![Login prompt](../img/getting_started_login.png)
-
-Enter *root* as the user name to log in with and press enter. Well done, you now have a computer that's ready for use!
-
-You can now add more devices, depending on what you want to use your computer for. For information on how to control devices, have a look at the [scripting](scripting.md) manual entry.
-
-Good luck, and most importantly, have fun!
+See [basics](basics.md), [scripting](scripting.md), [networking](networking.md) and [robotics](robotics.md) for the next steps.

@@ -1,0 +1,28 @@
+--- a/apps/ohttp/http/response.c
++++ b/apps/ohttp/http/response.c
+@@ -3,12 +3,11 @@
+  * blank line, and streams the body to a file.
+  *
+  * OnyxKernel's net_recv (kernel/src/net/tcp/sock.rs:tcp_recv) has no
+- * "peer closed" signal distinct from "no data yet": both come back as
+- * -1/ENOENT (it never returns 0), and the connection slot only vanishes
+- * (-1/EINVAL) after TIMEWAIT expires, well after the response finished.
+- * So this reader trusts Content-Length to know when the body is done,
+- * and treats slot-gone (EINVAL) as "done, whatever we got" for the rare
+- * server that closes without one. ENOENT just means "poll again".
++ * "peer closed" signal in the original kernel. The current OC2R kernel
++ * returns zero for orderly EOF and -1/ENOENT while a live connection has
++ * no data. Content-Length can finish a response before EOF; otherwise
++ * EOF terminates it. Older kernels may still report a vanished slot as
++ * EINVAL after TIMEWAIT. ENOENT means "poll again".
+  *
+  * Deliberately minimal beyond that: no chunked transfer-encoding, no
+  * redirects. Good enough for the plain-file GETs ohttp targets today;
+@@ -61,6 +60,7 @@
+     for (int attempt = 0; attempt < OHTTP_RECV_RETRIES; attempt++) {
+         long r = net_recv(conn_id, buf, len);
+         if (r > 0) return r;
++        if (r == 0) return 0; /* Current kernel: orderly peer EOF. */
+         if (r < 0 && errno == EINVAL) return 0;   /* slot gone: peer long closed */
+         if (r < 0 && errno != ENOENT) return -1;  /* real error */
+         for (volatile int spin = 0; spin < 2000; spin++) {} /* usleep() hangs here; spin instead */

@@ -7,6 +7,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **OnyxOS**: simultaneous IPv4 interfaces and routing, configurable addresses/DNS, TCP listeners and bounded UDP datagram APIs, with native network demonstration tools. Add `/dev/hvc0`, a native C RPC library and `oc2ctl` for OC2R devices, robot actions, scanner, inventory and sound.
+- **26.x datagen**: generate item definitions, item models and blockstates on both versions; isolate client/server outputs and verify recipe behavior and tag preservation before packaging.
+- **Manual**: embed the MIT-licensed Markdown Manual sources and assets inside OC2R, with localized pages, navigation history, tabs and item/block/tag previews on NeoForge 1.21.1, 26.1.2, 26.2 and Fabric 1.21.1; no external Markdown Manual or Architectury dependency is needed.
+- **Manual**: fenced multiline code blocks with optional language labels; shell and Lua examples in the English and Russian scripting, networking and robotics guides are now grouped into literal code blocks.
+- **Flash writer**: in-game interface for bundled firmware and local image upload, target/capacity validation, session ownership and exclusion while writable media is mounted by a running VM.
+- **26.x rendering**: machine terminal GUI extraction, in-world terminals, network cables and monitor rendering; projector depth/compositing supports the 26.2 reversed-Z pipeline and entity/particle shadows.
 - **Robot**: localization — `GlobalPos` origin (first tick + dimension change, persisted), `getFacing`/`getPosition`/`calibratePosition` device methods with Lua/MicroPython wrappers and docs (upstream `3acd14a`, RPC-only)
 - **Robot**: scanner module — `inspect`/`scan` (7x7x7 hardness cube, 5s cooldown) / `canSeeSky`/`getScanLayer`, recipe, docs, game tests (upstream `802b8be`, RPC-only)
 - **Robot**: crafting module — `craft()` over grid slots 0-8 with output from the selected slot, recipe, docs (upstream `b1366f9`, RPC-only)
@@ -14,7 +20,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Computer/Robot UI**: the power button now offers start, shut down, reboot (Shift) and power off (Ctrl); shut down and reboot ask the guest through the board system controller (interrupt 6) and fall back to a hard stop or restart when the guest has not enabled it (upstream `276b061`)
 - **VM**: the board system controller is published into the guest device tree; a guest-initiated reboot cycles the VM instead of wedging it in STOPPED (Sedna 5.2.0 syscon)
 - **Multiversion**: the build now multiplexes Minecraft 1.21.1 / 26.1.2 / 26.2 through Stonecutter 0.9.8 — `versions/<v>` nodes with per-version `gradle.properties`, a `ResourceLocation`→`Identifier` source replacement on 26.x with `//? if` conditionals for the API breaks, `core` compiling against NeoForm 26.1.2/26.2 (Java 25 toolchains), per-node dependency lockfiles and CI tasks qualified to `:1.21.1:`/`:fabric:1.21.1:`; Fabric remains on 1.21.1 (Loom does not remap 26.x)
-- **Fabric**: a `fabric/` module (Fabric Loom, Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual) that runs the whole mod on Fabric 1.21.1: registry, network, menu, capability, energy, environment and game-event bridges in `core`, Fabric client (models, shaders, renderers, manual), and Fabric GameTests (`:fabric:runGameTest`) that run the shared NeoForge game tests on a Fabric server
+- **Fabric**: a `fabric/` module (Fabric Loom, Fabric API, Team Reborn Energy, Forge Config API Port) that runs the whole mod on Fabric 1.21.1: registry, network, menu, capability, energy, environment and game-event bridges in `core`, Fabric client (models, shaders, renderers, manual), and Fabric GameTests (`:fabric:runGameTest`) that run the shared NeoForge game tests on a Fabric server
 - **Platform layer**: loader-independent `core` contracts for registries, network, menus, capabilities, item handlers, energy, client registration and client events, so shared code no longer names NeoForge for these
 - **Terminal**: ENQ (ANSI 0x05) transmits the answerback message (xterm `XTerm*answerbackString` semantics — empty by default, immediate no-op reply instead of silence); ENQ mid-CSI stays ignored per the existing deliberate C0-during-CSI divergence
 - **Terminal**: United Kingdom charset (`ESC ( A` / `ESC ) A`) — `#` renders as `£`, matching xterm's `nrc_British`; alternate-ROM designators remain documented no-ops
@@ -23,6 +29,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **Onyx console**: scale the mirrored text console to fit high-resolution monitors with centered margins, while preserving native framebuffer graphics and limiting presentation to changed regions.
+- **Onyx login**: enter a selected account without a password prompt when its stored credentials verify an empty password; protected and locked accounts retain authentication.
+- **Internet**: preserve buffered TCP response bytes when the remote socket reaches EOF, deliver them through the guest receive window and send FIN after acknowledgment. HTTP servers that close immediately after their response no longer lose the response inside the host adapter.
+- **Onyx HTTP**: recognize orderly EOF for close-delimited response bodies, build `ohttp` with the root-ring permissions required to create its output file, and resolve relative `open` paths against the guest's working directory.
+- **OnyxOS**: align mirrored UART/framebuffer console geometry, correct ANSI line erasure and reduce console framebuffer copying; prevent first-output hangs in libc and rebuild all bundled C apps with the corrected compiler/libc. Fix VirtIO network feature negotiation, receive-ring rollover, TCP receive-window updates and process ownership of sockets.
+- **VM storage**: retain the released Onyx base image and identify new writable roots by their immutable base hash. Restore saved pages against that base; stop and preserve the original snapshot when a required base is missing or corrupt.
+- **Datagen**: preserve preinstalled firmware in computer/robot recipes without constructing unbound item stacks, retain scanner/crafting module tags, generate speaker drops and an empty loot table for the itemless network switch.
+- **Manual**: preserve underscores and asterisks in inline code, transform document clipping correctly on 1.21.1, and bound scroll/tab interpolation when a 26.x frame spans multiple game ticks. Item preview stacks are created lazily after their components are available.
+- **GameTests**: negotiate registered NeoForge payload channels on mock server players so broadcasts from other tests do not fail as sends to vanilla clients.
+- **Audio**: discard cached speaker PCM streams when leaving a world so playback can restart in the next world.
+- **26.x persistence**: force a computer bus rescan after loading a world so its saved devices are discovered again.
 - **VM**: item devices are no longer created on the client, which broke dedicated servers (upstream issue #315) — creation is skipped there, and hard-drive images resolve on the worker thread at mount time
 - **Sound card**: the first tone or PCM stream crashed the JVM (SIGSEGV in `alBufferData`) because the audio streams handed OpenAL heap buffers; they are now direct, little-endian and flipped
 - **Bus cable**: a facade set or removed on a loaded cable was not sent to tracking clients until the chunk reloaded; grass and mycelium facades rendered black on NeoForge
@@ -39,13 +56,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Changed
 
+- **Manual content**: audit English and Russian instructions against current devices, recipes and bundled Linux; add CPU/GPU, Internet, speaker, scanner and crafting coverage in Russian, and correct firmware/root-disk boot, Lua library setup, scanner arrays, tone/PCM APIs and absent helper scripts.
 - **Terminal**: the client render thread draws from a per-frame consistent snapshot (`FrameState`) captured under a geometry seqlock instead of reading live terminal state, closing the unsynchronized-reads-during-render race; row renderers' blink phase is keyed to the terminal identity so line rebuilds and the visible phase stay in step
 - **Terminal**: the network diff carries resolved scrollback shift operations (memmove geometry) instead of the client re-deriving them, keeping scrollback above the visible window exact on the client; degradation is bounded when more than 32 shifts land inside one diff window
 - **Terminal**: scrolling reworked behind the buffer API — n-ary `shiftUp`/`shiftDown` with a batched scrollback window-growth phase (one dirty mark instead of one per row) and a total clip-discard shift primitive; the SU/SD handlers no longer reach into the scrollback window fields directly (#45)
 - **Terminal**: SGR background color resolution unified into a single `Terminal.currentBackgroundColor()` (six inline copies removed); IL/DL pass explicit clip bounds to the shift primitive and DL drops a redundant pre-clear pass
 - **Recipes**: `flash_memory_onyxos` now chains from `flash_memory_custom` + wrench and `hard_drive_onyxos` is a wrench-applied shapeless recipe from `hard_drive_medium` (both previously collided with their base recipes and could never both be crafted) (#47)
 - **Sedna**: updated to 5.2.0 (from 4.0.1) with sedna-buildroot 0.2.10 (from 0.0.72-oc2r1): the firmware is now a minimal boot ROM that loads the kernel from disk, so flash holds only `firmware.bin` and the single `rootfs.ext2` replaces the bootfs+rootfs pair (9p and `/mnt/builtin` verified working)
-- **Codebase**: all 108 `javac` warnings eliminated by fixing, not silencing (inlined deprecated-API defaults with behavior proofs, a `ValueInput`-to-tag bridge without deprecated calls, version-conditional replacements named by the deprecating patches themselves)
+- **Codebase**: address the 108 `javac` warnings identified in the earlier audit through API and behavior fixes (inlined deprecated-API defaults with behavior proofs, a `ValueInput`-to-tag bridge without deprecated calls, version-conditional replacements named by the deprecating patches themselves)
 
 ## [0.1.1-beta.3.1] — 2026-09-15
 

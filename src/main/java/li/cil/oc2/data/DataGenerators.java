@@ -28,7 +28,11 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 @EventBusSubscriber(modid = API.MOD_ID)
 public final class DataGenerators {
     //? if >=26.1 {
-    /*// Model and blockstate generation is not ported to the 26.x model generators yet.
+    /*@SubscribeEvent
+    public static void gatherClientData(final GatherDataEvent.Client event) {
+        event.createProvider(li.cil.oc2.data.model.ModernClientDataProvider::new);
+    }
+
     @SubscribeEvent
     public static void gatherServerData(final GatherDataEvent.Server event) {
         event.createProvider(

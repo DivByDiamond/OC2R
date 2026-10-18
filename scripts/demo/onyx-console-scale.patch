@@ -1,0 +1,364 @@
+diff --git a/kernel/src/drivers/video/fb_term/ansi/mod.rs b/kernel/src/drivers/video/fb_term/ansi/mod.rs
+--- a/kernel/src/drivers/video/fb_term/ansi/mod.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/mod.rs
+@@ -37,6 +37,8 @@
+ pub(crate) mod present;
+ pub(crate) mod render;
+ pub(crate) mod state;
++pub(crate) mod viewport;
++pub(crate) mod scale;
+ 
+ pub use state::AnsiTerm;
+ 
+@@ -265,4 +267,65 @@
+             }
+         }
+     }
++
++    #[test]
++    fn scaled_console_uses_full_screen_and_only_publishes_dirty_glyphs() {
++        let _lock = LOCK.lock().unwrap();
++        struct Reset;
++        impl Drop for Reset {
++            fn drop(&mut self) {
++                crate::drivers::fb_term::set_serial_mirror(false);
++                fb::test_clear_back();
++                fb::test_uninstall_front();
++            }
++        }
++        let _reset = Reset;
++        // A valid static PSF1 font makes this a glyph test too. Host tests do
++        // not execute the boot-time VFS font loader; its default glyph is blank.
++        static FONT: [u8; 4 + 256 * 16] = {
++            let mut data = [0; 4 + 256 * 16];
++            data[0] = 0x36; data[1] = 0x04; data[3] = 16;
++            let mut glyph = 33;
++            while glyph < 127 {
++                let mut row = 0;
++                while row < 16 { data[4 + glyph * 16 + row] = 0x42; row += 1; }
++                glyph += 1;
++            }
++            data
++        };
++        unsafe { crate::font::init(&FONT).unwrap(); }
++        crate::drivers::fb_term::set_serial_mirror(true);
++        for (width, height, cols, rows) in [(1920, 1080, 80, 24), (640, 480, 80, 24), (320, 200, 40, 12)] {
++            let mut front = vec![0x1234u16; width * height];
++            let mut back = vec![0u16; width * height];
++            unsafe {
++                fb::test_install_front(front.as_mut_ptr().cast(), width, height, width * 2, 16);
++                fb::test_publish_back(back.as_mut_ptr() as usize);
++                G_ANSI = super::AnsiTerm::new();
++            }
++            let output = format!("\x1b[2J\x1b[?25l\x1b[{};{}HFOOT", rows, cols - 5);
++            for byte in output.bytes() { console_putc(byte); }
++            present_locked();
++            let view = super::viewport::Viewport::fit(width, height, cols * 8, rows * 16).unwrap();
++            let footer = view.mapped(super::viewport::Rect::new((cols - 6) * 8, (rows - 1) * 16, (cols - 2) * 8, rows * 16));
++            assert!((footer.y0..footer.y1).any(|y| (footer.x0..footer.x1).any(|x| front[y * width + x] != 0)), "last-row TUI footer was not rendered");
++            // Every visible pixel must be the expected nearest logical pixel,
++            // while letterbox pixels are black. Native geometry stays unchanged.
++            assert_eq!((fb::width(), fb::height()), (width, height));
++            for y in 0..height { for x in 0..width {
++                let expected = if x >= view.x && x < view.x + view.width && y >= view.y && y < view.y + view.height {
++                    let sx = (x - view.x) * view.logical_width / view.width;
++                    let sy = (y - view.y) * view.logical_height / view.height;
++                    back[sy * width + sx]
++                } else { 0 };
++                assert_eq!(front[y * width + x], expected, "scaled pixel {x},{y}");
++            }}
++            front.fill(0x1234);
++            for byte in b"\x1b[2;2HA" { console_putc(*byte); }
++            present_locked();
++            let published = front.iter().filter(|&&pixel| pixel != 0x1234).count();
++            assert!(published <= 1100, "one glyph published {published} pixels");
++        }
++    }
++
+ }
+diff --git a/kernel/src/drivers/video/fb_term/ansi/render.rs b/kernel/src/drivers/video/fb_term/ansi/render.rs
+--- a/kernel/src/drivers/video/fb_term/ansi/render.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/render.rs
+@@ -15,6 +15,7 @@
+         if bpp != 32 && bpp != 16 {
+             return;
+         }
++        super::scale::mark(super::viewport::Rect::new(0,self.top*FONT_H,self.cols*FONT_W,(self.bot+1)*FONT_H));
+         let row_bytes = pitch * FONT_H;
+         for row in self.top..self.bot {
+             let dst = base + row * row_bytes;
+@@ -36,6 +37,7 @@
+         if bpp != 32 && bpp != 16 {
+             return;
+         }
++        super::scale::mark(super::viewport::Rect::new(0,self.top*FONT_H,self.cols*FONT_W,(self.bot+1)*FONT_H));
+         let row_bytes = pitch * FONT_H;
+         let mut row = self.bot;
+         while row > self.top {
+@@ -83,6 +85,7 @@
+             _ => self.cols * w,
+         };
+         let y = self.cur_row * h;
++        super::scale::mark(super::viewport::Rect::new(x0,y,x1,y+h));
+         for x in x0..x1.min(fb::width()) {
+             for dy in 0..h.min(fb::height() - y) {
+                 fb::put_pixel_blend(x, y + dy, self.bg);
+@@ -94,6 +97,7 @@
+     }
+ 
+     fn clear_row(&mut self, row: usize) {
++        super::scale::mark(super::viewport::Rect::new(0,row*FONT_H,self.cols*FONT_W,(row+1)*FONT_H));
+         let (_, pitch, bpp, _) = paint_info();
+         let base = paint_base_addr();
+         if base != 0 && (bpp == 32 || bpp == 16) {
+@@ -117,6 +121,7 @@
+     }
+ 
+     fn draw_char_at(&mut self, row: usize, col: usize, c: u8) {
++        super::scale::mark(super::viewport::Rect::new(col*FONT_W,row*FONT_H,(col+1)*FONT_W,(row+1)*FONT_H));
+         let (fg, bg) = if self.reverse {
+             (self.bg, self.fg)
+         } else {
+@@ -146,6 +151,7 @@
+     }
+ 
+     pub(super) fn enter_alt(&mut self) {
++        super::scale::mark(super::viewport::Rect::new(0,0,self.cols*FONT_W,self.rows*FONT_H));
+         let (base, bytes) = match surface() {
+             Some(v) => v,
+             None => return,
+@@ -165,6 +171,7 @@
+     }
+ 
+     pub(super) fn exit_alt(&mut self) {
++        super::scale::mark(super::viewport::Rect::new(0,0,self.cols*FONT_W,self.rows*FONT_H));
+         let (base, bytes) = match surface() {
+             Some(v) => v,
+             None => return,
+diff --git a/kernel/src/drivers/video/fb_term/ansi/present.rs b/kernel/src/drivers/video/fb_term/ansi/present.rs
+--- a/kernel/src/drivers/video/fb_term/ansi/present.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/present.rs
+@@ -148,11 +148,13 @@
+     // borrow does not escape this block.
+     unsafe {
+         let t = &raw mut super::G_ANSI;
+-        crate::drivers::fb::present_region(
+-            (*t).cols * super::state::FONT_W,
+-            (*t).rows * super::state::FONT_H,
+-        );
+-        (*t).draw_cursor_front();
++        if !super::scale::present(&*t) {
++            crate::drivers::fb::present_region(
++                (*t).cols * super::state::FONT_W,
++                (*t).rows * super::state::FONT_H,
++            );
++            (*t).draw_cursor_front();
++        }
+     }
+     G_DIRTY.store(false, Ordering::Release);
+ }
+diff --git a/kernel/src/drivers/video/fb_term/geometry.rs b/kernel/src/drivers/video/fb_term/geometry.rs
+--- a/kernel/src/drivers/video/fb_term/geometry.rs
++++ b/kernel/src/drivers/video/fb_term/geometry.rs
+@@ -3,6 +3,9 @@
+ static SERIAL_MIRROR: AtomicBool = AtomicBool::new(false);
+ pub fn set_serial_mirror(enabled: bool) {
+     SERIAL_MIRROR.store(enabled, Ordering::Relaxed);
++}
++pub(crate) fn serial_mirrored() -> bool {
++    SERIAL_MIRROR.load(Ordering::Relaxed)
+ }
+ pub fn console_geometry() -> (usize, usize) {
+     geometry(
+diff --git a/kernel/src/drivers/video/fb_term/ansi/scale.rs b/kernel/src/drivers/video/fb_term/ansi/scale.rs
+new file mode 100644
+--- /dev/null
++++ b/kernel/src/drivers/video/fb_term/ansi/scale.rs
+@@ -0,0 +1,73 @@
++//! Console-only scaled presentation; native fb devices retain their full geometry.
++use super::state::{AnsiTerm, FONT_H, FONT_W};
++use super::viewport::{Rect, Viewport};
++use crate::drivers::fb;
++use core::sync::atomic::{AtomicUsize, Ordering};
++
++static X0: AtomicUsize = AtomicUsize::new(usize::MAX);
++static Y0: AtomicUsize = AtomicUsize::new(usize::MAX);
++static X1: AtomicUsize = AtomicUsize::new(0);
++static Y1: AtomicUsize = AtomicUsize::new(0);
++// Accessed only under the existing console write/presentation lock.
++static mut LAST_VIEW: Option<Viewport> = None;
++static mut LAST_CURSOR: Option<Rect> = None;
++
++pub(super) fn mark(rect: Rect) {
++    if rect.empty() { return; }
++    X0.fetch_min(rect.x0, Ordering::Relaxed);
++    Y0.fetch_min(rect.y0, Ordering::Relaxed);
++    X1.fetch_max(rect.x1, Ordering::Relaxed);
++    Y1.fetch_max(rect.y1, Ordering::Relaxed);
++}
++fn take_dirty() -> Option<Rect> {
++    let rect=Rect::new(X0.swap(usize::MAX,Ordering::Relaxed),Y0.swap(usize::MAX,Ordering::Relaxed),X1.swap(0,Ordering::Relaxed),Y1.swap(0,Ordering::Relaxed));
++    if rect.empty(){None}else{Some(rect)}
++}
++fn cell(col:usize,row:usize)->Rect {Rect::new(col*FONT_W,row*FONT_H,(col+1)*FONT_W,(row+1)*FONT_H)}
++
++/// Return true when the console frame and cursor were presented here.
++/// SAFETY: caller holds the existing UART_LOCK, excluding paint/present.
++pub(super) unsafe fn present(term:&AnsiTerm)->bool {
++    if !crate::drivers::fb_term::geometry::serial_mirrored() { return false; }
++    let Some(view)=Viewport::fit(fb::width(),fb::height(),term.cols*FONT_W,term.rows*FONT_H) else{return false;};
++    let mut dirty=take_dirty();
++    // SAFETY: only the console lock holder accesses these presentation records.
++    unsafe {
++        if LAST_VIEW!=Some(view) {
++            dirty=Some(Rect::new(0,0,view.logical_width,view.logical_height));
++            clear_margins(view);
++            LAST_VIEW=Some(view);
++            LAST_CURSOR=None;
++        }
++        let cursor=if term.cursor_visible {Some(cell(term.cur_col,term.cur_row))}else{None};
++        if let Some(rect)=dirty {super::viewport::present_rect(view,rect,fb::paint_base(),fb::front_base(),fb::pitch(),fb::pitch(),fb::bpp());}
++        // Restore cursor cells separately. A cursor move from the bottom-right
++        // to the top-left must not expand a one-glyph change to a full frame.
++        for rect in [LAST_CURSOR,cursor].into_iter().flatten() {
++            super::viewport::present_rect(view,rect,fb::paint_base(),fb::front_base(),fb::pitch(),fb::pitch(),fb::bpp());
++        }
++        if let Some(current)=cursor {
++            let color=if term.reverse {term.bg}else{term.fg};
++            fill_front(view.mapped(current),color);
++        }
++        LAST_CURSOR=cursor;
++    }
++    true
++}
++unsafe fn clear_margins(v:Viewport) {
++    // Only letterbox margins are cleared; no extra full-frame copy.
++    unsafe {
++        fill_front(Rect::new(0,0,fb::width(),v.y),fb::COL_BLACK);
++        fill_front(Rect::new(0,v.y+v.height,fb::width(),fb::height()),fb::COL_BLACK);
++        fill_front(Rect::new(0,v.y,v.x,v.y+v.height),fb::COL_BLACK);
++        fill_front(Rect::new(v.x+v.width,v.y,fb::width(),v.y+v.height),fb::COL_BLACK);
++    }
++}
++unsafe fn fill_front(rect:Rect,color:u32) {
++    let bytes=fb::bpp()/8;let base=fb::front_base();let pitch=fb::pitch();
++    let packed=fb::rgb32_to_r5g6b5(color);
++    for y in rect.y0..rect.y1 {for x in rect.x0..rect.x1 {
++        // SAFETY: rectangles are derived from the installed bounded viewport.
++        unsafe {let ptr=base.add(y*pitch+x*bytes);match bytes {2=>core::ptr::write_volatile(ptr.cast::<u16>(),packed),4=>core::ptr::write_volatile(ptr.cast::<u32>(),color),_=>{}}}
++    }}
++}
+diff --git a/kernel/src/drivers/video/fb_term/ansi/viewport.rs b/kernel/src/drivers/video/fb_term/ansi/viewport.rs
+new file mode 100644
+--- /dev/null
++++ b/kernel/src/drivers/video/fb_term/ansi/viewport.rs
+@@ -0,0 +1,109 @@
++//! Console-only aspect-fit presentation. Native framebuffer geometry is untouched.
++//! GPL-3.0-or-later, matching OnyxKernel.
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct Rect { pub x0: usize, pub y0: usize, pub x1: usize, pub y1: usize }
++impl Rect {
++    pub const fn new(x0: usize, y0: usize, x1: usize, y1: usize) -> Self { Self { x0, y0, x1, y1 } }
++    pub fn union(self, other: Self) -> Self { Self::new(self.x0.min(other.x0), self.y0.min(other.y0), self.x1.max(other.x1), self.y1.max(other.y1)) }
++    pub fn clipped(self, width: usize, height: usize) -> Self { Self::new(self.x0.min(width), self.y0.min(height), self.x1.min(width), self.y1.min(height)) }
++    pub fn empty(self) -> bool { self.x0 >= self.x1 || self.y0 >= self.y1 }
++}
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct Viewport {
++    pub logical_width: usize, pub logical_height: usize,
++    pub width: usize, pub height: usize, pub x: usize, pub y: usize,
++}
++impl Viewport {
++    pub fn fit(physical_width: usize, physical_height: usize, logical_width: usize, logical_height: usize) -> Option<Self> {
++        if physical_width == 0 || physical_height == 0 || logical_width == 0 || logical_height == 0 { return None; }
++        let (width, height) = if physical_width as u64 * logical_height as u64 <= physical_height as u64 * logical_width as u64 {
++            (physical_width, (logical_height as u64 * physical_width as u64 / logical_width as u64) as usize)
++        } else { ((logical_width as u64 * physical_height as u64 / logical_height as u64) as usize, physical_height) };
++        if width == 0 || height == 0 { return None; }
++        Some(Self { logical_width, logical_height, width, height, x: (physical_width - width) / 2, y: (physical_height - height) / 2 })
++    }
++    /// Exact destination coverage of a logical rectangle under floor-based nearest sampling.
++    pub fn mapped(self, rect: Rect) -> Rect {
++        let r = rect.clipped(self.logical_width, self.logical_height);
++        let ceil = |n: usize, scale: usize, denom: usize| (n as u64 * scale as u64).div_ceil(denom as u64) as usize;
++        Rect::new(self.x + ceil(r.x0, self.width, self.logical_width), self.y + ceil(r.y0, self.height, self.logical_height), self.x + ceil(r.x1, self.width, self.logical_width), self.y + ceil(r.y1, self.height, self.logical_height))
++    }
++}
++
++/// Present only the changed logical rectangle. Source retains the physical pitch.
++/// No allocation, libc copy, frame-wide scan, or per-pixel division occurs here.
++///
++/// # Safety
++/// Source and destination must be distinct live surfaces covering their validated
++/// pitches and heights; bpp must be 16 or 32. Caller serializes console paint/present.
++/// Front may be MMIO; every destination store is volatile. Source reads target RAM.
++pub unsafe fn present_rect(view: Viewport, rect: Rect, source: *const u8, destination: *mut u8, source_pitch: usize, destination_pitch: usize, bpp: usize) -> usize {
++    let physical = view.mapped(rect);
++    if physical.empty() || (bpp != 16 && bpp != 32) { return 0; }
++    let dx0 = physical.x0 - view.x;
++    let dy0 = physical.y0 - view.y;
++    let mut sy = dy0 * view.logical_height / view.height;
++    let mut y_remainder = dy0 * view.logical_height % view.height;
++    let bytes = bpp / 8;
++    for y in physical.y0..physical.y1 {
++        let mut sx = dx0 * view.logical_width / view.width;
++        let mut x_remainder = dx0 * view.logical_width % view.width;
++        for x in physical.x0..physical.x1 {
++            // SAFETY: nearest coordinates lie within the clipped logical region;
++            // caller provided valid surfaces/pitches and aligned 16/32-bit pixels.
++            unsafe {
++                let src = source.add(sy * source_pitch + sx * bytes);
++                let dst = destination.add(y * destination_pitch + x * bytes);
++                if bpp == 16 { core::ptr::write_volatile(dst.cast::<u16>(), core::ptr::read(src.cast::<u16>())); }
++                else { core::ptr::write_volatile(dst.cast::<u32>(), core::ptr::read(src.cast::<u32>())); }
++            }
++            x_remainder += view.logical_width;
++            while x_remainder >= view.width { x_remainder -= view.width; sx += 1; }
++        }
++        y_remainder += view.logical_height;
++        while y_remainder >= view.height { y_remainder -= view.height; sy += 1; }
++    }
++    (physical.x1 - physical.x0) * (physical.y1 - physical.y0)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test] fn high_resolution_fills_height_without_stretch() {
++        let v=Viewport::fit(1920,1080,640,384).unwrap();
++        assert_eq!((v.x,v.y,v.width,v.height),(60,0,1800,1080));
++        assert_eq!(v.mapped(Rect::new(0,0,640,384)),Rect::new(60,0,1860,1080));
++    }
++    #[test] fn native_and_small_framebuffers_keep_all_cells() {
++        let v=Viewport::fit(640,480,640,384).unwrap();assert_eq!((v.x,v.y,v.width,v.height),(0,48,640,384));
++        let v=Viewport::fit(320,200,320,192).unwrap();assert_eq!((v.x,v.y,v.width,v.height),(0,4,320,192));
++        assert_eq!(Viewport::fit(0,200,640,384),None);
++    }
++    #[test] fn tui_footer_and_rightmost_cell_are_inside_every_display() {
++        for (w,h,cols,rows) in [(1920,1080,80,24),(640,480,80,24),(320,200,40,12)] {
++            let v=Viewport::fit(w,h,cols*8,rows*16).unwrap();
++            let r=v.mapped(Rect::new((cols-1)*8,(rows-1)*16,cols*8,rows*16));
++            assert!(!r.empty());assert!(r.x1<=w&&r.y1<=h);assert!(r.x0<v.x+v.width&&r.y0<v.y+v.height);
++        }
++    }
++    #[test] fn real_rgb565_pixels_scale_exactly_and_dirty_glyph_preserves_neighbors() {
++        let (w,h)=(1920,1080);let v=Viewport::fit(w,h,640,384).unwrap();
++        let mut back=vec![0u16;w*h];let mut front=vec![0x1234u16;w*h];
++        let glyph=Rect::new(79*8,23*16,80*8,24*16);
++        for y in glyph.y0..glyph.y1 {for x in glyph.x0..glyph.x1 {back[y*w+x]=if (x+y)%2==0 {0xf800}else{0x07e0};}}
++        let count=unsafe{present_rect(v,glyph,back.as_ptr().cast(),front.as_mut_ptr().cast(),w*2,w*2,16)};
++        let mapped=v.mapped(glyph);assert_eq!(count,(mapped.x1-mapped.x0)*(mapped.y1-mapped.y0));assert!(count<1100,"one cell must not copy the full HD surface");
++        for y in 0..h {for x in 0..w {let expected=if x>=mapped.x0&&x<mapped.x1&&y>=mapped.y0&&y<mapped.y1 {let sx=(x-v.x)*v.logical_width/v.width;let sy=(y-v.y)*v.logical_height/v.height;back[sy*w+sx]}else{0x1234};assert_eq!(front[y*w+x],expected,"pixel {x},{y}");}}
++    }
++    #[test] fn rgb8888_nearest_sampling_matches_at_all_positions_with_padded_stride() {
++        let (w,h,pitch)=(640,480,648);let v=Viewport::fit(w,h,640,384).unwrap();
++        let back:Vec<u32>=(0..pitch*h).map(|i|i as u32).collect();let mut front=vec![u32::MAX;pitch*h];
++        let changed=Rect::new(0,0,640,384);unsafe{present_rect(v,changed,back.as_ptr().cast(),front.as_mut_ptr().cast(),pitch*4,pitch*4,32);}
++        for y in 0..h {for x in 0..pitch {let expected=if y>=48&&y<432&&x<640 {back[(y-48)*pitch+x]}else{u32::MAX};assert_eq!(front[y*pitch+x],expected);}}
++    }
++    #[test] fn fractional_dirty_rect_partition_has_no_gaps_or_double_coverage() {
++        let v=Viewport::fit(1920,1080,640,384).unwrap();for x in 0..639 {let left=v.mapped(Rect::new(x,0,x+1,1));let right=v.mapped(Rect::new(x+1,0,x+2,1));assert_eq!(left.x1,right.x0);}
++    }
++}

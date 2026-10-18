@@ -74,8 +74,9 @@ public final class EstablishedState extends TcpState {
             receiveBuffer.limit(recvLim);
             receiveBuffer.position(recvPos);
         } else {
-            header.fin = session.state == TcpStates.FINISH;
+            header.fin = session.hasPendingFin() || session.state == TcpStates.FINISH;
             header.write(segment);
+            if (header.fin) session.state = TcpStates.FINISH;
         }
         segment.flip();
         return SessionActions.FORWARD;

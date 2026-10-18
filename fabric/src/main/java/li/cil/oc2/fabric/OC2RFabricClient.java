@@ -19,6 +19,7 @@ import net.fabricmc.api.Environment;
 public final class OC2RFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        li.cil.oc2.client.manual.Manuals.initialize();
         FabricClientEvents.register();
         FabricClientBlockEntityHooks.register();
 

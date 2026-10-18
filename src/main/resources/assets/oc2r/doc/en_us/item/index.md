@@ -19,3 +19,7 @@ This index lists all documented items. If you're looking for a block, see the [b
 - [Scanner Module](scanner_module.md)
 - [Scrench](wrench.md)
 - [Sound Card](sound_card.md)
+
+- [CPU](cpu.md)
+- [GPU](gpu.md)
+- [Internet Card](internet_card.md)

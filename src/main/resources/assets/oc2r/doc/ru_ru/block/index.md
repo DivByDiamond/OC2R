@@ -15,3 +15,5 @@
 - [Сетевой концентратор](network_hub.md)
 - [Проектор](projector.md)
 - [Красный интерфейс](redstone_interface.md)
+- [Динамик](speaker.md)
+- [Интернет-шлюз](internet_gateway.md)

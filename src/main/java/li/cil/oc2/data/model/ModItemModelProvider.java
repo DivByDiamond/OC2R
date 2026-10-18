@@ -77,7 +77,8 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.TRANSISTOR, "item/components/materials/transistor");
         simple(Items.CIRCUIT_BOARD, "item/components/materials/circuit_board");
 
-        withExistingParent(BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get()).getPath(), "template_shulker_box");
+        withExistingParent(BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get()).getPath(), "template_shulker_box")
+                .texture("particle", modLoc("entity/robot/robot"));
     }
 
     private <T extends Item> ItemModelBuilder simple(

@@ -15,13 +15,23 @@ public final class BuiltinRootFilesystem implements BlockDevice {
     private static final int SHADOW_BLOCK_SIZE = 64 * 1024;
 
     @Serialized private final SparseBlockDevice overlay;
+    @Serialized private String baseImageId;
 
     public BuiltinRootFilesystem(final InputStream image) throws IOException {
         this(ByteBufferBlockDevice.createFromStream(image, true));
     }
 
     public BuiltinRootFilesystem(final BlockDevice image) {
+        this(image, null);
+    }
+
+    public BuiltinRootFilesystem(final BlockDevice image, final String baseImageId) {
         overlay = new SparseBlockDevice(image, false, SHADOW_BLOCK_SIZE);
+        this.baseImageId = baseImageId;
+    }
+
+    public String getBaseImageId() {
+        return baseImageId;
     }
 
     @Override

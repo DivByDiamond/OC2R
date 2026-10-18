@@ -17,7 +17,7 @@ The side parameter of *inspect()* represents a face of the robot. Valid values a
 ### Scanning
 *scan()* measures the hardness of every block in a cube of seven by seven by seven blocks with the robot at its center. Positions use the axes of the robot's *getPosition()*: *x* grows towards east, *y* upward and *z* towards south.
 
-The result holds one byte per block. Blocks are ordered by *y*, then *z*, then *x*, each from *-3* to *3*, so the result is a stack of horizontal layers from bottom to top, and *x* changes fastest. The block at offset *x*, *y*, *z* from the robot is at index *(y + 3) * 7 * 7 + (z + 3) * 7 + (x + 3)*, counting from zero. Since Lua counts from one, this is equivalent to *string.byte(hardness, index + 1)*.
+The RPC result is a Lua table of 343 unsigned numbers (0 to 255), one per block, not a string. Blocks are ordered by *y*, then *z*, then *x*, each from *-3* to *3*, so the result is a stack of horizontal layers from bottom to top, and *x* changes fastest. The block at offset *x*, *y*, *z* from the robot is at index `(y + 3) * 7 * 7 + (z + 3) * 7 + (x + 3)`, counting from zero. Since Lua counts from one, this is equivalent to *hardness[index + 1]*.
 
 Each byte encodes air as *0*, any fluid as *254* and unbreakable or unscannable blocks as *255*. Regular blocks are encoded as hardness mapped into the *1* to *253* range.
 
@@ -35,11 +35,11 @@ Entities are reported by identifier, such as *minecraft:sheep*, closest first. A
 - Returns a table with the *block* and *fluid*, if present, and a list of *entities*.
 
 *scan():table* measures the hardness of the blocks around the robot and lists nearby entities.
-- Returns a table with the block *hardness* as binary data, see above, and the list of *entities* in the scanned cube.
+- Returns a table with the block *hardness* as a numeric array, see above, and the list of *entities* in the scanned cube.
 
 *canSeeSky():boolean* checks whether the robot's space gets full sky light.
 - Returns whether the sky is visible.
 
-*getScanLayer(layer:number):string* reads one layer of the last scan. Fails if there was no scan yet.
+*getScanLayer(layer:number):table* reads one layer of the last scan. Fails if there was no scan yet.
 - *layer* is the layer, 0 to 6 from bottom to top.
-- Returns 49 bytes, the hardness of each block in the layer.
+- Returns a table of 49 numbers, the hardness of each block in the layer.

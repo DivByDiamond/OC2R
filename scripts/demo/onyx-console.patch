@@ -1,0 +1,317 @@
+diff --git a/kernel/src/drivers/video/fb/draw.rs b/kernel/src/drivers/video/fb/draw.rs
+index cbb99f3..b815159 100644
+--- a/kernel/src/drivers/video/fb/draw.rs
++++ b/kernel/src/drivers/video/fb/draw.rs
+@@ -112,6 +112,29 @@ pub fn present() {
+     }
+ }
+ 
++/// Publish only a console rectangle. Native applications retain full-surface
++/// access; console refreshes need not copy millions of untouched MMIO pixels.
++pub fn present_region(width: usize, height: usize) {
++    let pa = G_BACK_PA.load(Ordering::Acquire);
++    if pa == 0 {
++        return;
++    }
++    let pitch = super::pitch();
++    let row_bytes = width.min(super::width()) * (super::bpp() / 8);
++    let height = height.min(super::height());
++    for y in 0..height {
++        // SAFETY: geometry is bounded to the installed surface; back and
++        // front buffers are disjoint and both contain pitch*height bytes.
++        unsafe {
++            core::ptr::copy_nonoverlapping(
++                (pa as *const u8).add(y * pitch),
++                front_base().add(y * pitch),
++                row_bytes,
++            );
++        }
++    }
++}
++
+ pub fn draw_char(x: usize, y: usize, c: u8, fg: u32, bg: u32) {
+     let glyph = font::glyph_bitmap(c);
+     for (row, &bits) in glyph.iter().enumerate() {
+diff --git a/kernel/src/drivers/video/fb_term/ansi/mod.rs b/kernel/src/drivers/video/fb_term/ansi/mod.rs
+index 03bb13c..81beed9 100644
+--- a/kernel/src/drivers/video/fb_term/ansi/mod.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/mod.rs
+@@ -206,4 +206,63 @@ mod pipeline_tests {
+         // Legacy behavior preserved: paint lands on the visible surface.
+         assert_ne!(s.front, front_before, "direct mode no longer paints");
+     }
++    #[test]
++    fn erase_entire_line_clears_both_sides_of_cursor() {
++        let _g = LOCK.lock().unwrap();
++        let mut s = install();
++        s.back.fill(255);
++        fb::test_publish_back(back_ptr(&s));
++        unsafe {
++            G_ANSI = super::AnsiTerm::new();
++        }
++        for b in b"\x1b[2;6H\x1b[2K" {
++            console_putc(*b);
++        }
++        let line = &s.back[16 * STRIDE..32 * STRIDE];
++        assert!(
++            line.iter().all(|b| *b == 0),
++            "EL 2 left stale cells on the row"
++        );
++        assert!(s.back[..16 * STRIDE].iter().all(|b| *b == 255));
++    }
++    #[test]
++    fn erase_start_of_line_keeps_cells_right_of_cursor() {
++        let _g = LOCK.lock().unwrap();
++        let mut s = install();
++        s.back.fill(255);
++        fb::test_publish_back(back_ptr(&s));
++        unsafe {
++            G_ANSI = super::AnsiTerm::new();
++        }
++        for b in b"\x1b[2;6H\x1b[1K" {
++            console_putc(*b);
++        }
++        for y in 16..32 {
++            let row = &s.back[y * STRIDE..(y + 1) * STRIDE];
++            assert!(row[..6 * 8 * 4].iter().all(|b| *b == 0));
++            assert!(
++                row[6 * 8 * 4..].iter().all(|b| *b == 255),
++                "EL 1 erased cells after cursor"
++            );
++        }
++    }
++    #[test]
++    fn region_present_does_not_copy_pixels_outside_console() {
++        let _g = LOCK.lock().unwrap();
++        let mut s = install();
++        s.back.fill(77);
++        let before = s.front.clone();
++        fb::test_publish_back(back_ptr(&s));
++        fb::present_region(8, 16);
++        for y in 0..H {
++            for x in 0..STRIDE {
++                let expected = if y < 16 && x < 8 * 4 {
++                    77
++                } else {
++                    before[y * STRIDE + x]
++                };
++                assert_eq!(s.front[y * STRIDE + x], expected);
++            }
++        }
++    }
+ }
+diff --git a/kernel/src/drivers/video/fb_term/ansi/present.rs b/kernel/src/drivers/video/fb_term/ansi/present.rs
+index edc2e77..c241fa1 100644
+--- a/kernel/src/drivers/video/fb_term/ansi/present.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/present.rs
+@@ -148,7 +148,10 @@ pub(crate) fn present_locked() {
+     // borrow does not escape this block.
+     unsafe {
+         let t = &raw mut super::G_ANSI;
+-        crate::drivers::fb::present();
++        crate::drivers::fb::present_region(
++            (*t).cols * super::state::FONT_W,
++            (*t).rows * super::state::FONT_H,
++        );
+         (*t).draw_cursor_front();
+     }
+     G_DIRTY.store(false, Ordering::Release);
+diff --git a/kernel/src/drivers/video/fb_term/ansi/render.rs b/kernel/src/drivers/video/fb_term/ansi/render.rs
+index 8d67883..fbd4884 100644
+--- a/kernel/src/drivers/video/fb_term/ansi/render.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/render.rs
+@@ -75,12 +75,12 @@ impl AnsiTerm {
+     pub(super) fn erase_line(&mut self, mode: u32) {
+         let (w, h) = (FONT_W, FONT_H);
+         let x0 = match mode {
+-            1 => 0,
+-            _ => self.cur_col * w,
++            0 => self.cur_col * w,
++            _ => 0,
+         };
+         let x1 = match mode {
+-            0 | 1 => self.cols * w,
+-            _ => (self.cur_col + 1) * w,
++            1 => (self.cur_col + 1) * w,
++            _ => self.cols * w,
+         };
+         let y = self.cur_row * h;
+         for x in x0..x1.min(fb::width()) {
+diff --git a/kernel/src/drivers/video/fb_term/ansi/state.rs b/kernel/src/drivers/video/fb_term/ansi/state.rs
+index 5b2b075..8f7d37a 100644
+--- a/kernel/src/drivers/video/fb_term/ansi/state.rs
++++ b/kernel/src/drivers/video/fb_term/ansi/state.rs
+@@ -76,8 +76,7 @@ impl AnsiTerm {
+     /// parser can never panic (e.g. after a hot-swap to a smaller fb).
+     pub(super) fn sync_size(&mut self) {
+         let old_rows = self.rows;
+-        self.cols = (fb::width() / FONT_W).max(1);
+-        self.rows = (fb::height() / FONT_H).max(1);
++        (self.rows, self.cols) = crate::drivers::fb_term::console_geometry();
+         // If the scroll region previously spanned the whole screen, keep it
+         // spanning the whole screen when the real geometry is taller than
+         // the compile-time default (25 rows): the check below only shrinks
+diff --git a/kernel/src/drivers/video/fb_term/mod.rs b/kernel/src/drivers/video/fb_term/mod.rs
+index c7cfce4..d1382cd 100644
+--- a/kernel/src/drivers/video/fb_term/mod.rs
++++ b/kernel/src/drivers/video/fb_term/mod.rs
+@@ -40,3 +40,6 @@ pub fn write_unicode_str(s: &str) {
+         w.puts_unicode(s);
+     }
+ }
++
++mod geometry;
++pub use geometry::{console_geometry, set_serial_mirror};
+diff --git a/kernel/src/proc/onx/load.rs b/kernel/src/proc/onx/load.rs
+index 212e38a..5aee4c3 100644
+--- a/kernel/src/proc/onx/load.rs
++++ b/kernel/src/proc/onx/load.rs
+@@ -138,7 +138,7 @@ unsafe fn load_into(
+         }
+ 
+         for s in &hdr.segs {
+-            crate::kinf!(
++            crate::kdbg!(
+                 "onx",
+                 "seg vaddr=%p memsz=%d filesz=%d flags=%d",
+                 Arg::from(s.vaddr),
+diff --git a/kernel/src/srv/main/display.rs b/kernel/src/srv/main/display.rs
+index e42f66f..e4fda6d 100644
+--- a/kernel/src/srv/main/display.rs
++++ b/kernel/src/srv/main/display.rs
+@@ -11,21 +11,33 @@ use onyx_core::fmt::Arg;
+ pub(crate) unsafe fn init_and_draw() {
+     // SAFETY: framebuffer memory is the DTB simple-framebuffer region or fresh pmm pages; single-threaded boot call.
+     unsafe {
++        crate::drivers::fb_term::set_serial_mirror(crate::libfdt::fdt::is_sedna());
+         // Prefer the device-tree simple-framebuffer (OC2R/sedna monitor): it is an
+         // MMIO region the host actually samples, whereas private RAM is invisible
+         // outside the VM. Fallback: pmm RAM (QEMU without virtio-gpu). The ECAM PCI
+         // scan (hardcoded QEMU-virt 0x30000000) is meaningless on OC2R/sedna and has
+         // been observed to return a bogus display BAR — never use it here.
+-        let mut displays = [crate::libfdt::fdt::SimpleFramebuffer::default(); fb::devices::MAX_FRAMEBUFFERS];
++        let mut displays =
++            [crate::libfdt::fdt::SimpleFramebuffer::default(); fb::devices::MAX_FRAMEBUFFERS];
+         let display_count = crate::libfdt::fdt::find_simple_framebuffers(&mut displays);
+         for display in &displays[..display_count] {
+             let result = if !fb::enabled() {
+-                fb::init_device(display.pa, display.width as usize, display.height as usize,
+-                    display.stride as usize, display.bpp as usize)
++                fb::init_device(
++                    display.pa,
++                    display.width as usize,
++                    display.height as usize,
++                    display.stride as usize,
++                    display.bpp as usize,
++                )
+             } else {
+-                fb::Framebuffer::new(display.pa, display.width as usize, display.height as usize,
+-                    display.stride as usize, display.bpp as usize)
+-                    .and_then(|surface| fb::devices::register(surface).map(|_| ()))
++                fb::Framebuffer::new(
++                    display.pa,
++                    display.width as usize,
++                    display.height as usize,
++                    display.stride as usize,
++                    display.bpp as usize,
++                )
++                .and_then(|surface| fb::devices::register(surface).map(|_| ()))
+             };
+             if result.is_ok() {
+                 crate::kinf!("fb", "simple-framebuffer at %p", Arg::from(display.pa));
+@@ -132,7 +144,11 @@ pub(crate) unsafe fn init_and_draw() {
+                 let scan = crate::drivers::bus::pci::find_vga_fb();
+                 crate::drivers::uart::putc(b'}');
+                 if let Ok(vga_pa) = scan {
+-                    crate::kinf!("display", "pci VGA scan returned %p", Arg::from(vga_pa as u64));
++                    crate::kinf!(
++                        "display",
++                        "pci VGA scan returned %p",
++                        Arg::from(vga_pa as u64)
++                    );
+                     if vga_pa >= 0x4000_0000 {
+                         crate::drivers::uart::putc(b'[');
+                         let ok = fb::init_device(vga_pa, 1280, 720, 1280 * 4, 32).is_ok();
+diff --git a/kernel/src/syscall/fs_sys/open_close/open.rs b/kernel/src/syscall/fs_sys/open_close/open.rs
+index 9f031ae..1bb9343 100644
+--- a/kernel/src/syscall/fs_sys/open_close/open.rs
++++ b/kernel/src/syscall/fs_sys/open_close/open.rs
+@@ -32,7 +32,7 @@ pub unsafe fn sys_open(path: u64, flags: u64, mode: u64) -> i64 {
+         };
+         let path_bytes = &path_buf[..path_len];
+ 
+-        crate::kinf!(
++        crate::kdbg!(
+             "sys_open",
+             "path_bytes=%s ring=%d",
+             Arg::from(core::str::from_utf8(path_bytes).unwrap_or("<bad>")),
+diff --git a/kernel/src/syscall/fs_sys3/extra/ioctl.rs b/kernel/src/syscall/fs_sys3/extra/ioctl.rs
+index a31b9e7..2c117b9 100644
+--- a/kernel/src/syscall/fs_sys3/extra/ioctl.rs
++++ b/kernel/src/syscall/fs_sys3/extra/ioctl.rs
+@@ -172,7 +172,7 @@ pub unsafe fn sys_ioctl(fd: u64, request: u64, arg: u64) -> i64 {
+             }
+             0x5413 => {
+                 // TIOCGWINSZ: real terminal size. On the framebuffer console
+-                // derive it from the fb geometry (ANSI cell grid 8x16); else
++                // use its ANSI grid (8x16, capped to UART on Sedna); else
+                 // fall back to the UART default 80x24.
+                 if arg == 0 {
+                     return 0;
+@@ -186,12 +186,11 @@ pub unsafe fn sys_ioctl(fd: u64, request: u64, arg: u64) -> i64 {
+                 }
+                 let ws = pa as *mut u16;
+                 let (rows, cols) = if crate::drivers::fb::enabled() {
+-                    let cols = (crate::drivers::fb::width() / 8) as u16;
+-                    let rows = (crate::drivers::fb::height() / 16) as u16;
+-                    (rows.max(1), cols.max(1))
++                    crate::drivers::fb_term::console_geometry()
+                 } else {
+                     (24, 80)
+                 };
++                let (rows, cols) = (rows as u16, cols as u16);
+                 // ws_row, ws_col, ws_xpixel, ws_ypixel
+                 ptr::write(ws.add(0), rows);
+                 ptr::write(ws.add(1), cols);
+diff --git a/kernel/src/drivers/video/fb_term/geometry.rs b/kernel/src/drivers/video/fb_term/geometry.rs
+new file mode 100644
+--- /dev/null
++++ b/kernel/src/drivers/video/fb_term/geometry.rs
+@@ -0,0 +1,37 @@
++//! Geometry of the stdout stream mirrored to both UART and framebuffer.
++use core::sync::atomic::{AtomicBool, Ordering};
++static SERIAL_MIRROR: AtomicBool = AtomicBool::new(false);
++pub fn set_serial_mirror(enabled: bool) {
++    SERIAL_MIRROR.store(enabled, Ordering::Relaxed);
++}
++pub fn console_geometry() -> (usize, usize) {
++    geometry(
++        super::fb::width(),
++        super::fb::height(),
++        SERIAL_MIRROR.load(Ordering::Relaxed),
++    )
++}
++fn geometry(width: usize, height: usize, mirrored: bool) -> (usize, usize) {
++    // Sedna mirrors one stdout byte stream to the fixed 80x24 PC UART
++    // terminal and the primary framebuffer. TUI coordinates must agree
++    // on both displays; framebuffer device geometry itself remains intact.
++    if mirrored {
++        ((height / 16).clamp(1, 24), (width / 8).clamp(1, 80))
++    } else {
++        ((height / 16).max(1), (width / 8).max(1))
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::geometry;
++    #[test]
++    fn mirrored_stdout_matches_oc2r_uart() {
++        assert_eq!(geometry(1920, 1080, true), (24, 80));
++        assert_eq!(geometry(640, 400, true), (24, 80));
++        assert_eq!(geometry(320, 200, true), (12, 40));
++    }
++    #[test]
++    fn standalone_framebuffer_retains_full_size() {
++        assert_eq!(geometry(1920, 1080, false), (67, 240));
++    }
++}

@@ -41,10 +41,6 @@ val jei_version: String get() = property("jei_version") as String
 val pr_version: String get() = property("pr_version") as String
 val ccl_version: String get() = property("ccl_version") as String
 val cbm_version: String get() = property("cbm_version") as String
-val architectury_project_id: String get() = property("architectury_project_id") as String
-val architectury_file_id: String get() = property("architectury_file_id") as String
-val markdownmanual_project_id: String get() = property("markdownmanual_project_id") as String
-val markdownmanual_file_id: String get() = property("markdownmanual_file_id") as String
 val native_networking_repo: String get() = property("native_networking_repo") as String
 val network_lib_version: String get() = property("network_lib_version") as String
 val embeddium_project_id: String get() = property("embeddium_project_id") as String
@@ -193,8 +189,18 @@ neoForge {
         }
 
         register("data") {
-            data()
-            programArguments.addAll("--mod", modId, "--all", "--output", rootProject.file("src/generated/resources/").absolutePath, "--existing", rootProject.file("src/main/resources/").absolutePath)
+            if (minecraft_version.startsWith("1.")) data() else serverData()
+            val generated = if (minecraft_version.startsWith("1.")) rootProject.file("src/generated/resources/")
+                else layout.buildDirectory.dir("generated/datagen/server").get().asFile
+            programArguments.addAll("--mod", modId, "--all", "--output", generated.absolutePath, "--existing", rootProject.file("src/main/resources/").absolutePath)
+            if (!minecraft_version.startsWith("1.")) programArguments.add("--flat")
+        }
+
+        if (!minecraft_version.startsWith("1.")) register("clientData") {
+            clientData()
+            programArguments.addAll("--mod", modId, "--all", "--flat", "--output",
+                layout.buildDirectory.dir("generated/datagen/client").get().asFile.absolutePath,
+                "--existing", rootProject.file("src/main/resources/").absolutePath)
         }
 
         configureEach {
@@ -246,12 +252,6 @@ dependencies {
         add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
         add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
         add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
-    }
-
-    // Markdown Manual and Architectury API have no 26.x builds (roadmap multiversion-26-neoforge §3).
-    if (minecraft_version.startsWith("1.")) {
-        implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
-        implementation("maven.modrinth:13P81Hg3:1.3.1")
     }
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
@@ -338,8 +338,7 @@ tasks.processResources {
     dependsOn("copyLicensesToResources")
 
     if (!minecraft_version.startsWith("1.")) {
-        // The manifest is written for 1.21.1: retarget the Minecraft/NeoForge ranges and make the
-        // Markdown Manual optional, it has no 26.x build (roadmap multiversion-26-neoforge section 3).
+        // The manifest is written for 1.21.1: retarget the Minecraft/NeoForge ranges.
         val neoMajor = (project.property("neo_version") as String).split(".").take(2).joinToString(".")
         val mcVersion = minecraft_version
         inputs.property("modsTomlRetarget", "$mcVersion/$neoMajor")
@@ -355,8 +354,6 @@ tasks.processResources {
                         "versionRange = \"[$mcVersion]\""
                     dependency == "neoforge" && trimmed.startsWith("versionRange") ->
                         "versionRange = \"[$neoMajor,)\""
-                    dependency == "markdown_manual" && trimmed.startsWith("type") ->
-                        "type = \"optional\""
                     else -> line
                 }
             }
@@ -411,6 +408,7 @@ tasks.processResources {
                 "hard_drive_medium" to 0xFF5E7C16.toInt(),
                 "hard_drive_large" to 0xFF169C9C.toInt(),
                 "hard_drive_extra_large" to 0xFFFED83D.toInt(),
+                "hard_drive_onyxos" to 0xFFB02E26.toInt(),
             )
             // The robot is drawn by the oc2r:robot special model renderer (RobotSpecialModelRenderer) on 26.x.
             itemDefinitions.resolve("robot.json").writeText(
@@ -449,9 +447,26 @@ tasks.processResources {
 }
 
 tasks.register<Copy>("copyGeneratedResources") {
+    onlyIf { minecraft_version.startsWith("1.") }
     from(rootProject.file("src/generated"))
     into(rootProject.file("src/main"))
     exclude("resources/.cache")
+}
+
+if (!minecraft_version.startsWith("1.")) tasks.processResources {
+    val generated = listOf("server", "client").map { layout.buildDirectory.dir("generated/datagen/$it") }
+    generated.forEach { directory -> inputs.files(directory.map { fileTree(it) { exclude(".cache/**") } }) }
+    // Datagen is an explicit task (it depends on classes). Overlay this node's generated
+    // resources after the legacy-asset compatibility conversion, never into shared 1.21 assets.
+    doLast {
+        generated.forEach { directory ->
+            project.copy {
+                from(directory)
+                into(destinationDir)
+                exclude(".cache/**")
+            }
+        }
+    }
 }
 
 tasks.jar {

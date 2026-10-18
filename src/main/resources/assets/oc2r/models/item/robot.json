@@ -1,3 +1,6 @@
 {
-  "parent": "minecraft:item/template_shulker_box"
+  "parent": "minecraft:item/template_shulker_box",
+  "textures": {
+    "particle": "oc2r:entity/robot/robot"
+  }
 }

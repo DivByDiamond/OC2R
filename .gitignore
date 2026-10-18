@@ -43,3 +43,5 @@ src/main/resources/generated/
 # runtime logs
 logs/
 .claude/
+DEMO_LOCAL.md
+SERVER_AUDIT_LOCAL.md

@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.Connection;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -61,6 +63,35 @@ public final class TestSupport {
         final Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.setYRot(0);
         return player;
+    }
+
+    /** Creates a server player whose connection can receive the mod's registered payloads. */
+    public static ServerPlayer serverPlayer(final GameTestHelper helper) {
+        @SuppressWarnings("removal") final ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        // Vanilla's mock player skips the configuration handshake. Without this, a tracking
+        // broadcast to it fails NeoForge's channel check, including broadcasts from other tests.
+        // This fixture is also compiled by Fabric, which has no NeoForge NetworkRegistry.
+        if (li.cil.oc2.platform.Platform.environment().isModLoaded("neoforge")) {
+            try {
+                Class.forName("net.neoforged.neoforge.network.registration.NetworkRegistry")
+                        .getMethod("configureMockConnection", Connection.class)
+                        .invoke(null, serverConnection(player));
+            } catch (final ReflectiveOperationException error) {
+                throw new IllegalStateException("Cannot configure GameTest player channels", error);
+            }
+        }
+        return player;
+    }
+
+    public static Connection serverConnection(final ServerPlayer player) {
+        try {
+            final java.lang.reflect.Field field = net.minecraft.server.network.ServerCommonPacketListenerImpl.class
+                    .getDeclaredField("connection");
+            field.setAccessible(true);
+            return (Connection) field.get(player.connection);
+        } catch (final ReflectiveOperationException error) {
+            throw new IllegalStateException("Cannot access GameTest player connection", error);
+        }
     }
 
     /**

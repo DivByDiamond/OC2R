@@ -44,8 +44,8 @@ public final class FlashWriterTests {
         final BlockPos relative = new BlockPos(1, 2, 1);
         helper.setBlock(relative, Blocks.FLASH_MEMORY_FLASHER.get());
         final FlashMemoryFlasherBlockEntity writer = TestSupport.blockEntity(helper, relative, FlashMemoryFlasherBlockEntity.class);
-        final ServerPlayer player = mockPlayer(helper);
-        final ServerPlayer intruder = mockPlayer(helper);
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
+        final ServerPlayer intruder = TestSupport.serverPlayer(helper);
         final BlockPos pos = writer.getBlockPos();
         player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         intruder.setPos(player.getX(), player.getY(), player.getZ());
@@ -56,7 +56,7 @@ public final class FlashWriterTests {
         TestSupport.assertNotNull(helper, token, "server-issued writer session");
         final Field channelField = Connection.class.getDeclaredField("channel");
         channelField.setAccessible(true);
-        final EmbeddedChannel channel = (EmbeddedChannel) channelField.get(connection(player));
+        final EmbeddedChannel channel = (EmbeddedChannel) channelField.get(TestSupport.serverConnection(player));
         final byte[] image = new byte[FlashImageUpload.CHUNK_SIZE + 31];
         for (int index = 0; index < image.length; index++) image[index] = (byte) (index * 7 + 19);
         final String digest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(image));
@@ -123,21 +123,6 @@ public final class FlashWriterTests {
                 }
             }
         });
-    }
-
-    private static ServerPlayer mockPlayer(final GameTestHelper helper) throws Exception {
-        @SuppressWarnings("removal") final ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        // NeoForge exposes this specifically for GameTests: negotiate every registered mod
-        // channel on the real EmbeddedChannel rather than bypassing network sends.
-        net.neoforged.neoforge.network.registration.NetworkRegistry.configureMockConnection(connection(player));
-        return player;
-    }
-
-    private static Connection connection(final ServerPlayer player) throws Exception {
-        final Field field = net.minecraft.server.network.ServerCommonPacketListenerImpl.class
-                .getDeclaredField("connection");
-        field.setAccessible(true);
-        return (Connection) field.get(player.connection);
     }
 
     private static UUID blobOf(final ItemStack stack) {

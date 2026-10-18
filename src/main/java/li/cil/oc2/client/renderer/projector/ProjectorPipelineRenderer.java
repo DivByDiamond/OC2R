@@ -180,6 +180,7 @@ public final class ProjectorPipelineRenderer {
                 }
                 final ChunkSectionsToRender chunks = renderer.prepareChunkRenders(projectorView);
                 renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos, projectorCamera);
+                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum, entry.worldPos(), camera);
                 final RenderInfo frame = frame(entry.projector());
                 entry.projector().onRendering();
                 composite(main, inverseMain, projectorCamera, frame);
@@ -588,6 +589,7 @@ public final class ProjectorPipelineRenderer {
                 }
                 final ChunkSectionsToRender chunks = renderer.prepareChunkRenders(projectorView);
                 renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos, projectorCamera);
+                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum, entry.worldPos(), camera);
                 final RenderInfo frame = frame(entry.projector());
                 entry.projector().onRendering();
                 // Direction from a surface towards the projector: the view space +z axis in world space.

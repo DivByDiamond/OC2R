@@ -234,7 +234,7 @@ public final class RobotCarryTests {
     }
 
     private static void placePlayerOnTop(final GameTestHelper helper, final Robot robot) {
-        @SuppressWarnings("removal") final ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
         player.setPos(robot.getX(), robot.getBoundingBox().maxY, robot.getZ());
     }
 

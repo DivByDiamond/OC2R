@@ -33,11 +33,6 @@ versionRange = "1.21.1"
 ordering = "NONE"
 side = "BOTH"
 [[dependencies.oc2r]]
-modId = "markdown_manual"
-type = "required"
-versionRange = "[1.2.1,)"
-side = "CLIENT"
-[[dependencies.oc2r]]
 modId = "projectred_transmission"
 type = "optional"
 versionRange = "[4.22.0,)"

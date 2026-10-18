@@ -27,6 +27,8 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Verify warm CPU/RAM continuation and automatic framebuffer retention after world reload; the current live check boots to guest login with hardware and root writes preserved.
 - [x] Speaker follow-up: cached PCM streams are dropped on world exit and when the sound engine stops ticking them (2026-10-17); in-game check of both lifecycle transitions still open (see docs/roadmap/multiloader.md)
 - [~] Finish multiversion stage 3 (branch multiversion-stage3): 1.21.1 is complete on both loaders; finish 26.1.2/26.2 rendering and acceptance as listed in [multiloader.md](docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion), then proceed to stage 4 release matrix.
+  - [x] Embed Markdown Manual in shared sources and verify it in game on all four targets (2026-10-18); remove the external Markdown Manual/Architectury dependencies. Complete the Russian page set (43 pages), update English/Russian content against code and the actual Linux image, and verify Russian rendering/navigation. See [manual content audit](docs/MANUAL_CONTENT_AUDIT.md).
+  - [x] Run the real GameTest matrix on all four targets (2026-10-18): 35 NeoForge 1.21.1, 37 NeoForge 26.1.2, 37 NeoForge 26.2 and 53 Fabric 1.21.1 tests, all required and passing; configure NeoForge mock-player channels before mod payload broadcasts.
   - [x] Port in-world terminal row-mesh construction to 26.2 `BufferBuilder`/`ByteBufferBuilder`; 26.1.2 and 26.2 compile.
   - [x] Port 26.2 network cable rendering to the level submit pipeline; both 26.1.2 and 26.2 compile.
   - [x] Verify 26.2 network cables and terminal backgrounds/glyphs/cursor in game (2026-10-16). Fixed the terminal text pipeline's forward-depth comparison for 26.2 reversed-Z; the in-world screen now shows glyphs, colored text/background and the blinking cursor. Screenshot: `build/reports/render-qa/26.2-terminal-world-after-depth-fix.png`.
@@ -89,6 +91,12 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Icebox: resizable screen (#12), projector rendering ideas, buildroot image rebuild, block area enlarge (see docs/roadmap/icebox.md)
 
 ## Conventions
+
+## Demo request — 2026-10-18
+
+- [ ] Complete the 26.1.2 OnyxOS demo arena, guest Internet/LAN/display/robot checks, terminal investigation, server audit, fenced manual code and CHANGELOG update; detailed checklist: [demo plan](docs/roadmap/demo-arena-26.1.2.md).
+
+## Conventions (continued)
 
 - One line per task; long context goes into the pages under `docs/roadmap/`.
 - Status boxes: `[ ]` open, `[x]` done, `[~]` partly done.

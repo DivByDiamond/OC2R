@@ -1,12 +1,21 @@
 # Scripting
 
-Controlling devices using Lua is a core concept when using [computers](block/computer.md). Many devices are so-called high level API (HLAPI) devices. This means they are not controlled using regular Linux drives, but via a simple RPC system, employing JSON messages over a serial device.
+Controlling devices using Lua is a core concept when using [computers](block/computer.md). Many devices are so-called high level API (HLAPI) devices. This means they are not controlled using regular Linux drivers, but via a simple RPC system, employing JSON messages over a serial device.
 
 ## The Devices Library
 
 The default Linux distribution includes libraries to make HLAPI devices more easily accessible. The *devices* library provides utilities for discovering devices and calling methods on them, as well as obtaining documentation on devices, when available.
 
-To use the *devices* library, import it using *require("devices")*.
+### Start Lua
+
+Run these commands in the Linux shell:
+
+```sh
+export LUA_PATH="/mnt/builtin/lib/lua/?.lua;;"
+lua
+```
+
+The *builtin* filesystem must be mounted. The bus defaults to `/dev/hvc0`; set `OC2R_BUS_PATH` before starting Lua to use a different device. The following examples run inside Lua, without a shell prompt.
 
 ### Methods
 
@@ -40,7 +49,7 @@ To use the *devices* library, import it using *require("devices")*.
 
 ## The Device Wrapper
 
-Devices returned from the *device* library are objects of type *Device*. This is a wrapper storing the device identifier.
+Devices returned from the *devices* library are objects of type *Device*. This is a wrapper storing the device identifier.
 
 Its main purpose is to enable seamless invocation of methods exposed by this device, as well as a convenient way to access documentation, if available.
 
@@ -57,27 +66,43 @@ For this example we will control a [redstone interface block](block/redstone_int
 
 We place a redstone lamp on top of the redstone interface to have a visual indicator that our commands work.
 
-To verify the connection between device and computer, run the command *lsdev.lua* from the command line. This lists the identifiers and type names of all connected HLAPI devices. One of these should have the type *redstone* among its type names.
+Start Lua as described above. List connected devices:
 
-Start Lua in interactive mode by running just *lua* from the command line.
+```lua
+d = require("devices")
+for _, v in ipairs(d:list()) do
+  print(v.deviceId)
+  print(table.concat(v.typeNames, ", "))
+end
+```
+
+The old *lsdev.lua* helper is not included.
 
 ![Lua in interactive mode](../img/scripting_lua_interactive.png)
 
-Include the devices library and store it in a variable named *d*: *d = require("devices")*
+Get the *Device* wrapper for the redstone interface block:
 
-Then get the *Device* wrapper for the redstone interface block and store it in a variable named *r*: *r = d:find("redstone")*
+```lua
+r = assert(d:find("redstone"))
+print(r)
+```
 
-The *redstone* in this call is the device type name, the same we checked for just earlier using *lsdev.lua*.
+The *redstone* in this call is the device type name, one of the type names returned by *d:list()*.
 
 We now have a wrapper for the redstone interface block on which we may call methods. To get a list of the available methods, run *=r*.
 
 For our example, we're interested in the *setRedstoneOutput* method. It allows setting the signal emitted from the redstone interface.
 
-To light up our lamp, we want to emit a redstone signal from the top face of the redstone interface block:
-*r:setRedstoneOutput("up", 15)*
+To light up our lamp, emit a redstone signal from the top face:
+
+```lua
+r:setRedstoneOutput("up", 15)
+```
 
 The lamp should now light up!
 
 ![Lit redstone lamp](../img/scripting_lamp.png)
 
 With this, you have the tools to learn the names of connected devices, which methods they offer and how to obtain their documentation. Go ahead and experiment with the other methods of the redstone interface to read incoming redstone signals, or try out other devices!
+
+*findAll(typeName):table* returns wrappers for every matching device, while *find* returns only one. The package also includes MicroPython wrappers and C/C++ RPC examples under */mnt/builtin/lib*. These are guest libraries; their availability does not change the required hardware.

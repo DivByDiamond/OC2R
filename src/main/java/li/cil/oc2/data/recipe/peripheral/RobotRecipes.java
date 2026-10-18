@@ -1,7 +1,6 @@
 package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.tool.RobotItem;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
 import li.cil.oc2.data.recipe.RecipeBuilders;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -10,7 +9,7 @@ import net.neoforged.neoforge.common.Tags;
 
 public final class RobotRecipes {
     public static void build(final RecipeOutput consumer) {
-        RecipeBuilders.shaped(RecipeCategory.MISC, RobotItem.getRobotWithFlash())
+        RecipeBuilders.robotWithFlash()
                 .pattern("ICI")
                 .pattern("PTP")
                 .pattern("IBI")

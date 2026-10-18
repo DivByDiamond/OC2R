@@ -1,0 +1,90 @@
+diff --git a/kernel/src/syscall/fs_sys/open_close/open.rs b/kernel/src/syscall/fs_sys/open_close/open.rs
+--- a/kernel/src/syscall/fs_sys/open_close/open.rs
++++ b/kernel/src/syscall/fs_sys/open_close/open.rs
+@@ -7,6 +7,33 @@
+ use onyx_core::errno::Errno;
+ use onyx_core::fmt::Arg;
+ 
++fn resolve_open_path<'a>(
++    path: &'a [u8],
++    cwd: &[u8],
++    joined: &'a mut [u8; 512],
++) -> Option<&'a [u8]> {
++    if path.first() == Some(&b'/') {
++        return Some(path);
++    }
++    if path.is_empty() || cwd.first() != Some(&b'/') {
++        return None;
++    }
++
++    let separator = usize::from(cwd.last() != Some(&b'/'));
++    let len = cwd.len().checked_add(separator)?.checked_add(path.len())?;
++    if len > joined.len() {
++        return None;
++    }
++    joined[..cwd.len()].copy_from_slice(cwd);
++    let mut offset = cwd.len();
++    if separator != 0 {
++        joined[offset] = b'/';
++        offset += 1;
++    }
++    joined[offset..len].copy_from_slice(path);
++    Some(&joined[..len])
++}
++
+ #[inline(never)]
+ /// # Safety
+ ///
+@@ -30,6 +57,11 @@
+                 return Errno::Inval.as_i64();
+             }
+         };
+-        let path_bytes = &path_buf[..path_len];
++        let input_path = &path_buf[..path_len];
++        let mut joined_path = [0u8; 512];
++        let path_bytes = match resolve_open_path(input_path, proc::cwd(), &mut joined_path) {
++            Some(path) => path,
++            None => return Errno::Inval.as_i64(),
++        };
+ 
+         crate::kdbg!(
+@@ -170,3 +202,39 @@
+         token as i64
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::resolve_open_path;
++
++    #[test]
++    fn relative_path_uses_current_directory() {
++        let mut joined = [0; 512];
++        assert_eq!(
++            resolve_open_path(b"internet.txt", b"/", &mut joined),
++            Some(b"/internet.txt".as_slice())
++        );
++
++        let mut joined = [0; 512];
++        assert_eq!(
++            resolve_open_path(b"docs/page.txt", b"/users/root", &mut joined),
++            Some(b"/users/root/docs/page.txt".as_slice())
++        );
++    }
++
++    #[test]
++    fn absolute_path_is_left_unchanged() {
++        let mut joined = [0; 512];
++        assert_eq!(
++            resolve_open_path(b"/tmp/file.txt", b"/users/root", &mut joined),
++            Some(b"/tmp/file.txt".as_slice())
++        );
++    }
++
++    #[test]
++    fn empty_path_and_invalid_current_directory_are_rejected() {
++        let mut joined = [0; 512];
++        assert!(resolve_open_path(b"", b"/", &mut joined).is_none());
++        assert!(resolve_open_path(b"file", b"", &mut joined).is_none());
++    }
++}

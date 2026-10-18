@@ -61,14 +61,16 @@ public final class RestrictedContainer {
     }
 
     //? if >=26.1 {
-    /*private static RestrictedContainer fromTemplates(
+    /*public static RestrictedContainer fromTemplates(
             final Map<TagKey<Item>, List<Optional<ItemStackTemplate>>> templates) {
         final var container = new RestrictedContainer(null);
-        container.pending = templates;
+        container.pending = templates.entrySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
+                Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
         return container;
     }
 
-    private Map<TagKey<Item>, List<Optional<ItemStackTemplate>>> toTemplates() {
+    private synchronized Map<TagKey<Item>, List<Optional<ItemStackTemplate>>> toTemplates() {
+        if (pending != null) return pending;
         final Map<TagKey<Item>, List<Optional<ItemStackTemplate>>> result = new ConcurrentHashMap<>();
         items().forEach(
                         (tag, stacks) -> {
@@ -108,17 +110,29 @@ public final class RestrictedContainer {
 
     @Override
     public boolean equals(final Object obj) {
+        //? if >=26.1 {
+        /*return obj == this || (obj instanceof RestrictedContainer other && toTemplates().equals(other.toTemplates()));
+        *///?} else {
         return obj == this
                 || (obj instanceof RestrictedContainer other && items().equals(other.items()));
+        //?}
     }
 
     @Override
     public int hashCode() {
+        //? if >=26.1 {
+        /*return toTemplates().hashCode();
+        *///?} else {
         return items().hashCode();
+        //?}
     }
 
     @Override
     public String toString() {
+        //? if >=26.1 {
+        /*return "RestrictedContainer[items=" + toTemplates() + "]";
+        *///?} else {
         return "RestrictedContainer[items=" + items() + "]";
+        //?}
     }
 }

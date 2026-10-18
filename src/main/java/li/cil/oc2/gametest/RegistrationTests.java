@@ -33,6 +33,21 @@ public final class RegistrationTests {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void serverPlayerReceivesModPayloads(final GameTestHelper helper) {
+        final net.minecraft.server.level.ServerPlayer player = TestSupport.serverPlayer(helper);
+        final li.cil.oc2.common.network.message.computer.ComputerBusStateMessage message =
+                new li.cil.oc2.common.network.message.computer.ComputerBusStateMessage(
+                        helper.absolutePos(TestSupport.COMPUTER_POS),
+                        li.cil.oc2.common.bus.controller.BusState.READY, 0);
+        TestSupport.assertTrue(helper, "computer payload channel must be negotiated",
+                player.connection.hasChannel(message.type().id()));
+        li.cil.oc2.platform.Platform.network().sendToPlayer(message, player);
+        helper.succeed();
+    }
+    *///?}
+
     // --------------------------------------------------------------------- //
 
     private RegistrationTests() {

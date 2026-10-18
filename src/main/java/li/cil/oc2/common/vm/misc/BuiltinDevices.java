@@ -107,18 +107,27 @@ public final class BuiltinDevices {
     }
 
     /** Switch only while the VM worker is stopped; retain both OS overlays across firmware changes. */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals") // Disk attachment depends on the exact backing instance.
     public void selectRootFilesystem(final boolean onyx) throws IOException {
         if (rfs == null) throw new IOException("Built-in root disk is unavailable");
         if (onyx && onyxRootFilesystem == null) {
-            final var image = new OnyxOSBlockDeviceData().getBlockDevice();
-            if (image.getCapacity() == 0) throw new IOException("OnyxOS root image is unavailable");
-            onyxRootFilesystem = new BuiltinRootFilesystem(image);
+            final var image = OnyxOSBlockDeviceData.currentRootImage();
+            if (image.device().getCapacity() == 0) throw new IOException("OnyxOS root image is unavailable");
+            onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
         }
         final BuiltinRootFilesystem selected = onyx ? onyxRootFilesystem : rootFilesystem;
         if (selected != attachedRootFilesystem) {
             rfs.setBlock(selected);
             attachedRootFilesystem = selected;
         }
+    }
+
+    /** Choose the saved immutable base before Ceres restores any sparse pages. */
+    public void prepareSavedOnyxRoot(final String baseImageId) throws IOException {
+        final var image = OnyxOSBlockDeviceData.savedRootImage(baseImageId);
+        onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
+        rfs.setBlock(onyxRootFilesystem);
+        attachedRootFilesystem = onyxRootFilesystem;
     }
 
     public static void connectSystemController(final GlobalVMContext context, final R5Board board) {

@@ -204,5 +204,14 @@
   "gui.oc2r.flash_writer.format_flash": ".bin: OpenSBI + ядро со смещением 2 МиБ.",
   "gui.oc2r.flash_writer.format_disk": "Сырой диск .img; ELF/ISO не преобразуются.",
   "gui.oc2r.flash_writer.format_empty": "Нужен .bin прошивки или сырой диск .img.",
-  "gui.oc2r.flash_writer.builtin_hint": "Встроенной OnyxOS не нужен жёсткий диск."
+  "gui.oc2r.flash_writer.builtin_hint": "Встроенной OnyxOS не нужен жёсткий диск.",
+  "block.oc2r.internet_gateway": "Интернет-шлюз",
+  "block.oc2r.internet_gateway.desc": "Предоставляет сети доступ к интернет-адаптеру сервера.",
+  "item.oc2r.internet_card": "Интернет-карта",
+  "item.oc2r.internet_card.desc": "Предоставляет доступ к интернет-адаптеру сервера.",
+  "message.oc2r.connector.connected": "Разъёмы соединены.",
+  "message.oc2r.connector.disconnected": "Соединение удалено, кабель возвращён.",
+  "message.oc2r.connector.link_started": "Кабель прикреплён. Используйте его на другом разъёме для соединения или на соединённом для удаления связи.",
+  "tooltip.oc2r.internet.disabled": "Доступ в интернет отключён. Администратор может включить его в настройках мода и ограничить доступные адреса. Подключения выполняются через реальный сервер.",
+  "tooltip.oc2r.internet.energy_per_packet": "Расход энергии на отправку пакета: %s"
 }

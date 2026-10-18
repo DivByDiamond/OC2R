@@ -8,8 +8,8 @@ import li.cil.oc2.api.bus.device.vm.VMDeviceLoadResult;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.controller.event.AfterDeviceScanEvent;
 import li.cil.oc2.common.bus.controller.event.DevicesChangedEvent;
-import li.cil.oc2.common.bus.device.rpc.item.CPUItemDevice;
 import li.cil.oc2.common.bus.device.data.firmware.OnyxOSFirmware;
+import li.cil.oc2.common.bus.device.rpc.item.CPUItemDevice;
 import li.cil.oc2.common.bus.device.vm.item.storage.FirmwareFlashStorageDevice;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.vm.VMRunState;
@@ -28,6 +28,8 @@ public final class VMLifecycle {
 
     private final AbstractVirtualMachine vm;
     private int loadDevicesDelay;
+    private CompoundTag unrestoredSnapshot;
+    private String restoreFailure;
 
     public VMLifecycle(final AbstractVirtualMachine vm) {
         this.vm = vm;
@@ -61,6 +63,11 @@ public final class VMLifecycle {
     }
 
     public void load() {
+        if (unrestoredSnapshot != null) {
+            vm.setRunState(VMRunState.STOPPED);
+            vm.error(Component.literal(restoreFailure), false);
+            return;
+        }
         if (loadDevicesDelay > 0) {
             loadDevicesDelay--;
             return;
@@ -203,11 +210,25 @@ public final class VMLifecycle {
 
     public CompoundTag serialize() {
         joinWorkerThread();
-        return VMLifecycleSerialization.serialize(vm);
+        return unrestoredSnapshot != null ? unrestoredSnapshot.copy() : VMLifecycleSerialization.serialize(vm);
     }
 
     public void deserialize(final CompoundTag tag) {
         joinWorkerThread();
-        VMLifecycleSerialization.deserialize(vm, tag);
+        try {
+            VMLifecycleSerialization.deserialize(vm, tag);
+            unrestoredSnapshot = null;
+            restoreFailure = null;
+        } catch (final IOException e) {
+            // Keep the exact original snapshot. Saving a stopped, fresh VM here would
+            // discard the user's disk pages merely because a pinned base is missing.
+            unrestoredSnapshot = tag.copy();
+            restoreFailure = e.getMessage();
+            vm.runner = null;
+            vm.state.board.setRunning(false);
+            vm.setRunState(VMRunState.STOPPED);
+            vm.error(Component.literal(restoreFailure), false);
+            LOGGER.error("Cannot restore saved VM root image; original snapshot retained", e);
+        }
     }
 }

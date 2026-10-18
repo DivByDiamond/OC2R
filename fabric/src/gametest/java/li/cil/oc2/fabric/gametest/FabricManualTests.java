@@ -1,6 +1,6 @@
 package li.cil.oc2.fabric.gametest;
 
-import li.cil.manual.api.prefab.item.AbstractManualItem;
+import li.cil.oc2.manual.api.prefab.item.AbstractManualItem;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.platform.Platform;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;

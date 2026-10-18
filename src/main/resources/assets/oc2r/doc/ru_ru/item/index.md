@@ -17,3 +17,9 @@
 - [Робот](robot.md)
 - [Ключ](wrench.md)
 - [Звуковая карта](sound_card.md)
+
+- [Процессор](cpu.md)
+- [Видеокарта](gpu.md)
+- [Интернет-карта](internet_card.md)
+- [Модуль крафта](crafting_module.md)
+- [Модуль сканера](scanner_module.md)

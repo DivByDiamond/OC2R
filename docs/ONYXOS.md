@@ -1,7 +1,10 @@
 # Bundled OnyxOS images
 
-Images in `src/main/resources/onyxos/` were rebuilt on 2026-10-16 from
-`/storage/project/systems/Onyx/` using `OnyxOS/scripts/build-oc2r.sh`.
+The current kernel and userspace in `src/main/resources/onyxos/` were rebuilt
+on 2026-10-18 from the source revisions and patches listed below. The
+2026-10-16 root base is retained
+separately for existing VM snapshots. Source revisions and permanent patches are
+listed below; full rebuild instructions are in `scripts/demo/README-Onyx-build.md`.
 
 The build includes OpenSBI jump firmware, the S-mode OnyxKernel, rebuilt
 init/login tools and shell, the RGB565 framebuffer diagnostic, and a raw
@@ -32,12 +35,12 @@ Verified fixes include:
   incorrectly treated `size_max` as a multiplier and could advertise space
   beyond the backing disk. The 16 MiB image now grows to 4096 OnyxFS blocks.
 
-Standalone Sedna 5.2.0 verification at 64 MiB RAM covers init, root login,
+The original standalone Sedna 5.2.0 verification at 64 MiB RAM covered init, root login,
 shell, redirection, create/read/copy/rename/delete, a saved-image reboot, and
-three independently written RGB565 framebuffers. The same guest image is used
-for the Minecraft integration checks. 166 kernel tests, FDT regressions and the
-existing OnyxApps checks were also run; detailed logs are in
-`build/reports/onyx-qa/`.
+three independently written RGB565 framebuffers. That baseline also ran 166
+kernel tests, FDT regressions and the existing OnyxApps checks. Current-image
+validation and network/RPC evidence are recorded with the source revisions below;
+detailed development logs are in `build/reports/onyx-qa/`.
 
 Log in as `root` with an empty password. Four 16 MiB memory modules provide
 the tested 64 MiB configuration. This is a tested configuration, not a measured
@@ -53,8 +56,34 @@ Existing hard-drive items retain their contents and remain attached as extra
 disks. An existing Onyx hard drive is not copied into the automatic root disk.
 
 The same `config/oc2r/onyxfs.img` override supplies the immutable base for new
-Onyx roots. Keep that base compatible with already saved overlays; changing
-its filesystem layout underneath existing writes is not an image migration.
+Onyx roots. Saved roots retain their own base identity, as described below;
+replacing an image does not migrate an existing filesystem's contents.
+
+## Root image revisions and existing worlds
+
+New private Onyx roots record the SHA-256 identity of their immutable base in
+`baseImageId`, alongside the sparse writable pages. The host pins that base in
+`config/oc2r/root-images/<sha256>.img`. Keep this directory with server backups,
+particularly when using a custom `config/oc2r/onyxfs.img` override. The cache must
+be writable to create a new private root; an unavailable cache does not prevent
+reading a retained legacy root or using a complete hard-drive image. After an image
+update, saved machines select their original base before their writable pages
+are restored; newly created roots use the updated image.
+
+Snapshots created before `baseImageId` existed select the retained
+`onyxfs-20261016.img` resource, whose SHA-256 is
+`bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
+An existing custom override retains the previous override behavior for those
+unversioned snapshots: keep that override unchanged until each machine has been
+loaded and saved with a base identity. Do not replace the retained legacy image.
+Updating the default image does not install tools into existing private roots.
+
+If a saved base is missing or its bytes do not match its identity, the VM stops
+with an error and retains its original snapshot, including all writable pages.
+Restore the corresponding cache image and reload the machine/world; it must not
+silently mount those pages over a different filesystem. For a disposable demo
+machine, a complete image can alternatively be imported through its private
+root output stream, persisting every shadow page independently of the base.
 
 ## Importing an OS inside Minecraft
 
@@ -97,6 +126,37 @@ applications can write or map the other devices independently. The basic
 framebuffer path does not require the RPC library.
 
 
+## Native network and device tools
+
+New root images include `netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve`,
+`tcpstream`, and `oc2ctl`. Their source is in `scripts/demo/guest/` and they are
+built with `--ring1` for the required privileged operations. Existing private
+roots retain their files and base image; updating the mod does not silently
+replace those roots or install tools over user data.
+
+The network tools configure individual NICs and demonstrate UDP/TCP traffic.
+Use `netcfg list` to identify interfaces before configuring Internet and LAN
+addresses; see `scripts/demo/README-Onyx-network.md`. The bundled `ohttp` implements minimal plain HTTP GETs with a numeric IPv4
+address or DNS-resolved hostname. It does not implement HTTPS/TLS, redirects or
+chunked transfer decoding. The browser's networking has not been independently
+validated by the HTTP checks described below. `ohttp` uses root-ring permissions
+because the current kernel restricts creation of new files to that ring; other
+normal-ring C apps retain that restriction. `open` resolves relative paths
+against the process working directory.
+
+`oc2ctl` uses raw `/dev/hvc0` JSON RPC for discovery, inspection, inventory,
+sound and robot actions. Keep the robot's front clear and place the item chest
+above it for `inventory-demo`; that demo requires an empty selected slot so it
+cannot return pre-existing inventory contents by mistake. Device movement is
+queued, so the tool checks the action result rather than treating acceptance as
+completion. Native framebuffer applications address `/dev/fbN` independently.
+
+All bundled C apps and native tools were rebuilt against the corrected libc:
+its previous `puts`/`fputs`/`fwrite` paths could use uninitialized standard
+streams and hang on their first output. A compiler fix also materializes large
+structure-member offsets correctly. Merely replacing a compiler or libc file
+would not repair already compiled applications.
+
 ## Input
 
 The computer terminal uses UART input. Native VirtIO keyboard input currently
@@ -106,16 +166,84 @@ keyboards and verifies a character from the selected keyboard reaches a guest
 command. Multiple native keyboard aggregation remains separate work; all
 connected framebuffer outputs can be addressed independently.
 
+## Console and TUI behavior
+
+On Sedna, the kernel mirrors stdout to the PC's UART terminal and the primary
+framebuffer. The shared console grid is capped at 80 columns and 24 rows,
+bounded by smaller physical screens. Other platforms keep their framebuffer
+console dimensions. Native `/dev/fbN` applications continue to use each device's
+full resolution; this console limit does not reduce monitor or projector modes.
+
+The console patch fixes ANSI line erasure (`EL 1` and `EL 2`), moves routine
+file-open/ELF-segment traces to debug level, and publishes only the console
+viewport during console refreshes. The host does not impose a retro baud-rate
+delay: reducing the VM's 1,000-cycle service interval made the measured guest
+slower and was rejected. Heavy TUI redraws still execute inside the emulated
+CPU and consume its time quota.
+
+The original geometry fix is `scripts/demo/onyx-console.patch`; its
+console-only build is described in `scripts/demo/README-Onyx-console.md`. The
+later scaling candidate and full rebuild recipe are described separately below. Standalone RV64 tests with a
+1920×1080 primary framebuffer reproduced an `otop` footer on row 66 before the
+geometry fix and row 23 afterwards. In one controlled comparison of the
+original unscaled viewport against full-frame presentation, framebuffer stores fell from 1,036,928 to 123,008 and the first frame
+fell from about 1,108 ms to 933 ms. These are fixture measurements, not a frame
+rate guarantee inside Minecraft or measurements of the later scaled candidate.
+Logs are in `build/reports/terminal-qa/`.
+
 ## Verified source revisions
 
-- OnyxKernel: `1f39a22309d5f38a87f314b2a9a8aa898c440b4f`.
+- OnyxKernel base: `dc3aa4b`, plus `onyx-console.patch`, `onyx-network.patch`,
+  `onyx-rpc.patch`, `onyx-console-scale.patch`,
+  `onyx-login-passwordless.patch`, and `onyx-open-relative.patch` under
+  `scripts/demo/`. The base follows the original
+  OC2R boot/framebuffer fixes in `1f39a22309d5f38a87f314b2a9a8aa898c440b4f`.
+- OnyxApps: `ef5d9cd8d1a7116670d32af4b4441ac89da7a9b3`, all seven C apps rebuilt; `ohttp` adds `onyx-ohttp-eof.patch` and is built with `--ring1` to create its output file.
+- OnyxCompiller: `f9f78d88d6ecd16aee1ef4ab00cee291265d9428`, plus
+  `onyxcc-large-member.patch` and `onyx-libc-stdio-init.patch`.
 - OnyxShell: `636fef68547f3431fc9ed8eb3ddcd06900567e0a`.
 - OnyxOS: `888f69a5d7dccfdad382bc93641e8ea03ae6a8de`.
-- Kernel SHA-256: `55eac6a5ddf55cf667a4f313be9708f061ff108ddcc728729671c1efdd5f8a74`.
-- Root image SHA-256: `bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
+- Kernel SHA-256: `dc6162123327faab4c7542e6af632681285d37ac143106a5230ea57f7138846b`.
+- Current root image SHA-256: `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`.
+- Retained legacy root SHA-256: `bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
+
+The earlier integrated checkpoint (kernel `d8c700cd…`, root image `adc8de68…`)
+passed 191 host kernel tests, fresh RV64 boot/login, filesystem operations and
+redirection, real VirtIO keyboard input, independent RGB565 writes to three packed framebuffers, and a fresh boot
+of the saved filesystem with its marker preserved. The 1920×1080 TUI fixture
+also returns cleanly to the shell. A two-board/two-NIC guest fixture verifies UDP
+and TCP request/reply, an 8 KiB TCP stream across receive-window reopening, and
+routing to the Internet NIC. Raw VirtIO RPC verifies a fragmented 6 KiB device
+list, discovery and invocation. Those checks describe that checkpoint, rather
+than a rerun of every fixture against each later root-image repack. The separate current-image HTTP check is
+recorded below. Minecraft integration evidence is recorded separately.
 
 Real Minecraft 26.1.2 checks cover flash-only Onyx boot, login and file operations,
 three independent outputs, monitor GUI, separate Minux/Onyx root writes through
 firmware changes and world reload, and imported media surviving reload in the
 player inventory. Warm CPU/RAM continuation and automatic framebuffer retention
 across reload remain separate checks; these checks log in and redraw after boot.
+
+A separate HTTP reader regression reproduces the old busy poll after orderly
+EOF and checks a close-delimited response body after the fix. A fresh RV64
+client booted from the previous candidate also fetched an HTTP response from
+another real VirtIO-networked guest, saved it and printed the exact
+`HTTP-MOCK-PASS` body. In Minecraft 26.1.2, the current kernel then fetched
+`http://185.176.94.38:18080/oc2r` through the host adapter, wrote the 53-byte
+body to the relative path `internet.txt`, and `cat internet.txt` printed both
+expected lines. The same world verified TCP echo between Onyx guests over the
+visible blue cable. Logs and screenshots are under `build/demo-qa/`.
+
+The host TCP EOF regression was verified separately: all three
+`DefaultSessionLayerEofTest` cases failed before the adapter fix (immediate EOF
+with data, empty EOF, and a full buffer with a later EOF), then passed together
+with nine `EstablishedStateTest` cases. This verifies buffer preservation and
+FIN ordering in unit tests; it is not a Minecraft HTTP acceptance result.
+
+The console-scale/login/relative-open candidate adds
+`onyx-console-scale.patch`, `onyx-login-passwordless.patch`, and
+`onyx-open-relative.patch` after the three original kernel patches.
+Its build and guest validation are described in
+`scripts/demo/README-Onyx-console-scale.md`; installed checksums above identify
+which kernel/root pair is currently packaged. Do not infer that an existing
+saved root acquired a rebuilt login binary from a mod update.

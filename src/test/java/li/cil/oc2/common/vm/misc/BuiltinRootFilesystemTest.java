@@ -58,6 +58,29 @@ class BuiltinRootFilesystemTest {
     }
 
     @Test
+    void completeImageImportPersistsEveryPageWithoutChangingThePackagedBase() throws Exception {
+        final byte[] packaged = new byte[4 * 65536];
+        Arrays.fill(packaged, (byte) 7);
+        final byte[] imported = new byte[packaged.length];
+        for (int i = 0; i < imported.length; i++) imported[i] = (byte) (i * 31 + i / 65536);
+        final Snapshot original = new Snapshot(disk(packaged));
+        try (final var input = new ByteArrayInputStream(imported);
+                final var output = original.rootFilesystem.getOutputStream(0)) {
+            assertEquals(imported.length, input.transferTo(output));
+        }
+        final CompoundTag saved = NBTSerialization.serialize(original);
+        // A complete import must not depend on even one byte of the base image.
+        final Snapshot restored = new Snapshot(disk(new byte[packaged.length]));
+        NBTSerialization.deserialize(saved, restored);
+        assertArrayEquals(imported, restored.rootFilesystem.getInputStream().readAllBytes());
+        assertArrayEquals(packaged, disk(packaged).getInputStream().readAllBytes());
+        final CompoundTag root = (CompoundTag) saved.get("rootFilesystem");
+        final CompoundTag overlay = (CompoundTag) root.get("overlay");
+        final CompoundTag blocks = (CompoundTag) overlay.get("blocks");
+        assertEquals(4, ((net.minecraft.nbt.ListTag) blocks.get("values")).size());
+    }
+
+    @Test
     void bulkReadFromUnchangedPageSeesWritesInFollowingShadowPage() throws Exception {
         final byte[] image = new byte[192 * 1024];
         final BuiltinRootFilesystem disk = disk(image);

@@ -14,8 +14,6 @@ val night_config_version: String = providers.gradleProperty("night_config_versio
 val ceres_version: String = providers.gradleProperty("ceres_version").get()
 val sedna_version: String = providers.gradleProperty("sedna_version").get()
 val sedna_buildroot_version: String = providers.gradleProperty("sedna_buildroot_version").get()
-val markdown_manual_fabric_version: String = providers.gradleProperty("markdown_manual_fabric_version").get()
-val architectury_fabric_version: String = providers.gradleProperty("architectury_fabric_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
@@ -48,9 +46,6 @@ dependencies {
     implementation("com.electronwill.night-config:toml:$night_config_version")
     include("com.electronwill.night-config:core:$night_config_version")
     include("com.electronwill.night-config:toml:$night_config_version")
-    // The in-game manual: the original Markdown Manual has Fabric builds (it needs Architectury API).
-    modImplementation("maven.modrinth:markdownmanual:$markdown_manual_fabric_version")
-    modImplementation("maven.modrinth:architectury-api:$architectury_fabric_version")
     modImplementation("teamreborn:energy:$team_reborn_energy_version")
     include("teamreborn:energy:$team_reborn_energy_version")
 
@@ -134,6 +129,7 @@ val packageScripts = tasks.register<Zip>("packageScripts") {
 // src/generated is a gitignored datagen workdir whose content is synced into src/main/resources by
 // copyGeneratedResources (CI never has it): including it here only ever produced duplicates.
 tasks.processResources {
+    from(rootProject.file("LICENSE-MarkdownManual"))
     from(rootProject.file("src/main/resources")) {
         include("assets/**", "data/**", "natives/**", "onyxos/**", "pack.mcmeta")
     }

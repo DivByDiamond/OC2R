@@ -1,0 +1,18 @@
+diff --git a/src/back/gen.c b/src/back/gen.c
+index a39f776..8c28e18 100755
+--- a/src/back/gen.c
++++ b/src/back/gen.c
+@@ -272,11 +272,11 @@ static void materialize(val_t *v, int reg) {
+              * returned &struct and every same-register address use
+              * pointed at the wrong member. */
+             if (v->reg != reg) {
+-                rv_addi(reg, v->reg, (int)v->offset);
++                rv_addi_imm(reg, v->reg, (int)v->offset);
+                 v->reg = reg;
+                 v->offset = 0;
+             } else if (v->offset != 0) {
+-                rv_addi(reg, reg, (int)v->offset);
++                rv_addi_imm(reg, reg, (int)v->offset);
+                 v->offset = 0;
+             }
+             break;

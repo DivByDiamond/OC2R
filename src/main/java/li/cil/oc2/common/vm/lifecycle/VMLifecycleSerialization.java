@@ -23,7 +23,7 @@ final class VMLifecycleSerialization {
         return tag;
     }
 
-    static void deserialize(final AbstractVirtualMachine vm, final CompoundTag tag) {
+    static void deserialize(final AbstractVirtualMachine vm, final CompoundTag tag) throws IOException {
         //? if >=26.1 {
         /*if (tag.contains(VMLifecycle.RUNNER_TAG_NAME)) {
         *///?} else {
@@ -61,18 +61,25 @@ final class VMLifecycleSerialization {
         }
     }
 
-    private static void prepareRootFilesystem(final AbstractVirtualMachine vm, final CompoundTag state) {
+    private static void prepareRootFilesystem(final AbstractVirtualMachine vm, final CompoundTag state) throws IOException {
         // Ceres restores sparse pages into an existing backing image. Construct that image first;
         // otherwise an Onyx overlay could be restored without its immutable packaged base.
         final var devices = state.get("builtinDevices");
         if (devices instanceof CompoundTag saved
                 && saved.get("onyxRootFilesystem") instanceof CompoundTag root
                 && root.contains("overlay")) {
-            try {
-                vm.state.builtinDevices.selectRootFilesystem(true);
-            } catch (final IOException e) {
-                throw new IllegalStateException("Cannot restore the saved OnyxOS root filesystem", e);
+            if (root.contains("baseImageId") && !(root.get("baseImageId") instanceof net.minecraft.nbt.StringTag)) {
+                throw new IOException("Invalid OnyxOS root base identity; original snapshot retained");
             }
+            //? if >=26.1 {
+            /*final String baseImageId = root.getStringOr("baseImageId", "");
+            *///?} else {
+            final String baseImageId = root.getString("baseImageId");
+            //?}
+            if (root.contains("baseImageId") && baseImageId.isEmpty()) {
+                throw new IOException("Empty OnyxOS root base identity; original snapshot retained");
+            }
+            vm.state.builtinDevices.prepareSavedOnyxRoot(baseImageId);
         }
     }
 }

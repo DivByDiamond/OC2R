@@ -66,7 +66,7 @@ The default Linux image is bundled with the mod - no extra download needed.
 
 ### Dependencies
 
-- **Required:** Minecraft 1.21.1 with NeoForge 21.1.243+ or Fabric (Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual with Architectury API), Java 21+
+- **Required:** Minecraft 1.21.1 with NeoForge 21.1.243+ or Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
 - **Optional:** JEI (recipe viewer, NeoForge)
 
 | Minecraft | NeoForge | Fabric |
@@ -137,7 +137,7 @@ OC2R - мод для Minecraft, добавляющий полноценные в
 
 ### Зависимости
 
-- **Обязательные:** Minecraft 1.21.1 с NeoForge 21.1.243+ или Fabric (Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual с Architectury API), Java 21+
+- **Обязательные:** Minecraft 1.21.1 с NeoForge 21.1.243+ или Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
 - **Опциональные:** JEI (просмотр рецептов, NeoForge)
 
 | Minecraft | NeoForge | Fabric |
