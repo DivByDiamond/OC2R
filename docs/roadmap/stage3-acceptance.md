@@ -58,8 +58,17 @@ acceptance. Screenshots and the upgraded QA world copy are under ignored
 `build/demo-qa/` and `versions/26.2/run/saves/OC2R Demonstration 26_2_qa`.
 The 26.2 client shutdown also logged four `Allocator` memory-allocation leaks
 whose stacks lead through robot VM device mounting. The server stopped normally,
-but the allocation cleanup path needs a separate reproducible investigation
-before treating robot reload/shutdown as clean.
+and the root cause was that `Robot.tick()` passed `firstTick` to its lifecycle
+handler after `Entity.tick()` had already cleared it. This skipped both idle
+target initialization and registration of the robot's world-unload cleanup.
+The fix preserves the flag before calling `super.tick()`. Regression checks now
+assert that an idle robot's target matches its position; GameTests pass 38/38 on
+26.1.2 and 26.2, and both shutdown logs end without allocator leak reports.
+
+Live follow-up on 2026-10-20 in 26.1.2 also found that tall uppercase and digit
+glyphs in the terminal atlas exceeded the row height. The renderer now scales
+those glyphs vertically around the common baseline, leaving their monospaced
+horizontal advance unchanged. The focused font regression test passes.
 
 - [ ] Monitor models: each facing, single block and multiblock edges/corners;
   framebuffer alignment, GUI image and powered/unpowered states.

@@ -254,8 +254,12 @@ public final class Robot extends AbstractRobotEntity
 
     @Override
     public void tick() {
+        // Entity.baseTick() (called by super.tick()) clears firstTick. Preserve it so the robot's
+        // lifecycle handler can initialize synchronized movement targets and register unload
+        // cleanup on the actual first server tick.
+        final boolean isFirstTick = firstTick;
         super.tick();
-        RobotTickHandler.tick(this, firstTick);
+        RobotTickHandler.tick(this, isFirstTick);
     }
 
     @Override

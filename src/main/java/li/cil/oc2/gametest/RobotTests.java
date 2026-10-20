@@ -21,6 +21,37 @@ import net.minecraft.world.phys.Vec3;
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RobotTests {
+    /** The first server tick must initialize the synchronized idle target to the robot's position. */
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void robotInitializesIdleMovementTarget(final GameTestHelper helper) {
+        //? if >=26.1 {
+        /*final Robot robot = Entities.ROBOT.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        *///?} else {
+        final Robot robot = Entities.ROBOT.get().create(helper.getLevel());
+        //?}
+        if (robot == null) {
+            helper.fail("EntityType.create returned null");
+            return;
+        }
+        final Vec3 pos = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
+        //? if >=26.1 {
+        /*robot.snapTo(pos.x, pos.y, pos.z, 90, 0);
+        *///?} else {
+        robot.moveTo(pos.x, pos.y, pos.z, 90, 0);
+        //?}
+        helper.getLevel().addFreshEntity(robot);
+
+        helper.runAtTickTime(2, () -> {
+            final var expected = robot.blockPosition();
+            final var actual = robot.getEntityData().get(Robot.TARGET_POSITION);
+            if (!expected.equals(actual)) {
+                helper.fail("idle movement target is " + actual + ", expected " + expected);
+                return;
+            }
+            helper.succeed();
+        });
+    }
+
     /** Robots are saved through RobotSerializer, which is first loaded by the save itself. */
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void robotSurvivesSaveAndLoad(final GameTestHelper helper) {

@@ -29,6 +29,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **Terminal**: compress uppercase letters and digits vertically around the shared baseline so tall Monocraft glyphs stay inside their terminal row.
+- **Robot lifecycle**: preserve `firstTick` across `Entity.tick()`; idle robots now initialize their synchronized movement target instead of stepping toward the origin and snapping back, and their unload cleanup releases guest RAM allocator claims.
 - **Onyx console**: scale the mirrored text console to fit high-resolution monitors with centered margins, while preserving native framebuffer graphics and limiting presentation to changed regions.
 - **Onyx login**: enter a selected account without a password prompt when its stored credentials verify an empty password; protected and locked accounts retain authentication.
 - **Internet**: preserve buffered TCP response bytes when the remote socket reaches EOF, deliver them through the guest receive window and send FIN after acknowledgment. HTTP servers that close immediately after their response no longer lose the response inside the host adapter.
