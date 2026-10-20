@@ -47,6 +47,20 @@ walkthrough are in ignored `build/demo-qa/` and `DEMO_LOCAL.md`. These checks
 cover only part of the matrix below; they do not close the all-facings, projector,
 robot item or cross-version reload items.
 
+Live follow-up on 2026-10-20 in an isolated copy of the 26.1.2 demo world,
+opened with the NeoForge 26.2 client: the real guest projector framebuffer
+(`/dev/fb1`, 640x480) produced a visible green frame on the arena surface, and
+the image remained visible from an oblique view. Moving the camera behind the
+projection surface showed its opaque back face, with the projection out of view.
+This establishes basic framebuffer presentation and camera-dependent visibility;
+it does not complete the terrain/entity occlusion, power-cycle or cold-reload
+acceptance. Screenshots and the upgraded QA world copy are under ignored
+`build/demo-qa/` and `versions/26.2/run/saves/OC2R Demonstration 26_2_qa`.
+The 26.2 client shutdown also logged four `Allocator` memory-allocation leaks
+whose stacks lead through robot VM device mounting. The server stopped normally,
+but the allocation cleanup path needs a separate reproducible investigation
+before treating robot reload/shutdown as clean.
+
 - [ ] Monitor models: each facing, single block and multiblock edges/corners;
   framebuffer alignment, GUI image and powered/unpowered states.
 - [ ] Bus cable models: straight, bends, branches, six interface directions,
