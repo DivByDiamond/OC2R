@@ -20,6 +20,8 @@ import li.cil.oc2.common.entity.robot.movement.RobotMovementController;
 import li.cil.oc2.common.entity.robot.rotation.RobotRotationAction;
 import li.cil.oc2.common.entity.robot.state.RobotAnimationState;
 import li.cil.oc2.common.entity.robot.state.RobotSerializer;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.robot.state.RobotInitializationMessage;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
@@ -147,6 +149,10 @@ public final class Robot extends AbstractRobotEntity
     }
 
     public void openTerminalScreen(final ServerPlayer player) {
+        // Re-send the VM snapshot with the menu open. Entity tracking can race the
+        // first terminal interaction after a world reload, leaving the client with
+        // the default SCAN_PENDING state even though the server bus is already ready.
+        NetworkMessages.sendToClient(new RobotInitializationMessage(this), player);
         RobotTerminalContainer.createServer(this, energy, virtualMachine.busController, player);
     }
 

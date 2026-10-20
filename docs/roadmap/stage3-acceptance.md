@@ -38,9 +38,14 @@ the blue network cable remained reciprocal/resolved and both guest NICs worked
 after reconfiguration. TCP echo passed between OnyxOS guests, and HTTP returned
 `200 OK` with the expected body through the Internet Card. `/dev/fb1` and
 `/dev/fb2` drew distinct solid frames to the single and 3×2 monitors; both stayed
-visible at an oblique camera angle. Evidence and the local walkthrough are in
-ignored `build/demo-qa/` and `DEMO_LOCAL.md`. These checks cover only part of the
-matrix below; they do not close the all-facings, projector, robot or reload items.
+visible at an oblique camera angle. Reopening the robot terminal after a reload
+also exposed stale client VM state (`Bus Incomplete` while the server was
+`RUNNING/READY`); the terminal now receives a fresh VM snapshot when opened.
+After the fix, `help`, `oc2ctl robot-status` and `oc2ctl robot-demo` worked, with
+`ROBOT_DEMO_OK: every queued action completed SUCCESS`. Evidence and the local
+walkthrough are in ignored `build/demo-qa/` and `DEMO_LOCAL.md`. These checks
+cover only part of the matrix below; they do not close the all-facings, projector,
+robot item or cross-version reload items.
 
 - [ ] Monitor models: each facing, single block and multiblock edges/corners;
   framebuffer alignment, GUI image and powered/unpowered states.
