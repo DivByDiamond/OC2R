@@ -33,6 +33,15 @@ and the version for each completed check. The existing dated evidence is in
 [multiloader.md](multiloader.md#26x-rendering-notes-2026-10-14); generated images
 are under `build/reports/render-qa/` and are not committed.
 
+Live follow-up on 2026-10-20 in the 26.1.2 demo world: after a cold world reload,
+the blue network cable remained reciprocal/resolved and both guest NICs worked
+after reconfiguration. TCP echo passed between OnyxOS guests, and HTTP returned
+`200 OK` with the expected body through the Internet Card. `/dev/fb1` and
+`/dev/fb2` drew distinct solid frames to the single and 3×2 monitors; both stayed
+visible at an oblique camera angle. Evidence and the local walkthrough are in
+ignored `build/demo-qa/` and `DEMO_LOCAL.md`. These checks cover only part of the
+matrix below; they do not close the all-facings, projector, robot or reload items.
+
 - [ ] Monitor models: each facing, single block and multiblock edges/corners;
   framebuffer alignment, GUI image and powered/unpowered states.
 - [ ] Bus cable models: straight, bends, branches, six interface directions,
@@ -53,7 +62,7 @@ are under `build/reports/render-qa/` and are not committed.
 
 ## Remaining implementation
 
-- [ ] Port model/item/blockstate datagen to 26.x and run the providers; check
+- [x] Port model/item/blockstate datagen to 26.x and run the providers; check
   generated resources against the models actually used by the client.
 - [x] Embed and port Markdown Manual for all four supported targets, removing
   the external Markdown Manual and Architectury requirements. See

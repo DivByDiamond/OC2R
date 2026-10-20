@@ -1,7 +1,6 @@
 package li.cil.oc2.client.renderer.blockentity.monitor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
@@ -28,8 +27,8 @@ class MonitorScreenGeometryTest {
                         final float outwardDistance =
                                 (point.x - 0.5f) * facing.getStepX()
                                         + (point.z - 0.5f) * facing.getStepZ() - 0.5f;
-                        assertTrue(outwardDistance > 0 && outwardDistance < 0.001f,
-                                () -> "Screen floats away from " + facing + " cube face: " + outwardDistance);
+                        assertEquals(1f / 64f, outwardDistance, 0.00001f,
+                                () -> "Screen is not offset 1/64 block from " + facing + " cube face: " + outwardDistance);
                     }
                 }
             }

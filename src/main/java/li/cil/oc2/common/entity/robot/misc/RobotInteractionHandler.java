@@ -46,7 +46,11 @@ public final class RobotInteractionHandler {
     }
 
     public static void dropSelf(final Robot robot) {
-        if (!robot.isAlive()) {
+        // This handler is queried on both logical sides. In 26.x the entity drop API
+        // requires a ServerLevel, so allowing the client prediction path through here
+        // causes a ClientLevel -> ServerLevel cast crash when a creative player attacks
+        // the robot.
+        if (!robot.isAlive() || robot.level().isClientSide()) {
             return;
         }
         final ItemStack stack = new ItemStack(Items.ROBOT.get());
