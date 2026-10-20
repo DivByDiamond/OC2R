@@ -15,8 +15,10 @@ import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public abstract class AbstractVirtualMachine implements VirtualMachine {
     public static final String BUS_STATE_TAG_NAME = "busState";

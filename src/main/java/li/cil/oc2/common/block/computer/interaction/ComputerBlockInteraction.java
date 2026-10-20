@@ -9,8 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 //? if >=26.1 {
-/*import net.minecraft.world.InteractionResult;
-*///?} else {
+/**///?} else {
 import net.minecraft.world.ItemInteractionResult;
 //?}
 import net.minecraft.world.entity.player.Player;

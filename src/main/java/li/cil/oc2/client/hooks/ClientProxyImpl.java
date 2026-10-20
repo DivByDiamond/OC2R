@@ -14,8 +14,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 /**
  * The loader independent part of the client-side {@link ClientProxy}, delegating to the client hook

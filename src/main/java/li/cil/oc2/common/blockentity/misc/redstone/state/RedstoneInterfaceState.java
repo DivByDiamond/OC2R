@@ -39,7 +39,7 @@ public final class RedstoneInterfaceState {
         //?}
         for (final Direction dir : Direction.values()) {
             //? if >=26.1 {
-            /*final byte[] serializedBundled = bundledTag.getByteArray(dir.getName()).orElse(new byte[0]);
+            /*final byte[] serializedBundled = bundledTag.getByteArray(dir.getName()).orElse(new byte[0]); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
             *///?} else {
             final byte[] serializedBundled = bundledTag.getByteArray(dir.getName());
             //?}

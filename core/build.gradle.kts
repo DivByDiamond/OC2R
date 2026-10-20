@@ -61,7 +61,8 @@ tasks.withType<Checkstyle>().configureEach {
 }
 
 pmd {
-    toolVersion = "7.7.0"
+    // First PMD release that can resolve Minecraft 26.x / Java 25 class files.
+    toolVersion = "7.16.0"
     ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))
     isIgnoreFailures = false
     isConsoleOutput = true

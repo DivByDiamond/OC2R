@@ -1,7 +1,9 @@
 package li.cil.oc2.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+//? if <26.1 {
 import com.mojang.blaze3d.platform.InputConstants;
+//?}
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.KeyMapping;
@@ -14,8 +16,10 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import net.neoforged.neoforge.client.ClientHooks;
 
 /**

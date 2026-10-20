@@ -91,7 +91,7 @@ class VersionedRootImagesTest {
 
     @Test
     void retainedLegacyResourceIsByteIdenticalToTheReleasedBase() throws Exception {
-        try (final var input = getClass().getResourceAsStream("/onyxos/onyxfs-20261016.img")) {
+        try (var input = getClass().getResourceAsStream("/onyxos/onyxfs-20261016.img")) {
             assertNotNull(input);
             final String hash = java.util.HexFormat.of().formatHex(
                     java.security.MessageDigest.getInstance("SHA-256").digest(input.readAllBytes()));

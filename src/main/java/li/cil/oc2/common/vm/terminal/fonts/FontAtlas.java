@@ -8,8 +8,10 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public class FontAtlas {
@@ -143,7 +145,7 @@ public class FontAtlas {
         //? if >=26.1 {
 /*        // A 26.x GPU texture has a fixed size: replace it with one of the new size under the same
         // id. Registering closes the previous texture.
-        this.dynamicTexture = new DynamicTexture(() -> resources.toString(), atlasImage);
+        this.dynamicTexture = new DynamicTexture(resources::toString, atlasImage);
         Minecraft.getInstance().getTextureManager().register(resources, dynamicTexture);
 *///?} else {
         this.dynamicTexture.setPixels(atlasImage);

@@ -14,7 +14,7 @@ import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
+
 import net.minecraft.world.item.component.DyedItemColor;
 
 public final class HardDriveWithExternalDataItem extends AbstractBlockDeviceItem {

@@ -30,6 +30,11 @@ public final class BlockEntry implements GroupEntry {
     }
 
     @Override
+    public Optional<String> getDeviceDataSubKey() {
+        return Optional.ofNullable(deviceInfo.groupKey);
+    }
+
+    @Override
     public Optional<String> getLegacyDeviceDataKey() {
         if (dataKey != null) {
             return Optional.of("oc2r:block_device_provider");
@@ -53,13 +58,14 @@ public final class BlockEntry implements GroupEntry {
         if (o == null || getClass() != o.getClass()) return false;
         final BlockEntry that = (BlockEntry) o;
         return Objects.equals(dataKey, that.dataKey)
+                && Objects.equals(deviceInfo.groupKey, that.deviceInfo.groupKey)
                 && device.equals(that.device)
                 && side == that.side;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(dataKey, device, side);
+        return Objects.hash(dataKey, deviceInfo.groupKey, device, side);
     }
 
     @Override

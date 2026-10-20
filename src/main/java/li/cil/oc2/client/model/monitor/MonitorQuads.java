@@ -105,7 +105,7 @@ public final class MonitorQuads {
                 BakedColors.DEFAULT);
     }
 
-    private static float dot(final float[] a, final float[] b) {
+    private static float dot(final float[] a, final float[] b) { // NOPMD - This parameter is a complete fixed-shape array, not a variable argument list.
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
 }

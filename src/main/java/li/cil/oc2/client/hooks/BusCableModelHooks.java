@@ -6,8 +6,14 @@ import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
+//?}
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import net.neoforged.neoforge.model.data.ModelData;
 
 @OnlyIn(Dist.CLIENT)
@@ -37,8 +43,10 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 @OnlyIn(Dist.CLIENT)

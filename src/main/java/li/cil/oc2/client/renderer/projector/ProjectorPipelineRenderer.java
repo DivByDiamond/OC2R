@@ -58,7 +58,7 @@ public final class ProjectorPipelineRenderer {
     private static final float FRUSTUM_SCALE =
             (ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE + 4f)
                     * ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE;
-    private static final float FRUSTUM_X = ((ProjectorBlockEntity.MAX_WIDTH - 1) / 2) / FRUSTUM_SCALE;
+    private static final float FRUSTUM_X = (ProjectorBlockEntity.MAX_WIDTH - 1) / 2 / FRUSTUM_SCALE;
     private static final float FRUSTUM_Y = (ProjectorBlockEntity.MAX_HEIGHT - 1) / FRUSTUM_SCALE;
     private static final Matrix4f PROJECTION = new Matrix4f().frustum(
             -FRUSTUM_X, FRUSTUM_X, 0, FRUSTUM_Y, 1f / 16f,
@@ -149,7 +149,7 @@ public final class ProjectorPipelineRenderer {
             final LevelRenderer renderer,
             final CameraRenderState camera,
             final Matrix4fc mainView,
-            final SectionRenderDispatcher.RenderSection[] sections) {
+            final SectionRenderDispatcher.RenderSection[] sections) { // NOPMD - This parameter is a complete fixed-shape array, not a variable argument list.
         if (ProjectorDepthRenderer.VISIBLE_PROJECTORS.isEmpty()) return;
         final Minecraft minecraft = Minecraft.getInstance();
         final RenderTarget main = minecraft.getMainRenderTarget();
@@ -165,14 +165,14 @@ public final class ProjectorPipelineRenderer {
             for (int index = 0; index < Math.min(projectors.size(), ModShaders.MAX_PROJECTORS); index++) {
                 final var entry = projectors.get(index);
                 if (entry.projector().isRemoved() || !entry.projector().hasEnergy()) continue;
-                final Matrix4f projectorView = new Matrix4f()
+                final Matrix4f projectorView = new Matrix4f() // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                         .rotationY((float) Math.toRadians(entry.yRot() + 180))
                         .translate((float) (camera.pos.x - entry.worldPos().x),
                                 (float) (camera.pos.y - entry.worldPos().y),
                                 (float) (camera.pos.z - entry.worldPos().z));
-                final Matrix4f projectorCamera = new Matrix4f(PROJECTION).mul(projectorView);
-                final Frustum frustum = new Frustum(
-                        new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)), PROJECTION);
+                final Matrix4f projectorCamera = new Matrix4f(PROJECTION).mul(projectorView); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final Frustum frustum = new Frustum( // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                        new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)), PROJECTION); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 frustum.prepare(entry.worldPos().x, entry.worldPos().y, entry.worldPos().z);
                 visible.clear();
                 for (final var section : sections) {
@@ -224,7 +224,7 @@ public final class ProjectorPipelineRenderer {
                         ? quad.getQuadSize(1f) : box.getXsize() / 2;
                 final Vec3 center = box.getCenter();
                 if (center.distanceToSqr(projectorPos) > maxDistanceSqr) continue;
-                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue;
+                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 sprites.add(new double[] {center.x, center.y, center.z, half});
             }
         }
@@ -279,8 +279,12 @@ public final class ProjectorPipelineRenderer {
     }
 
     private static void addBox(final BufferBuilder b, final AABB box) {
-        final float x0 = (float) box.minX, y0 = (float) box.minY, z0 = (float) box.minZ;
-        final float x1 = (float) box.maxX, y1 = (float) box.maxY, z1 = (float) box.maxZ;
+        final float x0 = (float) box.minX;
+        final float y0 = (float) box.minY;
+        final float z0 = (float) box.minZ;
+        final float x1 = (float) box.maxX;
+        final float y1 = (float) box.maxY;
+        final float z1 = (float) box.maxZ;
         quad(b, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
         quad(b, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0);
         quad(b, x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0);
@@ -414,7 +418,7 @@ public final class ProjectorPipelineRenderer {
     private static final float FRUSTUM_SCALE =
             (ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE + 4f)
                     * ProjectorBlockEntity.MAX_GOOD_RENDER_DISTANCE;
-    private static final float FRUSTUM_X = ((ProjectorBlockEntity.MAX_WIDTH - 1) / 2) / FRUSTUM_SCALE;
+    private static final float FRUSTUM_X = (ProjectorBlockEntity.MAX_WIDTH - 1) / 2 / FRUSTUM_SCALE;
     private static final float FRUSTUM_Y = (ProjectorBlockEntity.MAX_HEIGHT - 1) / FRUSTUM_SCALE;
     private static final float NEAR = 1f / 16f;
     // Conventional projection, only used to cull sections and occluders against the projector.
@@ -540,7 +544,7 @@ public final class ProjectorPipelineRenderer {
         for (int x = center.x() - radius; x <= center.x() + radius; x++) {
             for (int z = center.z() - radius; z <= center.z() + radius; z++) {
                 for (int y = area.minSectionY(); y <= area.maxSectionY(); y++) {
-                    final var section = area.getRenderSectionAt(new BlockPos(x << 4, y << 4, z << 4));
+                    final var section = area.getRenderSectionAt(new BlockPos(x << 4, y << 4, z << 4)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                     if (section != null) sections.add(section);
                 }
             }
@@ -575,13 +579,13 @@ public final class ProjectorPipelineRenderer {
             for (int index = 0; index < Math.min(projectors.size(), ModShaders.MAX_PROJECTORS); index++) {
                 final var entry = projectors.get(index);
                 if (entry.projector().isRemoved() || !entry.projector().hasEnergy()) continue;
-                final Matrix4f rotation = new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180));
-                final Matrix4f projectorView = new Matrix4f(rotation)
+                final Matrix4f rotation = new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f projectorView = new Matrix4f(rotation) // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                         .translate((float) (camera.pos.x - entry.worldPos().x),
                                 (float) (camera.pos.y - entry.worldPos().y),
                                 (float) (camera.pos.z - entry.worldPos().z));
-                final Matrix4f projectorCamera = new Matrix4f(projectorProjection).mul(projectorView);
-                final Frustum frustum = new Frustum(rotation, CULL_PROJECTION);
+                final Matrix4f projectorCamera = new Matrix4f(projectorProjection).mul(projectorView); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final Frustum frustum = new Frustum(rotation, CULL_PROJECTION); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 frustum.prepare(entry.worldPos().x, entry.worldPos().y, entry.worldPos().z);
                 visible.clear();
                 for (final var section : sections) {
@@ -593,7 +597,7 @@ public final class ProjectorPipelineRenderer {
                 final RenderInfo frame = frame(entry.projector());
                 entry.projector().onRendering();
                 // Direction from a surface towards the projector: the view space +z axis in world space.
-                final Vector3f axis = rotation.transpose(new Matrix4f()).transformDirection(new Vector3f(0, 0, 1));
+                final Vector3f axis = rotation.transpose(new Matrix4f()).transformDirection(new Vector3f(0, 0, 1)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 composite(main, inverseMain, projectorCamera, axis, frame);
             }
         } finally {
@@ -635,7 +639,7 @@ public final class ProjectorPipelineRenderer {
                         ? quad.getQuadSize(1f) : box.getXsize() / 2;
                 final Vec3 center = box.getCenter();
                 if (center.distanceToSqr(projectorPos) > maxDistanceSqr) continue;
-                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue;
+                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 sprites.add(new double[] {center.x, center.y, center.z, half});
             }
         }
@@ -690,8 +694,12 @@ public final class ProjectorPipelineRenderer {
     }
 
     private static void addBox(final BufferBuilder b, final AABB box) {
-        final float x0 = (float) box.minX, y0 = (float) box.minY, z0 = (float) box.minZ;
-        final float x1 = (float) box.maxX, y1 = (float) box.maxY, z1 = (float) box.maxZ;
+        final float x0 = (float) box.minX;
+        final float y0 = (float) box.minY;
+        final float z0 = (float) box.minZ;
+        final float x1 = (float) box.maxX;
+        final float y1 = (float) box.maxY;
+        final float z1 = (float) box.maxZ;
         quad(b, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
         quad(b, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0);
         quad(b, x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0);

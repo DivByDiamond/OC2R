@@ -15,9 +15,13 @@ import li.cil.oc2.common.entity.robot.misc.RobotBlockCollider;
 import li.cil.oc2.common.entity.robot.misc.RobotEventHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInteractionHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInventory;
+//? if <26.1 {
 import li.cil.oc2.common.entity.robot.movement.RobotMovementAction;
+//?}
 import li.cil.oc2.common.entity.robot.movement.RobotMovementController;
+//? if <26.1 {
 import li.cil.oc2.common.entity.robot.rotation.RobotRotationAction;
+//?}
 import li.cil.oc2.common.entity.robot.state.RobotAnimationState;
 import li.cil.oc2.common.entity.robot.state.RobotSerializer;
 import li.cil.oc2.common.network.NetworkMessages;
@@ -30,7 +34,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+//? if <26.1 {
 import net.minecraft.util.Mth;
+//?}
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -38,8 +44,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class Robot extends AbstractRobotEntity
         implements li.cil.oc2.api.capabilities.Robot,

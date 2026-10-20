@@ -100,6 +100,8 @@ public final class ScannerModuleTests {
             helper.fail("second scan during cooldown succeeded");
             return;
         } catch (final IllegalStateException expected) {
+            TestSupport.assertTrue(helper, "unexpected scanner cooldown error",
+                    "scanner is recharging".equals(expected.getMessage()));
         }
 
         final byte[] layer = scanner.getScanLayer(3);
@@ -112,6 +114,8 @@ public final class ScannerModuleTests {
             helper.fail("out-of-range scan layer succeeded");
             return;
         } catch (final IllegalArgumentException expected) {
+            TestSupport.assertTrue(helper, "unexpected scan-layer error",
+                    "layer out of range: 7 (expected 0 to 6)".equals(expected.getMessage()));
         }
 
         // Cooldown and last scan survive an item round trip.
@@ -130,6 +134,8 @@ public final class ScannerModuleTests {
             restored.scan();
             helper.fail("restored scanner ignores cooldown");
         } catch (final IllegalStateException expected) {
+            TestSupport.assertTrue(helper, "unexpected scanner cooldown error",
+                    "scanner is recharging".equals(expected.getMessage()));
         }
         helper.succeed();
     }

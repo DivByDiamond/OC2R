@@ -4,7 +4,9 @@ import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.client.ClientCompat;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.monitor.MonitorInputCaptureButton;
@@ -24,8 +26,10 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorContainer>

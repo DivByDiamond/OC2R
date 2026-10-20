@@ -17,8 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 //? if >=26.1 {
-/*import net.minecraft.world.InteractionResult;
-*///?} else {
+/**///?} else {
 import net.minecraft.world.ItemInteractionResult;
 //?}
 import net.minecraft.world.entity.player.Player;
@@ -41,8 +40,10 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 //? if >=26.1 {
 /*public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock, li.cil.oc2.common.block.BlockTooltipProvider {

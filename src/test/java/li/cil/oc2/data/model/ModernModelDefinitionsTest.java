@@ -21,7 +21,7 @@ class ModernModelDefinitionsTest {
         final Map<String, JsonObject> generated = ModernModelDefinitions.create();
         try (var paths = Files.list(ASSETS.resolve("models/item"))) {
             final Set<String> existing = paths.map(path -> path.getFileName().toString())
-                    .filter(name -> !name.equals("network_switch.json")).collect(Collectors.toSet());
+                    .filter(name -> !"network_switch.json".equals(name)).collect(Collectors.toSet());
             final Set<String> actual = generated.keySet().stream().filter(name -> name.startsWith("models/item/"))
                     .map(name -> name.substring("models/item/".length())).collect(Collectors.toSet());
             assertEquals(existing, actual, "The network switch has no registered item; every other model must be generated");
@@ -51,7 +51,7 @@ class ModernModelDefinitionsTest {
         try (var files = Files.list(ASSETS.resolve("blockstates"))) {
             for (final Path file : files.toList()) {
                 final String name = file.getFileName().toString();
-                if (name.equals("bus_cable.json") || name.equals("monitor.json")) continue;
+                if ("bus_cable.json".equals(name) || "monitor.json".equals(name)) continue;
                 final JsonObject expected = read("blockstates/" + name).getAsJsonObject("variants");
                 final JsonObject actual = generated.get("blockstates/" + name).getAsJsonObject("variants");
                 for (final var entry : expected.entrySet()) {
@@ -91,7 +91,7 @@ class ModernModelDefinitionsTest {
         final JsonArray sources = JsonParser.parseString(Files.readString(
                 Path.of("src/main/resources/assets/minecraft/atlases/blocks.json"))).getAsJsonObject().getAsJsonArray("sources");
         assertTrue(java.util.stream.StreamSupport.stream(sources.spliterator(), false)
-                .map(source -> source.getAsJsonObject())
+                .map(com.google.gson.JsonElement::getAsJsonObject)
                 .anyMatch(source -> "minecraft:single".equals(source.get("type").getAsString())
                         && particle.equals(source.get("resource").getAsString())),
                 "An entity skin is outside the default block/item atlas directories and needs an explicit sprite source");
@@ -111,7 +111,7 @@ class ModernModelDefinitionsTest {
             for (final var entry : model.getAsJsonObject("display").entrySet()) {
                 final JsonObject transform = entry.getValue().getAsJsonObject();
                 for (final String field : List.of("rotation", "translation", "scale")) {
-                    if (!transform.has(field)) transform.add(field, JsonParser.parseString(field.equals("scale") ? "[1,1,1]" : "[0,0,0]"));
+                    if (!transform.has(field)) transform.add(field, JsonParser.parseString("scale".equals(field) ? "[1,1,1]" : "[0,0,0]"));
                 }
             }
         }

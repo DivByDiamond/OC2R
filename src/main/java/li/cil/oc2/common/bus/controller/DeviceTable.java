@@ -61,11 +61,15 @@ final class DeviceTable {
 
         final Set<Device> removedDevices = new HashSet<>(devices);
         removedDevices.removeAll(newDevices);
-        controller.onDevicesRemoved(removedDevices);
+        if (!removedDevices.isEmpty()) {
+            controller.onDevicesRemoved(removedDevices);
+        }
 
         final Set<Device> addedDevices = new HashSet<>(newDevices);
         addedDevices.removeAll(devices);
-        controller.onDevicesAdded(addedDevices);
+        if (!addedDevices.isEmpty()) {
+            controller.onDevicesAdded(addedDevices);
+        }
 
         final boolean didDevicesChange = !removedDevices.isEmpty() || !addedDevices.isEmpty();
         final boolean didDeviceIdsChange;

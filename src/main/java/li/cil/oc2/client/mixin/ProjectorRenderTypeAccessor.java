@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(RenderType.class)
 public interface ProjectorRenderTypeAccessor {
     @Accessor(value = "state", remap = false)
-    RenderSetup oc2r$getSetup();
+    RenderSetup oc2r$getSetup(); // NOPMD - Namespaced Mixin accessor prevents collisions with other mods.
 }
 *///?} else {
 import net.minecraft.client.particle.ParticleEngine;

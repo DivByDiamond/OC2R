@@ -1,3 +1,7 @@
+import java.nio.channels.FileChannel
+import java.nio.file.StandardOpenOption
+import java.time.Duration
+
 plugins {
     `java-library`
     id("fabric-loom") version "1.14.10"
@@ -150,8 +154,8 @@ loom {
     accessWidenerPath = rootProject.file("fabric/src/main/resources/oc2r.accesswidener")
 }
 
-// Runs the Fabric GameTests (`./gradlew :fabric:runGametest`): they exercise the Fabric bridges on a
-// real dedicated server, since the shared mod code does not build for Fabric yet.
+// Runs shared tests and Fabric bridge tests on a real dedicated server.
+// ./gradlew :fabric:1.21.1:runGameTest
 fabricApi {
     configureTests {
         createSourceSet = true
@@ -159,6 +163,26 @@ fabricApi {
         enableGameTests = true
         enableClientGameTests = false
         eula = true
+    }
+}
+
+// GameTests create many mock-player records. They are disposable and keeping them between runs
+// makes the test server's autosave and shutdown increasingly expensive.
+tasks.named("runGameTest") {
+    timeout.set(Duration.ofMinutes(12))
+    doFirst {
+        val world = layout.buildDirectory.dir("run/gameTest/world").get().asFile
+        val sessionLock = world.resolve("session.lock")
+        if (sessionLock.exists()) {
+            // Check Minecraft's lock before removing its world, including when another
+            // Gradle invocation is still waiting for the previous server to flush chunks.
+            FileChannel.open(sessionLock.toPath(), StandardOpenOption.WRITE).use { channel ->
+                val lock = channel.tryLock()
+                    ?: throw GradleException("Fabric GameTest world is still in use: $world")
+                lock.release()
+            }
+        }
+        delete(world)
     }
 }
 
@@ -181,6 +205,25 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
         }
     }
     into(sharedGameTestsDir.map { it.dir("li/cil/oc2/gametest") })
+    doLast {
+        // Limit the structures and player fixtures ticking together to one shared class.
+        // NeoForge consumes the original sources and keeps its native batch behavior.
+        sharedGameTestsDir.get().asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "java" }
+            .forEach { source ->
+                val batch = "oc2r_shared_${source.nameWithoutExtension.removeSuffix("Tests").lowercase()}"
+                val text = source.readText()
+                val batched = Regex("@GameTest\\(([^()]*)\\)").replace(text) { match ->
+                    val parameters = match.groupValues[1]
+                    if (Regex("\\bbatch\\s*=").containsMatchIn(parameters)) {
+                        match.value
+                    } else {
+                        "@GameTest($parameters, batch = \"$batch\")"
+                    }
+                }
+                if (batched != text) source.writeText(batched)
+            }
+    }
 }
 
 sourceSets.named("gametest") {

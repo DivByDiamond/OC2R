@@ -11,7 +11,9 @@ import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;

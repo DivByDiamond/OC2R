@@ -19,7 +19,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+//? if <26.1 {
 import net.minecraft.client.player.LocalPlayer;
+//?}
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -186,7 +188,8 @@ public final class ManualScreen extends Screen {
     @Override
     //? if >=26.1 {
         /*public boolean mouseClicked(final net.minecraft.client.input.MouseButtonEvent event, final boolean doubleClick) {
-        final double mouseX = event.x(), mouseY = event.y();
+        final double mouseX = event.x();
+                final double mouseY = event.y();
         final int button = event.button();
         *///?} else {
         public boolean mouseClicked(final double mouseX, final double mouseY, final int button) {
@@ -450,7 +453,8 @@ public final class ManualScreen extends Screen {
         @Override
         //? if >=26.1 {
         /*public boolean mouseClicked(final net.minecraft.client.input.MouseButtonEvent event, final boolean doubleClick) {
-            final double mouseX = event.x(), mouseY = event.y();
+            final double mouseX = event.x();
+                final double mouseY = event.y();
         *///?} else {
         protected boolean clicked(final double mouseX, final double mouseY) {
         //?}

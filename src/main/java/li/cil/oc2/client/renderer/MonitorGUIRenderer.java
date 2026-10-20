@@ -14,8 +14,14 @@ import li.cil.oc2.client.renderer.stage.RenderInfo;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.resources.ResourceLocation;
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
+//?}
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public class MonitorGUIRenderer {
     private final transient Set<RendererModel> renderers =
@@ -130,8 +136,10 @@ import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import org.joml.Matrix4f;
 
 public class MonitorGUIRenderer {

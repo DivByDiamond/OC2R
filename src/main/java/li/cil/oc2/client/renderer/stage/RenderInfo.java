@@ -18,10 +18,12 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 //? if >=26.1 {
 /*import net.minecraft.resources.ResourceLocation;
 *///?}
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
+//?}
 public final class RenderInfo implements FrameConsumer {
     private static final int[] GAMMA_LUT = new int[256];
 
@@ -139,11 +141,13 @@ public final class RenderInfo implements FrameConsumer {
     }
 
     private static DynamicTexture createTexture(final int width, final int height) {
+        // A newly visible monitor can render before its first network frame arrives.
+        // Clear the placeholder instead of uploading uninitialized native pixels.
         //? if >=26.1 {
         /*final DynamicTexture created =
-                new DynamicTexture(() -> "oc2r monitor", width, height, false);
+                new DynamicTexture(() -> "oc2r monitor", width, height, true);
 *///?} else {
-        final DynamicTexture created = new DynamicTexture(width, height, false);
+        final DynamicTexture created = new DynamicTexture(width, height, true);
         //?}
         created.upload();
         return created;

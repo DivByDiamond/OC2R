@@ -17,8 +17,14 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.ResourceLocation;
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
+//?}
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class ModRenderType {
@@ -194,8 +200,14 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.ResourceLocation;
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
+//?}
+
+//? if <26.1 {
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class ModRenderType {
@@ -357,8 +369,10 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import li.cil.oc2.api.API;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class ModRenderType extends RenderType {

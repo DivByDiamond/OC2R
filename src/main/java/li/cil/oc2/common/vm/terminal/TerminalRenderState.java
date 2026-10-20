@@ -2,8 +2,10 @@ package li.cil.oc2.common.vm.terminal;
 
 import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 /**
  * Lazily-created client render/tick handle for a {@link Terminal}. Extracted from

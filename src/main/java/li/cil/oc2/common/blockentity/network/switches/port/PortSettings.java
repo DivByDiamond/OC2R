@@ -33,7 +33,7 @@ public final class PortSettings {
         tag.put(
                 "tagged",
                 //? if >=26.1 {
-                /*new IntArrayTag(tagged.stream().mapToInt(s -> (int) s).toArray()));
+                /*new IntArrayTag(tagged.stream().mapToInt(Short::intValue).toArray()));
                 *///?} else {
                 new IntArrayTag(tagged.stream().map(s -> (int) s).collect(Collectors.toList())));
                 //?}

@@ -6,8 +6,10 @@ import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT) // §36 M5: rasterizeGlyph registers into the client-only FontAtlas texture
 public class UnicodeFontRenderer {

@@ -21,12 +21,12 @@ public final class ModernClientDataProvider implements DataProvider {
     @Override
     public CompletableFuture<?> run(final CachedOutput cache) {
         final Map<String, JsonObject> definitions = ModernModelDefinitions.create();
-        BuiltInRegistries.ITEM.keySet().stream().filter(id -> id.getNamespace().equals(API.MOD_ID)).forEach(id -> {
+        BuiltInRegistries.ITEM.keySet().stream().filter(id -> API.MOD_ID.equals(id.getNamespace())).forEach(id -> {
             if (!definitions.containsKey("items/" + id.getPath() + ".json")) {
                 throw new IllegalStateException("Missing generated item definition: " + id);
             }
         });
-        BuiltInRegistries.BLOCK.keySet().stream().filter(id -> id.getNamespace().equals(API.MOD_ID)).forEach(id -> {
+        BuiltInRegistries.BLOCK.keySet().stream().filter(id -> API.MOD_ID.equals(id.getNamespace())).forEach(id -> {
             if (!definitions.containsKey("blockstates/" + id.getPath() + ".json")) {
                 throw new IllegalStateException("Missing generated blockstate: " + id);
             }

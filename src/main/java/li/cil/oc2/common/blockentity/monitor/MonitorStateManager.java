@@ -45,8 +45,8 @@ public final class MonitorStateManager {
         // and each construct their own renderer, leaking one). This fixes construction only;
         // thread-safety of using the renderer is up to the renderer itself.
         this.monitorCache = createMonitorSupplier().get();
-        deviceGroup.addDevice(monitorDevice);
-        deviceGroup.addDevice(keyboardDevice);
+        deviceGroup.addDevice("monitor", monitorDevice);
+        deviceGroup.addDevice("keyboard", keyboardDevice);
     }
 
     public Object getMonitor() {

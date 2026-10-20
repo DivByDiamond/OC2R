@@ -103,7 +103,7 @@ class DefaultSessionLayerEofTest {
 
     private void readSocket() throws Exception {
         final Method read = DefaultSessionLayer.class.getDeclaredMethod("readStream", SessionLayer.Receiver.class, StreamSession.class);
-        read.setAccessible(true);
+        read.setAccessible(true); // NOPMD - Observe private state without exposing a production-only testing API.
         final SessionLayer.Receiver receiver = ignored -> session.getReceiveBuffer();
         assertEquals(true, read.invoke(layer, receiver, session));
     }

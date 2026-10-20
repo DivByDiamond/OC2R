@@ -69,6 +69,7 @@ public final class RecipeTests {
         helper.setBlock(TABLE, Blocks.CRAFTING_TABLE);
 
         final List<String> withoutRecipe = new ArrayList<>();
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
         for (final Item item : modItems) {
             final var id = BuiltInRegistries.ITEM.getKey(item);
             if (ITEMS_WITHOUT_RECIPE.contains(id.getPath())) {
@@ -86,7 +87,7 @@ public final class RecipeTests {
             }
 
             for (final RecipeHolder<?> holder : producing) {
-                craft(helper, level, holder);
+                craft(helper, level, player, holder);
             }
         }
 
@@ -113,8 +114,9 @@ public final class RecipeTests {
 
         helper.setBlock(TABLE, Blocks.CRAFTING_TABLE);
 
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
         for (final RecipeHolder<?> holder : modRecipes) {
-            craft(helper, level, holder);
+            craft(helper, level, player, holder);
         }
 
         helper.succeed();
@@ -122,7 +124,8 @@ public final class RecipeTests {
 
     // --------------------------------------------------------------------- //
 
-    private static void craft(final GameTestHelper helper, final ServerLevel level, final RecipeHolder<?> holder) {
+    private static void craft(final GameTestHelper helper, final ServerLevel level, final ServerPlayer player,
+                              final RecipeHolder<?> holder) {
         final String id = idOf(holder);
 
         if (!(holder.value() instanceof final CraftingRecipe recipe)) {
@@ -132,7 +135,6 @@ public final class RecipeTests {
         final ItemStack expected = resultOf(recipe, level);
         assertTrue(helper, id + " should produce a result", !expected.isEmpty());
 
-        final ServerPlayer player = TestSupport.serverPlayer(helper);
         final CraftingMenu menu = new CraftingMenu(0, player.getInventory(),
             ContainerLevelAccess.create(level, helper.absolutePos(TABLE)));
 

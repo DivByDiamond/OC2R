@@ -25,8 +25,7 @@ class WarmContinuationTest {
 
     @Test
     void restoredBoardContinuesCountingInsteadOfRestarting() throws Exception {
-        final ByteBufferMemory ram = new ByteBufferMemory(0x2000);
-        try {
+        try (ByteBufferMemory ram = new ByteBufferMemory(0x2000)) {
             // lui x6,0x80001; zero-extend x6 (lui sign-extends on RV64); loop: addi x5,x5,1; sw x5,0(x6); j loop
             final int[] program = {0x80001337, 0x02031313, 0x02035313, 0x00128293, 0x00532023, 0xFF9FF06F};
             for (int i = 0; i < program.length; i++) {
@@ -54,8 +53,6 @@ class WarmContinuationTest {
             final int after = (int) second.getMemoryMap().load(RAM_BASE + COUNTER_OFFSET, 2);
             assertTrue(after > before, "restored board restarted: before=" + before + " after=" + after);
             assertEquals(after, (int) second.getMemoryMap().load(RAM_BASE + COUNTER_OFFSET, 2));
-        } finally {
-            ram.close();
         }
     }
 }

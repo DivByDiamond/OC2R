@@ -91,9 +91,10 @@ class LateFramebufferWatcherTest {
     private static AsyncVideoEncoder.CompletedFrame awaitFrame(final AsyncVideoEncoder encoder)
             throws InterruptedException {
         final long deadline = System.nanoTime() + 5_000_000_000L;
-        AsyncVideoEncoder.CompletedFrame result;
-        while ((result = encoder.poll()) == null && System.nanoTime() < deadline) {
+        AsyncVideoEncoder.CompletedFrame result = encoder.poll();
+        while (result == null && System.nanoTime() < deadline) {
             Thread.sleep(5);
+            result = encoder.poll();
         }
         assertNotNull(result, "the encoder must publish the requested static frame");
         return result;
@@ -116,7 +117,7 @@ class LateFramebufferWatcherTest {
 
     private static Field field(final Object owner, final String name) throws NoSuchFieldException {
         final Field field = owner.getClass().getDeclaredField(name);
-        field.setAccessible(true);
+        field.setAccessible(true); // NOPMD - Observe private state without exposing a production-only testing API.
         return field;
     }
 }

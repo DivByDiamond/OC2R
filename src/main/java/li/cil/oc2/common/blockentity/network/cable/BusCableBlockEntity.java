@@ -15,7 +15,9 @@ import li.cil.oc2.common.blockentity.network.cable.faceoverride.FaceOverrides;
 import li.cil.oc2.common.energy.CableEnergyStorage;
 import li.cil.oc2.common.energy.EnergyNetworkCache;
 import li.cil.oc2.common.energy.EnergyTransferManager;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.platform.CapabilityInvalidationListener;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
@@ -158,7 +160,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
                 //?}
         // Model data is built from the facade; a client that starts tracking must
         // rebuild it, otherwise the cable renders without the facade.
-        requestModelDataUpdate();
+        refreshFacadeModel();
     }
 
     @Override
@@ -187,7 +189,17 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
                 //?}
+        refreshFacadeModel();
+    }
+
+    private void refreshFacadeModel() {
         requestModelDataUpdate();
+        // Model-data refresh alone does not invalidate an already compiled section.
+        // The block-state update can arrive before the facade data packet.
+        if (level != null && level.isClientSide()) {
+            final BlockState state = getBlockState();
+            level.sendBlockUpdated(getBlockPos(), state, state, Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override
@@ -201,7 +213,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             // Old saves could infer half-links without owning a cable. With HAS_CABLE=false,
             // recomputation preserves interfaces and never queries or loads neighboring chunks.
             final BlockState repaired = BusCableStateProperties.recomputeConnections(level, getBlockPos(), state);
-            if (repaired != state) {
+            if (repaired != state) { // NOPMD - Block states are canonical; compare their identities. // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
                 level.setBlock(getBlockPos(), repaired, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             }
         }

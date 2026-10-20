@@ -9,7 +9,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 
 /** The in-game manual item is the Markdown Manual library's on Fabric, and late registrations work. */
 public final class FabricManualTests implements FabricGameTest {
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_manual")
     public void manualItemUsesTheLibrary(final GameTestHelper helper) {
         if (!(Items.MANUAL.get() instanceof AbstractManualItem)) {
             helper.fail("the manual item is " + Items.MANUAL.get().getClass());
@@ -17,7 +17,7 @@ public final class FabricManualTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_manual")
     public void vanillaRegistriesRejectLateRegistration(final GameTestHelper helper) {
         try {
             Platform.registries().register("minecraft:item", "oc2r_gametest", "late", () -> net.minecraft.world.item.Items.STICK);

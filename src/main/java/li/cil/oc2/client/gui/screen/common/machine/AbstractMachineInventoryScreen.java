@@ -15,7 +15,7 @@ import li.cil.oc2.client.gui.util.GuiUtils;
 import li.cil.oc2.client.gui.util.TooltipRenderer;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
 import li.cil.oc2.client.gui.screen.widget.PowerButton;
-import li.cil.oc2.client.gui.widget.misc.ToggleImageButton;
+
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.ChatFormatting;
@@ -28,8 +28,10 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTerminalContainer>

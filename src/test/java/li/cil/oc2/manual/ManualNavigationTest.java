@@ -24,7 +24,7 @@ class ManualNavigationTest {
         final Manual manual = new Manual();
         final String start = manual.peek();
         manual.push("en_us/block/computer.md");
-        manual.setUserData(Integer.valueOf(42));
+        manual.setUserData(42);
         manual.push("en_us/networking.md");
         assertTrue(manual.pop());
         assertEquals(42, manual.getUserData(Integer.class).orElseThrow());
@@ -42,7 +42,7 @@ class ManualNavigationTest {
     @Test
     void localRegistriesIsolateTabsAndDocumentsByManualNamespaceAndResolveRedirects() {
         final String namespace = "manual_test_" + IDS.incrementAndGet();
-        final TestManual manual = new TestManual();
+        final FixtureManual manual = new FixtureManual();
         RegistryUtils.get(Constants.MANUAL_REGISTRY)
                 .register(ResourceLocation.fromNamespaceAndPath(namespace, "manual"), () -> manual);
         final TextureTab tab = new TextureTab("en_us/index.md", null, ResourceLocation.parse("test:icon"));
@@ -65,7 +65,7 @@ class ManualNavigationTest {
         assertTrue(manual.read("en_us/missing.md").isEmpty());
     }
 
-    private static final class TestManual extends Manual {
+    private static final class FixtureManual extends Manual {
         Optional<Document> read(final String path) {
             return documentFor(path, "en_us", new LinkedHashSet<>());
         }

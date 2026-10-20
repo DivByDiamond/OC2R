@@ -58,7 +58,7 @@ public final class FlashWriterScreen extends Screen {
 
     public static void receive(final BlockPos position, final UUID session, final String state,
                                final int offset, final int capacity, final String detail) {
-        if (state.equals("open")) {
+        if ("open".equals(state)) {
             if (active != null) active.onClose();
             active = new FlashWriterScreen(position, session, capacity, detail);
             RenderCompat.setScreen(active);
@@ -104,7 +104,7 @@ public final class FlashWriterScreen extends Screen {
         statusLabel.setMessage(status);
         chooseButton.active = !busy && !completed && capacity > 0;
         writeButton.active = !busy && !completed && selected != null;
-        minuxButton.active = !busy && !completed && kind.equals("flash");
+        minuxButton.active = !busy && !completed && "flash".equals(kind);
         onyxButton.active = minuxButton.active;
     }
 
@@ -129,29 +129,13 @@ public final class FlashWriterScreen extends Screen {
         updateWidgets();
         CompletableFuture.runAsync(() -> {
             try {
-                final long size = Files.size(path);
-                if (!Files.isRegularFile(path) || size <= 0 || size > capacity || size > FlashImageUpload.MAX_IMAGE_SIZE) {
-                    throw new IOException("invalid_image");
-                }
-                final MessageDigest hash = MessageDigest.getInstance("SHA-256");
-                try (InputStream stream = Files.newInputStream(path)) {
-                    final byte[] bytes = new byte[32 * 1024];
-                    int read;
-                    long count = 0;
-                    while ((read = stream.read(bytes)) != -1) {
-                        count += read;
-                        if (count > size) throw new IOException("invalid_image");
-                        hash.update(bytes, 0, read);
-                    }
-                    if (count != size) throw new IOException("invalid_image");
-                }
-                final String checksum = HexFormat.of().formatHex(hash.digest());
+                final ImageInfo image = inspectImage(path, capacity);
                 Minecraft.getInstance().execute(() -> {
                     if (closed) return;
                     selected = path;
-                    length = (int) size;
+                    length = image.length();
                     fileName = path.getFileName().toString();
-                    digest = checksum;
+                    digest = image.checksum();
                     busy = false;
                     status = text("ready_to_write");
                     updateWidgets();
@@ -160,6 +144,28 @@ public final class FlashWriterScreen extends Screen {
                 Minecraft.getInstance().execute(() -> localError("invalid_image"));
             }
         });
+    }
+
+    private record ImageInfo(int length, String checksum) {}
+
+    private static ImageInfo inspectImage(final Path path, final int capacity)
+            throws IOException, java.security.NoSuchAlgorithmException {
+        final long size = Files.size(path);
+        if (!Files.isRegularFile(path) || size <= 0 || size > capacity || size > FlashImageUpload.MAX_IMAGE_SIZE) {
+            throw new IOException("invalid_image");
+        }
+        final MessageDigest hash = MessageDigest.getInstance("SHA-256");
+        try (InputStream stream = Files.newInputStream(path)) {
+            final byte[] bytes = new byte[32 * 1024];
+            long count = 0;
+            for (int read = stream.read(bytes); read != -1; read = stream.read(bytes)) {
+                count += read;
+                if (count > size) throw new IOException("invalid_image");
+                hash.update(bytes, 0, read);
+            }
+            if (count != size) throw new IOException("invalid_image");
+        }
+        return new ImageInfo((int) size, HexFormat.of().formatHex(hash.digest()));
     }
 
     private void builtin(final String firmware) {
@@ -227,7 +233,10 @@ public final class FlashWriterScreen extends Screen {
                 if (closed) return;
                 if (input == null) input = Files.newInputStream(selected);
                 final byte[] bytes = input.readNBytes(Math.min(FlashImageUpload.CHUNK_SIZE, length - offset));
-                if (bytes.length == 0) throw new IOException("incomplete_image");
+                if (bytes.length == 0) {
+                    Minecraft.getInstance().execute(() -> localError("io_error"));
+                    return;
+                }
                 Minecraft.getInstance().execute(() -> {
                     if (closed) return;
                     sent = bytes.length;
@@ -276,7 +285,7 @@ public final class FlashWriterScreen extends Screen {
     public void onClose() {
         closed = true;
         closeInput();
-        if (active == this) active = null;
+        if (active == this) active = null; // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
         if (!completed) send("cancel");
         super.onClose();
     }

@@ -1,13 +1,17 @@
 package li.cil.oc2.common.item.crafting;
 
+//? if <26.1 {
 import com.mojang.serialization.MapCodec;
+//?}
 import java.util.List;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.NonNullList;
+//? if <26.1 {
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.client.gui.Sprites;
 import net.minecraft.client.renderer.Rect2i;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public class SidebarAreas {

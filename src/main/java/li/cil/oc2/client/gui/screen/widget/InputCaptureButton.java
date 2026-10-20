@@ -6,8 +6,10 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public class InputCaptureButton extends ToggleImageButton {

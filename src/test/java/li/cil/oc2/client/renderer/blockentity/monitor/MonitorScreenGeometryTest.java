@@ -12,9 +12,9 @@ class MonitorScreenGeometryTest {
     void screenStaysFlushWithCubeFaceForEveryFacingAndMultiblockSize() {
         for (final Direction facing : new Direction[] {
                 Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST}) {
-            for (final int width : new int[] {1, 2, 8}) {
-                for (final int height : new int[] {1, 3, 8}) {
-                    final PoseStack pose = new PoseStack();
+            for (final int width : new int[] {1, 2, 8}) { // NOPMD - Each test case needs independent fixture inputs.
+                for (final int height : new int[] {1, 3, 8}) { // NOPMD - Each test case needs independent fixture inputs.
+                    final PoseStack pose = new PoseStack(); // NOPMD - Each test case needs independent fixture inputs.
                     MonitorScreenGeometry.orient(pose, facing, width, height);
                     MonitorScreenGeometry.translateToSurface(pose, 0, 0);
                     final Vector3f topLeft = point(pose, 0, 0);
@@ -23,7 +23,7 @@ class MonitorScreenGeometryTest {
                     final Vector3f bottomRight = point(pose, 16, 16);
                     assertEquals(width, topLeft.distance(topRight), 0.00001);
                     assertEquals(height, topLeft.distance(bottomLeft), 0.00001);
-                    for (final Vector3f point : new Vector3f[] {topLeft, topRight, bottomLeft, bottomRight}) {
+                    for (final Vector3f point : new Vector3f[] {topLeft, topRight, bottomLeft, bottomRight}) { // NOPMD - Each test case needs independent fixture inputs.
                         final float outwardDistance =
                                 (point.x - 0.5f) * facing.getStepX()
                                         + (point.z - 0.5f) * facing.getStepZ() - 0.5f;

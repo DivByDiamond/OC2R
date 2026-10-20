@@ -2,11 +2,13 @@ package li.cil.oc2.client.gui.screen.common;
 
 //? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
-//?}
 import net.minecraft.client.Minecraft;
+//?}
 import net.minecraft.client.gui.GuiGraphics;
+//? if <26.1 {
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+//?}
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 //? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
@@ -14,8 +16,10 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractModContainerScreen<T extends AbstractContainerMenu>

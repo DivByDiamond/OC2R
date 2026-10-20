@@ -6,6 +6,7 @@ import static li.cil.oc2.gametest.TestSupport.*;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.Direction;
@@ -242,6 +243,47 @@ public final class DeviceBusTests {
         final Player player = fakePlayer(helper);
         place(helper, player, new ItemStack(Items.REDSTONE_INTERFACE.get()), DEVICE_POS);
         connectInterface(helper, CABLE_POS, Direction.EAST);
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE,
+        timeoutTicks = 200)
+    public static void monitorMergeReplacesCachedDevices(final GameTestHelper helper) {
+        final ComputerFixture computer = placeComputerAndCable(helper);
+        final Player player = fakePlayer(helper);
+        place(helper, player, new ItemStack(Items.MONITOR.get()), DEVICE_POS);
+        connectInterface(helper, CABLE_POS, Direction.EAST);
+        final var previous = blockEntity(helper, DEVICE_POS, MonitorBlockEntity.class);
+
+        helper.startSequence()
+            .thenExecuteAfter(40, () -> assertTrue(helper, "single monitor must be discovered",
+                computer.devices().containsAll(previous.stateManager.deviceGroup.getDevices())))
+            .thenExecute(() -> place(helper, player, new ItemStack(Items.MONITOR.get()), DEVICE_POS.above()))
+            .thenExecuteAfter(40, () -> {
+                final var origin = blockEntity(helper, DEVICE_POS.above(), MonitorBlockEntity.class);
+                assertTrue(helper, "upper monitor must become the origin", origin.isOrigin() && !previous.isOrigin());
+                assertTrue(helper, "bus must discover the new origin without touching its cable",
+                    computer.devices().containsAll(origin.stateManager.deviceGroup.getDevices()));
+                assertTrue(helper, "bus must discard the displaced monitor devices",
+                    previous.stateManager.deviceGroup.getDevices().stream().noneMatch(computer.devices()::contains));
+            })
+            .thenSucceed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void firstBusScanDiscoversSavedInterfaces(final GameTestHelper helper) {
+        place(helper, fakePlayer(helper), new ItemStack(Items.MONITOR.get()), DEVICE_POS);
+        final var monitor = blockEntity(helper, DEVICE_POS, MonitorBlockEntity.class);
+        final var state = li.cil.oc2.common.block.common.Blocks.BUS_CABLE.get().defaultBlockState()
+            .setValue(li.cil.oc2.common.block.cable.BusCableStateProperties.FACING_TO_CONNECTION_MAP
+                .get(Direction.EAST), li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
+        // Chunk loading constructs and attaches the cable before its deferred onLoad
+        // discovery runs. A controller can walk the saved interface in that interval.
+        final var cable = new BusCableBlockEntity(helper.absolutePos(CABLE_POS), state);
+        cable.setLevel(helper.getLevel());
+        assertTrue(helper, "loaded neighbours must be available", cable.busElement.getNeighbors().isPresent());
+        assertTrue(helper, "first bus walk must publish the saved interface devices before VM resume",
+            cable.busElement.getLocalDevices().containsAll(monitor.stateManager.deviceGroup.getDevices()));
+        helper.succeed();
     }
 
     // --------------------------------------------------------------------- //

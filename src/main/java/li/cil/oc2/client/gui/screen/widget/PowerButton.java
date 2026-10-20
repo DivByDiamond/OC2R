@@ -7,7 +7,9 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.base.AbstractMachineContainer;
 import li.cil.oc2.common.vm.PowerAction;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
+//? if >=26.1 {
+/*import net.minecraft.client.Minecraft;
+*///?}
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 //? if <26.1 {
@@ -15,8 +17,10 @@ import net.minecraft.client.gui.screens.Screen;
 //?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public class PowerButton extends ToggleImageButton {

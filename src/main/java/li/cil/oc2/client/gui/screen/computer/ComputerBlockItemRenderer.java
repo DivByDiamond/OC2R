@@ -16,27 +16,33 @@ import li.cil.oc2.client.gui.widget.Texture;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 //?}
 import li.cil.oc2.common.item.Items;
-//? if <26.1 {
 import net.minecraft.client.Minecraft;
+//? if >=26.1 {
+/*import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-//?} else {
-/*import net.minecraft.client.gui.GuiGraphics;
-*///?}
+//?}
 import net.minecraft.core.Direction;
 //? if <26.1 {
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.ItemDisplayContext;
 //?}
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <26.1 {
-import org.joml.Matrix4fStack;
 //?}
+//? if >=26.1 {
+/*import org.joml.Matrix3x2f;
+*///?} else {
+import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
+//?}
 import org.joml.Vector3f;
 
 public class ComputerBlockItemRenderer {
@@ -50,6 +56,9 @@ public class ComputerBlockItemRenderer {
 
     @Nullable
     public Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
+        //? if >=26.1 {
+        /*return ComputerPreviewGeometry.focusedSide(mouseX, mouseY, rotation);
+        *///?} else {
         final Quaternionf quaternion =
                 new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
         quaternion.conjugate();
@@ -74,11 +83,11 @@ public class ComputerBlockItemRenderer {
                 //?}
                 .filter(side -> side != Direction.SOUTH)
                 .orElse(null);
+        //?}
     }
 
     //? if >=26.1 {
-/*    // Items cannot be drawn rotated in a 26.x GUI (extraction only supports 2D transforms), so the
-    // block is drawn upright and without the per-face overlays.
+/*    // Three-dimensional previews use PiP rather than the GUI item's 2D transform.
     public void render(
             final GuiGraphics graphics,
             final int x,
@@ -86,12 +95,26 @@ public class ComputerBlockItemRenderer {
             final Vector3f rotation,
             @Nullable final Direction focusedSide,
             final NetworkInterfaceCardScreen screen) {
-        final float scale = BLOCK_RENDER_SIZE / 16f * 2;
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(x - 8 * scale, y - 8 * scale);
-        graphics.pose().scale(scale, scale);
-        graphics.item(computerItemStack, 0, 0);
-        graphics.pose().popMatrix();
+        final var client = Minecraft.getInstance();
+        final var item = new ItemStackRenderState();
+        client.getItemModelResolver().updateForTopItem(
+                item, computerItemStack, ItemDisplayContext.NONE, client.level, client.player, 0);
+        int enabled = 0;
+        for (final Direction side : Direction.values()) {
+            if (screen.getConfiguration(side)) enabled |= 1 << side.get3DDataValue();
+        }
+        final int radius = BLOCK_RENDER_SIZE;
+        final var pose = new Matrix3x2f(graphics.pose());
+        final var scissor = graphics.peekScissorStack();
+        final var area = new ScreenRectangle(x - radius, y - radius, radius * 2, radius * 2)
+                .transformMaxBounds(pose);
+        final var bounds = scissor == null ? area : area.intersection(scissor);
+        if (bounds != null) {
+            graphics.submitPictureInPictureRenderState(new ComputerPreviewRenderState(
+                    item, rotation.x, rotation.y, rotation.z, enabled, focusedSide,
+                    x - radius, x + radius, y - radius, y + radius, BLOCK_RENDER_SIZE,
+                    pose, scissor, bounds));
+        }
     }
 
 *///?} else {

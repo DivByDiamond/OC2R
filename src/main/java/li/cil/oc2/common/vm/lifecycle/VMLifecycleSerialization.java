@@ -2,7 +2,9 @@ package li.cil.oc2.common.vm.lifecycle;
 
 import java.io.IOException;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;

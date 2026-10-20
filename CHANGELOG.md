@@ -29,6 +29,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Fixed
 
+- **Static analysis**: update PMD to read Java 25 classes, refresh dependency locks/checksums, correct version-specific imports and clear full main/test/GameTest PMD checks across NeoForge and core targets.
+- **GameTests**: replace malformed shared structure NBT that could leave Fabric tests waiting forever for an unticked neighbour chunk; bound test launches and clear only unlocked disposable test worlds.
+- **VM persistence**: save grouped monitor/keyboard devices independently, preserve undiscovered and unloaded device snapshots, and discover saved cable interfaces before resuming the VM. Unchanged bus scans no longer reboot running guests.
+- **Device lifecycle**: release disposed devices' interrupt reservations on cold restarts and invalidate cached bus devices when wired monitors merge.
+- **26.x rendering**: correct NIC preview rotation and face picking, clear newly allocated monitor textures, and rebuild loaded cable sections after facade updates.
 - **Terminal**: compress uppercase letters and digits vertically around the shared baseline so tall Monocraft glyphs stay inside their terminal row.
 - **Robot lifecycle**: preserve `firstTick` across `Entity.tick()`; idle robots now initialize their synchronized movement target instead of stepping toward the origin and snapping back, and their unload cleanup releases guest RAM allocator claims.
 - **Onyx console**: scale the mirrored text console to fit high-resolution monitors with centered margins, while preserving native framebuffer graphics and limiting presentation to changed regions.
@@ -55,6 +60,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Terminal**: `CSI Ps SP A` (SR, scroll right) was misrouted to cursor-up, so a horizontal scroll-right moved the cursor and subsequent writes landed on the wrong line (visible e.g. in ttycity); SR now scrolls each row of the scroll region right, the mirror of SL, and both SL/SR are ignored when the cursor is outside the scroll region, matching xterm
 - **Bus**: cable `addInterface` never notified the bus — `onConnectionTypeChanged(..., false)` suppressed `scheduleScan`, so a device wired after the cable settled stayed invisible; now passes `true` and forces `updateDevicesForNeighbor` for the wired side (schedule alone only re-walks cable-to-cable topology) (#47)
 - **GameTest**: stabilized the full suite to 14/14 required green — explicit `connectInterface` for cable-computer/device links (cable only auto-connects cable-to-cable), `placeFloor` for `FaceAttached` blocks (`NetworkConnector`), `ComputerFixture` boot-error sentinel fix, `computerStartsWithoutBootError` now places power + CPU/memory/flash, timeout bumps for sequential waits, and deterministic recipe coverage (wrench-disambiguated `flash_memory_custom`/`onyxos` chain and `hard_drive_onyxos`, `ITEMS_WITHOUT_RECIPE` for smelting/debug/WIP items) (#47)
+
+- **GameTests**: repair the shared empty structure's malformed NBT, which could leave tests waiting forever for an unforced neighbour chunk before their timeout started. Keep Fabric suites in class-sized batches, reuse recipe mock players, guard disposable-world cleanup with Minecraft's session lock and bound the runner. The Stage 3 verification script now reaches its Fabric test invocation.
+- **Cable facades**: rebuild the client render section after facade data arrives, so loaded cables show the chosen block instead of stale camouflage.
+- **Monitors**: refresh cached device and energy capabilities after merging monitor blocks, so an attached bus discovers the new origin without reconnecting its cable; clear the initial framebuffer texture before its first network frame arrives.
+- **Virtual machines**: release stale IRQ and address reservations on a full stop, allowing computers with many monitors to boot again; suspension retains reservations for resume. Unchanged bus scans no longer trigger a reboot that discards the suspended CPU, RAM and framebuffer state. Restored cable interfaces are discovered before the first VM resume instead of appearing as newly attached hardware on the following tick. Monitor and keyboard members now save independent state instead of overwriting each other under their shared provider key. Saving a not-yet-discovered or unloaded bus group preserves its pending device snapshot.
+- **26.x NIC settings**: restore the rotating computer preview and enabled/disabled face overlays, with mouse picking using the same rotation in degrees.
 
 ### Changed
 

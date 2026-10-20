@@ -129,7 +129,7 @@ public final class ProjectorBlockEntityDepth {
     // Models submit synchronously so their mutable animation state cannot be overwritten by another instance.
     static final class Collector extends SubmitNodeStorage implements AutoCloseable {
         private int vertexCount;
-        private final Map<RenderType, Batch> batches = new IdentityHashMap<>();
+        private final Map<RenderType, Batch> batches = new IdentityHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
         private final SubmitNodeCollection collection = new SubmitNodeCollection(
                 //? if <26.2 {
                 this
@@ -243,7 +243,7 @@ public final class ProjectorBlockEntityDepth {
     private static Texture texture(final RenderType type) {
         //? if >=26.2 {
         for (final var texture : type.prepare().textures()) {
-            if (texture.name().equals("Sampler0")) return new Texture(texture.textureView(), texture.sampler());
+            if ("Sampler0".equals(texture.name())) return new Texture(texture.textureView(), texture.sampler());
         }
         //?} else {
         final var texture = ((ProjectorRenderTypeAccessor) (Object) type).oc2r$getSetup().getTextures().get("Sampler0");
@@ -263,7 +263,11 @@ public final class ProjectorBlockEntityDepth {
                 //?}
                 DefaultVertexFormat.POSITION_TEX_COLOR);
         private boolean pending;
-        private float x, y, z, u, v;
+        private float x;
+        private float y;
+        private float z;
+        private float u;
+        private float v;
         private int color = -1;
 
         private Batch(final Collector collector) {

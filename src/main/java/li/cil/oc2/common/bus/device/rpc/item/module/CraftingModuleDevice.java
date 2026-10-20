@@ -108,15 +108,16 @@ public final class CraftingModuleDevice extends AbstractItemRPCDevice {
     }
 
     private ItemStack insertIntoOutput(
-            final ItemStackHandler inventory, ItemStack stack, final boolean simulate) {
+            final ItemStackHandler inventory, final ItemStack stack, final boolean simulate) {
+        ItemStack remaining = stack;
         final int outputSlots = inventory.getSlots() - GRID_SLOTS;
         final int start = Math.max(robot.getSelectedSlot() - GRID_SLOTS, 0);
-        for (int i = 0; i < outputSlots && !stack.isEmpty(); i++) {
-            stack =
+        for (int i = 0; i < outputSlots && !remaining.isEmpty(); i++) {
+            remaining =
                     inventory.insertItem(
-                            GRID_SLOTS + (start + i) % outputSlots, stack, simulate);
+                            GRID_SLOTS + (start + i) % outputSlots, remaining, simulate);
         }
 
-        return stack;
+        return remaining;
     }
 }

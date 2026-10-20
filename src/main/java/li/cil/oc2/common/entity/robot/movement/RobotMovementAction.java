@@ -10,13 +10,17 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotAction;
 import li.cil.oc2.common.entity.robot.action.RobotActionResult;
 import li.cil.oc2.common.entity.robot.action.RobotActions;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+//? if <26.1 {
 import net.minecraft.nbt.NbtUtils;
+//?}
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
@@ -80,7 +84,7 @@ public final class RobotMovementAction extends AbstractRobotAction {
             for (final Entity entity : carriedEntities) {
                 final double lift = top - entity.getBoundingBox().minY;
                 if (shouldMoveEntity(entity)) {
-                    entity.move(MoverType.SHULKER, new Vec3(0, lift, 0));
+                    entity.move(MoverType.SHULKER, new Vec3(0, lift, 0)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 } else if (robot.level()
                         .noCollision(entity, entity.getBoundingBox().move(0, lift, 0))) {
                     passThrough.add(entity);

@@ -5,7 +5,9 @@ import static li.cil.oc2.common.util.async.OptionalUtils.instanceOf;
 import java.util.*;
 import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.common.bus.element.AbstractGroupingDeviceBusElement;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -15,6 +17,7 @@ public class GroupManager<E extends GroupEntry, Q> {
     private static final String GROUPS_TAG_NAME = "groups";
     private static final String GROUP_ID_TAG_NAME = "groupId";
     private static final String GROUP_DATA_TAG_NAME = "groupData";
+    private static final String GROUP_MEMBERS_TAG_NAME = "oc2r:group_members";
 
     private final AbstractGroupingDeviceBusElement<E, Q> element;
 
@@ -80,7 +83,7 @@ public class GroupManager<E extends GroupEntry, Q> {
                         .flatMap(instanceOf(CompoundTag.class))
                         .ifPresent(
                                 deviceTag ->
-                                        entry.getDevice().deserializeNBT(registries, deviceTag));
+                                        loadEntry(registries, entry, deviceTag));
             }
         }
     }
@@ -203,7 +206,7 @@ public class GroupManager<E extends GroupEntry, Q> {
             final Q query) {
         final CompoundTag devicesTag = element.groupData[index];
         for (final E entry : removedEntries) {
-            entry.getDeviceDataKey().ifPresent(devicesTag::remove);
+            entry.getDeviceDataKey().ifPresent(key -> removeEntryData(devicesTag, key, entry));
         }
 
         //? if >=26.1 {
@@ -221,12 +224,11 @@ public class GroupManager<E extends GroupEntry, Q> {
                                 *///?} else {
                                 if (devicesTag.contains(key, NBTTagIds.TAG_COMPOUND)) {
                                 //?}
-                                    entry.getDevice()
-                                            .deserializeNBT(
+                                    loadEntry(
                                                     //? if >=26.1 {
-                                                    /*registries, devicesTag.getCompoundOrEmpty(key));
+                                                    /*registries, entry, devicesTag.getCompoundOrEmpty(key));
                                                     *///?} else {
-                                                    registries, devicesTag.getCompound(key));
+                                                    registries, entry, devicesTag.getCompound(key));
                                                     //?}
                                 } else {
                                     devicesTag.remove(key);
@@ -235,11 +237,14 @@ public class GroupManager<E extends GroupEntry, Q> {
                                             .flatMap(instanceOf(CompoundTag.class))
                                             .ifPresent(
                                                     deviceTag ->
-                                                            entry.getDevice()
-                                                                    .deserializeNBT(
-                                                                            registries, deviceTag));
+                                                            loadEntry(registries, entry, deviceTag));
                                 }
                             });
+        }
+
+        // A changed member must not discard cached state belonging to an unchanged sibling.
+        for (final E entry : element.groups.get(index)) {
+            entry.getDeviceDataKey().ifPresent(invalidDataKeys::remove);
         }
 
         for (final String invalidDataKey : invalidDataKeys) {
@@ -257,14 +262,58 @@ public class GroupManager<E extends GroupEntry, Q> {
     }
 
     private void saveGroup(final HolderLookup.Provider registries, final int index) {
+        // An initial world save can precede discovery; an unloaded group also keeps
+        // its last snapshot here. Only an authoritative empty query may discard it.
+        if (element.groups.get(index).isEmpty()) return;
+
         final CompoundTag devicesTag = new CompoundTag();
         for (final E entry : element.groups.get(index)) {
             entry.getDeviceDataKey()
                     .ifPresent(
                             key -> {
-                                devicesTag.put(key, entry.getDevice().serializeNBT(registries));
+                                final CompoundTag data = entry.getDevice().serializeNBT(registries);
+                                if (entry.getDeviceDataSubKey().isPresent()) {
+                                    final CompoundTag providerTag = compoundOrEmpty(devicesTag, key);
+                                    final CompoundTag members = compoundOrEmpty(providerTag, GROUP_MEMBERS_TAG_NAME);
+                                    members.put(entry.getDeviceDataSubKey().orElseThrow(), data);
+                                    providerTag.put(GROUP_MEMBERS_TAG_NAME, members);
+                                    devicesTag.put(key, providerTag);
+                                } else {
+                                    devicesTag.put(key, data);
+                                }
                             });
         }
         element.groupData[index] = devicesTag;
     }
+
+    private static CompoundTag compoundOrEmpty(final CompoundTag tag, final String key) {
+        return tag.get(key) instanceof CompoundTag compound ? compound : new CompoundTag();
+    }
+
+    private void loadEntry(final HolderLookup.Provider registries, final E entry, final CompoundTag tag) {
+        if (tag.get(GROUP_MEMBERS_TAG_NAME) instanceof CompoundTag members) {
+            // Missing members in the new format have no saved state. Never feed the
+            // wrapper or a sibling's state to a newly introduced device.
+            entry.getDeviceDataSubKey()
+                    .map(members::get)
+                    .flatMap(instanceOf(CompoundTag.class))
+                    .ifPresent(data -> entry.getDevice().deserializeNBT(registries, data));
+        } else {
+            // Best effort compatibility with flat saves. A state overwritten by the
+            // old provider-key collision cannot be reconstructed here.
+            entry.getDevice().deserializeNBT(registries, tag);
+        }
+    }
+
+    private void removeEntryData(final CompoundTag devicesTag, final String key, final E entry) {
+        if (devicesTag.get(key) instanceof CompoundTag providerTag
+                && providerTag.get(GROUP_MEMBERS_TAG_NAME) instanceof CompoundTag members
+                && entry.getDeviceDataSubKey().isPresent()) {
+            members.remove(entry.getDeviceDataSubKey().orElseThrow());
+            if (members.isEmpty()) devicesTag.remove(key);
+        } else {
+            devicesTag.remove(key);
+        }
+    }
+
 }

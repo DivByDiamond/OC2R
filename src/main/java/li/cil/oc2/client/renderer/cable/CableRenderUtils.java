@@ -1,7 +1,9 @@
 package li.cil.oc2.client.renderer.cable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+//? if <26.2 {
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//?}
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -9,14 +11,22 @@ import javax.annotation.Nullable;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.util.block.Vec3Utils;
 import li.cil.oc2.network.wire.WireGeometry;
+//? if <26.2 {
 import net.minecraft.client.Minecraft;
+//?}
 //? if >=26.2 {
 /*import net.minecraft.client.renderer.SubmitNodeCollector;
+
+//? if >=26.1 && <26.2 {
 import net.minecraft.client.renderer.rendertype.RenderType;
+//?}
 import net.minecraft.util.LightCoordsUtil;
 *///?} else if >=26.1 {
 /*import net.minecraft.client.renderer.MultiBufferSource;
+
+//? if >=26.1 && <26.2 {
 import net.minecraft.client.renderer.rendertype.RenderType;
+//?}
 import net.minecraft.util.LightCoordsUtil;
 *///?} else {
 import net.minecraft.client.renderer.LightTexture;
@@ -33,7 +43,9 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+//? if <26.2 {
 import org.joml.Matrix4f;
+//?}
 import org.joml.Vector3f;
 
 final class CableRenderUtils {
@@ -88,12 +100,12 @@ final class CableRenderUtils {
                     connection.right,
                     computeCableSwingAmount(p0, p1),
                     connection.hashCode());
-            final List<NetworkCablePoint> points = new ArrayList<>(vertexCount);
+            final List<NetworkCablePoint> points = new ArrayList<>(vertexCount); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
             for (int i = 0; i < vertexCount; i++) {
                 final float t = i / (vertexCount - 1f);
                 final Vec3 p = quadraticBezier(p0, p1, p2, t);
                 final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
-                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p));
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
                 final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);

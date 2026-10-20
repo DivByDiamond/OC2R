@@ -64,8 +64,8 @@ class BuiltinRootFilesystemTest {
         final byte[] imported = new byte[packaged.length];
         for (int i = 0; i < imported.length; i++) imported[i] = (byte) (i * 31 + i / 65536);
         final Snapshot original = new Snapshot(disk(packaged));
-        try (final var input = new ByteArrayInputStream(imported);
-                final var output = original.rootFilesystem.getOutputStream(0)) {
+        try (var input = new ByteArrayInputStream(imported);
+                var output = original.rootFilesystem.getOutputStream(0)) {
             assertEquals(imported.length, input.transferTo(output));
         }
         final CompoundTag saved = NBTSerialization.serialize(original);
@@ -86,7 +86,7 @@ class BuiltinRootFilesystemTest {
         final BuiltinRootFilesystem disk = disk(image);
         disk.getOutputStream(65536 + 13).write(99);
         final byte[] result = new byte[image.length];
-        try (final var input = disk.getInputStream()) {
+        try (var input = disk.getInputStream()) {
             int position = 0;
             while (position < result.length) {
                 final int count = input.read(result, position, result.length - position);

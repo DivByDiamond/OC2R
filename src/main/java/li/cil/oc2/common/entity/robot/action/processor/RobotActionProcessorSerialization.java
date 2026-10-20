@@ -3,7 +3,9 @@ package li.cil.oc2.common.entity.robot.action.processor;
 import java.util.List;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotAction;
 import li.cil.oc2.common.entity.robot.action.RobotActions;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

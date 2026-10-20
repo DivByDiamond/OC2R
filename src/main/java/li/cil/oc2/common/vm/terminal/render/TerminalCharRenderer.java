@@ -6,8 +6,10 @@ import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 import li.cil.oc2.common.vm.terminal.fonts.Glyph;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)

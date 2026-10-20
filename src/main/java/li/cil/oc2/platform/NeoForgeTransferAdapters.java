@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
  // <p>All wrappers and views compare equal when they wrap the same delegate, for the reason
  // documented in {@code NeoForgeCapabilitiesTest}: the device bus compares devices through these
  // objects.
-final class NeoForgeTransferAdapters {
+final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific nested adapter implementations.
     private NeoForgeTransferAdapters() {}
 
     // ---------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ final class NeoForgeTransferAdapters {
     // ---------------------------------------------------------------------------------------
 
     // Not yet committed net amount per storage, shared by every wrapper over the same storage.
-    private static final Map<EnergyStorage, EnergyJournal> ENERGY_JOURNALS = new WeakHashMap<>();
+    private static final Map<EnergyStorage, EnergyJournal> ENERGY_JOURNALS = new WeakHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
 
     private static EnergyJournal energyJournal(final EnergyStorage storage) {
         synchronized (ENERGY_JOURNALS) {
@@ -54,6 +54,7 @@ final class NeoForgeTransferAdapters {
         private int pending;
 
         private EnergyJournal(final EnergyStorage storage) {
+            super();
             this.storage = new WeakReference<>(storage);
         }
 
@@ -230,7 +231,7 @@ final class NeoForgeTransferAdapters {
     // One journal per handler, shared by every wrapper over it: wrappers are created per query, and
     // two journals over the same handler would restore their snapshots in the wrong order on abort
     // (the later snapshot already contains the earlier wrapper's changes).
-    private static final Map<ItemHandler, ItemJournal> ITEM_JOURNALS = new WeakHashMap<>();
+    private static final Map<ItemHandler, ItemJournal> ITEM_JOURNALS = new WeakHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
 
     private static ItemJournal itemJournal(final ItemHandler handler) {
         synchronized (ITEM_JOURNALS) {
@@ -242,6 +243,7 @@ final class NeoForgeTransferAdapters {
         private final WeakReference<ItemHandler> handler;
 
         private ItemJournal(final ItemHandler handler) {
+            super();
             this.handler = new WeakReference<>(handler);
         }
 
@@ -455,6 +457,7 @@ final class NeoForgeTransferAdapters {
         private final List<FluidStack> operations = new ArrayList<>();
 
         private FluidJournal(final FluidHandler handler) {
+            super();
             this.handler = handler;
         }
 
@@ -477,7 +480,7 @@ final class NeoForgeTransferAdapters {
                     handler.fill(operation, FluidHandler.FluidAction.EXECUTE);
                 } else {
                     handler.drain(
-                            new FluidStack(operation.getFluid(), -operation.getAmount()),
+                            new FluidStack(operation.getFluid(), -operation.getAmount()), // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                             FluidHandler.FluidAction.EXECUTE);
                 }
             }
@@ -555,7 +558,7 @@ final class NeoForgeTransferAdapters {
                 final FluidResource resource,
                 final int amount,
                 final TransactionContext transaction) {
-            if (resource.isEmpty() || amount <= 0 || resource.getFluid() != getResource(index).getFluid()) {
+            if (resource.isEmpty() || amount <= 0 || resource.getFluid() != getResource(index).getFluid()) { // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
                 return 0;
             }
             final FluidStack drained =

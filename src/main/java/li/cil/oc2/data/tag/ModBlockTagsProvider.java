@@ -4,7 +4,9 @@ import static li.cil.oc2.common.block.common.Blocks.*;
 import static li.cil.oc2.common.tags.BlockTags.*;
 
 import java.util.concurrent.CompletableFuture;
+//? if <26.1 {
 import javax.annotation.Nullable;
+//?}
 import li.cil.oc2.api.API;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;

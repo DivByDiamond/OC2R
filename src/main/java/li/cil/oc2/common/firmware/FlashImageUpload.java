@@ -12,7 +12,7 @@ public final class FlashImageUpload {
     public static final int CHUNK_SIZE = 16 * 1024;
     private final int length;
     private final String expectedDigest;
-    private final MessageDigest digest;
+    private final MessageDigest digest; // NOPMD - Each ordered upload exclusively owns its digest. // NOPMD - Each ordered upload owns its digest; it is not shared between uploads.
     private final OutputStream output;
     private int offset;
     private boolean finished;

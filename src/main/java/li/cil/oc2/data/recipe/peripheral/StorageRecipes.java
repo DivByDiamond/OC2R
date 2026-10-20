@@ -6,7 +6,9 @@ import li.cil.oc2.data.recipe.RecipeBuilders;
 import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
+//? if <26.2 {
 import net.minecraft.tags.ItemTags;
+//?}
 import net.neoforged.neoforge.common.Tags;
 
 public final class StorageRecipes {

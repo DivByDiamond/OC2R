@@ -2,9 +2,13 @@ package li.cil.oc2.client.item;
 
 import static net.minecraft.core.component.DataComponents.DYED_COLOR;
 
+//? if <26.1 {
 import java.util.List;
+//?}
 import java.util.Map;
+//? if <26.1 {
 import li.cil.oc2.common.item.Items;
+//?}
 import li.cil.oc2.platform.ClientRegistrar;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.DyeColor;

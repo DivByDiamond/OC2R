@@ -4,8 +4,10 @@ import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.client.gui.screen.monitor.BusInterfaceScreen;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import net.minecraft.core.Direction;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class BusInterfaceScreenHooks {

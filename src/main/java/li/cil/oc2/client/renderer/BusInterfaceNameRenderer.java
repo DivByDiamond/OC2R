@@ -1,19 +1,28 @@
 package li.cil.oc2.client.renderer;
 
+//? if <26.2 {
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import li.cil.oc2.client.RenderCompat;
+//?}
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.LevelRenderContext;
+//? if <26.2 {
 import net.minecraft.client.Camera;
+//?}
 import net.minecraft.client.Minecraft;
+//? if <26.2 {
 import net.minecraft.client.gui.Font;
+//?}
 //? if >=26.1 {
-/*import net.minecraft.util.LightCoordsUtil;
+/*
+//? if >=26.1 && <26.2 {
+import net.minecraft.util.LightCoordsUtil;
+//?}
 *///?} else {
 import net.minecraft.client.renderer.LightTexture;
 //?}
@@ -29,7 +38,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
+//? if <26.2 {
 import org.joml.Matrix4f;
+//?}
 
 public enum BusInterfaceNameRenderer {
     INSTANCE;
@@ -38,6 +49,8 @@ public enum BusInterfaceNameRenderer {
         ClientEvents.RENDER_LEVEL.register(INSTANCE::handleRenderLastEvent);
     }
 
+    // The drawing block is version-dependent; keep its shared early guards intact.
+    @SuppressWarnings("PMD.UnnecessaryReturn")
     private void handleRenderLastEvent(final LevelRenderContext event) {
         if (event.stage() != LevelRenderContext.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             return;

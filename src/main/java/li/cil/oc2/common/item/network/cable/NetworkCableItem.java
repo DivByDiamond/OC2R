@@ -10,7 +10,9 @@ import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+//? if <26.1 {
 import net.minecraft.nbt.NbtUtils;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;

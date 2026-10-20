@@ -1,7 +1,9 @@
 package li.cil.oc2.client.gui.screen.common.machine;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.client.ClientCompat;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.common.MachineTerminalEnergyTooltip;
@@ -22,8 +24,10 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTerminalContainer>

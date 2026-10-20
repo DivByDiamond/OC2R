@@ -1,23 +1,31 @@
 package li.cil.oc2.client.renderer.cable;
 
+//? if <26.2 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+//?}
 import java.util.*;
 import java.util.Collections;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.CommonEvents;
+//? if <26.2 {
 import li.cil.oc2.platform.event.LevelRenderContext;
+//?}
 //? if >=26.2 {
 /*import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
 *///?}
+//? if <26.2 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.chunk.ChunkAccess;
+//? if <26.2 {
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+//?}
 
 public final class NetworkCableRenderer {
     private static final Set<NetworkConnectorBlockEntity> connectors =

@@ -2,7 +2,9 @@ package li.cil.oc2.common.item.storage;
 
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.text.TextFormatUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;

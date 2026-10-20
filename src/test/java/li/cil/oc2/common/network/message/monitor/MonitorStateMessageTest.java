@@ -14,7 +14,7 @@ class MonitorStateMessageTest {
     void preservesAllAuthoritativeStateCombinations() {
         final BlockPos position = new BlockPos(-12, 100, 34);
         for (int flags = 0; flags < 8; flags++) {
-            final MonitorStateMessage message = new MonitorStateMessage(
+            final MonitorStateMessage message = new MonitorStateMessage( // NOPMD - Each test case needs independent fixture inputs.
                     position, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0);
             assertEquals(message, roundtrip(message));
         }

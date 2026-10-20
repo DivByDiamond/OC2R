@@ -19,8 +19,10 @@ import li.cil.oc2.common.vm.terminal.modes.ModeState;
 import li.cil.oc2.common.vm.terminal.modes.PrivateModeState;
 import li.cil.oc2.common.vm.terminal.render.RendererModel;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @Serialized
 public class Terminal {

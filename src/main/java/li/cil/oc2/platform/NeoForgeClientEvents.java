@@ -2,7 +2,9 @@ package li.cil.oc2.platform;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.platform.event.ClientEvents;
-import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
+//? if >=26.2 {
+/*import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
+*///?}
 import li.cil.oc2.platform.event.LevelRenderContext;
 
 //? if >=26.1 {

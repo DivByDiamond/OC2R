@@ -13,7 +13,10 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
+
+//? if <26.1 {
 import net.minecraft.core.Direction;
+//?}
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,7 +40,7 @@ public final class BusCableBakedModel implements DynamicBlockStateModel {
     BusCableBakedModel(
             final BlockStateModelPart base,
             final BlockStateModelPart[] straightModelByAxis,
-            final BlockStateModelPart[] supportModelByFace) {
+            final BlockStateModelPart... supportModelByFace) {
         this.base = base;
         this.straightModelByAxis = straightModelByAxis.clone();
         this.supportModelByFace = supportModelByFace.clone();
@@ -148,7 +151,7 @@ public final class BusCableBakedModel implements DynamicBlockStateModel {
     private BlockStateModel getFacadeModel(final BlockState facadeState) {
         final BlockStateModel model =
                 Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(facadeState);
-        return model == this ? null : model; // A cable as its own facade would recurse forever.
+        return model == this ? null : model; // NOPMD - A cable as its own facade would recurse forever.
     }
 }
 *///?} else {
@@ -170,7 +173,9 @@ import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+//? if <26.1 {
 import net.minecraft.core.Direction;
+//?}
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -186,7 +191,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel[] straightModelByAxis;
 
     BusCableBakedModel(
-            BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel... supportModelByFace) {
+            BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel... supportModelByFace) { // NOPMD - Legacy supports use procedural geometry; retain the shared bake signature.
         this.proxy = proxy;
         this.straightModelByAxis = straightModelByAxis.clone();
     }

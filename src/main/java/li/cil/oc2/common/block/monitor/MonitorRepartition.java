@@ -3,6 +3,7 @@ package li.cil.oc2.common.block.monitor;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -80,6 +81,12 @@ public final class MonitorRepartition {
             if (be instanceof MonitorBlockEntity monitor) {
                 monitor.loadStateFromTransfer(savedState, registries);
             }
+        }
+
+        // Interfaces may be attached to any sub-block. Refresh their cached device and
+        // energy lookups only after the entire layout and the new origin's state agree.
+        for (final BlockPos bp : blocks) {
+            Platform.capabilities().invalidateBlock(level, bp);
         }
     }
 

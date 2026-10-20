@@ -2,13 +2,17 @@ package li.cil.oc2.common.blockentity.network.connector;
 
 import java.util.List;
 import java.util.Set;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+//? if <26.1 {
 import net.minecraft.nbt.NbtUtils;
+//?}
 import net.minecraft.nbt.Tag;
 
 public final class NetworkConnectorConnectionStore {

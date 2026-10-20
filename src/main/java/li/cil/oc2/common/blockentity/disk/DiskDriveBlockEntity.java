@@ -23,8 +23,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDriveContainer {
     final DiskDriveDevice<DiskDriveBlockEntity> device = new DiskDriveDevice<>(this);

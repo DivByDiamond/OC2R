@@ -13,7 +13,9 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.optional.OptionalAddress;
 import li.cil.oc2.common.serialization.BlobStorage;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.sedna.api.device.PhysicalMemory;
 import li.cil.sedna.device.memory.ByteBufferMemory;
 import net.minecraft.core.HolderLookup;

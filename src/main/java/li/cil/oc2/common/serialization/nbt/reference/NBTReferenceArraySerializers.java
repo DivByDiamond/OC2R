@@ -6,7 +6,9 @@ import java.util.UUID;
 import li.cil.oc2.common.serialization.ceres.color.ColorDataSerializer;
 import li.cil.oc2.common.serialization.nbt.NBTArraySerializer;
 import li.cil.oc2.common.serialization.nbt.NBTDeserializerImpl;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import net.minecraft.nbt.*;
 

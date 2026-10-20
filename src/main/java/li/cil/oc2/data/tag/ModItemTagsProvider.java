@@ -3,13 +3,15 @@ package li.cil.oc2.data.tag;
 import static li.cil.oc2.common.tags.ItemTags.*;
 
 import java.util.concurrent.CompletableFuture;
+//? if <26.1 {
 import javax.annotation.Nullable;
+//?}
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.tags.BlockTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 //? if >=26.1 {
-/*import net.minecraft.data.tags.TagsProvider.TagLookup;
+/*
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 *///?} else {

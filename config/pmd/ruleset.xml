@@ -7,6 +7,12 @@
     <description>OC2R PMD rules: best practices, error prone, performance, codestyle, design, multithreading</description>
 
     <rule ref="category/java/bestpractices.xml">
+        <!-- Keep defensive defaults for version-dependent Minecraft enums. -->
+        <exclude name="ExhaustiveSwitchHasDefault"/>
+        <!-- API extension points need not promise lambda compatibility. -->
+        <exclude name="ImplicitFunctionalInterface"/>
+        <!-- Suppressions may apply only on another Stonecutter version or rule subset. -->
+        <exclude name="UnnecessaryWarningSuppression"/>
         <exclude name="GuardLogStatement"/>
 
         <exclude name="AbstractClassWithoutAbstractMethod"/>
@@ -23,6 +29,8 @@
     </rule>
 
     <rule ref="category/java/errorprone.xml">
+        <!-- Record-style accessors intentionally share the name of their backing field. -->
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="NullAssignment"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="UseCorrectExceptionLogging"/>
@@ -54,6 +62,8 @@
     </rule>
 
     <rule ref="category/java/multithreading.xml">
+        <!-- Monitor locks are intentional; replacing them changes synchronization contracts. -->
+        <exclude name="AvoidSynchronizedStatement"/>
         <!-- Unavoidable: NeoForge/Minecraft thread model requires shared mutable state -->
         <exclude name="DoNotUseThreads"/>
         <!-- Unavoidable: CompletableFuture in DiskDriveDevice, FlashMemoryFlasherDevice -->

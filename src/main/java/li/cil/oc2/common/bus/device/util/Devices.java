@@ -70,7 +70,7 @@ public final class Devices {
             if (device.isPresent()) {
                 if (device.get() instanceof DeviceGroup group) {
                     for (Device dev : group.getDevices()) {
-                        devices.add(new BlockDeviceInfo(provider, dev));
+                        devices.add(new BlockDeviceInfo(provider, dev, group.getDeviceKey(dev)));
                     }
                 } else {
                     devices.add(new BlockDeviceInfo(provider, device.get()));

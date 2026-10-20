@@ -1,6 +1,8 @@
 package li.cil.oc2.client.gui.widget.misc;
 
+//? if <26.1 {
 import com.mojang.blaze3d.vertex.PoseStack;
+//?}
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.monitor.AbstractMonitorDisplayScreen;
@@ -18,9 +20,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 *///?}
 import net.minecraft.network.chat.Component;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
+//?}
 import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)

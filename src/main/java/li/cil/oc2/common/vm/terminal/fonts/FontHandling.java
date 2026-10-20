@@ -4,8 +4,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 /**
  * §36 M5: static initializers build a {@link FontAtlas} (registers a client texture) and

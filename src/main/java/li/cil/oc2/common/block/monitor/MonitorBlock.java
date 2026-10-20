@@ -1,7 +1,9 @@
 package li.cil.oc2.common.block.monitor;
 
 import com.mojang.serialization.MapCodec;
+//? if <26.1 {
 import java.util.List;
+//?}
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
@@ -14,14 +16,20 @@ import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorPowerMessage
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if <26.1 {
 import net.minecraft.network.chat.Component;
+//?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+//? if <26.1 {
 import net.minecraft.world.item.Item;
+//?}
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.item.TooltipFlag;
+//?}
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,8 +50,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class MonitorBlock extends HorizontalDirectionalBlock
         implements EnergyConsumingBlock, EntityBlock {

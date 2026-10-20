@@ -1,6 +1,8 @@
 package li.cil.oc2.common.item.network.cable;
 
-import li.cil.oc2.common.item.ItemProps;
+//? if >=26.1 {
+/*import li.cil.oc2.common.item.ItemProps;
+*///?}
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -34,8 +36,10 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {

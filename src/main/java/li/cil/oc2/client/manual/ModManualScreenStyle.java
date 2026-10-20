@@ -5,8 +5,10 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.manual.api.ManualScreenStyle;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class ModManualScreenStyle implements ManualScreenStyle {

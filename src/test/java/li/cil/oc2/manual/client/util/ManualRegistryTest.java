@@ -36,7 +36,7 @@ class ManualRegistryTest {
         assertTrue(registry.getKey(new Object()).isEmpty());
         final AtomicInteger constructions = new AtomicInteger();
         assertThrows(IllegalArgumentException.class,
-                () -> registry.register(id, () -> constructions.incrementAndGet()));
+                () -> registry.register(id, constructions::incrementAndGet));
         assertEquals(0, constructions.get());
     }
 

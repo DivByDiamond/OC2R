@@ -7,7 +7,7 @@ import li.cil.oc2.client.renderer.blockentity.computer.ComputerRenderer;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 

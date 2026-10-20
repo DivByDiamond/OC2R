@@ -5,8 +5,10 @@ import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.vm.VMRunState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class ComputerSoundHooks {

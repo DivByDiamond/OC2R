@@ -7,7 +7,7 @@ import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.codec.ByteBufCodecs;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;

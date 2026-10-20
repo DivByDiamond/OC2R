@@ -23,7 +23,7 @@ class PcmAudioStreamLatencyTest {
         int consumed = 0;
         for (int index = 0; index < 4; index++) {
             final ByteBuffer pcm = stream.read(bytesPerSecond);
-            final byte[] actual = new byte[pcm.remaining()];
+            final byte[] actual = new byte[pcm.remaining()]; // NOPMD - Each test case needs independent fixture inputs.
             pcm.get(actual);
             assertArrayEquals(Arrays.copyOfRange(data, consumed, consumed + actual.length), actual);
             consumed += actual.length;

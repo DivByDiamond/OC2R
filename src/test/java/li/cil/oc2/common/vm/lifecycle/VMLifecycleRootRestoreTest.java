@@ -51,19 +51,19 @@ class VMLifecycleRootRestoreTest {
     void malformedBaseIdentityDoesNotFallBackToTheLegacyFilesystem() {
         Sedna.initialize();
         for (final boolean emptyString : new boolean[] {false, true}) {
-            final var vm = new StubVirtualMachine();
+            final var vm = new StubVirtualMachine(); // NOPMD - Each test case needs independent fixture inputs.
             vm.state.builtinDevices = mock(BuiltinDevices.class);
-            final CompoundTag root = new CompoundTag();
+            final CompoundTag root = new CompoundTag(); // NOPMD - Each test case needs independent fixture inputs.
             if (emptyString) root.putString("baseImageId", "");
             else root.putInt("baseImageId", 42);
-            root.put("overlay", new CompoundTag());
-            final CompoundTag devices = new CompoundTag();
+            root.put("overlay", new CompoundTag()); // NOPMD - Each test case needs independent fixture inputs.
+            final CompoundTag devices = new CompoundTag(); // NOPMD - Each test case needs independent fixture inputs.
             devices.put("onyxRootFilesystem", root);
-            final CompoundTag state = new CompoundTag();
+            final CompoundTag state = new CompoundTag(); // NOPMD - Each test case needs independent fixture inputs.
             state.put("builtinDevices", devices);
-            final CompoundTag saved = new CompoundTag();
+            final CompoundTag saved = new CompoundTag(); // NOPMD - Each test case needs independent fixture inputs.
             saved.put("state", state);
-            final VMLifecycle lifecycle = new VMLifecycle(vm);
+            final VMLifecycle lifecycle = new VMLifecycle(vm); // NOPMD - Each test case needs independent fixture inputs.
             lifecycle.deserialize(saved);
             assertEquals(VMRunState.STOPPED, vm.runState);
             assertEquals(saved, lifecycle.serialize());

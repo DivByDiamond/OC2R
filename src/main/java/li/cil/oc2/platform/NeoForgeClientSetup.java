@@ -3,9 +3,11 @@ package li.cil.oc2.platform;
 import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc2.api.API;
 //? if >=26.1 {
-/*import li.cil.oc2.client.model.BusCableModel;
+/*import li.cil.oc2.client.gui.screen.computer.ComputerPreviewRenderState;
+import li.cil.oc2.client.gui.screen.computer.ComputerPreviewRenderer;
+import li.cil.oc2.client.model.BusCableModel;
 import li.cil.oc2.client.model.monitor.MonitorModel;
-import net.minecraft.resources.ResourceLocation;
+import li.cil.oc2.client.renderer.entity.RobotSpecialModelRenderer;
 *///?} else {
 import li.cil.oc2.client.model.BusCableModelLoader;
 import li.cil.oc2.client.model.monitor.MonitorModelLoader;
@@ -18,10 +20,11 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.platform.event.ClientEvents;
 //? if <26.1 {
 import net.minecraft.client.Minecraft;
-//?}
-//? if <26.1 {
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 //?}
+//? if >=26.1 {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -34,11 +37,11 @@ import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 //?}
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 //? if >=26.1 {
-/*import li.cil.oc2.client.renderer.entity.RobotSpecialModelRenderer;
+/*import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 *///?}
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 //? if <26.1 {
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -111,6 +114,11 @@ public final class NeoForgeClientSetup {
 /*    @SubscribeEvent
     public static void onRegisterSpecialModelRenderers(final RegisterSpecialModelRendererEvent event) {
         event.register(RobotSpecialModelRenderer.ID, RobotSpecialModelRenderer.Unbaked.MAP_CODEC);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterPictureInPictureRenderers(final RegisterPictureInPictureRenderersEvent event) {
+        event.register(ComputerPreviewRenderState.class, ComputerPreviewRenderer::new);
     }
 
     @SubscribeEvent

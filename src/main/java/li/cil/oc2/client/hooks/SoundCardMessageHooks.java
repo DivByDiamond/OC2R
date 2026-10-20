@@ -2,8 +2,10 @@ package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.audio.SoundClientManager;
 import net.minecraft.core.BlockPos;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 /** Client-side entry points for sound card network messages, kept out of common message classes. */
 @OnlyIn(Dist.CLIENT)

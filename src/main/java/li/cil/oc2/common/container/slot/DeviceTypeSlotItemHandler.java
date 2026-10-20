@@ -1,12 +1,16 @@
 package li.cil.oc2.common.container.slot;
 
+//? if <26.1 {
 import com.mojang.datafixers.util.Pair;
+//?}
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.DeviceType;
 import li.cil.oc2.platform.ItemHandler;
 import li.cil.oc2.platform.ItemHandlerSlot;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1 {
 import net.minecraft.world.inventory.InventoryMenu;
+//?}
 
 public final class DeviceTypeSlotItemHandler extends ItemHandlerSlot {
     private final DeviceType deviceType;

@@ -1,6 +1,8 @@
 package li.cil.oc2.data;
 
+//? if <26.1 {
 import java.util.Collections;
+//?}
 //? if >=26.1 {
 /*import java.util.List;
 *///?}
@@ -14,8 +16,10 @@ import li.cil.oc2.data.model.ModItemModelProvider;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
 import li.cil.oc2.data.tag.ModBlockTagsProvider;
 import li.cil.oc2.data.tag.ModItemTagsProvider;
+//? if <26.1 {
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+//?}
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;

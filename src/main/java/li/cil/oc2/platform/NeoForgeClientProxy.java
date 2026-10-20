@@ -7,8 +7,10 @@ import li.cil.oc2.client.hooks.MonitorModelHooks;
 //?}
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 //? if >=26.1 {
 /*import net.neoforged.neoforge.model.data.ModelData;
 *///?} else {

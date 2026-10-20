@@ -11,8 +11,7 @@ class Z80BoardExecutionTest {
     @Test
     void executesGuestProgramFromMappedRam() throws Exception {
         final Z80Board board = new Z80Board();
-        final ByteBufferMemory ram = new ByteBufferMemory(0x10000);
-        try {
+        try (ByteBufferMemory ram = new ByteBufferMemory(0x10000)) {
             assertTrue(board.addDevice(0, ram));
 
             // LD A, 0x42; LD (0x2000), A; HALT
@@ -27,8 +26,6 @@ class Z80BoardExecutionTest {
 
             assertEquals(0x42, board.getMemoryMap().load(0x2000, 0));
             assertTrue(board.isHalted());
-        } finally {
-            ram.close();
         }
     }
 }

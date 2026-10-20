@@ -9,8 +9,10 @@ import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+//? if <26.1 {
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+//?}
 
 public final class ComputerBlockEntityPersistence {
     private static final String BUS_ELEMENT_TAG_NAME = "busElement";

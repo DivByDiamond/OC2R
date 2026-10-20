@@ -8,8 +8,10 @@ import li.cil.oc2.manual.api.ManualModel;
 import li.cil.oc2.manual.api.ManualScreenStyle;
 import li.cil.oc2.manual.api.ManualStyle;
 import li.cil.oc2.manual.api.prefab.item.AbstractManualItem;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class ManualItem extends AbstractManualItem {
     public ManualItem() {

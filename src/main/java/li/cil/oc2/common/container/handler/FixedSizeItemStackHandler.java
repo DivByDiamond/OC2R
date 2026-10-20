@@ -1,7 +1,9 @@
 package li.cil.oc2.common.container.handler;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;

@@ -10,7 +10,9 @@ import li.cil.oc2.common.item.block.AbstractBlockDeviceItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+//? if <26.1 {
 import mezz.jei.api.constants.VanillaTypes;
+//?}
 //? if >=26.1 {
 /*import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
 *///?} else {

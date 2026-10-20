@@ -6,7 +6,9 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotAction;
 import li.cil.oc2.common.entity.robot.action.RobotActionResult;
 import li.cil.oc2.common.entity.robot.action.RobotActions;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.Direction;

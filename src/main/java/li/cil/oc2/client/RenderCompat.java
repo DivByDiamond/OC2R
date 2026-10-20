@@ -11,8 +11,10 @@ import net.minecraft.client.renderer.LevelRenderer;
 //?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 /**
  * Access to the current screen, the main camera and block light coordinates, which moved off {@link
