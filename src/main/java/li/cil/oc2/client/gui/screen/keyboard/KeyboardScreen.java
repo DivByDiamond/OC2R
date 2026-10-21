@@ -6,12 +6,12 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.monitor.input.KeyboardInputMessage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 //? if >=26.1 {
 /*import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 *///?}
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

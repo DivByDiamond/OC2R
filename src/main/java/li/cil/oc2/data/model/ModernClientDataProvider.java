@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.data.model;
+/*
+package li.cil.oc2.data.model;
 
 import com.google.gson.JsonObject;
 import java.util.ArrayList;

@@ -1,29 +1,35 @@
 package li.cil.oc2.platform;
 
+//? if >=26.2 {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+*///?}
 import li.cil.oc2.api.API;
+//? if >=26.1 {
+/*import li.cil.oc2.client.RenderCompat;
+*///?}
 import li.cil.oc2.platform.event.ClientEvents;
 //? if >=26.2 {
 /*import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
 *///?}
 import li.cil.oc2.platform.event.LevelRenderContext;
-
 //? if >=26.1 {
-/*import li.cil.oc2.client.RenderCompat;
-import net.minecraft.client.Minecraft;
-import org.joml.Matrix4f;
+/*import net.minecraft.client.Minecraft;
 *///?}
 //? if >=26.2 {
-/*import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.world.level.Level;
+/*import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 *///?}
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+//? if >=26.2 {
+/*import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+*///?}
+//? if >=26.1 {
+/*import org.joml.Matrix4f;
+*///?}
 
 /** Fires the loader-independent {@link ClientEvents} from NeoForge's game event bus. */
 @EventBusSubscriber(modid = API.MOD_ID, value = Dist.CLIENT)

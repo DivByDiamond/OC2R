@@ -5,12 +5,12 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import li.cil.oc2.common.vm.PowerAction;
 
 public record RobotPowerMessage(int entityId, PowerAction action) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, RobotPowerMessage> STREAM_CODEC =
@@ -46,6 +46,8 @@ public record RobotPowerMessage(int entityId, PowerAction action) implements Abs
                         case SHUTDOWN -> robot.shutdown();
                         case REBOOT -> robot.reboot();
                         case POWER_OFF -> robot.stop();
+                        // All PowerAction values are handled above; the default keeps the switch exhaustive.
+                        default -> {}
                     }
                 });
     }

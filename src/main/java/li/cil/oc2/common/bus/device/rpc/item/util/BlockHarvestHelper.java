@@ -1,6 +1,9 @@
 package li.cil.oc2.common.bus.device.rpc.item.util;
 
 import li.cil.oc2.common.config.Config;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?}
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
@@ -8,12 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-//? if >=26.1 {
-/*import li.cil.oc2.common.config.Tiers;
-*///?} else {
-import net.minecraft.world.item.Tier;
-//?}
 //? if <26.1 {
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 //?}
 import net.minecraft.world.level.GameType;

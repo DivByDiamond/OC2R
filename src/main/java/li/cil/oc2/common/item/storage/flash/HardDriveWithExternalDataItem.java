@@ -1,20 +1,20 @@
 package li.cil.oc2.common.item.storage.flash;
 
-import li.cil.oc2.common.item.ItemProps;
 //? if <26.1 {
 import javax.annotation.Nullable;
 //?}
 import li.cil.oc2.api.API;
+import li.cil.oc2.common.item.ItemProps;
 import li.cil.oc2.common.item.block.AbstractBlockDeviceItem;
-//? if >=26.1 {
-/*import net.minecraft.util.Util;
-*///?} else {
+//? if <26.1 {
 import net.minecraft.Util;
 //?}
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?}
 import net.minecraft.world.item.DyeColor;
-
 import net.minecraft.world.item.component.DyedItemColor;
 
 public final class HardDriveWithExternalDataItem extends AbstractBlockDeviceItem {

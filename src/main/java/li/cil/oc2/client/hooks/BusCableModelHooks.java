@@ -1,16 +1,15 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.hooks;
+/*
+package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.BusCableModelTypes;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 //?}
-
 //? if <26.1 {
 import net.neoforged.api.distmarker.OnlyIn;
 //?}
@@ -33,6 +32,7 @@ public final class BusCableModelHooks {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.hooks;
 
 import li.cil.oc2.client.model.BusCableModelTypes;

@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model.monitor;
+/*
+package li.cil.oc2.client.model.monitor;
 
 import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ public final class MonitorModel implements CustomUnbakedBlockStateModel {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.model.monitor;
 
 import java.util.Map;

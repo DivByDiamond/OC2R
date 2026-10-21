@@ -6,9 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
-//? if >=26.1 {
-/*
-*///?} else {
+//? if <26.1 {
 import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 //?}
 import net.neoforged.neoforge.network.handling.IPayloadContext;

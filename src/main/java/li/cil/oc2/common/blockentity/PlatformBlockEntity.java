@@ -1,18 +1,22 @@
 package li.cil.oc2.common.blockentity;
 
+//? if >=26.1 {
+/*import li.cil.oc2.common.util.nbt.NBTUtils;
+*///?}
 import net.minecraft.core.BlockPos;
 //? if >=26.1 {
 /*import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import li.cil.oc2.common.util.nbt.NBTUtils;
 *///?}
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=26.1 {
+/*import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+*///?}
 
 /**
  * NeoForge side of the loader specific block entity base class; the Fabric module provides a class with

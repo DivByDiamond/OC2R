@@ -18,12 +18,7 @@ import net.minecraft.client.Minecraft;
 //? if <26.2 {
 import net.minecraft.client.gui.Font;
 //?}
-//? if >=26.1 {
-/*
-//? if >=26.1 && <26.2 {
-import net.minecraft.util.LightCoordsUtil;
-//?}
-*///?} else {
+//? if <26.1 {
 import net.minecraft.client.renderer.LightTexture;
 //?}
 //? if <26.2 {
@@ -34,6 +29,9 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 && <26.2 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;

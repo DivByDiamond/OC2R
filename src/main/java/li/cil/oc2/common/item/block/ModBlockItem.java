@@ -1,10 +1,10 @@
 package li.cil.oc2.common.item.block;
 
-import li.cil.oc2.common.item.ItemProps;
 import java.util.List;
 //? if >=26.1 {
 /*import li.cil.oc2.common.block.BlockTooltipProvider;
 *///?}
+import li.cil.oc2.common.item.ItemProps;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;

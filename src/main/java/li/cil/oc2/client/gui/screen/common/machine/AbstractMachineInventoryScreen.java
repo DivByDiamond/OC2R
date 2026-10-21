@@ -11,11 +11,10 @@ import java.util.List;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
+import li.cil.oc2.client.gui.screen.widget.PowerButton;
 import li.cil.oc2.client.gui.util.GuiUtils;
 import li.cil.oc2.client.gui.util.TooltipRenderer;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
-import li.cil.oc2.client.gui.screen.widget.PowerButton;
-
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.ChatFormatting;

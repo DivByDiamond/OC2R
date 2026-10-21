@@ -2,19 +2,25 @@ package li.cil.oc2.common.components;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 //? if >=26.1 {
 /*import java.util.ArrayList;
-import java.util.Optional;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.ItemStackTemplate;
 *///?}
+import java.util.List;
+import java.util.Map;
+//? if >=26.1 {
+/*import java.util.Optional;
+*///?}
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+//? if >=26.1 {
+/*import net.minecraft.util.ExtraCodecs;
+*///?}
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+//? if >=26.1 {
+/*import net.minecraft.world.item.ItemStackTemplate;
+*///?}
 
 public final class RestrictedContainer {
     //? if >=26.1 {

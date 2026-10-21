@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model.monitor;
+/*
+package li.cil.oc2.client.model.monitor;
 
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -110,6 +111,7 @@ public final class MonitorQuads {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.model.monitor;
 
 import java.util.ArrayList;

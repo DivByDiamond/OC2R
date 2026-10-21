@@ -11,8 +11,7 @@ import li.cil.oc2.common.tags.BlockTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 //? if >=26.1 {
-/*
-import net.minecraft.world.level.block.Block;
+/*import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 *///?} else {
 import net.minecraft.data.tags.ItemTagsProvider;

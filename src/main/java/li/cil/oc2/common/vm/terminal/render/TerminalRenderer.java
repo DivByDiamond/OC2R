@@ -1,9 +1,18 @@
 package li.cil.oc2.common.vm.terminal.render;
 
+//? if >=26.1 && <26.2 {
+/*import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
+*///?}
 //? if <26.2 {
 import com.mojang.blaze3d.systems.RenderSystem;
 //?}
 import com.mojang.blaze3d.vertex.*;
+//? if >=26.1 {
+/*import java.nio.ByteBuffer;
+import java.util.Arrays;
+*///?}
 import java.util.concurrent.atomic.AtomicLong;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
@@ -12,28 +21,14 @@ import li.cil.oc2.common.vm.terminal.fonts.FontHandling;
 //?}
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalBackgroundRenderer;
 import li.cil.oc2.common.vm.terminal.render.overlay.TerminalCursorRenderer;
-//? if >=26.1 {
-/*//? if <26.2 {
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.platform.CompareOp;
-//?}
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-//? if <26.2 {
-import net.minecraft.client.renderer.RenderPipelines;
+//? if >=26.1 && <26.2 {
+/*import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-//?}
-
-//? if >=26.1 && <26.2 {
-import org.lwjgl.system.MemoryUtil;
-//?}
-*///?} else {
+*///?}
+//? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
-//?}
-//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 //?}
@@ -42,6 +37,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 //?}
 import org.joml.Matrix4f;
+//? if >=26.1 && <26.2 {
+/*import org.lwjgl.system.MemoryUtil;
+*///?}
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalRenderer implements RendererModel, RendererView {
@@ -50,6 +48,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
     //?}
     public final Terminal terminal;
+
     //? if >=26.1 {
     /*// 26.x has no retained VertexBuffer. Each dirty row's vertices are kept as raw bytes and the
     // rows are replayed into one mesh drawn through RenderType each frame.
@@ -486,7 +485,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final byte[] background;
             final int backgroundVertices;
             try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final BufferBuilder builder = new BufferBuilder( // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final BufferBuilder builder = new BufferBuilder(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                         bytes,
                         com.mojang.blaze3d.PrimitiveTopology.QUADS,
                         DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -507,7 +506,7 @@ public class TerminalRenderer implements RendererModel, RendererView {
             final byte[] text;
             final int textVertices;
             try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final BufferBuilder builder = new BufferBuilder( // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final BufferBuilder builder = new BufferBuilder(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                         bytes,
                         com.mojang.blaze3d.PrimitiveTopology.QUADS,
                         DefaultVertexFormat.POSITION_TEX_COLOR);

@@ -4,12 +4,13 @@ package li.cil.oc2.common.item.storage;
 import javax.annotation.Nullable;
 //?}
 import li.cil.oc2.api.API;
-//? if >=26.1 {
-/*import net.minecraft.util.Util;
-*///?} else {
+//? if <26.1 {
 import net.minecraft.Util;
 //?}
 import net.minecraft.resources.ResourceLocation;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?}
 
 public final class MemoryItem extends AbstractStorageItem {
 

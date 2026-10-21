@@ -23,9 +23,7 @@ import net.minecraft.world.ItemInteractionResult;
 //?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-//? if >=26.1 {
-/*import net.minecraft.world.level.gamerules.GameRules;
-*///?} else {
+//? if <26.1 {
 import net.minecraft.world.level.GameRules;
 //?}
 import net.minecraft.world.level.Level;
@@ -33,6 +31,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+//? if >=26.1 {
+/*import net.minecraft.world.level.gamerules.GameRules;
+*///?}
 import net.minecraft.world.phys.BlockHitResult;
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;

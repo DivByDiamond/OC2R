@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model;
+/*
+package li.cil.oc2.client.model;
 
 import com.mojang.math.Quadrant;
 import com.mojang.serialization.MapCodec;
@@ -75,6 +76,7 @@ public final class BusCableModel implements CustomUnbakedBlockStateModel {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.model;
 
 import static java.util.Objects.requireNonNull;

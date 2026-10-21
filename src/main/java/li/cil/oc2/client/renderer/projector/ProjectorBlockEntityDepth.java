@@ -2,8 +2,15 @@ package li.cil.oc2.client.renderer.projector;
 
 //? if >=26.1 {
 /*
+//? if >=26.2 {
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
+//?}
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
+//? if >=26.2 {
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
+//?}
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -19,22 +26,22 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-//? if >=26.2 {
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-//?} else {
+//? if <26.2 {
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.OptionalInt;
-import li.cil.oc2.client.mixin.ProjectorRenderTypeAccessor;
 //?}
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+//? if <26.2 {
+import java.util.OptionalInt;
+//?}
 import java.util.Set;
-import java.util.Collections;
 import li.cil.oc2.api.API;
+//? if <26.2 {
+import li.cil.oc2.client.mixin.ProjectorRenderTypeAccessor;
+//?}
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
@@ -290,18 +297,47 @@ public final class ProjectorBlockEntityDepth {
         private final VertexConsumer consumer = new VertexConsumer() {
             @Override public VertexConsumer addVertex(final float px, final float py, final float pz) {
                 flushVertex();
-                x = px; y = py; z = pz; u = 0; v = 0; color = -1; pending = true;
+                x = px;
+                y = py;
+                z = pz;
+                u = 0;
+                v = 0;
+                color = -1;
+                pending = true;
                 return this;
             }
+
             @Override public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
-                color = (a << 24) | (r << 16) | (g << 8) | b; return this;
+                color = (a << 24) | (r << 16) | (g << 8) | b;
+                return this;
             }
-            @Override public VertexConsumer setColor(final int value) { color = value; return this; }
-            @Override public VertexConsumer setUv(final float pu, final float pv) { u = pu; v = pv; return this; }
-            @Override public VertexConsumer setUv1(final int u, final int v) { return this; }
-            @Override public VertexConsumer setUv2(final int u, final int v) { return this; }
-            @Override public VertexConsumer setNormal(final float x, final float y, final float z) { return this; }
-            @Override public VertexConsumer setLineWidth(final float width) { return this; }
+
+            @Override public VertexConsumer setColor(final int value) {
+                color = value;
+                return this;
+            }
+
+            @Override public VertexConsumer setUv(final float pu, final float pv) {
+                u = pu;
+                v = pv;
+                return this;
+            }
+
+            @Override public VertexConsumer setUv1(final int u, final int v) {
+                return this;
+            }
+
+            @Override public VertexConsumer setUv2(final int u, final int v) {
+                return this;
+            }
+
+            @Override public VertexConsumer setNormal(final float x, final float y, final float z) {
+                return this;
+            }
+
+            @Override public VertexConsumer setLineWidth(final float width) {
+                return this;
+            }
         };
     }
 }

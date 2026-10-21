@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model.monitor;
+/*
+package li.cil.oc2.client.model.monitor;
 
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,7 @@ public final class MonitorBakedModel implements DynamicBlockStateModel {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.model.monitor;
 
 import java.util.Collections;

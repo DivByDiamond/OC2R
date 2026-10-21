@@ -690,6 +690,8 @@ tasks.register("lintRatchet") {
         ":core:${sc.current.version}:checkstyleMain", ":core:${sc.current.version}:checkstyleTest",
         ":core:${sc.current.version}:pmdMain", ":core:${sc.current.version}:pmdTest",
         ":core:${sc.current.version}:spotbugsMain", ":core:${sc.current.version}:spotbugsTest",
+        // The fabric node only exists for 1.21.1 (Loom does not remap 26.x).
+        ":fabric:1.21.1:checkstyleMain", ":fabric:1.21.1:checkstyleTest",
     )
 
     val baseline = Properties()
@@ -716,6 +718,9 @@ tasks.register("lintRatchet") {
             "coreCheckstyleTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/test.xml"), "error"),
             "corePmdMain" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/main.xml"), "violation"),
             "corePmdTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/test.xml"), "violation"),
+            // fabric module (the same tool config, see fabric/build.gradle.kts).
+            "fabricCheckstyleMain" to count(rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/main.xml"), "error"),
+            "fabricCheckstyleTest" to count(rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/test.xml"), "error"),
         )
 
         var failed = false

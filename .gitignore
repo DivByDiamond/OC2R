@@ -32,6 +32,7 @@ qodana-report/
 *.log
 *.tmp
 .ruff_cache/
+__pycache__/
 
 # Reference repos
 ref/

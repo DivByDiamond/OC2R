@@ -1,8 +1,5 @@
 package li.cil.oc2.common.item.network.cable;
 
-//? if >=26.1 {
-/*import li.cil.oc2.common.item.ItemProps;
-*///?}
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -10,6 +7,9 @@ import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.config.Config;
+//? if >=26.1 {
+/*import li.cil.oc2.common.item.ItemProps;
+*///?}
 import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;

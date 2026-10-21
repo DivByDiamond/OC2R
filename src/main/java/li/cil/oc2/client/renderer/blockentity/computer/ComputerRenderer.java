@@ -6,6 +6,9 @@ import com.google.common.cache.RemovalNotification;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.time.Duration;
+//? if >=26.1 {
+/*import javax.annotation.Nullable;
+*///?}
 import li.cil.oc2.api.API;
 import li.cil.oc2.client.renderer.blockentity.OverlayRenderer;
 import li.cil.oc2.common.block.computer.ComputerBlock;
@@ -15,17 +18,18 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
 import li.cil.oc2.platform.event.ClientEvents;
 //? if >=26.1 {
-/*import javax.annotation.Nullable;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
 *///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 //?}
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+*///?}
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;

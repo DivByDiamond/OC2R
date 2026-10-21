@@ -8,13 +8,14 @@ import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
-//? if >=26.1 {
-/*import net.minecraft.util.Util;
-*///?} else {
+//? if <26.1 {
 import net.minecraft.Util;
 //?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;

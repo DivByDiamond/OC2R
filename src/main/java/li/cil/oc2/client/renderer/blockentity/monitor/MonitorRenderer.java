@@ -1,6 +1,9 @@
 package li.cil.oc2.client.renderer.blockentity.monitor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+//? if >=26.1 {
+/*import javax.annotation.Nullable;
+*///?}
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.common.block.monitor.MonitorMultiblock;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
@@ -8,16 +11,17 @@ import li.cil.oc2.common.blockentity.monitor.misc.MonitorContraptionHelper;
 import li.cil.oc2.platform.event.ClientEvents;
 import net.minecraft.client.gui.Font;
 //? if >=26.1 {
-/*import javax.annotation.Nullable;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
 *///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 //?}
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+*///?}
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;

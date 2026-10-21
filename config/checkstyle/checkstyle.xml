@@ -116,6 +116,20 @@
   <module name="SuppressionSingleFilter">
     <property name="checks" value="AvoidStarImport"/>
   </module>
+  <!--
+    The multiversion source layout renames or moves the imported class itself
+    (net.minecraft.resources.ResourceLocation -> net.minecraft.resources.Identifier
+    on 26.x, net.minecraft.Util -> net.minecraft.util.Util), and the new name
+    sorts to a different place than the old one. When such an import sits next
+    to a neighbour whose position flips with it, no single order satisfies
+    1.21.1 and 26.x at the same time, so the alphabetical import order cannot
+    hold for these files. The rule stays enabled everywhere else.
+  -->
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="CustomImportOrder"/>
+    <property name="files"
+              value=".*[/\\](api[/\\]bus[/\\]device[/\\]DeviceType|api[/\\]util[/\\]Registries|manual[/\\]api[/\\]util[/\\]Constants|manual[/\\]client[/\\]util[/\\](ManualRegistry|RegistryUtils)|manual[/\\]client[/\\]document[/\\]segment[/\\]LinkSegment|platform[/\\](BlockHolder|ItemHolder))\.java"/>
+  </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="WhitespaceAround"/>
   </module>

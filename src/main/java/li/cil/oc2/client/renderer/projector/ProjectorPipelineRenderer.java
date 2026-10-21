@@ -171,7 +171,7 @@ public final class ProjectorPipelineRenderer {
                                 (float) (camera.pos.y - entry.worldPos().y),
                                 (float) (camera.pos.z - entry.worldPos().z));
                 final Matrix4f projectorCamera = new Matrix4f(PROJECTION).mul(projectorView); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final Frustum frustum = new Frustum( // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                final Frustum frustum = new Frustum(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                         new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)), PROJECTION); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
                 frustum.prepare(entry.worldPos().x, entry.worldPos().y, entry.worldPos().z);
                 visible.clear();

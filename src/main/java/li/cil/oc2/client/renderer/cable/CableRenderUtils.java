@@ -16,24 +16,23 @@ import net.minecraft.client.Minecraft;
 //?}
 //? if >=26.2 {
 /*import net.minecraft.client.renderer.SubmitNodeCollector;
-
 //? if >=26.1 && <26.2 {
 import net.minecraft.client.renderer.rendertype.RenderType;
 //?}
-import net.minecraft.util.LightCoordsUtil;
 *///?} else if >=26.1 {
 /*import net.minecraft.client.renderer.MultiBufferSource;
-
 //? if >=26.1 && <26.2 {
 import net.minecraft.client.renderer.rendertype.RenderType;
 //?}
-import net.minecraft.util.LightCoordsUtil;
 *///?} else {
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 //?}
 import net.minecraft.core.BlockPos;
+//? if >=26.1 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?}
 import net.minecraft.util.Mth;
 //? if >=26.1 {
 /*import net.minecraft.world.level.BlockAndLightGetter;
@@ -71,10 +70,12 @@ final class CableRenderUtils {
             final PoseStack stack,
             final Vec3 eye,
             final List<NetworkCableConnection> connections,
-            final Predicate<AABB> filter
             //? if >=26.2 {
-            /*, final SubmitNodeCollector collector
-            *///?}
+/*final Predicate<AABB> filter,
+            final SubmitNodeCollector collector
+            *///?} else {
+            final Predicate<AABB> filter
+            //?}
             ) {
         //? if >=26.2 {
         /*final List<CableVertex> vertices = new ArrayList<>();

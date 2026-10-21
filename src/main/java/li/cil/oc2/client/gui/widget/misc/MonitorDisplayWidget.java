@@ -17,9 +17,11 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 //? if >=26.1 {
 /*import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
 *///?}
 import net.minecraft.network.chat.Component;
+//? if >=26.1 {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;

@@ -4,12 +4,13 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-//? if >=26.2 {
-/*import net.minecraft.util.LightCoordsUtil;
-*///?} else {
+//? if <26.2 {
 import net.minecraft.client.renderer.LevelRenderer;
 //?}
 import net.minecraft.core.BlockPos;
+//? if >=26.2 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?}
 import net.minecraft.world.level.Level;
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;

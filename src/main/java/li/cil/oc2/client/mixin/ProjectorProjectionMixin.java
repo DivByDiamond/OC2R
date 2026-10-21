@@ -1,11 +1,15 @@
 package li.cil.oc2.client.mixin;
 
-import net.minecraft.client.renderer.GameRenderer;
-import org.spongepowered.asm.mixin.Mixin;
 //? if >=26.1 {
 /*import li.cil.oc2.client.renderer.projector.ProjectorPipelineRenderer;
-import org.joml.Matrix4f;
-import org.spongepowered.asm.mixin.injection.At;
+*///?}
+import net.minecraft.client.renderer.GameRenderer;
+//? if >=26.1 {
+/*import org.joml.Matrix4f;
+*///?}
+import org.spongepowered.asm.mixin.Mixin;
+//? if >=26.1 {
+/*import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 *///?}
 

@@ -10,6 +10,9 @@ import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.common.bus.device.rpc.item.util.BlockHarvestHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.InventoryHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.RepairHelper;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?}
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.BlockPos;
@@ -24,9 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-//? if >=26.1 {
-/*import li.cil.oc2.common.config.Tiers;
-*///?} else {
+//? if <26.1 {
 import net.minecraft.world.item.Tier;
 //?}
 import net.minecraft.world.item.context.BlockPlaceContext;

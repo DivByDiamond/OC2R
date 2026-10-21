@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model;
+/*
+package li.cil.oc2.client.model;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,7 +14,6 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
-
 //? if <26.1 {
 import net.minecraft.core.Direction;
 //?}
@@ -155,6 +155,7 @@ public final class BusCableBakedModel implements DynamicBlockStateModel {
     }
 }
 *///?} else {
+
 package li.cil.oc2.client.model;
 
 import java.util.Collections;

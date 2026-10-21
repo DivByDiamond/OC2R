@@ -5,6 +5,7 @@ import java.time.Duration
 plugins {
     `java-library`
     id("fabric-loom") version "1.14.10"
+    id("checkstyle")
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
@@ -232,4 +233,17 @@ sourceSets.named("gametest") {
 
 tasks.named("compileGametestJava") {
     dependsOn(sharedGameTestSources)
+}
+
+/* ── Static analysis: same tool version and config as the root project ──── */
+
+checkstyle {
+    toolVersion = "10.21.0"
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = false
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
 }

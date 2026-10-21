@@ -1,5 +1,6 @@
 //? if >=26.1 {
-/*package li.cil.oc2.client.model;
+/*
+package li.cil.oc2.client.model;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.model.data.ModelProperty;
@@ -12,6 +13,7 @@ public final class BusCableModelTypes {
     private BusCableModelTypes() {}
 }
 *///?} else {
+
 package li.cil.oc2.client.model;
 
 import net.minecraft.client.resources.model.BakedModel;

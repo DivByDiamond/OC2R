@@ -1,7 +1,7 @@
 package li.cil.oc2.common.entity.robot;
 
-import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import java.util.List;
+import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;

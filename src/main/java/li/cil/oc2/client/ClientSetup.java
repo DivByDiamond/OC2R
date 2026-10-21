@@ -1,6 +1,7 @@
 package li.cil.oc2.client;
 
 import java.util.List;
+import li.cil.oc2.client.audio.SoundClientManager;
 import li.cil.oc2.client.gui.screen.computer.ComputerContainerScreen;
 import li.cil.oc2.client.gui.screen.computer.ComputerTerminalScreen;
 import li.cil.oc2.client.gui.screen.keyboard.KeyboardScreen;
@@ -25,7 +26,6 @@ import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.container.Containers;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.platform.ClientRegistrar;
-import li.cil.oc2.client.audio.SoundClientManager;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.CommonEvents;
 

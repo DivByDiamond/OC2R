@@ -1,15 +1,19 @@
 package li.cil.oc2.data.recipe;
 
+//? if >=26.1 {
+/*import net.minecraft.core.HolderGetter;
+*///?}
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
 //? if >=26.1 {
-/*import net.minecraft.core.HolderGetter;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStackTemplate;
+/*import net.minecraft.world.item.Item;
 *///?}
+import net.minecraft.world.item.ItemStack;
+//? if >=26.1 {
+/*import net.minecraft.world.item.ItemStackTemplate;
+*///?}
+import net.minecraft.world.level.ItemLike;
 
 /**
  * Recipe builder factories that hide the 26.x change where builders need an item lookup. On 26.x

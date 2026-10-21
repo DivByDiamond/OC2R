@@ -6,15 +6,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
-//? if >=26.1 {
-/*
 //? if >=26.1 && <26.2 {
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-//?}
-*///?} else {
-import net.minecraft.client.renderer.GameRenderer;
-//?}
+/*import net.minecraft.client.renderer.rendertype.RenderTypes;
+*///?}
 //? if <26.1 {
+import net.minecraft.client.renderer.GameRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 //?}

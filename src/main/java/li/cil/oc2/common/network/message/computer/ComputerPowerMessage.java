@@ -5,13 +5,12 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
-
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import li.cil.oc2.common.vm.PowerAction;
 
 public record ComputerPowerMessage(BlockPos pos, PowerAction action) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, ComputerPowerMessage> STREAM_CODEC =
@@ -47,6 +46,8 @@ public record ComputerPowerMessage(BlockPos pos, PowerAction action) implements 
                         case SHUTDOWN -> computer.terminalManager.shutdown();
                         case REBOOT -> computer.terminalManager.reboot();
                         case POWER_OFF -> computer.terminalManager.stop();
+                        // All PowerAction values are handled above; the default keeps the switch exhaustive.
+                        default -> {}
                     }
                 });
     }

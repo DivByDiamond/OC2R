@@ -5,14 +5,15 @@ import li.cil.oc2.client.renderer.projector.ProjectorDepthRenderer;
 //? if <26.1 {
 import net.minecraft.client.renderer.FogRenderer;
 //?}
+//? if >=26.1 {
+/*import net.minecraft.util.TriState;
+*///?}
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-//? if >=26.1 {
-/*import net.minecraft.util.TriState;
-*///?} else {
+//? if <26.1 {
 import net.neoforged.neoforge.common.util.TriState;
 //?}
 

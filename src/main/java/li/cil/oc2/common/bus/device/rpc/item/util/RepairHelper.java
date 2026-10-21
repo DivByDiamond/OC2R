@@ -1,11 +1,12 @@
 package li.cil.oc2.common.bus.device.rpc.item.util;
 
 import javax.annotation.Nullable;
-import net.minecraft.world.item.ItemStack;
 //? if >=26.1 {
 /*import li.cil.oc2.common.config.Tiers;
 import net.minecraft.core.component.DataComponents;
-*///?} else {
+*///?}
+import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
 //?}
