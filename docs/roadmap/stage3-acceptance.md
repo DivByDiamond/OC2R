@@ -2,7 +2,11 @@
 
 Stage 3 is complete for the four supported targets (verified 2026-10-20):
 NeoForge 1.21.1, 26.1.2 and 26.2, and Fabric 1.21.1. Fabric 26.x and the
-six-target release matrix remain separate work.
+six-target release matrix remain separate work. The stage is closed as
+implementation and acceptance; the remaining tail — the repository-wide
+`checkstyleMain`, CI confirmation of the branch and documentation sync — moved
+to Stage 4 Wave A (see
+[multiloader.md](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)).
 
 ## Automated checks
 
@@ -244,6 +248,22 @@ added to production sources. Both clients were saved and closed after checking.
 Earlier user-initiated Java stops are not OOM evidence; any later QA graphics
 process cleanup happened only after the integrated server had saved all worlds
 and unloaded its configs.
+
+## Known limitations
+
+These are accepted limitations of the four verified targets, not open defects:
+
+- Legacy worlds: grouped monitor/keyboard state that was already overwritten
+  under the old flat provider key is not recovered by a warm reload — one cold
+  restart of the computer establishes a complete new snapshot; new snapshots are
+  correct (see "The subsequent real reload exposed a persistence collision" and
+  "Completed live follow-up (2026-10-20)" above).
+- Projector shadows for entities and particles are computed from bounding boxes
+  and billboard bounds, not from the exact model mesh; exact entity mesh shadows
+  are not implemented (see "Client acceptance" above).
+- The manual content audit ([../MANUAL_CONTENT_AUDIT.md](../MANUAL_CONTENT_AUDIT.md))
+  did not include refreshing the Chinese translation (see "Implementation"
+  below).
 
 ## Implementation
 
