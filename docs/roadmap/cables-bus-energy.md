@@ -38,4 +38,5 @@ preserving installed interfaces and avoiding neighbor chunk queries.
 Three GameTests cover six directions, interface priority, symmetric link removal,
 and legacy state repair. Real 26.1.2 baked-model and world checks confirm the
 support rod is gone and occupied faces retain their interface. Before/after
-screenshots and reports are in `build/reports/cable-qa/`.
+screenshots and reports are in `build/reports/cable-qa/`. The user-visible
+change is recorded in `CHANGELOG.md` (Unreleased, Fixed).

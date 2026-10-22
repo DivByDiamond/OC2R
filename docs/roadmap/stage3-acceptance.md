@@ -3,10 +3,11 @@
 Stage 3 is complete for the four supported targets (verified 2026-10-20):
 NeoForge 1.21.1, 26.1.2 and 26.2, and Fabric 1.21.1. Fabric 26.x and the
 six-target release matrix remain separate work. The stage is closed as
-implementation and acceptance; the remaining tail — the repository-wide
-`checkstyleMain`, CI confirmation of the branch and documentation sync — moved
-to Stage 4 Wave A (see
+implementation and acceptance; the remaining tail — CI confirmation of the
+branch and documentation sync — moved to Stage 4 Wave A (see
 [multiloader.md](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion)).
+The other tail item, the repository-wide `checkstyleMain`, is closed since
+2026-10-21 (see "Automated checks" below).
 
 ## Automated checks
 
@@ -18,8 +19,8 @@ bash scripts/verify-stage3.sh --console=plain
 
 Final verification completed with exit status 0: 543 main and 17 core unit tests
 on each NeoForge version (1,680 total), and server GameTests 38/38 (1.21.1),
-40/40 (26.1.2), 40/40 (26.2) and 56/56 (Fabric 1.21.1). All four assemblies and
-both 26.x data generators passed. Fresh JARs contain no temporary QA classes.
+40/40 (26.1.2), 40/40 (26.2) and 56/56 (Fabric 1.21.1) — 174 in total. All four
+assemblies and both 26.x data generators passed. Fresh JARs contain no temporary QA classes.
 The final matrix was repeated after the PMD cleanup with exit status 0; its log
 is ignored `build/stage3-qa/verification-post-pmd-final.log`.
 For this local repeat, temporary init scripts selected disposable worlds on a
@@ -53,10 +54,15 @@ All four assemblies, 1,680 unit tests and the three `checkstyleTest` tasks passe
 in the same successful invocation; see ignored
 `build/stage3-qa/pmd-verification-final.log`.
 
-The separate repository-wide `checkstyleMain` run still reports import-order
-and formatting findings; see ignored
-`build/stage3-qa/pmd-quality-verification-final.log`. This PMD completion does not
-claim that every `build` task or all static-analysis tools pass.
+The separate repository-wide `checkstyleMain` run is green since 2026-10-21:
+0 findings on the 1.21.1, 26.1.2 and 26.2 nodes, 0 on the three `core` nodes
+and 0 on the `fabric` module, which is covered by Checkstyle for the first
+time. The counts in the ignored log
+`build/stage3-qa/pmd-quality-verification-final.log` (45 findings on 1.21.1,
+183 on 26.1.2 and 171 on 26.2 — `CustomImportOrder`, `EmptyLineSeparator`,
+`OneStatementPerLine`, `MissingSwitchDefault`) are the historical state
+before the import cleanup. This PMD completion does not claim that every
+`build` task or all static-analysis tools pass.
 
 Check the server logs as well as test counts. A test can report success while
 the VM worker logs an exception. In particular, no `Payload ... may not be sent

@@ -2,11 +2,11 @@
 
 ## Code Style
 
-- **Java 21**, NeoForge, Gradle
+- **Java 21** (the 26.1.2 and 26.2 nodes build with Java 25), **NeoForge** and **Fabric**, Gradle
 - **≤200 lines per file**, **≤4 files per folder** (Single Responsibility Principle)
 - **Comments**: `//` comments are allowed for complex logic, tricky edge cases, and important modules where intent is not obvious. Keep them concise and meaningful; avoid redundant or obvious comments.
 - **JavaDoc** on public API methods
-- **No SPDX headers**
+- **No SPDX headers** in the code we write ourselves. Vendored or imported files of third-party projects (for example the MIT-licensed Markdown Manual, see `LICENSE-MarkdownManual`) keep their original license headers and attribution — the license of the imported project requires them.
 - **Build before commit**: `./gradlew :1.21.1:build :fabric:1.21.1:build`
 
 ## Project Layout
@@ -75,7 +75,7 @@ This is not a reason to reject a PR - it just needs review with that in mind, th
 - `//` comments only where they explain complex logic or important modules
 - Public API has JavaDoc
 - ≤200 lines per file, ≤4 files per folder
-- No SPDX headers
+- No SPDX headers in new code (vendored or imported third-party files keep their own license headers)
 - AI tool usage disclosed in the PR description, if any was used
 
 ## Committed Binaries

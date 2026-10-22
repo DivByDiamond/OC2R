@@ -229,10 +229,12 @@ EOF and checks a close-delimited response body after the fix. A fresh RV64
 client booted from the previous candidate also fetched an HTTP response from
 another real VirtIO-networked guest, saved it and printed the exact
 `HTTP-MOCK-PASS` body. In Minecraft 26.1.2, the current kernel then fetched
-`http://185.176.94.38:18080/oc2r` through the host adapter, wrote the 53-byte
+`http://<demo-server>:18080/oc2r` through the host adapter, wrote the 53-byte
 body to the relative path `internet.txt`, and `cat internet.txt` printed both
 expected lines. The same world verified TCP echo between Onyx guests over the
-visible blue cable. Logs and screenshots are under `build/demo-qa/`.
+visible blue cable. Logs and screenshots are under `build/demo-qa/`. The real
+demo server address and the guest commands that reach it are kept in the local,
+untracked `DEMO_LOCAL.md`.
 
 The host TCP EOF regression was verified separately: all three
 `DefaultSessionLayerEofTest` cases failed before the adapter fix (immediate EOF
