@@ -14,7 +14,12 @@ import net.minecraft.world.level.material.MapColor;
 
 public final class SpeakerBlock extends Block implements EntityBlock {
     public SpeakerBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
     }
 
     @Override

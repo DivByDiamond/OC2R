@@ -32,7 +32,9 @@ import net.minecraft.network.codec.StreamCodec;
  * single-character echo therefore costs a handful of bytes per changed row instead of the
  * former fixed 37 bytes per cell.
  */
-@SuppressWarnings("PMD.CyclomaticComplexity") // class-aggregate complexity is high because the diff touches every facet of terminal state (rows, cursor, modes, bell, palette); each is a small focused method
+// class-aggregate complexity is high because the diff touches every facet of terminal state
+// (rows, cursor, modes, bell, palette); each is a small focused method
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public final class TerminalDiff {
     // Attribute byte: which non-default fields follow the codepoint.
     private static final int ATTR_FG_EXPLICIT = 1;
@@ -330,7 +332,8 @@ public final class TerminalDiff {
                     terminal.altStyles[index]);
         }
         return new Cell(
-                terminal.buffer[index], terminal.colors[index], terminal.colorsBackground[index], terminal.styles[index]);
+                terminal.buffer[index], terminal.colors[index], terminal.colorsBackground[index],
+                terminal.styles[index]);
     }
 
     private static void writeCell(final ByteBuffer buf, final Cell cell) {
@@ -448,7 +451,8 @@ public final class TerminalDiff {
      * xterm/tmux scrollback). Otherwise every incoming diff would yank a scrolled-back view
      * back to the bottom, making scrollback review impossible while output streams.
      */
-    public static void apply(final Terminal terminal, final Snapshot s) { // NOPMD: NPath — ops replay + view-anchoring branches over the snapshot fields, same shape as Terminal.resizeHeight
+    // NPath — ops replay + view-anchoring branches over the snapshot fields, same shape as Terminal.resizeHeight
+    public static void apply(final Terminal terminal, final Snapshot s) { // NOPMD
         // The user's scrollback position BEFORE this snapshot, for the anchoring rule below.
         final int preLrd = terminal.lastRowToDisplay;
         final int preLrdMax = terminal.lastRowToDisplayMax;
@@ -661,10 +665,10 @@ public final class TerminalDiff {
     private static DecodedCell readCell(final ByteBuffer buf) {
         final int ch = getVarInt(buf);
         final int attr = buf.get() & 0xFF;
-        final ColorData fg =
-                (attr & ATTR_FG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_FOREGROUND_COLOR.copy();
-        final ColorData bg =
-                (attr & ATTR_BG_EXPLICIT) != 0 ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
+        final ColorData fg = (attr & ATTR_FG_EXPLICIT) != 0
+                ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_FOREGROUND_COLOR.copy();
+        final ColorData bg = (attr & ATTR_BG_EXPLICIT) != 0
+                ? unpackColor(getVarInt(buf)) : TerminalColors.DEFAULT_BACKGROUND_COLOR.copy();
         final byte style =
                 (attr & ATTR_STYLE_EXPLICIT) != 0 ? buf.get() : TerminalColors.DEFAULT_STYLE;
         return new DecodedCell(ch, fg, bg, style);

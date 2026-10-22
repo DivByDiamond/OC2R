@@ -149,7 +149,8 @@ public final class ProjectorPipelineRenderer {
             final LevelRenderer renderer,
             final CameraRenderState camera,
             final Matrix4fc mainView,
-            final SectionRenderDispatcher.RenderSection[] sections) { // NOPMD - This parameter is a complete fixed-shape array, not a variable argument list.
+            // This parameter is a complete fixed-shape array, not a variable argument list.
+            final SectionRenderDispatcher.RenderSection[] sections) { // NOPMD
         if (ProjectorDepthRenderer.VISIBLE_PROJECTORS.isEmpty()) return;
         final Minecraft minecraft = Minecraft.getInstance();
         final RenderTarget main = minecraft.getMainRenderTarget();
@@ -160,27 +161,33 @@ public final class ProjectorPipelineRenderer {
         ProjectorDepthRenderer.VISIBLE_PROJECTORS.clear();
         projectors.sort(Comparator.comparingDouble(entry -> entry.worldPos().distanceToSqr(camera.pos)));
         if (depthTarget == null) depthTarget = new TextureTarget("oc2r projector depth", 512, 512, true);
-        final Matrix4f inverseMain = new Matrix4f(mainProjection != null ? mainProjection : camera.projectionMatrix).mul(mainView).invert();
+        final Matrix4f inverseMain = new Matrix4f(mainProjection != null ? mainProjection : camera.projectionMatrix)
+                .mul(mainView).invert();
         try {
             for (int index = 0; index < Math.min(projectors.size(), ModShaders.MAX_PROJECTORS); index++) {
                 final var entry = projectors.get(index);
                 if (entry.projector().isRemoved() || !entry.projector().hasEnergy()) continue;
-                final Matrix4f projectorView = new Matrix4f() // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f projectorView = new Matrix4f() // NOPMD
                         .rotationY((float) Math.toRadians(entry.yRot() + 180))
                         .translate((float) (camera.pos.x - entry.worldPos().x),
                                 (float) (camera.pos.y - entry.worldPos().y),
                                 (float) (camera.pos.z - entry.worldPos().z));
-                final Matrix4f projectorCamera = new Matrix4f(PROJECTION).mul(projectorView); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final Frustum frustum = new Frustum(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                        new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)), PROJECTION); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f projectorCamera = new Matrix4f(PROJECTION).mul(projectorView); // NOPMD
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Frustum frustum = new Frustum(// NOPMD
+                        new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)), PROJECTION); // NOPMD
                 frustum.prepare(entry.worldPos().x, entry.worldPos().y, entry.worldPos().z);
                 visible.clear();
                 for (final var section : sections) {
                     if (section != null && frustum.isVisible(section.getBoundingBox())) visible.add(section);
                 }
                 final ChunkSectionsToRender chunks = renderer.prepareChunkRenders(projectorView);
-                renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos, projectorCamera);
-                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum, entry.worldPos(), camera);
+                renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos,
+                        projectorCamera);
+                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum,
+                        entry.worldPos(), camera);
                 final RenderInfo frame = frame(entry.projector());
                 entry.projector().onRendering();
                 composite(main, inverseMain, projectorCamera, frame);
@@ -224,7 +231,8 @@ public final class ProjectorPipelineRenderer {
                         ? quad.getQuadSize(1f) : box.getXsize() / 2;
                 final Vec3 center = box.getCenter();
                 if (center.distanceToSqr(projectorPos) > maxDistanceSqr) continue;
-                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD
                 sprites.add(new double[] {center.x, center.y, center.z, half});
             }
         }
@@ -243,7 +251,8 @@ public final class ProjectorPipelineRenderer {
         final List<AABB> boxes = occluders.boxes();
         final var device = RenderSystem.getDevice();
         try (ByteBufferBuilder bytes = new ByteBufferBuilder(occluders.size() * 24 * 12)) {
-            final BufferBuilder builder = new BufferBuilder(bytes, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            final BufferBuilder builder = new BufferBuilder(bytes, VertexFormat.Mode.QUADS,
+                    DefaultVertexFormat.POSITION);
             for (final AABB box : boxes) addBox(builder, box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z));
             for (final double[] sprite : occluders.sprites()) addSprite(builder, sprite, projectorPos, cameraPos);
             try (MeshData mesh = builder.buildOrThrow();
@@ -312,8 +321,10 @@ public final class ProjectorPipelineRenderer {
             pass.setUniform("Globals", RenderSystem.getGlobalSettingsUniform());
             pass.setUniform("Projection", projection);
             final var indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-            final GpuBuffer indexBuffer = chunks.maxIndicesRequired() == 0 ? null : indices.getBuffer(chunks.maxIndicesRequired());
-            for (final ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}) {
+            final GpuBuffer indexBuffer = chunks.maxIndicesRequired() == 0
+                    ? null : indices.getBuffer(chunks.maxIndicesRequired());
+            for (final ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID,
+                    ChunkSectionLayer.CUTOUT}) {
                 pass.setPipeline(layer == ChunkSectionLayer.SOLID ? DEPTH_SOLID : DEPTH_CUTOUT);
                 if (layer == ChunkSectionLayer.CUTOUT) {
                     pass.bindTexture("Sampler0", chunks.textureView(),
@@ -333,7 +344,8 @@ public final class ProjectorPipelineRenderer {
         final var device = RenderSystem.getDevice();
         try (MemoryStack stack = MemoryStack.stackPush();
                 GpuBuffer matrices = device.createBuffer(() -> "oc2r projector matrices", GpuBuffer.USAGE_UNIFORM,
-                        Std140Builder.onStack(stack, UNIFORM_SIZE).putMat4f(inverseMain).putMat4f(projectorCamera).get());
+                        Std140Builder.onStack(stack, UNIFORM_SIZE)
+                                .putMat4f(inverseMain).putMat4f(projectorCamera).get());
                 RenderPass pass = device.createCommandEncoder().createRenderPass(
                         () -> "oc2r projector composite", main.getColorTextureView(), OptionalInt.empty())) {
             pass.setPipeline(COMPOSITE);
@@ -544,7 +556,8 @@ public final class ProjectorPipelineRenderer {
         for (int x = center.x() - radius; x <= center.x() + radius; x++) {
             for (int z = center.z() - radius; z <= center.z() + radius; z++) {
                 for (int y = area.minSectionY(); y <= area.maxSectionY(); y++) {
-                    final var section = area.getRenderSectionAt(new BlockPos(x << 4, y << 4, z << 4)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                    // Each iteration owns distinct geometry, coordinates or serialized state.
+                    final var section = area.getRenderSectionAt(new BlockPos(x << 4, y << 4, z << 4)); // NOPMD
                     if (section != null) sections.add(section);
                 }
             }
@@ -579,25 +592,34 @@ public final class ProjectorPipelineRenderer {
             for (int index = 0; index < Math.min(projectors.size(), ModShaders.MAX_PROJECTORS); index++) {
                 final var entry = projectors.get(index);
                 if (entry.projector().isRemoved() || !entry.projector().hasEnergy()) continue;
-                final Matrix4f rotation = new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final Matrix4f projectorView = new Matrix4f(rotation) // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f rotation =
+                        new Matrix4f().rotationY((float) Math.toRadians(entry.yRot() + 180)); // NOPMD
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f projectorView = new Matrix4f(rotation) // NOPMD
                         .translate((float) (camera.pos.x - entry.worldPos().x),
                                 (float) (camera.pos.y - entry.worldPos().y),
                                 (float) (camera.pos.z - entry.worldPos().z));
-                final Matrix4f projectorCamera = new Matrix4f(projectorProjection).mul(projectorView); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final Frustum frustum = new Frustum(rotation, CULL_PROJECTION); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Matrix4f projectorCamera = new Matrix4f(projectorProjection).mul(projectorView); // NOPMD
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Frustum frustum = new Frustum(rotation, CULL_PROJECTION); // NOPMD
                 frustum.prepare(entry.worldPos().x, entry.worldPos().y, entry.worldPos().z);
                 visible.clear();
                 for (final var section : sections) {
                     if (frustum.isVisible(section.getBoundingBox())) visible.add(section);
                 }
                 final ChunkSectionsToRender chunks = renderer.prepareChunkRenders(projectorView);
-                renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos, projectorCamera);
-                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum, entry.worldPos(), camera);
+                renderDepth(chunks, occluders(frustum, entry.worldPos()), entry.worldPos(), camera.pos,
+                        projectorCamera);
+                ProjectorBlockEntityDepth.render(depthTarget, projectorCamera, visible, frustum,
+                        entry.worldPos(), camera);
                 final RenderInfo frame = frame(entry.projector());
                 entry.projector().onRendering();
                 // Direction from a surface towards the projector: the view space +z axis in world space.
-                final Vector3f axis = rotation.transpose(new Matrix4f()).transformDirection(new Vector3f(0, 0, 1)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final Vector3f axis = rotation.transpose(new Matrix4f()) // NOPMD
+                        .transformDirection(new Vector3f(0, 0, 1)); // NOPMD
                 composite(main, inverseMain, projectorCamera, axis, frame);
             }
         } finally {
@@ -639,7 +661,8 @@ public final class ProjectorPipelineRenderer {
                         ? quad.getQuadSize(1f) : box.getXsize() / 2;
                 final Vec3 center = box.getCenter();
                 if (center.distanceToSqr(projectorPos) > maxDistanceSqr) continue;
-                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                if (!frustum.isVisible(new AABB(center, center).inflate(half))) continue; // NOPMD
                 sprites.add(new double[] {center.x, center.y, center.z, half});
             }
         }
@@ -664,8 +687,10 @@ public final class ProjectorPipelineRenderer {
             final Occluders occluders, final Vec3 projectorPos, final Vec3 cameraPos) {
         if (occluders.isEmpty()) return null;
         try (ByteBufferBuilder bytes = new ByteBufferBuilder(occluders.size() * 24 * 12)) {
-            final BufferBuilder builder = new BufferBuilder(bytes, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION);
-            for (final AABB box : occluders.boxes()) addBox(builder, box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z));
+            final BufferBuilder builder = new BufferBuilder(bytes, PrimitiveTopology.QUADS,
+                    DefaultVertexFormat.POSITION);
+            for (final AABB box : occluders.boxes()) addBox(builder,
+                    box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z));
             for (final double[] sprite : occluders.sprites()) addSprite(builder, sprite, projectorPos, cameraPos);
             try (MeshData mesh = builder.buildOrThrow()) {
                 final GpuBuffer vertices = RenderSystem.getDevice().createBuffer(
@@ -733,7 +758,8 @@ public final class ProjectorPipelineRenderer {
             final int indicesRequired = Math.max(chunks.maxIndicesRequired(),
                     occluderMesh == null ? 0 : occluderMesh.indexCount());
             final GpuBuffer indexBuffer = indicesRequired == 0 ? null : indices.getBuffer(indicesRequired);
-            for (final ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}) {
+            for (final ChunkSectionLayer layer : new ChunkSectionLayer[] {ChunkSectionLayer.SOLID,
+                    ChunkSectionLayer.CUTOUT}) {
                 pass.setPipeline(layer == ChunkSectionLayer.SOLID ? DEPTH_SOLID : DEPTH_CUTOUT);
                 if (layer == ChunkSectionLayer.CUTOUT) {
                     pass.bindTexture("Sampler0", chunks.textureView(),

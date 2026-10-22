@@ -166,6 +166,38 @@
         <exclude name="FieldNamingConventions"/>
     </rule>
 
+    <!--
+        AvoidDollarSigns: the mixin classes of the Fabric module prefix their injected members
+        with "oc2r$" on purpose, so that they cannot collide with a vanilla or a foreign method
+        name in the class they are mixed into. The rule stays active for every other file: the
+        scope below names the files of the module that use the prefix.
+
+        The scope is by file name (pmd:fileName()), like the other file scopes of this ruleset.
+        One name exists in both trees: ServerChunkCacheMixin.java, whose NeoForge counterpart
+        carries no dollar sign, so excluding it does not hide anything today.
+    -->
+    <rule ref="category/java/codestyle.xml/AvoidDollarSigns">
+        <properties>
+            <property name="xpath" value="//ClassDeclaration[contains(@SimpleName, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))] | //EnumDeclaration[contains(@SimpleName, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))] | //AnnotationTypeDeclaration[contains(@SimpleName, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))] | //RecordDeclaration[contains(@SimpleName, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))] | //VariableId[contains(@Name, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))] | //MethodDeclaration[contains(@Name, '$')][not(ends-with(pmd:fileName(), 'ClientPacketListenerMixin.java') or ends-with(pmd:fileName(), 'EntityMixin.java') or ends-with(pmd:fileName(), 'EntityRendererMixin.java') or ends-with(pmd:fileName(), 'FogRendererMixin.java') or ends-with(pmd:fileName(), 'GuiMixin.java') or ends-with(pmd:fileName(), 'LevelChunkClientMixin.java') or ends-with(pmd:fileName(), 'LevelChunkMixin.java') or ends-with(pmd:fileName(), 'MinecraftPickBlockMixin.java') or ends-with(pmd:fileName(), 'PersistentDataHolder.java') or ends-with(pmd:fileName(), 'ServerChunkCacheMixin.java') or ends-with(pmd:fileName(), 'ServerPlayerGameModeMixin.java') or ends-with(pmd:fileName(), 'SoundEngineMixin.java'))]"/>
+        </properties>
+    </rule>
+
+    <!--
+        MethodNamingConventions: the "oc2r$" prefix of the Fabric mixin members does not match
+        the camel case pattern of the rule. The pattern is widened by "$", so that the rule does
+        not fight the deliberate mixin prefix. Where a dollar sign is allowed at all is decided by
+        AvoidDollarSigns above, whose file scope names the files that use the prefix.
+
+        Note that the rule is implemented in Java, not as an XPath rule, so it cannot be narrowed
+        to a file scope the way AvoidDollarSigns is.
+    -->
+    <rule ref="category/java/codestyle.xml/MethodNamingConventions">
+        <properties>
+            <property name="methodPattern" value="[a-z][a-zA-Z0-9$]*"/>
+            <property name="staticPattern" value="[a-z][a-zA-Z0-9$]*"/>
+        </properties>
+    </rule>
+
     <rule ref="category/java/design.xml/CyclomaticComplexity">
         <properties>
             <property name="classReportLevel" value="100"/>

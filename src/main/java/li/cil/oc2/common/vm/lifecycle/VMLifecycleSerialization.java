@@ -63,7 +63,8 @@ final class VMLifecycleSerialization {
         }
     }
 
-    private static void prepareRootFilesystem(final AbstractVirtualMachine vm, final CompoundTag state) throws IOException {
+    private static void prepareRootFilesystem(final AbstractVirtualMachine vm, final CompoundTag state)
+            throws IOException {
         // Ceres restores sparse pages into an existing backing image. Construct that image first;
         // otherwise an Onyx overlay could be restored without its immutable packaged base.
         final var devices = state.get("builtinDevices");

@@ -34,7 +34,9 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
         try (InputStream current = custom ? Files.newInputStream(override)
                         : OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs.img");
                 InputStream legacy = OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs-20261016.img")) {
-            if (current == null || legacy == null) throw new IllegalStateException("Bundled OnyxOS root image is missing");
+            if (current == null || legacy == null) {
+                throw new IllegalStateException("Bundled OnyxOS root image is missing");
+            }
             if (custom) LOGGER.info("OnyxOS: using override {}", override);
             return new VersionedRootImages(current.readAllBytes(), legacy.readAllBytes(),
                     config.resolve("root-images"), custom);

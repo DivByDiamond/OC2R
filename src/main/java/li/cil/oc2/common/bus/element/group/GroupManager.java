@@ -31,7 +31,8 @@ public class GroupManager<E extends GroupEntry, Q> {
             saveGroup(registries, i);
 
             // NOPMD: a distinct sideTag per group is required as each is added to the list
-            final CompoundTag sideTag = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
+            // allocation depends on loop iteration / per-item state
+            final CompoundTag sideTag = new CompoundTag(); // NOPMD
             //? if >=26.1 {
             /*sideTag.store(GROUP_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, element.groupIds[i]);
             *///?} else {

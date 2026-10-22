@@ -36,7 +36,8 @@ public final class MachineTerminalWidget {
     private static final int MARGIN_SIZE = 8;
     static final int TERMINAL_X = MARGIN_SIZE;
     static final int TERMINAL_Y = MARGIN_SIZE;
-    static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2; // base height; dynamic height scales within the fixed widget
+    // base height; dynamic height scales within the fixed widget
+    static final int TERMINAL_HEIGHT = Terminal.HEIGHT * Terminal.CHAR_HEIGHT / 2;
 
     public static final int WIDTH = Sprites.TERMINAL_SCREEN.width;
     public static final int HEIGHT = Sprites.TERMINAL_SCREEN.height;

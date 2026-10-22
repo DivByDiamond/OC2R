@@ -27,7 +27,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-@SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
+@SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+        justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
 public final class BlockEntities {
     public static final Supplier<BlockEntityType<BusCableBlockEntity>>
             BUS_CABLE = register(Blocks.BUS_CABLE, BusCableBlockEntity::new);

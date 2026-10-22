@@ -62,7 +62,8 @@ public final class BusCableModelHooks {
                 final BakedModel model = shapes.getBlockModel(facadeState);
                 final ModelData data = model.getModelData(owner.getLevel(), owner.getBlockPos(), facadeState, current);
                 return ModelData.builder()
-                        .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
+                        .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY,
+                                new BusCableModelTypes.BusCableFacade(facadeState, model, data))
                         .build();
             }
         }

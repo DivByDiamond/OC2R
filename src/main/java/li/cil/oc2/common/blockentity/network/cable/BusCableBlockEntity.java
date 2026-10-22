@@ -213,13 +213,16 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
             // Old saves could infer half-links without owning a cable. With HAS_CABLE=false,
             // recomputation preserves interfaces and never queries or loads neighboring chunks.
             final BlockState repaired = BusCableStateProperties.recomputeConnections(level, getBlockPos(), state);
-            if (repaired != state) { // NOPMD - Block states are canonical; compare their identities. // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+            // Block states are canonical; compare their identities.
+            // Instance identity is required for ownership, canonical states and recursion guards.
+            if (repaired != state) { // NOPMD
                 level.setBlock(getBlockPos(), repaired, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             }
         }
         for (final var side : Direction.values()) {
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
-            final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state
+            // allocation depends on loop iteration / per-item state
+            final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD
             neighborListeners[side.get3DDataValue()] = listener;
             Platform.capabilities()
                     .registerBlockCapabilityListener(

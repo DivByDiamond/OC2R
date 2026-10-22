@@ -33,9 +33,10 @@ public abstract class MinecraftPickBlockMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/block/Block;getCloneItemStack("
                             + "Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;"
-                            + "Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/item/ItemStack;"))
+                            + "Lnet/minecraft/world/level/block/state/BlockState;)"
+                            + "Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack oc2r$pickBlock(
-            final Block block, final LevelReader level, final BlockPos pos, final BlockState state) {
+            final Block ignoredBlock, final LevelReader level, final BlockPos pos, final BlockState state) {
         return FabricInteractionHooks.pickBlock(state, hitResult, level, pos, player);
     }
 }

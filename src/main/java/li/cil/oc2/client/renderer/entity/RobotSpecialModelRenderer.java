@@ -24,13 +24,15 @@ public final class RobotSpecialModelRenderer implements NoDataSpecialModelRender
     }
 
     @Override
-    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector,
+            final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
         poseStack.pushPose();
         poseStack.translate(0.5, 0, 0.5);
         // The 6-argument overload exists on 26.1 and 26.2; the foil and outline arguments of the longer
         // overloads differ between them, and an item model needs neither.
         submitNodeCollector.submitModelPart(
-            this.model.root(), poseStack, this.model.renderType(RobotModel.ROBOT_ENTITY_TEXTURE), lightCoords, overlayCoords, null
+            this.model.root(), poseStack, this.model.renderType(RobotModel.ROBOT_ENTITY_TEXTURE),
+            lightCoords, overlayCoords, null
         );
         poseStack.popPose();
     }

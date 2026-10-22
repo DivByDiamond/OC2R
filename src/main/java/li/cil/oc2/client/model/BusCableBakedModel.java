@@ -191,7 +191,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel proxy;
     private final BakedModel[] straightModelByAxis;
 
-    BusCableBakedModel(BakedModel proxy, BakedModel[] straightModelByAxis) { // NOPMD - the array holds one baked model per axis and is always passed as an array.
+    // the array holds one baked model per axis and is always passed as an array.
+    BusCableBakedModel(BakedModel proxy, BakedModel[] straightModelByAxis) { // NOPMD
         this.proxy = proxy;
         this.straightModelByAxis = straightModelByAxis.clone();
     }
@@ -207,7 +208,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         final RenderType layer = RenderType.solid();
 
         if (extraData.has(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY)) {
-            final BusCableModelTypes.BusCableFacade facade = extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
+            final BusCableModelTypes.BusCableFacade facade =
+                    extraData.get(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY);
             if (facade != null) {
                 return facade.model().getQuads(
                         facade.blockState(), side, rand, facade.data(), renderType);
@@ -322,7 +324,8 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
         final ModelData data = model.getModelData(level, pos, facadeState, blockEntityData);
 
         return ModelData.builder()
-                .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY, new BusCableModelTypes.BusCableFacade(facadeState, model, data))
+                .with(BusCableModelTypes.BUS_CABLE_FACADE_PROPERTY,
+                        new BusCableModelTypes.BusCableFacade(facadeState, model, data))
                 .build();
     }
 }

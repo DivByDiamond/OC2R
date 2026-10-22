@@ -126,7 +126,8 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"}) // Ceres serializer API is wildcard-generic; the component type is only known as Class<?>
+    // Ceres serializer API is wildcard-generic; the component type is only known as Class<?>
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private ArrayComponentSerializer createComponentSerializer(
             final String name, final Class<?> componentType) {
         if (componentType.isArray()) {

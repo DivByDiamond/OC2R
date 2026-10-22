@@ -37,12 +37,14 @@ public abstract class PlatformBlockEntity extends BlockEntity {
     //? if >=26.1 {
     /*@Override
     public final net.neoforged.neoforge.model.data.ModelData getModelData() {
-        return getCustomModelData() instanceof final net.neoforged.neoforge.model.data.ModelData data ? data : net.neoforged.neoforge.model.data.ModelData.EMPTY;
+        return getCustomModelData() instanceof final net.neoforged.neoforge.model.data.ModelData data
+                ? data : net.neoforged.neoforge.model.data.ModelData.EMPTY;
     }
     *///?} else {
     @Override
     public final net.neoforged.neoforge.client.model.data.ModelData getModelData() {
-        return getCustomModelData() instanceof final net.neoforged.neoforge.client.model.data.ModelData data ? data : net.neoforged.neoforge.client.model.data.ModelData.EMPTY;
+        return getCustomModelData() instanceof final net.neoforged.neoforge.client.model.data.ModelData data
+                ? data : net.neoforged.neoforge.client.model.data.ModelData.EMPTY;
     }
     //?}
 

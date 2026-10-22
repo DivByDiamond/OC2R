@@ -12,7 +12,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ParticleGroup.class)
 public interface ParticleGroupAccessor {
     @Accessor(value = "particles", remap = false)
-    Queue<? extends Particle> oc2r$getParticles(); // NOPMD - Namespaced Mixin accessor prevents collisions with other mods.
+    // Namespaced Mixin accessor prevents collisions with other mods.
+    Queue<? extends Particle> oc2r$getParticles(); // NOPMD
 }
 *///?} else {
 import net.minecraft.client.particle.ParticleEngine;

@@ -30,9 +30,10 @@ public abstract class LevelChunkClientMixin {
             final Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> original) {
         return vanillaOutput -> original.accept((pos, type, tag) -> {
             final BlockEntity blockEntity = getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
+            // BlockState does not override equals(), so this compares the canonical instances.
             if (blockEntity instanceof final PlatformBlockEntity platform
                     && tag != null
-                    && blockEntity.getType() == type) {
+                    && blockEntity.getType().equals(type)) {
                 platform.handleUpdateTag(tag, level.registryAccess());
             } else {
                 vanillaOutput.accept(pos, type, tag);

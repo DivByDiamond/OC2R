@@ -57,7 +57,8 @@ public abstract class AbstractItemDeviceBusElement
                     .ifPresent(
                             key -> {
                                 // NOPMD - fresh tag needed per exported device
-                                final CompoundTag deviceTag = new CompoundTag(); // NOPMD allocation depends on loop iteration / per-item state
+                                // allocation depends on loop iteration / per-item state
+                                final CompoundTag deviceTag = new CompoundTag(); // NOPMD
                                 entry.getDevice().exportToItemStack(deviceTag);
                                 if (!deviceTag.isEmpty()) {
                                     exportedTag.put(key, deviceTag);

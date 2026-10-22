@@ -70,7 +70,7 @@ public abstract class LevelRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At("TAIL"))
-    private void cleanupDepthRendering(final CallbackInfo ignored) {
+    private void restoreRenderTargets(final CallbackInfo ignored) {
         if (ProjectorDepthRenderer.isIsRenderingProjectorDepth()) {
             cleanupDepthRendering();
         }

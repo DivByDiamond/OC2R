@@ -32,7 +32,8 @@ public final class PcmAudioStream implements AudioStream {
         final int read = buffer.read(out);
         // OpenAL reads the samples through their native address, so the buffer must be direct (a heap
         // buffer crashes the JVM in alBufferData); without data a block of silence keeps the stream alive.
-        final ByteBuffer direct = ByteBuffer.allocateDirect(read > 0 ? read : boundedSize).order(ByteOrder.LITTLE_ENDIAN);
+        final ByteBuffer direct = ByteBuffer.allocateDirect(read > 0 ? read : boundedSize)
+                .order(ByteOrder.LITTLE_ENDIAN);
         direct.put(out, 0, direct.capacity());
         direct.flip();
         return direct;

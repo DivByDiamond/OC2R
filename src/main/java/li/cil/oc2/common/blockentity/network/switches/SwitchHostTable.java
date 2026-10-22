@@ -58,9 +58,11 @@ final class SwitchHostTable {
                     host.getLong("mac"),
                     //?}
                     //? if >=26.1 {
-                    /*new HostEntry(host.getIntOr("side", 0), host.getLongOr("timestamp", 0L))); // NOPMD allocation depends on loop iteration / per-item state
+                    /*new HostEntry(host.getIntOr("side", 0), host.getLongOr("timestamp", 0L))); // NOPMD
+                    // allocation depends on loop iteration / per-item state
                     *///?} else {
-                    new HostEntry(host.getInt("side"), host.getLong("timestamp"))); // NOPMD allocation depends on loop iteration / per-item state
+                    new HostEntry(host.getInt("side"), host.getLong("timestamp"))); // NOPMD
+                    // allocation depends on loop iteration / per-item state
                     //?}
         }
     }

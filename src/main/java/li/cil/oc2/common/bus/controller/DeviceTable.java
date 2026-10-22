@@ -54,7 +54,8 @@ final class DeviceTable {
                                 identifier ->
                         newDeviceIds
                                 .computeIfAbsent(// NOPMD: per-device set
-                                        device, unused -> new HashSet<>()) // NOPMD allocation depends on loop iteration / per-item state
+                                        // allocation depends on loop iteration / per-item state
+                                        device, unused -> new HashSet<>()) // NOPMD
                                 .add(identifier));
             }
         }

@@ -74,7 +74,8 @@ public final class FlashWriterService {
             initialized = true;
             CommonEvents.SERVER_TICK_START.register(server -> {
                 for (final Session session : SESSIONS.values()) {
-                    if (session.player.level().getServer() == server && !valid(session)) { // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                    // Instance identity is required for ownership, canonical states and recursion guards.
+                    if (session.player.level().getServer() == server && !valid(session)) { // NOPMD
                         if (session.player.hasDisconnected()) discard(session);
                         else fail(session, "expired");
                     }
@@ -82,7 +83,8 @@ public final class FlashWriterService {
             });
             CommonEvents.SERVER_STOPPING.register(server -> {
                 for (final Session session : SESSIONS.values()) {
-                    if (session.player.level().getServer() == server) discard(session); // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                    // Instance identity is required for ownership, canonical states and recursion guards.
+                    if (session.player.level().getServer() == server) discard(session); // NOPMD
                 }
             });
         }
@@ -98,7 +100,8 @@ public final class FlashWriterService {
         SESSIONS.put(player.getUUID(), session);
         final ItemStack stack = session.stack;
         final String kind = stack.getItem() instanceof HardDriveItem ? "disk"
-                : stack.getItem() instanceof FlashMemoryItem || stack.getItem() instanceof FlashMemoryWithExternalDataItem
+                : stack.getItem() instanceof FlashMemoryItem
+                        || stack.getItem() instanceof FlashMemoryWithExternalDataItem
                 ? "flash" : "empty";
         reply(session, "open", kind);
         return session.token;
@@ -273,23 +276,27 @@ public final class FlashWriterService {
 
     private static Session find(final ServerPlayer player, final BlockPos position, final UUID token) {
         final Session session = SESSIONS.get(player.getUUID());
-        return session != null && session.player == player && session.token.equals(token) // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+        // Instance identity is required for ownership, canonical states and recursion guards.
+        return session != null && session.player == player && session.token.equals(token) // NOPMD
                 && session.owner.getBlockPos().equals(position) ? session : null;
     }
 
     private static boolean accessible(final ServerPlayer player, final FlashMemoryFlasherBlockEntity owner) {
-        if (player.isSpectator() || !player.mayBuild() || owner.getLevel() != player.level() // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+        // Instance identity is required for ownership, canonical states and recursion guards.
+        if (player.isSpectator() || !player.mayBuild() || owner.getLevel() != player.level() // NOPMD
                 || !owner.getBlockPos().closerToCenterThan(player.position(), 8)) return false;
         final var level = player.level();
         return level.hasChunkAt(owner.getBlockPos()) && level.mayInteract(player, owner.getBlockPos())
-                && !owner.isRemoved() && level.getBlockEntity(owner.getBlockPos()) == owner; // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                // Instance identity is required for ownership, canonical states and recursion guards.
+                && !owner.isRemoved() && level.getBlockEntity(owner.getBlockPos()) == owner; // NOPMD
     }
 
     private static boolean valid(final Session session) {
         return !session.closed && !session.player.hasDisconnected()
                 && System.currentTimeMillis() - session.lastAccess < TIMEOUT
                 && accessible(session.player, session.owner)
-                && session.owner.getDiskItemStack() == session.stack // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                // Instance identity is required for ownership, canonical states and recursion guards.
+                && session.owner.getDiskItemStack() == session.stack // NOPMD
                 && ItemStack.isSameItemSameComponents(session.stack, session.snapshot)
                 && session.stack.getCount() == session.snapshot.getCount();
     }
@@ -340,7 +347,8 @@ public final class FlashWriterService {
      */
     private static final class SessionRegistry {
         // Server thread only; the registry owns the map and confines it to that thread.
-        private final Map<UUID, Session> sessions = new HashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+        // Map ownership is confined to one thread or protected by its explicit monitor.
+        private final Map<UUID, Session> sessions = new HashMap<>(); // NOPMD
 
         Session get(final UUID player) {
             return sessions.get(player);

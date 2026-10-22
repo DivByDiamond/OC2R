@@ -14,7 +14,8 @@ import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class TerminalCharRenderer {
-    static void renderForeground(final FrameState frame, // NOPMD: data-driven render loop (DECSCNM inverse, VT100 blink)
+    // data-driven render loop (DECSCNM inverse, VT100 blink)
+    static void renderForeground(final FrameState frame, // NOPMD
             final Matrix4f matrix,
             final BufferBuilder buffer,
             final int row,
@@ -61,7 +62,8 @@ public class TerminalCharRenderer {
         }
     }
 
-    private static int getForegroundColor(final FrameState frame, // NOPMD: data-driven color-mode switch (boldIsBright, VT100 blink)
+    // data-driven color-mode switch (boldIsBright, VT100 blink)
+    private static int getForegroundColor(final FrameState frame, // NOPMD
             final byte style, final int index,
             final boolean invertBackground, final boolean isBold, final boolean isBlinking, final boolean blinkOff) {
         final ColorData color = selectColor(frame, index, invertBackground);
@@ -265,10 +267,14 @@ public class TerminalCharRenderer {
                 quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
                 quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
             }
-            case 0x23BA -> quad(buffer, matrix, offset, h * SCAN_1_Y, offset + w, h * SCAN_1_Y + t, r, g, b); // ⎺ scan 1
-            case 0x23BB -> quad(buffer, matrix, offset, h * SCAN_3_Y, offset + w, h * SCAN_3_Y + t, r, g, b); // ⎻ scan 3
-            case 0x23BC -> quad(buffer, matrix, offset, h * SCAN_7_Y, offset + w, h * SCAN_7_Y + t, r, g, b); // ⎼ scan 7
-            case 0x23BD -> quad(buffer, matrix, offset, h * SCAN_9_Y, offset + w, h * SCAN_9_Y + t, r, g, b); // ⎽ scan 9
+            case 0x23BA -> quad(buffer, matrix, offset, h * SCAN_1_Y,
+                    offset + w, h * SCAN_1_Y + t, r, g, b); // ⎺ scan 1
+            case 0x23BB -> quad(buffer, matrix, offset, h * SCAN_3_Y,
+                    offset + w, h * SCAN_3_Y + t, r, g, b); // ⎻ scan 3
+            case 0x23BC -> quad(buffer, matrix, offset, h * SCAN_7_Y,
+                    offset + w, h * SCAN_7_Y + t, r, g, b); // ⎼ scan 7
+            case 0x23BD -> quad(buffer, matrix, offset, h * SCAN_9_Y,
+                    offset + w, h * SCAN_9_Y + t, r, g, b); // ⎽ scan 9
             default -> {}
         }
     }

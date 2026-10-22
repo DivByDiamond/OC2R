@@ -32,7 +32,8 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     // NB: linked hash map such that order of parameters in constructor is retained.
     //     This is relevant when assigning default addresses for devices.
     private final Map<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
-            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
+            Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
 
     public final ItemHandler combinedItemHandlers;
 
@@ -42,7 +43,8 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
             // NOPMD - each group requires its own VMItemHandler.
             itemHandlers.put(
                     group.deviceType,
-                    new VMItemHandler(providerSupplier, group.count, group.deviceType)); // NOPMD allocation depends on loop iteration / per-item state
+                    // allocation depends on loop iteration / per-item state
+                    new VMItemHandler(providerSupplier, group.count, group.deviceType)); // NOPMD
         }
 
         combinedItemHandlers =

@@ -16,7 +16,8 @@ public enum Tiers {
     DIAMOND(ToolMaterial.DIAMOND),
     NETHERITE(ToolMaterial.NETHERITE);
 
-    private final ToolMaterial material; // NOPMD - Enum serialization stores the constant name, not its instance fields.
+    // Enum serialization stores the constant name, not its instance fields.
+    private final ToolMaterial material; // NOPMD
 
     Tiers(final ToolMaterial material) {
         this.material = material;

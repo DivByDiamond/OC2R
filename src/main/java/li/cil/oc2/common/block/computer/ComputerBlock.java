@@ -46,13 +46,19 @@ import net.neoforged.api.distmarker.OnlyIn;
 //?}
 
 //? if >=26.1 {
-/*public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock, li.cil.oc2.common.block.BlockTooltipProvider {
+/*public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock,
+        li.cil.oc2.common.block.BlockTooltipProvider {
 *///?} else {
 public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
 //?}
 
     public ComputerBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -160,9 +166,11 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         //?}
                 ComputerBlockInteraction.useItemOn(stack, state, level, pos, player, hand, hitResult, computer);
         //? if >=26.1 {
-        /*return result != InteractionResult.TRY_WITH_EMPTY_HAND ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        /*return result != InteractionResult.TRY_WITH_EMPTY_HAND ? result
+                : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         *///?} else {
-        return result != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        return result != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+                ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         //?}
     }
 

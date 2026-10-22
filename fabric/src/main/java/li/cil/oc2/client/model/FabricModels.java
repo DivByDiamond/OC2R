@@ -83,7 +83,8 @@ public final class FabricModels {
         final Map<String, TextureAtlasSprite> sprites = new ConcurrentHashMap<>();
         for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
             final Material material =
-                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD allocation depends on loop iteration
+                    // allocation depends on loop iteration
+                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD
             sprites.put(name, context.textureGetter().apply(material));
         }
         final ItemTransforms transforms = context.sourceModel() instanceof final BlockModel blockModel

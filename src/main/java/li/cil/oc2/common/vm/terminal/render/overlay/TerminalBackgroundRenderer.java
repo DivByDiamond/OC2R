@@ -72,7 +72,8 @@ public class TerminalBackgroundRenderer {
                         : frame.colors()[index];
     }
 
-    private static int resolveBackground(final FrameState frame, // NOPMD: data-driven color-mode switch (bold-bright, blink)
+    // data-driven color-mode switch (bold-bright, blink)
+    private static int resolveBackground(final FrameState frame, // NOPMD
             final ColorData color,
             final boolean invertBackground,
             final boolean isBold, final boolean isBlinking, final boolean blinkOff) {

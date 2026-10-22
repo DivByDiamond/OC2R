@@ -60,11 +60,13 @@ public final class ComputerTerminalManager implements TerminalUserProvider, ICap
     }
 
     public void openTerminalScreen(final ServerPlayer player) {
-        ComputerTerminalContainer.createServer(computer, computer.energy, computer.virtualMachine.busController, player);
+        ComputerTerminalContainer.createServer(computer, computer.energy,
+                computer.virtualMachine.busController, player);
     }
 
     public void openInventoryScreen(final ServerPlayer player) {
-        ComputerInventoryContainer.createServer(computer, computer.energy, computer.virtualMachine.busController, player);
+        ComputerInventoryContainer.createServer(computer, computer.energy,
+                computer.virtualMachine.busController, player);
     }
 
     public void addTerminalUser(final Player player) {

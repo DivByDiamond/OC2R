@@ -40,7 +40,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
     // ---------------------------------------------------------------------------------------
 
     // Not yet committed net amount per storage, shared by every wrapper over the same storage.
-    private static final Map<EnergyStorage, EnergyJournal> ENERGY_JOURNALS = new WeakHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+    // Map ownership is confined to one thread or protected by its explicit monitor.
+    private static final Map<EnergyStorage, EnergyJournal> ENERGY_JOURNALS = new WeakHashMap<>(); // NOPMD
 
     private static EnergyJournal energyJournal(final EnergyStorage storage) {
         synchronized (ENERGY_JOURNALS) {
@@ -231,7 +232,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
     // One journal per handler, shared by every wrapper over it: wrappers are created per query, and
     // two journals over the same handler would restore their snapshots in the wrong order on abort
     // (the later snapshot already contains the earlier wrapper's changes).
-    private static final Map<ItemHandler, ItemJournal> ITEM_JOURNALS = new WeakHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+    // Map ownership is confined to one thread or protected by its explicit monitor.
+    private static final Map<ItemHandler, ItemJournal> ITEM_JOURNALS = new WeakHashMap<>(); // NOPMD
 
     private static ItemJournal itemJournal(final ItemHandler handler) {
         synchronized (ITEM_JOURNALS) {
@@ -480,7 +482,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
                     handler.fill(operation, FluidHandler.FluidAction.EXECUTE);
                 } else {
                     handler.drain(
-                            new FluidStack(operation.getFluid(), -operation.getAmount()), // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                            // Each iteration owns distinct geometry, coordinates or serialized state.
+                            new FluidStack(operation.getFluid(), -operation.getAmount()), // NOPMD
                             FluidHandler.FluidAction.EXECUTE);
                 }
             }
@@ -558,7 +561,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
                 final FluidResource resource,
                 final int amount,
                 final TransactionContext transaction) {
-            if (resource.isEmpty() || amount <= 0 || resource.getFluid() != getResource(index).getFluid()) { // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+            // Instance identity is required for ownership, canonical states and recursion guards.
+            if (resource.isEmpty() || amount <= 0 || resource.getFluid() != getResource(index).getFluid()) { // NOPMD
                 return 0;
             }
             final FluidStack drained =

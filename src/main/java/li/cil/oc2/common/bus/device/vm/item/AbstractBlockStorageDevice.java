@@ -183,7 +183,8 @@ public abstract class AbstractBlockStorageDevice<B extends BlockDevice, I>
     public static void unmount(final CompoundTag tag) {
         //? if >=26.1 {
         /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
-            BlobStorageCloseHelper.closeBlob(LOGGER, tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow());
+            BlobStorageCloseHelper.closeBlob(LOGGER,
+                    tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow());
         *///?} else {
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             BlobStorageCloseHelper.closeBlob(LOGGER, tag.getUUID(BLOB_HANDLE_TAG_NAME));

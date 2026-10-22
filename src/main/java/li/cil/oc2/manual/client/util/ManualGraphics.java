@@ -51,7 +51,8 @@ public final class ManualGraphics {
 
     public static void tooltip(final GuiGraphics graphics, final Font font,
                                 final java.util.List<net.minecraft.util.FormattedCharSequence> lines,
-                                final net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner positioner,
+                                final net.minecraft.client.gui.screens.inventory.tooltip
+                                        .ClientTooltipPositioner positioner,
                                 final int x, final int y) {
         //? if >=26.1 {
         /*graphics.setTooltipForNextFrame(font, lines, positioner, x, y, true);

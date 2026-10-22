@@ -37,7 +37,7 @@ public final class FabricBusCableModel implements BakedModel {
     private final BakedModel base;
     private final BakedModel[] straightModelByAxis;
 
-    FabricBusCableModel(final BakedModel base, final BakedModel[] straightModelByAxis) {
+    FabricBusCableModel(final BakedModel base, final BakedModel... straightModelByAxis) {
         this.base = base;
         this.straightModelByAxis = straightModelByAxis.clone();
     }

@@ -46,13 +46,16 @@ public final class RecipeBuilders {
                         new ItemStackTemplate(li.cil.oc2.common.item.Items.FLASH_MEMORY_CUSTOM.get()))),
                 li.cil.oc2.common.tags.ItemTags.DEVICES_CPU, java.util.List.of(empty),
                 li.cil.oc2.common.tags.ItemTags.DEVICES_MEMORY, java.util.Collections.nCopies(4, empty),
-                robot ? li.cil.oc2.common.tags.ItemTags.DEVICES_ROBOT_MODULE : li.cil.oc2.common.tags.ItemTags.DEVICES_CARD,
-                        java.util.Collections.nCopies(4, empty),
-                li.cil.oc2.common.tags.ItemTags.DEVICES_HARD_DRIVE, java.util.Collections.nCopies(robot ? 2 : 4, empty)));
+                robot ? li.cil.oc2.common.tags.ItemTags.DEVICES_ROBOT_MODULE
+                : li.cil.oc2.common.tags.ItemTags.DEVICES_CARD,
+                java.util.Collections.nCopies(4, empty),
+                li.cil.oc2.common.tags.ItemTags.DEVICES_HARD_DRIVE,
+                java.util.Collections.nCopies(robot ? 2 : 4, empty)));
         final var components = net.minecraft.core.component.DataComponentPatch.builder()
                 .set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container).build();
         return ShapedRecipeBuilder.shaped(items, RecipeCategory.MISC,
-                new ItemStackTemplate(robot ? li.cil.oc2.common.item.Items.ROBOT.get() : li.cil.oc2.common.item.Items.COMPUTER.get(), components));
+                new ItemStackTemplate(robot ? li.cil.oc2.common.item.Items.ROBOT.get()
+                        : li.cil.oc2.common.item.Items.COMPUTER.get(), components));
         *///?} else {
         return shaped(RecipeCategory.MISC, robot ? li.cil.oc2.common.item.tool.RobotItem.getRobotWithFlash()
                 : li.cil.oc2.common.block.computer.factory.ComputerBlockFactory.getComputerWithFlash());

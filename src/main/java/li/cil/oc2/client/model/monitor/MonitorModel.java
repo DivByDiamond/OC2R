@@ -33,11 +33,13 @@ public final class MonitorModel implements CustomUnbakedBlockStateModel {
 
     @Override
     public BlockStateModel bake(final ModelBaker baker) {
-        final Map<String, Material.Baked> materials = new HashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+        // Map ownership is confined to one thread or protected by its explicit monitor.
+        final Map<String, Material.Baked> materials = new HashMap<>(); // NOPMD
         for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
             materials.put(
                     name,
-                    baker.materials().get(new Material(MonitorModelTypes.texture(name)), DEBUG_NAME)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                    // Each iteration owns distinct geometry, coordinates or serialized state.
+                    baker.materials().get(new Material(MonitorModelTypes.texture(name)), DEBUG_NAME)); // NOPMD
         }
         return new MonitorBakedModel(materials);
     }
@@ -72,7 +74,8 @@ public final class MonitorModel implements IUnbakedGeometry<MonitorModel> {
         for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
             // NOPMD - each iteration requires a distinct Material for its texture name.
             final Material material =
-                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD allocation depends on loop iteration / per-item state
+                    // allocation depends on loop iteration / per-item state
+                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD
             sprites.put(name, spriteGetter.apply(material));
         }
         return new MonitorBakedModel(sprites);

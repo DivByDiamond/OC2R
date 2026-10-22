@@ -29,13 +29,15 @@ import org.joml.Matrix4f;
 
 public final class NetworkCableRenderer {
     private static final Set<NetworkConnectorBlockEntity> connectors =
-            Collections.newSetFromMap(Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
+            Collections.newSetFromMap(Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
     private static final List<NetworkCableConnection> connections = new ArrayList<>();
     private static final Map<NetworkConnectorBlockEntity, List<NetworkCableConnection>>
-            connectionsByConnector = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            connectionsByConnector = Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
         connectors.add(connector);
@@ -195,7 +197,8 @@ public final class NetworkCableRenderer {
                     connections.add(connection);
                     connectionsByConnector
                             .computeIfAbsent(// NOPMD: per-connector list
-                                    connector, unused -> new ArrayList<>()) // NOPMD allocation depends on loop iteration / per-item state
+                                    // allocation depends on loop iteration / per-item state
+                                    connector, unused -> new ArrayList<>()) // NOPMD
                             .add(connection);
                 }
             }

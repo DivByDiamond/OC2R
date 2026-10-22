@@ -601,7 +601,11 @@ spotbugs {
     ignoreFailures.set(false)
     showProgress.set(true)
     excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
-    baselineFile.set(rootProject.file("config/spotbugs/baseline.xml"))
+    // One baseline per node: a baseline entry is matched by instance hash, so the entries of the
+    // 1.21.1 code do not match the same source compiled against 26.x. Nodes without a dedicated
+    // file (1.21.1, core) use the shared baseline.
+    val nodeBaseline = rootProject.file("config/spotbugs/baseline-${property("minecraft_version")}.xml")
+    baselineFile.set(if (nodeBaseline.isFile) nodeBaseline else rootProject.file("config/spotbugs/baseline.xml"))
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
@@ -691,8 +695,10 @@ tasks.register("lintRatchet") {
         ":core:${sc.current.version}:pmdMain", ":core:${sc.current.version}:pmdTest",
         ":core:${sc.current.version}:spotbugsMain", ":core:${sc.current.version}:spotbugsTest",
         // The fabric node only exists for 1.21.1 (Loom does not remap 26.x) and has no test
-        // source set, so only its main sources are linted.
-        ":fabric:1.21.1:checkstyleMain",
+        // source set, so only its main sources are linted. Its SpotBugs task analyses the
+        // module's own classes only (see fabric/build.gradle.kts) and fails the build itself on
+        // any finding, so it needs no count here.
+        ":fabric:1.21.1:checkstyleMain", ":fabric:1.21.1:pmdMain", ":fabric:1.21.1:spotbugsMain",
     )
 
     val baseline = Properties()
@@ -730,6 +736,7 @@ tasks.register("lintRatchet") {
             // fabric module (the same tool config, see fabric/build.gradle.kts). The module has
             // no test source set, so there is no fabricCheckstyleTest report.
             "fabricCheckstyleMain" to count("fabricCheckstyleMain", rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/main.xml"), "error"),
+            "fabricPmdMain" to count("fabricPmdMain", rootProject.file("fabric/versions/1.21.1/build/reports/pmd/main.xml"), "violation"),
         )
 
         var failed = false

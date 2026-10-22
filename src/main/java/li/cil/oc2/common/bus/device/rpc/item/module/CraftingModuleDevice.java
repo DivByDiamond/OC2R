@@ -38,7 +38,8 @@ public final class CraftingModuleDevice extends AbstractItemRPCDevice {
 
     @Callback(
             description =
-                    "Tries to craft once from the crafting grid. Fails if the grid matches no recipe or the result does not fit into the bottom row.",
+                    "Tries to craft once from the crafting grid. Fails if the grid matches no recipe "
+                            + "or the result does not fit into the bottom row.",
             returnValueDescription = "the number of items crafted, or `0` if crafting failed.")
     public int craft() {
         final Level level = entity.level();

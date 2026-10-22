@@ -14,7 +14,8 @@ public final class Wrenches {
     public static boolean isHoldingWrench(final Entity entity) {
         if (entity instanceof final LivingEntity livingEntity) {
             //? if >=26.1 {
-            /*for (final ItemStack stack : java.util.List.of(livingEntity.getMainHandItem(), livingEntity.getOffhandItem())) {
+            /*for (final ItemStack stack : java.util.List.of(
+                    livingEntity.getMainHandItem(), livingEntity.getOffhandItem())) {
             *///?} else {
             for (final ItemStack stack : livingEntity.getHandSlots()) {
             //?}

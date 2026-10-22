@@ -94,7 +94,8 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             myMacAddress =
                     MacAddressUtils.macFromUuid(
                             //? if >=26.1 {
-                            /*layerState.read(DEVICE_ID_TAG, net.minecraft.core.UUIDUtil.CODEC).orElseThrow(), MAC_PREFIX);
+                            /*layerState.read(DEVICE_ID_TAG, net.minecraft.core.UUIDUtil.CODEC).orElseThrow(),
+                            MAC_PREFIX);
                             *///?} else {
                             layerState.getUUID(DEVICE_ID_TAG), MAC_PREFIX);
                             //?}

@@ -28,7 +28,8 @@ public final class NBTReferenceArraySerializers {
             return list;
         }
 
-        @SuppressWarnings({"unchecked", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.EmptyCatchBlock"}) // legacy ordinal + name fallback is inherently branching
+        // legacy ordinal + name fallback is inherently branching
+        @SuppressWarnings({"unchecked", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.EmptyCatchBlock"})
         @Override
         public Object deserialize(final Tag tag, final Class<?> type, final Object into) {
             final Class<?> componentType = type.getComponentType();

@@ -1,10 +1,9 @@
 package li.cil.oc2.fabric;
 
 import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Queue;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import li.cil.oc2.common.blockentity.PlatformBlockEntity;
 import li.cil.oc2.common.item.tool.WrenchItem;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
@@ -27,15 +26,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * tick of their level.
  */
 public final class FabricBlockEntityHooks {
-    private static final Map<Level, Queue<PlatformBlockEntity>> FRESH =
-            Collections.synchronizedMap(new WeakHashMap<>());
+    // The map and the queues in it are guarded by the lock: a WeakHashMap is not thread-safe and
+    // the queues are plain ArrayDeques. The keys are weak on purpose: a level that is unloaded
+    // must not be kept alive by this map.
+    private static final ReentrantLock FRESH_LOCK = new ReentrantLock();
+    private static final WeakHashMap<Level, Queue<PlatformBlockEntity>> FRESH = new WeakHashMap<>();
 
     private FabricBlockEntityHooks() {
     }
 
     /** Registers the hooks that apply to servers (and the integrated server). */
     public static void register() {
-        ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register((blockEntity, level) -> enqueue(blockEntity, level));
+        ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register(FabricBlockEntityHooks::enqueue);
         ServerTickEvents.START_WORLD_TICK.register(FabricBlockEntityHooks::drain);
         UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
             final ItemStack stack = player.getItemInHand(hand);
@@ -48,21 +50,33 @@ public final class FabricBlockEntityHooks {
 
     static void enqueue(final BlockEntity blockEntity, final Level level) {
         if (blockEntity instanceof final PlatformBlockEntity platform) {
-            synchronized (FRESH) {
+            FRESH_LOCK.lock();
+            try {
                 FRESH.computeIfAbsent(level, key -> new ArrayDeque<>()).add(platform);
+            } finally {
+                FRESH_LOCK.unlock();
             }
         }
     }
 
     static void drain(final Level level) {
-        final Queue<PlatformBlockEntity> queue = FRESH.get(level);
+        final Queue<PlatformBlockEntity> queue;
+        FRESH_LOCK.lock();
+        try {
+            queue = FRESH.get(level);
+        } finally {
+            FRESH_LOCK.unlock();
+        }
         if (queue == null) {
             return;
         }
         while (true) {
             final PlatformBlockEntity blockEntity;
-            synchronized (FRESH) {
+            FRESH_LOCK.lock();
+            try {
                 blockEntity = queue.poll();
+            } finally {
+                FRESH_LOCK.unlock();
             }
             if (blockEntity == null) {
                 return;

@@ -74,7 +74,8 @@ public final class FlashWriterScreen extends Screen {
         addRenderableWidget(new StringWidget(left, top, 300, 16, title, font));
         addRenderableWidget(new StringWidget(left, top + 21, 300, 12, text("inserted_" + kind), font));
         addRenderableWidget(new StringWidget(left, top + 37, 300, 12,
-                Component.translatable("gui.oc2r.flash_writer.capacity", Math.min(capacity, FlashImageUpload.MAX_IMAGE_SIZE) / 1024), font));
+                Component.translatable("gui.oc2r.flash_writer.capacity",
+                        Math.min(capacity, FlashImageUpload.MAX_IMAGE_SIZE) / 1024), font));
         addRenderableWidget(new StringWidget(left, top + 53, 300, 12, text("format_" + kind), font));
         addRenderableWidget(new StringWidget(left, top + 69, 300, 12, text("builtin_hint"), font));
         fileLabel = addRenderableWidget(new StringWidget(left, top + 85, 300, 12, text("no_file"), font));
@@ -300,7 +301,8 @@ public final class FlashWriterScreen extends Screen {
     public void onClose() {
         closed = true;
         closeInput();
-        if (active == this) active = null; // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+        // Instance identity is required for ownership, canonical states and recursion guards.
+        if (active == this) active = null; // NOPMD
         if (!completed) send("cancel");
         super.onClose();
     }

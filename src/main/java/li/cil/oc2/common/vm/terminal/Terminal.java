@@ -449,7 +449,10 @@ public class Terminal {
      * (captureFull) so a RIS reset snapshot always carries the palette even when the revision
      * hasn't moved — otherwise a client that missed an earlier change would keep a stale one.
      */
-    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull") // null is a load-bearing sentinel: the Snapshot record + stream codec use it to mean "palette unchanged this diff" (skip the ~1 KiB payload). An empty array can't express absence, and Optional<int[]> allocates on the hot path.
+    // null is a load-bearing sentinel: the Snapshot record + stream codec use it to mean
+    // "palette unchanged this diff" (skip the ~1 KiB payload). An empty array can't express
+    // absence, and Optional<int[]> allocates on the hot path.
+    @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
     @javax.annotation.Nullable
     public int[] consumePaletteDirty(final boolean force) {
         return networkState.consumePaletteDirty(force, palette256);

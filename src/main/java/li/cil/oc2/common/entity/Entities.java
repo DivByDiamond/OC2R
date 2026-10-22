@@ -35,7 +35,8 @@ public final class Entities {
                                 .build(
                                         net.minecraft.resources.ResourceKey.create(
                                                 net.minecraft.core.registries.Registries.ENTITY_TYPE,
-                                                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(API.MOD_ID, name))));
+                                                net.minecraft.resources.ResourceLocation
+                                                        .fromNamespaceAndPath(API.MOD_ID, name))));
                 *///?} else {
                 () -> customizer.apply(EntityType.Builder.of(factory, classification)).build(name));
                 //?}

@@ -114,7 +114,8 @@ public final class ByteBufferFlashStorageDevice extends IdentityProxy<ItemStack>
                 //? if >=26.1 {
                 /*CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompoundOrEmpty(DATA_TAG_NAME);
                 if (tag.read("blob", net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
-                    BlobStorage.getOrOpenAsync(tag.read("blob", net.minecraft.core.UUIDUtil.CODEC).orElseThrow()).join().read(data, 0);
+                    BlobStorage.getOrOpenAsync(tag.read("blob", net.minecraft.core.UUIDUtil.CODEC).orElseThrow())
+                            .join().read(data, 0);
                 *///?} else {
                 CompoundTag tag = ItemStackUtils.getModDataTag(identity).getCompound(DATA_TAG_NAME);
                 if (tag.hasUUID("blob")) {

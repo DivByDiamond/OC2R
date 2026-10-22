@@ -32,7 +32,8 @@ public final class ModernModelDefinitions {
             output.put("items/" + name + ".json", itemDefinition(name));
         });
         HORIZONTAL_BLOCKS.forEach(name -> output.put("blockstates/" + name + ".json", horizontal(name)));
-        SIMPLE.forEach(name -> output.put("blockstates/" + name + ".json", variants(single("model", "oc2r:block/" + name))));
+        SIMPLE.forEach(name -> output.put("blockstates/" + name + ".json",
+                variants(single("model", "oc2r:block/" + name))));
         output.put("blockstates/monitor.json", variants(single("type", "oc2r:monitor")));
         output.put("blockstates/bus_cable.json", cable());
         output.put("blockstates/network_connector.json", connector());
@@ -40,7 +41,8 @@ public final class ModernModelDefinitions {
         return Map.copyOf(output);
     }
 
-    @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.NPathComplexity"}) // Independent loops fill a declarative catalog.
+    // Independent loops fill a declarative catalog.
+    @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.NPathComplexity"})
     private static Map<String, JsonObject> itemModels() {
         final Map<String, JsonObject> result = new LinkedHashMap<>();
         flat(result, "wrench", "tools/wrench");
@@ -48,7 +50,8 @@ public final class ModernModelDefinitions {
         flat(result, "network_cable", "components/materials/network_cable");
         for (final String size : List.of("small", "medium", "large", "extra_large")) {
             flat(result, "memory_" + size, "components/memory/memory_" + size);
-            flat(result, "hard_drive_" + size, "storage/hard_drive/hard_drive_base", "storage/hard_drive/hard_drive_tint");
+            flat(result, "hard_drive_" + size, "storage/hard_drive/hard_drive_base",
+                    "storage/hard_drive/hard_drive_tint");
         }
         for (final String tier : List.of("1", "2", "3", "4", "inf")) {
             flat(result, "cpu_tier_" + tier, "components/cpu/cpu_tier_" + tier);
@@ -58,16 +61,20 @@ public final class ModernModelDefinitions {
             flat(result, name, "components/silicon/" + name);
         }
         flat(result, "hard_drive_onyxos", "storage/hard_drive/hard_drive_base", "storage/hard_drive/hard_drive_tint");
-        for (final String name : List.of("flash_memory_small", "flash_memory_medium", "flash_memory", "flash_memory_custom", "flash_memory_onyxos")) {
+        for (final String name : List.of("flash_memory_small", "flash_memory_medium", "flash_memory",
+                "flash_memory_custom", "flash_memory_onyxos")) {
             flat(result, name, "storage/flash_memory/flash_memory");
         }
-        for (final String name : List.of("floppy", "floppy_modern")) flat(result, name, "storage/floppy/floppy_base", "storage/floppy/floppy_tint");
+        for (final String name : List.of("floppy", "floppy_modern")) flat(result, name,
+                "storage/floppy/floppy_base", "storage/floppy/floppy_tint");
         for (final String name : List.of("redstone_interface_card", "network_interface_card", "internet_card",
                 "file_import_export_card", "sound_card", "network_tunnel_card")) flat(result, name, "cards/" + name);
-        for (final String name : List.of("inventory_operations_module", "block_operations_module", "scanner_module", "crafting_module", "network_tunnel_module")) {
+        for (final String name : List.of("inventory_operations_module", "block_operations_module",
+                "scanner_module", "crafting_module", "network_tunnel_module")) {
             flat(result, name, "modules/" + name);
         }
-        for (final String name : List.of("transistor", "circuit_board")) flat(result, name, "components/materials/" + name);
+        for (final String name : List.of("transistor", "circuit_board")) flat(result, name,
+                "components/materials/" + name);
         for (final String name : HORIZONTAL_BLOCKS) {
             if (!"network_switch".equals(name)) result.put(name, single(PARENT, "oc2r:block/" + name));
         }
@@ -117,7 +124,8 @@ public final class ModernModelDefinitions {
 
     private static JsonObject horizontal(final String name) {
         final JsonObject choices = new JsonObject();
-        for (int index = 0; index < FACES.size(); index++) choices.add("facing=" + FACES.get(index), rotated(name, "keyboard".equals(name) ? 270 : 0, index * 90));
+        for (int index = 0; index < FACES.size(); index++) choices.add("facing=" + FACES.get(index),
+                rotated(name, "keyboard".equals(name) ? 270 : 0, index * 90));
         final JsonObject state = new JsonObject();
         state.add("variants", choices);
         return state;
@@ -128,7 +136,8 @@ public final class ModernModelDefinitions {
         for (final String face : List.of("floor", "wall", "ceiling")) {
             final int x = "floor".equals(face) ? 0 : "wall".equals(face) ? 90 : 180;
             for (int i = 0; i < FACES.size(); i++) {
-                choices.add("face=" + face + ",facing=" + FACES.get(i), rotated("network_connector", x, (i * 90 + ("ceiling".equals(face) ? 180 : 0)) % 360));
+                choices.add("face=" + face + ",facing=" + FACES.get(i),
+                        rotated("network_connector", x, (i * 90 + ("ceiling".equals(face) ? 180 : 0)) % 360));
             }
         }
         final JsonObject state = new JsonObject();
@@ -136,7 +145,8 @@ public final class ModernModelDefinitions {
         return state;
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Each multipart entry owns an independent mutable JSON tree.
+    // Each multipart entry owns an independent mutable JSON tree.
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static JsonObject cable() {
         final JsonArray parts = new JsonArray();
         final JsonObject base = new JsonObject();
@@ -190,9 +200,15 @@ public final class ModernModelDefinitions {
         display.add("gui", plug ? transform(30, 315, 0, 2, 1, 0, .75f) : transform(30, 225, 0, 0, 0, 0, .75f));
         display.add("ground", transform(0, 0, 0, 0, 3, plug ? -5 : 0, .75f));
         display.add("fixed", transform(0, 180, 0, 0, 0, plug ? 4 : 0, 1));
-        display.add("thirdperson_righthand", plug ? transform(75, 180, 0, 0, -1, 0, .75f) : transform(75, 45, 0, 0, 2.5f, 0, .75f));
-        display.add("firstperson_righthand", plug ? transform(0, 180, 0, 0, 0, 2, .75f) : transform(0, 45, 0, 0, 0, 0, .75f));
-        display.add("firstperson_lefthand", plug ? transform(0, 180, 0, 0, 0, 2, .75f) : transform(0, 225, 0, 0, 0, 0, .75f));
+        display.add("thirdperson_righthand", plug
+                ? transform(75, 180, 0, 0, -1, 0, .75f)
+                : transform(75, 45, 0, 0, 2.5f, 0, .75f));
+        display.add("firstperson_righthand", plug
+                ? transform(0, 180, 0, 0, 0, 2, .75f)
+                : transform(0, 45, 0, 0, 0, 0, .75f));
+        display.add("firstperson_lefthand", plug
+                ? transform(0, 180, 0, 0, 0, 2, .75f)
+                : transform(0, 225, 0, 0, 0, 0, .75f));
         item.add("display", display);
         return item;
     }
@@ -218,7 +234,8 @@ public final class ModernModelDefinitions {
         final JsonObject model = single(PARENT, "minecraft:block/cube");
         final JsonObject textures = single("particle", "oc2r:block/monitor_oc/bmm");
         for (final String face : List.of("down", "up", "north", "south", "east", "west")) {
-            textures.addProperty(face, "oc2r:block/monitor_oc/" + ("north".equals(face) ? "f" : "up".equals(face) || "down".equals(face) ? "b" : "b2"));
+            textures.addProperty(face, "oc2r:block/monitor_oc/"
+                    + ("north".equals(face) ? "f" : "up".equals(face) || "down".equals(face) ? "b" : "b2"));
         }
         model.add("textures", textures);
         return model;

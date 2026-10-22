@@ -133,7 +133,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         super.handleUpdateTag(tag, registries);
         //? if >=26.1 {
         /*projectorState.applyClient(tag.getBooleanOr("projecting", false), tag.getBooleanOr("has_energy", false));
-        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        }
         *///?} else {
         projectorState.applyClient(tag.getBoolean("projecting"), tag.getBoolean("has_energy"));
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
@@ -169,7 +171,9 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
         super.loadAdditional(tag, registries);
         //? if >=26.1 {
         /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
-        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        }
         *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);

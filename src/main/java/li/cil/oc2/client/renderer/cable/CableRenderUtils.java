@@ -101,12 +101,14 @@ final class CableRenderUtils {
                     connection.right,
                     computeCableSwingAmount(p0, p1),
                     connection.hashCode());
-            final List<NetworkCablePoint> points = new ArrayList<>(vertexCount); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            final List<NetworkCablePoint> points = new ArrayList<>(vertexCount); // NOPMD
             for (int i = 0; i < vertexCount; i++) {
                 final float t = i / (vertexCount - 1f);
                 final Vec3 p = quadraticBezier(p0, p1, p2, t);
                 final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
-                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
                 final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
@@ -185,7 +187,8 @@ final class CableRenderUtils {
                 final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
 
                 // NOPMD - the block position depends on the per-iteration point p
-                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD allocation depends on loop iteration / per-item state
+                // allocation depends on loop iteration / per-item state
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
                 //? if >=26.1 {

@@ -20,7 +20,8 @@ public final class SGRStyleDispatch {
      * @param terminal The terminal to mutate.
      * @param code     The SGR code to apply.
      */
-    public static void apply(final Terminal terminal, final int code) { // NOPMD: inherently large data-driven ANSI SGR style switch
+    // inherently large data-driven ANSI SGR style switch
+    public static void apply(final Terminal terminal, final int code) { // NOPMD
         switch (code) {
             case 0 -> { // Reset / Normal
                 terminal.sixteenColor = TerminalColors.DEFAULT_COLORS.copy();
@@ -45,7 +46,8 @@ public final class SGRStyleDispatch {
                     terminal.style |= Terminal.STYLE_INVERT_MASK;
             case 8 -> // Conceal aka Hide
                     terminal.style |= Terminal.STYLE_HIDDEN_MASK;
-            case 9 -> terminal.style = (byte) (terminal.style | Terminal.STYLE_CROSSED_OUT_MASK); // 0x80 needs explicit cast, compound |= warns lossy
+            // 0x80 needs explicit cast, compound |= warns lossy
+            case 9 -> terminal.style = (byte) (terminal.style | Terminal.STYLE_CROSSED_OUT_MASK);
             case 22 -> // Normal color or intensity
                     terminal.style &= ~(Terminal.STYLE_BOLD_MASK | Terminal.STYLE_DIM_MASK);
             case 23 -> terminal.style &= ~Terminal.STYLE_ITALIC_MASK;

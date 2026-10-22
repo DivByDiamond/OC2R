@@ -56,7 +56,8 @@ public final class NetworkTunnelItem extends ModItem {
                 stack,
                 (nbt) -> {
                     //? if >=26.1 {
-                    /*ItemStackUtils.getOrCreateModDataTag(nbt).store(TUNNEL_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, value);
+                    /*ItemStackUtils.getOrCreateModDataTag(nbt)
+                            .store(TUNNEL_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, value);
                     *///?} else {
                     ItemStackUtils.getOrCreateModDataTag(nbt).putUUID(TUNNEL_ID_TAG_NAME, value);
                     //?}

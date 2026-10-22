@@ -95,7 +95,8 @@ public final class ProjectorBlockEntityDepth {
                         .withUniform("ModelMatrices", UniformType.UNIFORM_BUFFER).withSampler("Sampler0").build())
                 .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.QUADS)
-                .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_NONE));
+                .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM,
+                        ColorTargetState.WRITE_NONE));
         //?} else {
         builder.withUniform("ModelMatrices", UniformType.UNIFORM_BUFFER).withSampler("Sampler0")
                 .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
@@ -129,8 +130,10 @@ public final class ProjectorBlockEntityDepth {
     private static <E extends BlockEntity, S extends BlockEntityRenderState> void submit(
             final E entity, final Collector collector, final Frustum frustum, final Vec3 projectorPos,
             final CameraRenderState camera, final float partialTick) {
-        if (entity instanceof ProjectorBlockEntity || entity.isRemoved() || !entity.hasLevel() || !entity.getType().isValid(entity.getBlockState())) return;
-        final BlockEntityRenderer<E, S> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
+        if (entity instanceof ProjectorBlockEntity || entity.isRemoved() || !entity.hasLevel()
+                || !entity.getType().isValid(entity.getBlockState())) return;
+        final BlockEntityRenderer<E, S> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher()
+                .getRenderer(entity);
         if (renderer == null || !renderer.shouldRender(entity, projectorPos)
                 || !frustum.isVisible(renderer.getRenderBoundingBox(entity))) return;
         if (new Vec3(entity.getBlockPos().getX() + 0.5, entity.getBlockPos().getY() + 0.5,
@@ -139,14 +142,16 @@ public final class ProjectorBlockEntityDepth {
         final S state = renderer.createRenderState();
         renderer.extractRenderState(entity, state, partialTick, projectorPos, null);
         final PoseStack pose = new PoseStack();
-        pose.translate(state.blockPos.getX() - camera.pos.x, state.blockPos.getY() - camera.pos.y, state.blockPos.getZ() - camera.pos.z);
+        pose.translate(state.blockPos.getX() - camera.pos.x, state.blockPos.getY() - camera.pos.y,
+                state.blockPos.getZ() - camera.pos.z);
         renderer.submit(state, pose, collector, camera);
     }
 
     // Models submit synchronously so their mutable animation state cannot be overwritten by another instance.
     static final class Collector extends SubmitNodeStorage implements AutoCloseable {
         private int vertexCount;
-        private final Map<RenderType, Batch> batches = new IdentityHashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+        // Map ownership is confined to one thread or protected by its explicit monitor.
+        private final Map<RenderType, Batch> batches = new IdentityHashMap<>(); // NOPMD
         private final SubmitNodeCollection collection = new SubmitNodeCollection(
                 //? if <26.2 {
                 this
@@ -155,7 +160,8 @@ public final class ProjectorBlockEntityDepth {
             @Override
             public <S> void submitModel(final Model<? super S> model, final S state, final PoseStack pose,
                     final RenderType type, final int light, final int overlay, final int color,
-                    final TextureAtlasSprite sprite, final int outline, final ModelFeatureRenderer.CrumblingOverlay breaking) {
+                    final TextureAtlasSprite sprite, final int outline,
+                    final ModelFeatureRenderer.CrumblingOverlay breaking) {
                 final VertexConsumer buffer = buffer(type);
                 if (buffer == null) return;
                 model.setupAnim(state);
@@ -169,7 +175,8 @@ public final class ProjectorBlockEntityDepth {
                     final boolean sheeted, final boolean foil, final int color,
                     final ModelFeatureRenderer.CrumblingOverlay breaking, final int outline) {
                 final VertexConsumer buffer = buffer(type);
-                if (buffer != null) model.render(pose, sprite == null ? buffer : sprite.wrap(buffer), light, overlay, color);
+                if (buffer != null) model.render(pose, sprite == null ? buffer : sprite.wrap(buffer),
+                        light, overlay, color);
             }
             //?}
 
@@ -207,7 +214,8 @@ public final class ProjectorBlockEntityDepth {
         void draw(final RenderTarget target, final Matrix4fc projectorCamera) {
             for (final var entry : batches.entrySet()) {
                 final RenderType type = entry.getKey();
-                final float cutoff = Float.parseFloat(type.pipeline().getShaderDefines().values().getOrDefault("ALPHA_CUTOUT", "-1"));
+                final float cutoff = Float.parseFloat(type.pipeline().getShaderDefines().values()
+                        .getOrDefault("ALPHA_CUTOUT", "-1"));
                 final Texture texture = texture(type);
                 if (texture == null) continue;
                 try (MeshData mesh = finish(type)) {
@@ -221,10 +229,14 @@ public final class ProjectorBlockEntityDepth {
                             //?}
                     );
                     try (MemoryStack stack = MemoryStack.stackPush();
-                            GpuBuffer matrices = device.createBuffer(() -> "oc2r projector model matrices", GpuBuffer.USAGE_UNIFORM,
-                                    Std140Builder.onStack(stack, 80).putMat4f(projectorCamera).putVec4(cutoff, 0, 0, 0).get());
-                            GpuBuffer vertices = device.createBuffer(() -> "oc2r projector model vertices", GpuBuffer.USAGE_VERTEX, mesh.vertexBuffer());
-                            RenderPass pass = device.createCommandEncoder().createRenderPass(() -> "oc2r projector block entity depth",
+                            GpuBuffer matrices = device.createBuffer(() -> "oc2r projector model matrices",
+                                    GpuBuffer.USAGE_UNIFORM,
+                                    Std140Builder.onStack(stack, 80).putMat4f(projectorCamera)
+                                            .putVec4(cutoff, 0, 0, 0).get());
+                            GpuBuffer vertices = device.createBuffer(() -> "oc2r projector model vertices",
+                                    GpuBuffer.USAGE_VERTEX, mesh.vertexBuffer());
+                            RenderPass pass = device.createCommandEncoder().createRenderPass(
+                                    () -> "oc2r projector block entity depth",
                                     target.getColorTextureView(),
                                     //? if >=26.2 {
                                     Optional.empty(),
@@ -263,7 +275,8 @@ public final class ProjectorBlockEntityDepth {
             if ("Sampler0".equals(texture.name())) return new Texture(texture.textureView(), texture.sampler());
         }
         //?} else {
-        final var texture = ((ProjectorRenderTypeAccessor) (Object) type).oc2r$getSetup().getTextures().get("Sampler0");
+        final var texture = ((ProjectorRenderTypeAccessor) (Object) type)
+                .oc2r$getSetup().getTextures().get("Sampler0");
         if (texture != null) return new Texture(texture.textureView(), texture.sampler());
         //?}
         return null;

@@ -84,7 +84,8 @@ public final class RobotMovementAction extends AbstractRobotAction {
             for (final Entity entity : carriedEntities) {
                 final double lift = top - entity.getBoundingBox().minY;
                 if (shouldMoveEntity(entity)) {
-                    entity.move(MoverType.SHULKER, new Vec3(0, lift, 0)); // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                    // Each iteration owns distinct geometry, coordinates or serialized state.
+                    entity.move(MoverType.SHULKER, new Vec3(0, lift, 0)); // NOPMD
                 } else if (robot.level()
                         .noCollision(entity, entity.getBoundingBox().move(0, lift, 0))) {
                     passThrough.add(entity);

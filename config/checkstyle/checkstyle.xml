@@ -366,9 +366,6 @@
     <property name="checks" value="NonEmptyAtclauseDescription"/>
   </module>
   <module name="SuppressionSingleFilter">
-    <property name="checks" value="LineLength"/>
-  </module>
-  <module name="SuppressionSingleFilter">
     <property name="checks" value="JavadocTagContinuationIndentation"/>
   </module>
   <module name="SuppressionSingleFilter">
@@ -382,6 +379,27 @@
   </module>
   <module name="SuppressionSingleFilter">
     <property name="files" value=".*[/\\]test[/\\].*"/>
+  </module>
+
+  <!--
+    `LineLength` follows the `.editorconfig` limit of 120 columns for every
+    `*.java` file. The one exception is the imported MarkdownManual package
+    (`li.cil.oc2.manual`, MIT, see LICENSE-MarkdownManual): that code is kept
+    as close to its upstream form as possible and is not reflowed here, so the
+    line breaks of the upstream sources are not ours to enforce. The few
+    files this project added to the package itself (the Minecraft version
+    shims) are listed in the lookahead and stay checked like the rest of the
+    project code.
+
+    `SuppressionSingleFilter` matches its `files` pattern with
+    `Matcher.find()`, i.e. the pattern may match at any offset of the path.
+    The pattern below is therefore anchored with `^` and `$`, so that the
+    negative lookahead is evaluated against the whole path.
+  -->
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="LineLength"/>
+    <property name="files"
+              value="^(?!.*[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\].*[/\\](CodeBlockLineSegment|ManualGraphics|ManualRegistry|RegistryUtils)\.java$).*[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\].*$"/>
   </module>
 
   <module name="FileTabCharacter">

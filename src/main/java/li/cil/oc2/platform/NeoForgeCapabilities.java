@@ -555,7 +555,8 @@ final class NeoForgeCapabilities {
         }
 
         @Override
-        public net.neoforged.neoforge.fluids.FluidStack drain(final int maxDrain, final IFluidHandler.FluidAction action) {
+        public net.neoforged.neoforge.fluids.FluidStack drain(final int maxDrain,
+                final IFluidHandler.FluidAction action) {
             return toNeoForgeFluid(handler.drain(maxDrain, toCoreAction(action)));
         }
 

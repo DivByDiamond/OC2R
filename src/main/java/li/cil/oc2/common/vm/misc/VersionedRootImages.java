@@ -80,7 +80,8 @@ public final class VersionedRootImages {
     }
 
     private static Image image(final byte[] bytes) throws IOException {
-        return new Image(ByteBufferBlockDevice.createFromStream(new ByteArrayInputStream(bytes), true), fingerprint(bytes));
+        return new Image(ByteBufferBlockDevice.createFromStream(new ByteArrayInputStream(bytes), true),
+                fingerprint(bytes));
     }
 
     private static String fingerprint(final byte[] bytes) {

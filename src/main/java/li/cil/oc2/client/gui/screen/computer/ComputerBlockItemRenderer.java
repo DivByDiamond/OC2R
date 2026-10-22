@@ -184,7 +184,8 @@ public class ComputerBlockItemRenderer {
             sideRotation.mul((float) Math.PI / 180.0f);
             // NOPMD - depends on loop variable (per-face rotation)
             poseStack.rotate(
-                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z)); // NOPMD allocation depends on loop iteration / per-item state
+                    // allocation depends on loop iteration / per-item state
+                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z)); // NOPMD
 
             poseStack.translate(-0.5f, -0.5f, 0f);
 

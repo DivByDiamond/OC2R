@@ -6,9 +6,35 @@ plugins {
     `java-library`
     id("fabric-loom") version "1.14.10"
     id("checkstyle")
+    id("pmd")
+    id("com.github.spotbugs") version "6.5.10"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
+
+// fabric.mod.json expands ${version}; without an explicit version the module keeps Gradle's
+// default "unspecified", which is what the published jar would then advertise as the mod version.
+// This repeats the version computation of the root build script, because the Fabric node is
+// configured in its own build of the Stonecutter tree, where rootProject.version is still the
+// Gradle default when this script is evaluated.
+fun fabricGitRef(): String = try {
+    ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+        .redirectErrorStream(true)
+        .start()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+} catch (ignored: Throwable) {
+    "unknown"
+}
+
+val fabricSemver: String = providers.gradleProperty("semver").get()
+version = if (System.getenv("RELEASE_TYPE") == "release") {
+    fabricSemver.trimStart('v')
+} else {
+    "${fabricSemver.trimStart('v')}+${fabricGitRef()}"
+}
 
 val minecraft_version: String = providers.gradleProperty("minecraft_version").get()
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
@@ -56,7 +82,13 @@ dependencies {
 
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     // @OnlyIn/Dist annotations used by shared code; missing annotation classes are ignored at runtime.
-    compileOnly("net.neoforged:mergetool:2.0.0:api")
+    // Non-transitive: only the annotation classes of the "api" artifact are needed, and the
+    // transitive dependencies of mergetool (asm, jopt-simple, srgutils) are not resolvable here --
+    // srgutils only lives on the Forge maven, which this module does not use. The lint tasks
+    // resolve an auxiliary classpath that includes this dependency, so a transitive mergetool
+    // breaks pmdMain (and every other task that resolves the runtime classpath) with
+    // "Could not find net.minecraftforge:srgutils".
+    compileOnly("net.neoforged:mergetool:2.0.0:api") { isTransitive = false }
     // Emulator and serialization libraries, shipped inside the mod jar like on NeoForge.
     implementation("li.cil.ceres:ceres:$ceres_version")
     implementation("li.cil.sedna:sedna:$sedna_version")
@@ -246,4 +278,77 @@ checkstyle {
 tasks.withType<Checkstyle>().configureEach {
     isEnabled = true
     exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
+}
+
+pmd {
+    // First PMD release that can resolve Minecraft 26.x / Java 25 class files.
+    toolVersion = "7.16.0"
+    ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))
+    isIgnoreFailures = false
+    isConsoleOutput = true
+}
+
+tasks.withType<Pmd>().configureEach {
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
+}
+
+// The main source set of this module compiles three trees: the module's own sources
+// (fabric/src/main/java), the loader-independent core module (core/src/main/java) and the
+// shared mod code of the root project (src/main/java). The core node and the root node lint
+// the latter two with the same ruleset, so PMD must only see the module's own sources here:
+// analysing them again would report every finding of the shared tree a second time, and the
+// lint ratchet counts violations per report, not per file.
+tasks.named<Pmd>("pmdMain") {
+    setSource(rootProject.fileTree("fabric/src/main/java") { include("**/*.java") })
+}
+
+/* ── Static analysis: SpotBugs ──────────────────────────────────────────────── */
+
+// Same engine and filters as the root project, scoped to the sources of this module. The main
+// source set also compiles the loader-independent core module and the shared mod code of the
+// root project; both are analysed by their own nodes, and their classes carry no relation to
+// this module's analysis (a baseline entry is matched by instance hash, which differs when the
+// same source is compiled against different mappings). Analysing them here would therefore
+// report the shared tree a second time under hashes no baseline can match.
+spotbugs {
+    toolVersion = "4.10.3"
+    ignoreFailures = false
+    showProgress = false
+    excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
+}
+
+val fabricOwnSources = rootProject.fileTree("fabric/src/main/java") { include("**/*.java") }
+// Fully qualified names of the classes that this module's own sources produce (an inner class is
+// covered by its outer class name, because "$" is stripped below).
+val fabricOwnClassNames: Set<String> = fabricOwnSources.files.mapTo(mutableSetOf()) { source ->
+    source.relativeTo(rootProject.file("fabric/src/main/java"))
+        .invariantSeparatorsPath
+        .removeSuffix(".java")
+        .replace('/', '.')
+}
+
+fun isFabricOwnClass(file: File): Boolean {
+    if (!file.name.endsWith(".class")) {
+        return false
+    }
+    // Only classes of the java output, not resources of the same source set.
+    val marker = "/classes/java/main/"
+    val path = file.invariantSeparatorsPath
+    val index = path.indexOf(marker)
+    if (index < 0) {
+        return false
+    }
+    val className = path.substring(index + marker.length).removeSuffix(".class").replace('/', '.')
+    return className.substringBefore('$') in fabricOwnClassNames
+}
+
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
+    reports.create("html")
+    reports.create("xml")
+    // Only the classes compiled from this module's own sources, no shared or core code.
+    classes = classes?.filter(::isFabricOwnClass)
+    // The excluded classes still have to be resolvable as types (auxiliary classpath entries are
+    // never analysed), otherwise every reference into the shared tree is reported as missing.
+    auxClassPaths.from(sourceSets["main"].output.classesDirs)
 }

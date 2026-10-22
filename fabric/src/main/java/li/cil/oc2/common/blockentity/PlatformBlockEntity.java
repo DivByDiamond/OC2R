@@ -1,10 +1,12 @@
 package li.cil.oc2.common.blockentity;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -48,6 +50,9 @@ public abstract class PlatformBlockEntity extends BlockEntity {
 
     /** Asks the client to rebuild the render data of this block entity after it changed. */
     public void requestModelDataUpdate() {
+        // Read the field once: BlockEntity#level is mutable (it is cleared when the block entity
+        // is removed), so a second read below could see null.
+        final Level level = this.level;
         if (level != null && level.isClientSide()) {
             final BlockState state = getBlockState();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_IMMEDIATE);
@@ -56,8 +61,9 @@ public abstract class PlatformBlockEntity extends BlockEntity {
 
     /**
      * The render model data of this block entity, as an opaque object (the type is loader specific and
-     * client only). Not used on Fabric yet.
+     * client only). Not used on Fabric yet, so there is no model data to return.
      */
+    @Nullable
     protected Object getCustomModelData() {
         return null;
     }

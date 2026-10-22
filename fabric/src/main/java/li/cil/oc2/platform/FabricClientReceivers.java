@@ -4,6 +4,7 @@ import java.util.function.BiConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +25,14 @@ final class FabricClientReceivers {
 
                     @Override
                     public Connection connection() {
-                        return context.client().getConnection().getConnection();
+                        // The listener only exists while a play connection is established; a
+                        // packet handler cannot run before that, but make the failure explicit
+                        // instead of dereferencing a null the compiler cannot rule out.
+                        final ClientPacketListener listener = context.client().getConnection();
+                        if (listener == null) {
+                            throw new IllegalStateException("no client play connection for a received payload");
+                        }
+                        return listener.getConnection();
                     }
 
                     @Override

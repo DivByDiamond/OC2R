@@ -61,7 +61,8 @@ public final class RPCItemStackTagFilter {
                 currentSource = currentSource.getCompound(segment);
             //?}
                 // NOPMD - each nested level of the path requires a distinct CompoundTag.
-                currentTarget.put(segment, new CompoundTag()); // NOPMD allocation depends on loop iteration / per-item state
+                // allocation depends on loop iteration / per-item state
+                currentTarget.put(segment, new CompoundTag()); // NOPMD
                 //? if >=26.1 {
                 /*currentTarget = currentTarget.getCompoundOrEmpty(segment);
                 *///?} else {

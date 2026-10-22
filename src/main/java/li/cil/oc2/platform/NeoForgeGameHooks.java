@@ -78,7 +78,8 @@ public final class NeoForgeGameHooks implements GameHooks {
             final ServerPlayer player,
             final boolean willHarvest) {
         //? if >=26.1 {
-        /*return state.onDestroyedByPlayer(level, pos, player, player.getMainHandItem(), willHarvest, level.getFluidState(pos));
+        /*return state.onDestroyedByPlayer(level, pos, player, player.getMainHandItem(), willHarvest,
+                level.getFluidState(pos));
         *///?} else {
         return state.onDestroyedByPlayer(level, pos, player, willHarvest, level.getFluidState(pos));
         //?}

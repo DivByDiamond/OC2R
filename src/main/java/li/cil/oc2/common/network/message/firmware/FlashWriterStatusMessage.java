@@ -12,7 +12,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record FlashWriterStatusMessage(BlockPos pos, UUID session, String state, int offset, int capacity, String detail) implements AbstractMessage {
+public record FlashWriterStatusMessage(BlockPos pos, UUID session, String state, int offset,
+        int capacity, String detail) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, FlashWriterStatusMessage> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, FlashWriterStatusMessage::pos,
             UUIDUtil.STREAM_CODEC, FlashWriterStatusMessage::session,

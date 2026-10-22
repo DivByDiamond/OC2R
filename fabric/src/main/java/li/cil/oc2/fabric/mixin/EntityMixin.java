@@ -31,14 +31,15 @@ public abstract class EntityMixin implements PersistentDataHolder {
     }
 
     @Inject(method = "saveWithoutId", at = @At("RETURN"))
-    private void oc2r$savePersistentData(final CompoundTag tag, final CallbackInfoReturnable<CompoundTag> cir) {
+    private void oc2r$savePersistentData(
+            final CompoundTag ignoredTag, final CallbackInfoReturnable<CompoundTag> cir) {
         if (oc2r$persistentData != null && !oc2r$persistentData.isEmpty()) {
             cir.getReturnValue().put(OC2R_PERSISTENT_DATA_KEY, oc2r$persistentData.copy());
         }
     }
 
     @Inject(method = "load", at = @At("TAIL"))
-    private void oc2r$loadPersistentData(final CompoundTag tag, final CallbackInfo ci) {
+    private void oc2r$loadPersistentData(final CompoundTag tag, final CallbackInfo ignoredCi) {
         if (tag.contains(OC2R_PERSISTENT_DATA_KEY, 10)) {
             oc2r$persistentData = tag.getCompound(OC2R_PERSISTENT_DATA_KEY).copy();
         }

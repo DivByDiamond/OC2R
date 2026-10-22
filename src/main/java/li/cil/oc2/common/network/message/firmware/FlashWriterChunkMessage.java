@@ -23,7 +23,8 @@ public record FlashWriterChunkMessage(BlockPos pos, UUID session, int offset, by
             BlockPos.STREAM_CODEC, FlashWriterChunkMessage::pos,
             UUIDUtil.STREAM_CODEC, FlashWriterChunkMessage::session,
             ByteBufCodecs.VAR_INT, FlashWriterChunkMessage::offset,
-            ByteBufCodecs.byteArray(li.cil.oc2.common.firmware.FlashImageUpload.CHUNK_SIZE), FlashWriterChunkMessage::data,
+            ByteBufCodecs.byteArray(li.cil.oc2.common.firmware.FlashImageUpload.CHUNK_SIZE),
+            FlashWriterChunkMessage::data,
             FlashWriterChunkMessage::new);
     public static final CustomPacketPayload.Type<FlashWriterChunkMessage> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "flash_writer_chunk_message"));

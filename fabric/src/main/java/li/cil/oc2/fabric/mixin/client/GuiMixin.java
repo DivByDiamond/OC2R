@@ -15,7 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GuiMixin {
     @Inject(method = "renderItemHotbar", at = @At("HEAD"), cancellable = true)
     private void oc2r$hideHotbar(
-            final GuiGraphics graphics, final DeltaTracker deltaTracker, final CallbackInfo ci) {
+            final GuiGraphics ignoredGraphics,
+            final DeltaTracker ignoredDeltaTracker,
+            final CallbackInfo ci) {
         final AtomicBoolean hide = new AtomicBoolean();
         ClientEvents.HIDE_HOTBAR.fire(listener -> {
             if (listener.getAsBoolean()) {

@@ -53,7 +53,12 @@ public final class BusCableBlock extends BaseEntityBlock {
     private final VoxelShape[] shapes;
 
     public BusCableBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         BlockState defaultState = getStateDefinition().any();
         for (final EnumProperty<ConnectionType> property : FACING_TO_CONNECTION_MAP.values()) {
             defaultState = defaultState.setValue(property, ConnectionType.NONE);

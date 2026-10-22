@@ -187,7 +187,8 @@ public class TunnelManager {
 
         LOGGER.debug("recv on vti {}", vni);
 
-        final byte[] inner = new byte[datagram.remaining() - HEADER_SIZE]; // NOPMD allocation depends on loop iteration / per-item state
+        // allocation depends on loop iteration / per-item state
+        final byte[] inner = new byte[datagram.remaining() - HEADER_SIZE]; // NOPMD
         datagram.position(HEADER_SIZE);
         datagram.get(inner);
 

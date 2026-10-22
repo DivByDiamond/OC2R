@@ -67,7 +67,8 @@ registrar.registerItem(
         }
 
         //? if >=26.1 {
-        /*final Robot robot = Entities.ROBOT.get().create(context.getLevel(), net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        /*final Robot robot = Entities.ROBOT.get()
+                .create(context.getLevel(), net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
         *///?} else {
         final Robot robot = Entities.ROBOT.get().create(context.getLevel());
         //?}

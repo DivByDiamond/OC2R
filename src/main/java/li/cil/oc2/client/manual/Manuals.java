@@ -21,11 +21,14 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public final class Manuals {
-    private static final String MANUAL_REGISTRY = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.MANUAL_REGISTRY).toString();
-    private static final String PATH_PROVIDERS = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.PATH_PROVIDER_REGISTRY).toString();
+    private static final String MANUAL_REGISTRY =
+            li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.MANUAL_REGISTRY).toString();
+    private static final String PATH_PROVIDERS =
+            li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.PATH_PROVIDER_REGISTRY).toString();
     private static final String CONTENT_PROVIDERS =
             li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.DOCUMENT_PROVIDER_REGISTRY).toString();
-    private static final String TABS = li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.TAB_REGISTRY).toString();
+    private static final String TABS =
+            li.cil.oc2.manual.client.util.RegistryUtils.id(Constants.TAB_REGISTRY).toString();
 
     public static final Supplier<Manual> MANUAL = register(MANUAL_REGISTRY, "manual", Manual::new);
 

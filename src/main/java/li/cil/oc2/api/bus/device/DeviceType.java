@@ -24,9 +24,11 @@ public interface DeviceType {
 
     @SuppressWarnings("unused")
     //? if >=26.1 {
-    /*Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(REGISTRY_KEY.identifier().toString(), API.MOD_ID, true);
+    /*Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(
+            REGISTRY_KEY.identifier().toString(), API.MOD_ID, true);
     *///?} else {
-    Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(REGISTRY_KEY.location().toString(), API.MOD_ID, true);
+    Registry<DeviceType> REGISTRY = Platform.registries().createRegistry(
+            REGISTRY_KEY.location().toString(), API.MOD_ID, true);
     //?}
 
     /**

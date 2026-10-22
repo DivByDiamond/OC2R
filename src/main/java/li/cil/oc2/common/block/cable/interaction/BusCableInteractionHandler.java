@@ -285,7 +285,8 @@ public final class BusCableInteractionHandler {
                                 entity.playerTouch(player);
                             });
         }
-        LevelUtils.playSound(level, pos, Platform.hooks().getSoundType(state, level, pos, null), SoundType::getBreakSound);
+        LevelUtils.playSound(level, pos, Platform.hooks().getSoundType(state, level, pos, null),
+                SoundType::getBreakSound);
     }
 
     @OnlyIn(Dist.CLIENT)

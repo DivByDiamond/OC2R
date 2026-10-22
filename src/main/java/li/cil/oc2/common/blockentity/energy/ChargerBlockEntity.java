@@ -146,7 +146,8 @@ registrar.registerBlock(
         for (final Entity entity : entities) {
             final EnergyStorage energy = Platform.energy().getEntityEnergy(entity, Direction.DOWN);
             if (energy != null) charge(energy);
-            final var items = Platform.capabilities().getEntityCapability(Capabilities.ItemHandler.ENTITY, entity, null);
+            final var items = Platform.capabilities()
+                    .getEntityCapability(Capabilities.ItemHandler.ENTITY, entity, null);
             if (items != null) chargeItems(items);
         }
     }

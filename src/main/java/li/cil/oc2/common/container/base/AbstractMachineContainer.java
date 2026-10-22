@@ -21,7 +21,8 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
         this.energyInfo = energyInfo;
 
         if (energyInfo.getIntCount() != ENERGY_INFO_SIZE) {
-            throw new IllegalArgumentException("Invalid data count " + energyInfo.getIntCount() + ", expected " + ENERGY_INFO_SIZE);
+            throw new IllegalArgumentException(
+                    "Invalid data count " + energyInfo.getIntCount() + ", expected " + ENERGY_INFO_SIZE);
         }
         super.addDataSlots(energyInfo);
     }

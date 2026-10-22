@@ -107,7 +107,8 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
     // abused). Re-dispatch is via handleEscape, so e.g. ESC [ mid-OSC starts a CSI rather than
     // buffering '[' as payload. (For a nested string start ESC P/] xterm's BeginString appends to
     // the old payload instead of clearing — OC2R's abort-and-start-fresh is the saner divergence.)
-    private void handleStringByte(final char ch, final StringSequenceHandler handler, // NOPMD VT100 string-state byte dispatch; each branch is required
+    // VT100 string-state byte dispatch; each branch is required
+    private void handleStringByte(final char ch, final StringSequenceHandler handler, // NOPMD
                                   final boolean belTerminates) {
         if (stringEscapePending) {
             if (ch == '\\') {

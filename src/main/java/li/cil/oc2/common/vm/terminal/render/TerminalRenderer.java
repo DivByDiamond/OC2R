@@ -215,7 +215,8 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
         byte[] cursorData = new byte[0];
         if (isCursorPhaseVisible()) {
-            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD
                 //? if >=26.2 {
                 final BufferBuilder builder = new BufferBuilder(bytes, com.mojang.blaze3d.PrimitiveTopology.QUADS,
                         DefaultVertexFormat.POSITION_COLOR);
@@ -484,8 +485,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
             matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
             final byte[] background;
             final int backgroundVertices;
-            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final BufferBuilder builder = new BufferBuilder(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final BufferBuilder builder = new BufferBuilder(// NOPMD
                         bytes,
                         com.mojang.blaze3d.PrimitiveTopology.QUADS,
                         DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -493,11 +496,13 @@ public class TerminalRenderer implements RendererModel, RendererView {
                 try (MeshData mesh = builder.build()) {
                     if (mesh != null) {
                         final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
-                        background = new byte[vertices.remaining()]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                        // Each iteration owns distinct geometry, coordinates or serialized state.
+                        background = new byte[vertices.remaining()]; // NOPMD
                         vertices.get(background);
                         backgroundVertices = mesh.drawState().vertexCount();
                     } else {
-                        background = new byte[0]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                        // Each iteration owns distinct geometry, coordinates or serialized state.
+                        background = new byte[0]; // NOPMD
                         backgroundVertices = 0;
                     }
                 }
@@ -505,8 +510,10 @@ public class TerminalRenderer implements RendererModel, RendererView {
 
             final byte[] text;
             final int textVertices;
-            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
-                final BufferBuilder builder = new BufferBuilder(// NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            try (ByteBufferBuilder bytes = new ByteBufferBuilder(256)) { // NOPMD
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final BufferBuilder builder = new BufferBuilder(// NOPMD
                         bytes,
                         com.mojang.blaze3d.PrimitiveTopology.QUADS,
                         DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -514,11 +521,13 @@ public class TerminalRenderer implements RendererModel, RendererView {
                 try (MeshData mesh = builder.build()) {
                     if (mesh != null) {
                         final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
-                        text = new byte[vertices.remaining()]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                        // Each iteration owns distinct geometry, coordinates or serialized state.
+                        text = new byte[vertices.remaining()]; // NOPMD
                         vertices.get(text);
                         textVertices = mesh.drawState().vertexCount();
                     } else {
-                        text = new byte[0]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                        // Each iteration owns distinct geometry, coordinates or serialized state.
+                        text = new byte[0]; // NOPMD
                         textVertices = 0;
                     }
                 }
@@ -551,12 +560,14 @@ public class TerminalRenderer implements RendererModel, RendererView {
             matrix.identity().translate(0, row * Terminal.CHAR_HEIGHT, 0);
 
             TerminalBackgroundRenderer.renderBackground(frame, matrix, builder, row, blinkSeed);
-            byte[] background = new byte[0]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            byte[] background = new byte[0]; // NOPMD
             int backgroundVertices = 0;
             try (MeshData mesh = builder.build()) {
                 if (mesh != null) {
                     final ByteBuffer vertices = mesh.vertexBuffer().duplicate();
-                    background = new byte[vertices.remaining()]; // NOPMD - Each iteration owns distinct geometry, coordinates or serialized state.
+                    // Each iteration owns distinct geometry, coordinates or serialized state.
+                    background = new byte[vertices.remaining()]; // NOPMD
                     vertices.get(background);
                     backgroundVertices = mesh.drawState().vertexCount();
                 }
@@ -570,9 +581,11 @@ public class TerminalRenderer implements RendererModel, RendererView {
                     final ByteBuffer vertices = rb.vertexBuffer().duplicate();
                     final byte[] data = Arrays.copyOf(background, background.length + vertices.remaining());
                     vertices.get(data, background.length, vertices.remaining());
-                    lines[row] = new RowMesh(data, backgroundVertices + rb.drawState().vertexCount(), backgroundVertices);
+                    lines[row] = new RowMesh(data,
+                            backgroundVertices + rb.drawState().vertexCount(), backgroundVertices);
                 } else {
-                    lines[row] = backgroundVertices == 0 ? null : new RowMesh(background, backgroundVertices, backgroundVertices);
+                    lines[row] = backgroundVertices == 0
+                            ? null : new RowMesh(background, backgroundVertices, backgroundVertices);
                 }
             }
         }

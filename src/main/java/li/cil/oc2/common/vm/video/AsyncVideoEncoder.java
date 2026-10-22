@@ -30,7 +30,8 @@ import org.apache.logging.log4j.Logger;
  * <p>Buffer ownership is exclusive at any point in time: a buffer is either held by the
  * producer, sitting in the inbox, owned by the worker while encoding, waiting in the
  * outbox or back in the pool. Replacing an unclaimed raw frame recycles its buffer. Encoded frames
- * are kept in order: a full outbox pauses that stream until the consumer catches up. Because {@code FrameCodec.encode} may return its input array as-is
+ * are kept in order: a full outbox pauses that stream until the consumer catches up. Because
+ * {@code FrameCodec.encode} may return its input array as-is
  * (RAW passthrough and overflow fallback), a completed frame's data must only be read
  * up to {@link #recycle}; network chunks are copied by {@code FrameChunker.slice}.
  *
@@ -88,7 +89,8 @@ public final class AsyncVideoEncoder {
      * is silently dropped if the worker lags behind, which is safe because dirty flags
      * of the device were already consumed and any further change produces a new frame.
      */
-    public void offer(final FrameCodec codec, final VideoCodec codecType, final byte[] rgb565, final int width, final int height) {
+    public void offer(final FrameCodec codec, final VideoCodec codecType, final byte[] rgb565,
+            final int width, final int height) {
         final PendingFrame evicted = pending.getAndSet(new PendingFrame(codec, codecType, rgb565, width, height));
         if (evicted != null) recycle(evicted.rgb565());
         scheduleIfPending();

@@ -6,7 +6,8 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 /**
  * DECREQTPARM — Request Terminal Parameters.
  * ESC [ {@code <sol>} x
- * Response (DECREPTPARM): ESC [ 3; {@code <par>}; {@code <nbits>}; {@code <xspeed>}; {@code <rspeed>}; {@code <clkmul>}; {@code <flags>} x
+ * Response (DECREPTPARM): ESC [ 3; {@code <par>}; {@code <nbits>}; {@code <xspeed>}; {@code <rspeed>};
+ * {@code <clkmul>}; {@code <flags>} x
  * {@code <sol>}=3 means report, only on request.
  * We report: no parity (1), 8 bits (1), 9600 baud (112), 9600 baud (112), clk mul 1, flags 0.
  */
