@@ -106,9 +106,13 @@ check_java() {
     # RpcTransportProbe additionally needs Gson, which Minecraft provides at
     # runtime. Use the copy from the Gradle cache when it is there, otherwise
     # fetch the pinned release; without it the harness is only skipped.
-    local gson_jar=""
-    gson_jar=$(find "${GRADLE_USER_HOME:-$HOME/.gradle}/caches/modules-2/files-2.1/com.google.code.gson/gson" \
-        -name 'gson-*.jar' ! -name '*-sources.jar' 2>/dev/null | sort -V | tail -1)
+    local gson_jar="" gson_cache
+    gson_cache="${GRADLE_USER_HOME:-$HOME/.gradle}/caches/modules-2/files-2.1/com.google.code.gson/gson"
+    # The Gradle cache does not exist in a job that never runs Gradle (the demo CI job does not),
+    # and `find` on a missing directory exits non-zero, which `set -e` would turn into a failure.
+    if [ -d "$gson_cache" ]; then
+        gson_jar=$(find "$gson_cache" -name 'gson-*.jar' ! -name '*-sources.jar' | sort -V | tail -1)
+    fi
     if [ -z "$gson_jar" ] && command -v curl >/dev/null 2>&1; then
         if curl -fsSL --retry 3 --retry-delay 2 --connect-timeout 10 \
             -o "$output/gson.jar" "$GSON_URL"; then
