@@ -1,0 +1,53 @@
+# Endpoint policy for the OC2R demo sources -- the single source of truth for
+# scripts/demo/check-endpoints.sh (run by the `demo-scripts` CI job and by
+# `bash scripts/demo/run-checks.sh endpoints`).
+#
+# Rules:
+#   allow-range  <cidr>    IPv4 literals inside this range may appear in the
+#                          demo sources. Private and documentation ranges only:
+#                          a public address must never be hardcoded.
+#   allow-literal <ipv4>   A public literal that is allowed on purpose. Every
+#                          entry needs a reason; a demo backend address is
+#                          never an acceptable reason -- the backend lives in
+#                          the git-ignored scripts/demo/demo-endpoints.local.sh.
+#   forbid-port <port>     A port of the public demo backend. The host address
+#                          is protected by the range rules above; the ports
+#                          are listed here so that they cannot be pasted into
+#                          the sources either.
+#
+# The gate checks both notations of an address: the dotted quad (203.0.113.7)
+# and the byte array of the kernel sources ([203,0,113,7]).
+#
+# The file itself is excluded from the scan: it is the policy, not a source.
+
+# --- private ranges (RFC 1918) and loopback -------------------------------
+allow-range 10.0.0.0/8         # QEMU/SLIRP NAT segment of the guest adapter
+allow-range 172.16.0.0/12      # private
+allow-range 192.168.0.0/16     # private: the LAN pair of the demo arena
+allow-range 127.0.0.0/8        # loopback
+
+# --- documentation ranges (RFC 5737), unroutable ---------------------------
+allow-range 192.0.2.0/24       # TEST-NET-1
+allow-range 198.51.100.0/24    # TEST-NET-2
+allow-range 203.0.113.0/24     # TEST-NET-3
+
+# --- reserved range -------------------------------------------------------
+# 255.0.0.0/8 is reserved for future use and is never a host address: the
+# kernel tests use it for the broadcast address and for an invalid netmask.
+allow-range 255.0.0.0/8
+
+# --- literals that are not addresses --------------------------------------
+allow-literal 0.0.0.0         # "no gateway" / "no DNS" marker in netcfg
+allow-literal 255.255.255.0   # the /24 netmask of the demo LAN segment
+
+# --- public literals allowed on purpose -----------------------------------
+# The public resolver of the QEMU NAT example. It is a well-known public DNS
+# service, not a demo endpoint, and it appears in the guest configuration of
+# scripts/demo/qa/NetworkPair.java.
+allow-literal 1.1.1.1
+
+# --- ports of the public demo backend --------------------------------------
+# The backend is a temporary public service; its ports must not be hardcoded
+# in the demo sources. Use the OC2R_DEMO_* variables instead.
+forbid-port 18080
+forbid-port 16769

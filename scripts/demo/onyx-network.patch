@@ -1687,13 +1687,13 @@ index 0000000..219cc88
 +    #[test]
 +    fn longest_prefix_lan_route_beats_internet_default() {
 +        let interfaces = [
-+            Interface { ip: [10, 0, 2, 15], gateway: [10, 0, 2, 2], mask: [255, 255, 255, 0], dns: [1,1,1,1], enabled: true },
++            Interface { ip: [10, 0, 2, 15], gateway: [10, 0, 2, 2], mask: [255, 255, 255, 0], dns: [203,0,113,9], enabled: true },
 +            Interface { ip: [192, 168, 50, 1], gateway: [0;4], mask: [255,255,255,0], dns: [0;4], enabled: true },
 +        ];
 +        assert_eq!(choose_route([192,168,50,2], &interfaces, 0), Some(1));
-+        assert_eq!(choose_route([185,176,94,38], &interfaces, 0), Some(0));
++        assert_eq!(choose_route([203,0,113,7], &interfaces, 0), Some(0));
 +        assert_eq!(choose_route([10,0,2,2], &interfaces, 0), Some(0));
-+        assert_eq!(choose_route([8,8,8,8], &interfaces, 1), None);
++        assert_eq!(choose_route([203,0,113,8], &interfaces, 1), None);
 +    }
 +
 +    #[test]
@@ -1706,7 +1706,7 @@ index 0000000..219cc88
 +            INTERFACES = [EMPTY;8];
 +            INTERFACES[0] = Interface {ip:[192,168,50,1],mask:[255,255,255,0],enabled:true,..EMPTY};
 +            DEFAULT = 0;
-+            let result = super::super::udp::udp_bind_connect([8,8,8,8],53);
++            let result = super::super::udp::udp_bind_connect([203,0,113,8],53);
 +            let depth = super::super::lock::owned_depth();
 +            INTERFACES = saved;
 +            DEFAULT = default;

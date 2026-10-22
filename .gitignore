@@ -47,3 +47,10 @@ logs/
 DEMO_LOCAL.md
 SERVER_AUDIT_LOCAL.md
 PR58_REVIEW_LOCAL.md
+
+# local demo endpoints (public demo backend addresses); the template is tracked
+scripts/demo/demo-endpoints.local.sh
+
+# staging directory the publish workflow creates on the runner (see
+# .github/workflows/publish.yml, "Collect release artifacts")
+dist/

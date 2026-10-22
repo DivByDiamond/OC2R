@@ -11,7 +11,10 @@ before the configured default gateway. ARP entries and TCP connections belong
 to their interface. Reconfiguring an interface closes affected sockets and
 clears ARP entries. Configuring a nonzero gateway chooses that default interface.
 DNS uses its configured DNS address. Boot still attempts DHCP on the first card
-and falls back to `10.0.2.15/24`, gateway `10.0.2.2`, DNS `10.0.2.3`.
+and falls back to `10.0.2.15/24`, gateway `10.0.2.2`, DNS `10.0.2.3`; the demo
+configures the same segment explicitly through `OC2R_DEMO_NAT_IP`,
+`OC2R_DEMO_NAT_GATEWAY` and `OC2R_DEMO_DNS_SERVER` (see the endpoint table
+below).
 
 Supported: IPv4, ARP, ICMP echo, DHCP client, DNS A queries, TCP client and
 bounded TCP listeners, UDP datagrams with sender address/port/interface.
@@ -34,6 +37,41 @@ which is required by Onyx spawn privileges; use the compiler/libc patches beside
 the RPC tools when rebuilding with the current OnyxCC. Do not modify a mounted image.
 The shell accepts `run /bin/netcfg list`; examples below omit that prefix.
 
+## Endpoints and environment variables
+
+No address of the public demo backend is stored in this repository. The demo
+reads its endpoints from the environment, or from the git-ignored
+`scripts/demo/demo-endpoints.local.sh` (copy
+`scripts/demo/demo-endpoints.local.sh.example` and fill it in). The variables
+are defined in `scripts/demo/demo-endpoints.sh`; the private lab addresses have
+repository defaults, the public backend has none.
+
+| Variable | Meaning | Default |
+| --- | --- | --- |
+| `OC2R_DEMO_HTTP_HOST` | public demo backend host (HTTP) | unset -- required |
+| `OC2R_DEMO_HTTP_PORT` | public demo backend HTTP port | unset -- required |
+| `OC2R_DEMO_HTTP_PATH` | HTTP request path | `/oc2r` |
+| `OC2R_DEMO_TCP_HOST` | public demo backend host (TCP echo) | unset -- required |
+| `OC2R_DEMO_TCP_PORT` | public demo backend TCP echo port | unset -- required |
+| `OC2R_DEMO_NAT_IP` | guest address of the QEMU/SLIRP NAT adapter | `10.0.2.15` |
+| `OC2R_DEMO_NAT_MASK` | netmask of the NAT segment | `255.255.255.0` |
+| `OC2R_DEMO_NAT_GATEWAY` | gateway of the NAT segment | `10.0.2.2` |
+| `OC2R_DEMO_DNS_SERVER` | DNS server of the NAT adapter | `1.1.1.1` |
+| `OC2R_DEMO_LAN_IP` | LAN address of the first guest | `192.168.50.1` |
+| `OC2R_DEMO_LAN_PEER_IP` | LAN address of the second guest | `192.168.50.2` |
+| `OC2R_DEMO_LAN_UDP_PORT` | UDP echo port of the LAN pair | `12346` |
+| `OC2R_DEMO_LAN_TCP_PORT` | TCP echo port of the LAN pair | `12345` |
+| `OC2R_DEMO_LAN_STREAM_PORT` | TCP stream port of the LAN pair | `12348` |
+| `OC2R_DEMO_ROUTE_PROBE_IP` | off-subnet probe target | `1.1.1.1` |
+| `OC2R_DEMO_ROUTE_PROBE_PORT` | off-subnet probe port | `12347` |
+
+`bash scripts/demo/demo-endpoints.sh show` prints the resolved values and the
+guest command lines to paste into the Minecraft terminal. The command examples
+below use the placeholders of that table: `<NAT_IP>`, `<NAT_MASK>`,
+`<NAT_GATEWAY>`, `<DNS_SERVER>`, `<LAN_IP>`, `<LAN_PEER_IP>`,
+`<LAN_UDP_PORT>`, `<LAN_TCP_PORT>`, `<HTTP_HOST>`, `<HTTP_PORT>`,
+`<HTTP_PATH>`, `<TCP_HOST>` and `<TCP_PORT>`.
+
 ## Guest commands (root)
 
 Indices follow device-tree probe order, not Minecraft item slots. `netcfg list`
@@ -42,23 +80,23 @@ For Internet index 0 and LAN index 1, on PC1:
 
 ```text
 netcfg list
-netcfg set 0 10.0.2.15 255.255.255.0 10.0.2.2 1.1.1.1
-netcfg set 1 192.168.50.1 255.255.255.0 0.0.0.0 0.0.0.0
-udpserve 12346
+netcfg set 0 <NAT_IP> <NAT_MASK> <NAT_GATEWAY> <DNS_SERVER>
+netcfg set 1 <LAN_IP> <NAT_MASK> 0.0.0.0 0.0.0.0
+udpserve <LAN_UDP_PORT>
 ```
 
 On PC2, configure its Internet card the same way (the separate NAT adapter has
-its own address space), configure its LAN address to `192.168.50.2`, then:
+its own address space), configure its LAN address to `<LAN_PEER_IP>`, then:
 
 ```text
-udpdemo call 192.168.50.1 12346 OC2R-LAN-UDP
+udpdemo call <LAN_IP> <LAN_UDP_PORT> OC2R-LAN-UDP
 ```
 
 `UDP ROUNDTRIP: ONYX-UDP-ECHO` proves request and response. For TCP, start
-`tcpserve 12345` on PC1, then on PC2:
+`tcpserve <LAN_TCP_PORT>` on PC1, then on PC2:
 
 ```text
-tcpdemo 192.168.50.1 12345 OC2R-LAN-TCP
+tcpdemo <LAN_IP> <LAN_TCP_PORT> OC2R-LAN-TCP
 ```
 
 `TCP RECEIVED: ONYX-TCP-ECHO` proves the TCP exchange. Servers accept one
@@ -66,12 +104,13 @@ request; tools have 60-second guest deadlines. Reverse the roles to test the
 other direction. `udpdemo send IP PORT MESSAGE` and `udpdemo recv PORT` remain
 available for one-way markers.
 
-Internet and LAN remain configured together. With a permitted external server:
+Internet and LAN remain configured together. With a permitted external server
+(the public demo backend, configured in the local endpoint file):
 
 ```text
-ohttp 185.176.94.38:18080/oc2r /tmp/demo-http.txt
+ohttp <HTTP_HOST>:<HTTP_PORT><HTTP_PATH> /tmp/demo-http.txt
 cat /tmp/demo-http.txt
-tcpdemo 185.176.94.38 16769 OC2R-GUEST-PROBE
+tcpdemo <TCP_HOST> <TCP_PORT> OC2R-GUEST-PROBE
 ```
 
 `ohttp` accepts numeric IPv4 or hostnames, optional `http://`, optional port and
