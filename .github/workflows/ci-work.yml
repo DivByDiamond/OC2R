@@ -43,9 +43,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
+        id: jdk21
         with:
           distribution: 'temurin'
           java-version: '21'
+      # The job also compiles the 26.x mod nodes, whose toolchain is Java 25. Gradle only
+      # auto-detects the JDK of JAVA_HOME, so install it here and pass both paths explicitly;
+      # the toolchain resolver cannot provision a JDK at build time on this runner.
+      - uses: actions/setup-java@v6
+        id: jdk25
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          set-default: false
+      - name: Resolve toolchain paths
+        id: jdks
+        env:
+          JDK21: ${{ steps.jdk21.outputs.path }}
+          JDK25: ${{ steps.jdk25.outputs.path }}
+        run: echo "paths=$JDK21,$JDK25" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: |
@@ -65,9 +81,10 @@ jobs:
         # of the mod nodes -- so a change that breaks the 26.x sources cannot pass CI.
         run: |
           TASKS=":1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet :26.1.2:checkstyleMain :26.2:checkstyleMain :core:1.21.1:checkstyleMain :core:26.1.2:checkstyleMain :core:26.2:checkstyleMain :26.1.2:compileJava :26.2:compileJava"
-          ./gradlew $TASKS || {
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
             echo "::warning::First lint gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew $TASKS --refresh-dependencies
+            ./gradlew $JDKS $TASKS --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -233,16 +250,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      # Java 25 is the toolchain of the 26.x nodes. Installing it here means
-      # Gradle finds a local JDK instead of provisioning one through the
-      # foojay resolver in the middle of the build, which is the slow and
-      # flaky path in CI. A job must not mix toolchains: Gradle only
-      # auto-detects the JDK of JAVA_HOME, so a 21/25 mixture would download
-      # the second JDK at build time.
+      # The 26.x nodes build their mod classes on Java 25, while their Gradle
+      # tooling (asset download, part of the plugins) still asks for Java 21.
+      # Both JDKs are installed here and handed to Gradle explicitly: the
+      # toolchain resolver is not configured on this runner, so letting Gradle
+      # search on its own fails with "Cannot find a Java installation".
       - uses: actions/setup-java@v6
+        id: jdk25
         with:
           distribution: 'temurin'
           java-version: '25'
+      # Compiling a 26.x node also needs Java 21: the asset download task and part of the
+      # build tooling still run on the 1.21.1 toolchain. Both paths go to Gradle explicitly.
+      - uses: actions/setup-java@v6
+        id: jdk21
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          set-default: false
+      - name: Resolve toolchain paths
+        id: jdks
+        env:
+          JDK21: ${{ steps.jdk21.outputs.path }}
+          JDK25: ${{ steps.jdk25.outputs.path }}
+        run: echo "paths=$JDK21,$JDK25" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: |
@@ -259,9 +290,10 @@ jobs:
       - name: Unit tests (26.x)
         run: |
           TASKS=":26.1.2:test :26.2:test :core:26.1.2:test :core:26.2:test"
-          ./gradlew $TASKS || {
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
             echo "::warning::First 26.x test gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew $TASKS --refresh-dependencies
+            ./gradlew $JDKS $TASKS --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -269,9 +301,10 @@ jobs:
       - name: Game tests (26.x)
         run: |
           TASKS=":26.1.2:gameTest :26.2:gameTest"
-          ./gradlew $TASKS || {
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
             echo "::warning::First 26.x gameTest gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew $TASKS --refresh-dependencies
+            ./gradlew $JDKS $TASKS --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -333,6 +366,9 @@ jobs:
         run: |
           missing=()
           command -v cc >/dev/null 2>&1 || missing+=(gcc)
+          # A compiler without the libc development headers cannot even parse the guest tools
+          # ("stdio.h: No such file or directory"), which is what the syntax check does.
+          [ -f /usr/include/stdio.h ] || missing+=(libc6-dev)
           command -v python3 >/dev/null 2>&1 || missing+=(python3)
           if [ "${#missing[@]}" -gt 0 ]; then
             sudo apt-get update
