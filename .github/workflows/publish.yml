@@ -77,6 +77,16 @@ jobs:
           fi
           echo "paths=$PATHS" >> "$GITHUB_OUTPUT"
 
+      # :fabric:1.21.1:build pulls in loom's runGameTest, which starts the game test server
+      # through xvfb-run. The stock actions-runner image does not ship it, and the release must
+      # not fail after the build has already produced the jars.
+      - name: Install xvfb
+        run: |
+          command -v xvfb-run >/dev/null || {
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends xvfb
+          }
+
       - name: Build 1.21.1 artifacts (NeoForge and Fabric)
         # Transient Maven 5xx (e.g. maven.neoforged.net 502) aborts Gradle
         # resolution; one retry keeps the release publish path reliable.
