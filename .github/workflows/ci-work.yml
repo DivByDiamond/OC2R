@@ -79,21 +79,13 @@ jobs:
             versions/1.21.1/build/reports/pmd/
             versions/1.21.1/build/reports/checkstyle/
             versions/1.21.1/build/reports/spotbugs/
-            versions/26.1.2/build/reports/pmd/
             versions/26.1.2/build/reports/checkstyle/
-            versions/26.1.2/build/reports/spotbugs/
-            versions/26.2/build/reports/pmd/
             versions/26.2/build/reports/checkstyle/
-            versions/26.2/build/reports/spotbugs/
             core/versions/1.21.1/build/reports/pmd/
             core/versions/1.21.1/build/reports/checkstyle/
             core/versions/1.21.1/build/reports/spotbugs/
-            core/versions/26.1.2/build/reports/pmd/
             core/versions/26.1.2/build/reports/checkstyle/
-            core/versions/26.1.2/build/reports/spotbugs/
-            core/versions/26.2/build/reports/pmd/
             core/versions/26.2/build/reports/checkstyle/
-            core/versions/26.2/build/reports/spotbugs/
           if-no-files-found: ignore
           retention-days: 1
 
