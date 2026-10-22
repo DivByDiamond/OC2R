@@ -15,7 +15,9 @@ split into several blocks with the same condition.
 
 The comparator follows Checkstyle's `CustomImportOrderCheck.compareImports`:
 split on ".", compare the segments pairwise (case sensitive), shorter path
-first when all common segments are equal.
+first when all common segments are equal. It lives in `import_order.py`, which
+the other scripts of this directory share, so that the tool that reports and
+the tool that fixes agree on what "sorted" means.
 
 Files whose import region contains an `if/else` branch pair are skipped: their
 branches are complete alternatives of each other and must stay adjacent.
@@ -33,6 +35,10 @@ import pathlib
 import re
 import sys
 from dataclasses import dataclass, field
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+from import_order import compare_imports  # noqa: E402
 
 BLOCK_OPEN_RE = re.compile(r"^\s*//\?\s*(if|else)\b(.*?)\{\s*$")
 BLOCK_ELSE_RE = re.compile(r"^\s*(?:\*/)?//\?\}\s*else\s*\{\s*$")
@@ -101,20 +107,6 @@ def evaluate_condition(condition: str, version: str) -> bool:
 # --------------------------------------------------------------------------- #
 # checkstyle comparison
 # --------------------------------------------------------------------------- #
-
-
-def compare_imports(first: str, second: str) -> int:
-    """Checkstyle's CustomImportOrderCheck.compareImports."""
-    first_tokens = first.split(".")
-    second_tokens = second.split(".")
-    result = 0
-    for left, right in zip(first_tokens, second_tokens):
-        result = (left > right) - (left < right)
-        if result != 0:
-            break
-    if result == 0:
-        result = (len(first_tokens) > len(second_tokens)) - (len(first_tokens) < len(second_tokens))
-    return result
 
 
 def cmp_key(names: dict[int, dict[str, str]], variant: str):

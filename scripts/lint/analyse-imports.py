@@ -9,6 +9,12 @@ so a fix in the shared tree has to be correct for every variant at once.
 This tool prints, per file, the import order each variant sees and what it would
 have to be, so the reordering can be derived instead of guessed.
 
+The expected order is the one Checkstyle computes: the static group first, then
+the regular group, each sorted with the segment comparator of
+`import_order.compare_imports` (not with `sorted()`). Imports inside a
+`/* ... */` block are ignored: in the shared tree those are the branches of a
+Stonecutter conditional block that the linted version does not use.
+
 Usage: analyse-imports.py [--root DIR] [--variant NAME=DIR ...] [FILE ...]
 """
 
@@ -16,11 +22,11 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-import re
 import sys
 
-IMPORT_RE = re.compile(r"^\s*import\s+(static\s+)?([\w.]+)\s*;")
-COMMENTED_IMPORT_RE = re.compile(r"^\s*/\*\s*import\s+(static\s+)?([\w.]+)\s*;")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+from import_order import sorted_imports, visible_imports  # noqa: E402
 
 STATIC_GROUP = 0
 REGULAR_GROUP = 1
@@ -28,26 +34,12 @@ REGULAR_GROUP = 1
 
 def parse_imports(path: pathlib.Path) -> list[tuple[int, str, bool]]:
     """Return (line number, import path, is_static) for the visible imports."""
-    out: list[tuple[int, str, bool]] = []
-    text = path.read_text(encoding="utf-8")
-    for number, line in enumerate(text.splitlines(), start=1):
-        match = IMPORT_RE.match(line)
-        if match:
-            out.append((number, match.group(2), bool(match.group(1))))
-    return out
+    return visible_imports(path.read_text(encoding="utf-8").splitlines())
 
 
 def variant_imports(path: pathlib.Path) -> list[tuple[int, str, bool]]:
-    """Same as parse_imports, but ignores `/*`-prefixed (inactive) imports."""
-    out: list[tuple[int, str, bool]] = []
-    text = path.read_text(encoding="utf-8")
-    for number, line in enumerate(text.splitlines(), start=1):
-        if COMMENTED_IMPORT_RE.match(line):
-            continue
-        match = IMPORT_RE.match(line)
-        if match:
-            out.append((number, match.group(2), bool(match.group(1))))
-    return out
+    """Same as parse_imports, for a resolved variant tree."""
+    return parse_imports(path)
 
 
 def group_of(is_static: bool) -> int:
@@ -55,9 +47,9 @@ def group_of(is_static: bool) -> int:
 
 
 def sorted_targets(imports: list[tuple[int, str, bool]]) -> list[str]:
-    """Checkstyle's expectation: static group first, then alphabetical."""
-    statics = sorted(p for _, p, s in imports if s)
-    regular = sorted(p for _, p, s in imports if not s)
+    """Checkstyle's expectation: static group first, then alphabetical by segment."""
+    statics = sorted_imports([p for _, p, s in imports if s])
+    regular = sorted_imports([p for _, p, s in imports if not s])
     return statics + regular
 
 
@@ -86,9 +78,16 @@ def main() -> int:
     else:
         shared_files = sorted(shared_root.rglob("*.java"))
 
+    # The build excludes these packages from the lint source sets
+    # (`exclude("**/jcodec/**", "**/gametest/**")` in build.gradle.kts), so the tool
+    # must not report them either.
+    excluded = ("/jcodec/", "/gametest/")
+
     broken = 0
     for shared in shared_files:
         rel = shared.relative_to(root)
+        if any(part in "/" + rel.as_posix() for part in excluded):
+            continue
         per_variant = []
         for name, directory in variants:
             candidate = directory / rel.relative_to("src/main/java")

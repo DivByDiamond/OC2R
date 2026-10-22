@@ -18,9 +18,241 @@
 
   <module name="SuppressWarningsFilter"/>
 
+  <!--
+    `MissingJavadocMethod` is only meaningful for the public API surface, so
+    the check is enabled for the API packages (`api`, `manual/api` and
+    `platform`) and muted for everything else.
+
+    `SuppressionSingleFilter` matches its `files` pattern with `Matcher.find()`,
+    i.e. the pattern may match at any offset of the path. The pattern below is
+    therefore anchored with `^` and `$`, so that the negative lookahead is
+    evaluated against the whole path: a path is only muted when it has no
+    `api` or `platform` directory segment at all. Without the anchor the
+    lookahead matches at the first offset that is outside such a segment, which
+    mutes the check for the whole repository.
+  -->
   <module name="SuppressionSingleFilter">
     <property name="checks" value="MissingJavadocMethod"/>
-    <property name="files" value="(?!.*[/\\]api[/\\]).*"/>
+    <property name="files" value="^(?!.*[/\\](api|platform)[/\\]).*$"/>
+  </module>
+
+  <!--
+    The API packages still hold members that were written before this check
+    had any effect. They are muted one file and one line at a time, so that a
+    public API member added from now on is reported while the existing ones
+    stay as they are. The lines are the lines of the members themselves; the
+    26.x trees are generated from the same sources and keep the same line
+    numbers, except for the members that only exist in one of the versions.
+  -->
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]InternetDeviceLifecycle\.java"/>
+    <property name="lines" value="7,11"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]InternetManager\.java"/>
+    <property name="lines" value="5,8"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]LayerParameters\.java"/>
+    <property name="lines" value="7,9"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]layer[/\\]SessionLayer\.java"/>
+    <property name="lines" value="15,17,22"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]session[/\\]EchoSession\.java"/>
+    <property name="lines" value="4,6"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]session[/\\]Session\.java"/>
+    <property name="lines" value="8,10,12,14,17,19,21,23"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]inet[/\\]session[/\\]StreamSession\.java"/>
+    <property name="lines" value="6,8,10"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]api[/\\]util[/\\]Side\.java"/>
+    <property name="lines" value="74"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]provider[/\\]NamespaceDocumentProvider\.java"/>
+    <property name="lines" value="32,37"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]provider[/\\]NamespacePathProvider\.java"/>
+    <property name="lines" value="32,36"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]renderer[/\\]MinecraftFontRenderer\.java"/>
+    <property name="lines" value="18"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]tab[/\\]AbstractTab\.java"/>
+    <property name="lines" value="17"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]tab[/\\]ItemStackTab\.java"/>
+    <property name="lines" value="19"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]prefab[/\\]tab[/\\]TextureTab\.java"/>
+    <property name="lines" value="19"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]util[/\\]PathUtils\.java"/>
+    <property name="lines" value="12"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]manual[/\\]api[/\\]util[/\\]ShowManualScreenEvent\.java"/>
+    <property name="lines" value="28,34"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]AbstractEnergyStorage\.java"/>
+    <property name="lines" value="14,18,22,26"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]CapabilityRegistrar\.java"/>
+    <property name="lines" value="43,55,62"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]ClientRegistrar\.java"/>
+    <property name="lines" value="43"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]CombinedItemHandler\.java"/>
+    <property name="lines" value="11"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]EnergyStorage\.java"/>
+    <property name="lines" value="11,13,15,17,19,21"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]FabricClientEvents\.java"/>
+    <property name="lines" value="23"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]FabricClientSetup\.java"/>
+    <property name="lines" value="27"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]FabricCommonEvents\.java"/>
+    <property name="lines" value="26"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]ItemHandlerSlot\.java"/>
+    <property name="lines" value="22"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]ItemStackHandler\.java"/>
+    <property name="lines" value="24,28,32"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]MenuBridge\.java"/>
+    <property name="lines" value="35"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NbtSerializable\.java"/>
+    <property name="lines" value="14,16"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeCapabilityRegistrar\.java"/>
+    <property name="lines" value="18"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeCapabilitySetup\.java"/>
+    <property name="lines" value="14"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeClientEvents\.java"/>
+    <property name="lines" value="39,45,63,68,74,93"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeClientRegistrar\.java"/>
+    <property name="lines" value="62"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeClientSetup\.java"/>
+    <property name="lines" value="59,70,80,86,102,107,114,119,124,129,134,140,145"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeCommonEvents\.java"/>
+    <property name="lines" value="26,31,36,41,46,51,56,61,67,73"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeConfigEvents\.java"/>
+    <property name="lines" value="14"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeImc\.java"/>
+    <property name="lines" value="12"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeMessageRegistrar\.java"/>
+    <property name="lines" value="19"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeProjectorEvents\.java"/>
+    <property name="lines" value="28,44"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]NeoForgeShaderEvents\.java"/>
+    <property name="lines" value="21"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]Platform\.java"/>
+    <property name="lines" value="30,44,58,72,86,100,114"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]ScreenFactory\.java"/>
+    <property name="lines" value="12"/>
+  </module>
+  <module name="SuppressionSingleFilter">
+    <property name="checks" value="MissingJavadocMethod"/>
+    <property name="files" value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\]li[/\\]cil[/\\]oc2[/\\]platform[/\\]event[/\\]CommonEvents\.java"/>
+    <property name="lines" value="52"/>
   </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="HideUtilityClassConstructor"/>
@@ -117,19 +349,10 @@
     <property name="checks" value="AvoidStarImport"/>
   </module>
   <!--
-    The multiversion source layout renames or moves the imported class itself
-    (net.minecraft.resources.ResourceLocation -> net.minecraft.resources.Identifier
-    on 26.x, net.minecraft.Util -> net.minecraft.util.Util), and the new name
-    sorts to a different place than the old one. When such an import sits next
-    to a neighbour whose position flips with it, no single order satisfies
-    1.21.1 and 26.x at the same time, so the alphabetical import order cannot
-    hold for these files. The rule stays enabled everywhere else.
+    The import order of the multiversion source layout is handled by the
+    SuppressionXpathSingleFilter inside the TreeWalker below, which narrows the
+    suppression to the single import that no order can satisfy for 1.21.1 and 26.x.
   -->
-  <module name="SuppressionSingleFilter">
-    <property name="checks" value="CustomImportOrder"/>
-    <property name="files"
-              value=".*[/\\](api[/\\]bus[/\\]device[/\\]DeviceType|api[/\\]util[/\\]Registries|manual[/\\]api[/\\]util[/\\]Constants|manual[/\\]client[/\\]util[/\\](ManualRegistry|RegistryUtils)|manual[/\\]client[/\\]document[/\\]segment[/\\]LinkSegment|platform[/\\](BlockHolder|ItemHolder))\.java"/>
-  </module>
   <module name="SuppressionSingleFilter">
     <property name="checks" value="WhitespaceAround"/>
   </module>
@@ -424,6 +647,35 @@
       <property name="commentFormat" value="CHECKSTYLE.SUPPRESS\: ([\w\|]+)"/>
       <property name="checkFormat" value="$1"/>
       <property name="influenceFormat" value="1"/>
+    </module>
+
+    <!--
+      The multiversion source layout renames or moves the imported class itself:
+      `net.minecraft.resources.ResourceLocation` becomes `net.minecraft.resources.Identifier`
+      on 26.x, and `net.minecraft.Util` becomes `net.minecraft.util.Util`. The new name sorts
+      to a different place than the old one, so an import that sits next to a neighbour whose
+      position flips with it has no order that satisfies 1.21.1 and 26.x at the same time.
+
+      The suppression is narrowed to the single import that Checkstyle reports, so
+      CustomImportOrder keeps checking every other import of these files. The file pattern is
+      bound to the source trees of this project (`src/main/java` and the generated Stonecutter
+      trees), so a same-named file of another package cannot be silenced by accident.
+
+      Note: the move of `net.minecraft.Util` to `net.minecraft.util.Util` is not a Stonecutter
+      replacement (stonecutter.gradle.kts has four replacements, none of them touches Util);
+      LinkSegment carries it as a conditional import.
+    -->
+    <module name="SuppressionXpathSingleFilter">
+      <property name="checks" value="CustomImportOrder"/>
+      <property name="files"
+                value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\].*[/\\](api[/\\]bus[/\\]device[/\\]DeviceType|api[/\\]util[/\\]Registries|manual[/\\]api[/\\]util[/\\]Constants|manual[/\\]client[/\\]util[/\\](ManualRegistry|RegistryUtils)|platform[/\\](BlockHolder|ItemHolder))\.java"/>
+      <property name="query" value="//IMPORT[./DOT//IDENT[@text='Identifier']]"/>
+    </module>
+    <module name="SuppressionXpathSingleFilter">
+      <property name="checks" value="CustomImportOrder"/>
+      <property name="files"
+                value=".*[/\\](src[/\\]main[/\\]java|generated[/\\]stonecutter[/\\]main[/\\]java)[/\\].*[/\\]manual[/\\]client[/\\]document[/\\]segment[/\\]LinkSegment\.java"/>
+      <property name="query" value="//IMPORT[./DOT//IDENT[@text='Component']]"/>
     </module>
 
   </module>

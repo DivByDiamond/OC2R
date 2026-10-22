@@ -34,8 +34,9 @@ jobs:
       contents: read
     runs-on: pocketprobe-kube
     # Static analysis on compiled classes (spotbugs) -- compile is needed but
-    # no game server; the whole job is CPU-bound gradle work.
-    timeout-minutes: 20
+    # no game server; the whole job is CPU-bound gradle work. The job also builds
+    # the 26.x mod nodes, so it needs more than the 1.21.1-only budget.
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v7
@@ -57,12 +58,14 @@ jobs:
       - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
         # Transient 5xx from maven.neoforged.net aborts Gradle resolution (unlike 404
         # it is not treated as "not found"); one retry recovers the same way build.yml does.
-        # Tasks are qualified to the active multiversion node (1.21.1): bare names would
-        # also resolve the 26.x nodes, which this job neither builds nor caches.
+        # Every task is qualified: a bare name would also resolve in the nodes this job does
+        # not build. The 26.x nodes are covered explicitly -- their checkstyle and the compile
+        # of the mod nodes -- so a change that breaks the 26.x sources cannot pass CI.
         run: |
-          ./gradlew :1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet || {
+          TASKS=":1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet :26.1.2:checkstyleMain :26.2:checkstyleMain :core:1.21.1:checkstyleMain :core:26.1.2:checkstyleMain :core:26.2:checkstyleMain :26.1.2:compileJava :26.2:compileJava"
+          ./gradlew $TASKS || {
             echo "::warning::First lint gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew :1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet --refresh-dependencies
+            ./gradlew $TASKS --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -76,9 +79,21 @@ jobs:
             versions/1.21.1/build/reports/pmd/
             versions/1.21.1/build/reports/checkstyle/
             versions/1.21.1/build/reports/spotbugs/
+            versions/26.1.2/build/reports/pmd/
+            versions/26.1.2/build/reports/checkstyle/
+            versions/26.1.2/build/reports/spotbugs/
+            versions/26.2/build/reports/pmd/
+            versions/26.2/build/reports/checkstyle/
+            versions/26.2/build/reports/spotbugs/
             core/versions/1.21.1/build/reports/pmd/
             core/versions/1.21.1/build/reports/checkstyle/
             core/versions/1.21.1/build/reports/spotbugs/
+            core/versions/26.1.2/build/reports/pmd/
+            core/versions/26.1.2/build/reports/checkstyle/
+            core/versions/26.1.2/build/reports/spotbugs/
+            core/versions/26.2/build/reports/pmd/
+            core/versions/26.2/build/reports/checkstyle/
+            core/versions/26.2/build/reports/spotbugs/
           if-no-files-found: ignore
           retention-days: 1
 

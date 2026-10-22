@@ -6,6 +6,7 @@
       <trusted-artifacts>
          <trust group="loom" name="mappings"/>
          <trust group="net.minecraft" name="minecraft-merged-.*" regex="true"/>
+         <!-- Mods Fabric Loom remaps locally from the downloaded jars; their hashes differ per checkout. The originals stay verified. -->
          <trust group="remapped\..*" regex="true"/>
       </trusted-artifacts>
    </configuration>

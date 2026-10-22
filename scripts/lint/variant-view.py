@@ -10,7 +10,9 @@ checked without running Gradle:
 * the `else` branch of a block is the negated condition;
 * the Stonecutter replacements from stonecutter.gradle.kts are applied
   (`ResourceLocation` -> `Identifier` and `GuiGraphics` -> `GuiGraphicsExtractor`
-  on 26.x, the reverse below 26.1).
+  on 26.x, the reverse below 26.1). The replacements are anchored to the start
+  of a code line, so a mention in a comment keeps its spelling; the patterns
+  below are the Python spelling of the ones in stonecutter.gradle.kts.
 
 Usage:
     variant-view.py --version 26.1.2 src/main/java/.../Foo.java
@@ -33,11 +35,14 @@ BASE_VERSION = "1.21.1"
 
 REPLACEMENTS = [
     (r"\bResourceLocation\b", "Identifier", r"(?<!-)\bIdentifier\b", "ResourceLocation"),
-    (r"\bGuiGraphics\b", "GuiGraphicsExtractor", r"\bGuiGraphicsExtractor\b", "GuiGraphics"),
-    (r"(?<![.\w])Properties\.of\(\)", "li.cil.oc2.common.block.BlockProps.of()",
-     r"li\.cil\.oc2\.common\.block\.BlockProps\.of\(\)", "Properties.of()"),
-    (r"@OnlyIn\(Dist\.CLIENT\)", "@li.cil.oc2.common.util.ClientOnly",
-     r"@li\.cil\.oc2\.common\.util\.ClientOnly", "@OnlyIn(Dist.CLIENT)"),
+    (r"(?m)^(?![ \t]*(?://|\*))((?:[^\n/]|/(?!/))*?)\bGuiGraphics\b", r"\1GuiGraphicsExtractor",
+     r"(?m)^(?![ \t]*(?://|\*))((?:[^\n/]|/(?!/))*?)\bGuiGraphicsExtractor\b", r"\1GuiGraphics"),
+    (r"(?m)^(?![ \t]*(?://|\*))((?:[^\n/]|/(?!/))*?)(?<![.\w])Properties\.of\(\)",
+     r"\1li.cil.oc2.common.block.BlockProps.of()",
+     r"(?m)^(?![ \t]*(?://|\*))((?:[^\n/]|/(?!/))*?)(?<![.\w])li\.cil\.oc2\.common\.block\.BlockProps\.of\(\)",
+     r"\1Properties.of()"),
+    (r"(?m)^([ \t]*)@OnlyIn\(Dist\.CLIENT\)", r"\1@li.cil.oc2.common.util.ClientOnly",
+     r"(?m)^([ \t]*)@li\.cil\.oc2\.common\.util\.ClientOnly", r"\1@OnlyIn(Dist.CLIENT)"),
 ]
 
 

@@ -8,11 +8,25 @@
 
     <rule ref="category/java/bestpractices.xml">
         <!-- Keep defensive defaults for version-dependent Minecraft enums. -->
-        <exclude name="ExhaustiveSwitchHasDefault"/>
         <!-- API extension points need not promise lambda compatibility. -->
-        <exclude name="ImplicitFunctionalInterface"/>
-        <!-- Suppressions may apply only on another Stonecutter version or rule subset. -->
+        <!--
+            UnnecessaryWarningSuppression stays off: it reports every suppression that did not
+            hide a violation of the *current* ruleset, and the repo still carries ~50 such
+            dead suppressions (mostly "// NOPMD" comments for AvoidInstantiatingObjectsInLoops,
+            which PMD 7 no longer reports for per-iteration state). Removing them is a
+            separate cleanup; until then the rule would fail the build on ~50 findings.
+            The rules it is meant to protect (AvoidSynchronizedStatement, ...) are enabled
+            below, so their point suppressions are live again.
+        -->
         <exclude name="UnnecessaryWarningSuppression"/>
+        <!--
+            ImplicitFunctionalInterface stays off: PMD 7 cannot scope this rule to files (it is
+            not an XPath rule, so its query cannot be narrowed), and the ~29 functional
+            interfaces of the public API intentionally carry no @FunctionalInterface
+            annotation. Turning the rule on needs either an annotation per interface or a
+            point @SuppressWarnings in each of them, which touches the API files.
+        -->
+        <exclude name="ImplicitFunctionalInterface"/>
         <exclude name="GuardLogStatement"/>
 
         <exclude name="AbstractClassWithoutAbstractMethod"/>
@@ -30,7 +44,6 @@
 
     <rule ref="category/java/errorprone.xml">
         <!-- Record-style accessors intentionally share the name of their backing field. -->
-        <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="NullAssignment"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="UseCorrectExceptionLogging"/>
@@ -54,6 +67,21 @@
         </properties>
     </rule>
 
+    <!--
+        AvoidFieldNameMatchingMethodName: enabled again, narrowed to the classes that keep a
+        field whose name matches an accessor on purpose. The stock query is kept verbatim; the
+        only addition is the file scope, so the rule stays active for every other class (and
+        the ThreadLocal rename in core/.../platform/RegistrationContext keeps its meaning).
+
+        The listed files are the ones that violate the rule today; the point suppressions
+        that replace this file scope belong into them.
+    -->
+    <rule ref="category/java/errorprone.xml/AvoidFieldNameMatchingMethodName">
+        <properties>
+            <property name="xpath" value="//FieldDeclaration/VariableDeclarator/VariableId[not(ends-with(pmd:fileName(), 'RestrictedContainer.java') or ends-with(pmd:fileName(), 'FlashImageUpload.java') or ends-with(pmd:fileName(), 'PowerAction.java') or ends-with(pmd:fileName(), 'BusCableBakedModel.java') or ends-with(pmd:fileName(), 'BusCableModel.java') or ends-with(pmd:fileName(), 'MonitorBakedModel.java') or ends-with(pmd:fileName(), 'MonitorModel.java') or ends-with(pmd:fileName(), 'NeoForgeTransferAdapters.java') or ends-with(pmd:fileName(), 'ProjectorBlockEntityDepth.java') or ends-with(pmd:fileName(), 'ProjectorPipelineRenderer.java') or ends-with(pmd:fileName(), 'WrenchRecipe.java'))][some $method in ../../..[self::ClassBody or self::EnumBody]/MethodDeclaration satisfies lower-case(@Name) = lower-case($method/@Name)]"/>
+        </properties>
+    </rule>
+
     <rule ref="category/java/performance.xml">
         <!-- §172: enabled again; deliberate allocations inside hot loops get @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") -->
         <exclude name="RedundantFieldInitializer"/>
@@ -62,8 +90,6 @@
     </rule>
 
     <rule ref="category/java/multithreading.xml">
-        <!-- Monitor locks are intentional; replacing them changes synchronization contracts. -->
-        <exclude name="AvoidSynchronizedStatement"/>
         <!-- Unavoidable: NeoForge/Minecraft thread model requires shared mutable state -->
         <exclude name="DoNotUseThreads"/>
         <!-- Unavoidable: CompletableFuture in DiskDriveDevice, FlashMemoryFlasherDevice -->
@@ -72,6 +98,33 @@
         <exclude name="NonThreadSafeSingleton"/>
         <!-- Unavoidable: Mixin classes access Minecraft fields -->
         <exclude name="AvoidSynchronizedAtMethodLevel"/>
+    </rule>
+
+    <!--
+        AvoidSynchronizedStatement: enabled again, narrowed to the classes that
+        deliberately synchronize on a foreign monitor (the flash writer, the chunk cache and
+        the transfer adapters). The stock query is kept verbatim; the file scope keeps the
+        rule active everywhere else, so the point suppressions in core/.../platform/Platform.java
+        are live again.
+
+        The listed files are the ones that violate the rule today; the point suppressions
+        that replace this file scope belong into them.
+    -->
+    <rule ref="category/java/multithreading.xml/AvoidSynchronizedStatement">
+        <properties>
+            <property name="xpath" value="//SynchronizedStatement[not(ends-with(pmd:fileName(), 'FlashMemoryFlasherDevice.java') or ends-with(pmd:fileName(), 'ChunkUtils.java') or ends-with(pmd:fileName(), 'NeoForgeTransferAdapters.java'))]"/>
+        </properties>
+    </rule>
+
+    <!--
+        ExhaustiveSwitchHasDefault: enabled again, narrowed to the classes whose switches
+        keep a defensive default branch (Minecraft enums change between versions). The rule
+        stays active for every other switch, so a new defensive default is still reported.
+    -->
+    <rule ref="category/java/bestpractices.xml/ExhaustiveSwitchHasDefault">
+        <properties>
+            <property name="xpath" value="//(SwitchStatement | SwitchExpression)[@Exhaustive = true()][@DefaultCase = true()][not(ends-with(pmd:fileName(), 'ComputerRenderer.java') or ends-with(pmd:fileName(), 'AbstractComputerContainer.java') or ends-with(pmd:fileName(), 'AbstractMonitorContainer.java') or ends-with(pmd:fileName(), 'AbstractRobotContainer.java') or ends-with(pmd:fileName(), 'TcpUtils.java') or ends-with(pmd:fileName(), 'NetworkCableItem.java') or ends-with(pmd:fileName(), 'ComputerPowerMessage.java') or ends-with(pmd:fileName(), 'RobotPowerMessage.java') or ends-with(pmd:fileName(), 'NativeLoader.java') or ends-with(pmd:fileName(), 'VMErrorCalculator.java') or ends-with(pmd:fileName(), 'TerminalOutput.java') or ends-with(pmd:fileName(), 'FontHandling.java') or ends-with(pmd:fileName(), 'TerminalCharRenderer.java') or ends-with(pmd:fileName(), 'TerminalBackgroundRenderer.java'))]"/>
+        </properties>
     </rule>
 
     <!-- §168: codestyle.xml — reasonable subset (naming/obvious-dead-code rules kept,
@@ -113,7 +166,7 @@
         <exclude name="FieldNamingConventions"/>
     </rule>
 
-<rule ref="category/java/design.xml/CyclomaticComplexity">
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
         <properties>
             <property name="classReportLevel" value="100"/>
             <property name="methodReportLevel" value="20"/>

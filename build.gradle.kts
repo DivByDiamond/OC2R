@@ -690,8 +690,9 @@ tasks.register("lintRatchet") {
         ":core:${sc.current.version}:checkstyleMain", ":core:${sc.current.version}:checkstyleTest",
         ":core:${sc.current.version}:pmdMain", ":core:${sc.current.version}:pmdTest",
         ":core:${sc.current.version}:spotbugsMain", ":core:${sc.current.version}:spotbugsTest",
-        // The fabric node only exists for 1.21.1 (Loom does not remap 26.x).
-        ":fabric:1.21.1:checkstyleMain", ":fabric:1.21.1:checkstyleTest",
+        // The fabric node only exists for 1.21.1 (Loom does not remap 26.x) and has no test
+        // source set, so only its main sources are linted.
+        ":fabric:1.21.1:checkstyleMain",
     )
 
     val baseline = Properties()
@@ -702,25 +703,33 @@ tasks.register("lintRatchet") {
     }
 
     doLast {
-        fun count(file: java.io.File, tag: String): Int {
-            if (!file.exists()) return 0
+        // A missing report is an error, not "0 violations": counting a report that was never
+        // written as clean would turn a moved module or a renamed report into a silent pass of
+        // the ratchet.
+        fun count(name: String, file: java.io.File, tag: String): Int {
+            if (!file.isFile) {
+                throw org.gradle.api.GradleException(
+                    "Lint report for $name is missing: ${file.absolutePath} was not written. " +
+                        "The ratchet cannot check the baseline without it."
+                )
+            }
             val text = file.readText()
             return Regex("<$tag ").findAll(text).count()
         }
 
         val checks = listOf(
-            "checkstyleMain" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("main.xml").asFile, "error"),
-            "checkstyleTest" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
-            "pmdMain" to count(layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
-            "pmdTest" to count(layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
+            "checkstyleMain" to count("checkstyleMain", layout.buildDirectory.dir("reports/checkstyle").get().file("main.xml").asFile, "error"),
+            "checkstyleTest" to count("checkstyleTest", layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
+            "pmdMain" to count("pmdMain", layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
+            "pmdTest" to count("pmdTest", layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
             // core module reports (core/build.gradle.kts applies the same tool configs).
-            "coreCheckstyleMain" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/main.xml"), "error"),
-            "coreCheckstyleTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/test.xml"), "error"),
-            "corePmdMain" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/main.xml"), "violation"),
-            "corePmdTest" to count(rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/test.xml"), "violation"),
-            // fabric module (the same tool config, see fabric/build.gradle.kts).
-            "fabricCheckstyleMain" to count(rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/main.xml"), "error"),
-            "fabricCheckstyleTest" to count(rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/test.xml"), "error"),
+            "coreCheckstyleMain" to count("coreCheckstyleMain", rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/main.xml"), "error"),
+            "coreCheckstyleTest" to count("coreCheckstyleTest", rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/test.xml"), "error"),
+            "corePmdMain" to count("corePmdMain", rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/main.xml"), "violation"),
+            "corePmdTest" to count("corePmdTest", rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/test.xml"), "violation"),
+            // fabric module (the same tool config, see fabric/build.gradle.kts). The module has
+            // no test source set, so there is no fabricCheckstyleTest report.
+            "fabricCheckstyleMain" to count("fabricCheckstyleMain", rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/main.xml"), "error"),
         )
 
         var failed = false
