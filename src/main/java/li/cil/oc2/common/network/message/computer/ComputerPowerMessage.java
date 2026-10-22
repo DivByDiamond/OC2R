@@ -5,20 +5,20 @@ import li.cil.oc2.api.API;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
 import li.cil.oc2.common.network.message.misc.AbstractMessage;
 import li.cil.oc2.common.network.util.MessageUtils;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.platform.MessageContext;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record ComputerPowerMessage(BlockPos pos, boolean power) implements AbstractMessage {
+public record ComputerPowerMessage(BlockPos pos, PowerAction action) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, ComputerPowerMessage> STREAM_CODEC =
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC,
                     ComputerPowerMessage::pos,
-                    ByteBufCodecs.BOOL,
-                    ComputerPowerMessage::power,
+                    PowerAction.STREAM_CODEC,
+                    ComputerPowerMessage::action,
                     ComputerPowerMessage::new);
 
     public static final CustomPacketPayload.Type<ComputerPowerMessage> TYPE =
@@ -30,8 +30,8 @@ public record ComputerPowerMessage(BlockPos pos, boolean power) implements Abstr
         return TYPE;
     }
 
-    public ComputerPowerMessage(final ComputerBlockEntity computer, final boolean power) {
-        this(computer.getBlockPos(), power);
+    public ComputerPowerMessage(final ComputerBlockEntity computer, final PowerAction action) {
+        this(computer.getBlockPos(), action);
     }
 
     @Override
@@ -41,10 +41,13 @@ public record ComputerPowerMessage(BlockPos pos, boolean power) implements Abstr
                 pos,
                 ComputerBlockEntity.class,
                 (player, computer) -> {
-                    if (power) {
-                        computer.terminalManager.start();
-                    } else {
-                        computer.terminalManager.stop();
+                    switch (action) {
+                        case START -> computer.terminalManager.start();
+                        case SHUTDOWN -> computer.terminalManager.shutdown();
+                        case REBOOT -> computer.terminalManager.reboot();
+                        case POWER_OFF -> computer.terminalManager.stop();
+                        // All PowerAction values are handled above; the default keeps the switch exhaustive.
+                        default -> {}
                     }
                 });
     }

@@ -1,6 +1,21 @@
 #file: noinspection UndefinedAction,UndefinedParamsPresent
 name: publish
 
+# Publishes a release to CurseForge, Modrinth and the GitHub release.
+#
+# Four targets are published (Stage 4, Wave A):
+#   * NeoForge 1.21.1 -> versions/1.21.1/build/libs
+#   * NeoForge 26.1.2 -> versions/26.1.2/build/libs
+#   * NeoForge 26.2   -> versions/26.2/build/libs
+#   * Fabric   1.21.1 -> fabric/versions/1.21.1/build/libs
+#
+# Every target is published on its own, so a target that is not ready cannot
+# take the whole release down:
+#   * a target whose artifact is missing (failed build) is skipped,
+#   * a target without a configured CurseForge project is skipped,
+#   * a platform without a token is skipped.
+# Only the NeoForge 1.21.1 upload to CurseForge (the historical path) still
+# fails the release on an error; every other upload only warns.
 on:
   workflow_dispatch:
   release:
@@ -13,7 +28,8 @@ jobs:
       packages: write
     # Self-hosted runner pool.
     runs-on: pocketprobe-kube
-    timeout-minutes: 45
+    # The 26.x nodes are built as well, which needs more than the 1.21.1-only budget.
+    timeout-minutes: 60
 
     steps:
       - name: Set release type to 'release'
@@ -26,18 +42,78 @@ jobs:
         if: github.event.release.prerelease == true
 
       - uses: actions/checkout@v7
+
+      # Java 21 runs Gradle and builds the 1.21.1 nodes (NeoForge and Fabric).
       - uses: actions/setup-java@v6
+        id: jdk21
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
-      - name: Build artifacts
+      # The 26.x nodes need a Java 25 toolchain (versions/<v>/gradle.properties:
+      # java_version=25). The JDK is installed but not made the default, so the
+      # Gradle daemon of the 1.21.1 build keeps running on Java 21.
+      # continue-on-error: Gradle's toolchain auto-detection is the fallback
+      # (the same mechanism ci-work.yml relies on for the 26.x compile check).
+      - uses: actions/setup-java@v6
+        id: jdk25
+        continue-on-error: true
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          set-default: false
+      - name: Resolve toolchain paths
+        id: jdks
+        env:
+          JDK21: ${{ steps.jdk21.outputs.path }}
+          JDK25: ${{ steps.jdk25.outputs.path }}
+        run: |
+          # Gradle searches the standard locations and the paths listed here;
+          # both JDKs are needed in the same build.
+          PATHS="$JDK21"
+          if [ -n "$JDK25" ]; then
+            PATHS="$PATHS,$JDK25"
+          else
+            echo "::notice::JDK 25 is not installed: the 26.x nodes rely on Gradle's toolchain auto-detection."
+          fi
+          echo "paths=$PATHS" >> "$GITHUB_OUTPUT"
+
+      - name: Build 1.21.1 artifacts (NeoForge and Fabric)
         # Transient Maven 5xx (e.g. maven.neoforged.net 502) aborts Gradle
         # resolution; one retry keeps the release publish path reliable.
+        # Qualified to the 1.21.1 nodes: a bare `build` would also resolve the
+        # 26.x nodes, which are built in their own step below (Java 25).
         run: |
-          ./gradlew -Psemver='${{ github.event.release.tag_name }}' build || {
+          TASKS=":1.21.1:build :fabric:1.21.1:build"
+          ./gradlew -Dorg.gradle.java.installations.paths='${{ steps.jdks.outputs.paths }}' -Psemver='${{ github.event.release.tag_name }}' $TASKS || {
             echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
-            ./gradlew -Psemver='${{ github.event.release.tag_name }}' build --refresh-dependencies
+            ./gradlew -Dorg.gradle.java.installations.paths='${{ steps.jdks.outputs.paths }}' -Psemver='${{ github.event.release.tag_name }}' $TASKS --refresh-dependencies
           }
+        env:
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build 26.x artifacts (NeoForge, Java 25)
+        # The 26.x Minecraft artifacts are compiled for Java 25, so this build
+        # runs on JDK 25 entirely. It is best effort: a broken 26.x node must
+        # not cost the 1.21.1 release, the 26.x targets are skipped instead.
+        continue-on-error: true
+        run: |
+          if [ -n "${{ steps.jdk25.outputs.path }}" ]; then
+            export JAVA_HOME='${{ steps.jdk25.outputs.path }}'
+            export PATH="$JAVA_HOME/bin:$PATH"
+          else
+            echo "::notice::JDK 25 is not available: the 26.x build runs on Java 21 and relies on Gradle's toolchain auto-detection."
+          fi
+          java -version
+          TASKS=":26.1.2:build :26.2:build"
+          ./gradlew -Dorg.gradle.java.installations.paths='${{ steps.jdks.outputs.paths }}' -Psemver='${{ github.event.release.tag_name }}' $TASKS || {
+            echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
+            ./gradlew -Dorg.gradle.java.installations.paths='${{ steps.jdks.outputs.paths }}' -Psemver='${{ github.event.release.tag_name }}' $TASKS --refresh-dependencies
+          }
+          if [ $? -ne 0 ]; then
+            echo "::error::The 26.x build failed: the NeoForge 26.1.2/26.2 targets are skipped."
+            exit 1
+          fi
         env:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -46,36 +122,265 @@ jobs:
       # a failure here must not prevent the CurseForge upload below.
       - name: Publish to GitHub Packages
         continue-on-error: true
-        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} publishGprPublicationToGitHubPackagesRepository
+        run: ./gradlew -Psemver='${{ github.event.release.tag_name }}' -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }} :1.21.1:publishGprPublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       # Modrinth version_number regex allows only [a-zA-Z0-9._-]:
-      # strip the leading 'v' from the tag name and never append '+git' (build.gradle.kts).
-      # Tag your releases WITHOUT the 'v' prefix, e.g. 0.1.0, and this stays clean.
-      - name: Resolve artifact path
-        id: artifact
+      # the build strips the leading 'v' from the tag name and never appends
+      # '+git' to the published version (build.gradle.kts).
+      - name: Resolve release metadata
+        id: release
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: |
-          FILE=$(ls build/libs/oc2r-1.21.1-neoforge-*.jar | grep -v -- '-api\.jar' | head -n1)
-          echo "path=$FILE" >> "$GITHUB_OUTPUT"
+          # The published version is the tag without its leading 'v': that is
+          # the version the build puts into the jar name and the manifest.
+          VERSION="${TAG_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # The secrets context is not available in step conditions, so the
+          # presence of a token is resolved here and read from the outputs.
+          if [ -n "$CURSEFORGE_API_KEY" ]; then
+            echo "curseforge_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "curseforge_token=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$MODRINTH_TOKEN" ]; then
+            echo "modrinth_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "modrinth_token=false" >> "$GITHUB_OUTPUT"
+          fi
+          # Modrinth project id: the one from gradle.properties.
+          MODRINTH_ID=$(grep -E '^modrinth_project_id=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "modrinth_project_id=${MODRINTH_ID:-F1gm4RsH}" >> "$GITHUB_OUTPUT"
+
+      - name: Collect release artifacts
+        id: artifacts
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          # One canonical file per target in dist/, so every platform and the
+          # GitHub release refer to the same artifact. Loom names the Fabric
+          # jar after the Stonecutter node ("1.21.1.jar", without a version),
+          # so it is renamed here.
+          mkdir -p dist dist/sources
+          for SPEC in "1.21.1:neoforge_1_21_1" "26.1.2:neoforge_26_1_2" "26.2:neoforge_26_2"; do
+            NODE="${SPEC%%:*}"
+            KEY="${SPEC##*:}"
+            SRC=$(ls "versions/$NODE/build/libs/oc2r-$NODE-neoforge-"*.jar 2>/dev/null | grep -v -e '-sources\.jar$' -e '-api\.jar$' | head -n1)
+            if [ -n "$SRC" ]; then
+              cp "$SRC" "dist/$(basename "$SRC")"
+              echo "$KEY=dist/$(basename "$SRC")" >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning::No NeoForge $NODE jar found: the $KEY target is skipped."
+            fi
+          done
+          for NODE in 1.21.1 26.1.2 26.2; do
+            SRC=$(ls "versions/$NODE/build/libs/"*"-sources.jar" 2>/dev/null | head -n1)
+            if [ -n "$SRC" ]; then
+              cp "$SRC" "dist/sources/$(basename "$SRC")"
+            fi
+          done
+          SRC=$(ls fabric/versions/1.21.1/build/libs/*.jar 2>/dev/null | grep -v -e '-sources\.jar$' -e '-dev\.jar$' -e '-api\.jar$' | head -n1)
+          if [ -n "$SRC" ]; then
+            cp "$SRC" "dist/oc2r-1.21.1-fabric-$VERSION.jar"
+            echo "fabric_1_21_1=dist/oc2r-1.21.1-fabric-$VERSION.jar" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No Fabric 1.21.1 jar found: the fabric_1_21_1 target is skipped."
+          fi
+          ls -l dist dist/sources
 
       - name: Add Artifacts to Github Release
+        # The tag is "0.4.1" -- upstream has no "v" prefixed tag, and an
+        # unresolvable action ref fails the job before the platform uploads.
         uses: alexellis/upload-assets@0.4.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./build/libs/*.jar"]'
+          # Every target: the four mod jars plus the NeoForge sources jars.
+          asset_paths: '["./dist/*.jar", "./dist/sources/*.jar"]'
 
-      - name: Upload to CurseForge
+      - name: Report skipped publish targets
+        env:
+          CF_PROJECT_26_1_2: ${{ vars.CURSEFORGE_PROJECT_ID_26_1_2 }}
+          CF_PROJECT_26_2: ${{ vars.CURSEFORGE_PROJECT_ID_26_2 }}
+          CF_PROJECT_FABRIC: ${{ vars.CURSEFORGE_PROJECT_ID_FABRIC }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_API_KEY }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          # A target without a CurseForge project id (or without a token) is
+          # skipped on purpose: an optional platform must not fail the release.
+          if [ -z "$CURSEFORGE_TOKEN" ]; then
+            echo "::notice::No CurseForge token configured: every CurseForge upload is skipped."
+          else
+            if [ -z "$CF_PROJECT_26_1_2" ]; then
+              echo "::notice::No CurseForge project for NeoForge 26.1.2 configured (repository variable CURSEFORGE_PROJECT_ID_26_1_2): skipped."
+            fi
+            if [ -z "$CF_PROJECT_26_2" ]; then
+              echo "::notice::No CurseForge project for NeoForge 26.2 configured (repository variable CURSEFORGE_PROJECT_ID_26_2): skipped."
+            fi
+            if [ -z "$CF_PROJECT_FABRIC" ]; then
+              echo "::notice::No CurseForge project for Fabric 1.21.1 configured (repository variable CURSEFORGE_PROJECT_ID_FABRIC): skipped."
+            fi
+          fi
+          if [ -z "$MODRINTH_TOKEN" ]; then
+            echo "::notice::No Modrinth token configured: every Modrinth upload is skipped."
+          fi
+
+      # --- CurseForge --------------------------------------------------------
+      # CurseForge stores the game version per file and the loader per project,
+      # so every target needs its own upload. The 1.21.1 NeoForge project id is
+      # the historical one; the other targets need a project id of their own
+      # (repository variables), until they are configured the upload is skipped.
+      - name: Upload NeoForge 1.21.1 to CurseForge
+        id: cf_1_21_1
         uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.curseforge_token == 'true' && steps.artifacts.outputs.neoforge_1_21_1 != '' }}
         with:
           curseforge-id: 1657848
           curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
-          files: ${{ steps.artifact.outputs.path }}
-          name: OC2R ${{ github.event.release.tag_name }} for Minecraft 1.21.1 (NeoForge)
-          version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
-          version: ${{ github.event.release.tag_name }}
-          changelog: ${{ github.event.release.body }}
-          loaders: neoforge
-          game-versions: 1.21.1
-          java: 21
+          curseforge-files: ${{ steps.artifacts.outputs.neoforge_1_21_1 }}
+          curseforge-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 1.21.1 (NeoForge)
+          curseforge-version: ${{ steps.release.outputs.version }}
+          curseforge-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          curseforge-changelog: ${{ github.event.release.body }}
+          curseforge-loaders: neoforge
+          curseforge-game-versions: 1.21.1
+          curseforge-java: 21
+
+      - name: Upload NeoForge 26.1.2 to CurseForge
+        id: cf_26_1_2
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.curseforge_token == 'true' && vars.CURSEFORGE_PROJECT_ID_26_1_2 != '' && steps.artifacts.outputs.neoforge_26_1_2 != '' }}
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_PROJECT_ID_26_1_2 }}
+          curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
+          curseforge-files: ${{ steps.artifacts.outputs.neoforge_26_1_2 }}
+          curseforge-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 26.1.2 (NeoForge)
+          curseforge-version: ${{ steps.release.outputs.version }}
+          curseforge-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          curseforge-changelog: ${{ github.event.release.body }}
+          curseforge-loaders: neoforge
+          curseforge-game-versions: 26.1.2
+          curseforge-java: 25
+          # Optional target: a CurseForge error must not block the release.
+          curseforge-fail-mode: warn
+
+      - name: Upload NeoForge 26.2 to CurseForge
+        id: cf_26_2
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.curseforge_token == 'true' && vars.CURSEFORGE_PROJECT_ID_26_2 != '' && steps.artifacts.outputs.neoforge_26_2 != '' }}
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_PROJECT_ID_26_2 }}
+          curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
+          curseforge-files: ${{ steps.artifacts.outputs.neoforge_26_2 }}
+          curseforge-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 26.2 (NeoForge)
+          curseforge-version: ${{ steps.release.outputs.version }}
+          curseforge-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          curseforge-changelog: ${{ github.event.release.body }}
+          curseforge-loaders: neoforge
+          curseforge-game-versions: 26.2
+          curseforge-java: 25
+          curseforge-fail-mode: warn
+
+      - name: Upload Fabric 1.21.1 to CurseForge
+        id: cf_fabric
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.curseforge_token == 'true' && vars.CURSEFORGE_PROJECT_ID_FABRIC != '' && steps.artifacts.outputs.fabric_1_21_1 != '' }}
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_PROJECT_ID_FABRIC }}
+          curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
+          curseforge-files: ${{ steps.artifacts.outputs.fabric_1_21_1 }}
+          curseforge-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 1.21.1 (Fabric)
+          curseforge-version: ${{ steps.release.outputs.version }}
+          curseforge-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          curseforge-changelog: ${{ github.event.release.body }}
+          curseforge-loaders: fabric
+          curseforge-game-versions: 1.21.1
+          curseforge-java: 21
+          curseforge-fail-mode: warn
+
+      # --- Modrinth ----------------------------------------------------------
+      # One Modrinth version per target: the mod version is the same for all of
+      # them, the game version and the loader differ.
+      - name: Upload NeoForge 1.21.1 to Modrinth
+        id: mr_1_21_1
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.modrinth_token == 'true' && steps.artifacts.outputs.neoforge_1_21_1 != '' }}
+        with:
+          modrinth-id: ${{ steps.release.outputs.modrinth_project_id }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-files: ${{ steps.artifacts.outputs.neoforge_1_21_1 }}
+          modrinth-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 1.21.1 (NeoForge)
+          modrinth-version: ${{ steps.release.outputs.version }}
+          modrinth-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          modrinth-changelog: ${{ github.event.release.body }}
+          modrinth-loaders: neoforge
+          modrinth-game-versions: 1.21.1
+          modrinth-fail-mode: warn
+
+      - name: Upload NeoForge 26.1.2 to Modrinth
+        id: mr_26_1_2
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.modrinth_token == 'true' && steps.artifacts.outputs.neoforge_26_1_2 != '' }}
+        with:
+          modrinth-id: ${{ steps.release.outputs.modrinth_project_id }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-files: ${{ steps.artifacts.outputs.neoforge_26_1_2 }}
+          modrinth-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 26.1.2 (NeoForge)
+          modrinth-version: ${{ steps.release.outputs.version }}
+          modrinth-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          modrinth-changelog: ${{ github.event.release.body }}
+          modrinth-loaders: neoforge
+          modrinth-game-versions: 26.1.2
+          modrinth-fail-mode: warn
+
+      - name: Upload NeoForge 26.2 to Modrinth
+        id: mr_26_2
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.modrinth_token == 'true' && steps.artifacts.outputs.neoforge_26_2 != '' }}
+        with:
+          modrinth-id: ${{ steps.release.outputs.modrinth_project_id }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-files: ${{ steps.artifacts.outputs.neoforge_26_2 }}
+          modrinth-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 26.2 (NeoForge)
+          modrinth-version: ${{ steps.release.outputs.version }}
+          modrinth-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          modrinth-changelog: ${{ github.event.release.body }}
+          modrinth-loaders: neoforge
+          modrinth-game-versions: 26.2
+          modrinth-fail-mode: warn
+
+      - name: Upload Fabric 1.21.1 to Modrinth
+        id: mr_fabric
+        uses: Kir-Antipov/mc-publish@v3.3
+        if: ${{ steps.release.outputs.modrinth_token == 'true' && steps.artifacts.outputs.fabric_1_21_1 != '' }}
+        with:
+          modrinth-id: ${{ steps.release.outputs.modrinth_project_id }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-files: ${{ steps.artifacts.outputs.fabric_1_21_1 }}
+          modrinth-name: OC2R ${{ steps.release.outputs.version }} for Minecraft 1.21.1 (Fabric)
+          modrinth-version: ${{ steps.release.outputs.version }}
+          modrinth-version-type: ${{ github.event.release.prerelease == true && 'beta' || 'release' }}
+          modrinth-changelog: ${{ github.event.release.body }}
+          modrinth-loaders: fabric
+          modrinth-game-versions: 1.21.1
+          modrinth-fail-mode: warn
+
+      - name: Publish summary
+        if: always()
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          {
+            echo "### OC2R ${VERSION} — published targets"
+            echo ""
+            echo "| Target | Game version | Loader | CurseForge | Modrinth |"
+            echo "| --- | --- | --- | --- | --- |"
+            echo "| NeoForge 1.21.1 | 1.21.1 | neoforge | ${{ steps.cf_1_21_1.outputs.curseforge-url }} | ${{ steps.mr_1_21_1.outputs.modrinth-url }} |"
+            echo "| NeoForge 26.1.2 | 26.1.2 | neoforge | ${{ steps.cf_26_1_2.outputs.curseforge-url }} | ${{ steps.mr_26_1_2.outputs.modrinth-url }} |"
+            echo "| NeoForge 26.2 | 26.2 | neoforge | ${{ steps.cf_26_2.outputs.curseforge-url }} | ${{ steps.mr_26_2.outputs.modrinth-url }} |"
+            echo "| Fabric 1.21.1 | 1.21.1 | fabric | ${{ steps.cf_fabric.outputs.curseforge-url }} | ${{ steps.mr_fabric.outputs.modrinth-url }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

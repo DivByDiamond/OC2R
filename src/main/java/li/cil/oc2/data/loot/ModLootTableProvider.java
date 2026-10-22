@@ -24,6 +24,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+//? if >=26.1 {
+/*import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+*///?}
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public final class ModLootTableProvider extends LootTableProvider {
@@ -59,10 +62,12 @@ public final class ModLootTableProvider extends LootTableProvider {
             dropSelf(Blocks.REDSTONE_INTERFACE.get());
             dropSelf(Blocks.MONITOR.get());
             dropSelf(Blocks.FLASH_MEMORY_FLASHER.get());
-            dropSelf(Blocks.NETWORK_SWITCH.get());
+            // This block has no registered item; generating a self-drop would encode air.
+            add(Blocks.NETWORK_SWITCH.get(), LootTable.lootTable());
             dropSelf(Blocks.VXLAN_HUB.get());
             dropSelf(Blocks.PCI_CARD_CAGE.get());
             dropSelf(Blocks.INTERNET_GATEWAY.get());
+            dropSelf(Blocks.SPEAKER.get());
         }
 
         @Override
@@ -87,11 +92,18 @@ public final class ModLootTableProvider extends LootTableProvider {
                                             .add(
                                                     LootItem.lootTableItem(block)
                                                             .apply(
+                                                                    //? if >=26.1 {
+                                                                    /*CopyComponentsFunction
+                                                                            .copyComponentsFromBlockEntity(
+                                                                                    LootContextParams
+                                                                                            .BLOCK_ENTITY)
+                                                                    *///?} else {
                                                                     CopyComponentsFunction
                                                                             .copyComponents(
                                                                                     CopyComponentsFunction
                                                                                             .Source
                                                                                             .BLOCK_ENTITY)
+                                                                    //?}
                                                                             .include(
                                                                                     DataComponents
                                                                                             .RESTRICTED_CONTAINER

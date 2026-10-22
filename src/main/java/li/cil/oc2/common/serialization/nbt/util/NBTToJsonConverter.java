@@ -32,31 +32,59 @@ public final class NBTToJsonConverter {
     }
 
     private static JsonElement convertByte(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((ByteTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((ByteTag) tag).getAsByte());
+        //?}
     }
 
     private static JsonElement convertShort(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((ShortTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((ShortTag) tag).getAsShort());
+        //?}
     }
 
     private static JsonElement convertInt(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((IntTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((IntTag) tag).getAsInt());
+        //?}
     }
 
     private static JsonElement convertLong(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((LongTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((LongTag) tag).getAsLong());
+        //?}
     }
 
     private static JsonElement convertFloat(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((FloatTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((FloatTag) tag).getAsFloat());
+        //?}
     }
 
     private static JsonElement convertDouble(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(((DoubleTag) tag).value());
+        *///?} else {
         return new JsonPrimitive(((DoubleTag) tag).getAsDouble());
+        //?}
     }
 
     private static JsonElement convertString(final Tag tag) {
+        //? if >=26.1 {
+        /*return new JsonPrimitive(tag.asString().orElse(""));
+        *///?} else {
         return new JsonPrimitive(tag.getAsString());
+        //?}
     }
 
     private static JsonElement convertByteArray(final Tag tag) {
@@ -78,7 +106,11 @@ public final class NBTToJsonConverter {
     private static JsonElement convertCompound(final Tag tag) {
         final JsonObject json = new JsonObject();
         final CompoundTag compoundTag = (CompoundTag) tag;
+        //? if >=26.1 {
+        /*for (final String key : compoundTag.keySet()) {
+        *///?} else {
         for (final String key : compoundTag.getAllKeys()) {
+        //?}
             json.add(key, convert(compoundTag.get(key)));
         }
         return json;

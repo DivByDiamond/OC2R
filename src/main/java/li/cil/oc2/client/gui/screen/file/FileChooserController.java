@@ -85,7 +85,8 @@ class FileChooserController {
                                 okButton.active = true;
                                 if (Files.isRegularFile(path)) {
                                     okButton.setMessage(
-                                            FileChooserScreen.OVERWRITE_TEXT.copy().withStyle(style -> style.withColor(0xFF0000)));
+                                            FileChooserScreen.OVERWRITE_TEXT.copy()
+                                                    .withStyle(style -> style.withColor(0xFF0000)));
                                 }
                             }
                         });

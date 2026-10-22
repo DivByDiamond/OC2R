@@ -13,7 +13,11 @@ public final class TextComponentSerializer implements Serializer<Component> {
     public void serialize(
             final SerializationVisitor visitor, final Class<Component> type, final Object value)
             throws SerializationException {
+        //? if >=26.1 {
+        /*final String json = li.cil.oc2.common.util.text.ComponentJson.toJson((Component) value, RegistryAccess.EMPTY);
+        *///?} else {
         final String json = Component.Serializer.toJson((Component) value, RegistryAccess.EMPTY);
+        //?}
         visitor.putObject("value", String.class, json);
     }
 
@@ -33,6 +37,10 @@ public final class TextComponentSerializer implements Serializer<Component> {
             return (Component) value;
         }
 
+        //? if >=26.1 {
+        /*return li.cil.oc2.common.util.text.ComponentJson.fromJson(json, RegistryAccess.EMPTY);
+        *///?} else {
         return Component.Serializer.fromJson(json, RegistryAccess.EMPTY);
+        //?}
     }
 }

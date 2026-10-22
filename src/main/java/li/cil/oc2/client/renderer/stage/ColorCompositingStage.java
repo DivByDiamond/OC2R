@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.stage;
 
+//? if <26.1 {
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -104,3 +105,4 @@ public final class ColorCompositingStage {
         BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 }
+//?}

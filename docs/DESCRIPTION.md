@@ -6,7 +6,7 @@ Works out of the box with **Create: Aeronautics** - computers keep running on yo
 
 Like the original OC2, the computers are based on a 64-bit RISC-V emulation layer called [Sedna](https://github.com/fnuecke/sedna), written entirely in Java. Our fork keeps the same solid foundation but adds a full VT100-compliant terminal, tiered hardware, restored recipes and dozens of upstream bug fixes.
 
-[GitHub](https://github.com/TumRedSun/OC2R)
+[GitHub](https://github.com/DivByDiamond/OC2R)
 
 ## **Features**
 
@@ -29,13 +29,13 @@ Like the original OC2, the computers are based on a 64-bit RISC-V emulation laye
 
 ## **Server Owners/Managers**
 
-This fork is being actively maintained and tested for NeoForge 1.21.1. Computers run real Linux inside a RISC-V VM, so keep an eye on RAM usage on large servers - each running computer consumes resources proportional to its workload.
+This fork is being actively maintained and tested for Minecraft 1.21.1 on NeoForge and Fabric. Support for 26.1.2 / 26.2 (NeoForge) is in development. Computers run real Linux inside a RISC-V VM, so keep an eye on RAM usage on large servers - each running computer consumes resources proportional to its workload.
 
 ## **Getting Started**
 
 [Image 1]
 
-The mod provides stationary computers and, in the future, mobile robots. Computers connect to other in-world devices via bus cables and extension cards, and can communicate with each other using network cards and cables.
+The mod provides stationary computers and programmable mobile robots. Computers connect to other in-world devices via bus cables and extension cards, and can communicate with each other using network cards and cables.
 
 To get started:
 
@@ -76,7 +76,7 @@ Computers can be configured using various device items. Shared device types incl
 ## **Requirements**
 
 - **Minecraft**: 1.21.1
-- **Loader**: NeoForge 21.1.243+
+- **Loader**: NeoForge 21.1.243+ or Fabric (with Fabric API, Team Reborn Energy, Forge Config API Port, Markdown Manual and Architectury API)
 - **Java**: 21+
 
 ## **Contributors**
@@ -87,7 +87,7 @@ Computers can be configured using various device items. Shared device types incl
 
 ## **Bug Reports**
 
-Found a bug? Report it on our [GitHub repository](https://github.com/TumRedSun/OC2R/issues)
+Found a bug? Report it on our [GitHub repository](https://github.com/DivByDiamond/OC2R/issues)
 
 ## **License**
 

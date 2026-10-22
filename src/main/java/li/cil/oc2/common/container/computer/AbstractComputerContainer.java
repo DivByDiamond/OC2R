@@ -14,6 +14,7 @@ import li.cil.oc2.common.network.message.computer.terminal.ComputerTerminalInput
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerInventoryMessage;
 import li.cil.oc2.common.network.message.computer.terminal.OpenComputerTerminalMessage;
 import li.cil.oc2.common.util.GlobalInputCapture;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.common.vm.VirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.EnergyStorage;
@@ -55,7 +56,12 @@ public abstract class AbstractComputerContainer extends AbstractMachineTerminalC
 
     @Override
     public void sendPowerStateToServer(final boolean value) {
-        NetworkMessages.sendToServer(new ComputerPowerMessage(computer, value));
+        sendPowerActionToServer(value ? PowerAction.START : PowerAction.POWER_OFF);
+    }
+
+    @Override
+    public void sendPowerActionToServer(final PowerAction action) {
+        NetworkMessages.sendToServer(new ComputerPowerMessage(computer, action));
     }
 
     @Override

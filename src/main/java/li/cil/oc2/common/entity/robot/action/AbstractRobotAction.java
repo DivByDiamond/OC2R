@@ -15,7 +15,11 @@ public abstract class AbstractRobotAction {
 
     public AbstractRobotAction(final AbstractRobotActionType type, final CompoundTag tag) {
         this(type);
+        //? if >=26.1 {
+        /*id = tag.getIntOr(ID_TAG_NAME, 0);
+        *///?} else {
         id = tag.getInt(ID_TAG_NAME);
+        //?}
     }
 
     public AbstractRobotActionType getType() {
@@ -43,6 +47,10 @@ public abstract class AbstractRobotAction {
     }
 
     public void deserialize(final CompoundTag tag) {
+        //? if >=26.1 {
+        /*id = tag.getIntOr(ID_TAG_NAME, 0);
+        *///?} else {
         id = tag.getInt(ID_TAG_NAME);
+        //?}
     }
 }

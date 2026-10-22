@@ -20,7 +20,7 @@ Due to the nature of the employed protocol, data rate is rather limited. Most de
 
 ## Configuration
 
-Computers can be configured to some degree. The amount of memory, extra storage in the form of [hard drives](item/hard_drive.md) and most importantly, which cards to install, are largely up to the user. Note that the default Linux distribution does require at least 20M of memory, 24M are recommended.
+Computers can be configured to some degree. The amount of memory, extra storage in the form of [hard drives](item/hard_drive.md) and most importantly, which cards to install, are largely up to the user. Install a CPU as well as RAM; 32 MiB is a practical starting point for the bundled Linux. See [getting started](getting_started.md).
 
 Most components contribute to the overall energy consumption of a computer. To conserve energy, choosing only the necessary components is essential.
 
@@ -28,6 +28,6 @@ Most components contribute to the overall energy consumption of a computer. To c
 
 The default Linux distribution contains some basic command line tools, and the ability to write and run Lua programs. For an overview of how to interact with HLAPI devices using Lua, please see the [scripting](scripting.md) manual entry.
 
-Native devices use regular Linux drivers. For example, hard drives show up as */dev/vdaX* devices and can be formatted and mounted regularly.
+Native devices use regular Linux drivers. For example, whole disks appear as */dev/vda*, */dev/vdb* and so on; partitions, when present, add a number such as */dev/vda1*. The built-in root disk also occupies a device name. Inspect */proc/partitions* before formatting an extra disk.
 
 Computers provide two hardware clock (RTC) devices. The first one counts time in a scale most users will think in. It is used by default, for example by command line tools like *date* and *time*. The second one measures time as it works in the world the computer runs in. To obtain the current world time, use *hwclock -f /dev/rtc1*.

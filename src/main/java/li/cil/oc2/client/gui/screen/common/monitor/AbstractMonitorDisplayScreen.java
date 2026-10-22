@@ -4,7 +4,9 @@ import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.client.ClientCompat;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.monitor.MonitorInputCaptureButton;
@@ -18,11 +20,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+//? if >=26.1 {
+/*import net.minecraft.client.input.KeyEvent;
+*///?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorContainer>
@@ -34,10 +41,20 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
 
     protected AbstractMonitorDisplayScreen(
             final T container, final Inventory playerInventory, final Component title) {
+        //? if >=26.1 {
+/*        super(
+                container,
+                playerInventory,
+                title,
+                Sprites.MONITOR_SCREEN.width,
+                Sprites.MONITOR_SCREEN.height);
+        this.monitorDisplayWidget = new MonitorDisplayWidget(this);
+*///?} else {
         super(container, playerInventory, title);
         this.monitorDisplayWidget = new MonitorDisplayWidget(this);
         imageWidth = Sprites.MONITOR_SCREEN.width;
         imageHeight = Sprites.MONITOR_SCREEN.height;
+        //?}
     }
 
     @Override
@@ -47,6 +64,27 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
         monitorDisplayWidget.tick();
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean keyPressed(final KeyEvent event) {
+        if (monitorDisplayWidget.keyPressed(event.key(), event.scancode(), event.modifiers())) {
+            return true;
+        }
+
+        return Minecraft.getInstance().options.keyInventory.matches(event)
+                || super.keyPressed(event);
+    }
+
+    @Override
+    public boolean keyReleased(final KeyEvent event) {
+        if (monitorDisplayWidget.keyReleased(event.key(), event.scancode(), event.modifiers())) {
+            return true;
+        }
+
+        return Minecraft.getInstance().options.keyInventory.matches(event)
+                || super.keyPressed(event);
+    }
+*///?} else {
     @Override
     public boolean keyPressed(final int keyCode, final int scanCode, final int modifiers) {
         if (monitorDisplayWidget.keyPressed(keyCode, scanCode, modifiers)) {
@@ -68,6 +106,7 @@ public abstract class AbstractMonitorDisplayScreen<T extends AbstractMonitorCont
                         Minecraft.getInstance().options.keyInventory, keyCode, scanCode)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
+    //?}
 
     @Override
     public void init() {

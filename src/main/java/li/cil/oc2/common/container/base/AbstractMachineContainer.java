@@ -2,6 +2,7 @@ package li.cil.oc2.common.container.base;
 
 import li.cil.oc2.common.container.AbstractContainer;
 import li.cil.oc2.common.container.data.IntPrecisionContainerData;
+import li.cil.oc2.common.vm.PowerAction;
 import li.cil.oc2.common.vm.VirtualMachine;
 import net.minecraft.world.inventory.MenuType;
 
@@ -20,7 +21,8 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
         this.energyInfo = energyInfo;
 
         if (energyInfo.getIntCount() != ENERGY_INFO_SIZE) {
-            throw new IllegalArgumentException("Invalid data count " + energyInfo.getIntCount() + ", expected " + ENERGY_INFO_SIZE);
+            throw new IllegalArgumentException(
+                    "Invalid data count " + energyInfo.getIntCount() + ", expected " + ENERGY_INFO_SIZE);
         }
         super.addDataSlots(energyInfo);
     }
@@ -30,6 +32,10 @@ public abstract class AbstractMachineContainer extends AbstractContainer {
     public abstract VirtualMachine getVirtualMachine();
 
     public abstract void sendPowerStateToServer(final boolean value);
+
+    public void sendPowerActionToServer(final PowerAction action) {
+        sendPowerStateToServer(action == PowerAction.START);
+    }
 
     public int getEnergy() {
         return energyInfo.getInt(ENERGY_STORED_INDEX);

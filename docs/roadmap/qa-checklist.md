@@ -16,7 +16,6 @@ Source: [21](done.md#21-sound-tone-generator-pcm-streaming-speaker-block) (check
 - [ ] **Speaker is silent**: `lua -e 'local d=require("devices"); d:find("speaker"):beep(880,500)'`: RPC without errors but no sound. The chain is intact: callback -> `SoundClientMessages.sendBeep` -> `SoundCardBeepMessage` -> `SoundClientManager.playTone` ->
   `ToneSoundInstance` (stream `sound_card_beep`); POST beeps (same sound registration) do play. Check: (1) client log for `Unable to play unknown soundEvent`/exceptions in `enqueueWork`; (2) distance (`Attenuation.LINEAR`, range 16 blocks);
   (3) a silent failure in the `SoundEngine` streaming path (an exception in `CompletableFuture.thenAccept` is not logged): if needed, play without `stream=true` and return sound from `SoundBufferLibrary` (fallback `.ogg`).
-  May be the same problem as issue #288 ([upstream.md](upstream.md#413-not-applicable-or-already-closed)).
 - [ ] `d:find("sound")` returned nil: this was a consequence of the computer being off (energy shortage, config 256/t). After the fix (transfer 1024/t, computer buffer 8000) check again.
 - [ ] Check `write` (PCM streaming) once the tone is fixed.
 

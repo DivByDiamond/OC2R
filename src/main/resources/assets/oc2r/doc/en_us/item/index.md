@@ -2,6 +2,7 @@
 This index lists all documented items. If you're looking for a block, see the [block index](../block/index.md) instead.
 
 - [Block Operations Module](block_operations_module.md)
+- [Crafting Module](crafting_module.md)
 - [The Computerist's Handbook](manual.md)
 - [File Import/Export Card](file_import_export_card.md)
 - [Flash Memory](flash_memory.md)
@@ -15,5 +16,10 @@ This index lists all documented items. If you're looking for a block, see the [b
 - [Network Tunnel Module](network_tunnel_module.md)
 - [Redstone Interface Card](redstone_interface_card.md)
 - [Robot](robot.md)
+- [Scanner Module](scanner_module.md)
 - [Scrench](wrench.md)
 - [Sound Card](sound_card.md)
+
+- [CPU](cpu.md)
+- [GPU](gpu.md)
+- [Internet Card](internet_card.md)

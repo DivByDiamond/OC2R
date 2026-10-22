@@ -37,7 +37,9 @@ public abstract class ClientPacketListenerMixin {
             return;
         }
         final BlockEntity blockEntity = minecraft.level.getBlockEntity(packet.getPos());
-        if (blockEntity instanceof final PlatformBlockEntity platform && blockEntity.getType() == packet.getType()) {
+        // BlockState does not override equals(), so this compares the canonical instances.
+        if (blockEntity instanceof final PlatformBlockEntity platform
+                && blockEntity.getType().equals(packet.getType())) {
             platform.onDataPacket(minecraft.getConnection().getConnection(), packet, registryAccess);
             ci.cancel();
         }

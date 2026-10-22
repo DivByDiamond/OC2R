@@ -45,7 +45,11 @@ public final class FaceOverrides {
     }
 
     public void load(final CompoundTag tag, final String key) {
+        //? if >=26.1 {
+        /*final byte[] bytes = tag.getByteArray(key).orElse(new byte[0]);
+        *///?} else {
         final byte[] bytes = tag.getByteArray(key);
+        //?}
         // A missing or truncated array simply falls back to AUTO for the remaining faces.
         for (int i = 0; i < overrides.length; i++) {
             overrides[i] = i < bytes.length ? FaceOverride.fromByte(bytes[i]) : FaceOverride.AUTO;

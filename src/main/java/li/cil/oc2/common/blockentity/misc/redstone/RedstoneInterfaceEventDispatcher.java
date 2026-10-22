@@ -31,9 +31,17 @@ public final class RedstoneInterfaceEventDispatcher {
         final Direction direction = Side.relativeDirection(pos, fromPos);
         assert direction != null;
 
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(fromPos);
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(fromPos);
+        //?}
         final int sl =
+                //? if >=26.1 {
+                /*level.hasChunk(chunkPos.x(), chunkPos.z()) ? level.getSignal(fromPos, direction) : 0;
+                *///?} else {
                 level.hasChunk(chunkPos.x, chunkPos.z) ? level.getSignal(fromPos, direction) : 0;
+                //?}
 
         final JsonObject msg = new JsonObject();
         msg.addProperty("event", "redstone");

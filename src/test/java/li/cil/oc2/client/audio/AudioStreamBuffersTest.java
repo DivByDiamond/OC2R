@@ -60,6 +60,9 @@ class AudioStreamBuffersTest {
         // Without data the stream plays silence so that it stays alive.
         final ByteBuffer silence = stream.read(1024);
         assertTrue(silence.isDirect());
-        assertEquals(1024, silence.remaining());
+        assertTrue(silence.remaining() > 0 && silence.remaining() <= 1024);
+        while (silence.hasRemaining()) {
+            assertEquals(0, silence.get());
+        }
     }
 }

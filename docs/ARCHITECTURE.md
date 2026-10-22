@@ -1,5 +1,18 @@
 # Architecture Overview
 
+## Modules and Platform Layer
+
+Code is split so that most of the mod does not know which loader it runs on:
+
+```
+core            loader-independent contracts (li.cil.oc2.platform: RegistryBridge, NetworkBridge,
+                MenuBridge, CapabilityBridge, EnergyBridge, CommonEvents, ClientRegistrar, ...)
+root (NeoForge) the mod code + NeoForge implementations of the bridges
+fabric          Fabric implementations, entrypoints and mixins; compiles the shared sources too
+```
+
+Dependencies point one way: loader modules depend on `core`, never the reverse. Loader implementations are bound at start-up (`Main` / `OC2RFabric` through `ModBootstrap`) via `ServiceLoader`; shared code calls `Platform.*` instead of NeoForge or Fabric APIs. Minecraft versions (1.21.1, 26.1.2, 26.2) are multiplexed by Stonecutter nodes under `versions/`. Details: [MULTILOADER.md](MULTILOADER.md).
+
 ## Device Bus Graph
 
 The central architectural pattern is a **device bus** — a graph of interconnected `DeviceBusElement` nodes. A `DeviceBusController` scans reachable elements from a root, aggregates all exposed devices, and presents them to the virtual machine.

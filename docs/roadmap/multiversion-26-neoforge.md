@@ -3,6 +3,12 @@
 Spike of 2026-10-03 for roadmap [item 42, stages 3 and 4](multiloader.md) (multiversion 1.21.1 / 26.1 / 26.2 through Stonecutter). Scope: NeoForge only (the Fabric side is investigated separately). Nothing here was merged:
 all experiments ran in a scratch copy of the worktree (`scratchpad/s`), only this document is committed.
 
+Current status (2026-10-18): this document records the historical feasibility
+spike. Markdown Manual has since been embedded and ported into shared `src`,
+removing both external manual and Architectury dependencies. See
+[the maintained Stage 3 acceptance checklist](stage3-acceptance.md) and
+[manual provenance](../MARKDOWN_MANUAL.md).
+
 ## 1. Verdict
 
 - The toolchain is obtainable and works in the sandbox: JDK 25 (Temurin 25.0.4.1, downloaded from the Adoptium GitHub release that foojay points to), ModDevGradle 2.0.148, NeoForge `26.1.2.114`, NeoForm `26.1.2-1`.

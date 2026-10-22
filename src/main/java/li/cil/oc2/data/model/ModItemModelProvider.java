@@ -1,3 +1,5 @@
+//? if <26.1 {
+
 package li.cil.oc2.data.model;
 
 import li.cil.oc2.api.API;
@@ -57,7 +59,8 @@ public final class ModItemModelProvider extends ItemModelProvider {
         simple(Items.FLASH_MEMORY, "item/storage/flash_memory/flash_memory");
         simple(Items.FLASH_MEMORY_CUSTOM, "item/storage/flash_memory/flash_memory");
         simple(Items.FLOPPY, "item/storage/floppy/floppy_base").texture("layer1", "item/storage/floppy/floppy_tint");
-        simple(Items.FLOPPY_MODERN, "item/storage/floppy/floppy_base").texture("layer1", "item/storage/floppy/floppy_tint");
+        simple(Items.FLOPPY_MODERN, "item/storage/floppy/floppy_base")
+                .texture("layer1", "item/storage/floppy/floppy_tint");
 
         simple(Items.REDSTONE_INTERFACE_CARD, "item/cards/redstone_interface_card");
         simple(Items.NETWORK_INTERFACE_CARD, "item/cards/network_interface_card");
@@ -68,12 +71,15 @@ public final class ModItemModelProvider extends ItemModelProvider {
 
         simple(Items.INVENTORY_OPERATIONS_MODULE, "item/modules/inventory_operations_module");
         simple(Items.BLOCK_OPERATIONS_MODULE, "item/modules/block_operations_module");
+        simple(Items.SCANNER_MODULE, "item/modules/scanner_module");
+        simple(Items.CRAFTING_MODULE, "item/modules/crafting_module");
         simple(Items.NETWORK_TUNNEL_MODULE, "item/modules/network_tunnel_module");
 
         simple(Items.TRANSISTOR, "item/components/materials/transistor");
         simple(Items.CIRCUIT_BOARD, "item/components/materials/circuit_board");
 
-        withExistingParent(BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get()).getPath(), "template_shulker_box");
+        withExistingParent(BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get()).getPath(), "template_shulker_box")
+                .texture("particle", modLoc("entity/robot/robot"));
     }
 
     private <T extends Item> ItemModelBuilder simple(
@@ -85,3 +91,4 @@ public final class ModItemModelProvider extends ItemModelProvider {
                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, texturePath));
     }
 }
+//?}

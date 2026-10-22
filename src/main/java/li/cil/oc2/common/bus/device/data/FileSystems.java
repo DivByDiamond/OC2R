@@ -25,7 +25,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+//? if <26.1 {
 import net.minecraft.util.profiling.ProfilerFiller;
+//?}
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -185,7 +187,7 @@ public final class FileSystems {
                 "  Adding block device [{}] with id [{}] and a size of [{}].",
                 name,
                 location,
-                formatSize(data.getBlockDevice().getCapacity()));
+                formatSize(data.getCapacity()));
         BLOCK_DEVICE_DATA.put(location, data);
         blocksByName.put(name, data);
     }
@@ -193,6 +195,18 @@ public final class FileSystems {
     private static final class ReloadListener implements PreparableReloadListener {
         public static final ReloadListener INSTANCE = new ReloadListener();
 
+        //? if >=26.1 {
+        /*@Override
+        public CompletableFuture<Void> reload(
+                final PreparableReloadListener.SharedState currentReload,
+                final Executor backgroundExecutor,
+                final PreparableReloadListener.PreparationBarrier stage,
+                final Executor gameExecutor) {
+            return CompletableFuture.runAsync(
+                            () -> FileSystems.reload(currentReload.resourceManager()), backgroundExecutor)
+                    .thenCompose(stage::wait);
+        }
+        *///?} else {
         @Override
         public CompletableFuture<Void> reload(
                 final PreparableReloadListener.PreparationBarrier stage,
@@ -205,5 +219,6 @@ public final class FileSystems {
                             () -> FileSystems.reload(resourceManager), backgroundExecutor)
                     .thenCompose(stage::wait);
         }
+        //?}
     }
 }

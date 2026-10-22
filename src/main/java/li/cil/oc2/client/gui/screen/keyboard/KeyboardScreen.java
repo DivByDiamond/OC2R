@@ -8,6 +8,10 @@ import li.cil.oc2.common.network.message.monitor.input.KeyboardInputMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=26.1 {
+/*import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -34,7 +38,7 @@ public final class KeyboardScreen extends Screen {
      * @param keyboard the keyboard block entity.
      */
     public KeyboardScreen(final KeyboardBlockEntity keyboard) {
-        super(Items.KEYBOARD.get().getDescription());
+        super(Component.translatable(Items.KEYBOARD.get().getDescriptionId()));
         this.keyboard = keyboard;
     }
 
@@ -58,6 +62,57 @@ public final class KeyboardScreen extends Screen {
         }
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean keyPressed(final KeyEvent event) {
+        sendInputMessage(event.key(), true);
+        return true;
+    }
+
+    @Override
+    public boolean keyReleased(final KeyEvent event) {
+        sendInputMessage(event.key(), false);
+        return true;
+    }
+
+    @Override
+    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+        if (event.button() == GLFW.GLFW_MOUSE_BUTTON_2) {
+            onClose();
+            return true;
+        } else {
+            return super.mouseClicked(event, doubleClick);
+        }
+    }
+
+    @Override
+    public void extractBackground(
+            final GuiGraphics guiGraphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTick) {
+        // Don't
+    }
+
+    @Override
+    public void extractRenderState(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
+
+        renderBorderOverlay(graphics);
+
+        graphics.textWithWordWrap(
+                font,
+                CLOSE_INFO,
+                BORDER_SIZE * 3,
+                height - BORDER_SIZE * 3 - font.lineHeight,
+                width - BORDER_SIZE * 6,
+                0x88FFFFFF);
+    }
+*///?} else {
     @Override
     public boolean keyPressed(final int keycode, final int scancode, final int modifiers) {
         sendInputMessage(keycode, true);
@@ -107,6 +162,7 @@ public final class KeyboardScreen extends Screen {
                 width - BORDER_SIZE * 6,
                 0x88FFFFFF);
     }
+    //?}
 
     @Override
     public boolean isPauseScreen() {

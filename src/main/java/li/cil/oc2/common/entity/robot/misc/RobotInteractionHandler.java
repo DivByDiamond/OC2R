@@ -31,7 +31,11 @@ public final class RobotInteractionHandler {
                 }
             }
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(robot.level().isClientSide());
+        //?}
     }
 
     public static boolean skipAttackInteraction(final Robot robot, final Entity entity) {
@@ -42,12 +46,20 @@ public final class RobotInteractionHandler {
     }
 
     public static void dropSelf(final Robot robot) {
-        if (!robot.isAlive()) {
+        // This handler is queried on both logical sides. In 26.x the entity drop API
+        // requires a ServerLevel, so allowing the client prediction path through here
+        // causes a ClientLevel -> ServerLevel cast crash when a creative player attacks
+        // the robot.
+        if (!robot.isAlive() || robot.level().isClientSide()) {
             return;
         }
         final ItemStack stack = new ItemStack(Items.ROBOT.get());
         robot.exportToItemStack(stack);
+        //? if >=26.1 {
+        /*robot.spawnAtLocation((net.minecraft.server.level.ServerLevel) robot.level(), stack);
+        *///?} else {
         robot.spawnAtLocation(stack);
+        //?}
         robot.discard();
         LevelUtils.playSound(
                 robot.level(), robot.blockPosition(), SoundType.METAL, SoundType::getBreakSound);

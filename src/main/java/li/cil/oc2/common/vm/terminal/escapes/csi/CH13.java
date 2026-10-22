@@ -20,7 +20,8 @@ public class CH13
     }
 
     @Override
-    public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD: CyclomaticComplexity — shared final-byte dispatch with intermediate branching, same shape as pre-PR
+    // CyclomaticComplexity — shared final-byte dispatch with intermediate branching, same shape as pre-PR
+    public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD
         // xterm-410 routes the private-marker forms elsewhere: csi_dec_dollar_table (the
         // "CSI ? Pn $" table, VTPrsTbl.c:4374) maps '|' to CASE_GROUND_STATE — ignored — and
         // only the plain csi_dollar_table (VTPrsTbl.c:3074) maps '|' to CASE_DECSCPP; the

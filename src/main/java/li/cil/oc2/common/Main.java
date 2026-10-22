@@ -45,8 +45,12 @@ public final class Main {
         ModBootstrap.registerListeners();
 
         modBus.addListener((FMLCommonSetupEvent event) -> CommonSetup.run());
+        //? if >=26.1 {
+        /*if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {
+        *///?} else {
         if (FMLLoader.getDist() == Dist.CLIENT) {
-            Manuals.initialize();
+        //?}
+            modBus.addListener(Main::initializeManual);
             ClientEventListeners.register();
             ClientProxy.set(new NeoForgeClientProxy());
             ClientSetup.register(NeoForgeClientRegistrar.instance());
@@ -56,6 +60,11 @@ public final class Main {
         modBus.addListener(Main::registerPayloads);
 
         NativeLoader.loadLibrary();
+    }
+
+    @SuppressWarnings("FutureReturnValueIgnored") // FML owns and observes the deferred setup work.
+    private static void initializeManual(final net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(Manuals::initialize);
     }
 
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {

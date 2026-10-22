@@ -2,7 +2,9 @@ package li.cil.oc2.client.gui.screen.network;
 
 import static li.cil.oc2.common.util.text.TranslationUtils.text;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
@@ -11,7 +13,9 @@ import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.network.connector.NetworkTunnelLinkMessage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+//? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -27,13 +31,34 @@ public final class NetworkTunnelScreen extends AbstractModContainerScreen<Networ
             final NetworkTunnelContainer container,
             final Inventory inventory,
             final Component title) {
+        //? if >=26.1 {
+/*        super(
+                container,
+                inventory,
+                title,
+                Sprites.NETWORK_TUNNEL_SCREEN.width,
+                Sprites.NETWORK_TUNNEL_SCREEN.height);
+*///?} else {
         super(container, inventory, title);
 
         imageWidth = Sprites.NETWORK_TUNNEL_SCREEN.width;
         imageHeight = Sprites.NETWORK_TUNNEL_SCREEN.height;
+        //?}
         inventoryLabelY = imageHeight - 94;
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public void extractContents(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        linkButton.active = getMenu().hasLinkSlotItem();
+
+        super.extractContents(graphics, mouseX, mouseY, partialTicks);
+    }
+*///?} else {
     @Override
     public void render(
             final GuiGraphics graphics,
@@ -47,6 +72,7 @@ public final class NetworkTunnelScreen extends AbstractModContainerScreen<Networ
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderTooltip(graphics, mouseX, mouseY);
     }
+    //?}
 
     @Override
     protected void init() {
@@ -80,8 +106,10 @@ public final class NetworkTunnelScreen extends AbstractModContainerScreen<Networ
             final float partialTicks,
             final int mouseX,
             final int mouseY) {
+        //? if <26.1 {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
+        //?}
 
         Sprites.NETWORK_TUNNEL_SCREEN.draw(graphics, leftPos, topPos);
     }

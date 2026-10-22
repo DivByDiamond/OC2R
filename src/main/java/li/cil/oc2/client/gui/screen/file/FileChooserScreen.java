@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
 import java.util.function.Supplier;
+import li.cil.oc2.client.RenderCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -42,24 +43,24 @@ public final class FileChooserScreen extends Screen {
 
     public static void openFileChooserForSave(
             final String name, final FileChooserCallback callback) {
-        final Screen currentScreen = Minecraft.getInstance().screen;
+        final Screen currentScreen = RenderCompat.currentScreen();
         if (currentScreen instanceof FileChooserScreen) {
             currentScreen.onClose();
         }
 
         final FileChooserScreen screen = new FileChooserScreen(callback, false);
-        Minecraft.getInstance().setScreen(screen);
+        RenderCompat.setScreen(screen);
         screen.fileNameTextField.setValue(name);
     }
 
     public static void openFileChooserForLoad(final FileChooserCallback callback) {
-        final Screen currentScreen = Minecraft.getInstance().screen;
+        final Screen currentScreen = RenderCompat.currentScreen();
         if (currentScreen instanceof FileChooserScreen) {
             currentScreen.onClose();
         }
 
         final FileChooserScreen screen = new FileChooserScreen(callback, true);
-        Minecraft.getInstance().setScreen(screen);
+        RenderCompat.setScreen(screen);
     }
 
     public FileChooserScreen(final FileChooserCallback callback, final boolean isLoad) {
@@ -68,7 +69,7 @@ public final class FileChooserScreen extends Screen {
         this.callback = callback;
         this.isLoad = isLoad;
 
-        this.previousScreen = Minecraft.getInstance().screen;
+        this.previousScreen = RenderCompat.currentScreen();
     }
 
     @Override
@@ -78,7 +79,11 @@ public final class FileChooserScreen extends Screen {
         }
 
         if (previousScreen != null) {
-            Minecraft.getInstance().tell(() -> Minecraft.getInstance().setScreen(previousScreen));
+            //? if >=26.1 {
+/*            Minecraft.getInstance().schedule(() -> RenderCompat.setScreen(previousScreen));
+*///?} else {
+            Minecraft.getInstance().tell(() -> RenderCompat.setScreen(previousScreen));
+            //?}
         }
     }
 

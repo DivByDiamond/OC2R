@@ -36,7 +36,7 @@ public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractI
 
         return Optional.of(
                 new HardDriveDeviceWithInitialData(
-                        stack, data.getBlockDevice(), false, LocationSupplierUtils.of(query)));
+                        stack, data, false, LocationSupplierUtils.of(query)));
     }
 
     @Override
@@ -48,7 +48,7 @@ public final class HardDriveWithExternalDataItemDeviceProvider extends AbstractI
             return 0;
         }
 
-        final long capacity = Math.max(data.getBlockDevice().getCapacity(), 0);
+        final long capacity = Math.max(data.getCapacity(), 0);
         return Math.max(
                 1,
                 (int)

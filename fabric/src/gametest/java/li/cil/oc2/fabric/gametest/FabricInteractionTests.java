@@ -45,7 +45,7 @@ public final class FabricInteractionTests implements FabricGameTest {
                 hit(helper, POS, Direction.NORTH));
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
     public void wrenchSneakStillUsesBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -56,7 +56,7 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
     public void otherItemSneakDoesNotUseBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -67,7 +67,7 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
     public void nonSneakingUsesBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -82,7 +82,7 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
     public void pickBlockOfBusCable(final GameTestHelper helper) {
         final BlockState state = Blocks.BUS_CABLE.get().defaultBlockState()
                 .setValue(BusCableStateProperties.HAS_CABLE, true)
@@ -118,7 +118,7 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
     public void persistentDataSurvivesRespawn(final GameTestHelper helper) {
         final ServerPlayer oldPlayer = helper.makeMockServerPlayerInLevel();
         final ServerPlayer newPlayer = helper.makeMockServerPlayerInLevel();

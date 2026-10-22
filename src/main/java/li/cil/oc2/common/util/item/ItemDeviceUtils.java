@@ -9,7 +9,11 @@ public final class ItemDeviceUtils {
     private static final String ITEM_DEVICE_DATA_TAG_NAME = "item_device";
 
     public static CompoundTag getItemDeviceData(final ItemStack stack) {
+        //? if >=26.1 {
+        /*return ItemStackUtils.getModDataTag(stack).getCompoundOrEmpty(ITEM_DEVICE_DATA_TAG_NAME);
+        *///?} else {
         return ItemStackUtils.getModDataTag(stack).getCompound(ITEM_DEVICE_DATA_TAG_NAME);
+        //?}
     }
 
     public static void setItemDeviceData(final ItemStack stack, final CompoundTag data) {

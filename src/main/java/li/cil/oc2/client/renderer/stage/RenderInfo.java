@@ -1,15 +1,29 @@
 package li.cil.oc2.client.renderer.stage;
 
 import com.mojang.blaze3d.platform.NativeImage;
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+//? if >=26.1 {
+/*import java.util.concurrent.atomic.AtomicInteger;
+import li.cil.oc2.api.API;
+*///?}
 import li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer;
+//? if >=26.1 {
+/*import net.minecraft.client.Minecraft;
+*///?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
+//? if >=26.1 {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
+//?}
 public final class RenderInfo implements FrameConsumer {
     private static final int[] GAMMA_LUT = new int[256];
 
@@ -22,15 +36,44 @@ public final class RenderInfo implements FrameConsumer {
     // Read on the render thread, replaced from processFrame (main thread); volatile so a
     // frame rendered between recreation steps never observes a closed texture.
     private volatile DynamicTexture texture;
+    //? if >=26.1 {
+    /*// The GPU texture is reachable from render types and the GUI only through a registered id.
+    private static final AtomicInteger NEXT_ID = new AtomicInteger();
+    private final ResourceLocation textureLocation =
+            ResourceLocation.fromNamespaceAndPath(
+                    API.MOD_ID, "monitor/" + NEXT_ID.incrementAndGet());
+*///?}
     private volatile int textureWidth;
     private volatile int textureHeight;
     private volatile boolean closed = false;
 
     public RenderInfo(final int width, final int height) {
         this.texture = createTexture(width, height);
+        //? if >=26.1 {
+        /*registerTexture(texture);
+*///?}
         this.textureWidth = width;
         this.textureHeight = height;
     }
+
+    //? if >=26.1 {
+    /*public ResourceLocation getTextureLocation() {
+        return textureLocation;
+    }
+
+    public int getTextureWidth() {
+        return textureWidth;
+    }
+
+    public int getTextureHeight() {
+        return textureHeight;
+    }
+
+    private void registerTexture(final DynamicTexture created) {
+        // Registering under an id that is already taken closes the texture it replaces.
+        Minecraft.getInstance().getTextureManager().register(textureLocation, created);
+    }
+*///?}
 
     public DynamicTexture getTexture() {
         return texture;
@@ -41,8 +84,12 @@ public final class RenderInfo implements FrameConsumer {
         closed = true;
         // Schedule texture close on the render thread to avoid closing the
         // NativeImage while a queued upload is still pending in RenderSystem.
-        final DynamicTexture current = texture;
-        RenderSystem.recordRenderCall(current::close);
+        //? if >=26.1 {
+        /*Minecraft.getInstance()
+                .execute(() -> Minecraft.getInstance().getTextureManager().release(textureLocation));
+*///?} else {
+        RenderSystem.recordRenderCall(texture::close);
+        //?}
     }
 
     @Override
@@ -63,7 +110,11 @@ public final class RenderInfo implements FrameConsumer {
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 final int pixel = rgb565.getShort() & 0xFFFF;
+                //? if >=26.1 {
+                /*image.setPixelABGR(col, row, toAbgr(pixel));
+*///?} else {
                 image.setPixelRGBA(col, row, toAbgr(pixel));
+                //?}
             }
         }
 
@@ -73,17 +124,31 @@ public final class RenderInfo implements FrameConsumer {
     private void recreateTexture(final int width, final int height) {
         // GPU resolution changed: the old texture has the wrong size, swap in a new one
         // and release the old on the render thread (same reasoning as close()).
+        //? if >=26.1 {
+        /*// Registering the replacement closes the old texture.
+        final DynamicTexture replacement = createTexture(width, height);
+        texture = replacement;
+        Minecraft.getInstance().execute(() -> registerTexture(replacement));
+*///?} else {
         final DynamicTexture old = texture;
         if (old != null) {
             RenderSystem.recordRenderCall(old::close);
         }
         texture = createTexture(width, height);
+        //?}
         textureWidth = width;
         textureHeight = height;
     }
 
     private static DynamicTexture createTexture(final int width, final int height) {
-        final DynamicTexture created = new DynamicTexture(width, height, false);
+        // A newly visible monitor can render before its first network frame arrives.
+        // Clear the placeholder instead of uploading uninitialized native pixels.
+        //? if >=26.1 {
+        /*final DynamicTexture created =
+                new DynamicTexture(() -> "oc2r monitor", width, height, true);
+*///?} else {
+        final DynamicTexture created = new DynamicTexture(width, height, true);
+        //?}
         created.upload();
         return created;
     }

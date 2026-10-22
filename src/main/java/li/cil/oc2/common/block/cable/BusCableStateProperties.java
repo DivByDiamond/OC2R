@@ -8,9 +8,14 @@ import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
+//? if <26.1 {
 import net.minecraft.Util;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -72,7 +77,11 @@ public final class BusCableStateProperties {
 
     public static Direction getHitSide(final BlockPos pos, final BlockHitResult hit) {
         final Vec3 localHitPos = hit.getLocation().subtract(Vec3.atCenterOf(pos));
+        //? if >=26.1 {
+        /*return Direction.getApproximateNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        *///?} else {
         return Direction.getNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        //?}
     }
 
     public static boolean addInterface(
@@ -146,10 +155,12 @@ public final class BusCableStateProperties {
             final EnumProperty<ConnectionType> property = entry.getValue();
             final BlockPos neighborPos = pos.relative(side);
             final ConnectionType next;
-            if (canHaveCableTo(level.getBlockState(neighborPos), side.getOpposite())) {
-                next = ConnectionType.CABLE;
-            } else if (state.getValue(property) == ConnectionType.INTERFACE) {
+            if (state.getValue(property) == ConnectionType.INTERFACE) {
+                // An installed interface is a real part, not an inferred cable connection.
                 next = ConnectionType.INTERFACE;
+            } else if (state.getValue(HAS_CABLE)
+                    && canHaveCableTo(level.getBlockState(neighborPos), side.getOpposite())) {
+                next = ConnectionType.CABLE;
             } else {
                 next = ConnectionType.NONE;
             }

@@ -160,7 +160,7 @@ public final class FabricNetworkTests implements FabricGameTest {
         return new CapturingConnection(player.connection.connection);
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
     public void sendToPlayerReachesTheConnection(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -176,7 +176,7 @@ public final class FabricNetworkTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
     public void sendToTrackingPlayersDoesNotThrow(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -209,7 +209,7 @@ public final class FabricNetworkTests implements FabricGameTest {
         });
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
     public void serverboundReceiverRunsHandlerWithContext(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -305,7 +305,7 @@ public final class FabricNetworkTests implements FabricGameTest {
         throw new NoSuchFieldException(name);
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
     public void openMenuExtraDataRoundTrips(final GameTestHelper helper) throws ReflectiveOperationException {
         final MenuType<TestMenu> type = menuType();
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();

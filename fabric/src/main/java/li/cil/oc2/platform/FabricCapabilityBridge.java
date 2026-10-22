@@ -152,9 +152,11 @@ public final class FabricCapabilityBridge implements CapabilityBridge {
         }
         for (final Listener entry : listeners) {
             final CapabilityInvalidationListener listener = entry.listener().get();
-            if (listener == null || entry.level().get() == null) {
+            // The weak references are read once: the level may be collected between two reads.
+            final Level entryLevel = entry.level().get();
+            if (listener == null || entryLevel == null) {
                 listeners.remove(entry);
-            } else if (entry.level().get() == level && !listener.onInvalidate()) {
+            } else if (entryLevel.equals(level) && !listener.onInvalidate()) {
                 listeners.remove(entry);
             }
         }

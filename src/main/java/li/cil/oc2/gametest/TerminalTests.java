@@ -5,11 +5,17 @@ package li.cil.oc2.gametest;
 import li.cil.oc2.api.API;
 import java.nio.charset.StandardCharsets;
 import li.cil.oc2.common.vm.terminal.Terminal;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.player.Player;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)

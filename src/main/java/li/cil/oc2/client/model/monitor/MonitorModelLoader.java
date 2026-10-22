@@ -1,3 +1,5 @@
+//? if <26.1 {
+
 package li.cil.oc2.client.model.monitor;
 
 import com.google.gson.JsonDeserializationContext;
@@ -11,3 +13,4 @@ public final class MonitorModelLoader implements IGeometryLoader<MonitorModel> {
         return new MonitorModel();
     }
 }
+//?}

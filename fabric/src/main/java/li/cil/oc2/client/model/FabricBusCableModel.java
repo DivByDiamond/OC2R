@@ -29,23 +29,17 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Fabric counterpart of the NeoForge {@code BusCableBakedModel}: the cable core model with a straight
- * variant, a support stub towards a solid neighbour and the facade of a camouflaged cable. Instead of
- * NeoForge's {@code ModelData} it reads what it needs from the block view while the chunk is rendered
- * (the facade from the block entity, the support from the neighbouring blocks).
+ * variant and the facade of a camouflaged cable. Only explicit block-state connections add cable
+ * geometry; adjacent solid blocks must not create phantom supports.
  */
 @Environment(EnvType.CLIENT)
 public final class FabricBusCableModel implements BakedModel {
     private final BakedModel base;
     private final BakedModel[] straightModelByAxis;
-    private final BakedModel[] supportModelByFace;
 
-    FabricBusCableModel(
-            final BakedModel base,
-            final BakedModel[] straightModelByAxis,
-            final BakedModel[] supportModelByFace) {
+    FabricBusCableModel(final BakedModel base, final BakedModel... straightModelByAxis) {
         this.base = base;
         this.straightModelByAxis = straightModelByAxis.clone();
-        this.supportModelByFace = supportModelByFace.clone();
     }
 
     @Override
@@ -83,12 +77,6 @@ public final class FabricBusCableModel implements BakedModel {
         }
 
         base.emitBlockQuads(view, state, pos, random, context);
-
-        final Direction supportSide = BusCableModelUtils.getSupportSide(view, pos, state);
-        if (supportSide != null) {
-            supportModelByFace[supportSide.get3DDataValue()].emitBlockQuads(
-                    view, state, pos, random, context);
-        }
     }
 
     private static BlockState getFacadeState(final BlockAndTintGetter view, final BlockPos pos) {

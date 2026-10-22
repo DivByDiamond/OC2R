@@ -1,5 +1,6 @@
 package li.cil.oc2.common.entity.robot;
 
+import java.util.List;
 import li.cil.oc2.common.ext.ICaptureInputStateStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,6 +11,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+//? if <26.1 {
+import net.minecraft.world.entity.vehicle.Boat;
+//?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +37,7 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
 
     private long lastPistonMovement;
     public boolean captureInputState;
+    private List<Entity> ignoredColliders = List.of();
 
     protected AbstractRobotEntity(final EntityType<?> type, final Level world) {
         super(type, world);
@@ -59,6 +65,17 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         return lastPistonMovement;
     }
 
+    public void move(final Vec3 delta, final List<Entity> ignoredColliders) {
+        this.ignoredColliders = List.copyOf(ignoredColliders); // NOPMD - read by canCollideWith during move
+        try {
+            move(MoverType.SELF, delta);
+        } finally {
+            // The ignored colliders only apply to this movement; a failure must not leave
+            // them in place and suppress the collisions of unrelated movements.
+            this.ignoredColliders = List.of();
+        }
+    }
+
     @Override
     protected void defineSynchedData(final SynchedEntityData.Builder builder) {
         builder.define(TARGET_POSITION, BlockPos.ZERO);
@@ -66,29 +83,71 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         builder.define(SELECTED_SLOT, (byte) 0);
     }
 
+    //? if >=26.1 {
+    /*// Minecraft 26.x saves entities through ValueOutput/ValueInput; the robot keeps its tag based serialization.
+    @Override
+    protected final void addAdditionalSaveData(final net.minecraft.world.level.storage.ValueOutput output) {
+        final CompoundTag tag = new CompoundTag();
+        addAdditionalSaveData(tag);
+        output.store(tag);
+    }
+
+    @Override
+    protected final void readAdditionalSaveData(final net.minecraft.world.level.storage.ValueInput input) {
+        readAdditionalSaveData(li.cil.oc2.common.util.nbt.NBTUtils.toTag(input));
+    }
+
+    protected abstract void addAdditionalSaveData(final CompoundTag tag);
+
+    protected abstract void readAdditionalSaveData(final CompoundTag tag);
+    *///?} else {
     @Override
     protected abstract void addAdditionalSaveData(final CompoundTag tag);
 
     @Override
     protected abstract void readAdditionalSaveData(final CompoundTag tag);
+    //?}
+
+    //? if >=26.1 {
+    /*@Override
+    public boolean hurtServer(
+            final net.minecraft.server.level.ServerLevel level,
+            final net.minecraft.world.damagesource.DamageSource source,
+            final float damage) {
+        return false;
+    }
 
     @Override
     public boolean isPickable() {
+    *///?} else {
+    @Override
+    public boolean isPickable() {
+    //?}
         return true;
     }
 
     @Override
     public boolean canCollideWith(final Entity entity) {
-        return !entity.equals(this);
+        //? if >=26.1 {
+        /*return !ignoredColliders.contains(entity)
+                && (entity.canBeCollidedWith(this) || entity.isPushable())
+                && !isPassengerOfSameVehicle(entity);
+        *///?} else {
+        return !ignoredColliders.contains(entity) && Boat.canVehicleCollide(this, entity);
+        //?}
     }
 
-    @Override
-    public void push(final Entity entity) {}
-
+    //? if >=26.1 {
+    /*@Override
+    public boolean canBeCollidedWith(@javax.annotation.Nullable final Entity other) {
+        return true;
+    }
+    *///?} else {
     @Override
     public boolean canBeCollidedWith() {
         return true;
     }
+    //?}
 
     @Override
     public boolean canSpawnSprintParticle() {
@@ -100,8 +159,15 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
         return Entity.MovementEmission.NONE;
     }
 
+    //? if >=26.1 {
+    /*@Override
+    protected boolean isAffectedByBlocks() {
+        return false;
+    }
+    *///?} else {
     @Override
     protected void checkInsideBlocks() {}
+    //?}
 
     @Override
     protected Vec3 limitPistonMovement(final Vec3 pos) {

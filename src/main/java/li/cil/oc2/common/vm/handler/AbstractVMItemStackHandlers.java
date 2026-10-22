@@ -32,7 +32,8 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
     // NB: linked hash map such that order of parameters in constructor is retained.
     //     This is relevant when assigning default addresses for devices.
     private final Map<DeviceType, AbstractTypedDeviceItemStackHandler> itemHandlers =
-            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
+            Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new LinkedHashMap<>())));
 
     public final ItemHandler combinedItemHandlers;
 
@@ -42,7 +43,8 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
             // NOPMD - each group requires its own VMItemHandler.
             itemHandlers.put(
                     group.deviceType,
-                    new VMItemHandler(providerSupplier, group.count, group.deviceType)); // NOPMD allocation depends on loop iteration / per-item state
+                    // allocation depends on loop iteration / per-item state
+                    new VMItemHandler(providerSupplier, group.count, group.deviceType)); // NOPMD
         }
 
         combinedItemHandlers =
@@ -135,6 +137,12 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
 
     protected void onChanged() {}
 
+    /**
+     * Whether these handlers live on the client. Item devices must never be created there (their
+     * providers touch server-only state such as block device images); the bus element stays empty.
+     */
+    protected abstract boolean isClientSide();
+
     private final class VMItemHandler extends AbstractTypedDeviceItemStackHandler {
         private final VMItemBusElement busElement;
 
@@ -166,6 +174,14 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
         @Override
         protected ItemDeviceQuery makeQuery(final ItemStack stack) {
             return AbstractVMItemStackHandlers.this.makeQuery(stack);
+        }
+
+        @Override
+        protected ItemQueryResult collectDevices(final ItemStack stack) {
+            if (isClientSide()) {
+                return new ItemQueryResult(null, Set.of());
+            }
+            return super.collectDevices(stack);
         }
     }
 

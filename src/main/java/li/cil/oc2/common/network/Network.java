@@ -122,6 +122,20 @@ public final class Network {
                 OpenRobotTerminalMessage.STREAM_CODEC,
                 OpenRobotTerminalMessage::handleMessage);
 
+        bridge.registerServerbound(
+                li.cil.oc2.common.network.message.firmware.FlashWriterActionMessage.TYPE,
+                li.cil.oc2.common.network.message.firmware.FlashWriterActionMessage.STREAM_CODEC,
+                li.cil.oc2.common.network.message.firmware.FlashWriterActionMessage::handleMessage);
+        bridge.registerServerbound(
+                li.cil.oc2.common.network.message.firmware.FlashWriterChunkMessage.TYPE,
+                li.cil.oc2.common.network.message.firmware.FlashWriterChunkMessage.STREAM_CODEC,
+                li.cil.oc2.common.network.message.firmware.FlashWriterChunkMessage::handleMessage);
+        bridge.registerClientbound(
+                li.cil.oc2.common.network.message.firmware.FlashWriterStatusMessage.TYPE,
+                li.cil.oc2.common.network.message.firmware.FlashWriterStatusMessage.STREAM_CODEC,
+                li.cil.oc2.common.network.message.firmware.FlashWriterStatusMessage::handleMessage);
+        li.cil.oc2.common.firmware.FlashWriterService.initialize();
+
         // Disk / Firmware
         // (contents ride on the block entities' update tags via sendBlockUpdated)
 

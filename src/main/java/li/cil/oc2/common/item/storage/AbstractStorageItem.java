@@ -2,7 +2,9 @@ package li.cil.oc2.common.item.storage;
 
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.text.TextFormatUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -26,11 +28,19 @@ public abstract class AbstractStorageItem extends ModItem {
 
     public int getCapacity(final ItemStack stack) {
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
+        //? if >=26.1 {
+        /*if (!tag.contains(CAPACITY_TAG_NAME)) {
+        *///?} else {
         if (!tag.contains(CAPACITY_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             return defaultCapacity;
         }
 
+        //? if >=26.1 {
+        /*return tag.getIntOr(CAPACITY_TAG_NAME, 0);
+        *///?} else {
         return tag.getInt(CAPACITY_TAG_NAME);
+        //?}
     }
 
     public ItemStack withCapacity(final ItemStack stack, final int capacity) {

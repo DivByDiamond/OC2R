@@ -36,7 +36,11 @@ public final class RobotEventHandler {
             return;
         }
 
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(robot.blockPosition());
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(robot.blockPosition());
+        //?}
         if (!Objects.equals(chunkPos, chunk.getPos())) {
             return;
         }

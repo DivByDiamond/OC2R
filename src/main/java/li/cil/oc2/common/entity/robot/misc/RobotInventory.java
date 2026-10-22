@@ -115,6 +115,11 @@ public class RobotInventory {
         }
 
         @Override
+        protected boolean isClientSide() {
+            return robot.level().isClientSide();
+        }
+
+        @Override
         protected void onChanged() {
             super.onChanged();
             if (!robot.level().isClientSide()) {
@@ -149,13 +154,22 @@ public class RobotInventory {
 
         public CompoundTag serialize() {
             final CompoundTag tag = new CompoundTag();
+            //? if >=26.1 {
+            /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
+            *///?} else {
             tag.putUUID(DEVICE_ID_TAG_NAME, deviceId);
+            //?}
             return tag;
         }
 
         public void deserialize(final CompoundTag tag) {
+            //? if >=26.1 {
+            /*if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+                deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+            *///?} else {
             if (tag.hasUUID(DEVICE_ID_TAG_NAME)) {
                 deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
+            //?}
             }
         }
     }

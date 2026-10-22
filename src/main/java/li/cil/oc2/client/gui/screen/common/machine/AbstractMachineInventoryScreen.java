@@ -3,28 +3,34 @@ package li.cil.oc2.client.gui.screen.common.machine;
 import static java.util.Arrays.asList;
 import static li.cil.oc2.common.util.text.TextFormatUtils.withFormat;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.api.bus.device.DeviceTypes;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
+import li.cil.oc2.client.gui.screen.widget.PowerButton;
 import li.cil.oc2.client.gui.util.GuiUtils;
 import li.cil.oc2.client.gui.util.TooltipRenderer;
 import li.cil.oc2.client.gui.widget.misc.ImageButton;
-import li.cil.oc2.client.gui.widget.misc.ToggleImageButton;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+//? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
+//?}
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTerminalContainer>
@@ -36,6 +42,17 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
             final T container, final Inventory playerInventory, final Component title) {
         super(container, playerInventory, title);
     }
+
+    //? if >=26.1 {
+/*    public AbstractMachineInventoryScreen(
+            final T container,
+            final Inventory playerInventory,
+            final Component title,
+            final int imageWidth,
+            final int imageHeight) {
+        super(container, playerInventory, title, imageWidth, imageHeight);
+    }
+*///?}
 
     public List<Rect2i> getExtraAreas() {
         final List<Rect2i> list = new ArrayList<>();
@@ -63,32 +80,8 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
         super.init();
 
         addRenderableWidget(
-                        new ToggleImageButton(
-                                leftPos - Sprites.SIDEBAR_3.width + 4,
-                                topPos + CONTROLS_TOP + 4,
-                                12,
-                                12,
-                                Sprites.POWER_BUTTON_BASE,
-                                Sprites.POWER_BUTTON_PRESSED,
-                                Sprites.POWER_BUTTON_ACTIVE) {
-                            @Override
-                            protected void updateWidgetNarration(
-                                    final NarrationElementOutput narrationElementOutput) {}
-
-                            @Override
-                            public void onPress() {
-                                super.onPress();
-                                menu.sendPowerStateToServer(!menu.getVirtualMachine().isRunning());
-                            }
-
-                            @Override
-                            public boolean isToggled() {
-                                return menu.getVirtualMachine().isRunning();
-                            }
-                        })
-                .withTooltip(
-                        Component.translatable(Constants.COMPUTER_SCREEN_POWER_CAPTION),
-                        Component.translatable(Constants.COMPUTER_SCREEN_POWER_DESCRIPTION));
+                new PowerButton(
+                        leftPos - Sprites.SIDEBAR_3.width + 4, topPos + CONTROLS_TOP + 4, menu));
 
         addRenderableWidget(
                 new ImageButton(
@@ -115,8 +108,10 @@ public abstract class AbstractMachineInventoryScreen<T extends AbstractMachineTe
             final float partialTicks,
             final int mouseX,
             final int mouseY) {
+        //? if <26.1 {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
+        //?}
 
         Sprites.SIDEBAR_2.draw(graphics, leftPos - Sprites.SIDEBAR_2.width, topPos + CONTROLS_TOP);
 

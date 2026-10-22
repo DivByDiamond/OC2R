@@ -5,6 +5,7 @@ import static li.cil.oc2.common.util.text.TranslationUtils.text;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.client.gui.screen.file.FileChooserCallback;
 import li.cil.oc2.client.gui.screen.file.FileChooserScreen;
 import li.cil.oc2.common.bus.device.rpc.item.card.FileImportExportCardItemDevice;
@@ -15,8 +16,10 @@ import li.cil.oc2.common.network.message.misc.MultipartMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,9 +62,17 @@ public final class FileTransferHooks {
                                 NetworkMessages.sendToServer(new ClientCanceledImportFileMessage(id));
                                 Minecraft.getInstance()
                                         .gui
+                                        //? if >=26.2 {
+                                        /*.hud
+                                        *///?}
                                         .getChat()
+                                        //? if >=26.1 {
+                                        /*.addClientSystemMessage(FILE_TOO_LARGE_TEXT.withStyle(
+                                                s -> s.withColor(TextColor.fromRgb(0xFFA0A0))));
+                                        *///?} else {
                                         .addMessage(FILE_TOO_LARGE_TEXT.withStyle(
                                                 s -> s.withColor(TextColor.fromRgb(0xFFA0A0))));
+                                        //?}
                             } else {
                                 MultipartMessage.sendToServer(new ImportedFileMessage(id, fileName, data));
                             }
@@ -78,8 +89,8 @@ public final class FileTransferHooks {
     }
 
     public static void closeFileChooser() {
-        Minecraft.getInstance().tell(() -> {
-            if (Minecraft.getInstance().screen instanceof FileChooserScreen screen) {
+        Minecraft.getInstance().execute(() -> {
+            if (RenderCompat.currentScreen() instanceof FileChooserScreen screen) {
                 screen.onClose();
             }
         });

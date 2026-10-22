@@ -1,7 +1,9 @@
 package li.cil.oc2.client.gui.screen.common.machine;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.client.ClientCompat;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.common.MachineTerminalEnergyTooltip;
@@ -14,11 +16,18 @@ import li.cil.oc2.common.container.base.AbstractMachineTerminalContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+//? if >=26.1 {
+/*import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTerminalContainer>
@@ -32,10 +41,20 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
 
     protected AbstractMachineTerminalScreen(
             final T container, final Inventory playerInventory, final Component title) {
+        //? if >=26.1 {
+/*        super(
+                container,
+                playerInventory,
+                title,
+                Sprites.TERMINAL_SCREEN.width,
+                Sprites.TERMINAL_SCREEN.height);
+        this.terminalWidget = new MachineTerminalWidget(this);
+*///?} else {
         super(container, playerInventory, title);
         this.terminalWidget = new MachineTerminalWidget(this);
         imageWidth = Sprites.TERMINAL_SCREEN.width;
         imageHeight = Sprites.TERMINAL_SCREEN.height;
+        //?}
     }
 
     public List<Rect2i> getExtraAreas() {
@@ -48,6 +67,21 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
         terminalWidget.tick();
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean charTyped(final CharacterEvent event) {
+        return (Character.isBmpCodePoint(event.codepoint())
+                        && terminalWidget.charTyped((char) event.codepoint(), 0))
+                || super.charTyped(event);
+    }
+
+    @Override
+    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+        wasMouseClicked = true;
+        return terminalWidget.mouseClicked(event.x(), event.y(), event.button())
+                || super.mouseClicked(event, doubleClick);
+    }
+*///?} else {
     @Override
     public boolean charTyped(final char ch, final int modifiers) {
         return terminalWidget.charTyped(ch, modifiers) || super.charTyped(ch, modifiers);
@@ -58,6 +92,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
         wasMouseClicked = true;
         return terminalWidget.mouseClicked(x, y, button) || super.mouseClicked(x, y, button);
     }
+    //?}
 
     @Override
     public void mouseMoved(final double x, final double y) {
@@ -70,6 +105,24 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
         return terminalWidget.mouseScrolled(scrollY);
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean mouseReleased(final MouseButtonEvent event) {
+        if (!wasMouseClicked) return super.mouseReleased(event);
+        return terminalWidget.mouseReleased(event.x(), event.y(), event.button())
+                || super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean keyPressed(final KeyEvent event) {
+        if (terminalWidget.keyPressed(event.key(), event.scancode(), event.modifiers())) {
+            return true;
+        }
+
+        return Minecraft.getInstance().options.keyInventory.matches(event)
+                || super.keyPressed(event);
+    }
+*///?} else {
     @Override
     public boolean mouseReleased(final double x, final double y, final int button) {
         if (!wasMouseClicked) return super.mouseReleased(x, y, button);
@@ -86,6 +139,7 @@ public abstract class AbstractMachineTerminalScreen<T extends AbstractMachineTer
                         Minecraft.getInstance().options.keyInventory, keyCode, scanCode)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
+    //?}
 
     @Override
     public void init() {

@@ -6,7 +6,9 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotAction;
 import li.cil.oc2.common.entity.robot.action.RobotActionResult;
 import li.cil.oc2.common.entity.robot.action.RobotActions;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.Direction;
@@ -32,6 +34,12 @@ public final class RobotRotationAction extends AbstractRobotAction {
 
     RobotRotationAction(final CompoundTag tag) {
         super(RobotActions.ROTATION, tag);
+    }
+
+    public static boolean isComplete(final Robot robot) {
+        return Mth.degreesDifferenceAbs(
+                        robot.getYRot(), robot.getEntityData().get(Robot.TARGET_DIRECTION).toYRot())
+                <= TARGET_EPSILON;
     }
 
     public static void rotateTowards(final Robot robot, final Direction targetRotation) {
@@ -95,7 +103,11 @@ public final class RobotRotationAction extends AbstractRobotAction {
         direction = NBTUtils.getEnum(tag, DIRECTION_TAG_NAME, RotationDirection.class);
         if (direction == null) direction = RotationDirection.LEFT;
         direction = direction.resolve();
+        //? if >=26.1 {
+        /*if (tag.contains(TARGET_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(TARGET_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             target = NBTUtils.getEnum(tag, TARGET_TAG_NAME, Direction.class);
         }
     }

@@ -1,25 +1,36 @@
 package li.cil.oc2.common.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+//? if <26.2 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import li.cil.oc2.client.renderer.projector.ProjectorDepthRenderer;
+//?}
 import li.cil.oc2.common.ext.MinecraftExt;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+//? if <26.2 {
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//?}
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements MinecraftExt {
+    //? if <26.2 {
     private RenderTarget mainRenderTargetOverride;
 
     @Override
     public void setMainRenderTargetOverride(@Nullable final RenderTarget renderTarget) {
         mainRenderTargetOverride = renderTarget;
     }
+    //?} else {
+    /*// 26.2 renders the projector depth pass through its own targets, nothing is redirected.
+    @Override
+    public void setMainRenderTargetOverride(@Nullable final RenderTarget renderTarget) {}
+    *///?}
 
+    //? if <26.2 {
     /**
      * Redirect everything into the correct buffer while rendering projector depth.
      *
@@ -32,7 +43,9 @@ public abstract class MinecraftMixin implements MinecraftExt {
             cir.setReturnValue(mainRenderTargetOverride);
         }
     }
+    //?}
 
+    //? if <26.2 {
     /**
      * Avoid access to render targets that are null while rendering projector depth to skip some
      * work.
@@ -45,4 +58,5 @@ public abstract class MinecraftMixin implements MinecraftExt {
             cir.setReturnValue(false);
         }
     }
+    //?}
 }

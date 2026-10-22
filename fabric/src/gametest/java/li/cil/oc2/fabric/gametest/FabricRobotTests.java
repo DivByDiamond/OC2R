@@ -31,7 +31,7 @@ import net.minecraft.world.phys.Vec3;
 public final class FabricRobotTests implements FabricGameTest {
     private static final BlockPos FLOOR = new BlockPos(1, 1, 1);
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_robot")
     public void robotTypeIsRegisteredButNotSummonable(final GameTestHelper helper) {
         final ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(Entities.ROBOT.get());
         if (!"oc2r:robot".equals(id.toString())) {
@@ -43,7 +43,7 @@ public final class FabricRobotTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_robot")
     public void robotItemPlacesRobotEntity(final GameTestHelper helper) {
         helper.setBlock(FLOOR, Blocks.STONE);
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -68,7 +68,7 @@ public final class FabricRobotTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_robot")
     public void robotSurvivesSaveAndLoad(final GameTestHelper helper) {
         final Robot robot = Entities.ROBOT.get().create(helper.getLevel());
         if (robot == null) {

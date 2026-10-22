@@ -1,14 +1,10 @@
 # Flash Memory Flasher
-![Flashes before your eyes](block:oc2r:flash_memory_flasher)
+![Firmware writer](block:oc2r:flash_memory_flasher)
 
-The memory flasher provides a way to flash custom compiled firmware onto a flash chip for your computer.
+Insert a flash chip or a writable hard drive by using it on the flasher. Use the block with an empty hand to open its writer interface. Sneak-use with an empty hand ejects the item when no write is active.
 
-On a Linux system, the memory flasher will typically appear as */dev/vdX* devices, following any installed hard drives. On a technical level flash memory chips work exactly like a floppy or 
-hard drive does from this mod, so you could use it for data storage or sharing though they are primarily intended for firmware storage.
+The interface offers bundled firmware and local-image upload. The server validates the target type and capacity. Writing replaces the target's previous contents; wait for completion before retrieving it. The GUI writer cannot start while the device is mounted by a running computer: shut that computer down first.
 
-To flash the device you should use the *flash.sh* script found in the */mnt/builtin/bin* directory of the default linux distro. You can use it as follows:
+Connected through a device bus, the flasher also exposes inserted writable media to the guest as a block device such as */dev/vdb*. Inspect */proc/partitions* to identify it. A raw image can be written with normal guest block-device tools, but choosing the wrong device destroys data. The old *flash.sh* helper is not bundled in the current scripts package.
 
-- *flash.sh [device path] [firmware file path] (use opensbi, yes or no, if ommitted opensbi will not be used)*
-
-OpenSBI is an open source loader/bootstrapper for RISC-V systems that makes developing kernels much simpler. Further information about building
-custom kernels is outside the scope of this documentation.
+See [flash memory](../item/flash_memory.md) for bundled firmware and boot requirements.

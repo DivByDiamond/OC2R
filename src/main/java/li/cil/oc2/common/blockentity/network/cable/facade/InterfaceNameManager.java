@@ -59,7 +59,11 @@ public final class InterfaceNameManager {
 
     public void deserialize(final List<Tag> tag) {
         for (int i = 0; i < Constants.BLOCK_FACE_COUNT; i++) {
+            //? if >=26.1 {
+            /*final String name = ((StringTag) tag.get(i)).value().trim();
+            *///?} else {
             final String name = ((StringTag) tag.get(i)).getAsString().trim();
+            //?}
             interfaceNames[i] = name.substring(0, Math.min(32, name.length()));
         }
     }

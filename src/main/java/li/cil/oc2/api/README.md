@@ -2,7 +2,7 @@
 
 Welcome to the API of OC2R, fellow developer! This document provides an overview of what integrations this API allows and how to best implement them. The primary purpose of the API is to let other mods implement their own devices for the computers in this mod.
 
-> OC2R is a rewrite of the original OpenComputers 2 mod, updated to **NeoForge** and modern Minecraft versions.
+> OC2R is a rewrite of the original OpenComputers 2 mod, updated to **NeoForge** (1.21.1, 26.x in development) and modern Minecraft versions. A Fabric build for 1.21.1 exists; the examples below use NeoForge APIs, and the registries behind them (`DeferredRegister`) are still NeoForge-specific for addons.
 
 ## The `RPCDevice`
 

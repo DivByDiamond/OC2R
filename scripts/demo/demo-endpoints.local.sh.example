@@ -1,0 +1,35 @@
+# Copy this file to scripts/demo/demo-endpoints.local.sh and fill in the
+# addresses of the public demo backend. The copy is git-ignored, so the
+# backend can be moved or rotated without touching the repository.
+#
+#   cp scripts/demo/demo-endpoints.local.sh.example scripts/demo/demo-endpoints.local.sh
+#
+# scripts/demo/demo-endpoints.sh reads the copy and exports the variables;
+# `bash scripts/demo/demo-endpoints.sh show` prints the resolved values and the
+# guest command lines to paste into the Minecraft terminal.
+#
+# The values are optional: an unset host or port means "not configured" and the
+# helpers print a placeholder instead of a stale address.
+
+# Host and port of the public HTTP backend (guest tool: ohttp).
+OC2R_DEMO_HTTP_HOST=""
+OC2R_DEMO_HTTP_PORT=""
+OC2R_DEMO_HTTP_PATH="/oc2r"
+
+# Host and port of the public TCP echo backend (guest tool: tcpdemo).
+OC2R_DEMO_TCP_HOST=""
+OC2R_DEMO_TCP_PORT=""
+
+# The lab addresses below already have repository defaults in
+# scripts/demo/demo-endpoints.sh; uncomment them only to override.
+#OC2R_DEMO_NAT_IP="10.0.2.15"
+#OC2R_DEMO_NAT_MASK="255.255.255.0"
+#OC2R_DEMO_NAT_GATEWAY="10.0.2.2"
+#OC2R_DEMO_DNS_SERVER="1.1.1.1"
+#OC2R_DEMO_LAN_IP="192.168.50.1"
+#OC2R_DEMO_LAN_PEER_IP="192.168.50.2"
+#OC2R_DEMO_LAN_UDP_PORT="12346"
+#OC2R_DEMO_LAN_TCP_PORT="12345"
+#OC2R_DEMO_LAN_STREAM_PORT="12348"
+#OC2R_DEMO_ROUTE_PROBE_IP="1.1.1.1"
+#OC2R_DEMO_ROUTE_PROBE_PORT="12347"

@@ -13,3 +13,5 @@ To connect external devices to a computer, use [bus interfaces](bus_interface.md
 
 ### Energy
 Usually, computers will require energy to run. Most modern energy generators producing RF energy should be compatible. Computers have a small built-in energy storage. However, this will usually not be sufficient to keep the machine running for any prolonged amount of time.
+
+A [CPU](../item/cpu.md), RAM and valid firmware are required. A [GPU](../item/gpu.md) is needed for monitors, while the built-in terminal works without one.

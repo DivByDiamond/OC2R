@@ -15,22 +15,17 @@ public final class MinuxFirmware implements Firmware {
 
     @Override
     public boolean run(final MemoryMap memory, final long startAddress) {
-        try (InputStream firmware = Buildroot.getFirmware();
-             InputStream linuxImage = Buildroot.getLinuxImage()) {
+        // Since sedna-buildroot 0.2.x the firmware is a minimal boot ROM that
+        // loads the kernel from disk (rootfs.ext2 on a virtio-blk device); no
+        // kernel image is stored into flash anymore.
+        try (InputStream firmware = Buildroot.getSednaFirmware()) {
             if (firmware == null) {
                 LOGGER.error(
-                        "Minux firmware resource (generated/fw_jump.bin) is missing from"
-                                + " sedna-buildroot.jar — VM will not boot.");
-                return false;
-            }
-            if (linuxImage == null) {
-                LOGGER.error(
-                        "Minux Linux image resource (generated/Image) is missing from"
+                        "Minux firmware resource (generated/firmware.bin) is missing from"
                                 + " sedna-buildroot.jar — VM will not boot.");
                 return false;
             }
             MemoryMaps.store(memory, startAddress, firmware);
-            MemoryMaps.store(memory, startAddress + 0x200000, linuxImage);
             return true;
         } catch (final IOException e) {
             LOGGER.error("Failed to load Minux firmware into VM memory", e);

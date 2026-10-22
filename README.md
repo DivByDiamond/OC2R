@@ -7,6 +7,7 @@ Fork of [North-Western-Development/OC2R], itself a fork of [OpenComputers 2] by 
 
 ![Java](https://img.shields.io/badge/Java-21+-orange?style=flat-square&logo=openjdk&logoColor=white)
 ![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1-green?style=flat-square)
+![Fabric](https://img.shields.io/badge/Fabric-1.21.1-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
 ![GitHub Release](https://img.shields.io/github/v/release/DivByDiamond/OC2R?style=flat-square)
 
@@ -65,8 +66,13 @@ The default Linux image is bundled with the mod - no extra download needed.
 
 ### Dependencies
 
-- **Required:** NeoForge 21.1.243+, Java 21+
-- **Optional:** JEI (recipe viewer)
+- **Required:** Minecraft 1.21.1 with NeoForge 21.1.243+ or Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
+- **Optional:** JEI (recipe viewer, NeoForge)
+
+| Minecraft | NeoForge | Fabric |
+|-----------|----------|--------|
+| 1.21.1 | ✅ supported | ✅ supported |
+| 26.1.2 / 26.2 | 🚧 in development: compiles, client run in progress, not released | ❌ not available (Fabric Loom cannot remap 26.x yet) |
 
 ### Libraries
 
@@ -131,8 +137,13 @@ OC2R - мод для Minecraft, добавляющий полноценные в
 
 ### Зависимости
 
-- **Обязательные:** NeoForge 21.1.243+, Java 21+
-- **Опциональные:** JEI (просмотр рецептов)
+- **Обязательные:** Minecraft 1.21.1 с NeoForge 21.1.243+ или Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
+- **Опциональные:** JEI (просмотр рецептов, NeoForge)
+
+| Minecraft | NeoForge | Fabric |
+|-----------|----------|--------|
+| 1.21.1 | ✅ поддерживается | ✅ поддерживается |
+| 26.1.2 / 26.2 | 🚧 в разработке: компилируется, клиент проверяется, не выпущено | ❌ недоступно (Fabric Loom пока не умеет ремапить 26.x) |
 
 ### Библиотеки
 
@@ -156,14 +167,23 @@ OC2R построен поверх этих библиотек (ссылки н�
 
 ### Building
 
+The build multiplexes Minecraft versions through [Stonecutter](https://stonecutter.kikugie.dev/); the working tree is kept on the `1.21.1` node. Modules: the root project (NeoForge), `core` (loader-independent code) and `fabric`.
+
 ```bash
-./gradlew build
+./gradlew :1.21.1:build :fabric:1.21.1:build   # NeoForge + Fabric on 1.21.1
+./gradlew :1.21.1:gameTest                     # NeoForge GameTests
+./gradlew :fabric:1.21.1:runGameTest           # Fabric GameTests
+./gradlew :26.1.2:compileJava                  # NeoForge on 26.1.2 (Java 25)
 ```
+
+Switch the sources to another version with `./gradlew "Set active project to 26.1.2"` and reset with `./gradlew "Reset active project"` before committing.
 
 ### Docs
 
 - [Source Structure](docs/SRC_STRUCTURE.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Multiloader / multiversion](docs/MULTILOADER.md)
+- [Roadmap](docs/roadmap/README.md)
 - [Contributing](CONTRIBUTING.md)
 
 ### License

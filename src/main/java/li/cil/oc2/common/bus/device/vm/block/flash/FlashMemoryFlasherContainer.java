@@ -6,4 +6,8 @@ public interface FlashMemoryFlasherContainer {
     ItemStack getDiskItemStack();
 
     void handleDataAccess();
+
+    default boolean isWriting() {
+        return false;
+    }
 }

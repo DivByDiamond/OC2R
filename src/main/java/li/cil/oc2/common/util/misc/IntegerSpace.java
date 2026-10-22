@@ -19,7 +19,8 @@ public class IntegerSpace {
         }
 
         final Map.Entry<Integer, Integer> floor = ranges.floorEntry(begin);
-        if (floor != null && Integer.compareUnsigned(floor.getKey(), begin) <= 0 && Integer.compareUnsigned(floor.getValue(), end) >= 0) {
+        if (floor != null && Integer.compareUnsigned(floor.getKey(), begin) <= 0
+                && Integer.compareUnsigned(floor.getValue(), end) >= 0) {
             // Already exists in the space
             // [---------]
             // [---------]
@@ -86,7 +87,8 @@ public class IntegerSpace {
 
     public final long countLong() {
         return ranges.entrySet().stream()
-                .mapToLong(range -> Integer.toUnsignedLong(range.getValue()) - Integer.toUnsignedLong(range.getKey()) + 1)
+                .mapToLong(range -> Integer.toUnsignedLong(range.getValue())
+                        - Integer.toUnsignedLong(range.getKey()) + 1)
                 .sum();
     }
 

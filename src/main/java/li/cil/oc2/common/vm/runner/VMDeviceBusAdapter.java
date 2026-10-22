@@ -76,6 +76,11 @@ public final class VMDeviceBusAdapter {
         unmountDevices();
 
         unmountedDevices.forEach(VMDevice::dispose);
+
+        // A cold stop discards device IRQs and addresses. Reserve only resources still
+        // claimed by built-ins, so the next boot can reuse the released slots. Suspension
+        // keeps the old reservations through unmountDevices() for an exact resume.
+        globalContext.updateReservations();
     }
 
     public void addDevices(final Collection<Device> devices) {

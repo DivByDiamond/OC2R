@@ -2,8 +2,11 @@ package li.cil.oc2.common.blockentity.network.cable;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
@@ -24,6 +27,7 @@ import net.minecraft.world.level.LevelAccessor;
 
 public final class BusCableBusElement extends AbstractBlockDeviceBusElement {
     private final BusCableBlockEntity owner;
+    private boolean initialDevicesCollected;
 
     BusCableBusElement(final BusCableBlockEntity owner) {
         super();
@@ -39,6 +43,21 @@ public final class BusCableBusElement extends AbstractBlockDeviceBusElement {
     @Override
     public BlockPos getPosition() {
         return owner.getBlockPos();
+    }
+
+    @Override
+    public Optional<Collection<DeviceBusElement>> getNeighbors() {
+        final Optional<Collection<DeviceBusElement>> neighbors = super.getNeighbors();
+        if (neighbors.isPresent() && !initialDevicesCollected) {
+            // A restored controller may scan before the deferred onLoad callback.
+            // Publish saved interfaces during traversal, before controllers register
+            // with this element and resume their VM with its device snapshot.
+            initialDevicesCollected = true;
+            for (final Direction direction : Constants.DIRECTIONS) {
+                updateDevicesForNeighbor(direction);
+            }
+        }
+        return neighbors;
     }
 
     // FORCED_OFF is only ever asked of the side a scan wants to leave through, so it blocks this

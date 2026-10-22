@@ -6,8 +6,10 @@ import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 class TerminalClient {
     private final Terminal terminal;

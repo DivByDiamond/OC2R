@@ -98,17 +98,15 @@ public final class ComputerBlockEntity extends ModBlockEntity
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected void applyImplicitComponents(final net.minecraft.core.component.DataComponentGetter componentInput) {
+    *///?} else {
     protected void applyImplicitComponents(final DataComponentInput componentInput) {
+    //?}
         super.applyImplicitComponents(componentInput);
         var container = componentInput.get(DataComponents.RESTRICTED_CONTAINER.get());
         if (container != null) {
             deviceItems.loadItems(getLevel().registryAccess(), container);
-        } else {
-            var blockEntityData =
-                    componentInput.get(
-                            net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
-            if (blockEntityData == null) return;
-            blockEntityData.copyTag().size();
         }
     }
 
@@ -163,7 +161,12 @@ public final class ComputerBlockEntity extends ModBlockEntity
     protected void loadServer() {
         super.loadServer();
         assert level != null;
+        // Chunk NBT is loaded before setLevel, so item-device providers were deferred.
+        // Recollect now; empty groups retain their saved IDs and pending device data.
+        final HolderLookup.Provider registries = level.registryAccess();
+        deviceItems.loadItems(registries, deviceItems.saveItems(registries));
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(level);
+        virtualMachine.busController.scheduleBusScan();
     }
 
     @Override

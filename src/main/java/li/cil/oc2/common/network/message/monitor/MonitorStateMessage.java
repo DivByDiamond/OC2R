@@ -12,7 +12,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEnergy)
+public record MonitorStateMessage(
+        BlockPos pos, boolean isMounted, boolean hasEnergy, boolean isPowered)
         implements AbstractMessage {
     public static final StreamCodec<ByteBuf, MonitorStateMessage> STREAM_CODEC =
             StreamCodec.composite(
@@ -22,6 +23,8 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
                     MonitorStateMessage::isMounted,
                     ByteBufCodecs.BOOL,
                     MonitorStateMessage::hasEnergy,
+                    ByteBufCodecs.BOOL,
+                    MonitorStateMessage::isPowered,
                     MonitorStateMessage::new);
 
     public static final CustomPacketPayload.Type<MonitorStateMessage> TYPE =
@@ -34,8 +37,11 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
     }
 
     public MonitorStateMessage(
-            final MonitorBlockEntity monitor, final boolean isMounted, final boolean hasEnergy) {
-        this(monitor.getBlockPos(), isMounted, hasEnergy);
+            final MonitorBlockEntity monitor,
+            final boolean isMounted,
+            final boolean hasEnergy,
+            final boolean isPowered) {
+        this(monitor.getBlockPos(), isMounted, hasEnergy, isPowered);
     }
 
     @Override
@@ -43,6 +49,6 @@ public record MonitorStateMessage(BlockPos pos, boolean isMounted, boolean hasEn
         ClientBlockEntityLookup.withClientBlockEntityAt(
                 pos,
                 MonitorBlockEntity.class,
-                monitor -> monitor.applyMonitorStateClient(isMounted, hasEnergy));
+                monitor -> monitor.applyMonitorStateClient(isMounted, hasEnergy, isPowered));
     }
 }

@@ -11,7 +11,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class NeoForgeNetworkBridge implements NetworkBridge {
     @Override
     public void sendToServer(final CustomPacketPayload message) {
+        //? if >=26.1 {
+        /*net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(message);
+        *///?} else {
         PacketDistributor.sendToServer(message);
+        //?}
     }
 
     @Override

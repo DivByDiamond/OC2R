@@ -13,13 +13,17 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 public final class ServerScheduler {
     private static final TickScheduler globalTickScheduler = new TickScheduler();
     private static final Map<LevelAccessor, TickScheduler> levelTickSchedulers =
-            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, SimpleScheduler> levelUnloadSchedulers =
-            Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
-            chunkLoadSchedulers = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            chunkLoadSchedulers = Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
     private static final Map<LevelAccessor, Map<ChunkPos, ListenerCollection>>
-            chunkUnloadSchedulers = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            chunkUnloadSchedulers = Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void initialize() {
         CommonEvents.SERVER_STOPPED.register(server -> EventHandler.handleServerStopped());

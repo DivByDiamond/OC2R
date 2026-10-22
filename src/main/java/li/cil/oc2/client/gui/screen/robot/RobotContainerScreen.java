@@ -1,15 +1,21 @@
 package li.cil.oc2.client.gui.screen.robot;
 
+//? if <26.1 {
 import com.mojang.blaze3d.systems.RenderSystem;
+//?}
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.machine.AbstractMachineInventoryScreen;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
 import net.minecraft.client.gui.GuiGraphics;
+//? if <26.1 {
 import net.minecraft.client.renderer.GameRenderer;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class RobotContainerScreen
@@ -22,8 +28,10 @@ public final class RobotContainerScreen
             final int x,
             final int y,
             final int columns) {
+        //? if <26.1 {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1, 1, 1, 1);
+        //?}
 
         final int slotX = selectedSlot % columns * SLOT_SIZE;
         final int slotY = selectedSlot / columns * SLOT_SIZE;
@@ -35,9 +43,18 @@ public final class RobotContainerScreen
             final RobotInventoryContainer container,
             final Inventory playerInventory,
             final Component title) {
+        //? if >=26.1 {
+/*        super(
+                container,
+                playerInventory,
+                title,
+                Sprites.ROBOT_CONTAINER.width,
+                Sprites.ROBOT_CONTAINER.height);
+*///?} else {
         super(container, playerInventory, title);
         imageWidth = Sprites.ROBOT_CONTAINER.width;
         imageHeight = Sprites.ROBOT_CONTAINER.height;
+        //?}
         inventoryLabelY = imageHeight - 94;
     }
 

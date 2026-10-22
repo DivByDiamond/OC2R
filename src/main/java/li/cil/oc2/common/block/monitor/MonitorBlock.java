@@ -1,7 +1,9 @@
 package li.cil.oc2.common.block.monitor;
 
 import com.mojang.serialization.MapCodec;
+//? if <26.1 {
 import java.util.List;
+//?}
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.block.energy.EnergyConsumingBlock;
@@ -14,14 +16,20 @@ import li.cil.oc2.common.network.message.monitor.framebuffer.MonitorPowerMessage
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if <26.1 {
 import net.minecraft.network.chat.Component;
+//?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+//? if <26.1 {
 import net.minecraft.world.item.Item;
+//?}
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.item.TooltipFlag;
+//?}
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,8 +50,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class MonitorBlock extends HorizontalDirectionalBlock
         implements EnergyConsumingBlock, EntityBlock {
@@ -63,8 +73,8 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     public static final IntegerProperty ORIGIN_OFFSET_Y =
             IntegerProperty.create("mb_oy", 0, MonitorMultiblock.MAX_HEIGHT - 1);
 
-    // We bake the "screen" indent on the front into the collision shape, to prevent stuff being
-    // placeable on that side, such as network connectors, torches, etc.
+    // Support geometry deliberately has an inset front: connectors and torches must not attach
+    // to the display. Collision and selection use the actual full-cube fragment model below.
     private static final VoxelShape NEG_Z_SHAPE =
             Shapes.or(
                     Block.box(0, 0, 1, 16, 16, 16), // main body
@@ -103,6 +113,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
         return BlockCodecs.MONITOR.get();
     }
 
+    //? if <26.1 {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void appendHoverText(
@@ -112,6 +123,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final TooltipFlag advanced) {
         super.appendHoverText(stack, context, tooltip, advanced);
     }
+    //?}
 
     @Override
     public VoxelShape getShape(
@@ -119,6 +131,12 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final BlockGetter level,
             final BlockPos pos,
             final CollisionContext context) {
+        return Shapes.block();
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(
+            final BlockState state, final BlockGetter level, final BlockPos pos) {
         return switch (state.getValue(FACING)) {
             case NORTH -> NEG_Z_SHAPE;
             case SOUTH -> POS_Z_SHAPE;
@@ -158,7 +176,11 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
                 monitor.openTerminalScreen(serverPlayer);
             }
         }
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
     @Override
@@ -188,7 +210,7 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
 
     // Not annotated with @Override: this is NeoForge's world-aware rotate hook (what wrenches call),
     // which does not exist in vanilla. See Platform.hooks().rotate for the other loaders.
-    @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"}) // NeoForge-only hook, see above
     public BlockState rotate(
             final BlockState state,
             final net.minecraft.world.level.LevelAccessor level,
@@ -200,13 +222,20 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
     /**
      * Rotating a single block of a multiblock with a wrench would change its FACING and break the
      * multiblock structure. Refuses to rotate when this block is part of a multiblock larger than 1x1.
+     *
+     * <p>Only meaningful for states of this block; every caller upholds that.
      */
     public static BlockState rotateWithWrench(
             final BlockState state, final net.minecraft.world.level.block.Rotation rotation) {
         if (state.getValue(WIDTH) > 1 || state.getValue(HEIGHT) > 1) {
             return state;
         }
-        return state.rotate(rotation);
+        // Inlined default of the deprecated BlockStateBase.rotate(Rotation) (body: getBlock().rotate,
+        // per the NeoForge patch). Spelled with a MonitorBlock-typed receiver because
+        // BlockBehaviour.rotate is protected: through a Block-typed receiver it is not accessible
+        // here, and the suggested BlockState#rotate(LevelAccessor, BlockPos, Rotation) is
+        // NeoForge-only, so it cannot be used from this shared source set.
+        return ((MonitorBlock) state.getBlock()).rotate(state, rotation);
     }
 
     // EntityBlock

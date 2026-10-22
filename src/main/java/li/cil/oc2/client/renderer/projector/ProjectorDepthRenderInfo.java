@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.projector;
 
+//? if <26.1 {
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
@@ -65,3 +66,4 @@ final class ProjectorDepthRenderInfo implements FrameConsumer {
         return r | (g << 8) | (b << 16) | (0xFF << 24);
     }
 }
+//?}

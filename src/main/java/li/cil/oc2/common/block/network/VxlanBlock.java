@@ -23,7 +23,12 @@ import net.minecraft.world.level.material.MapColor;
 
 public final class VxlanBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public VxlanBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -38,6 +43,16 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
                 .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            @javax.annotation.Nullable final net.minecraft.world.level.redstone.Orientation orientation,
+            final boolean isMoving) {
+    *///?} else {
     @Override
     public void neighborChanged(
             final BlockState state,
@@ -46,6 +61,7 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
             final Block changedBlock,
             final BlockPos changedBlockPos,
             final boolean isMoving) {
+    //?}
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof final VxlanBlockEntity vxlanEntity) {
             vxlanEntity.handleNeighborChanged();

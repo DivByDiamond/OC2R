@@ -12,18 +12,21 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 public final class ChunkUtils {
     /**
-     * All chunks marked for lazy saving. The lazy unsaved state will be applied when chunks unload
-     * and when chunks get explicitly saved, via the {@code ServerChunkCacheMixin}.
+     * All chunks marked for lazy saving. ChunkMap's save hook applies this flag before the
+     * save check; the ServerChunkCache hook also flushes it for explicit saves.
      */
+    private static final Object SAVE_LOCK = new Object();
     private static final Set<ChunkAccess> UNSAVED_CHUNKS =
-            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+            Collections.newSetFromMap(new WeakHashMap<>());
+    private static final Set<ChunkAccess> CLOSING_CHUNKS =
+            Collections.newSetFromMap(new WeakHashMap<>());
 
     /**
      * This will mark a chunk unsaved lazily, right before an attempt to save it would be made due
      * to of these events:
      *
      * <ul>
-     *   <li>Chunk unloaded.
+     *   <li>Chunk about to be saved during unload.
      *   <li>Game paused (singleplayer).
      *   <li>Save command.
      *   <li>Server stopped.
@@ -40,7 +43,9 @@ public final class ChunkUtils {
      * @param chunkAccess the chunk to set the flag for.
      */
     public static void setLazyUnsaved(final ChunkAccess chunkAccess) {
-        UNSAVED_CHUNKS.add(chunkAccess);
+        synchronized (SAVE_LOCK) {
+            if (!CLOSING_CHUNKS.contains(chunkAccess)) UNSAVED_CHUNKS.add(chunkAccess);
+        }
     }
 
     /**
@@ -48,7 +53,7 @@ public final class ChunkUtils {
      * to of these events:
      *
      * <ul>
-     *   <li>Chunk unloaded.
+     *   <li>Chunk about to be saved during unload.
      *   <li>Game paused (singleplayer).
      *   <li>Save command.
      *   <li>Server stopped.
@@ -78,7 +83,7 @@ public final class ChunkUtils {
      * to of these events:
      *
      * <ul>
-     *   <li>Chunk unloaded.
+     *   <li>Chunk about to be saved during unload.
      *   <li>Game paused (singleplayer).
      *   <li>Save command.
      *   <li>Server stopped.
@@ -96,32 +101,63 @@ public final class ChunkUtils {
      * @param chunkPos the position of the chunk.
      */
     public static void setLazyUnsaved(final LevelAccessor level, final ChunkPos chunkPos) {
+        //? if >=26.1 {
+        /*final int chunkX = chunkPos.x();
+        final int chunkZ = chunkPos.z();
+        *///?} else {
         final int chunkX = chunkPos.x;
         final int chunkZ = chunkPos.z;
+        //?}
         if (level.hasChunk(chunkX, chunkZ)) {
             setLazyUnsaved(level.getChunk(chunkX, chunkZ));
         }
     }
 
     /**
-     * Marks the specified as unsaved, if it was marked as lazy unsaved before and clears the lazy
-     * unsaved flags.
+     * Applies pending lazy flags for explicit saves, excluding chunks already closing.
      */
     public static void applyChunkLazyUnsaved() {
-        for (final ChunkAccess chunk : UNSAVED_CHUNKS) {
-            chunk.setUnsaved(true);
+        synchronized (SAVE_LOCK) {
+            for (final ChunkAccess chunk : UNSAVED_CHUNKS) {
+                if (!CLOSING_CHUNKS.contains(chunk)) markUnsaved(chunk);
+            }
+            UNSAVED_CHUNKS.clear();
         }
-        UNSAVED_CHUNKS.clear();
     }
 
-    /** Subscribes to chunk unloads so lazily-unsaved chunks are flagged before they are saved. */
+    /** Applied by ChunkMap.save before vanilla checks whether this chunk needs saving. */
+    public static void applyChunkLazyUnsaved(final ChunkAccess chunk) {
+        synchronized (SAVE_LOCK) {
+            if (UNSAVED_CHUNKS.remove(chunk) && !CLOSING_CHUNKS.contains(chunk)) markUnsaved(chunk);
+        }
+    }
+
+    private static void markUnsaved(final ChunkAccess chunk) {
+        //? if >=26.1 {
+        /*chunk.markUnsaved();
+        *///?} else {
+        chunk.setUnsaved(true);
+        //?}
+    }
+
     public static void register() {
+        CommonEvents.CHUNK_LOAD.register((level, chunk) -> handleChunkLoad(chunk));
         CommonEvents.CHUNK_UNLOAD.register((level, chunk) -> handleChunkUnload(chunk));
     }
 
-    private static void handleChunkUnload(final ChunkAccess chunk) {
-        if (UNSAVED_CHUNKS.remove(chunk)) {
-            chunk.setUnsaved(true);
+    static void handleChunkLoad(final ChunkAccess chunk) {
+        synchronized (SAVE_LOCK) {
+            CLOSING_CHUNKS.remove(chunk);
+        }
+    }
+
+    static void handleChunkUnload(final ChunkAccess chunk) {
+        synchronized (SAVE_LOCK) {
+            // NeoForge fires unload AFTER the chunk was saved. Marking it dirty here, or
+            // from the VM's ensuing suspend callbacks, can save it again after its block
+            // entities have been cleared and overwrite the good snapshot with an empty list.
+            CLOSING_CHUNKS.add(chunk);
+            UNSAVED_CHUNKS.remove(chunk);
         }
     }
 }

@@ -1,5 +1,81 @@
 package li.cil.oc2.common.mixin;
 
+//? if >=26.2 {
+/*import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.framegraph.FramePass;
+import li.cil.oc2.client.renderer.projector.ProjectorPipelineRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LevelTargetBundle;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(LevelRenderer.class)
+public abstract class LevelRendererMixin {
+    @Shadow(remap = false) @Final private LevelTargetBundle targets;
+    @Shadow(remap = false) @Final private LevelRenderState levelRenderState;
+
+    @Inject(method = "addAlwaysOnTopPass", at = @At("HEAD"), remap = false)
+    private void renderProjectors(
+            final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame unusedFeatureFrame,
+            final GpuBufferSlice unusedFog, final CallbackInfo unusedCi) {
+        // World depth must be sampled before always_on_top clears it for gizmos drawn over the world.
+        // Reading and writing the main target puts this pass after the world's passes and
+        // keeps it alive in the frame graph even when no other target reads its output.
+        final FramePass pass = frame.addPass("oc2r_projectors");
+        targets.main = pass.readsAndWrites(targets.main);
+        pass.executes(() -> {
+            final var camera = levelRenderState.cameraRenderState;
+            ProjectorPipelineRenderer.render((LevelRenderer) (Object) this, camera, camera.viewRotationMatrix);
+        });
+    }
+}
+*///?} else if >=26.1 {
+/*import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.framegraph.FramePass;
+import li.cil.oc2.client.renderer.projector.ProjectorPipelineRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LevelTargetBundle;
+import net.minecraft.client.renderer.ViewArea;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.joml.Matrix4fc;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(LevelRenderer.class)
+public abstract class LevelRendererMixin {
+    @Shadow(remap = false) private ViewArea viewArea;
+    @Shadow(remap = false) @Final private LevelTargetBundle targets;
+
+    @Inject(method = "addLateDebugPass", at = @At("HEAD"), remap = false)
+    private void renderProjectors(
+            final FrameGraphBuilder frame, final CameraRenderState camera,
+            final GpuBufferSlice unusedFog, final Matrix4fc view, final CallbackInfo unusedCi) {
+        // World depth must be sampled before late_debug clears it for always-on-top gizmos.
+        // Reading and writing the main target puts this pass after the world's passes and
+        // keeps it alive in the frame graph even when no other target reads its output.
+        final FramePass pass = frame.addPass("oc2r_projectors");
+        targets.main = pass.readsAndWrites(targets.main);
+        pass.executes(() -> {
+            if (viewArea != null) {
+                ProjectorPipelineRenderer.render(
+                        (LevelRenderer) (Object) this, camera, view, viewArea.sections);
+            }
+        });
+    }
+}
+*///?} else {
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
@@ -191,3 +267,4 @@ public abstract class LevelRendererMixin {
         }
     }
 }
+//?}

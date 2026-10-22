@@ -57,7 +57,11 @@ public final class DeviceTypes {
                                 tag,
                                 ResourceLocation.fromNamespaceAndPath(API.MOD_ID, iconPath),
                                 text("gui.{mod}.device_type." + id));
+        //? if >=26.1 {
+        /*Platform.registries().register(DeviceType.REGISTRY_KEY.identifier().toString(), API.MOD_ID, id, supplier);
+        *///?} else {
         Platform.registries().register(DeviceType.REGISTRY_KEY.location().toString(), API.MOD_ID, id, supplier);
+        //?}
         return supplier.get();
     }
 }

@@ -79,7 +79,11 @@ final class InventoryOperationsHelper {
 
                 if (!overflow.isEmpty()) {
                     remaining -= overflow.getCount();
+                    //? if >=26.1 {
+                    /*entity.spawnAtLocation((net.minecraft.server.level.ServerLevel) entity.level(), overflow);
+                    *///?} else {
                     entity.spawnAtLocation(overflow);
+                    //?}
                 }
             }
 
@@ -107,7 +111,11 @@ final class InventoryOperationsHelper {
         overflow = handler.insertItem(slot, overflow, false);
 
         if (!overflow.isEmpty()) {
+            //? if >=26.1 {
+            /*entity.spawnAtLocation((net.minecraft.server.level.ServerLevel) entity.level(), overflow);
+            *///?} else {
             entity.spawnAtLocation(overflow);
+            //?}
         }
 
         return taken;

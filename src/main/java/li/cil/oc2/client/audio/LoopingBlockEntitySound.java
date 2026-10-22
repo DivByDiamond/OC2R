@@ -3,11 +3,12 @@ package li.cil.oc2.client.audio;
 import java.time.Duration;
 import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -38,10 +39,12 @@ public final class LoopingBlockEntitySound extends AbstractTickableSoundInstance
     @Override
     public void tick() {
         volume = Mth.clamp(volume + FADE_IN_PER_TICK, 0, 1);
-        final ChunkPos chunkPos = new ChunkPos(blockEntity.getBlockPos());
+        final BlockPos blockPos = blockEntity.getBlockPos();
         if (blockEntity.isRemoved()
                 || blockEntity.getLevel() == null
-                || !blockEntity.getLevel().hasChunk(chunkPos.x, chunkPos.z)) {
+                || !blockEntity.getLevel().hasChunk(
+                        SectionPos.blockToSectionCoord(blockPos.getX()),
+                        SectionPos.blockToSectionCoord(blockPos.getZ()))) {
             stop();
         }
     }

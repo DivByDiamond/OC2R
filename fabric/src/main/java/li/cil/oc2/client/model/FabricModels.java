@@ -32,8 +32,6 @@ public final class FabricModels {
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_base");
     private static final ResourceLocation BUS_CABLE_STRAIGHT_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_straight");
-    private static final ResourceLocation BUS_CABLE_SUPPORT_MODEL =
-            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_support");
     private static final ResourceLocation MONITOR_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/monitor");
 
@@ -41,7 +39,7 @@ public final class FabricModels {
 
     public static void register() {
         ModelLoadingPlugin.register(context -> {
-            context.addModels(BUS_CABLE_STRAIGHT_MODEL, BUS_CABLE_SUPPORT_MODEL);
+            context.addModels(BUS_CABLE_STRAIGHT_MODEL);
             context.modifyModelAfterBake().register(ModelModifier.WRAP_PHASE, FabricModels::modify);
         });
     }
@@ -77,15 +75,7 @@ public final class FabricModels {
             requireNonNull(baker.bake(BUS_CABLE_STRAIGHT_MODEL, BlockModelRotation.X90_Y0)),
             requireNonNull(baker.bake(BUS_CABLE_STRAIGHT_MODEL, settings))
         };
-        final BakedModel[] supportModelByFace = {
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, BlockModelRotation.X270_Y0)), // -y
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, BlockModelRotation.X90_Y0)), // +y
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, BlockModelRotation.X0_Y180)), // -z
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, settings)), // +z
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, BlockModelRotation.X0_Y90)), // -x
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, BlockModelRotation.X0_Y270)) // +x
-        };
-        return new FabricBusCableModel(base, straightModelByAxis, supportModelByFace);
+        return new FabricBusCableModel(base, straightModelByAxis);
     }
 
     @SuppressWarnings("deprecation")
@@ -93,7 +83,8 @@ public final class FabricModels {
         final Map<String, TextureAtlasSprite> sprites = new ConcurrentHashMap<>();
         for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
             final Material material =
-                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD allocation depends on loop iteration
+                    // allocation depends on loop iteration
+                    new Material(TextureAtlas.LOCATION_BLOCKS, MonitorModelTypes.texture(name)); // NOPMD
             sprites.put(name, context.textureGetter().apply(material));
         }
         final ItemTransforms transforms = context.sourceModel() instanceof final BlockModel blockModel

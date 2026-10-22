@@ -7,10 +7,12 @@ name: ci
 # build.yml only triggers on `push` (post-merge) -- without this, a PR
 # targeting 1.21.1 got zero automated verification before merge.
 #
-# The pipeline is split into three jobs that share the pool and run in
-# parallel (lint / unit tests / game tests -- each dominates a different
-# bottleneck: static analysis CPU, JVM tests, MC server boot). Formally the
-# branch is still gated by a single check: the `ci` result job below.
+# The pipeline is split into jobs that share the pool and run in parallel
+# (lint / unit tests / game tests / 26.x unit and game tests / demo scripts --
+# each dominates a different bottleneck: static analysis CPU, JVM tests, MC
+# server boot, the Java 25 toolchain of the 26.x nodes and the host toolchain
+# of the demo scripts). Formally the branch is still gated by a single check:
+# the `ci` result job below.
 # NOTE: paths-ignore applies to `push` only. On pull_request every change --
 # docs included -- must produce the `ci` check, or a docs-only PR would sit in
 # "Expected - Waiting for status" forever once `ci` is a required check.
@@ -34,15 +36,32 @@ jobs:
       contents: read
     runs-on: pocketprobe-kube
     # Static analysis on compiled classes (spotbugs) -- compile is needed but
-    # no game server; the whole job is CPU-bound gradle work.
-    timeout-minutes: 20
+    # no game server; the whole job is CPU-bound gradle work. The job also builds
+    # the 26.x mod nodes, so it needs more than the 1.21.1-only budget.
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
+        id: jdk21
         with:
           distribution: 'temurin'
           java-version: '21'
+      # The job also compiles the 26.x mod nodes, whose toolchain is Java 25. Gradle only
+      # auto-detects the JDK of JAVA_HOME, so install it here and pass both paths explicitly;
+      # the toolchain resolver cannot provision a JDK at build time on this runner.
+      - uses: actions/setup-java@v6
+        id: jdk25
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          set-default: false
+      - name: Resolve toolchain paths
+        id: jdks
+        env:
+          JDK21: ${{ steps.jdk21.outputs.path }}
+          JDK25: ${{ steps.jdk25.outputs.path }}
+        run: echo "paths=$JDK21,$JDK25" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: |
@@ -57,10 +76,15 @@ jobs:
       - name: Static analysis (checkstyle + pmd + spotbugs + ratchet)
         # Transient 5xx from maven.neoforged.net aborts Gradle resolution (unlike 404
         # it is not treated as "not found"); one retry recovers the same way build.yml does.
+        # Every task is qualified: a bare name would also resolve in the nodes this job does
+        # not build. The 26.x nodes are covered explicitly -- their checkstyle and the compile
+        # of the mod nodes -- so a change that breaks the 26.x sources cannot pass CI.
         run: |
-          ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet || {
+          TASKS=":1.21.1:checkstyleMain :1.21.1:checkstyleTest :1.21.1:pmdMain :1.21.1:pmdTest :1.21.1:spotbugsMain :1.21.1:spotbugsTest :1.21.1:lintRatchet :26.1.2:checkstyleMain :26.2:checkstyleMain :core:1.21.1:checkstyleMain :core:26.1.2:checkstyleMain :core:26.2:checkstyleMain :26.1.2:compileJava :26.2:compileJava"
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
             echo "::warning::First lint gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest lintRatchet --refresh-dependencies
+            ./gradlew $JDKS $TASKS --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -71,9 +95,16 @@ jobs:
         with:
           name: lint-reports
           path: |
-            build/reports/pmd/
-            build/reports/checkstyle/
-            build/reports/spotbugs/
+            versions/1.21.1/build/reports/pmd/
+            versions/1.21.1/build/reports/checkstyle/
+            versions/1.21.1/build/reports/spotbugs/
+            versions/26.1.2/build/reports/checkstyle/
+            versions/26.2/build/reports/checkstyle/
+            core/versions/1.21.1/build/reports/pmd/
+            core/versions/1.21.1/build/reports/checkstyle/
+            core/versions/1.21.1/build/reports/spotbugs/
+            core/versions/26.1.2/build/reports/checkstyle/
+            core/versions/26.2/build/reports/checkstyle/
           if-no-files-found: ignore
           retention-days: 1
 
@@ -110,13 +141,14 @@ jobs:
 
       # `test` runs the JUnit suite (incl. the vttest replay harness); `assemble`
       # builds the mod jar so the job still guards packaging regressions. Gradle's `test`
-      # lifecycle also pulls in loom's :fabric:runGameTest, which needs xvfb-run; the Fabric
+      # lifecycle also pulls in loom's :fabric:1.21.1:runGameTest, which needs xvfb-run; the Fabric
       # game tests have their own step in the gametest job, so skip them here.
+      # Qualified to the 1.21.1 nodes: bare names would also resolve the 26.x nodes.
       - name: Unit tests and jar assembly
         run: |
-          ./gradlew test assemble -x :fabric:runGameTest || {
+          ./gradlew :1.21.1:test :1.21.1:assemble :core:1.21.1:test :fabric:1.21.1:test :fabric:1.21.1:assemble -x :fabric:1.21.1:runGameTest || {
             echo "::warning::First test gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew test assemble -x :fabric:runGameTest --refresh-dependencies
+            ./gradlew :1.21.1:test :1.21.1:assemble :core:1.21.1:test :fabric:1.21.1:test :fabric:1.21.1:assemble -x :fabric:1.21.1:runGameTest --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -126,14 +158,19 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results
-          path: build/test-results/test/*.xml
+          path: |
+            versions/1.21.1/build/test-results/test/*.xml
+            core/versions/1.21.1/build/test-results/test/*.xml
+            fabric/versions/1.21.1/build/test-results/test/*.xml
           if-no-files-found: error
           retention-days: 1
 
       - uses: actions/upload-artifact@v7
         with:
           name: oc2r-dev-jar
-          path: build/libs/*.jar
+          path: |
+            versions/1.21.1/build/libs/*.jar
+            fabric/versions/1.21.1/build/libs/*.jar
 
   gametest:
     permissions:
@@ -162,9 +199,9 @@ jobs:
 
       - name: Run game tests
         run: |
-          ./gradlew gameTest || {
+          ./gradlew :1.21.1:gameTest || {
             echo "::warning::First gameTest gradle run failed (likely transient dependency resolution); retrying."
-            ./gradlew gameTest --refresh-dependencies
+            ./gradlew :1.21.1:gameTest --refresh-dependencies
           }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -181,28 +218,193 @@ jobs:
       # Exercises the Fabric bridges (registry/network/events/capabilities/energy) on a real
       # dedicated server; fails the job when a required Fabric game test fails.
       - name: Run Fabric game tests
-        run: ./gradlew :fabric:runGameTest
+        run: ./gradlew :fabric:1.21.1:runGameTest
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       # The gameTest task fails on a vacuous run and always emits
-      # build/test-results/gameTest/results.xml; missing XML therefore means
-      # the task did not run at all -- upload with `error` so that is visible.
+      # versions/1.21.1/build/test-results/gameTest/results.xml; missing XML therefore
+      # means the task did not run at all -- upload with `error` so that is visible.
       - name: Upload game test results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: gametest-results
-          path: 'build/test-results/gameTest/*.xml'
+          path: 'versions/1.21.1/build/test-results/gameTest/*.xml'
           if-no-files-found: error
           retention-days: 1
+
+  test-26x:
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    # The 26.x nodes need a Java 25 toolchain (versions/<v>/gradle.properties:
+    # java_version=25) and the NeoForge 26.x artifacts, which are not in the
+    # 1.21.1 cache. The leg runs the unit suites of both mod nodes and of both
+    # core nodes and then boots two game test servers. For comparison: the
+    # 1.21.1 unit leg gets 25 minutes and the 1.21.1 game leg 30 minutes for
+    # a single server boot. Two 26.x server boots plus the 26.x setup are
+    # about twice that, and 70 minutes leaves room for the retry of a
+    # transient dependency resolution failure.
+    timeout-minutes: 70
+
+    steps:
+      - uses: actions/checkout@v7
+      # The 26.x nodes build their mod classes on Java 25, while their Gradle
+      # tooling (asset download, part of the plugins) still asks for Java 21.
+      # Both JDKs are installed here and handed to Gradle explicitly: the
+      # toolchain resolver is not configured on this runner, so letting Gradle
+      # search on its own fails with "Cannot find a Java installation".
+      - uses: actions/setup-java@v6
+        id: jdk25
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      # Compiling a 26.x node also needs Java 21: the asset download task and part of the
+      # build tooling still run on the 1.21.1 toolchain. Both paths go to Gradle explicitly.
+      - uses: actions/setup-java@v6
+        id: jdk21
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          set-default: false
+      - name: Resolve toolchain paths
+        id: jdks
+        env:
+          JDK21: ${{ steps.jdk21.outputs.path }}
+          JDK25: ${{ steps.jdk25.outputs.path }}
+        run: echo "paths=$JDK21,$JDK25" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+
+      # Qualified to the 26.x nodes: a bare `test` would also resolve the
+      # 1.21.1 nodes, which the test job already covers.
+      - name: Unit tests (26.x)
+        run: |
+          TASKS=":26.1.2:test :26.2:test :core:26.1.2:test :core:26.2:test"
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
+            echo "::warning::First 26.x test gradle run failed (likely transient dependency resolution); retrying."
+            ./gradlew $JDKS $TASKS --refresh-dependencies
+          }
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Game tests (26.x)
+        run: |
+          TASKS=":26.1.2:gameTest :26.2:gameTest"
+          JDKS="-Dorg.gradle.java.installations.paths=${{ steps.jdks.outputs.paths }}"
+          ./gradlew $JDKS $TASKS || {
+            echo "::warning::First 26.x gameTest gradle run failed (likely transient dependency resolution); retrying."
+            ./gradlew $JDKS $TASKS --refresh-dependencies
+          }
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # The test task always writes one JUnit XML per test class into
+      # <node>/build/test-results/test/, so missing XML means the task did not
+      # run at all -- upload with `error` so that is visible.
+      - name: Upload 26.x unit test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-26x
+          path: |
+            versions/26.1.2/build/test-results/test/*.xml
+            versions/26.2/build/test-results/test/*.xml
+            core/versions/26.1.2/build/test-results/test/*.xml
+            core/versions/26.2/build/test-results/test/*.xml
+          if-no-files-found: error
+          retention-days: 1
+
+      # The gameTest task fails on a vacuous run and always emits
+      # <node>/build/test-results/gameTest/results.xml; missing XML therefore
+      # means the task did not run at all -- upload with `error` so that is
+      # visible.
+      - name: Upload 26.x game test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametest-results-26x
+          path: |
+            versions/26.1.2/build/test-results/gameTest/*.xml
+            versions/26.2/build/test-results/gameTest/*.xml
+          if-no-files-found: error
+          retention-days: 1
+
+  demo-scripts:
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    # The demo scripts are checked with the host toolchain (bash, a C
+    # compiler, python3 and javac) -- no Gradle, no Minecraft, no game
+    # server. The leg is a few minutes at most; 15 minutes leaves room for
+    # the toolchain installation and the dependency download.
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+      # javac for the two demo Java harnesses; the demo code targets the same
+      # language level as the 1.21.1 mod.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # The runner image is not guaranteed to ship a C compiler or python3
+      # (the demo checks need both); install the missing packages the same
+      # way the gametest job installs xvfb.
+      - name: Install the demo check toolchain
+        run: |
+          missing=()
+          command -v cc >/dev/null 2>&1 || missing+=(gcc)
+          # A compiler without the libc development headers cannot even parse the guest tools
+          # ("stdio.h: No such file or directory"), which is what the syntax check does.
+          [ -f /usr/include/stdio.h ] || missing+=(libc6-dev)
+          command -v python3 >/dev/null 2>&1 || missing+=(python3)
+          if [ "${#missing[@]}" -gt 0 ]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends "${missing[@]}"
+          fi
+          cc --version | head -1
+          python3 --version
+
+      # The Sedna runtime is the only dependency of the demo Java harnesses.
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+
+      - name: Check the demo shell scripts
+        run: bash scripts/demo/run-checks.sh shell
+
+      - name: Compile the demo C sources (syntax only)
+        run: bash scripts/demo/run-checks.sh c
+
+      - name: Run the demo RPC test
+        run: bash scripts/demo/run-checks.sh python
+
+      - name: Compile the demo Java harnesses
+        run: bash scripts/demo/run-checks.sh java
+
+      # The gate: no public address and no public demo backend port may be
+      # hardcoded in the demo sources. The policy lives in
+      # scripts/demo/endpoint-policy.txt.
+      - name: Fail on hardcoded demo endpoints
+        run: bash scripts/demo/run-checks.sh endpoints
 
   ci:
     # Single formal check aggregating the parallel jobs; branch protection can
     # require `ci` only. `if: always()` so the check still reports (red) when a
     # leg fails, instead of staying pending forever.
     name: ci
-    needs: [ lint, test, gametest ]
+    needs: [ lint, test, gametest, test-26x, demo-scripts ]
     if: always()
     permissions:
       contents: read
@@ -214,10 +416,12 @@ jobs:
           LINT: ${{ needs.lint.result }}
           TEST: ${{ needs.test.result }}
           GAMETEST: ${{ needs.gametest.result }}
+          TEST_26X: ${{ needs.test-26x.result }}
+          DEMO_SCRIPTS: ${{ needs.demo-scripts.result }}
         run: |
-          for r in "$LINT" "$TEST" "$GAMETEST"; do
+          for r in "$LINT" "$TEST" "$GAMETEST" "$TEST_26X" "$DEMO_SCRIPTS"; do
             if [ "$r" != "success" ]; then
-              echo "failure leg: lint=$LINT test=$TEST gametest=$GAMETEST"
+              echo "failure leg: lint=$LINT test=$TEST gametest=$GAMETEST test-26x=$TEST_26X demo-scripts=$DEMO_SCRIPTS"
               exit 1
             fi
           done

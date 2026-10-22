@@ -4,7 +4,6 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotAction;
 import li.cil.oc2.common.entity.robot.action.AbstractRobotActionType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.phys.Vec3;
 
 public final class RobotMovementActionType extends AbstractRobotActionType {
     public RobotMovementActionType(final int id) {
@@ -25,11 +24,11 @@ public final class RobotMovementActionType extends AbstractRobotActionType {
 
     @Override
     public void performClient(final Robot robot) {
-        final Vec3 target =
-                RobotMovementAction.getTargetPositionInBlock(
-                        robot.getEntityData().get(Robot.TARGET_POSITION));
-        if (robot.position().distanceToSqr(target) > RobotMovementAction.TARGET_EPSILON) {
-            RobotMovementAction.moveTowards(robot, target);
+        if (!RobotMovementAction.isComplete(robot)) {
+            RobotMovementAction.moveTowards(
+                    robot,
+                    RobotMovementAction.getTargetPositionInBlock(
+                            robot.getEntityData().get(Robot.TARGET_POSITION)));
         }
     }
 

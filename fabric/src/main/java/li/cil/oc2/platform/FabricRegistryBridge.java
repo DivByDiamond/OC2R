@@ -50,7 +50,7 @@ public final class FabricRegistryBridge implements RegistryBridge {
         final BlockHolder<B> holder = new BlockHolder<>() {
             @Override
             public ResourceLocation getId() {
-                return entry.id();
+                return entry.identifier();
             }
 
             @Override
@@ -76,7 +76,7 @@ public final class FabricRegistryBridge implements RegistryBridge {
         return new ItemHolder<>() {
             @Override
             public ResourceLocation getId() {
-                return entry.id();
+                return entry.identifier();
             }
 
             @Override
@@ -171,7 +171,7 @@ public final class FabricRegistryBridge implements RegistryBridge {
                     : BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(entry.registryId));
             if (existing == null || entry.registryId.startsWith("minecraft:")) {
                 throw new IllegalStateException(
-                        "Registration of " + entry.id() + " after registries were bound");
+                        "Registration of " + entry.identifier() + " after registries were bound");
             }
             entry.registerInto(resolve(entry.registryId));
             return;
@@ -193,12 +193,15 @@ public final class FabricRegistryBridge implements RegistryBridge {
             this.factory = factory;
         }
 
-        ResourceLocation id() {
+        ResourceLocation identifier() {
             return id;
         }
 
         void registerInto(final Registry<Object> registry) {
-            final T created = factory.get();
+            // The id of the entry has to be known while the factory runs: on 26.x the block and
+            // item properties read it from the registration context. The NeoForge bridge does
+            // the same through DeferredRegister (see NeoForgeRegistryBridge#registerBlock).
+            final T created = RegistrationContext.with(id, factory);
             Registry.register(registry, id, created);
             value = created;
         }

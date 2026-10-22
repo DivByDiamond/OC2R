@@ -2,7 +2,9 @@ package li.cil.oc2.common.bus.device.rpc.filter;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -51,11 +53,21 @@ public final class RPCItemStackTagFilter {
         CompoundTag currentTarget = result;
         for (int j = 0; j < path.length - 1; j++) {
             final String segment = path[j];
+            //? if >=26.1 {
+            /*if (currentSource.contains(segment)) {
+                currentSource = currentSource.getCompoundOrEmpty(segment);
+            *///?} else {
             if (currentSource.contains(segment, NBTTagIds.TAG_COMPOUND)) {
                 currentSource = currentSource.getCompound(segment);
+            //?}
                 // NOPMD - each nested level of the path requires a distinct CompoundTag.
-                currentTarget.put(segment, new CompoundTag()); // NOPMD allocation depends on loop iteration / per-item state
+                // allocation depends on loop iteration / per-item state
+                currentTarget.put(segment, new CompoundTag()); // NOPMD
+                //? if >=26.1 {
+                /*currentTarget = currentTarget.getCompoundOrEmpty(segment);
+                *///?} else {
                 currentTarget = currentTarget.getCompound(segment);
+                //?}
             } else {
                 return null; // Path mismatch, inner element is not a compound tag.
             }

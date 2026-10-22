@@ -1,5 +1,121 @@
 package li.cil.oc2.client.renderer.blockentity.computer;
 
+//? if >=26.1 {
+/*import com.google.common.cache.Cache;
+import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.concurrent.ExecutionException;
+import li.cil.oc2.client.renderer.blockentity.RendererQuadHelper;
+import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
+import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.terminal.render.RendererView;
+import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.network.chat.Component;
+
+final class TerminalTextRenderer {
+    private final Font font;
+    private final Cache<Terminal, RendererView> rendererViews;
+
+    TerminalTextRenderer(
+            final Font font, final Cache<Terminal, RendererView> rendererViews) {
+        this.font = font;
+        this.rendererViews = rendererViews;
+    }
+
+    void renderTerminal(
+            final PoseStack stack,
+            final SubmitNodeCollector collector,
+            final Terminal terminal,
+            final double distanceToCamera) {
+        // Render terminal content if close enough (same 6 block range as on 1.21.1).
+        if (distanceToCamera >= 6f) {
+            return;
+        }
+
+        // A 26.x block entity renderer only collects: the frame is captured here and replayed
+        // when the submitted node is drawn, because the world is rendered after extraction.
+        final TerminalRenderer.GuiSnapshot snapshot = captureFrame(terminal);
+        if (snapshot == null) {
+            return;
+        }
+        // Empty rows have no mesh; cursor-only frames are still submitted independently.
+        if (snapshot.vertexCount() == 0 && !snapshot.cursorVisible()) {
+            return;
+        }
+
+        stack.pushPose();
+        stack.translate(2, 2, -0.9f);
+
+        final float textScaleX = 12f / terminal.getWidth();
+        final float textScaleY = 7f / terminal.getHeight();
+        // Preserve the pre-DECCOLM uniform scale as the baseline so the 80-column
+        // rendering is pixel-identical to before. At 132 cols textScaleX shrinks below
+        // the uniform floor, so characters squish horizontally like a real VT100.
+        final float scaleX = Math.min(textScaleX, textScaleY) * 0.95f;
+        final float scaleY = textScaleY * 0.95f;
+
+        // Center the terminal in the block face.
+        stack.translate(
+                terminal.getWidth() * (textScaleX - scaleX) * 0.5f,
+                terminal.getHeight() * (textScaleY - scaleY) * 0.5f,
+                0f);
+
+        stack.scale(scaleX, scaleY, 1f);
+
+        if (snapshot.backgroundVertexCount() > 0) {
+            collector.order(0).submitCustomGeometry(
+                    stack, ModRenderType.getTerminalCursor(), snapshot::replayBackground);
+        }
+        if (snapshot.textVertexCount() > 0) {
+            collector.order(1).submitCustomGeometry(
+                    stack, ModRenderType.getTerminalText(), snapshot::replayText);
+        }
+        if (snapshot.cursorVisible()) {
+            collector.order(2).submitCustomGeometry(
+                    stack,
+                    ModRenderType.getTerminalCursor(),
+                    snapshot::replayCursor);
+        }
+
+        stack.popPose();
+    }
+
+    @javax.annotation.Nullable
+    private TerminalRenderer.GuiSnapshot captureFrame(final Terminal terminal) {
+        try {
+            final RendererView view = rendererViews.get(terminal, terminal::getRenderer);
+            if (view instanceof final TerminalRenderer renderer) {
+                return renderer.captureForGui();
+            }
+        } catch (final ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    void renderStatusText(
+            final PoseStack stack,
+            final SubmitNodeCollector collector,
+            final double distanceToCamera,
+            final Component bootError) {
+        if (distanceToCamera > 12f) {
+            return;
+        }
+
+        if (bootError == null) {
+            return;
+        }
+
+        stack.pushPose();
+        stack.translate(3, 3, -0.9f);
+
+        RendererQuadHelper.drawText(collector, stack, bootError, font);
+
+        stack.popPose();
+    }
+}
+*///?} else {
 import com.google.common.cache.Cache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -155,3 +271,4 @@ final class TerminalTextRenderer {
                 false);
     }
 }
+//?}

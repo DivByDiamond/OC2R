@@ -47,8 +47,13 @@ final class VMItemStackHandlerSerialization {
             final CompoundTag tag) {
         itemHandlers.forEach(
                 (deviceType, handler) ->
+                        //? if >=26.1 {
+                        /*handler.loadItems(
+                                provider, tag.getCompoundOrEmpty(deviceType.getName().toString())));
+                        *///?} else {
                         handler.loadItems(
                                 provider, tag.getCompound(deviceType.getName().toString())));
+                        //?}
     }
 
     static void saveDevices(
@@ -75,6 +80,10 @@ final class VMItemStackHandlerSerialization {
         itemHandlers.forEach(
                 (deviceType, handler) ->
                         handler.loadDevices(
+                                //? if >=26.1 {
+                                /*registries, tag.getCompoundOrEmpty(deviceType.getName().toString())));
+                                *///?} else {
                                 registries, tag.getCompound(deviceType.getName().toString())));
+                                //?}
     }
 }

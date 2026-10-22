@@ -11,14 +11,20 @@ import li.cil.oc2.common.hooks.ClientProxy;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.InteractionResultHolder;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -41,10 +47,19 @@ public final class NetworkInterfaceCardItem extends ModItem {
                 (nbt) -> {
                     final CompoundTag tag = ItemStackUtils.getOrCreateModDataTag(nbt);
                     final byte[] values;
+                    //? if >=26.1 {
+                    /*if (tag.contains(SIDE_CONFIGURATION_TAG_NAME)
+                            && tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME).orElse(new byte[0]).length
+                    *///?} else {
                     if (tag.contains(SIDE_CONFIGURATION_TAG_NAME, NBTTagIds.TAG_BYTE_ARRAY)
                             && tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME).length
+                    //?}
                                     == Constants.BLOCK_FACE_COUNT) {
+                        //? if >=26.1 {
+                        /*values = tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME).orElse(new byte[0]);
+                        *///?} else {
                         values = tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME);
+                        //?}
                     } else {
                         values = new byte[Constants.BLOCK_FACE_COUNT];
                         Arrays.fill(values, (byte) 1);
@@ -65,8 +80,13 @@ public final class NetworkInterfaceCardItem extends ModItem {
         final int index = side.get3DDataValue();
 
         final CompoundTag tag = ItemStackUtils.getModDataTag(stack);
+        //? if >=26.1 {
+        /*if (tag.contains(SIDE_CONFIGURATION_TAG_NAME)) {
+            final byte[] values = tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME).orElse(new byte[0]);
+        *///?} else {
         if (tag.contains(SIDE_CONFIGURATION_TAG_NAME, NBTTagIds.TAG_BYTE_ARRAY)) {
             final byte[] values = tag.getByteArray(SIDE_CONFIGURATION_TAG_NAME);
+        //?}
             if (index < values.length) {
                 return values[index] != 0;
             }
@@ -77,7 +97,11 @@ public final class NetworkInterfaceCardItem extends ModItem {
 
     public static boolean hasConfiguration(final ItemStack stack) {
         final byte[] values =
+                //? if >=26.1 {
+                /*ItemStackUtils.getModDataTag(stack).getByteArray(SIDE_CONFIGURATION_TAG_NAME).orElse(new byte[0]);
+                *///?} else {
                 ItemStackUtils.getModDataTag(stack).getByteArray(SIDE_CONFIGURATION_TAG_NAME);
+                //?}
         for (final byte value : values) {
             if (value == 0) {
                 return true;
@@ -100,7 +124,11 @@ public final class NetworkInterfaceCardItem extends ModItem {
     }
 
     @Override
+    //? if >=26.1 {
+    /*public InteractionResult use(
+    *///?} else {
     public InteractionResultHolder<ItemStack> use(
+    //?}
             final Level level, final Player player, final InteractionHand hand) {
         final ItemStack itemStack = player.getItemInHand(hand);
 
@@ -109,7 +137,11 @@ public final class NetworkInterfaceCardItem extends ModItem {
             openConfigurationScreen(player, hand);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResultHolder.sidedSuccess(itemStack, player.level().isClientSide());
+        //?}
     }
 
     private void openConfigurationScreen(final Player player, final InteractionHand hand) {

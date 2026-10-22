@@ -1,0 +1,8 @@
+{
+  "markdown_manual.warning.missing.block": "Блок недоступен.",
+  "markdown_manual.warning.missing.image": "Изображение не найдено.",
+  "markdown_manual.warning.missing.item": "Предмет недоступен.",
+  "markdown_manual.warning.missing.tag": "Тег недоступен.",
+  "markdown_manual.warning.missing.content_renderer": "Не найден способ отображения [%s].",
+  "markdown_manual.warning.redirection_loop": "Зацикленное перенаправление: "
+}

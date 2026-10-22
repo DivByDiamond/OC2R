@@ -2,6 +2,7 @@ package li.cil.oc2.client.gui.util;
 
 import java.util.List;
 import li.cil.oc2.client.ClientCompat;
+import li.cil.oc2.client.RenderCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -37,7 +38,7 @@ public final class TooltipRenderer {
             final int widthHint,
             final ItemStack itemStack) {
         final Minecraft minecraft = Minecraft.getInstance();
-        final Screen screen = minecraft.screen;
+        final Screen screen = RenderCompat.currentScreen();
         if (screen == null) {
             return;
         }

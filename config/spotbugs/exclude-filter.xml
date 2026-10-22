@@ -7,14 +7,13 @@
     <Match>
         <Class name="~li\.cil\.oc2\.jcodec\..*" />
     </Match>
-    <!-- Generated sources. -->
-    <Match>
-        <Source name="~.*[/\\]generated[/\\].*" />
-    </Match>
+    <!-- No &lt;Source&gt; rules for directory names here. SpotBugs matches the source pattern
+         against the compilation path of the class, and on the 26.x nodes every class is compiled
+         from a path below build/generated/stonecutter, so a rule on "generated" excluded the
+         whole mod and made the 26.x analysis report zero findings (a vacuous gate that looked
+         green). src/generated of the tree holds datagen resources only (no Java), and the
+         GameTest sources are covered by the class rule below. -->
     <!-- GameTest infrastructure (runs via runGameTestServer, not SpotBugs-linted). -->
-    <Match>
-        <Source name="~.*[/\\]gametest[/\\].*" />
-    </Match>
     <Match>
         <Class name="~li\.cil\.oc2\.gametest\..*" />
     </Match>
@@ -67,6 +66,33 @@
         <Class name="li.cil.oc2.bus.topology.NetworkResolver$Result" />
         <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
     </Match>
+    <!-- Same detector limitation as NetworkResolver$Result: LevelGeometrySubmitContext is a
+         record whose borrowed render-pass components really are flagged for exposing the
+         internal representation, but SpotBugs 6.5.10 does not look at record accessors, so it
+         cannot see that the class-level annotation suppresses anything. Removing the
+         annotation resurfaces the EI_ findings on the next :core:spotbugsMain run. -->
+    <Match>
+        <Class name="li.cil.oc2.platform.event.LevelGeometrySubmitContext" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
+    <!-- Same record blind spot as LevelGeometrySubmitContext: the class-level annotation on
+         the two scanner result records suppresses the EI_EXPOSE_REP of their accessors and the
+         EI_EXPOSE_REP2 of their canonical constructors, but the UselessSuppression detector
+         does not attribute a record's canonical constructor to the class, so it reports the
+         EI_EXPOSE_REP2 part as unnecessary. Dropping EI_EXPOSE_REP2 from the annotations
+         brings the constructor findings back on the next :1.21.1:spotbugsMain run. -->
+    <Match>
+        <Class name="li.cil.oc2.common.bus.device.rpc.item.module.ScannerModuleDevice$Inspection" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.common.bus.device.rpc.item.module.ScannerModuleDevice$ScanResult" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.common.network.message.firmware.FlashWriterChunkMessage" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
     <!-- Same detector limitation as NetworkResolver$Result: ItemHandlerSlot's class-level
          @SuppressFBWarnings(EI_EXPOSE_REP/REP2) really does suppress the handler getter and
          constructor findings, and LevelRenderContext (a record) needs the annotation on the type
@@ -88,5 +114,75 @@
     <Match>
         <Class name="li.cil.oc2.platform.NeoForgeEnergyBridge" />
         <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE" />
+    </Match>
+    <!-- FlashWriterScreen keeps the writer screen that is currently open in a static field, so
+         that the network handler can route a server reply to it. Every access to that field
+         happens on the client thread: the reply is dispatched through the platform message
+         context (enqueueWork), the screen is opened and closed from the render thread, and the
+         field is never read from anywhere else. The check-then-act sequence in receive() and
+         the reset in onClose() therefore cannot race, and there is no second instance of the
+         screen that could observe a half-updated field. -->
+    <Match>
+        <Class name="li.cil.oc2.client.gui.screen.firmware.FlashWriterScreen" />
+        <Field name="active" />
+        <Bug pattern="LI_LAZY_INIT_UPDATE_STATIC,ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+    </Match>
+    <!-- ── Fabric module ──────────────────────────────────────────────────────
+         The Fabric module is analysed on its own class output (see fabric/build.gradle.kts), so
+         these entries cannot mask anything on the NeoForge nodes. They cover the two shapes that
+         SpotBugs cannot see through in loader glue code: mixin casts and the deliberate
+         representation sharing of loader APIs. -->
+
+    <!-- BakedModel.getQuads declares its state and side parameters @Nullable, but these models are
+         baked per block state and are only reached through the block model pipeline, which always
+         passes both. Declaring the parameters nullable would only add dead null branches. -->
+    <Match>
+        <Class name="li.cil.oc2.client.model.FabricBusCableModel" />
+        <Bug pattern="NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.client.model.FabricMonitorModel" />
+        <Bug pattern="NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION" />
+    </Match>
+
+    <!-- Key the persistent data of a player are copied through the PersistentDataHolder interface
+         that EntityMixin adds to Entity; the cast is guaranteed by that mixin. -->
+    <Match>
+        <Class name="li.cil.oc2.fabric.FabricInteractionHooks" />
+        <Bug pattern="BC_UNCONFIRMED_CAST" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.platform.FabricGameHooks" />
+        <Bug pattern="BC_UNCONFIRMED_CAST" />
+    </Match>
+
+    <!-- The mixins below cast their own instance to the target class ((Object) this), which
+         SpotBugs cannot confirm because the mixin class does not extend the target. The cast is
+         guaranteed by the mixin framework. -->
+    <Match>
+        <Class name="li.cil.oc2.fabric.mixin.LevelChunkMixin" />
+        <Bug pattern="BC_IMPOSSIBLE_CAST" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.fabric.mixin.client.FrustumMixin" />
+        <Bug pattern="BC_IMPOSSIBLE_CAST" />
+    </Match>
+
+    <!-- EntityMixin.getPersistentData returns the stored tag on purpose: it is the Fabric
+         counterpart of NeoForge's Entity#getPersistentData(), whose callers mutate the tag.
+         MinecraftMixin stores the render target it is handed by the caller. -->
+    <Match>
+        <Class name="li.cil.oc2.fabric.mixin.EntityMixin" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="li.cil.oc2.fabric.mixin.client.MinecraftMixin" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <!-- A @Shadow field: the mixin writes it for the target class to read, never reads it itself. -->
+    <Match>
+        <Class name="li.cil.oc2.fabric.mixin.client.LevelRendererMixin" />
+        <Bug pattern="URF_UNREAD_FIELD" />
     </Match>
 </FindBugsFilter>

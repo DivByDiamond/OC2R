@@ -6,12 +6,20 @@ import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.ModItem;
 import li.cil.oc2.common.util.item.ItemStackUtils;
+//? if <26.1 {
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
+//?}
+//? if >=26.1 {
+/*import net.minecraft.IdentifierException;
+*///?}
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
+//? if >=26.1 {
+/*import net.minecraft.util.Util;
+*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.apache.logging.log4j.LogManager;
@@ -23,10 +31,16 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
     public static final String FIRMWARE_TAG_NAME = "firmware";
 
     private final ResourceLocation defaultData;
-    @Nullable private String descriptionId;
 
     public FlashMemoryWithExternalDataItem(final ResourceLocation defaultData) {
+        //? if >=26.1 {
+        /*super(
+                createProperties()
+                        .stacksTo(1)
+                        .overrideDescription(Util.makeDescriptionId("item", Items.FLASH_MEMORY.getId())));
+        *///?} else {
         super(createProperties().stacksTo(1));
+        //?}
         this.defaultData = defaultData;
     }
 
@@ -37,13 +51,21 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
         }
 
         final String registryName =
+                //? if >=26.1 {
+                /*ItemStackUtils.getModDataTag(stack).getStringOr(FIRMWARE_TAG_NAME, "");
+                *///?} else {
                 ItemStackUtils.getModDataTag(stack).getString(FIRMWARE_TAG_NAME);
+                //?}
 
         ResourceLocation location = defaultData;
         if (!StringUtil.isNullOrEmpty(registryName)) {
             try {
                 location = ResourceLocation.parse(registryName);
+            //? if >=26.1 {
+            /*} catch (final IdentifierException ignored) {
+            *///?} else {
             } catch (final ResourceLocationException ignored) {
+            //?}
                 LOGGER.trace("Invalid registry name: {}", registryName, ignored);
             }
         }
@@ -88,6 +110,9 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
         }
     }
 
+    //? if <26.1 {
+    @Nullable private String descriptionId;
+
     @Override
     protected String getOrCreateDescriptionId() {
         if (descriptionId == null) {
@@ -95,4 +120,5 @@ public final class FlashMemoryWithExternalDataItem extends ModItem {
         }
         return descriptionId;
     }
+    //?}
 }

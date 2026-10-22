@@ -9,7 +9,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+//? if >=26.1 {
+/**///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -27,7 +30,12 @@ import net.minecraft.world.phys.BlockHitResult;
 public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
         implements EntityBlock {
     public FlashMemoryFlasherBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -43,7 +51,11 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected InteractionResult useItemOn(
+    *///?} else {
     protected ItemInteractionResult useItemOn(
+    //?}
             final ItemStack stack,
             final BlockState state,
             final Level level,
@@ -60,7 +72,11 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             if (!level.isClientSide()) {
                 player.setItemInHand(hand, diskDrive.insert(stack, player));
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -82,9 +98,19 @@ public final class FlashMemoryFlasherBlock extends HorizontalDirectionalBlock
             if (!level.isClientSide()) {
                 diskDrive.eject(player);
             }
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
             return InteractionResult.sidedSuccess(level.isClientSide());
+            //?}
         }
 
+        if (!player.isShiftKeyDown()) {
+            if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                li.cil.oc2.common.firmware.FlashWriterService.open(serverPlayer, diskDrive);
+            }
+            return InteractionResult.SUCCESS;
+        }
         return super.useWithoutItem(state, level, pos, player, hitResult);
     }
 

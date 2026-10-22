@@ -23,14 +23,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         implements FlashMemoryFlasherContainer {
     private final FlashMemoryItemStackHandler itemHandler = new FlashMemoryItemStackHandler(this);
     final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device =
             new FlashMemoryFlasherDevice<>(this);
+    private volatile boolean writing;
     private final ThrottledSoundEmitter insertSoundEmitter;
     private final ThrottledSoundEmitter ejectSoundEmitter;
 
@@ -48,7 +51,8 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     }
 
     public boolean canInsert(final ItemStack stack) {
-        return !stack.isEmpty() && stack.is(ItemTags.DEVICES_FLASH_MEMORY);
+        return !writing && !stack.isEmpty() && (stack.is(ItemTags.DEVICES_FLASH_MEMORY)
+                || stack.getItem() instanceof li.cil.oc2.common.item.storage.HardDriveItem);
     }
 
     public ItemStack insert(final ItemStack stack, @Nullable final Player player) {
@@ -62,12 +66,31 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         return itemHandler.insertItem(0, stack, false);
     }
 
+    @Override
+    public boolean isWriting() {
+        return writing;
+    }
+
+    public synchronized boolean beginWriting() {
+        if (writing || device.isMounted()) return false;
+        writing = true;
+        return true;
+    }
+
+    public synchronized void endWriting() {
+        writing = false;
+    }
+
+    public void replaceWrittenItem(final ItemStack stack) {
+        itemHandler.setStackInSlot(0, stack);
+    }
+
     public boolean canEject() {
-        return !itemHandler.extractItem(0, 1, true).isEmpty();
+        return !writing && !itemHandler.extractItem(0, 1, true).isEmpty();
     }
 
     public void eject(@Nullable final Player player) {
-        if (level == null) {
+        if (level == null || writing) {
             return;
         }
 
@@ -130,7 +153,11 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     @Override
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override
@@ -144,7 +171,11 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override

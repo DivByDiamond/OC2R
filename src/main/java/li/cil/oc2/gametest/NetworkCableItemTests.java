@@ -7,14 +7,20 @@ import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEnti
 import li.cil.oc2.common.item.Items;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * Link lifecycle driven through {@code NetworkCableItem}: creating a link costs a cable in
@@ -76,7 +82,7 @@ public final class NetworkCableItemTests {
         final GameTestHelper helper, final Player player, final BlockPos pos) {
         TestSupport.placeFloor(helper, pos);
         TestSupport.place(helper, player, new ItemStack(Items.NETWORK_CONNECTOR.get()), pos);
-        final NetworkConnectorBlockEntity connector = helper.getBlockEntity(pos);
+        final NetworkConnectorBlockEntity connector = TestSupport.blockEntity(helper, pos, NetworkConnectorBlockEntity.class);
         TestSupport.assertNotNull(helper, connector, "network connector at " + pos);
         return connector;
     }
@@ -91,7 +97,11 @@ public final class NetworkCableItemTests {
             (TestSupport.DEVICE_POS.getX() - TestSupport.CABLE_POS.getX()) / 2,
             (TestSupport.DEVICE_POS.getY() - TestSupport.CABLE_POS.getY()) / 2,
             (TestSupport.DEVICE_POS.getZ() - TestSupport.CABLE_POS.getZ()) / 2);
+        //? if >=26.2 {
+        /*return helper.getEntities(net.minecraft.world.entity.EntityTypes.ITEM, center, 3.0).stream()
+        *///?} else {
         return helper.getEntities(EntityType.ITEM, center, 3.0).stream()
+        //?}
             .filter(item -> item.getItem().getItem() == Items.NETWORK_CABLE.get())
             .count();
     }

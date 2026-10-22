@@ -78,8 +78,13 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
         assert direction != null;
 
         final BlockPos neighborPos = getBlockPos().relative(direction);
+        //? if >=26.1 {
+        /*final ChunkPos chunkPos = ChunkPos.containing(neighborPos);
+        if (!level.hasChunk(chunkPos.x(), chunkPos.z())) {
+        *///?} else {
         final ChunkPos chunkPos = new ChunkPos(neighborPos);
         if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+        //?}
             return 0;
         }
 

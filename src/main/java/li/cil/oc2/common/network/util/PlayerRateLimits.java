@@ -12,6 +12,8 @@ public final class PlayerRateLimits {
     private static final long THROTTLE_WINDOW_MS = 1000;
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final WeakHashMap<Object, Long> LAST_ALLOWED_AT = new WeakHashMap<>();
+    private static final WeakHashMap<Object, WeakHashMap<Object, Long>> DEVICE_LAST_ALLOWED_AT =
+            new WeakHashMap<>();
     private static final WeakHashMap<Object, EventWindow> EVENT_WINDOWS = new WeakHashMap<>();
 
     private PlayerRateLimits() {}
@@ -29,6 +31,28 @@ public final class PlayerRateLimits {
                 return false;
             }
             LAST_ALLOWED_AT.put(key, now);
+            return true;
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
+    /**
+     * Limits requests independently for each player/device pair. Both keys are weak:
+     * a disconnected player or an unloaded block entity must not be kept alive here.
+     */
+    public static boolean allowThrottled(
+            final Object player, final Object device, final long minIntervalMs) {
+        LOCK.lock();
+        try {
+            final long now = System.currentTimeMillis();
+            final WeakHashMap<Object, Long> devices =
+                    DEVICE_LAST_ALLOWED_AT.computeIfAbsent(player, ignored -> new WeakHashMap<>());
+            final Long last = devices.get(device);
+            if (last != null && now - last < minIntervalMs) {
+                return false;
+            }
+            devices.put(device, now);
             return true;
         } finally {
             LOCK.unlock();

@@ -139,8 +139,13 @@ public final class NetworkConnectorConnectionManager {
             return;
         }
 
+        //? if >=26.1 {
+        /*final ChunkPos destinationChunk = ChunkPos.containing(connectedPosition);
+        if (!level.hasChunk(destinationChunk.x(), destinationChunk.z())) {
+        *///?} else {
         final ChunkPos destinationChunk = new ChunkPos(connectedPosition);
         if (!level.hasChunk(destinationChunk.x, destinationChunk.z)) {
+        //?}
             ServerScheduler.schedule(
                     level,
                     () -> dirtyConnectors.add(connectedPosition),

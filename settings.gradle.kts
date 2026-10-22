@@ -7,6 +7,7 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver") version "0.9.0"
+    id("dev.kikugie.stonecutter") version "0.9.8"
 }
 
 val minecraft_version: String get() = gradle.providers.gradleProperty("minecraft_version").get()
@@ -14,8 +15,17 @@ val minecraft_sdk: String get() = gradle.providers.gradleProperty("minecraft_sdk
 
 rootProject.name = "oc2r-${minecraft_version}-${minecraft_sdk}"
 
-include("core")
-include("fabric")
+stonecutter {
+    create(rootProject) {
+        vcsVersion = "1.21.1"
+        // Root branch: the mod (neoforge) module, versioned nodes live in versions/<v>/.
+        versions("1.21.1", "26.1.2", "26.2")
+        // Loader-independent core module: same versions as the root branch.
+        branch("core") { inherit() }
+        // Fabric module: 1.21.1 only (Loom 1.14 cannot remap 26.x, roadmap multiversion-26-fabric §5).
+        branch("fabric") { versions("1.21.1") }
+    }
+}
 
 fun substituteLocal(directoryName: String, libraryName: String) {
     val path = java.io.File("../${directoryName}")

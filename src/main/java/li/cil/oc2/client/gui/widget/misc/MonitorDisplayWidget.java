@@ -1,6 +1,8 @@
 package li.cil.oc2.client.gui.widget.misc;
 
+//? if <26.1 {
 import com.mojang.blaze3d.vertex.PoseStack;
+//?}
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.monitor.AbstractMonitorDisplayScreen;
@@ -13,10 +15,18 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.RenderPipelines;
+*///?}
 import net.minecraft.network.chat.Component;
+//? if >=26.1 {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
+//?}
 import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)
@@ -55,6 +65,34 @@ public final class MonitorDisplayWidget {
 
     public void render(final GuiGraphics graphics, @Nullable final Component error) {
         if (container.getPowerState() && container.isMounted() && container.hasPower()) {
+            //? if >=26.1 {
+/*            if (rendererView == null) {
+                final MonitorGUIRenderer renderer =
+                        (MonitorGUIRenderer) container.getMonitor().getMonitor();
+                rendererView = renderer.getRenderer(container.getMonitor());
+            }
+
+            final ResourceLocation texture = rendererView.getTexture();
+            if (texture != null) {
+                // Resolution of the last frame received from the server (legacy default before
+                // the first frame); the texture is stretched over the whole screen area.
+                final int framebufferWidth = container.getMonitor().video.getClientFrameWidth();
+                final int framebufferHeight = container.getMonitor().video.getClientFrameHeight();
+                graphics.blit(
+                        RenderPipelines.GUI_TEXTURED,
+                        texture,
+                        leftPos + TERMINAL_X,
+                        topPos + TERMINAL_Y,
+                        0f,
+                        0f,
+                        Sprites.MONITOR_SCREEN.width - 16,
+                        Sprites.MONITOR_SCREEN.height - 16,
+                        framebufferWidth,
+                        framebufferHeight,
+                        framebufferWidth,
+                        framebufferHeight);
+            }
+*///?} else {
             final PoseStack terminalStack = new PoseStack();
             terminalStack.translate(leftPos + TERMINAL_X, topPos + TERMINAL_Y, 0);
             // Resolution of the last frame received from the server (legacy default before
@@ -80,6 +118,7 @@ public final class MonitorDisplayWidget {
                     framebufferWidth,
                     framebufferHeight,
                     false);
+            //?}
         } else if (container.getPowerState()) {
             final Font font = getClient().font;
             if (error != null) {
@@ -99,6 +138,9 @@ public final class MonitorDisplayWidget {
 
     private void drawShadow(
             Font font, GuiGraphics graphics, Component text, float x, float y, int color) {
+        //? if >=26.1 {
+/*        graphics.text(font, text, (int) x, (int) y, 0xFF000000 | color, true);
+*///?} else {
         var batch = graphics.bufferSource();
         font.drawInBatch(
                 text,
@@ -112,6 +154,7 @@ public final class MonitorDisplayWidget {
                 0,
                 15728880);
         batch.endBatch();
+        //?}
     }
 
     public void tick() {}

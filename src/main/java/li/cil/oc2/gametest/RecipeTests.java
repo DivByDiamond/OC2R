@@ -6,12 +6,21 @@ import static li.cil.oc2.gametest.TestSupport.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import li.cil.oc2.api.API;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -20,8 +29,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -53,7 +60,7 @@ public final class RecipeTests {
         final RecipeManager recipes = level.getServer().getRecipeManager();
 
         final List<Item> modItems = BuiltInRegistries.ITEM.entrySet().stream()
-            .filter(entry -> entry.getKey().location().getNamespace().equals(API.MOD_ID))
+            .filter(entry -> namespaceOf(entry.getKey()).equals(API.MOD_ID))
             .map(java.util.Map.Entry::getValue)
             .toList();
 
@@ -62,15 +69,16 @@ public final class RecipeTests {
         helper.setBlock(TABLE, Blocks.CRAFTING_TABLE);
 
         final List<String> withoutRecipe = new ArrayList<>();
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
         for (final Item item : modItems) {
-            final ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+            final var id = BuiltInRegistries.ITEM.getKey(item);
             if (ITEMS_WITHOUT_RECIPE.contains(id.getPath())) {
                 continue;
             }
 
             final List<RecipeHolder<?>> producing = recipes.getRecipes().stream()
                 .filter(holder -> holder.value() instanceof CraftingRecipe)
-                .filter(holder -> holder.value().getResultItem(level.registryAccess()).getItem() == item)
+                .filter(holder -> resultOf(holder.value(), level).getItem() == item)
                 .toList();
 
             if (producing.isEmpty()) {
@@ -79,7 +87,7 @@ public final class RecipeTests {
             }
 
             for (final RecipeHolder<?> holder : producing) {
-                craft(helper, level, holder);
+                craft(helper, level, player, holder);
             }
         }
 
@@ -97,7 +105,7 @@ public final class RecipeTests {
         final RecipeManager recipes = level.getServer().getRecipeManager();
 
         final List<RecipeHolder<?>> modRecipes = recipes.getRecipes().stream()
-            .filter(holder -> holder.id().getNamespace().equals(API.MOD_ID))
+            .filter(holder -> namespaceOf(holder).equals(API.MOD_ID))
             .filter(holder -> holder.value() instanceof CraftingRecipe)
             .filter(holder -> !holder.value().isSpecial())
             .toList();
@@ -106,8 +114,9 @@ public final class RecipeTests {
 
         helper.setBlock(TABLE, Blocks.CRAFTING_TABLE);
 
+        final ServerPlayer player = TestSupport.serverPlayer(helper);
         for (final RecipeHolder<?> holder : modRecipes) {
-            craft(helper, level, holder);
+            craft(helper, level, player, holder);
         }
 
         helper.succeed();
@@ -115,17 +124,17 @@ public final class RecipeTests {
 
     // --------------------------------------------------------------------- //
 
-    private static void craft(final GameTestHelper helper, final ServerLevel level, final RecipeHolder<?> holder) {
-        final String id = holder.id().toString();
+    private static void craft(final GameTestHelper helper, final ServerLevel level, final ServerPlayer player,
+                              final RecipeHolder<?> holder) {
+        final String id = idOf(holder);
 
         if (!(holder.value() instanceof final CraftingRecipe recipe)) {
             throw failure(helper, id + " is not a crafting recipe (" + holder.value().getClass().getSimpleName() + ")");
         }
 
-        final ItemStack expected = recipe.getResultItem(level.registryAccess());
+        final ItemStack expected = resultOf(recipe, level);
         assertTrue(helper, id + " should produce a result", !expected.isEmpty());
 
-        @SuppressWarnings("removal") final ServerPlayer player = helper.makeMockServerPlayerInLevel();
         final CraftingMenu menu = new CraftingMenu(0, player.getInventory(),
             ContainerLevelAccess.create(level, helper.absolutePos(TABLE)));
 
@@ -135,7 +144,11 @@ public final class RecipeTests {
         }
         menu.slotsChanged(menu.getSlot(FIRST_GRID_SLOT).container);
 
+        //? if >=26.1 {
+        /*final ItemStack result = menu.getResultSlot().getItem();
+        *///?} else {
         final ItemStack result = menu.getSlot(menu.getResultSlotIndex()).getItem();
+        //?}
         if (result.isEmpty()) {
             throw failure(helper, id + " did not match its own ingredients: " + describe(inputs));
         }
@@ -151,7 +164,7 @@ public final class RecipeTests {
             inputs.add(ItemStack.EMPTY);
         }
 
-        final List<Ingredient> ingredients = recipe.getIngredients();
+        final List<Optional<Ingredient>> ingredients = slotIngredients(recipe);
         if (recipe instanceof final ShapedRecipe shaped) {
             if (shaped.getWidth() > GRID_WIDTH || shaped.getHeight() > GRID_HEIGHT) {
                 throw failure(helper, id + " does not fit a " + GRID_WIDTH + "x" + GRID_HEIGHT + " grid");
@@ -174,17 +187,77 @@ public final class RecipeTests {
         return inputs;
     }
 
-    private static ItemStack firstStack(final GameTestHelper helper, final String id, final Ingredient ingredient) {
-        if (ingredient.isEmpty()) {
+    private static ItemStack firstStack(final GameTestHelper helper, final String id, final Optional<Ingredient> slot) {
+        if (slot.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
+        final Ingredient ingredient = slot.get();
+        //? if >=26.1 {
+        /*return ingredient.getValues().stream().findFirst()
+            .map(holder -> new ItemStack(holder.value()))
+            .orElseThrow(() -> failure(helper, id + " has an ingredient no item satisfies"));
+        *///?} else {
         final ItemStack[] candidates = ingredient.getItems();
         if (candidates.length == 0) {
             throw failure(helper, id + " has an ingredient no item satisfies");
         }
 
         return candidates[0].copyWithCount(1);
+        //?}
+    }
+
+    // One entry per grid slot: shaped recipes list every slot in reading order (empty for air),
+    // shapeless recipes list their ingredients in order.
+    private static List<Optional<Ingredient>> slotIngredients(final CraftingRecipe recipe) {
+        //? if >=26.1 {
+        /*if (recipe instanceof final ShapedRecipe shaped) {
+            return shaped.getIngredients();
+        }
+        return recipe.placementInfo().ingredients().stream().map(Optional::of).toList();
+        *///?} else {
+        return recipe.getIngredients().stream()
+            .map(ingredient -> ingredient.isEmpty() ? Optional.<Ingredient>empty() : Optional.of(ingredient))
+            .toList();
+        //?}
+    }
+
+    // Recipe results are read from the display on 26.x, where Recipe.getResultItem is gone.
+    private static ItemStack resultOf(final Recipe<?> recipe, final ServerLevel level) {
+        //? if >=26.1 {
+        /*return recipe.display().stream()
+            .map(display -> display.result())
+            .filter(net.minecraft.world.item.crafting.display.SlotDisplay.ItemStackSlotDisplay.class::isInstance)
+            .map(slot -> ((net.minecraft.world.item.crafting.display.SlotDisplay.ItemStackSlotDisplay) slot).stack().create())
+            .findFirst()
+            .orElse(ItemStack.EMPTY);
+        *///?} else {
+        return recipe.getResultItem(level.registryAccess());
+        //?}
+    }
+
+    private static String namespaceOf(final ResourceKey<?> key) {
+        //? if >=26.1 {
+        /*return key.identifier().getNamespace();
+        *///?} else {
+        return key.location().getNamespace();
+        //?}
+    }
+
+    private static String namespaceOf(final RecipeHolder<?> holder) {
+        //? if >=26.1 {
+        /*return holder.id().identifier().getNamespace();
+        *///?} else {
+        return holder.id().getNamespace();
+        //?}
+    }
+
+    private static String idOf(final RecipeHolder<?> holder) {
+        //? if >=26.1 {
+        /*return holder.id().identifier().toString();
+        *///?} else {
+        return holder.id().toString();
+        //?}
     }
 
     private static String describe(final List<ItemStack> inputs) {

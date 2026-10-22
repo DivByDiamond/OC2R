@@ -17,6 +17,9 @@ This mod uses the Terminus Font under the Open Font License. The full license ca
 [[mixins]]
 config="mixins.oc2r.json"
 
+[[mixins]]
+config="mixins.oc2r.client.json"
+
 [[dependencies.oc2r]]
 modId = "neoforge"
 type = "required"
@@ -29,11 +32,6 @@ type = "required"
 versionRange = "1.21.1"
 ordering = "NONE"
 side = "BOTH"
-[[dependencies.oc2r]]
-modId = "markdown_manual"
-type = "required"
-versionRange = "[1.2.1,)"
-side = "CLIENT"
 [[dependencies.oc2r]]
 modId = "projectred_transmission"
 type = "optional"

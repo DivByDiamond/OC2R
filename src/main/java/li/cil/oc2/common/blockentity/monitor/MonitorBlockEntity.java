@@ -48,17 +48,23 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     public void start() {
-        if (!isOrigin()) {
-            return;
-        }
-        stateManager.isPowered = true;
+        setPowerState(true);
     }
 
     public void stop() {
+        setPowerState(false);
+    }
+
+    private void setPowerState(final boolean value) {
         if (!isOrigin()) {
             return;
         }
-        stateManager.isPowered = false;
+        if (level != null && !level.isClientSide()) {
+            tickHandler.updateMonitorState(stateManager.isMounted, stateManager.hasEnergy, value);
+        } else {
+            // Keep immediate local feedback for the initiating player's power button.
+            stateManager.isPowered = value;
+        }
     }
 
     public void handleInput(final int keycode, final boolean isDown) {
@@ -73,11 +79,17 @@ public final class MonitorBlockEntity extends ModBlockEntity
     }
 
     public void applyMonitorStateClient(final boolean isRendering, final boolean hasEnergy) {
+        applyMonitorStateClient(isRendering, hasEnergy, stateManager.isPowered);
+    }
+
+    public void applyMonitorStateClient(
+            final boolean isRendering, final boolean hasEnergy, final boolean isPowered) {
         if (level == null || !level.isClientSide()) {
             return;
         }
         stateManager.isMounted = isRendering;
         stateManager.hasEnergy = hasEnergy;
+        stateManager.isPowered = isPowered;
     }
 
     public boolean hasPower() {
@@ -187,7 +199,11 @@ public final class MonitorBlockEntity extends ModBlockEntity
         // a multiblock merge, and we want to carry its deviceId/energy across the transition.
         stateManager.loadPersistent(tag, registries);
         if (tag.contains("capture_input")) {
+            //? if >=26.1 {
+            /*stateManager.captureInputState = tag.getBooleanOr("capture_input", false);
+            *///?} else {
             stateManager.captureInputState = tag.getBoolean("capture_input");
+            //?}
         }
     }
 
@@ -213,7 +229,11 @@ public final class MonitorBlockEntity extends ModBlockEntity
     public void loadStateFromTransfer(final CompoundTag tag, final HolderLookup.Provider registries) {
         stateManager.loadPersistent(tag, registries);
         if (tag.contains("capture_input")) {
+            //? if >=26.1 {
+            /*stateManager.captureInputState = tag.getBooleanOr("capture_input", false);
+            *///?} else {
             stateManager.captureInputState = tag.getBoolean("capture_input");
+            //?}
         }
         setChanged();
     }

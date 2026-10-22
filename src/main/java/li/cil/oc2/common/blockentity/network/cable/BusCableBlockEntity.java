@@ -2,6 +2,7 @@ package li.cil.oc2.common.blockentity.network.cable;
 
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -14,7 +15,9 @@ import li.cil.oc2.common.blockentity.network.cable.faceoverride.FaceOverrides;
 import li.cil.oc2.common.energy.CableEnergyStorage;
 import li.cil.oc2.common.energy.EnergyNetworkCache;
 import li.cil.oc2.common.energy.EnergyTransferManager;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.platform.CapabilityInvalidationListener;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
@@ -25,6 +28,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class BusCableBlockEntity extends ModBlockEntity implements TickableBlockEntity {
@@ -147,11 +151,16 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     @Override
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
         interfaceNameManager.deserialize(
+                //? if >=26.1 {
+                /*tag.getListOrEmpty(INTERFACE_NAMES_TAG_NAME));
+        facadeManager.deserialize(tag.getCompoundOrEmpty(FACADE_TAG_NAME));
+                *///?} else {
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
+                //?}
         // Model data is built from the facade; a client that starts tracking must
         // rebuild it, otherwise the cable renders without the facade.
-        requestModelDataUpdate();
+        refreshFacadeModel();
     }
 
     @Override
@@ -166,12 +175,31 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*busElement.loadAdditional(tag.getCompoundOrEmpty(BUS_ELEMENT_TAG_NAME), registries);
+        *///?} else {
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
+        //?}
         faceOverrides.load(tag, FACE_OVERRIDES_TAG_NAME);
         interfaceNameManager.deserialize(
+                //? if >=26.1 {
+                /*tag.getListOrEmpty(INTERFACE_NAMES_TAG_NAME));
+        facadeManager.deserialize(tag.getCompoundOrEmpty(FACADE_TAG_NAME));
+                *///?} else {
                 tag.getList(INTERFACE_NAMES_TAG_NAME, NBTTagIds.TAG_STRING));
         facadeManager.deserialize(tag.getCompound(FACADE_TAG_NAME));
+                //?}
+        refreshFacadeModel();
+    }
+
+    private void refreshFacadeModel() {
         requestModelDataUpdate();
+        // Model-data refresh alone does not invalidate an already compiled section.
+        // The block-state update can arrive before the facade data packet.
+        if (level != null && level.isClientSide()) {
+            final BlockState state = getBlockState();
+            level.sendBlockUpdated(getBlockPos(), state, state, Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override
@@ -180,9 +208,21 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         assert level != null;
         EnergyNetworkCache.invalidate();
         final ServerLevel serverLevel = (ServerLevel) level;
+        final BlockState state = getBlockState();
+        if (!state.getValue(BusCableStateProperties.HAS_CABLE)) {
+            // Old saves could infer half-links without owning a cable. With HAS_CABLE=false,
+            // recomputation preserves interfaces and never queries or loads neighboring chunks.
+            final BlockState repaired = BusCableStateProperties.recomputeConnections(level, getBlockPos(), state);
+            // Block states are canonical; compare their identities.
+            // Instance identity is required for ownership, canonical states and recursion guards.
+            if (repaired != state) { // NOPMD
+                level.setBlock(getBlockPos(), repaired, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            }
+        }
         for (final var side : Direction.values()) {
             // NOPMD: listener is tied to the loop's side and registered per-neighbor position
-            final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD allocation depends on loop iteration / per-item state
+            // allocation depends on loop iteration / per-item state
+            final var listener = new NeighborListener(serverLevel, busElement, side); // NOPMD
             neighborListeners[side.get3DDataValue()] = listener;
             Platform.capabilities()
                     .registerBlockCapabilityListener(

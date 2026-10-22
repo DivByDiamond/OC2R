@@ -5,6 +5,7 @@ import li.cil.oc2.common.item.tool.WrenchItem;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,18 +24,24 @@ public final class FabricInteractionHooks {
     }
 
     public static void register() {
-        ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> copyPersistentData(oldPlayer, newPlayer));
+        ServerPlayerEvents.COPY_FROM.register(
+                (oldPlayer, newPlayer, alive) -> copyPersistentData(oldPlayer, newPlayer));
     }
 
     /** NeoForge keeps the persistent data of a player over death, dimension change and the End exit. */
     static void copyPersistentData(final ServerPlayer from, final ServerPlayer to) {
         final CompoundTag source = ((PersistentDataHolder) from).oc2r$getPersistentData();
         final CompoundTag target = ((PersistentDataHolder) to).oc2r$getPersistentData();
-        if (source == target) {
+        // Equal tags need no copy: every key of the source is already present in the target with
+        // the same value, so the copy below would not change anything.
+        if (source.equals(target)) {
             return;
         }
         for (final String key : source.getAllKeys()) {
-            target.put(key, source.get(key).copy());
+            final Tag value = source.get(key);
+            if (value != null) {
+                target.put(key, value.copy());
+            }
         }
     }
 
@@ -43,18 +50,14 @@ public final class FabricInteractionHooks {
      * not bypass it (both hands are asked).
      */
     public static boolean sneakSkipsBlockUse(final Player player, final boolean vanillaDecision) {
-        if (!vanillaDecision) {
-            return false;
-        }
-        return !(bypasses(player, player.getMainHandItem()) && bypasses(player, player.getOffhandItem()));
+        return vanillaDecision
+                && !(bypasses(player, player.getMainHandItem()) && bypasses(player, player.getOffhandItem()));
     }
 
     private static boolean bypasses(final Player player, final ItemStack stack) {
-        if (stack.isEmpty()) {
-            return true;
-        }
-        return stack.getItem() instanceof final WrenchItem wrench
-                && wrench.doesSneakBypassUse(stack, player.level(), player.blockPosition(), player);
+        return stack.isEmpty()
+                || stack.getItem() instanceof final WrenchItem wrench
+                        && wrench.doesSneakBypassUse(stack, player.level(), player.blockPosition(), player);
     }
 
     /** Pick-block result: the cable's context-aware stack for bus cables, otherwise vanilla's. */

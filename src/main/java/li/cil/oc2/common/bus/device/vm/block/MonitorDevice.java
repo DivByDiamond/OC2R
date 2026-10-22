@@ -14,7 +14,9 @@ import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.optional.OptionalAddress;
 import li.cil.oc2.common.serialization.BlobStorage;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -72,8 +74,12 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     }
 
     public boolean copyFrame(final ByteBuffer dst) {
+        return copyFrame(dst, false);
+    }
+
+    public boolean copyFrame(final ByteBuffer dst, final boolean force) {
         final SimpleFramebufferDevice framebufferDevice = device;
-        return framebufferDevice != null && framebufferDevice.copyFrame(dst);
+        return framebufferDevice != null && framebufferDevice.copyFrame(dst, force);
     }
 
     @Override
@@ -129,7 +135,11 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         final CompoundTag tag = new CompoundTag();
 
         if (blobHandle != null) {
+            //? if >=26.1 {
+            /*tag.store(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, blobHandle);
+            *///?} else {
             tag.putUUID(BLOB_HANDLE_TAG_NAME, blobHandle);
+            //?}
         }
         if (address.isPresent()) {
             tag.putLong(ADDRESS_TAG_NAME, address.getAsLong());
@@ -140,11 +150,21 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
+            blobHandle = tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
+        *///?} else {
         if (tag.hasUUID(BLOB_HANDLE_TAG_NAME)) {
             blobHandle = tag.getUUID(BLOB_HANDLE_TAG_NAME);
+        //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(ADDRESS_TAG_NAME)) {
+            address.set(tag.getLongOr(ADDRESS_TAG_NAME, 0L));
+        *///?} else {
         if (tag.contains(ADDRESS_TAG_NAME, NBTTagIds.TAG_LONG)) {
             address.set(tag.getLong(ADDRESS_TAG_NAME));
+        //?}
         }
     }
 

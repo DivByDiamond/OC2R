@@ -15,7 +15,9 @@ public class CH4
     }
 
     @Override
-    public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD: CyclomaticComplexity, CognitiveComplexity — multi-sub-handler dispatch (XTSMTITLE/DECSWBV/DECRARA/XTWINOPS) with a switch; inherent to the combined-handler architecture
+    // CyclomaticComplexity, CognitiveComplexity — multi-sub-handler dispatch
+    // (XTSMTITLE/DECSWBV/DECRARA/XTWINOPS) with a switch; inherent to the combined-handler architecture
+    public void execute(final int[] args, final int argsCount, final CSIState state) { // NOPMD
         // xterm-410 VTPrsTbl.c maps 't' to a handler in exactly four tables: plain CSI
         // (XTERM_WINOPS), SP (DECSWBV), $ (DECRARA), and CSI > (XTERM_SM_TITLE). Every other
         // intermediate table — ?, !, #, ", ', * — maps 't' to CASE_GROUND_STATE (ignored);

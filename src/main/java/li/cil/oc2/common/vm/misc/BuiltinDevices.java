@@ -5,17 +5,18 @@ import java.io.InputStream;
 import java.util.function.Function;
 import li.cil.ceres.api.Serialized;
 import li.cil.oc2.common.bus.device.data.FileSystems;
+import li.cil.oc2.common.bus.device.data.block.OnyxOSBlockDeviceData;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.sedna.api.Interrupt;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.buildroot.Buildroot;
-import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import li.cil.sedna.device.rtc.GoldfishRTC;
 import li.cil.sedna.device.rtc.SystemTimeRealTimeCounter;
 import li.cil.sedna.device.serial.UART16550A;
 import li.cil.sedna.device.virtio.VirtIOBlockDevice;
 import li.cil.sedna.device.virtio.VirtIOConsoleDevice;
 import li.cil.sedna.device.virtio.VirtIOFileSystemDevice;
+import li.cil.sedna.riscv.R5Board;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,16 +28,31 @@ public final class BuiltinDevices {
     public static final int RPC_INTERRUPT = 0x3;
     private static final int UART_INTERRUPT = 0x4;
     private static final int VFS_INTERRUPT = 0x5;
-    private static final int BFS_INTERRUPT = 0x6;
     private static final int RFS_INTERRUPT = 0x7;
+    // Free slot between the VFS and the RFS; claimed up front so dynamically allocated devices
+    // never take it, and only for VMs that do not already have a device on it.
+    private static final int SYSCON_INTERRUPT = 0x6;
 
     public final MinecraftRealTimeCounter rtcMinecraft = new MinecraftRealTimeCounter();
 
     @Serialized public VirtIOConsoleDevice rpcSerialDevice;
     @Serialized public UART16550A uart;
     @Serialized public VirtIOFileSystemDevice vfs;
-    @Serialized public VirtIOBlockDevice bfs;
+    // Legacy bootfs device (sedna-buildroot < 0.2.x served bootfs.squashfs
+    // next to rootfs.cramfs). The 0.2.x image line ships a single
+    // rootfs.ext2; the field stays so pre-5.2 worlds still deserialize, but
+    // new VMs never attach it.
+    @Deprecated @Serialized public VirtIOBlockDevice bfs;
     @Serialized public VirtIOBlockDevice rfs;
+    // VirtIOBlockDevice does not serialize its backing BlockDevice. Persist the COW overlay
+    // separately, restoring into the same instance already attached to rfs during construction.
+    @Serialized public BuiltinRootFilesystem rootFilesystem;
+    // The Onyx overlay is the only one of these devices that is replaced after construction,
+    // when the root filesystem is selected or restored. It does not have to be public: Ceres
+    // serialises it by field name (it reads the declared fields reflectively), and the only
+    // other code that touches it lives in this package.
+    @Serialized BuiltinRootFilesystem onyxRootFilesystem;
+    private BuiltinRootFilesystem attachedRootFilesystem;
 
     public BuiltinDevices(final GlobalVMContext context) {
         initialize(
@@ -65,35 +81,21 @@ public final class BuiltinDevices {
                                 FileSystems.getLayeredFileSystem()),
                         VFS_INTERRUPT,
                         VirtIOFileSystemDevice::getInterrupt);
-        try (InputStream ris = Buildroot.getRootFilesystem();
-             InputStream bis = Buildroot.getBootFilesystem()) {
+        try (InputStream ris = Buildroot.getRootFilesystem()) {
             if (ris == null) {
                 LOGGER.error(
-                        "Buildroot root filesystem (generated/rootfs.cramfs) is missing from"
+                        "Buildroot root filesystem (generated/rootfs.ext2) is missing from"
                                 + " sedna-buildroot.jar — VM will boot but have no rootfs.");
             }
-            if (bis == null) {
-                LOGGER.error(
-                        "Buildroot boot filesystem (generated/bootfs.squashfs) is missing from"
-                                + " sedna-buildroot.jar — VM will boot but have no bootfs.");
-            }
-            if (bis != null) {
-                bfs =
-                        initialize(
-                                context,
-                                new VirtIOBlockDevice(
-                                        context.getMemoryMap(),
-                                        ByteBufferBlockDevice.createFromStream(bis, true)),
-                                BFS_INTERRUPT,
-                                VirtIOBlockDevice::getInterrupt);
-            }
             if (ris != null) {
+                rootFilesystem = new BuiltinRootFilesystem(ris);
+                attachedRootFilesystem = rootFilesystem;
                 rfs =
                         initialize(
                                 context,
                                 new VirtIOBlockDevice(
                                         context.getMemoryMap(),
-                                        ByteBufferBlockDevice.createFromStream(ris, true)),
+                                        rootFilesystem),
                                 RFS_INTERRUPT,
                                 VirtIOBlockDevice::getInterrupt);
             }
@@ -102,10 +104,44 @@ public final class BuiltinDevices {
             // failure mode invisible in production. Log it properly so users
             // can actually tell why their computer "appears on but does nothing".
             LOGGER.error(
-                    "Failed to load one of the Buildroot block devices (bootfs/rootfs) into the VM",
-                    e);
+                    "Failed to load the Buildroot rootfs block device into the VM", e);
         } catch (final Exception t) {
             LOGGER.error("Unexpected error while loading Buildroot block devices into the VM", t);
+        }
+    }
+
+    /** Switch only while the VM worker is stopped; retain both OS overlays across firmware changes. */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals") // Disk attachment depends on the exact backing instance.
+    public void selectRootFilesystem(final boolean onyx) throws IOException {
+        if (rfs == null) throw new IOException("Built-in root disk is unavailable");
+        if (onyx && onyxRootFilesystem == null) {
+            final var image = OnyxOSBlockDeviceData.currentRootImage();
+            if (image.device().getCapacity() == 0) throw new IOException("OnyxOS root image is unavailable");
+            onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
+        }
+        final BuiltinRootFilesystem selected = onyx ? onyxRootFilesystem : rootFilesystem;
+        if (selected != attachedRootFilesystem) {
+            rfs.setBlock(selected);
+            attachedRootFilesystem = selected;
+        }
+    }
+
+    /** Choose the saved immutable base before Ceres restores any sparse pages. */
+    public void prepareSavedOnyxRoot(final String baseImageId) throws IOException {
+        // The root disk is missing when the buildroot image could not be loaded; the saved
+        // snapshot cannot be restored onto it, and dereferencing it would fail with an NPE.
+        if (rfs == null) throw new IOException("Built-in root disk is unavailable");
+        final var image = OnyxOSBlockDeviceData.savedRootImage(baseImageId);
+        onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
+        rfs.setBlock(onyxRootFilesystem);
+        attachedRootFilesystem = onyxRootFilesystem;
+    }
+
+    public static void connectSystemController(final GlobalVMContext context, final R5Board board) {
+        if (context.getInterruptAllocator().claimInterrupt(SYSCON_INTERRUPT)) {
+            board.getSystemController()
+                    .getInterrupt()
+                    .set(SYSCON_INTERRUPT, context.getInterruptController());
         }
     }
 

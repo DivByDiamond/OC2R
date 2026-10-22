@@ -7,17 +7,17 @@ import java.io.OutputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import li.cil.oc2.api.bus.device.data.BlockDeviceData;
 import li.cil.oc2.common.util.world.BlockLocation;
-import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import net.minecraft.world.item.ItemStack;
 
 public final class HardDriveDeviceWithInitialData extends HardDriveDevice {
-    private final BlockDevice base;
+    private final BlockDeviceData base;
 
     public HardDriveDeviceWithInitialData(
             final ItemStack identity,
-            final BlockDevice base,
+            final BlockDeviceData base,
             final boolean readonly,
             final Supplier<Optional<BlockLocation>> location) {
         super(identity, (int) base.getCapacity(), readonly, location);
@@ -31,8 +31,10 @@ public final class HardDriveDeviceWithInitialData extends HardDriveDevice {
                 .thenApplyAsync(
                         device -> {
                             if (isInitializing) {
+                                // Resolved here, on the worker thread at mount/copy time, never
+                                // while scanning inventories: image I/O is server-only.
                                 try {
-                                    try (InputStream input = base.getInputStream(0);
+                                    try (InputStream input = base.getBlockDevice().getInputStream(0);
                                             OutputStream output = device.getOutputStream(0)) {
                                         ByteStreams.copy(input, output);
                                     }

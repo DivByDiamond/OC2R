@@ -50,7 +50,11 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
         remaining = inventory.insertItem(fromSlot, remaining, false);
 
         if (!remaining.isEmpty()) {
+            //? if >=26.1 {
+            /*entity.spawnAtLocation((net.minecraft.server.level.ServerLevel) entity.level(), remaining);
+            *///?} else {
             entity.spawnAtLocation(remaining);
+            //?}
         }
     }
 
@@ -93,7 +97,11 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
 
         if (!stack.isEmpty()) {
             dropped += stack.getCount();
+            //? if >=26.1 {
+            /*entity.spawnAtLocation((net.minecraft.server.level.ServerLevel) entity.level(), stack);
+            *///?} else {
             entity.spawnAtLocation(stack);
+            //?}
         }
 
         return dropped;
@@ -136,7 +144,11 @@ public final class InventoryOperationsModuleDevice extends AbstractItemRPCDevice
 
         if (!stack.isEmpty()) {
             dropped += stack.getCount();
+            //? if >=26.1 {
+            /*entity.spawnAtLocation((net.minecraft.server.level.ServerLevel) entity.level(), stack);
+            *///?} else {
             entity.spawnAtLocation(stack);
+            //?}
         }
 
         return dropped;

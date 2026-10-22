@@ -1,30 +1,43 @@
 package li.cil.oc2.client.renderer.cable;
 
+//? if <26.2 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+//?}
 import java.util.*;
 import java.util.Collections;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.CommonEvents;
+//? if <26.2 {
 import li.cil.oc2.platform.event.LevelRenderContext;
+//?}
+//? if >=26.2 {
+/*import li.cil.oc2.platform.event.LevelGeometrySubmitContext;
+*///?}
+//? if <26.2 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.chunk.ChunkAccess;
+//? if <26.2 {
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+//?}
 
 public final class NetworkCableRenderer {
     private static final Set<NetworkConnectorBlockEntity> connectors =
-            Collections.newSetFromMap(Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
+            Collections.newSetFromMap(Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>()))));
     private static int lastKnownConnectorCount;
     private static boolean isDirty;
 
     private static final List<NetworkCableConnection> connections = new ArrayList<>();
     private static final Map<NetworkConnectorBlockEntity, List<NetworkCableConnection>>
-            connectionsByConnector = Collections.synchronizedMap(Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
+            connectionsByConnector = Collections.synchronizedMap(
+                    Collections.synchronizedMap(Collections.synchronizedMap(new WeakHashMap<>())));
 
     public static void addNetworkConnector(final NetworkConnectorBlockEntity connector) {
         connectors.add(connector);
@@ -38,7 +51,11 @@ public final class NetworkCableRenderer {
     public static void registerEvents() {
         CommonEvents.CHUNK_UNLOAD.register(NetworkCableRenderer::handleChunkUnload);
         CommonEvents.LEVEL_UNLOAD.register(NetworkCableRenderer::handleLevelUnload);
+        //? if >=26.2 {
+/*        ClientEvents.SUBMIT_LEVEL_GEOMETRY.register(NetworkCableRenderer::handleSubmitGeometry);
+        *///?} else {
         ClientEvents.RENDER_LEVEL.register(NetworkCableRenderer::handleRenderWorld);
+        //?}
     }
 
     private static void handleChunkUnload(final LevelAccessor level, final ChunkAccess chunk) {
@@ -47,8 +64,13 @@ public final class NetworkCableRenderer {
 
             final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
             for (final NetworkConnectorBlockEntity connector : list) {
+                //? if >=26.1 {
+/*                final ChunkPos connectorChunkPos =
+                        ChunkPos.containing(connector.getBlockPos()); // NOPMD: depends on connector
+*///?} else {
                 final ChunkPos connectorChunkPos =
                         new ChunkPos(connector.getBlockPos()); // NOPMD: depends on connector
+                //?}
                 if (Objects.equals(connectorChunkPos, chunkPos)) {
                     connectors.remove(connector);
                 }
@@ -72,6 +94,7 @@ public final class NetworkCableRenderer {
         }
     }
 
+    //? if <26.2 {
     private static void handleRenderWorld(final LevelRenderContext event) {
         if (event.stage() != LevelRenderContext.Stage.AFTER_CUTOUT_BLOCKS) {
             return;
@@ -92,7 +115,11 @@ public final class NetworkCableRenderer {
 
         final PoseStack stack = event.poseStack();
 
+        //? if >=26.1 {
+/*        final Vec3 eye = event.camera().position();
+*///?} else {
         final Vec3 eye = event.camera().getPosition();
+        //?}
 
         final var frustumMatrix = new Matrix4f(event.modelViewMatrix());
         frustumMatrix.mul(stack.last().pose());
@@ -104,7 +131,9 @@ public final class NetworkCableRenderer {
 
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().set(event.modelViewMatrix());
+        //? if <26.1 {
         RenderSystem.applyModelViewMatrix();
+        //?}
 
         CableRenderUtils.renderCables(level, stack, eye, connections, frustum::isVisible);
 
@@ -112,6 +141,25 @@ public final class NetworkCableRenderer {
 
         stack.popPose();
     }
+    //?}
+
+    //? if >=26.2 {
+/*    private static void handleSubmitGeometry(final LevelGeometrySubmitContext event) {
+        validateConnectors();
+        validatePairs();
+        if (connections.isEmpty()) {
+            return;
+        }
+
+        CableRenderUtils.renderCables(
+                event.level(),
+                event.poseStack(),
+                event.cameraPosition(),
+                connections,
+                unused -> true,
+                event.collector());
+    }
+    *///?}
 
     private static void validateConnectors() {
         final List<NetworkConnectorBlockEntity> list = new ArrayList<>(connectors);
@@ -149,7 +197,8 @@ public final class NetworkCableRenderer {
                     connections.add(connection);
                     connectionsByConnector
                             .computeIfAbsent(// NOPMD: per-connector list
-                                    connector, unused -> new ArrayList<>()) // NOPMD allocation depends on loop iteration / per-item state
+                                    // allocation depends on loop iteration / per-item state
+                                    connector, unused -> new ArrayList<>()) // NOPMD
                             .add(connection);
                 }
             }

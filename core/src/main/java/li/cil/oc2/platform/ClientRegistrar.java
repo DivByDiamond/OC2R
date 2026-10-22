@@ -2,13 +2,18 @@ package li.cil.oc2.platform;
 
 import java.util.List;
 import java.util.function.Supplier;
+//? if <26.1 {
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
+//?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+*///?}
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -30,8 +35,15 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
  */
 public interface ClientRegistrar {
     /** Renders block entities of {@code type} with {@code provider}. */
+    //? if >=26.1 {
+    /*<T extends BlockEntity, S extends BlockEntityRenderState> void registerBlockEntityRenderer(
+            Supplier<? extends BlockEntityType<? extends T>> type,
+            BlockEntityRendererProvider<T, S> provider);
+    *///?} else {
     <T extends BlockEntity> void registerBlockEntityRenderer(
-            Supplier<? extends BlockEntityType<? extends T>> type, BlockEntityRendererProvider<T> provider);
+            Supplier<? extends BlockEntityType<? extends T>> type,
+            BlockEntityRendererProvider<T> provider);
+    //?}
 
     /** Renders entities of {@code type} with {@code provider}. */
     <T extends Entity> void registerEntityRenderer(
@@ -41,10 +53,20 @@ public interface ClientRegistrar {
     void registerLayerDefinition(ModelLayerLocation location, Supplier<LayerDefinition> definition);
 
     /** Tints {@code blocks} with {@code color}. */
-    void registerBlockColor(BlockColor color, List<? extends Supplier<? extends Block>> blocks);
+    void registerBlockColor(
+            //? if >=26.1 {
+            /*Object color, List<? extends Supplier<? extends Block>> blocks);
+            *///?} else {
+            BlockColor color, List<? extends Supplier<? extends Block>> blocks);
+            //?}
 
     /** Tints {@code items} with {@code color}. */
-    void registerItemColor(ItemColor color, List<? extends Supplier<? extends Item>> items);
+    void registerItemColor(
+            //? if >=26.1 {
+            /*Object color, List<? extends Supplier<? extends Item>> items);
+            *///?} else {
+            ItemColor color, List<? extends Supplier<? extends Item>> items);
+            //?}
 
     /** Opens {@code constructor}'s screen for menus of {@code type}. */
     <M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> void registerScreen(

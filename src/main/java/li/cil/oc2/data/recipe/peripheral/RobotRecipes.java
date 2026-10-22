@@ -1,16 +1,15 @@
 package li.cil.oc2.data.recipe.peripheral;
 
 import li.cil.oc2.common.item.Items;
-import li.cil.oc2.common.item.tool.RobotItem;
 import li.cil.oc2.data.recipe.ModRecipesProvider;
+import li.cil.oc2.data.recipe.RecipeBuilders;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.neoforged.neoforge.common.Tags;
 
 public final class RobotRecipes {
     public static void build(final RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RobotItem.getRobotWithFlash())
+        RecipeBuilders.robotWithFlash()
                 .pattern("ICI")
                 .pattern("PTP")
                 .pattern("IBI")
@@ -27,7 +26,7 @@ public final class RobotRecipes {
                         ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.INVENTORY_OPERATIONS_MODULE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.INVENTORY_OPERATIONS_MODULE.get())
                 .pattern("TCG")
                 .pattern(" B ")
                 .define('T', Items.TRANSISTOR.get())
@@ -37,7 +36,7 @@ public final class RobotRecipes {
                 .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.BLOCK_OPERATIONS_MODULE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.BLOCK_OPERATIONS_MODULE.get())
                 .pattern("TPG")
                 .pattern(" B ")
                 .define('T', Items.TRANSISTOR.get())
@@ -47,7 +46,7 @@ public final class RobotRecipes {
                 .unlockedBy("has_robot", ModRecipesProvider.inventoryChange(Items.ROBOT.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.NETWORK_TUNNEL_MODULE.get())
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_TUNNEL_MODULE.get())
                 .pattern("TEG")
                 .pattern(" B ")
                 .define('T', Items.TRANSISTOR.get())

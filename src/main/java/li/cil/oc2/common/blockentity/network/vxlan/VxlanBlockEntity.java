@@ -153,7 +153,11 @@ public final class VxlanBlockEntity extends ModBlockEntity
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (level != null && !level.isClientSide() && tag.contains("vti")) {
+            //? if >=26.1 {
+            /*final int loaded = tag.getIntOr("vti", 0);
+            *///?} else {
             final int loaded = tag.getInt("vti");
+            //?}
             // NBT is player-writable (creative pick-block exports etc.): an out-of-range
             // or hostile value falls back to a fresh random identifier.
             vti = loaded >= 0 && loaded < VNI_LIMIT ? loaded : VTI_RANDOM.nextInt(VNI_LIMIT);

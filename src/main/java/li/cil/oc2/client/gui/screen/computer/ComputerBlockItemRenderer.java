@@ -1,39 +1,64 @@
 package li.cil.oc2.client.gui.screen.computer;
 
+//? if <26.1 {
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//?}
 import javax.annotation.Nullable;
+//? if <26.1 {
 import li.cil.oc2.client.gui.Textures;
+//?}
 import li.cil.oc2.client.gui.screen.network.NetworkInterfaceCardScreen;
+//? if <26.1 {
 import li.cil.oc2.client.gui.widget.Texture;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
+//?}
 import li.cil.oc2.common.item.Items;
 import net.minecraft.client.Minecraft;
+//? if >=26.1 {
+/*import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
+//?}
 import net.minecraft.core.Direction;
+//? if <26.1 {
 import net.minecraft.world.inventory.InventoryMenu;
+//?}
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+//?}
+//? if >=26.1 {
+/*import org.joml.Matrix3x2f;
+*///?} else {
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
+//?}
 import org.joml.Vector3f;
 
 public class ComputerBlockItemRenderer {
     public static final int BLOCK_RENDER_SIZE = 48;
 
     private final ItemStack computerItemStack = new ItemStack(Items.COMPUTER.get());
+    //? if <26.1 {
     private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
     private final BakedModel model = itemRenderer.getModel(computerItemStack, null, null, 0);
+    //?}
 
     @Nullable
     public Direction getFocusedSide(final float mouseX, final float mouseY, final Vector3f rotation) {
+        //? if >=26.1 {
+        /*return ComputerPreviewGeometry.focusedSide(mouseX, mouseY, rotation);
+        *///?} else {
         final Quaternionf quaternion =
                 new Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z);
         quaternion.conjugate();
@@ -51,11 +76,48 @@ public class ComputerBlockItemRenderer {
 
         final AABB aabb = new AABB(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
         return aabb.clip(new Vec3(source), new Vec3(target))
+                //? if >=26.1 {
+/*                .map(hit -> Direction.getApproximateNearest(hit.x, -hit.y(), hit.z()))
+*///?} else {
                 .map(hit -> Direction.getNearest(hit.x, -hit.y(), hit.z()))
+                //?}
                 .filter(side -> side != Direction.SOUTH)
                 .orElse(null);
+        //?}
     }
 
+    //? if >=26.1 {
+/*    // Three-dimensional previews use PiP rather than the GUI item's 2D transform.
+    public void render(
+            final GuiGraphics graphics,
+            final int x,
+            final int y,
+            final Vector3f rotation,
+            @Nullable final Direction focusedSide,
+            final NetworkInterfaceCardScreen screen) {
+        final var client = Minecraft.getInstance();
+        final var item = new ItemStackRenderState();
+        client.getItemModelResolver().updateForTopItem(
+                item, computerItemStack, ItemDisplayContext.NONE, client.level, client.player, 0);
+        int enabled = 0;
+        for (final Direction side : Direction.values()) {
+            if (screen.getConfiguration(side)) enabled |= 1 << side.get3DDataValue();
+        }
+        final int radius = BLOCK_RENDER_SIZE;
+        final var pose = new Matrix3x2f(graphics.pose());
+        final var scissor = graphics.peekScissorStack();
+        final var area = new ScreenRectangle(x - radius, y - radius, radius * 2, radius * 2)
+                .transformMaxBounds(pose);
+        final var bounds = scissor == null ? area : area.intersection(scissor);
+        if (bounds != null) {
+            graphics.submitPictureInPictureRenderState(new ComputerPreviewRenderState(
+                    item, rotation.x, rotation.y, rotation.z, enabled, focusedSide,
+                    x - radius, x + radius, y - radius, y + radius, BLOCK_RENDER_SIZE,
+                    pose, scissor, bounds));
+        }
+    }
+
+*///?} else {
     public void render(
             final int x,
             final int y,
@@ -122,7 +184,8 @@ public class ComputerBlockItemRenderer {
             sideRotation.mul((float) Math.PI / 180.0f);
             // NOPMD - depends on loop variable (per-face rotation)
             poseStack.rotate(
-                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z)); // NOPMD allocation depends on loop iteration / per-item state
+                    // allocation depends on loop iteration / per-item state
+                    new Quaternionf().rotateXYZ(sideRotation.x, sideRotation.y, sideRotation.z)); // NOPMD
 
             poseStack.translate(-0.5f, -0.5f, 0f);
 
@@ -140,6 +203,8 @@ public class ComputerBlockItemRenderer {
         }
     }
 
+    //?}
+
     private static Vector3f getSideRotation(final Direction side) {
         return switch (side) {
             case DOWN -> new Vector3f(-90, 0, 0);
@@ -151,6 +216,7 @@ public class ComputerBlockItemRenderer {
         };
     }
 
+    //? if <26.1 {
     private void renderOverlay(
             final Matrix4fStack poseStack,
             final MultiBufferSource.BufferSource bufferSource,
@@ -163,4 +229,5 @@ public class ComputerBlockItemRenderer {
         buffer.addVertex(poseStack, 1, 1, 0).setUv(1, 1);
         buffer.addVertex(poseStack, 1, 0, 0).setUv(1, 0);
     }
+    //?}
 }

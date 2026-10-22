@@ -68,4 +68,19 @@ public final class RobotDevice {
     public RobotActionResult getActionResult(@Parameter("actionId") final int actionId) {
         return robot.getMovementController().findActionResult(actionId);
     }
+
+    @Callback(synchronize = false)
+    public String getFacing() {
+        return robot.getFacing();
+    }
+
+    @Callback(synchronize = false)
+    public Robot.Position getPosition() {
+        return robot.getPosition();
+    }
+
+    @Callback(synchronize = false)
+    public void calibratePosition() {
+        robot.calibratePosition();
+    }
 }

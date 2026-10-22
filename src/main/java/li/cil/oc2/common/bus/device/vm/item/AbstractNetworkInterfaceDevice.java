@@ -9,7 +9,9 @@ import li.cil.oc2.common.bus.device.util.IdentityProxy;
 import li.cil.oc2.common.bus.device.util.optional.OptionalAddress;
 import li.cil.oc2.common.bus.device.util.optional.OptionalInterrupt;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.sedna.device.virtio.VirtIONetworkDevice;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -92,14 +94,29 @@ public abstract class AbstractNetworkInterfaceDevice extends IdentityProxy<ItemS
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*if (tag.contains(DEVICE_TAG_NAME)) {
+            deviceTag = tag.getCompoundOrEmpty(DEVICE_TAG_NAME);
+        *///?} else {
         if (tag.contains(DEVICE_TAG_NAME, NBTTagIds.TAG_COMPOUND)) {
             deviceTag = tag.getCompound(DEVICE_TAG_NAME);
+        //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(ADDRESS_TAG_NAME)) {
+            address.set(tag.getLongOr(ADDRESS_TAG_NAME, 0L));
+        *///?} else {
         if (tag.contains(ADDRESS_TAG_NAME, NBTTagIds.TAG_LONG)) {
             address.set(tag.getLong(ADDRESS_TAG_NAME));
+        //?}
         }
+        //? if >=26.1 {
+        /*if (tag.contains(INTERRUPT_TAG_NAME)) {
+            interrupt.set(tag.getIntOr(INTERRUPT_TAG_NAME, 0));
+        *///?} else {
         if (tag.contains(INTERRUPT_TAG_NAME, NBTTagIds.TAG_INT)) {
             interrupt.set(tag.getInt(INTERRUPT_TAG_NAME));
+        //?}
         }
     }
 

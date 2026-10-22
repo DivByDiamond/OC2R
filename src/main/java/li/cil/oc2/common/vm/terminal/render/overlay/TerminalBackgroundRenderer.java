@@ -5,8 +5,10 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.render.FrameState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
@@ -70,7 +72,8 @@ public class TerminalBackgroundRenderer {
                         : frame.colors()[index];
     }
 
-    private static int resolveBackground(final FrameState frame, // NOPMD: data-driven color-mode switch (bold-bright, blink)
+    // data-driven color-mode switch (bold-bright, blink)
+    private static int resolveBackground(final FrameState frame, // NOPMD
             final ColorData color,
             final boolean invertBackground,
             final boolean isBold, final boolean isBlinking, final boolean blinkOff) {

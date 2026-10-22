@@ -157,6 +157,8 @@ public final class Items {
             register("inventory_operations_module");
     public static final ItemHolder<Item> BLOCK_OPERATIONS_MODULE =
             register("block_operations_module", BlockOperationsModule::new);
+    public static final ItemHolder<Item> SCANNER_MODULE = register("scanner_module");
+    public static final ItemHolder<Item> CRAFTING_MODULE = register("crafting_module");
     public static final ItemHolder<Item> NETWORK_TUNNEL_MODULE =
             register("network_tunnel_module", NetworkTunnelItem::new);
 

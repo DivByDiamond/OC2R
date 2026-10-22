@@ -70,7 +70,11 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
             tag.putString(name, (String) value);
         } else if (type == UUID.class) {
             final CompoundTag uuidTag = new CompoundTag();
+            //? if >=26.1 {
+            /*uuidTag.store(name, net.minecraft.core.UUIDUtil.CODEC, (UUID) value);
+            *///?} else {
             uuidTag.putUUID(name, (UUID) value);
+            //?}
             tag.put(name, uuidTag);
         } else {
             final CompoundTag valueTag = new CompoundTag();
@@ -113,12 +117,17 @@ public record NBTSerializerImpl(CompoundTag tag) implements SerializationVisitor
         } else {
             final CompoundTag arrayTag = new CompoundTag();
             arrayTag.put("value", (ListTag) listTag);
+            //? if >=26.1 {
+            /*arrayTag.putIntArray("nulls", nullIndices.toIntArray());
+            *///?} else {
             arrayTag.putIntArray("nulls", nullIndices);
+            //?}
             return arrayTag;
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"}) // Ceres serializer API is wildcard-generic; the component type is only known as Class<?>
+    // Ceres serializer API is wildcard-generic; the component type is only known as Class<?>
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private ArrayComponentSerializer createComponentSerializer(
             final String name, final Class<?> componentType) {
         if (componentType.isArray()) {

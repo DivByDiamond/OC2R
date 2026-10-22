@@ -71,7 +71,11 @@ final class DiskDriveItemStackHandler extends TypedItemStackHandler {
                     (nbt) -> {
                         final CompoundTag tag =
                                 ItemStackUtils.getOrCreateModDataTag(nbt)
+                                        //? if >=26.1 {
+                                        /*.getCompoundOrEmpty(AbstractBlockDeviceItem.DATA_TAG_NAME);
+                                        *///?} else {
                                         .getCompound(AbstractBlockDeviceItem.DATA_TAG_NAME);
+                                        //?}
                         blockEntity.device.updateBlockDevice(tag);
                     });
         }

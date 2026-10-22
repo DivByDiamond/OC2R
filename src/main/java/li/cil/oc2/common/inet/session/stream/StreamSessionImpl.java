@@ -74,6 +74,8 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
      */
     public boolean needsAcknowledgment = false;
 
+    private boolean inputEnded;
+
     public StreamSessionImpl(
             final int ipAddress, final short port, final StreamSessionDiscriminator discriminator) {
         super(ipAddress, port);
@@ -142,6 +144,19 @@ public class StreamSessionImpl extends SessionBase implements StreamSession {
             LOGGER.warn("Closing session in ACCEPT state, forcing to REJECT");
             state = TcpStates.REJECT;
         }
+    }
+
+    /** Socket EOF follows the queued response; it must not discard unacknowledged bytes. */
+    public void endOfInput() {
+        inputEnded = true;
+    }
+
+    public boolean isInputEnded() {
+        return inputEnded;
+    }
+
+    public boolean hasPendingFin() {
+        return inputEnded && receiveBuffer.position() == 0;
     }
 
     public TcpHeader getHeader() {

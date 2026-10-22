@@ -21,6 +21,7 @@ import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class NetworkConnectorBlockEntity extends ModBlockEntity
@@ -84,6 +85,16 @@ public final class NetworkConnectorBlockEntity extends ModBlockEntity
         NetworkConnectorConnectionStore.writeToUpdateTag(
                 tag, registries, connectionManager.connectorPositions);
         return tag;
+    }
+
+    /**
+     * Vanilla sends no block entity data on block updates unless this returns a packet; without it
+     * a connection made on a loaded chunk only reached clients that (re)loaded the chunk, so the
+     * renderer (which reads {@link #getConnectedPositions()}) never saw it and no cable was drawn.
+     */
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

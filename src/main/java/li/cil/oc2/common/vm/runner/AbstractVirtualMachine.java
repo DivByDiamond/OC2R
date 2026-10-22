@@ -15,8 +15,10 @@ import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public abstract class AbstractVirtualMachine implements VirtualMachine {
     public static final String BUS_STATE_TAG_NAME = "busState";
@@ -50,6 +52,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
         state.board = new R5Board();
         state.context = new GlobalVMContext(state.board);
         state.builtinDevices = new BuiltinDevices(state.context);
+        BuiltinDevices.connectSystemController(state.context, state.board);
         state.rpcAdapter = new RPCDeviceBusAdapter(state.builtinDevices.rpcSerialDevice);
         state.vmAdapter = new VMDeviceBusAdapter(state.context);
 
@@ -138,6 +141,24 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     @Override
     public void stop() {
         lifecycle.stopRunnerAndReset();
+    }
+
+    @Override
+    public void shutdown() {
+        // The guest has to opt in to the syscon (CONTROL_ENABLE); without that it is a hard stop.
+        if (runState != VMRunState.RUNNING || !state.board.getSystemController().requestPowerOff()) {
+            stop();
+        }
+    }
+
+    @Override
+    public void reboot() {
+        if (runState == VMRunState.STOPPED) return;
+
+        if (runState != VMRunState.RUNNING || !state.board.getSystemController().requestReset()) {
+            stop();
+            start();
+        }
     }
 
     public void markDevicesChanged() {

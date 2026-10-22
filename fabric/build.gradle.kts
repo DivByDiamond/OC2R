@@ -1,9 +1,40 @@
+import java.nio.channels.FileChannel
+import java.nio.file.StandardOpenOption
+import java.time.Duration
+
 plugins {
     `java-library`
     id("fabric-loom") version "1.14.10"
+    id("checkstyle")
+    id("pmd")
+    id("com.github.spotbugs") version "6.5.10"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
+
+// fabric.mod.json expands ${version}; without an explicit version the module keeps Gradle's
+// default "unspecified", which is what the published jar would then advertise as the mod version.
+// This repeats the version computation of the root build script, because the Fabric node is
+// configured in its own build of the Stonecutter tree, where rootProject.version is still the
+// Gradle default when this script is evaluated.
+fun fabricGitRef(): String = try {
+    ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+        .redirectErrorStream(true)
+        .start()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+} catch (ignored: Throwable) {
+    "unknown"
+}
+
+val fabricSemver: String = providers.gradleProperty("semver").get()
+version = if (System.getenv("RELEASE_TYPE") == "release") {
+    fabricSemver.trimStart('v')
+} else {
+    "${fabricSemver.trimStart('v')}+${fabricGitRef()}"
+}
 
 val minecraft_version: String = providers.gradleProperty("minecraft_version").get()
 val fabric_loader_version: String = providers.gradleProperty("fabric_loader_version").get()
@@ -14,8 +45,6 @@ val night_config_version: String = providers.gradleProperty("night_config_versio
 val ceres_version: String = providers.gradleProperty("ceres_version").get()
 val sedna_version: String = providers.gradleProperty("sedna_version").get()
 val sedna_buildroot_version: String = providers.gradleProperty("sedna_buildroot_version").get()
-val markdown_manual_fabric_version: String = providers.gradleProperty("markdown_manual_fabric_version").get()
-val architectury_fabric_version: String = providers.gradleProperty("architectury_fabric_version").get()
 val fabric_api_version: String = providers.gradleProperty("fabric_api_version").get()
 
 repositories {
@@ -48,15 +77,18 @@ dependencies {
     implementation("com.electronwill.night-config:toml:$night_config_version")
     include("com.electronwill.night-config:core:$night_config_version")
     include("com.electronwill.night-config:toml:$night_config_version")
-    // The in-game manual: the original Markdown Manual has Fabric builds (it needs Architectury API).
-    modImplementation("maven.modrinth:markdownmanual:$markdown_manual_fabric_version")
-    modImplementation("maven.modrinth:architectury-api:$architectury_fabric_version")
     modImplementation("teamreborn:energy:$team_reborn_energy_version")
     include("teamreborn:energy:$team_reborn_energy_version")
 
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     // @OnlyIn/Dist annotations used by shared code; missing annotation classes are ignored at runtime.
-    compileOnly("net.neoforged:mergetool:2.0.0:api")
+    // Non-transitive: only the annotation classes of the "api" artifact are needed, and the
+    // transitive dependencies of mergetool (asm, jopt-simple, srgutils) are not resolvable here --
+    // srgutils only lives on the Forge maven, which this module does not use. The lint tasks
+    // resolve an auxiliary classpath that includes this dependency, so a transitive mergetool
+    // breaks pmdMain (and every other task that resolves the runtime classpath) with
+    // "Could not find net.minecraftforge:srgutils".
+    compileOnly("net.neoforged:mergetool:2.0.0:api") { isTransitive = false }
     // Emulator and serialization libraries, shipped inside the mod jar like on NeoForge.
     implementation("li.cil.ceres:ceres:$ceres_version")
     implementation("li.cil.sedna:sedna:$sedna_version")
@@ -69,7 +101,7 @@ dependencies {
 // core is built against NeoForm, not Loom, so its jar cannot be remapped for production. Compile
 // its sources as part of this module instead, so Loom remaps them together with the Fabric code.
 sourceSets.main {
-    java.srcDir(project(":core").file("src/main/java"))
+    java.srcDir(rootProject.file("core/src/main/java"))
     // Compiles the shared mod code (src/main/java of the root project) too, see docs/roadmap/multiloader.md §42.
     // -Pfabric.common=false compiles the Fabric module alone (it then no longer builds, the Fabric glue uses
     // shared classes).
@@ -105,6 +137,7 @@ sourceSets.main {
             // Mixins for the NeoForge mixin config (client rendering of the projector, server chunk
             // cache); the Fabric module has its own mixin config with counterparts.
             "li/cil/oc2/common/mixin/**",
+            "li/cil/oc2/client/mixin/**",
             // JEI/ProjectRed/Create integrations are NeoForge-specific for now.
             "li/cil/oc2/common/integration/jei/**",
             "li/cil/oc2/common/integration/projectred/**")
@@ -130,12 +163,12 @@ val packageScripts = tasks.register<Zip>("packageScripts") {
 
 // Assets, data packs, natives and the OnyxOS images live in the root project's resources. Only the
 // loader-independent parts are shared: META-INF (NeoForge service files, mods.toml) must not leak in.
+// src/generated is a gitignored datagen workdir whose content is synced into src/main/resources by
+// copyGeneratedResources (CI never has it): including it here only ever produced duplicates.
 tasks.processResources {
+    from(rootProject.file("LICENSE-MarkdownManual"))
     from(rootProject.file("src/main/resources")) {
         include("assets/**", "data/**", "natives/**", "onyxos/**", "pack.mcmeta")
-    }
-    from(rootProject.file("src/generated/resources")) {
-        include("assets/**", "data/**")
     }
     // The guest scripts archive (same content as the root project's packageScripts task).
     from(packageScripts) {
@@ -151,11 +184,11 @@ tasks.processResources {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/oc2r.accesswidener")
+    accessWidenerPath = rootProject.file("fabric/src/main/resources/oc2r.accesswidener")
 }
 
-// Runs the Fabric GameTests (`./gradlew :fabric:runGametest`): they exercise the Fabric bridges on a
-// real dedicated server, since the shared mod code does not build for Fabric yet.
+// Runs shared tests and Fabric bridge tests on a real dedicated server.
+// ./gradlew :fabric:1.21.1:runGameTest
 fabricApi {
     configureTests {
         createSourceSet = true
@@ -163,6 +196,26 @@ fabricApi {
         enableGameTests = true
         enableClientGameTests = false
         eula = true
+    }
+}
+
+// GameTests create many mock-player records. They are disposable and keeping them between runs
+// makes the test server's autosave and shutdown increasingly expensive.
+tasks.named("runGameTest") {
+    timeout.set(Duration.ofMinutes(12))
+    doFirst {
+        val world = layout.buildDirectory.dir("run/gameTest/world").get().asFile
+        val sessionLock = world.resolve("session.lock")
+        if (sessionLock.exists()) {
+            // Check Minecraft's lock before removing its world, including when another
+            // Gradle invocation is still waiting for the previous server to flush chunks.
+            FileChannel.open(sessionLock.toPath(), StandardOpenOption.WRITE).use { channel ->
+                val lock = channel.tryLock()
+                    ?: throw GradleException("Fabric GameTest world is still in use: $world")
+                lock.release()
+            }
+        }
+        delete(world)
     }
 }
 
@@ -185,6 +238,25 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
         }
     }
     into(sharedGameTestsDir.map { it.dir("li/cil/oc2/gametest") })
+    doLast {
+        // Limit the structures and player fixtures ticking together to one shared class.
+        // NeoForge consumes the original sources and keeps its native batch behavior.
+        sharedGameTestsDir.get().asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "java" }
+            .forEach { source ->
+                val batch = "oc2r_shared_${source.nameWithoutExtension.removeSuffix("Tests").lowercase()}"
+                val text = source.readText()
+                val batched = Regex("@GameTest\\(([^()]*)\\)").replace(text) { match ->
+                    val parameters = match.groupValues[1]
+                    if (Regex("\\bbatch\\s*=").containsMatchIn(parameters)) {
+                        match.value
+                    } else {
+                        "@GameTest($parameters, batch = \"$batch\")"
+                    }
+                }
+                if (batched != text) source.writeText(batched)
+            }
+    }
 }
 
 sourceSets.named("gametest") {
@@ -193,4 +265,90 @@ sourceSets.named("gametest") {
 
 tasks.named("compileGametestJava") {
     dependsOn(sharedGameTestSources)
+}
+
+/* ── Static analysis: same tool version and config as the root project ──── */
+
+checkstyle {
+    toolVersion = "10.21.0"
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = false
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
+}
+
+pmd {
+    // First PMD release that can resolve Minecraft 26.x / Java 25 class files.
+    toolVersion = "7.16.0"
+    ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))
+    isIgnoreFailures = false
+    isConsoleOutput = true
+}
+
+tasks.withType<Pmd>().configureEach {
+    isEnabled = true
+    exclude("**/jcodec/**", "**/generated/**", "**/gametest/**")
+}
+
+// The main source set of this module compiles three trees: the module's own sources
+// (fabric/src/main/java), the loader-independent core module (core/src/main/java) and the
+// shared mod code of the root project (src/main/java). The core node and the root node lint
+// the latter two with the same ruleset, so PMD must only see the module's own sources here:
+// analysing them again would report every finding of the shared tree a second time, and the
+// lint ratchet counts violations per report, not per file.
+tasks.named<Pmd>("pmdMain") {
+    setSource(rootProject.fileTree("fabric/src/main/java") { include("**/*.java") })
+}
+
+/* ── Static analysis: SpotBugs ──────────────────────────────────────────────── */
+
+// Same engine and filters as the root project, scoped to the sources of this module. The main
+// source set also compiles the loader-independent core module and the shared mod code of the
+// root project; both are analysed by their own nodes, and their classes carry no relation to
+// this module's analysis (a baseline entry is matched by instance hash, which differs when the
+// same source is compiled against different mappings). Analysing them here would therefore
+// report the shared tree a second time under hashes no baseline can match.
+spotbugs {
+    toolVersion = "4.10.3"
+    ignoreFailures = false
+    showProgress = false
+    excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
+}
+
+val fabricOwnSources = rootProject.fileTree("fabric/src/main/java") { include("**/*.java") }
+// Fully qualified names of the classes that this module's own sources produce (an inner class is
+// covered by its outer class name, because "$" is stripped below).
+val fabricOwnClassNames: Set<String> = fabricOwnSources.files.mapTo(mutableSetOf()) { source ->
+    source.relativeTo(rootProject.file("fabric/src/main/java"))
+        .invariantSeparatorsPath
+        .removeSuffix(".java")
+        .replace('/', '.')
+}
+
+fun isFabricOwnClass(file: File): Boolean {
+    if (!file.name.endsWith(".class")) {
+        return false
+    }
+    // Only classes of the java output, not resources of the same source set.
+    val marker = "/classes/java/main/"
+    val path = file.invariantSeparatorsPath
+    val index = path.indexOf(marker)
+    if (index < 0) {
+        return false
+    }
+    val className = path.substring(index + marker.length).removeSuffix(".class").replace('/', '.')
+    return className.substringBefore('$') in fabricOwnClassNames
+}
+
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
+    reports.create("html")
+    reports.create("xml")
+    // Only the classes compiled from this module's own sources, no shared or core code.
+    classes = classes?.filter(::isFabricOwnClass)
+    // The excluded classes still have to be resolvable as types (auxiliary classpath entries are
+    // never analysed), otherwise every reference into the shared tree is reported as missing.
+    auxClassPaths.from(sourceSets["main"].output.classesDirs)
 }

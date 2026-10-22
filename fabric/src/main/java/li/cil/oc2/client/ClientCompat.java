@@ -49,7 +49,7 @@ public final class ClientCompat {
             final int y,
             final ItemStack stack) {
         graphics.renderTooltip(
-                font, Language.getInstance().getVisualOrder(new ArrayList<FormattedText>(tooltip)), x, y);
+                font, Language.getInstance().getVisualOrder(new ArrayList<>(tooltip)), x, y);
     }
 
     public static boolean isActiveAndMatches(

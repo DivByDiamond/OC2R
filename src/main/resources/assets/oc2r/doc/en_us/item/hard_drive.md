@@ -1,8 +1,10 @@
 # Hard Drive
-![Going in circles](item:oc2r:hard_drive_large)
+![Data storage](item:oc2r:hard_drive_large)
 
-Hard drives are the main storage device used for data storage in [computers](../block/computer.md) and [robots](robot.md).
+Hard drives add persistent storage to [computers](../block/computer.md) and [robots](robot.md). The default Linux already has a built-in writable root disk: an extra hard drive is optional. Its overlay is saved with the VM, independently of removable disks.
 
-Usually computers use a firmware that requires some hard drive to complete the boot process. The [flash memory](flash_memory.md) installed in newly obtained computers and robots contains a Linux distribution expecting a regular root file system on the first installed disk drive. One may typically be obtained by configuring a hard drive with the [appropriate tool](wrench.md).
+Extra disks appear as Linux block devices such as */dev/vdb*. Device letters depend on the attached devices: inspect */proc/partitions* before formatting. Format a new data disk, create a mount directory and mount it using the tools described for the [disk drive](../block/disk_drive.md). Formatting destroys existing data. Never format the built-in root disk to prepare an extra data disk.
 
-Computers *have to be shut down* before installing or removing this component. Installing it while the computer is running will have no effect, removing it may lead to system errors.
+The OnyxOS disk recipe uses the medium hard drive; it is separate from the standard Linux boot path. Custom OS images can require a different disk layout.
+
+Shut down before installing or removing a hard drive. Preserve the original item to preserve its data.

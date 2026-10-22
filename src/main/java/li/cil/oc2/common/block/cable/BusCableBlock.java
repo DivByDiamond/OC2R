@@ -17,7 +17,11 @@ import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+//? if >=26.1 {
+/*import net.minecraft.world.InteractionResult;
+*///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -38,7 +42,9 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
+//? if <26.1 {
 import net.minecraft.world.phys.HitResult;
+//?}
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -47,7 +53,12 @@ public final class BusCableBlock extends BaseEntityBlock {
     private final VoxelShape[] shapes;
 
     public BusCableBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         BlockState defaultState = getStateDefinition().any();
         for (final EnumProperty<ConnectionType> property : FACING_TO_CONNECTION_MAP.values()) {
             defaultState = defaultState.setValue(property, ConnectionType.NONE);
@@ -77,6 +88,20 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
+    //? if >=26.1 {
+    /*public BlockState updateShape(
+            final BlockState state,
+            final net.minecraft.world.level.LevelReader levelReader,
+            final net.minecraft.world.level.ScheduledTickAccess ticks,
+            final BlockPos currentPos,
+            final Direction facing,
+            final BlockPos facingPos,
+            final BlockState facingState,
+            final net.minecraft.util.RandomSource random) {
+        final LevelAccessor level = (LevelAccessor) levelReader;
+        final BlockState result =
+                BusCableStateProperties.recomputeConnections((Level) level, currentPos, state);
+    *///?} else {
     public BlockState updateShape(
             final BlockState state,
             final Direction facing,
@@ -86,6 +111,7 @@ public final class BusCableBlock extends BaseEntityBlock {
             final BlockPos facingPos) {
         final BlockState result =
                 BusCableStateProperties.recomputeConnections((Level) level, currentPos, state);
+    //?}
         if (!result.equals(state)) {
             for (final Map.Entry<Direction, EnumProperty<ConnectionType>> entry :
                     FACING_TO_CONNECTION_MAP.entrySet()) {
@@ -116,7 +142,11 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected InteractionResult useItemOn(
+    *///?} else {
     protected ItemInteractionResult useItemOn(
+    //?}
             final ItemStack heldItem,
             final BlockState state,
             final Level level,
@@ -124,7 +154,11 @@ public final class BusCableBlock extends BaseEntityBlock {
             final Player player,
             final InteractionHand hand,
             final BlockHitResult hitResult) {
+        //? if >=26.1 {
+        /*final InteractionResult result =
+        *///?} else {
         final ItemInteractionResult result =
+        //?}
                 BusCableInteractionHandler.handleUseItemOn(
                         heldItem, state, level, pos, player, hand, hitResult);
         return result != null
@@ -132,9 +166,23 @@ public final class BusCableBlock extends BaseEntityBlock {
                 : super.useItemOn(heldItem, state, level, pos, player, hand, hitResult);
     }
 
+    //? if >=26.1 {
+    /*// Minecraft 26.x passes no hit result to the pick-block hook, so the interface pick falls back to the cable.
+    @Override
+    public ItemStack getCloneItemStack(
+            final LevelReader level,
+            final BlockPos pos,
+            final BlockState state,
+            final boolean includeData,
+            final Player player) {
+        final ItemStack result =
+                BusCableItemHelper.getPickBlock(state, null, level, pos, player);
+        return result != null ? result : super.getCloneItemStack(level, pos, state, includeData, player);
+    }
+    *///?} else {
     // Not annotated with @Override: the five-argument overload only exists in NeoForge's patched Block
     // (the pick-block hook with the hit result and player); other loaders call it from their own hook.
-    @SuppressWarnings("PMD.MissingOverride") // NeoForge-only hook, see above
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"}) // NeoForge-only hook, see above
     public ItemStack getCloneItemStack(
             final BlockState state,
             final HitResult hit,
@@ -143,8 +191,12 @@ public final class BusCableBlock extends BaseEntityBlock {
             final Player player) {
         final ItemStack result =
                 BusCableItemHelper.getPickBlock(state, hit, level, pos, player);
-        return result != null ? result : super.getCloneItemStack(level, pos, state);
+        // Inlined default of the deprecated Block.getCloneItemStack(LevelReader, BlockPos, BlockState)
+        // (NeoForge patch confirms the body is just this); calling it warns, and the interface default
+        // is NeoForge-only, so it cannot be used from this shared source set.
+        return result != null ? result : new ItemStack(this);
     }
+    //?}
 
     @Nullable
     @Override

@@ -35,6 +35,10 @@ public interface ClientProxy {
     /** Closes the file chooser opened for an import the server has already settled. */
     default void closeFileChooser() {}
 
+    /** Opens or updates the server-authorized flash/image writer screen. */
+    default void handleFlashWriterStatus(final BlockPos pos, final java.util.UUID session,
+            final String state, final int offset, final int capacity, final String detail) {}
+
     /** Plays a tone of a sound card at {@code pos}. */
     default void playTone(final BlockPos pos, final float frequency, final int durationMs) {}
 

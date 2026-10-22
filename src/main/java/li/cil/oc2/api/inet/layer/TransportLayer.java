@@ -39,8 +39,6 @@ public interface TransportLayer extends InternetDeviceLifecycle {
 
     String LAYER_NAME = "Transport";
 
-    ////////////////////////////////////////////////////////////////////////////////////
-
     /**
      * Tries to get the next transport message to wrap it into an IP packet and send it to virtual
      * computer later.

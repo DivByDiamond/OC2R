@@ -1,12 +1,15 @@
+
 package li.cil.oc2.client.manual;
 
-import li.cil.manual.api.ManualStyle;
-import li.cil.manual.api.render.FontRenderer;
 import li.cil.oc2.client.renderer.font.MonospaceFontRenderer;
+import li.cil.oc2.manual.api.ManualStyle;
+import li.cil.oc2.manual.api.render.FontRenderer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 @OnlyIn(Dist.CLIENT)
 public final class ModManualStyle implements ManualStyle {

@@ -6,10 +6,16 @@ import static li.cil.oc2.gametest.TestSupport.assertNotNull;
 
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+//? if >=26.1 {
+/*import li.cil.oc2.gametest.GameTestRegistrar.GameTest;
+import li.cil.oc2.gametest.GameTestRegistrar.GameTestHolder;
+import li.cil.oc2.gametest.GameTestRegistrar.PrefixGameTestTemplate;
+*///?} else {
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//?}
+import net.minecraft.gametest.framework.GameTestHelper;
 
 @GameTestHolder(API.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -26,6 +32,21 @@ public final class RegistrationTests {
         assertNotNull(helper, DeviceTypes.NETWORK_TUNNEL, "DeviceTypes.NETWORK_TUNNEL");
         helper.succeed();
     }
+
+    //? if >=26.1 {
+    /*@GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void serverPlayerReceivesModPayloads(final GameTestHelper helper) {
+        final net.minecraft.server.level.ServerPlayer player = TestSupport.serverPlayer(helper);
+        final li.cil.oc2.common.network.message.computer.ComputerBusStateMessage message =
+                new li.cil.oc2.common.network.message.computer.ComputerBusStateMessage(
+                        helper.absolutePos(TestSupport.COMPUTER_POS),
+                        li.cil.oc2.common.bus.controller.BusState.READY, 0);
+        TestSupport.assertTrue(helper, "computer payload channel must be negotiated",
+                player.connection.hasChannel(message.type().id()));
+        li.cil.oc2.platform.Platform.network().sendToPlayer(message, player);
+        helper.succeed();
+    }
+    *///?}
 
     // --------------------------------------------------------------------- //
 

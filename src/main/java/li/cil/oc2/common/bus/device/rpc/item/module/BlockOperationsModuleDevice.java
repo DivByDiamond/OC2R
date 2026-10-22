@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.rpc.item.module;
 
+import java.time.Duration;
 import java.util.List;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
@@ -10,6 +11,9 @@ import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.common.bus.device.rpc.item.util.BlockHarvestHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.InventoryHelper;
 import li.cil.oc2.common.bus.device.rpc.item.util.RepairHelper;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?}
 import li.cil.oc2.common.util.misc.FakePlayerUtils;
 import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.BlockPos;
@@ -24,16 +28,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+//? if <26.1 {
 import net.minecraft.world.item.Tier;
+//?}
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
+    private static final Duration COOLDOWN_DURATION = Duration.ofSeconds(1);
     private final Entity entity;
     private final Robot robot;
-    private final BlockOperationCooldown cooldown = new BlockOperationCooldown();
+    private final BlockOperationCooldown cooldown = new BlockOperationCooldown(COOLDOWN_DURATION);
 
     public BlockOperationsModuleDevice(
             final ItemStack identity, final Entity entity, final Robot robot) {
@@ -49,7 +56,7 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Override
     public void deserializeNBT(final HolderLookup.Provider provider, final CompoundTag tag) {
-        cooldown.deserializeNBT(provider, tag, entity.level());
+        cooldown.deserializeNBT(provider, tag);
     }
 
     @Callback
@@ -59,10 +66,10 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean excavate(@Parameter("side") @Nullable final RobotOperationSide side) {
-        if (cooldown.isOnCooldown(entity.level())) {
+        if (cooldown.isOnCooldown()) {
             return false;
         }
-        cooldown.beginCooldown(entity.level());
+        cooldown.beginCooldown();
 
         final Level level = entity.level();
         if (!(level instanceof final ServerLevel serverLevel)) {
@@ -99,10 +106,10 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean place(@Parameter("side") @Nullable final RobotOperationSide side) {
-        if (cooldown.isOnCooldown(entity.level())) {
+        if (cooldown.isOnCooldown()) {
             return false;
         }
-        cooldown.beginCooldown(entity.level());
+        cooldown.beginCooldown();
 
         final Level level = entity.level();
         if (!(level instanceof final ServerLevel serverLevel)) {
@@ -123,7 +130,11 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
         final BlockHitResult hit =
                 new BlockHitResult(
                         Vec3.atCenterOf(blockPos)
+                                //? if >=26.1 {
+                                /*.add(Vec3.atCenterOf(oppositeDirection.getUnitVec3i()).scale(0.5)),
+                                *///?} else {
                                 .add(Vec3.atCenterOf(oppositeDirection.getNormal()).scale(0.5)),
+                                //?}
                         oppositeDirection,
                         blockPos,
                         false);
@@ -153,10 +164,10 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
     @Callback
     public boolean repair() {
-        if (cooldown.isOnCooldown(entity.level())) {
+        if (cooldown.isOnCooldown()) {
             return false;
         }
-        cooldown.beginCooldown(entity.level());
+        cooldown.beginCooldown();
 
         if (identity.getDamageValue() == 0) {
             return false;
@@ -167,7 +178,11 @@ public final class BlockOperationsModuleDevice extends AbstractItemRPCDevice {
 
         final ItemStack extracted = inventory.extractItem(selectedSlot, 1, true);
 
+        //? if >=26.1 {
+        /*final Tiers tier = RepairHelper.getRepairItemTier(extracted);
+        *///?} else {
         final Tier tier = RepairHelper.getRepairItemTier(extracted);
+        //?}
         if (tier == null) {
             return false;
         }

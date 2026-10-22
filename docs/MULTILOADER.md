@@ -1,9 +1,10 @@
 # Multiloader / Multi-version Plan
 
+> **Status (2026-10-14):** historical design document. Stages 1 and 2 are implemented and Stage 3 is in progress; the layout below differs from the plan: the root project *is* the NeoForge module (there is no `neoforge/` directory), `fabric/` is a working module for 1.21.1, and Minecraft versions are multiplexed by Stonecutter nodes in `versions/`. Current state and progress: [roadmap/multiloader.md §42](roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion); module overview: [SRC_STRUCTURE.md](SRC_STRUCTURE.md#modules-and-versions).
+
 Design doc for turning OC2R from a single NeoForge/1.21.1 module into a
 mod that builds for NeoForge **and** Fabric, on MC 1.21.1, 26.1 and 26.2.
-Written 2026-09-15, not yet implemented — this is the plan, not the
-build. Each stage below gets its own implementation plan (and its own
+Written 2026-09-15 as a plan (see the status note above). Each stage below gets its own implementation plan (and its own
 PRs) when work actually starts on it; only Stage 1 is designed in detail
 here.
 

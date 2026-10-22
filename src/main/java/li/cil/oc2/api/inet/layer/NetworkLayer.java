@@ -41,8 +41,6 @@ public interface NetworkLayer extends InternetDeviceLifecycle {
 
     String LAYER_NAME = "Network";
 
-    ////////////////////////////////////////////////////////////////////////////////////
-
     /**
      * Tries to get the next IP paket to wrap it into an ethernet frame and send it to virtual
      * computer later.

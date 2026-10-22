@@ -23,8 +23,6 @@ public final class TransportMessage {
     private byte ttl = -1;
     private ByteBuffer data = null;
 
-    ///////////////////////////////////////////////////////////////////////
-
     /**
      * Network layer should provide byte buffer for transport layer via this method.
      *

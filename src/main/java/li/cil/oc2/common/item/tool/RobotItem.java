@@ -66,12 +66,21 @@ registrar.registerItem(
             position = Vec3.atCenterOf(pos.relative(context.getClickedFace()));
         }
 
+        //? if >=26.1 {
+        /*final Robot robot = Entities.ROBOT.get()
+                .create(context.getLevel(), net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        *///?} else {
         final Robot robot = Entities.ROBOT.get().create(context.getLevel());
+        //?}
         if (robot == null) {
             return InteractionResult.FAIL;
         }
 
+        //? if >=26.1 {
+        /*robot.snapTo(
+        *///?} else {
         robot.moveTo(
+        //?}
                 position.x,
                 position.y - robot.getBbHeight() * 0.5f,
                 position.z,
@@ -99,9 +108,16 @@ registrar.registerItem(
             context.getPlayer().awardStat(Stats.ITEM_USED.get(this));
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 
+    // Intentionally overrides the deprecated method: the IItemExtension default delegates to it,
+    // and this shared source set cannot name the NeoForge-only extension (it also compiles on Fabric).
+    @SuppressWarnings("deprecation")
     @Override
     public boolean canFitInsideContainerItems() {
         return false;

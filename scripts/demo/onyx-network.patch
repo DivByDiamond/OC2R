@@ -1,0 +1,2314 @@
+diff --git a/kernel/src/drivers/virtio_net/init.rs b/kernel/src/drivers/virtio_net/init.rs
+index 84cdba3..85b5aa8 100644
+--- a/kernel/src/drivers/virtio_net/init.rs
++++ b/kernel/src/drivers/virtio_net/init.rs
+@@ -1,6 +1,6 @@
+ //! virtio-net device probe and virtqueue setup.
+ use super::queue::push_avail;
+-use super::{G_NET, HDR_LEN, NET_MTU, RX_DESCS, VIRTIO_ID_NET};
++use super::{G_NET, HDR_LEN, NET_MTU, RX_DESCS, VIRTIO_ID_NET, DEVICES, DEVICE_COUNT, EMPTY_NET, MAX_NET_DEVICES};
+ use crate::arch::mmio::Mmio;
+ use crate::drivers::virtio::{
+     R_DEVICE_ID, R_GUEST_FEATURES, R_GUEST_FEATURES_SEL, R_GUEST_PAGE_SIZE, R_HOST_FEATURES,
+@@ -32,6 +32,31 @@ pub unsafe fn probe(base: usize) -> bool {
+ /// `base` must be a probed virtio-net MMIO base; must be called during the
+ /// single-threaded boot-time device probe, once per base.
+ pub unsafe fn init(base: usize) -> KResult<()> {
++    // SAFETY: called during single-hart boot. Preserve the first active card
++    // while each later card gets independent queues and buffer ownership.
++    unsafe {
++        if DEVICE_COUNT >= MAX_NET_DEVICES {
++            return Err(Errno::NoMem);
++        }
++        let previous = G_NET;
++        G_NET = EMPTY_NET;
++        let result = init_device(base);
++        if result.is_ok() {
++            DEVICES[DEVICE_COUNT] = G_NET;
++            DEVICE_COUNT += 1;
++            if previous.base != 0 {
++                G_NET = previous;
++            }
++        } else {
++            G_NET = previous;
++        }
++        result
++    }
++}
++
++/// # Safety
++/// Single-hart boot, with G_NET reset to an empty private staging device.
++unsafe fn init_device(base: usize) -> KResult<()> {
+     // SAFETY: boot-time single-threaded probe (SIE=0, see crate::sync) on a probed base, Busy-guarded so G_NET is written at most once; offsets are spec constants and MAC reads target the device config region at 0x100 (legacy MMIO layout).
+     unsafe {
+         if G_NET.base != 0 {
+@@ -87,7 +112,7 @@ pub unsafe fn init(base: usize) -> KResult<()> {
+         reg_w(
+             base,
+             R_STATUS,
+-            VIRTIO_S_ACK | VIRTIO_S_DRIVER | VIRTIO_S_DRIVER_OK,
++            driver_ready_status(modern),
+         );
+         Ok(())
+     }
+@@ -203,3 +228,17 @@ unsafe fn setup_queue_rings(base: usize, modern: bool) -> KResult<(usize, usize,
+         }
+     }
+ }
++
++fn driver_ready_status(modern: bool) -> u32 {
++    VIRTIO_S_ACK | VIRTIO_S_DRIVER | VIRTIO_S_DRIVER_OK | if modern { VIRTIO_S_FEATURES_OK } else { 0 }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn modern_ready_preserves_negotiated_features() {
++        assert_eq!(driver_ready_status(true), 15);
++        assert_eq!(driver_ready_status(false), 7);
++    }
++}
+diff --git a/kernel/src/drivers/virtio_net/mod.rs b/kernel/src/drivers/virtio_net/mod.rs
+index 21a308f..9811552 100644
+--- a/kernel/src/drivers/virtio_net/mod.rs
++++ b/kernel/src/drivers/virtio_net/mod.rs
+@@ -32,7 +32,7 @@ pub(crate) struct NetDev {
+     pub mac: [u8; 6],
+ }
+ 
+-pub(crate) static mut G_NET: NetDev = NetDev {
++pub(crate) const EMPTY_NET: NetDev = NetDev {
+     base: 0,
+     modern: false,
+     rx_desc: ptr::null_mut(),
+@@ -47,6 +47,47 @@ pub(crate) static mut G_NET: NetDev = NetDev {
+     mac: [0; 6],
+ };
+ 
++// Boot discovers several cards; one explicitly selected interface drives the
++// current single-address stack. Selection saves ring cursors before switching.
++pub(crate) static mut G_NET: NetDev = EMPTY_NET;
++pub(crate) const MAX_NET_DEVICES: usize = 8;
++pub(crate) static mut DEVICES: [NetDev; MAX_NET_DEVICES] = [EMPTY_NET; MAX_NET_DEVICES];
++pub(crate) static mut DEVICE_COUNT: usize = 0;
++static mut ACTIVE_DEVICE: usize = 0;
++
++pub fn device_count() -> usize {
++    // SAFETY: populated only during single-hart boot, then immutable.
++    unsafe { DEVICE_COUNT }
++}
++
++pub fn active_device() -> usize {
++    // SAFETY: runtime users hold net_lock; boot is single-hart.
++    unsafe { ACTIVE_DEVICE }
++}
++
++/// # Safety
++/// Caller holds net_lock; no TX/RX operation can run during a switch.
++pub unsafe fn select_device(index: usize) -> onyx_core::errno::KResult<()> {
++    // SAFETY: bounds checked before copying initialized driver/ring state.
++    unsafe {
++        if index >= DEVICE_COUNT {
++            return Err(onyx_core::errno::Errno::Inval);
++        }
++        DEVICES[ACTIVE_DEVICE] = G_NET;
++        G_NET = DEVICES[index];
++        ACTIVE_DEVICE = index;
++        Ok(())
++    }
++}
++
++pub fn device_mac(index: usize) -> onyx_core::errno::KResult<[u8; 6]> {
++    // SAFETY: caller holds net_lock; MACs are boot-initialized and immutable.
++    unsafe {
++        if index >= DEVICE_COUNT { return Err(onyx_core::errno::Errno::Inval); }
++        Ok(DEVICES[index].mac)
++    }
++}
++
+ /// True once a virtio-net device has been fully initialized (queues up).
+ pub fn present() -> bool {
+     // SAFETY: reads of base/rx_desc written together by single-threaded boot init; kernel code never runs with SIE set (see crate::sync).
+diff --git a/kernel/src/drivers/virtio_net/xfer.rs b/kernel/src/drivers/virtio_net/xfer.rs
+index ce5451b..42af525 100644
+--- a/kernel/src/drivers/virtio_net/xfer.rs
++++ b/kernel/src/drivers/virtio_net/xfer.rs
+@@ -17,10 +17,11 @@ pub fn recv_into(out: &mut [u8]) -> KResult<usize> {
+         if used_idx == G_NET.rx_last_used {
+             return Err(Errno::NoEnt);
+         }
+-        let slot = (G_NET.rx_last_used as usize) % RX_DESCS;
+-        G_NET.rx_last_used = used_idx;
++        let (slot, next) = receive_cursor(G_NET.rx_last_used, used_idx).ok_or(Errno::NoEnt)?;
++        G_NET.rx_last_used = next;
+         let elem = ptr::read_volatile(ptr::addr_of!((*G_NET.rx_used).ring[slot]));
+-        let buf_idx = (elem.idx as usize) % RX_DESCS;
++        let buf_idx = elem.idx as usize;
++        if buf_idx >= RX_DESCS || elem.len as usize > HDR_LEN + NET_MTU { return Err(Errno::Io); }
+         let frame_len = (elem.len as usize).saturating_sub(HDR_LEN).min(out.len());
+         let src = G_NET.rx_bufs[buf_idx].add(HDR_LEN);
+         ptr::copy_nonoverlapping(src, out.as_mut_ptr(), frame_len);
+@@ -62,6 +63,7 @@ pub fn send(frame: &[u8]) -> KResult<()> {
+             flags: 0,
+             next: 0,
+         };
++        let last = ptr::read_volatile(ptr::addr_of!((*G_NET.tx_used).idx));
+         push_avail(0, false);
+         let base = G_NET.base;
+         // Queue index 1 = transmitq. Notifying 0 here (the original bug)
+@@ -69,7 +71,6 @@ pub fn send(frame: &[u8]) -> KResult<()> {
+         // send — and it targets the RX rings anyway, since there was no
+         // separate TX queue before this fix.
+         crate::drivers::virtio::reg_w(base, R_QUEUE_NOTIFY, 1);
+-        let last = ptr::read_volatile(ptr::addr_of!((*G_NET.tx_used).idx));
+         // Wait for one new used entry. sedna's VirtIONetworkDevice only marks
+         // the TX descriptor used when the OC2R network stack pulls the frame
+         // on its own tick (async w.r.t. the guest), so a fixed small spin
+@@ -97,3 +98,21 @@ pub fn send(frame: &[u8]) -> KResult<()> {
+         Ok(())
+     }
+ }
++
++// Used-ring positions wrap at queue capacity, independently of posted buffers.
++fn receive_cursor(last: u16, used: u16) -> Option<(usize, u16)> {
++    if last == used { None } else { Some((last as usize % crate::drivers::virtio::VIRTQ_SIZE, last.wrapping_add(1))) }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn receive_consumes_each_entry_and_wraps_at_queue_size() {
++        assert_eq!(receive_cursor(0, 3), Some((0,1)));
++        assert_eq!(receive_cursor(1, 3), Some((1,2)));
++        assert_eq!(receive_cursor(16, 17), Some((16,17)));
++        assert_eq!(receive_cursor(255, 256), Some((255,256)));
++        assert_eq!(receive_cursor(u16::MAX, 0), Some((255,0)));
++        assert_eq!(receive_cursor(3, 3), None);
++    }
++}
+diff --git a/kernel/src/net/eth.rs b/kernel/src/net/eth.rs
+index 64ee184..d35fb6b 100644
+--- a/kernel/src/net/eth.rs
++++ b/kernel/src/net/eth.rs
+@@ -12,7 +12,8 @@ pub struct EthHdr {
+     pub ethertype: u16,
+ }
+ 
+-const ARP_CACHE_MAX: usize = 8;
++const ARP_CACHE_MAX: usize = 64;
++static mut ARP_CACHE_IFACE: [usize; ARP_CACHE_MAX] = [0; ARP_CACHE_MAX];
+ static mut ARP_CACHE_IP: [[u8; 4]; ARP_CACHE_MAX] = [[0; 4]; ARP_CACHE_MAX];
+ static mut ARP_CACHE_MAC: [[u8; 6]; ARP_CACHE_MAX] = [[0; 6]; ARP_CACHE_MAX];
+ static mut ARP_CACHE_LEN: usize = 0;
+@@ -30,7 +31,7 @@ pub unsafe fn arp_lookup(ip: [u8; 4]) -> Option<[u8; 6]> {
+         net_lock();
+         let mut found = None;
+         for i in 0..ARP_CACHE_LEN {
+-            if ARP_CACHE_IP[i] == ip {
++            if ARP_CACHE_IP[i] == ip && ARP_CACHE_IFACE[i] == virtio_net::active_device() {
+                 found = Some(ARP_CACHE_MAC[i]);
+                 break;
+             }
+@@ -51,13 +52,14 @@ pub unsafe fn arp_insert(ip: [u8; 4], mac: [u8; 6]) {
+     unsafe {
+         net_lock();
+         for i in 0..ARP_CACHE_LEN {
+-            if ARP_CACHE_IP[i] == ip {
++            if ARP_CACHE_IP[i] == ip && ARP_CACHE_IFACE[i] == virtio_net::active_device() {
+                 ARP_CACHE_MAC[i] = mac;
+                 net_unlock();
+                 return;
+             }
+         }
+         if ARP_CACHE_LEN < ARP_CACHE_MAX {
++            ARP_CACHE_IFACE[ARP_CACHE_LEN] = virtio_net::active_device();
+             ARP_CACHE_IP[ARP_CACHE_LEN] = ip;
+             ARP_CACHE_MAC[ARP_CACHE_LEN] = mac;
+             ARP_CACHE_LEN += 1;
+@@ -119,13 +121,16 @@ unsafe fn handle_arp_inner(frame: &[u8]) {
+             return;
+         }
+         let mac = virtio_net::mac();
++        if frame[14..20] != [0,1,8,0,6,4] { return; }
+         let oper = u16::from_be_bytes([frame[20], frame[21]]);
++        if oper != 1 && oper != 2 { return; }
+         let spa: [u8; 4] = [frame[28], frame[29], frame[30], frame[31]];
+         let sha: [u8; 6] = [
+             frame[22], frame[23], frame[24], frame[25], frame[26], frame[27],
+         ];
+         let tpa: [u8; 4] = [frame[38], frame[39], frame[40], frame[41]];
+-        arp_insert(spa, sha);
++        if frame[6..12] != sha || (oper==2 && (frame[32..38]!=mac || tpa!=crate::net::G_IP)) { return; }
++        if spa != [0;4] { arp_insert(spa, sha); }
+         if oper == 1 && tpa == crate::net::G_IP {
+             let mut pkt = [0u8; 42];
+             pkt[0..6].copy_from_slice(&sha);
+@@ -180,3 +185,10 @@ pub unsafe fn dispatch(frame: &[u8]) {
+         }
+     }
+ }
++
++/// # Safety
++/// Caller holds net_lock while replacing the active interface/address.
++pub unsafe fn clear_arp_cache() {
++    // SAFETY: the serialization contract excludes all cache readers/writers.
++    unsafe { ARP_CACHE_LEN = 0; }
++}
+diff --git a/kernel/src/net/ip.rs b/kernel/src/net/ip.rs
+index dfe19f6..511b2ca 100644
+--- a/kernel/src/net/ip.rs
++++ b/kernel/src/net/ip.rs
+@@ -42,17 +42,26 @@ pub unsafe fn send_packet(dst_ip: [u8; 4], protocol: u8, payload: &[u8]) -> KRes
+ unsafe fn send_packet_inner(dst_ip: [u8; 4], protocol: u8, payload: &[u8]) -> KResult<()> {
+     // SAFETY: header vector sized IP_HLEN + payload.len(); IP_ID RMW and ARP cache accessed under the caller's net_lock().
+     unsafe {
+-        let dst_mac = if dst_ip == [255, 255, 255, 255] {
++        if payload.len() > 1480 { return Err(Errno::Range); }
++        let mask = u32::from_be_bytes(crate::net::G_MASK);
++        let local = u32::from_be_bytes(G_IP);
++        let destination = u32::from_be_bytes(dst_ip);
++        let broadcast = dst_ip == [255;4] || (mask != 0 && destination == (local | !mask));
++        let next_hop = if !broadcast && (destination & mask) != (local & mask) {
++            if crate::net::G_GW == [0;4] { return Err(Errno::Io); }
++            crate::net::G_GW
++        } else { dst_ip };
++        let dst_mac = if broadcast {
+             [0xFF; 6]
+         } else {
+-            match eth::arp_lookup(dst_ip) {
++            match eth::arp_lookup(next_hop) {
+                 Some(m) => m,
+                 None => {
+-                    eth::arp_request(dst_ip);
++                    eth::arp_request(next_hop);
+                     let mut found = None;
+                     for _ in 0..1000 {
+                         crate::net::poll();
+-                        if let Some(m) = eth::arp_lookup(dst_ip) {
++                        if let Some(m) = eth::arp_lookup(next_hop) {
+                             found = Some(m);
+                             break;
+                         }
+@@ -97,65 +106,23 @@ unsafe fn send_packet_inner(dst_ip: [u8; 4], protocol: u8, payload: &[u8]) -> KR
+ /// RX dispatcher: requires the net single-poller contract; protocol
+ /// dispatches to sub-handlers that validate their own offsets.
+ pub unsafe fn handle_ip(frame: &[u8]) {
+-    if frame.len() < eth::ETH_HLEN + IP_HLEN {
+-        return;
+-    }
+-    let ip_start = eth::ETH_HLEN;
+-    let ihl = (frame[ip_start] & 0x0F) as usize * 4;
+-    let total_len = u16::from_be_bytes([frame[ip_start + 2], frame[ip_start + 3]]) as usize;
+-    let protocol = frame[ip_start + 9];
+-    match protocol {
+-        // SAFETY: callee re-validates offsets against frame.len(); RX single-poller contract.
+-        IP_PROTO_ICMP => unsafe { handle_icmp(frame, ip_start, ihl, total_len) },
+-        // SAFETY: callee re-validates offsets against frame.len(); RX single-poller contract.
+-        IP_PROTO_TCP => unsafe { crate::net::tcp::handle_tcp(frame, ip_start, ihl, total_len) },
+-        // SAFETY: callee re-validates offsets against frame.len(); RX single-poller contract.
+-        IP_PROTO_UDP => unsafe { crate::net::udp::handle_udp(frame, ip_start) },
+-        _ => {}
+-    }
+-}
+-
+-/// # Safety
+-///
+-/// RX path: reads the frame with explicit bounds checks and replies via
+-/// send_frame; net single-poller contract applies to the statics.
+-unsafe fn handle_icmp(frame: &[u8], ip_start: usize, _ihl: usize, _total_len: usize) {
+-    // SAFETY: icmp_start offset checked against frame.len() before indexing; reply buffers sized from checked lengths.
++    let Some(packet) = super::ipv4::parse(frame) else { return; };
++    // SAFETY: context selected under net_lock; validated sizes bound every slice.
+     unsafe {
+-        let icmp_start = ip_start + IP_HLEN;
+-        if frame.len() < icmp_start + 8 {
+-            return;
+-        }
+-        if frame[icmp_start] != 8 {
+-            return;
+-        }
+-        let mut reply = alloc::vec![0u8; frame.len() - ip_start];
+-        reply[0] = 0;
+-        reply[1] = 0;
+-        reply[2..4].copy_from_slice(&[0, 0]);
+-        if reply.len() > 4 {
+-            reply[4..].copy_from_slice(&frame[icmp_start + 4..]);
++        let mask = u32::from_be_bytes(crate::net::G_MASK);
++        let broadcast = packet.destination == [255;4] || (mask != 0 && u32::from_be_bytes(packet.destination) == (u32::from_be_bytes(G_IP) | !mask));
++        if packet.destination != G_IP && !broadcast { return; }
++        let frame = &frame[..eth::ETH_HLEN + packet.total_len];
++        match packet.protocol {
++            IP_PROTO_ICMP if !broadcast => {
++                let payload = &frame[eth::ETH_HLEN + packet.header_len..];
++                if let Some(reply) = super::ipv4::echo_reply(payload) {
++                    let _ = send_packet(packet.source, IP_PROTO_ICMP, &reply);
++                }
++            },
++            IP_PROTO_TCP if !broadcast => crate::net::tcp::handle_tcp(frame, eth::ETH_HLEN, packet.header_len, packet.total_len),
++            IP_PROTO_UDP => crate::net::udp::handle_udp(frame, eth::ETH_HLEN),
++            _ => {},
+         }
+-        let ck = checksum(&reply);
+-        reply[2..4].copy_from_slice(&ck.to_be_bytes());
+-        let mut ip_pkt = alloc::vec![0u8; IP_HLEN + reply.len()];
+-        ip_pkt[0] = 0x45;
+-        let total = IP_HLEN + reply.len();
+-        ip_pkt[2..4].copy_from_slice(&(total as u16).to_be_bytes());
+-        ip_pkt[8] = 64;
+-        ip_pkt[9] = IP_PROTO_ICMP;
+-        let src: [u8; 4] = [
+-            frame[ip_start + 16],
+-            frame[ip_start + 17],
+-            frame[ip_start + 18],
+-            frame[ip_start + 19],
+-        ];
+-        ip_pkt[12..16].copy_from_slice(&src);
+-        ip_pkt[16..20].copy_from_slice(&G_IP);
+-        let ck = checksum(&ip_pkt[..IP_HLEN]);
+-        ip_pkt[10..12].copy_from_slice(&ck.to_be_bytes());
+-        ip_pkt[20..].copy_from_slice(&reply);
+-        let src_mac = [frame[6], frame[7], frame[8], frame[9], frame[10], frame[11]];
+-        eth::send_frame(src_mac, eth::ET_IP, &ip_pkt);
+     }
+ }
+diff --git a/kernel/src/net/mod.rs b/kernel/src/net/mod.rs
+index 511992b..0eec64c 100644
+--- a/kernel/src/net/mod.rs
++++ b/kernel/src/net/mod.rs
+@@ -1,8 +1,11 @@
++pub mod ownership;
+ pub mod checksum;
++pub mod config;
+ pub mod dhcp;
+ pub mod dns;
+ pub mod eth;
+ pub mod ip;
++pub mod ipv4;
+ pub mod lock;
+ pub mod tcp;
+ 
+@@ -64,17 +67,35 @@ pub unsafe fn poll() {
+         lock::net_lock();
+         // Reclaim expired TIMEWAIT TCP slots even when no packets arrive.
+         tcp::tick();
+-        loop {
++        let previous = virtio_net::active_device();
++        let count = virtio_net::device_count();
++        if (0..count).any(config::is_configured) {
++            for index in 0..count {
++                if config::is_configured(index) && config::activate(index).is_ok() {
++                    drain_current();
++                }
++            }
++            let _ = config::activate(previous);
++        } else {
++            drain_current(); // DHCP before the first interface is configured.
++        }
++        lock::net_unlock();
++    }
++}
++
++/// # Safety
++/// Caller holds net_lock and selected the matching interface/IP context.
++unsafe fn drain_current() {
++    // SAFETY: fixed buffer and ring handling validated by recv_into.
++    unsafe {
++        // Bound work even if a peer continuously fills the receive ring.
++        for _ in 0..64 {
+             let mut buf = [0u8; 2048];
+             match virtio_net::xfer::recv_into(&mut buf) {
+-                Ok(n) => {
+-                    if n >= 14 {
+-                        eth::dispatch(&buf[..n]);
+-                    }
+-                }
++                Ok(n) if n >= 14 => eth::dispatch(&buf[..n]),
++                Ok(_) => {},
+                 Err(_) => break,
+             }
+         }
+-        lock::net_unlock();
+     }
+ }
+diff --git a/kernel/src/net/tcp/conn.rs b/kernel/src/net/tcp/conn.rs
+index 58eca60..3f6bb1c 100644
+--- a/kernel/src/net/tcp/conn.rs
++++ b/kernel/src/net/tcp/conn.rs
+@@ -15,6 +15,12 @@ pub(in crate::net) const TIMEWAIT_US: u64 = 5_000_000;
+ 
+ #[derive(Clone, Copy)]
+ pub(in crate::net) struct TcpConn {
++    pub owner_pid: u32,
++    pub(in crate::net) iface: usize,
++    pub(in crate::net) listener: usize,
++    pub(in crate::net) last_tx_us: u64,
++    pub(in crate::net) retries: u8,
++    pub(in crate::net) peer_window: u16,
+     pub(in crate::net) state: u8,
+     pub(in crate::net) src_port: u16,
+     pub(in crate::net) dst_ip: [u8; 4],
+@@ -91,19 +97,20 @@ pub(super) fn send_tcp_seg(c: &TcpConn, flags: u8, data: &[u8]) {
+     seg[8..12].copy_from_slice(&c.rcv_nxt.to_be_bytes());
+     let off_flags = ((TCP_HLEN as u16) / 4) << 12 | flags as u16;
+     seg[12..14].copy_from_slice(&off_flags.to_be_bytes());
+-    seg[14..16].copy_from_slice(&[0xFF, 0xFF]);
++    seg[14..16].copy_from_slice(&((BUF_SIZE-c.recv_len) as u16).to_be_bytes());
+     seg[16..18].copy_from_slice(&[0, 0]);
+     seg[18..20].copy_from_slice(&[0, 0]);
+     if !data.is_empty() {
+         seg[TCP_HLEN..].copy_from_slice(data);
+     }
+-    // SAFETY: pseudo-header and segment are in-bounds buffers built above; G_IP read per the net contract.
++    // SAFETY: caller holds net_lock; the context is restored after TX/ARP poll.
+     unsafe {
+-        let cksum = tcp_checksum(&G_IP, &c.dst_ip, &seg);
+-        seg[16..18].copy_from_slice(&cksum.to_be_bytes());
++        crate::net::config::with_interface(c.iface, || {
++            let cksum = tcp_checksum(&G_IP, &c.dst_ip, &seg);
++            seg[16..18].copy_from_slice(&cksum.to_be_bytes());
++            ip::send_packet(c.dst_ip, 6, &seg)
++        }).ok();
+     }
+-    // SAFETY: seg sized TCP_HLEN + data.len(); TX ring contract per ip::send_packet (single-sender).
+-    unsafe { ip::send_packet(c.dst_ip, 6, &seg) }.ok();
+ }
+ 
+ pub(in crate::net) fn alloc_conn() -> Option<usize> {
+@@ -140,7 +147,7 @@ pub(super) fn sweep_timewait(now_us: u64) {
+         net_lock();
+         for slot in CONNS.iter_mut() {
+             let expired = match slot {
+-                Some(c) => c.state == 4 && now_us >= c.tw_deadline_us && c.tw_deadline_us != 0,
++                Some(c) => ((c.state == 4 && c.recv_len == 0) || c.state == 5 || c.state==6) && now_us >= c.tw_deadline_us && c.tw_deadline_us != 0,
+                 None => false,
+             };
+             if expired {
+diff --git a/kernel/src/net/tcp/handle.rs b/kernel/src/net/tcp/handle.rs
+index 4d95604..ab51c66 100644
+--- a/kernel/src/net/tcp/handle.rs
++++ b/kernel/src/net/tcp/handle.rs
+@@ -9,17 +9,6 @@ use super::state::{ACK, FIN, SEG_ACK, SEG_FIN_ACK, tcp_transition};
+ /// Total inbound segments dropped for a bad checksum (logged once).
+ static BAD_CKSUM: AtomicU32 = AtomicU32::new(0);
+ 
+-fn process_segment(c: &mut super::conn::TcpConn, seq: u32, ack: u32, flags: u8, payload: &[u8]) {
+-    let out = tcp_transition(c, seq, ack, flags, payload, now_us());
+-    for cmd in out {
+-        match cmd {
+-            SEG_ACK => send_tcp_seg(c, ACK, &[]),
+-            SEG_FIN_ACK => send_tcp_seg(c, FIN | ACK, &[]),
+-            _ => {}
+-        }
+-    }
+-}
+-
+ /// # Safety: RX path — mutates CONNS and sends under net_lock() (recursive
+ /// when re-entered from poll inside send_packet; net sync fix, todo P1 #4).
+ pub unsafe fn handle_tcp(frame: &[u8], ip_start: usize, ihl: usize, total_len: usize) {
+@@ -82,7 +71,7 @@ unsafe fn handle_tcp_inner(frame: &[u8], ip_start: usize, ihl: usize, total_len:
+         ]);
+         let flags = frame[tcp_off + 13];
+         let data_off = ((frame[tcp_off + 12] >> 4) as usize) * 4;
+-        if data_off < TCP_HLEN {
++        if data_off < TCP_HLEN || tcp_off + data_off > seg_end {
+             return;
+         }
+         let payload_start = tcp_off + data_off;
+@@ -97,13 +86,31 @@ unsafe fn handle_tcp_inner(frame: &[u8], ip_start: usize, ihl: usize, total_len:
+             return;
+         }
+         let payload = &frame[payload_start..payload_start + payload_len];
+-        for c in CONNS.iter_mut().flatten() {
+-            // Full 4-tuple match (local port AND remote IP:port) blocks off-path injection.
+-            if c.src_port != dport || c.dst_port != sport || c.dst_ip != sip {
+-                continue;
++        let iface = crate::drivers::virtio_net::active_device();
++        if let Some(cid) = CONNS.iter().position(|slot| slot.as_ref().is_some_and(|c|
++            c.iface == iface && c.src_port == dport && c.dst_port == sport && c.dst_ip == sip)) {
++            // Do not retain a mutable socket-table borrow across TX's nested poll.
++            if let Some(mut connection) = CONNS[cid] {
++                let before=connection.state;
++                if flags & 0x04 != 0 {connection.state=6;connection.tw_deadline_us=now_us()+5_000_000;CONNS[cid]=Some(connection);return;}
++                connection.peer_window=u16::from_be_bytes([frame[tcp_off+14],frame[tcp_off+15]]);
++                let commands = tcp_transition(&mut connection, seq, ack, flags, payload, now_us());
++                CONNS[cid] = Some(connection);
++                if before==5 && (connection.state==2 || connection.state==7) { super::listen::established(cid,connection.listener); }
++                if before==5 && flags & super::state::SYN != 0 && seq.wrapping_add(1)==connection.rcv_nxt {
++                    let mut resend=connection;resend.snd_nxt=resend.snd_una;
++                    send_tcp_seg(&resend,super::state::SYN|ACK,&[]);
++                }
++                for command in commands {
++                    match command {
++                        SEG_ACK => send_tcp_seg(&connection, ACK, &[]),
++                        SEG_FIN_ACK => send_tcp_seg(&connection, FIN | ACK, &[]),
++                        _ => {},
++                    }
++                }
+             }
+-            process_segment(c, seq, ack, flags, payload);
+-            break;
++        } else if flags & (super::state::SYN|ACK) == super::state::SYN {
++            super::listen::incoming_syn(dport,sip,sport,seq,u16::from_be_bytes([frame[tcp_off+14],frame[tcp_off+15]]));
+         }
+     }
+ }
+diff --git a/kernel/src/net/tcp/mod.rs b/kernel/src/net/tcp/mod.rs
+index 5ca77b4..8884edf 100644
+--- a/kernel/src/net/tcp/mod.rs
++++ b/kernel/src/net/tcp/mod.rs
+@@ -2,8 +2,10 @@
+ // tcp_checksum_ok directly.
+ pub(crate) mod conn;
+ mod handle;
++pub mod listen;
+ mod sock;
+ mod state;
++mod retry;
+ #[cfg(test)]
+ mod tests;
+ 
+@@ -14,4 +16,17 @@ pub use sock::{tcp_close, tcp_connect, tcp_recv, tcp_send};
+ /// net::poll so dead connections cannot accumulate.
+ pub fn tick() {
+     conn::sweep_timewait(conn::now_us());
++    // SAFETY: tick is called only by net::poll while the network lock is held.
++    unsafe { retry::tick(conn::now_us()); }
++}
++
++/// # Safety
++/// Caller holds net_lock; interface reconfiguration invalidates old sockets.
++pub unsafe fn clear_interface(index: usize) {
++    // SAFETY: socket table is exclusively accessed under the network lock.
++    unsafe {
++        for slot in conn::CONNS.iter_mut() {
++            if slot.as_ref().is_some_and(|socket| socket.iface == index) { *slot = None; }
++        }
++    }
+ }
+diff --git a/kernel/src/net/tcp/sock.rs b/kernel/src/net/tcp/sock.rs
+index 75c2692..85fc83e 100644
+--- a/kernel/src/net/tcp/sock.rs
++++ b/kernel/src/net/tcp/sock.rs
+@@ -31,12 +31,15 @@ unsafe fn tcp_connect_inner(dst_ip: [u8; 4], port: u16) -> KResult<usize> {
+         let sport = alloc_local_port();
+         let isn = (sport as u32).wrapping_add(1);
+         CONNS[cid] = Some(TcpConn {
++            owner_pid:0,
++            iface: crate::net::config::route(dst_ip).ok_or(Errno::Io)?,
++            listener:usize::MAX,last_tx_us:super::conn::now_us(),retries:0,peer_window:2048,
+             state: 1,
+             src_port: sport,
+             dst_ip,
+             dst_port: port,
+             snd_una: isn,
+-            snd_nxt: isn,
++            snd_nxt: isn.wrapping_add(1),
+             rcv_nxt: 0,
+             send_buf: [0; BUF_SIZE],
+             send_len: 0,
+@@ -46,10 +49,11 @@ unsafe fn tcp_connect_inner(dst_ip: [u8; 4], port: u16) -> KResult<usize> {
+             peer_fin: false,
+             tw_deadline_us: 0,
+         });
+-        if let Some(ref conn) = CONNS[cid] {
+-            send_tcp_seg(conn, super::state::SYN, &[]);
+-        }
+-        for _ in 0..50000 {
++        if let Some(mut conn) = CONNS[cid] { conn.snd_nxt=isn; send_tcp_seg(&conn, super::state::SYN, &[]); }
++        for attempt in 0..50000 {
++            if attempt > 0 && attempt % 10000 == 0 {
++                if let Some(mut conn)=CONNS[cid] { conn.snd_nxt=isn; send_tcp_seg(&conn,super::state::SYN,&[]); }
++            }
+             poll();
+             if let Some(ref c) = CONNS[cid]
+                 && c.state == 2
+@@ -81,16 +85,20 @@ pub unsafe fn tcp_send(cid: usize, data: &[u8]) -> KResult<usize> {
+ unsafe fn tcp_send_inner(cid: usize, data: &[u8]) -> KResult<usize> {
+     // SAFETY: conn checked non-empty; copy bounds-checked against BUF_SIZE - send_len; net_lock() held by caller.
+     unsafe {
+-        let conn = CONNS[cid].as_mut().ok_or(Errno::Inval)?;
+-        if conn.state != 2 {
++        let mut conn = CONNS.get(cid).and_then(|slot| *slot).ok_or(Errno::Inval)?;
++        if conn.state != 2 && conn.state != 7 {
+             return Err(Errno::Io);
+         }
+         // Send space is freed as ACKs advance snd_una (drain_acked); send_len counts unacked bytes.
+-        let n = data.len().min(BUF_SIZE - conn.send_len);
++        let available=usize::from(conn.peer_window).saturating_sub(conn.send_len);
++        let n = data.len().min(BUF_SIZE - conn.send_len).min(536).min(available);
+         conn.send_buf[conn.send_len..conn.send_len + n].copy_from_slice(&data[..n]);
++        if n>0 && conn.send_len==0 { conn.last_tx_us=super::conn::now_us(); conn.retries=0; }
+         conn.send_len += n;
+-        send_tcp_seg(conn, 0x18, &data[..n]);
++        let sent = conn;
+         conn.snd_nxt = conn.snd_nxt.wrapping_add(n as u32);
++        CONNS[cid] = Some(conn);
++        if n > 0 { send_tcp_seg(&sent, 0x18, &data[..n]); }
+         Ok(n)
+     }
+ }
+@@ -114,39 +122,46 @@ pub unsafe fn tcp_recv(cid: usize, buf: &mut [u8]) -> KResult<usize> {
+ unsafe fn tcp_recv_inner(cid: usize, buf: &mut [u8]) -> KResult<usize> {
+     // SAFETY: conn checked non-empty; ring reads masked % BUF_SIZE; net_lock() held by caller.
+     unsafe {
+-        let conn = CONNS[cid].as_mut().ok_or(Errno::Inval)?;
+-        if conn.recv_len == 0 {
+-            // Peer sent FIN and the receive ring is drained: clean EOF.
+-            // Report Ok(0) so callers can distinguish "peer done" from
+-            // "no data yet" (Err(NoEnt)) — HTTP responses without
+-            // Content-Length rely on this signal.
+-            if conn.peer_fin {
+-                return Ok(0);
+-            }
+-            return Err(Errno::NoEnt);
+-        }
+-        let n = buf.len().min(conn.recv_len);
+-        for (i, dst) in buf[..n].iter_mut().enumerate() {
+-            *dst = conn.recv_buf[(conn.recv_head + i) % BUF_SIZE];
+-        }
+-        conn.recv_head = (conn.recv_head + n) % BUF_SIZE;
+-        conn.recv_len -= n;
++        let mut conn = CONNS.get(cid).and_then(|slot| *slot).ok_or(Errno::Inval)?;
++        let (n, notify) = read_received(&mut conn, buf)?;
++        CONNS[cid] = Some(conn);
++        // Publish consumed bytes before reentrant TX/ARP polling, with no
++        // mutable table borrow alive. Reopen the advertised receive window.
++        if notify { send_tcp_seg(&conn, super::state::ACK, &[]); }
+         Ok(n)
+     }
+ }
+ 
++pub(super) fn read_received(conn: &mut TcpConn, buf: &mut [u8]) -> KResult<(usize, bool)> {
++    if conn.state == 6 { return Err(Errno::Io); }
++    if conn.recv_len == 0 {
++        return if conn.peer_fin { Ok((0,false)) } else { Err(Errno::NoEnt) };
++    }
++    let n = buf.len().min(conn.recv_len);
++    for (i,dst) in buf[..n].iter_mut().enumerate() {
++        *dst = conn.recv_buf[(conn.recv_head+i)%BUF_SIZE];
++    }
++    conn.recv_head = (conn.recv_head+n)%BUF_SIZE;
++    conn.recv_len -= n;
++    Ok((n,n>0 && !conn.peer_fin))
++}
++
+ /// # Safety: indexes CONNS[cid] under net_lock() (net sync fix, todo P1 #4).
+ pub unsafe fn tcp_close(cid: usize) {
+-    // SAFETY: FIN send reads a copy of the conn; slot cleared exactly once; slot access under net_lock().
++    // SAFETY: bounded socket table under net_lock; copied before reentrant TX.
+     unsafe {
++        if cid>=super::conn::MAX_CONNS{return;}
+         net_lock();
+-        if let Some(conn) = CONNS[cid].as_ref()
+-            && conn.state == 2
+-        {
+-            let c = *conn;
+-            send_tcp_seg(&c, super::state::FIN | super::state::ACK, &[]);
++        if let Some(mut connection)=CONNS[cid] {
++            if connection.state==2 || connection.state==7 {
++                let sent=connection;
++                connection.recv_len=0; // The application explicitly discarded unread data.
++                connection.state=3;connection.snd_nxt=connection.snd_nxt.wrapping_add(1);
++                connection.last_tx_us=super::conn::now_us();connection.retries=0;
++                CONNS[cid]=Some(connection);
++                let _=send_tcp_seg(&sent,super::state::FIN|super::state::ACK,&[]);
++            }else{CONNS[cid]=None;}
+         }
+-        CONNS[cid] = None;
+         net_unlock();
+     }
+ }
+diff --git a/kernel/src/net/tcp/state.rs b/kernel/src/net/tcp/state.rs
+index db80f11..c665705 100644
+--- a/kernel/src/net/tcp/state.rs
++++ b/kernel/src/net/tcp/state.rs
+@@ -12,13 +12,14 @@ pub(super) const SEG_FIN_ACK: u8 = 2;
+ pub(super) fn drain_acked(c: &mut super::conn::TcpConn, ack: u32) {
+     let outstanding = c.snd_nxt.wrapping_sub(c.snd_una);
+     let acked = ack.wrapping_sub(c.snd_una);
+-    if acked == 0 || acked > outstanding || acked as usize > c.send_len {
+-        return;
+-    }
+-    let acked = acked as usize;
++    if acked == 0 || acked > outstanding { return; }
++    let fin_ack = c.state==3 && ack==c.snd_nxt && acked as usize==c.send_len+1;
++    if acked as usize>c.send_len && !fin_ack { return; }
++    let acked = (acked as usize).min(c.send_len);
+     c.send_buf.copy_within(acked..c.send_len, 0);
+     c.send_len -= acked;
+     c.snd_una = ack;
++    c.retries=0;
+ }
+ 
+ /// Pure TCP state-machine core (no I/O, host-testable): mutates the conn, returns SEG_* commands to emit in order; `now` is uptime us.
+@@ -31,16 +32,22 @@ pub(super) fn tcp_transition(
+     now: u64,
+ ) -> [u8; 2] {
+     match c.state {
+-        1 if (flags & (SYN | ACK)) == (SYN | ACK) => {
++        1 if (flags & (SYN | ACK)) == (SYN | ACK) && ack == c.snd_nxt => {
+             c.state = 2;
+             c.snd_nxt = ack;
+             c.snd_una = ack;
+             c.rcv_nxt = seq.wrapping_add(1);
+             [SEG_ACK, 0]
+         }
+-        2 | 4 => {
++        5 if flags & ACK != 0 && ack == c.snd_nxt && seq == c.rcv_nxt => {
++            c.state=2; c.snd_una=ack; c.tw_deadline_us=0;
++            tcp_transition(c,seq,ack,flags,payload,now)
++        },
++        2 | 4 | 7 => {
+             drain_acked(c, ack);
+-            let mut out = [0u8; 2];
++            // ACK duplicate/out-of-order data too: this includes zero-window
++            // persist probes and lets peers recover from a lost window update.
++            let mut out = [if payload.is_empty() {0} else {SEG_ACK}, 0];
+             if seq == c.rcv_nxt && !payload.is_empty() {
+                 let n = payload.len().min(BUF_SIZE - c.recv_len);
+                 let start = (c.recv_head + c.recv_len) % BUF_SIZE;
+@@ -56,20 +63,18 @@ pub(super) fn tcp_transition(
+                 c.rcv_nxt = c.rcv_nxt.wrapping_add(1);
+                 c.peer_fin = true;
+                 if c.state == 2 {
+-                    c.state = 4;
+-                    out[1] = SEG_FIN_ACK;
+-                } else {
+-                    // Retransmitted FIN during TIMEWAIT: re-ACK it.
++                    // CLOSE_WAIT: peer ended its write side; application may
++                    // still send a response until it explicitly closes.
++                    c.state = 7;
+                     out[1] = SEG_ACK;
+-                }
+-                c.tw_deadline_us = now + TIMEWAIT_US;
++                } else { out[1] = SEG_ACK; }
++                if c.state == 4 { c.tw_deadline_us = now + TIMEWAIT_US; }
+             }
+             out
+         }
+         3 if flags & ACK != 0 => {
+             drain_acked(c, ack);
+-            c.state = 4;
+-            c.tw_deadline_us = now + TIMEWAIT_US;
++            if ack==c.snd_nxt { c.state = 4; c.tw_deadline_us = now + TIMEWAIT_US; }
+             [0, 0]
+         }
+         _ => [0, 0],
+diff --git a/kernel/src/net/tcp/tests.rs b/kernel/src/net/tcp/tests.rs
+index f03c539..db1e317 100644
+--- a/kernel/src/net/tcp/tests.rs
++++ b/kernel/src/net/tcp/tests.rs
+@@ -3,9 +3,11 @@ use super::conn::{
+ };
+ use super::state::{SEG_ACK, SEG_FIN_ACK, drain_acked, tcp_transition};
+ 
+-fn test_conn() -> TcpConn {
++pub(super) fn test_conn() -> TcpConn {
+     // State 1 = SYN_SENT, as left by tcp_connect().
+     TcpConn {
++        owner_pid:0,
++        iface: 0, listener: usize::MAX, last_tx_us: 0, retries: 0, peer_window: 2048,
+         state: 1,
+         src_port: 40000,
+         dst_ip: [10, 0, 0, 1],
+@@ -51,9 +53,9 @@ fn test_established_in_sequence_data_and_rcv_nxt() {
+     assert_eq!(&c.recv_buf[..5], b"hello");
+     assert_eq!(c.recv_len, 5);
+     assert_eq!(c.rcv_nxt, 5006);
+-    // Out-of-sequence (old) data is dropped: no ack, no buffer growth.
++    // Old data is dropped and ACKed again, without buffer growth.
+     let out = tcp_transition(&mut c, 5001, 1001, 0x10, b"junk", 0);
+-    assert_eq!(out, [0, 0]);
++    assert_eq!(out, [SEG_ACK, 0]);
+     assert_eq!(c.recv_len, 5);
+     assert_eq!(c.rcv_nxt, 5006);
+     // In-sequence again after the drop.
+@@ -63,23 +65,23 @@ fn test_established_in_sequence_data_and_rcv_nxt() {
+ }
+ 
+ #[test]
+-fn test_fin_sequence_established_to_timewait() {
++fn test_fin_sequence_established_to_close_wait() {
+     let mut c = test_conn();
+     tcp_transition(&mut c, 5000, 1001, 0x12, &[], 0);
+     // FIN landing exactly at rcv_nxt closes our receive side: TIMEWAIT
+     // deadline set and FIN|ACK emitted.
+     let out = tcp_transition(&mut c, 5001, 1001, 0x11, &[], 777);
+-    assert_eq!(c.state, 4);
+-    assert_eq!(out, [0, SEG_FIN_ACK]);
++    assert_eq!(c.state, 7);
++    assert_eq!(out, [0, SEG_ACK]);
+     assert_eq!(c.rcv_nxt, 5002);
+     assert!(c.peer_fin);
+-    assert_eq!(c.tw_deadline_us, 777 + TIMEWAIT_US);
++    assert_eq!(c.tw_deadline_us, 0);
+     // A stale retransmitted FIN (seq no longer matches rcv_nxt) during
+     // TIMEWAIT is ignored: no re-ACK and no state/deadline change.
+     let out = tcp_transition(&mut c, 5001, 1001, 0x11, &[], 778);
+-    assert_eq!(c.state, 4);
++    assert_eq!(c.state, 7);
+     assert_eq!(out, [0, 0]);
+-    assert_eq!(c.tw_deadline_us, 777 + TIMEWAIT_US);
++    assert_eq!(c.tw_deadline_us, 0);
+     // FIN before all data is consumed (seq != rcv_nxt) is ignored.
+     let mut c = test_conn();
+     tcp_transition(&mut c, 5000, 1001, 0x12, &[], 0);
+@@ -89,8 +91,8 @@ fn test_fin_sequence_established_to_timewait() {
+     let mut c = test_conn();
+     tcp_transition(&mut c, 5000, 1001, 0x12, &[], 0);
+     let out = tcp_transition(&mut c, 5001, 1001, 0x11, b"bye", 0);
+-    assert_eq!(out, [SEG_ACK, SEG_FIN_ACK]);
+-    assert_eq!(c.state, 4);
++    assert_eq!(out, [SEG_ACK, SEG_ACK]);
++    assert_eq!(c.state, 7);
+     assert_eq!(c.rcv_nxt, 5005);
+ }
+ 
+@@ -101,14 +103,17 @@ fn test_state3_ack_to_timewait_and_unexpected_segments() {
+     c.state = 3;
+     c.send_len = 10;
+     c.snd_una = 1000;
+-    c.snd_nxt = 1010;
+-    assert_eq!(tcp_transition(&mut c, 0, 1005, 0x10, &[], 42), [0, 0]);
++    c.snd_nxt = 1011; // Ten data bytes plus the FIN sequence number.
++    assert_eq!(tcp_transition(&mut c, 0, 1005, 0x10, &[], 41), [0, 0]);
++    assert_eq!(c.state, 3);
++    assert_eq!(c.send_len,5);
++    assert_eq!(tcp_transition(&mut c, 0, 1011, 0x10, &[], 42), [0, 0]);
+     assert_eq!(c.state, 4);
+     // Active close never sets peer_fin: recv keeps reporting "no data",
+     // not EOF, for slots lingering in TIMEWAIT after our own FIN.
+     assert!(!c.peer_fin);
+     assert_eq!(c.tw_deadline_us, 42 + TIMEWAIT_US);
+-    assert_eq!(c.send_len, 5); // drain_acked freed the acked prefix
++    assert_eq!(c.send_len, 0); // The FIN ACK also acknowledges the remaining data.
+     // State 3 without ACK flag: no transition.
+     let mut c = test_conn();
+     c.state = 3;
+@@ -149,6 +154,8 @@ fn test_conn_table_alloc_port_sweep() {
+         let cid = alloc_conn().expect("a free slot exists");
+         let sport = alloc_local_port();
+         CONNS[cid] = Some(TcpConn {
++            owner_pid:0,
++            iface: 0, listener: usize::MAX, last_tx_us: 0, retries: 0, peer_window: 2048,
+             state: 2,
+             src_port: sport,
+             dst_ip: [10, 0, 0, 1],
+@@ -180,3 +187,61 @@ fn test_conn_table_alloc_port_sweep() {
+         CONNS[cid] = None;
+     }
+ }
++
++#[test]
++fn test_passive_handshake_requires_matching_ack_and_can_receive_immediate_data() {
++    let mut connection=test_conn();connection.state=5;connection.rcv_nxt=5001;
++    assert_eq!(tcp_transition(&mut connection,5001,999,0x10,&[],0),[0,0]);
++    assert_eq!(connection.state,5);
++    assert_eq!(tcp_transition(&mut connection,5001,1001,0x18,b"hello",0),[SEG_ACK,0]);
++    assert_eq!(connection.state,2);assert_eq!(connection.recv_len,5);
++    assert_eq!(&connection.recv_buf[..5],b"hello");
++}
++#[test]
++fn test_active_handshake_rejects_wrong_ack() {
++    let mut connection=test_conn();
++    assert_eq!(tcp_transition(&mut connection,5000,999,0x12,&[],0),[0,0]);
++    assert_eq!(connection.state,1);
++}
++
++#[test]
++fn reading_a_full_receive_window_requests_an_ack_and_handles_persist_probe() {
++    let mut c = test_conn();
++    c.state=2; c.rcv_nxt=5000;
++    let payload=[b'x';BUF_SIZE];
++    tcp_transition(&mut c,5000,1001,0x10,&payload,0);
++    assert_eq!(c.recv_len,BUF_SIZE);
++    let mut output=[0;512];
++    let (n,notify)=super::sock::read_received(&mut c,&mut output).unwrap();
++    assert_eq!(n,512);assert!(notify);assert_eq!(BUF_SIZE-c.recv_len,512);
++    assert_eq!(output,[b'x';512]);
++    let seq=c.rcv_nxt.wrapping_sub(1);
++    assert_eq!(tcp_transition(&mut c,seq,1001,0x10,b"x",0),[SEG_ACK,0]);
++    assert_eq!(c.recv_len,BUF_SIZE-512);
++}
++
++#[test]
++fn timewait_does_not_discard_unread_response_bytes() {
++    unsafe {
++        crate::net::lock::net_lock();
++        let saved=CONNS;
++        let mut c=test_conn();c.state=4;c.peer_fin=true;c.recv_len=1;c.recv_buf[0]=b'x';c.tw_deadline_us=1;
++        CONNS[0]=Some(c);sweep_timewait(2);
++        assert!(CONNS[0].is_some());
++        CONNS=saved;crate::net::lock::net_unlock();
++    }
++}
++
++#[test]
++fn zero_window_send_does_not_postpone_outstanding_data_retries() {
++    unsafe {
++        crate::net::lock::net_lock();
++        let saved=CONNS;
++        let mut c=test_conn();c.state=2;c.peer_window=0;c.send_len=1;c.last_tx_us=123;c.retries=2;
++        CONNS[0]=Some(c);
++        assert_eq!(super::sock::tcp_send(0,b"more"),Ok(0));
++        assert_eq!(CONNS[0].unwrap().last_tx_us,123);
++        assert_eq!(CONNS[0].unwrap().retries,2);
++        CONNS=saved;crate::net::lock::net_unlock();
++    }
++}
+diff --git a/kernel/src/net/tests.rs b/kernel/src/net/tests.rs
+index 663a8da..9040d54 100644
+--- a/kernel/src/net/tests.rs
++++ b/kernel/src/net/tests.rs
+@@ -180,6 +180,8 @@ fn test_net_tables_concurrent_exclusivity() {
+             match alloc_conn() {
+                 Some(cid) => {
+                     CONNS[cid] = Some(crate::net::tcp::conn::TcpConn {
++                        owner_pid:0,
++            iface: 0, listener: usize::MAX, last_tx_us: 0, retries: 0, peer_window: 2048,
+                         state: 2,
+                         src_port: 5100 + cids_used as u16,
+                         dst_ip: [10, 9, 9, 1],
+diff --git a/kernel/src/net/udp.rs b/kernel/src/net/udp.rs
+index 522cbda..fe31ea3 100644
+--- a/kernel/src/net/udp.rs
++++ b/kernel/src/net/udp.rs
+@@ -1,9 +1,10 @@
+ pub mod rx;
++pub mod datagram;
+ pub mod sock;
+ 
+ pub use rx::handle_udp;
+ pub use sock::{
+-    udp_bind, udp_bind_connect, udp_close, udp_recv, udp_send, udp_send_bound, udp_sendto,
++    udp_bind, udp_bind_any, udp_send_from, udp_bind_connect, udp_close, udp_recv, udp_recv_from, udp_send, udp_send_bound, udp_sendto,
+ };
+ 
+ pub const UDP_HLEN: usize = 8;
+@@ -12,17 +13,17 @@ pub const UDP_BUF_SIZE: usize = 2048;
+ 
+ #[derive(Clone, Copy)]
+ pub struct UdpSocket {
++    pub owner_pid:u32,
++    pub iface: usize,
+     pub local_port: u16,
+     pub remote_ip: [u8; 4],
+     pub remote_port: u16,
+     pub bound: bool,
+     pub connected: bool,
+-    pub recv_buf: [u8; UDP_BUF_SIZE],
+-    pub recv_len: usize,
+-    pub recv_head: usize,
++    pub datagrams: datagram::DatagramQueue,
+ }
+ 
+-static mut UDP_SOCKS: [Option<UdpSocket>; MAX_UDP_SOCKS] = [const { None }; MAX_UDP_SOCKS];
++pub(super) static mut UDP_SOCKS: [Option<UdpSocket>; MAX_UDP_SOCKS] = [const { None }; MAX_UDP_SOCKS];
+ static mut NEXT_UDP_PORT: u16 = 50000;
+ 
+ fn alloc_udp_sock() -> Option<usize> {
+@@ -39,3 +40,14 @@ fn next_udp_port() -> u16 {
+         p
+     }
+ }
++
++/// # Safety
++/// Caller holds net_lock; interface reconfiguration invalidates old sockets.
++pub unsafe fn clear_interface(index: usize) {
++    // SAFETY: socket table is exclusively accessed under the network lock.
++    unsafe {
++        for slot in UDP_SOCKS.iter_mut() {
++            if slot.as_ref().is_some_and(|socket| socket.iface == index) { *slot = None; }
++        }
++    }
++}
+diff --git a/kernel/src/net/udp/rx.rs b/kernel/src/net/udp/rx.rs
+index 725f262..d155f9a 100644
+--- a/kernel/src/net/udp/rx.rs
++++ b/kernel/src/net/udp/rx.rs
+@@ -1,70 +1,32 @@
+-use crate::net::lock::{net_lock, net_unlock};
+-
+-use super::{UDP_BUF_SIZE, UDP_HLEN, UDP_SOCKS};
++use super::{UDP_HLEN, UDP_SOCKS, datagram::Peer};
++use crate::net::{checksum::pseudo_checksum, lock::{net_lock,net_unlock}};
+ 
+ /// # Safety
+-///
+-/// RX path: iterates the lock-free UDP_SOCKS table and mutates matched
+-/// slots; must run under the net single-poller contract (no concurrent
+-/// socket syscalls on another hart).
++/// RX context selected under net_lock; this function revalidates all lengths.
+ pub unsafe fn handle_udp(frame: &[u8], ip_start: usize) {
+-    // SAFETY: offsets bounds-checked before indexing; ring writes masked % UDP_BUF_SIZE; table access under net_lock() (recursive: net::poll already holds it on this hart).
++    if frame.len() < ip_start + 20 { return; }
++    let header_len = usize::from(frame[ip_start] & 15) * 4;
++    let offset = ip_start + header_len;
++    if header_len < 20 || frame.len() < offset + UDP_HLEN { return; }
++    let length = usize::from(u16::from_be_bytes([frame[offset+4],frame[offset+5]]));
++    if length < UDP_HLEN || offset + length > frame.len() { return; }
++    let source: [u8;4] = frame[ip_start+12..ip_start+16].try_into().unwrap_or([0;4]);
++    let destination: [u8;4] = frame[ip_start+16..ip_start+20].try_into().unwrap_or([0;4]);
++    if frame[offset+6..offset+8] != [0,0] && pseudo_checksum(&source,&destination,17,&frame[offset..offset+length]) != 0 { return; }
++    let source_port = u16::from_be_bytes([frame[offset],frame[offset+1]]);
++    let destination_port = u16::from_be_bytes([frame[offset+2],frame[offset+3]]);
++    // SAFETY: all packet slices validated above; socket updates under net_lock.
+     unsafe {
+         net_lock();
+-        handle_udp_inner(frame, ip_start);
+-        net_unlock();
+-    }
+-}
+-
+-/// Lock-free body of handle_udp (caller holds net_lock).
+-///
+-/// # Safety
+-///
+-/// Caller contract: net_lock() held.
+-unsafe fn handle_udp_inner(frame: &[u8], ip_start: usize) {
+-    // SAFETY: offsets bounds-checked before indexing; ring writes masked % UDP_BUF_SIZE; net_lock() held by caller.
+-    unsafe {
+-        let ip_ihl = (frame[ip_start] & 0x0F) as usize * 4;
+-        let udp_start = ip_start + ip_ihl;
+-        if udp_start + UDP_HLEN > frame.len() {
+-            return;
+-        }
+-        // UDP header (RFC 768): bytes 0-1 = source port, bytes 2-3 =
+-        // destination port — this used to be read backwards (dst_port from
+-        // the source-port field and vice versa), so `sock.local_port ==
+-        // dst_port` below compared against the *sender's* port and never
+-        // matched a bound socket. Confirmed live: a DHCP OFFER reply
+-        // (src=67 server, dst=68 client) logged as dst_port=67/src_port=68
+-        // before this fix — exactly the swapped fields — so the client's
+-        // port-68 socket never received it and dhcp_discover() always fell
+-        // back to hardcoded defaults despite the reply reaching the RX ring
+-        // intact (see OnyxKernel/todo.md).
+-        let src_port = u16::from_be_bytes([frame[udp_start], frame[udp_start + 1]]);
+-        let dst_port = u16::from_be_bytes([frame[udp_start + 2], frame[udp_start + 3]]);
+-        let udp_len = u16::from_be_bytes([frame[udp_start + 4], frame[udp_start + 5]]) as usize;
+-        let payload_start = udp_start + UDP_HLEN;
+-        let payload_len = udp_len
+-            .saturating_sub(UDP_HLEN)
+-            .min(frame.len().saturating_sub(payload_start));
+-        for sock in UDP_SOCKS.iter_mut().flatten() {
+-            if sock.bound && sock.local_port == dst_port {
+-                let n = payload_len.min(UDP_BUF_SIZE - sock.recv_len);
+-                let start = (sock.recv_head + sock.recv_len) % UDP_BUF_SIZE;
+-                for j in 0..n {
+-                    sock.recv_buf[(start + j) % UDP_BUF_SIZE] = frame[payload_start + j];
+-                }
+-                sock.recv_len += n;
+-                if !sock.connected {
+-                    sock.remote_ip = [
+-                        frame[ip_start + 12],
+-                        frame[ip_start + 13],
+-                        frame[ip_start + 14],
+-                        frame[ip_start + 15],
+-                    ];
+-                    sock.remote_port = src_port;
+-                }
+-                return;
++        let iface = crate::drivers::virtio_net::active_device();
++        for socket in UDP_SOCKS.iter_mut().flatten() {
++            if socket.bound && socket.local_port == destination_port
++                && (socket.iface == iface || socket.iface == usize::MAX)
++                && (!socket.connected || (socket.remote_ip == source && socket.remote_port == source_port)) {
++                socket.datagrams.push(&frame[offset+UDP_HLEN..offset+length],Peer{ip:source,port:source_port,iface:iface as u8});
++                break;
+             }
+         }
++        net_unlock();
+     }
+ }
+diff --git a/kernel/src/net/udp/sock.rs b/kernel/src/net/udp/sock.rs
+index 4f95b1d..29d09f5 100644
+--- a/kernel/src/net/udp/sock.rs
++++ b/kernel/src/net/udp/sock.rs
+@@ -5,7 +5,7 @@ use crate::net::lock::{net_lock, net_unlock};
+ use onyx_core::errno::{Errno, KResult};
+ 
+ use super::{
+-    MAX_UDP_SOCKS, UDP_BUF_SIZE, UDP_HLEN, UDP_SOCKS, UdpSocket, alloc_udp_sock, next_udp_port,
++    MAX_UDP_SOCKS, UDP_HLEN, UDP_SOCKS, UdpSocket, alloc_udp_sock, next_udp_port,
+ };
+ 
+ /// # Safety
+@@ -17,7 +17,7 @@ pub unsafe fn udp_send(socket: &mut UdpSocket, data: &[u8]) -> KResult<()> {
+     // SAFETY: segment vector sized UDP_HLEN + data.len(); socket access is through the exclusive &mut above; net_lock() guards G_IP reads and the nested ip::send_packet (recursive, same hart).
+     unsafe {
+         net_lock();
+-        let result = send_packet_inner(socket, data);
++        let result = send_endpoint(socket.local_port, socket.remote_ip, socket.remote_port, socket.connected, data);
+         net_unlock();
+         result
+     }
+@@ -28,24 +28,28 @@ pub unsafe fn udp_send(socket: &mut UdpSocket, data: &[u8]) -> KResult<()> {
+ /// # Safety
+ ///
+ /// Caller contract: net_lock() held; `socket` exclusively owned by the caller.
+-unsafe fn send_packet_inner(socket: &mut UdpSocket, data: &[u8]) -> KResult<()> {
++unsafe fn send_endpoint(local_port: u16, remote_ip: [u8;4], remote_port: u16, connected: bool, data: &[u8]) -> KResult<()> {
+     // SAFETY: segment vector sized UDP_HLEN + data.len(); socket access is through the exclusive &mut above.
+     unsafe {
+-        if !socket.connected {
++        if !connected || data.len() > 1472 {
+             return Err(Errno::Inval);
+         }
+         let udp_len = UDP_HLEN + data.len();
+         let mut seg = alloc::vec![0u8; udp_len];
+-        seg[0..2].copy_from_slice(&socket.local_port.to_be_bytes());
+-        seg[2..4].copy_from_slice(&socket.remote_port.to_be_bytes());
++        seg[0..2].copy_from_slice(&local_port.to_be_bytes());
++        seg[2..4].copy_from_slice(&remote_port.to_be_bytes());
+         seg[4..6].copy_from_slice(&(udp_len as u16).to_be_bytes());
+         seg[6..8].copy_from_slice(&[0, 0]);
+         if !data.is_empty() {
+             seg[UDP_HLEN..].copy_from_slice(data);
+         }
+-        let cksum = pseudo_checksum(&G_IP, &socket.remote_ip, ip::IP_PROTO_UDP, &seg);
+-        seg[6..8].copy_from_slice(&cksum.to_be_bytes());
+-        ip::send_packet(socket.remote_ip, ip::IP_PROTO_UDP, &seg)
++        let iface = crate::net::config::route(remote_ip).ok_or(Errno::Io)?;
++        crate::net::config::with_interface(iface, || {
++            let cksum = pseudo_checksum(&G_IP, &remote_ip, ip::IP_PROTO_UDP, &seg);
++            let cksum=if cksum==0 {u16::MAX} else {cksum};
++            seg[6..8].copy_from_slice(&cksum.to_be_bytes());
++            ip::send_packet(remote_ip, ip::IP_PROTO_UDP, &seg)
++        })
+     }
+ }
+ 
+@@ -59,19 +63,20 @@ pub unsafe fn udp_bind(port: u16) -> KResult<usize> {
+     // (net sync fix, todo P1 #4).
+     unsafe {
+         net_lock();
++        if UDP_SOCKS.iter().flatten().any(|socket|socket.bound && socket.local_port==port) { net_unlock();return Err(Errno::Busy); }
+         let idx = alloc_udp_sock().ok_or_else(|| {
+             net_unlock();
+             Errno::Busy
+         })?;
+         UDP_SOCKS[idx] = Some(UdpSocket {
++            owner_pid:0,
++            iface: crate::drivers::virtio_net::active_device(),
+             local_port: port,
+             remote_ip: [0; 4],
+             remote_port: 0,
+             bound: true,
+             connected: false,
+-            recv_buf: [0; UDP_BUF_SIZE],
+-            recv_len: 0,
+-            recv_head: 0,
++            datagrams: super::datagram::DatagramQueue::EMPTY,
+         });
+         net_unlock();
+         Ok(idx)
+@@ -106,29 +111,16 @@ unsafe fn udp_sendto_inner(dst_ip: [u8; 4], dst_port: u16, data: &[u8]) -> KResu
+         let idx = alloc_udp_sock().ok_or(Errno::Busy)?;
+         let port = next_udp_port();
+         UDP_SOCKS[idx] = Some(UdpSocket {
++            owner_pid:0,
++            iface: crate::net::config::route(dst_ip).ok_or(Errno::Io)?,
+             local_port: port,
+             remote_ip: dst_ip,
+             remote_port: dst_port,
+             bound: false,
+             connected: true,
+-            recv_buf: [0; UDP_BUF_SIZE],
+-            recv_len: 0,
+-            recv_head: 0,
++            datagrams: super::datagram::DatagramQueue::EMPTY,
+         });
+-        let result = {
+-            // Audit fix (🟡 #7): replace `UDP_SOCKS[idx].as_mut().unwrap()`.
+-            // alloc_udp_sock() returned Some(idx) moments ago, but a
+-            // malicious caller racing on another core could close the slot
+-            // between alloc and here. The unwrap would then panic the
+-            // kernel. Match-and-fail-closed is safe.
+-            let sock = match UDP_SOCKS[idx].as_mut() {
+-                Some(s) => s,
+-                None => {
+-                    return Err(Errno::Inval);
+-                }
+-            };
+-            udp_send(sock, data)
+-        };
++        let result = send_endpoint(port, dst_ip, dst_port, true, data);
+         UDP_SOCKS[idx] = None;
+         result
+     }
+@@ -161,16 +153,20 @@ pub unsafe fn udp_bind_connect(dst_ip: [u8; 4], dst_port: u16) -> KResult<usize>
+                 return Err(Errno::Busy);
+             }
+         };
++        let iface = match crate::net::config::route(dst_ip) {
++            Some(iface) => iface,
++            None => { net_unlock(); return Err(Errno::Io); }
++        };
+         let port = next_udp_port();
+         UDP_SOCKS[idx] = Some(UdpSocket {
++            owner_pid:0,
++            iface,
+             local_port: port,
+             remote_ip: dst_ip,
+             remote_port: dst_port,
+             bound: true,
+             connected: true,
+-            recv_buf: [0; UDP_BUF_SIZE],
+-            recv_len: 0,
+-            recv_head: 0,
++            datagrams: super::datagram::DatagramQueue::EMPTY,
+         });
+         net_unlock();
+         Ok(idx)
+@@ -190,8 +186,9 @@ pub unsafe fn udp_send_bound(sock_idx: usize, data: &[u8]) -> KResult<()> {
+             return Err(Errno::Inval);
+         }
+         net_lock();
+-        let result = match UDP_SOCKS[sock_idx].as_mut() {
+-            Some(s) => send_packet_inner(s, data),
++        let endpoint = UDP_SOCKS[sock_idx].as_ref().map(|s| (s.local_port,s.remote_ip,s.remote_port,s.connected));
++        let result = match endpoint {
++            Some((local,remote,port,connected)) => send_endpoint(local,remote,port,connected,data),
+             None => Err(Errno::Inval),
+         };
+         net_unlock();
+@@ -205,40 +202,23 @@ pub unsafe fn udp_send_bound(sock_idx: usize, data: &[u8]) -> KResult<()> {
+ /// own that slot exclusively -- a concurrent udp_recv or handle_udp on
+ /// the same slot from another hart would race the ring indices.
+ pub unsafe fn udp_recv(sock_idx: usize, buf: &mut [u8]) -> KResult<usize> {
+-    // SAFETY: valid-slot contract on sock_idx; ring reads masked % UDP_BUF_SIZE; head/len advanced under net_lock() so a concurrent poll/handle_udp cannot race the ring (net sync fix, todo P1 #4).
+-    unsafe {
+-        net_lock();
+-        let r = udp_recv_inner(sock_idx, buf);
+-        net_unlock();
+-        r
+-    }
++    // SAFETY: delegated to the bounded, locked datagram receive operation.
++    unsafe { udp_recv_from(sock_idx,buf).map(|(n,_)|n) }
+ }
+ 
+-/// Lock-free body of udp_recv (caller holds net_lock).
+-///
+ /// # Safety
+-///
+-/// Caller contract: net_lock() held; valid slot index.
+-unsafe fn udp_recv_inner(sock_idx: usize, buf: &mut [u8]) -> KResult<usize> {
+-    // SAFETY: sock_idx is bounds-checked below (a hostile/out-of-range
+-    // index returns EINVAL instead of indexing out of the slot table and
+-    // panicking the kernel); ring reads masked % UDP_BUF_SIZE; caller holds
+-    // net_lock().
++/// Kernel context; caller supplies a valid writable slice.
++pub unsafe fn udp_recv_from(sock_idx: usize, buf: &mut [u8]) -> KResult<(usize,super::datagram::Peer)> {
++    // SAFETY: bounds checked; socket table and queue are serialized by net_lock.
+     unsafe {
+-        if sock_idx >= MAX_UDP_SOCKS {
+-            return Err(Errno::Inval);
+-        }
+-        let sock = UDP_SOCKS[sock_idx].as_mut().ok_or(Errno::Inval)?;
+-        if sock.recv_len == 0 {
+-            return Err(Errno::NoEnt);
+-        }
+-        let n = buf.len().min(sock.recv_len);
+-        for (i, dst) in buf[..n].iter_mut().enumerate() {
+-            *dst = sock.recv_buf[(sock.recv_head + i) % UDP_BUF_SIZE];
+-        }
+-        sock.recv_head = (sock.recv_head + n) % UDP_BUF_SIZE;
+-        sock.recv_len -= n;
+-        Ok(n)
++        if sock_idx >= MAX_UDP_SOCKS { return Err(Errno::Inval); }
++        net_lock();
++        let result = match UDP_SOCKS[sock_idx].as_mut() {
++            Some(socket) => socket.datagrams.pop(buf).ok_or(Errno::NoEnt),
++            None => Err(Errno::Inval),
++        };
++        net_unlock();
++        result
+     }
+ }
+ 
+@@ -258,3 +238,22 @@ pub unsafe fn udp_close(sock_idx: usize) {
+         net_unlock();
+     }
+ }
++
++/// # Safety
++/// Privileged caller; binds a wildcard listener across all configured interfaces.
++pub unsafe fn udp_bind_any(port:u16) -> KResult<usize> {
++    // SAFETY: outer lock makes bind and wildcard marking atomic.
++    unsafe { net_lock();let result=udp_bind(port);if let Ok(id)=result { if let Some(socket)=UDP_SOCKS[id].as_mut() { socket.iface=usize::MAX; } } net_unlock();result }
++}
++
++/// # Safety
++/// Caller provides a valid payload; socket table and TX are serialized.
++pub unsafe fn udp_send_from(id:usize, peer:super::datagram::Peer, data:&[u8]) -> KResult<()> {
++    // SAFETY: bounds-checked socket lookup, endpoint copied before reentrant IO.
++    unsafe {
++        net_lock();
++        let local=UDP_SOCKS.get(id).and_then(Option::as_ref).map(|socket|socket.local_port);
++        let result=match local { Some(port)=>send_endpoint(port,peer.ip,peer.port,true,data), None=>Err(Errno::Inval) };
++        net_unlock();result
++    }
++}
+diff --git a/kernel/src/proc/lifecycle/exit.rs b/kernel/src/proc/lifecycle/exit.rs
+index 853be67..2f473ce 100644
+--- a/kernel/src/proc/lifecycle/exit.rs
++++ b/kernel/src/proc/lifecycle/exit.rs
+@@ -19,6 +19,9 @@ pub unsafe fn exit(pid: u32, code: i32) {
+     // (B4 fix, comment below); by_pid takes proc_list_lock itself and the
+     // returned node stays valid until reaped.
+     unsafe {
++        // No PROC/RQ lock held here: reclaim process-owned network slots
++        // before teardown so interrupted servers do not retain ports.
++        crate::net::ownership::close_process(pid);
+         if let Some(p) = by_pid(pid) {
+             // Normal exit (code == 0) is INFO, not ERR: logging every clean
+             // shutdown as "[ERR] proc: pid N exited code=0" (e.g. after
+diff --git a/kernel/src/srv/main/mod.rs b/kernel/src/srv/main/mod.rs
+index 7c4966c..bbc04f2 100644
+--- a/kernel/src/srv/main/mod.rs
++++ b/kernel/src/srv/main/mod.rs
+@@ -86,6 +86,7 @@ pub unsafe fn kmain(hartid: usize, fdt_addr: usize) -> ! {
+         }
+         crate::net::init(ip, gw, mask);
+         crate::net::G_DNS = dns;
++        crate::net::config::seed_boot_interface();
+         crate::kinf!(
+             "net",
+             "IP=%d.%d.%d.%d gw=%d.%d.%d.%d mask=%d.%d.%d.%d dns=%d.%d.%d.%d MAC=%x:%x:%x:%x:%x:%x",
+diff --git a/kernel/src/syscall/abi.rs b/kernel/src/syscall/abi.rs
+index 673daff..c833e1f 100644
+--- a/kernel/src/syscall/abi.rs
++++ b/kernel/src/syscall/abi.rs
+@@ -100,6 +100,18 @@ pub const SYS_umask: u64 = 88; // umask(new_mask) -> old_mask
+ pub const SYS_net_resolve: u64 = 89; // net_resolve(name_ptr, ip_out_ptr) -> 0 or -errno
+ pub const SYS_reboot: u64 = 90; // reboot(cmd) — 0 = power off, 1 = restart; never returns
+ 
++// OC2R guest demo extension: one explicitly selected network interface.
++pub const SYS_net_config: u64 = 91;
++pub const SYS_udp_bind: u64 = 92;
++pub const SYS_udp_sendto: u64 = 93;
++pub const SYS_udp_recv: u64 = 94;
++pub const SYS_udp_close: u64 = 95;
++pub const SYS_net_listen: u64 = 100;
++pub const SYS_net_accept: u64 = 101;
++pub const SYS_net_unlisten: u64 = 102;
++pub const SYS_udp_recvfrom: u64 = 103;
++pub const SYS_udp_sendfrom: u64 = 104;
++
+ // ── Flags / constants used by syscalls ─────────────────────────────────
+ 
+ pub const SEEK_SET: u32 = 0;
+diff --git a/kernel/src/syscall/handler/acl.rs b/kernel/src/syscall/handler/acl.rs
+index 20a1ca2..3a4ae63 100644
+--- a/kernel/src/syscall/handler/acl.rs
++++ b/kernel/src/syscall/handler/acl.rs
+@@ -105,6 +105,8 @@ fn syscall_allowed_uid(nr: u64, ring: u8, uid: Option<u32>) -> bool {
+         // default-deny stays — shadow protection is not weakened; only
+         // root's ability to modify its own system files from its own shell
+         // changes.
++        SYS_net_config | SYS_udp_bind | SYS_udp_sendto | SYS_udp_recv | SYS_udp_close | SYS_net_listen | SYS_net_accept | SYS_net_unlisten | SYS_udp_recvfrom | SYS_udp_sendfrom =>
++            ring <= proc::PROC_RING_ROOT || uid.is_some_and(|u| u == 0),
+         SYS_create | SYS_rename => ring <= proc::PROC_RING_ROOT || uid.is_some_and(|u| u == 0),
+         _ => false,
+     }
+@@ -203,9 +205,19 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn test_network_admin_calls_require_root() {
++        for nr in [SYS_net_config, SYS_udp_bind, SYS_udp_sendto, SYS_udp_recv, SYS_udp_close, SYS_net_listen, SYS_net_accept, SYS_net_unlisten, SYS_udp_recvfrom, SYS_udp_sendfrom] {
++            assert!(!syscall_allowed_uid(nr, PROC_RING_USER, Some(1000)));
++            assert!(!syscall_allowed_uid(nr, PROC_RING_USER, None));
++            assert!(syscall_allowed_uid(nr, PROC_RING_USER, Some(0)));
++            assert!(syscall_allowed_uid(nr, PROC_RING_ROOT, Some(1000)));
++        }
++    }
++
+     #[test]
+     fn test_unknown_syscall_numbers_denied() {
+-        for &nr in &[0u64, 91, 200, u64::MAX] {
++        for &nr in &[0u64, 96, 200, u64::MAX] {
+             for ring in [PROC_RING_KERNEL, PROC_RING_ROOT, PROC_RING_USER] {
+                 assert!(!syscall_allowed_uid(nr, ring, Some(0)));
+             }
+diff --git a/kernel/src/syscall/handler/dispatch.rs b/kernel/src/syscall/handler/dispatch.rs
+index 8068704..c13d6ea 100644
+--- a/kernel/src/syscall/handler/dispatch.rs
++++ b/kernel/src/syscall/handler/dispatch.rs
+@@ -185,6 +185,16 @@ pub unsafe fn handle(tf: &mut TrapFrame) -> i64 {
+             SYS_net_send => crate::syscall::net_sys::sys_net_send(a0, a1, a2),
+             SYS_net_recv => crate::syscall::net_sys::sys_net_recv(a0, a1, a2),
+             SYS_net_close => crate::syscall::net_sys::sys_net_close(a0),
++            SYS_net_listen => crate::syscall::net_server_sys::sys_net_listen(a0),
++            SYS_net_accept => crate::syscall::net_server_sys::sys_net_accept(a0),
++            SYS_net_unlisten => crate::syscall::net_server_sys::sys_net_unlisten(a0),
++            SYS_udp_recvfrom => crate::syscall::net_server_sys::sys_udp_recvfrom(a0,a1,a2,a3),
++            SYS_udp_sendfrom => crate::syscall::net_server_sys::sys_udp_sendfrom(a0,a1,a2,a3),
++            SYS_net_config => crate::syscall::net_admin_sys::sys_net_config(a0, a1),
++            SYS_udp_bind => crate::syscall::net_admin_sys::sys_udp_bind(a0),
++            SYS_udp_sendto => crate::syscall::net_admin_sys::sys_udp_sendto(a0, a1, a2, a3),
++            SYS_udp_recv => crate::syscall::net_admin_sys::sys_udp_recv(a0, a1, a2),
++            SYS_udp_close => crate::syscall::net_admin_sys::sys_udp_close(a0),
+             SYS_net_resolve => crate::syscall::net_sys::sys_net_resolve(a0, a1),
+             SYS_chown => crate::syscall::fs_sys3::sys_chown(a0, a1 as u32, a2 as u32),
+             SYS_fchown => crate::syscall::fs_sys3::sys_fchown(a0, a1 as u32, a2 as u32),
+diff --git a/kernel/src/syscall/mod.rs b/kernel/src/syscall/mod.rs
+index bc6e73a..709feb7 100644
+--- a/kernel/src/syscall/mod.rs
++++ b/kernel/src/syscall/mod.rs
+@@ -18,6 +18,8 @@ pub mod handler;
+ pub mod input_sys;
+ pub mod ipc_sys;
+ pub mod net_sys;
++mod net_admin_sys;
++mod net_server_sys;
+ pub mod poll_sys;
+ pub mod power_sys;
+ pub mod proc_sys;
+diff --git a/kernel/src/syscall/net_sys.rs b/kernel/src/syscall/net_sys.rs
+index a04fb6a..2979412 100644
+--- a/kernel/src/syscall/net_sys.rs
++++ b/kernel/src/syscall/net_sys.rs
+@@ -30,7 +30,7 @@ pub(super) unsafe fn sys_net_connect(ip_ptr: u64, port: u64) -> i64 {
+         if vmm::copy_from_user(proc::current().root_pa, ip.as_mut_ptr(), ip_ptr, 4).is_err() {
+             return Errno::Fault.as_i64();
+         }
+-        match net::tcp_connect(ip, port as u16) {
++        match net::ownership::tcp_connect(ip, port as u16,proc::current_pid()) {
+             Ok(cid) => cid as i64,
+             Err(e) => e.as_i64(),
+         }
+@@ -55,7 +55,8 @@ pub(super) unsafe fn sys_net_send(conn_id: u64, buf: u64, len: u64) -> i64 {
+             return Errno::Fault.as_i64();
+         }
+         let data = core::slice::from_raw_parts(buf as *const u8, len as usize);
+-        match net::tcp_send(conn_id as usize, data) {
++        net::poll();
++        match net::ownership::tcp(conn_id as usize,proc::current_pid(),||net::tcp_send(conn_id as usize, data)) {
+             Ok(n) => n as i64,
+             Err(e) => e.as_i64(),
+         }
+@@ -79,7 +80,7 @@ pub(super) unsafe fn sys_net_recv(conn_id: u64, buf: u64, len: u64) -> i64 {
+         }
+         let data = core::slice::from_raw_parts_mut(buf as *mut u8, len as usize);
+         net::poll();
+-        match net::tcp_recv(conn_id as usize, data) {
++        match net::ownership::tcp(conn_id as usize,proc::current_pid(),||net::tcp_recv(conn_id as usize, data)) {
+             Ok(n) => n as i64,
+             Err(e) => e.as_i64(),
+         }
+@@ -107,7 +108,7 @@ pub(super) unsafe fn sys_net_resolve(name_ptr: u64, ip_out: u64) -> i64 {
+         if vmm::check_user_range(proc::current().root_pa, ip_out, 4, true).is_err() {
+             return Errno::Fault.as_i64();
+         }
+-        let dns_server = net::G_DNS;
++        let dns_server = net::config::dns_server();
+         match net::dns_resolve(&name_buf[..name_len], dns_server) {
+             Ok(ip) => match vmm::copy_to_user(proc::current().root_pa, ip_out, ip.as_ptr(), 4) {
+                 Ok(()) => 0,
+@@ -129,7 +130,6 @@ pub(super) unsafe fn sys_net_close(conn_id: u64) -> i64 {
+         if conn_id >= 8 {
+             return Errno::Inval.as_i64();
+         }
+-        net::tcp_close(conn_id as usize);
+-        0
++        net::ownership::tcp(conn_id as usize,proc::current_pid(),||{net::tcp_close(conn_id as usize);Ok(())}).map_or_else(Errno::as_i64,|()|0)
+     }
+ }
+diff --git a/kernel/src/net/config.rs b/kernel/src/net/config.rs
+new file mode 100644
+index 0000000..219cc88
+--- /dev/null
++++ b/kernel/src/net/config.rs
+@@ -0,0 +1,206 @@
++//! Per-interface IPv4 configuration and longest-prefix routing.
++use super::lock::{net_lock, net_unlock};
++use crate::drivers::virtio_net;
++use onyx_core::errno::{Errno, KResult};
++
++pub const CONFIG_SIZE: usize = 32;
++#[derive(Clone, Copy)]
++pub struct Interface {
++    pub ip: [u8; 4],
++    pub gateway: [u8; 4],
++    pub mask: [u8; 4],
++    pub dns: [u8; 4],
++    pub enabled: bool,
++}
++const EMPTY: Interface = Interface { ip: [0;4], gateway: [0;4], mask: [0;4], dns: [0;4], enabled: false };
++static mut INTERFACES: [Interface; 8] = [EMPTY; 8];
++static mut DEFAULT: usize = 0;
++
++pub fn choose_route(dst: [u8; 4], interfaces: &[Interface], default: usize) -> Option<usize> {
++    let destination = u32::from_be_bytes(dst);
++    let direct = interfaces.iter().enumerate().filter(|(_, iface)| {
++        let mask = u32::from_be_bytes(iface.mask);
++        iface.enabled && mask != 0 && (u32::from_be_bytes(iface.ip) & mask) == (destination & mask)
++    }).max_by_key(|(_, iface)| u32::from_be_bytes(iface.mask).count_ones()).map(|(index, _)| index);
++    direct.or_else(|| interfaces.get(default).filter(|iface| iface.enabled && iface.gateway != [0;4]).map(|_| default))
++}
++
++pub fn validate(data: &[u8; CONFIG_SIZE]) -> KResult<()> {
++    let ip = &data[4..8];
++    let mask = u32::from_be_bytes(data[12..16].try_into().map_err(|_| Errno::Inval)?);
++    if ip[0] == 0 || ip[0] >= 224 || mask == 0 || mask.leading_ones() != mask.count_ones() {
++        return Err(Errno::Inval);
++    }
++    Ok(())
++}
++
++/// # Safety
++/// Boot-hart-only initialization after the first DHCP exchange.
++pub unsafe fn seed_boot_interface() {
++    // SAFETY: before secondary harts/processes run; all config buffers initialized.
++    unsafe {
++        if virtio_net::device_count() > 0 {
++            INTERFACES[virtio_net::active_device()] = Interface {
++                ip: super::G_IP, gateway: super::G_GW, mask: super::G_MASK, dns: super::G_DNS, enabled: true,
++            };
++            let _ = crate::srv::event::add_timer(10_000, heartbeat);
++        }
++    }
++}
++
++fn heartbeat() {
++    if virtio_net::present() {
++        // SAFETY: timer callback runs in kernel context, SIE clear; poll serializes IO.
++        unsafe { super::poll(); }
++    }
++}
++
++pub fn is_configured(index: usize) -> bool {
++    // SAFETY: callers hold net_lock or run during single-hart boot.
++    unsafe { index < 8 && INTERFACES[index].enabled }
++}
++
++/// # Safety
++/// Caller holds net_lock, excluding packet IO on another hart.
++pub unsafe fn activate(index: usize) -> KResult<()> {
++    // SAFETY: driver validates index; its array and config array have the same cap.
++    unsafe {
++        virtio_net::select_device(index)?;
++        if INTERFACES[index].enabled {
++            let iface = INTERFACES[index];
++            super::G_IP = iface.ip;
++            super::G_GW = iface.gateway;
++            super::G_MASK = iface.mask;
++            super::G_DNS = iface.dns;
++        }
++        Ok(())
++    }
++}
++
++/// Run a network operation in one interface's context, restoring the caller's.
++/// # Safety
++/// Kernel context with interrupts clear; operation must not reconfigure cards.
++pub unsafe fn with_interface<T>(index: usize, operation: impl FnOnce() -> KResult<T>) -> KResult<T> {
++    // SAFETY: recursive network lock serializes both context switches and IO.
++    unsafe {
++        net_lock();
++        let previous = virtio_net::active_device();
++        let result = match activate(index) { Ok(()) => operation(), Err(error) => Err(error) };
++        let _ = activate(previous);
++        net_unlock();
++        result
++    }
++}
++
++pub fn dns_server() -> [u8; 4] {
++    // SAFETY: the configured default interface is read under the network lock.
++    unsafe { net_lock(); let dns = INTERFACES[DEFAULT].dns; net_unlock(); dns }
++}
++
++pub fn route(dst: [u8; 4]) -> Option<usize> {
++    // SAFETY: called under net_lock; DHCP before configuration uses the first card.
++    unsafe {
++        if dst == [255;4] || !INTERFACES.iter().any(|iface| iface.enabled) {
++            return Some(virtio_net::active_device());
++        }
++        choose_route(dst, &INTERFACES, DEFAULT)
++    }
++}
++
++/// # Safety
++/// Privileged syscall; all packet IO is serialized while addresses change.
++pub unsafe fn apply(data: &[u8; CONFIG_SIZE]) -> KResult<()> {
++    validate(data)?;
++    let index = u32::from_le_bytes(data[..4].try_into().map_err(|_| Errno::Inval)?) as usize;
++    // SAFETY: bounded interface table, serialized by the recursive network lock.
++    unsafe {
++        net_lock();
++        if index >= virtio_net::device_count() || index >= 8 { net_unlock(); return Err(Errno::Inval); }
++        super::tcp::clear_interface(index);
++        super::udp::clear_interface(index);
++        super::eth::clear_arp_cache();
++        INTERFACES[index] = Interface {
++            ip: data[4..8].try_into().map_err(|_| Errno::Inval)?,
++            gateway: data[8..12].try_into().map_err(|_| Errno::Inval)?,
++            mask: data[12..16].try_into().map_err(|_| Errno::Inval)?,
++            dns: data[16..20].try_into().map_err(|_| Errno::Inval)?,
++            enabled: true,
++        };
++        if INTERFACES[index].gateway != [0;4] { DEFAULT = index; }
++        let result = activate(index);
++        net_unlock();
++        result
++    }
++}
++
++pub fn snapshot(index: Option<usize>) -> KResult<[u8; CONFIG_SIZE]> {
++    // SAFETY: all runtime config writers take the same lock; index checked.
++    unsafe {
++        net_lock();
++        let index = index.unwrap_or(virtio_net::active_device());
++        if index >= virtio_net::device_count() || index >= 8 { net_unlock(); return Err(Errno::Inval); }
++        let iface = INTERFACES[index];
++        let mut data = [0; CONFIG_SIZE];
++        data[..4].copy_from_slice(&(index as u32).to_le_bytes());
++        data[4..8].copy_from_slice(&iface.ip);
++        data[8..12].copy_from_slice(&iface.gateway);
++        data[12..16].copy_from_slice(&iface.mask);
++        data[16..20].copy_from_slice(&iface.dns);
++        data[20..26].copy_from_slice(&virtio_net::device_mac(index)?);
++        data[26] = u8::from(iface.enabled);
++        data[27] = DEFAULT as u8;
++        data[28..32].copy_from_slice(&(virtio_net::device_count() as u32).to_le_bytes());
++        net_unlock();
++        Ok(data)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn longest_prefix_lan_route_beats_internet_default() {
++        let interfaces = [
++            Interface { ip: [10, 0, 2, 15], gateway: [10, 0, 2, 2], mask: [255, 255, 255, 0], dns: [203,0,113,9], enabled: true },
++            Interface { ip: [192, 168, 50, 1], gateway: [0;4], mask: [255,255,255,0], dns: [0;4], enabled: true },
++        ];
++        assert_eq!(choose_route([192,168,50,2], &interfaces, 0), Some(1));
++        assert_eq!(choose_route([203,0,113,7], &interfaces, 0), Some(0));
++        assert_eq!(choose_route([10,0,2,2], &interfaces, 0), Some(0));
++        assert_eq!(choose_route([203,0,113,8], &interfaces, 1), None);
++    }
++
++    #[test]
++    fn udp_connect_without_route_releases_network_lock() {
++        // SAFETY: test takes the same global lock as runtime writers and restores config.
++        unsafe {
++            net_lock();
++            let saved = INTERFACES;
++            let default = DEFAULT;
++            INTERFACES = [EMPTY;8];
++            INTERFACES[0] = Interface {ip:[192,168,50,1],mask:[255,255,255,0],enabled:true,..EMPTY};
++            DEFAULT = 0;
++            let result = super::super::udp::udp_bind_connect([203,0,113,8],53);
++            let depth = super::super::lock::owned_depth();
++            INTERFACES = saved;
++            DEFAULT = default;
++            net_unlock();
++            assert_eq!(result, Err(Errno::Io));
++            assert_eq!(depth, 1);
++        }
++    }
++
++    #[test]
++    fn accepts_private_static_ip_and_contiguous_mask() {
++        let mut config = [0; CONFIG_SIZE];
++        config[4..8].copy_from_slice(&[192, 168, 50, 1]);
++        config[12..16].copy_from_slice(&[255, 255, 255, 0]);
++        assert!(validate(&config).is_ok());
++        config[12..16].copy_from_slice(&[255, 0, 255, 0]);
++        assert!(validate(&config).is_err());
++        config[12..16].copy_from_slice(&[255, 255, 255, 0]);
++        config[4] = 224;
++        assert!(validate(&config).is_err());
++    }
++}
+diff --git a/kernel/src/net/ownership.rs b/kernel/src/net/ownership.rs
+new file mode 100644
+index 0000000..a3a0a06
+--- /dev/null
++++ b/kernel/src/net/ownership.rs
+@@ -0,0 +1,110 @@
++//! User-visible numeric socket IDs are process-owned capabilities. Check and
++//! operate under one NET lock, excluding close/reallocation between both steps.
++use onyx_core::errno::{Errno,KResult};
++use super::{lock::{net_lock,net_unlock},tcp,udp};
++fn serialized<T>(operation:impl FnOnce()->KResult<T>)->KResult<T> {
++    net_lock();let result=operation();net_unlock();result
++}
++pub fn tcp_connect(ip:[u8;4],port:u16,pid:u32)->KResult<usize> {
++    serialized(||unsafe {let id=tcp::tcp_connect(ip,port)?;tcp::conn::CONNS[id].as_mut().ok_or(Errno::Inval)?.owner_pid=pid;Ok(id)})
++}
++pub fn tcp<T>(id:usize,pid:u32,operation:impl FnOnce()->KResult<T>)->KResult<T> {
++    serialized(||unsafe {
++        match tcp::conn::CONNS.get(id).and_then(Option::as_ref) {
++            Some(socket) if socket.owner_pid==pid=>operation(),
++            Some(_)=>Err(Errno::Perm),None=>Err(Errno::Inval),
++        }
++    })
++}
++pub fn listen(port:u16,pid:u32)->KResult<usize> {
++    serialized(||unsafe {let id=tcp::listen::listen(port)?;tcp::listen::set_owner(id,pid);Ok(id)})
++}
++pub fn listener<T>(id:usize,pid:u32,operation:impl FnOnce()->KResult<T>)->KResult<T> {
++    serialized(||unsafe {match tcp::listen::owner(id) {
++        Some(owner) if owner==pid=>operation(),Some(_)=>Err(Errno::Perm),None=>Err(Errno::Inval),
++    }})
++}
++pub fn bind_udp(port:u16,pid:u32)->KResult<usize> {
++    serialized(||unsafe {let id=udp::udp_bind_any(port)?;udp::UDP_SOCKS[id].as_mut().ok_or(Errno::Inval)?.owner_pid=pid;Ok(id)})
++}
++pub fn udp<T>(id:usize,pid:u32,operation:impl FnOnce()->KResult<T>)->KResult<T> {
++    serialized(||unsafe {match udp::UDP_SOCKS.get(id).and_then(Option::as_ref) {
++        Some(socket) if socket.owner_pid==pid=>operation(),Some(_)=>Err(Errno::Perm),None=>Err(Errno::Inval),
++    }})
++}
++/// Called before process teardown takes process-list or runqueue locks.
++/// Bounded table cleanup does no packet IO, allocation or scheduler work.
++pub fn close_process(pid:u32) {
++    net_lock();
++    unsafe {
++        for id in 0..8 { if tcp::listen::owner(id)==Some(pid) {let _=tcp::listen::close(id);} }
++        for slot in tcp::conn::CONNS.iter_mut() {
++            if slot.as_ref().is_some_and(|s|s.owner_pid==pid) {
++                if let Some(socket)=slot.as_mut().filter(|s|s.state==3 || s.state==4) {
++                    socket.owner_pid=0; // Kernel retains bounded FIN/data retries after close.
++                } else {*slot=None;}
++            }
++        }
++        for slot in udp::UDP_SOCKS.iter_mut() {if slot.as_ref().is_some_and(|s|s.owner_pid==pid) {*slot=None;} }
++    }
++    net_unlock();
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn process_exit_releases_owned_ports_and_preserves_other_processes() {
++        unsafe {
++            net_lock();let saved=tcp::conn::CONNS;
++            let listener_id=listen(34570,41).unwrap();
++            let udp_id=bind_udp(34571,41).unwrap();
++            let mut own:tcp::conn::TcpConn=core::mem::zeroed();own.owner_pid=41;own.listener=usize::MAX;
++            let mut foreign=own;foreign.owner_pid=42;
++            tcp::conn::CONNS[0]=Some(own);tcp::conn::CONNS[1]=Some(foreign);
++            close_process(41);
++            assert!(tcp::conn::CONNS[0].is_none());
++            assert_eq!(tcp::conn::CONNS[1].unwrap().owner_pid,42);
++            assert_eq!(listener(listener_id,41,||Ok(1)),Err(Errno::Inval));
++            assert_eq!(udp(udp_id,41,||Ok(1)),Err(Errno::Inval));
++            let new_listener=listen(34570,42).unwrap();let new_udp=bind_udp(34571,42).unwrap();
++            tcp::listen::close(new_listener).unwrap();super::super::udp::udp_close(new_udp);
++            tcp::conn::CONNS=saved;net_unlock();
++        }
++    }
++    #[test]
++    fn accepted_connections_inherit_listener_process_owner() {
++        unsafe {
++            net_lock();let saved=tcp::conn::CONNS;
++            let id=listen(34569,41).unwrap();
++            tcp::listen::incoming_syn(34569,[192,168,50,2],40001,100,2048);
++            let cid=tcp::conn::CONNS.iter().position(|slot|slot.as_ref().is_some_and(|c|c.listener==id)).unwrap();
++            assert_eq!(tcp::conn::CONNS[cid].unwrap().owner_pid,41);
++            tcp::conn::CONNS[cid].as_mut().unwrap().state=2;
++            tcp::listen::established(cid,id);
++            assert_eq!(listener(id,42,||tcp::listen::accept(id)),Err(Errno::Perm));
++            assert_eq!(listener(id,41,||tcp::listen::accept(id)),Ok(cid));
++            assert_eq!(tcp(cid,42,||Ok(7)),Err(Errno::Perm));
++            assert_eq!(tcp(cid,41,||Ok(7)),Ok(7));
++            tcp::listen::close(id).unwrap();tcp::conn::CONNS=saved;net_unlock();
++        }
++    }
++    #[test]
++    fn sockets_and_listeners_reject_other_processes() {
++        let listener_id=listen(34567,41).unwrap();
++        assert_eq!(listener(listener_id,42,||Ok(7)),Err(Errno::Perm));
++        assert_eq!(listener(listener_id,41,||Ok(7)),Ok(7));
++        listener(listener_id,41,||tcp::listen::close(listener_id)).unwrap();
++        let udp_id=bind_udp(34568,41).unwrap();
++        assert_eq!(udp(udp_id,42,||Ok(7)),Err(Errno::Perm));
++        assert_eq!(udp(udp_id,41,||Ok(7)),Ok(7));
++        udp(udp_id,41,||{unsafe {super::super::udp::udp_close(udp_id)};Ok(())}).unwrap();
++        unsafe {
++            net_lock();let saved=tcp::conn::CONNS;
++            let mut connection:tcp::conn::TcpConn=core::mem::zeroed();connection.owner_pid=41;
++            tcp::conn::CONNS[0]=Some(connection);
++            assert_eq!(tcp(0,42,||Ok(7)),Err(Errno::Perm));
++            assert_eq!(tcp(0,41,||Ok(7)),Ok(7));
++            tcp::conn::CONNS=saved;net_unlock();
++        }
++    }
++}
+diff --git a/kernel/src/net/ipv4.rs b/kernel/src/net/ipv4.rs
+new file mode 100644
+index 0000000..11c399f
+--- /dev/null
++++ b/kernel/src/net/ipv4.rs
+@@ -0,0 +1,69 @@
++//! Bounds/checksum validation shared by IPv4 protocol dispatch and host tests.
++use super::{checksum::checksum, eth::ETH_HLEN};
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct Packet {
++    pub header_len: usize,
++    pub total_len: usize,
++    pub protocol: u8,
++    pub source: [u8; 4],
++    pub destination: [u8; 4],
++}
++
++pub fn parse(frame: &[u8]) -> Option<Packet> {
++    let ip = frame.get(ETH_HLEN..)?;
++    if ip.len() < 20 || ip[0] >> 4 != 4 || ip[8] == 0 { return None; }
++    let header_len = usize::from(ip[0] & 15) * 4;
++    let total_len = usize::from(u16::from_be_bytes([ip[2], ip[3]]));
++    if header_len < 20 || total_len < header_len || total_len > ip.len() { return None; }
++    if checksum(ip.get(..header_len)?) != 0 { return None; }
++    // Fragment reassembly is deliberately unsupported: reject MF or a nonzero offset.
++    if u16::from_be_bytes([ip[6], ip[7]]) & 0x3fff != 0 { return None; }
++    Some(Packet {
++        header_len, total_len, protocol: ip[9],
++        source: ip[12..16].try_into().ok()?, destination: ip[16..20].try_into().ok()?,
++    })
++}
++
++pub fn echo_reply(request: &[u8]) -> Option<alloc::vec::Vec<u8>> {
++    if request.len() < 8 || request[0] != 8 || request[1] != 0 || checksum(request) != 0 { return None; }
++    let mut reply = request.to_vec();
++    reply[0] = 0;
++    reply[2..4].fill(0);
++    let sum = checksum(&reply);
++    reply[2..4].copy_from_slice(&sum.to_be_bytes());
++    Some(reply)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    fn packet() -> [u8; 42] {
++        let mut frame = [0u8; 42];
++        let ip = &mut frame[ETH_HLEN..];
++        ip[0] = 0x45; ip[2..4].copy_from_slice(&28u16.to_be_bytes()); ip[8] = 64; ip[9] = 1;
++        let sum = checksum(&ip[..20]); ip[10..12].copy_from_slice(&sum.to_be_bytes());
++        frame
++    }
++    #[test]
++    fn rejects_truncation_bad_header_checksum_and_fragments() {
++        let frame = packet();
++        assert!(parse(&frame).is_some());
++        assert!(parse(&frame[..41]).is_none());
++        let mut bad = frame; bad[ETH_HLEN+8] ^= 1; assert!(parse(&bad).is_none());
++        let mut fragment = frame; fragment[ETH_HLEN+6] = 0x20;
++        fragment[ETH_HLEN+10..ETH_HLEN+12].fill(0);
++        let sum = checksum(&fragment[ETH_HLEN..ETH_HLEN+20]);
++        fragment[ETH_HLEN+10..ETH_HLEN+12].copy_from_slice(&sum.to_be_bytes());
++        assert!(parse(&fragment).is_none());
++    }
++    #[test]
++    fn echo_reply_preserves_exact_payload_and_reverses_type() {
++        let mut request = alloc::vec![8,0,0,0,0x12,0x34,0,1,b'p',b'i',b'n',b'g'];
++        let sum = checksum(&request); request[2..4].copy_from_slice(&sum.to_be_bytes());
++        let reply = echo_reply(&request).expect("valid echo");
++        assert_eq!(reply.len(), request.len());
++        assert_eq!(reply[0],0); assert_eq!(&reply[4..],&request[4..]); assert_eq!(checksum(&reply),0);
++        request[8] ^= 1; assert!(echo_reply(&request).is_none());
++    }
++}
+diff --git a/kernel/src/net/tcp/listen.rs b/kernel/src/net/tcp/listen.rs
+new file mode 100644
+index 0000000..14152e0
+--- /dev/null
++++ b/kernel/src/net/tcp/listen.rs
+@@ -0,0 +1,108 @@
++//! Bounded passive TCP listeners; accepted connections use the ordinary socket API.
++use super::{conn::{CONNS, TcpConn, BUF_SIZE, alloc_conn, alloc_local_port, send_tcp_seg}, state::{SYN,ACK}};
++use crate::net::lock::{net_lock,net_unlock};
++use onyx_core::errno::{Errno,KResult};
++const LISTENERS_MAX: usize = 8;
++const BACKLOG: usize = 4;
++#[derive(Clone,Copy)]
++struct Listener { owner_pid:u32, port:u16, queue:[usize;BACKLOG], first:usize, len:usize }
++static mut LISTENERS: [Option<Listener>;LISTENERS_MAX] = [None;LISTENERS_MAX];
++
++pub fn listen(port:u16) -> KResult<usize> {
++    if port == 0 { return Err(Errno::Inval); }
++    // SAFETY: all listener and socket operations are serialized by net_lock.
++    unsafe {
++        net_lock();
++        let result = if LISTENERS.iter().flatten().any(|l|l.port==port) { Err(Errno::Busy) }
++        else if let Some(index) = LISTENERS.iter().position(Option::is_none) {
++            LISTENERS[index] = Some(Listener{owner_pid:0,port,queue:[0;BACKLOG],first:0,len:0}); Ok(index)
++        } else { Err(Errno::Busy) };
++        net_unlock(); result
++    }
++}
++
++pub fn accept(index:usize) -> KResult<usize> {
++    // SAFETY: bounds checked; all listener and socket operations under net_lock.
++    unsafe {
++        net_lock();
++        let result = match LISTENERS.get_mut(index).and_then(Option::as_mut) {
++            Some(listener) if listener.len>0 => {
++                let cid=listener.queue[listener.first]; listener.first=(listener.first+1)%BACKLOG; listener.len-=1;
++                if let Some(connection)=CONNS[cid].as_mut().filter(|c|c.listener==index && (c.state==2 || c.state==7)) { connection.listener=usize::MAX; Ok(cid) } else { Err(Errno::NoEnt) }
++            },
++            Some(_) => Err(Errno::NoEnt), None => Err(Errno::Inval),
++        };
++        net_unlock(); result
++    }
++}
++
++pub fn close(index:usize) -> KResult<()> {
++    // SAFETY: bounds checked; accepted sockets have detached listener ownership.
++    unsafe {
++        net_lock();
++        let result=if index<LISTENERS_MAX && LISTENERS[index].is_some() {
++            LISTENERS[index]=None;
++            for slot in CONNS.iter_mut() { if slot.as_ref().is_some_and(|c|c.listener==index) { *slot=None; } }
++            Ok(())
++        } else { Err(Errno::Inval) };
++        net_unlock();result
++    }
++}
++
++/// # Safety
++/// RX context under net_lock, after checksum and packet bounds validation.
++pub(in crate::net) unsafe fn incoming_syn(port:u16, remote:[u8;4], remote_port:u16, seq:u32, window:u16) {
++    // SAFETY: all indices checked or allocated from bounded tables.
++    unsafe {
++        let Some(parent)=LISTENERS.iter().position(|l|l.as_ref().is_some_and(|l|l.port==port)) else {return;};
++        if CONNS.iter().flatten().filter(|c|c.listener==parent).count()>=BACKLOG {return;}
++        let Some(cid)=alloc_conn() else {return;};
++        let isn=u32::from(alloc_local_port()).wrapping_mul(65537).wrapping_add(seq);
++        let mut connection=TcpConn {
++            owner_pid:LISTENERS[parent].as_ref().map(|l|l.owner_pid).unwrap_or(0),
++            iface:crate::drivers::virtio_net::active_device(), listener:parent,
++            state:5,src_port:port,dst_ip:remote,dst_port:remote_port,
++            snd_una:isn,snd_nxt:isn.wrapping_add(1),rcv_nxt:seq.wrapping_add(1),
++            send_buf:[0;BUF_SIZE],send_len:0,recv_buf:[0;BUF_SIZE],recv_len:0,recv_head:0,
++            peer_fin:false,tw_deadline_us:super::conn::now_us()+5_000_000,last_tx_us:super::conn::now_us(),retries:0,peer_window:window,
++        };
++        CONNS[cid]=Some(connection);
++        connection.snd_nxt=isn;
++        send_tcp_seg(&connection,SYN|ACK,&[]);
++    }
++}
++
++/// # Safety
++/// Caller holds net_lock; invoked once after passive handshake completion.
++pub(in crate::net) unsafe fn established(cid:usize, parent:usize) {
++    // SAFETY: parent and cid validated; listener may have closed while SYN was pending.
++    unsafe {
++        if let Some(listener)=LISTENERS.get_mut(parent).and_then(Option::as_mut) {
++            if listener.len<BACKLOG {
++                listener.queue[(listener.first+listener.len)%BACKLOG]=cid;listener.len+=1;return;
++            }
++        }
++        CONNS[cid]=None;
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn listeners_reject_conflicting_ports_and_accept_is_nonblocking() {
++        let index=listen(23456).expect("listen");
++        assert_eq!(listen(23456),Err(Errno::Busy));
++        assert_eq!(accept(index),Err(Errno::NoEnt));
++        close(index).expect("close");
++        assert_eq!(accept(index),Err(Errno::Inval));
++    }
++}
++
++// Caller holds NET lock, serializing claims/checks with listener reuse.
++pub(in crate::net) unsafe fn set_owner(index:usize,pid:u32) {
++    unsafe { if let Some(listener)=LISTENERS.get_mut(index).and_then(Option::as_mut) {listener.owner_pid=pid;} }
++}
++pub(in crate::net) unsafe fn owner(index:usize)->Option<u32> {
++    unsafe { LISTENERS.get(index).and_then(Option::as_ref).map(|l|l.owner_pid) }
++}
+diff --git a/kernel/src/net/tcp/retry.rs b/kernel/src/net/tcp/retry.rs
+new file mode 100644
+index 0000000..1245284
+--- /dev/null
++++ b/kernel/src/net/tcp/retry.rs
+@@ -0,0 +1,52 @@
++//! Bounded retransmission plans; no unbounded retry loops or retained socket borrows.
++use super::{conn::{TcpConn,CONNS,send_tcp_seg},state::{SYN,ACK,FIN}};
++const RETRY_US:u64=1_000_000;
++const RETRIES:u8=5;
++#[derive(Debug,Clone,Copy,PartialEq,Eq)]
++pub(super) struct Plan {pub flags:u8,pub sequence:u32,pub length:usize}
++pub(super) fn plan(connection:&mut TcpConn,now:u64)->Option<Plan>{
++    let action=match connection.state{
++        1=>Plan{flags:SYN,sequence:connection.snd_una,length:0},
++        5=>Plan{flags:SYN|ACK,sequence:connection.snd_una,length:0},
++        2 | 7 if connection.send_len>0=>Plan{flags:0x18,sequence:connection.snd_una,length:connection.send_len.min(536)},
++        3 if connection.send_len>0=>Plan{flags:0x18,sequence:connection.snd_una,length:connection.send_len.min(536)},
++        3=>Plan{flags:FIN|ACK,sequence:connection.snd_nxt.wrapping_sub(1),length:0},
++        _=>return None,
++    };
++    if now.wrapping_sub(connection.last_tx_us)<RETRY_US{return None;}
++    if connection.retries>=RETRIES{connection.state=6;connection.tw_deadline_us=now+5_000_000;return None;}
++    connection.retries+=1;connection.last_tx_us=now;Some(action)
++}
++static mut RUNNING:bool=false;
++/// # Safety
++/// Caller holds net_lock; avoids recursively retrying while TX resolves ARP.
++pub(super) unsafe fn tick(now:u64){
++    // SAFETY: network lock serializes static/table access; copies before reentrant TX.
++    unsafe{
++        if RUNNING{return;}RUNNING=true;
++        for cid in 0..super::conn::MAX_CONNS{
++            if let Some(mut connection)=CONNS[cid]{
++                let action=plan(&mut connection,now);CONNS[cid]=Some(connection);
++                if let Some(action)=action{
++                    connection.snd_nxt=action.sequence;
++                    let _=send_tcp_seg(&connection,action.flags,&connection.send_buf[..action.length]);
++                }
++            }
++        }
++        RUNNING=false;
++    }
++}
++#[cfg(test)]
++mod tests{
++    use super::*;
++    #[test]
++    fn retransmits_only_unacknowledged_prefix_and_eventually_reports_failure(){
++        let mut connection=super::super::tests::test_conn();connection.state=2;
++        connection.snd_una=100;connection.snd_nxt=103;connection.send_len=3;
++        assert_eq!(plan(&mut connection,999_999),None);
++        for retry in 1..=5{
++            assert_eq!(plan(&mut connection,retry*RETRY_US),Some(Plan{flags:0x18,sequence:100,length:3}));
++        }
++        assert_eq!(plan(&mut connection,6*RETRY_US),None);assert_eq!(connection.state,6);
++    }
++}
+diff --git a/kernel/src/net/udp/datagram.rs b/kernel/src/net/udp/datagram.rs
+new file mode 100644
+index 0000000..677860f
+--- /dev/null
++++ b/kernel/src/net/udp/datagram.rs
+@@ -0,0 +1,51 @@
++//! Bounded UDP datagram queue: packet boundaries and sender metadata survive RX.
++pub const QUEUE_BYTES: usize = 2048;
++const QUEUE_MESSAGES: usize = 8;
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct Peer { pub ip: [u8;4], pub port: u16, pub iface: u8 }
++const EMPTY_PEER: Peer = Peer { ip: [0;4], port: 0, iface: 0 };
++#[derive(Clone, Copy)]
++pub struct DatagramQueue {
++    bytes: [u8; QUEUE_BYTES], head: usize, used: usize,
++    lengths: [usize; QUEUE_MESSAGES], peers: [Peer; QUEUE_MESSAGES], first: usize, messages: usize,
++}
++impl DatagramQueue {
++    pub const EMPTY: Self = Self { bytes: [0;QUEUE_BYTES], head:0, used:0, lengths:[0;QUEUE_MESSAGES], peers:[EMPTY_PEER;QUEUE_MESSAGES], first:0, messages:0 };
++    pub fn push(&mut self, payload: &[u8], peer: Peer) -> bool {
++        if payload.len() > QUEUE_BYTES - self.used || self.messages == QUEUE_MESSAGES { return false; }
++        let tail = (self.head + self.used) % QUEUE_BYTES;
++        for (index, byte) in payload.iter().enumerate() { self.bytes[(tail+index)%QUEUE_BYTES] = *byte; }
++        let slot = (self.first+self.messages)%QUEUE_MESSAGES;
++        self.lengths[slot] = payload.len(); self.peers[slot] = peer;
++        self.used += payload.len(); self.messages += 1; true
++    }
++    pub fn pop(&mut self, target: &mut [u8]) -> Option<(usize, Peer)> {
++        if self.messages == 0 { return None; }
++        let length = self.lengths[self.first]; let n = length.min(target.len());
++        for (index, byte) in target[..n].iter_mut().enumerate() { *byte = self.bytes[(self.head+index)%QUEUE_BYTES]; }
++        let peer = self.peers[self.first];
++        self.head = (self.head+length)%QUEUE_BYTES; self.used -= length;
++        self.first = (self.first+1)%QUEUE_MESSAGES; self.messages -= 1;
++        Some((n,peer))
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn messages_do_not_merge_and_truncation_discards_only_one_datagram() {
++        let mut q = DatagramQueue::EMPTY; let p = Peer { ip:[192,168,50,2],port:123,iface:1 };
++        assert!(q.push(b"hello",p)); assert!(q.push(b"world",p));
++        let mut small = [0;2]; assert_eq!(q.pop(&mut small),Some((2,p))); assert_eq!(&small,b"he");
++        let mut out = [0;8]; assert_eq!(q.pop(&mut out),Some((5,p))); assert_eq!(&out[..5],b"world");
++        assert_eq!(q.pop(&mut out),None);
++    }
++    #[test]
++    fn empty_datagrams_and_full_queue_are_bounded() {
++        let mut q = DatagramQueue::EMPTY;
++        for _ in 0..8 { assert!(q.push(&[],EMPTY_PEER)); }
++        assert!(!q.push(b"overflow",EMPTY_PEER));
++        assert_eq!(q.pop(&mut []),Some((0,EMPTY_PEER)));
++        assert!(q.push(b"ok",EMPTY_PEER));
++    }
++}
+diff --git a/kernel/src/syscall/net_admin_sys.rs b/kernel/src/syscall/net_admin_sys.rs
+new file mode 100644
+index 0000000..807d6a5
+--- /dev/null
++++ b/kernel/src/syscall/net_admin_sys.rs
+@@ -0,0 +1,96 @@
++//! Privileged static-IP/interface selection and bounded UDP demo operations.
++use super::handler::user_ptr_ok;
++use crate::{mm::vmm, net, proc};
++use onyx_core::errno::{Errno, KResult};
++
++unsafe fn copyin<const N: usize>(ptr: u64) -> KResult<[u8; N]> {
++    if !user_ptr_ok(ptr, N as u64) {
++        return Err(Errno::Inval);
++    }
++    let mut data = [0; N];
++    // SAFETY: helper validates each user page before copying into the sized array.
++    unsafe { vmm::copy_from_user(proc::current().root_pa, data.as_mut_ptr(), ptr, N)?; }
++    Ok(data)
++}
++
++unsafe fn copyout(ptr: u64, data: &[u8]) -> KResult<()> {
++    if !user_ptr_ok(ptr, data.len() as u64) {
++        return Err(Errno::Inval);
++    }
++    // SAFETY: helper validates writable user pages; source is a valid slice.
++    unsafe { vmm::copy_to_user(proc::current().root_pa, ptr, data.as_ptr(), data.len()) }
++}
++
++/// # Safety
++/// Privileged syscall path; copy helpers validate all user pointers.
++pub(super) unsafe fn sys_net_config(ptr: u64, write: u64) -> i64 {
++    // SAFETY: copyin/out validate buffers and config::apply serializes IO.
++    let result = unsafe {
++        match write {
++            0 => net::config::snapshot(None).and_then(|data| copyout(ptr, &data)),
++            2 => copyin::<4>(ptr).and_then(|index| net::config::snapshot(Some(u32::from_le_bytes(index) as usize))).and_then(|data| copyout(ptr, &data)),
++            1 => copyin::<{ net::config::CONFIG_SIZE }>(ptr).and_then(|data| net::config::apply(&data)),
++            _ => Err(Errno::Inval),
++        }
++    };
++    result.map_or_else(Errno::as_i64, |()| 0)
++}
++
++/// # Safety
++/// Privileged syscall path, no user pointers.
++pub(super) unsafe fn sys_udp_bind(port: u64) -> i64 {
++    if port == 0 || port > u16::MAX as u64 {
++        return Errno::Inval.as_i64();
++    }
++    // SAFETY: udp_bind serializes the bounded socket table.
++    unsafe { net::ownership::bind_udp(port as u16,proc::current_pid()).map_or_else(Errno::as_i64, |id| id as i64) }
++}
++
++/// # Safety
++/// Privileged syscall path; data length is bounded and pointers are copied.
++pub(super) unsafe fn sys_udp_sendto(ip: u64, port: u64, ptr: u64, len: u64) -> i64 {
++    if port == 0 || port > u16::MAX as u64 || len == 0 || len > 1024 || !user_ptr_ok(ptr, len) {
++        return Errno::Inval.as_i64();
++    }
++    // SAFETY: both user buffers are copied through page-validating helpers;
++    // the kernel payload is bounded to one small Ethernet datagram.
++    unsafe {
++        let ip = match copyin::<4>(ip) {
++            Ok(ip) => ip,
++            Err(error) => return error.as_i64(),
++        };
++        let mut data = [0; 1024];
++        if let Err(error) = vmm::copy_from_user(proc::current().root_pa, data.as_mut_ptr(), ptr, len as usize) {
++            return error.as_i64();
++        }
++        net::udp::udp_sendto(ip, port as u16, &data[..len as usize]).map_or_else(Errno::as_i64, |()| len as i64)
++    }
++}
++
++/// # Safety
++/// Privileged syscall path; sized kernel staging buffer prevents user faults.
++pub(super) unsafe fn sys_udp_recv(id: u64, ptr: u64, len: u64) -> i64 {
++    if id >= net::udp::MAX_UDP_SOCKS as u64 || len == 0 || len > 1024 || !user_ptr_ok(ptr, len) {
++        return Errno::Inval.as_i64();
++    }
++    // SAFETY: poll/recv serialize rings; copyout validates writable user pages.
++    unsafe {
++        let mut data = [0; 1024];
++        net::poll();
++        match net::ownership::udp(id as usize,proc::current_pid(),||net::udp::udp_recv(id as usize, &mut data[..len as usize])) {
++            Ok(n) => copyout(ptr, &data[..n]).map_or_else(Errno::as_i64, |()| n as i64),
++            Err(Errno::NoEnt) => 0,
++            Err(error) => error.as_i64(),
++        }
++    }
++}
++
++/// # Safety
++/// Privileged syscall path; socket index is checked before closing.
++pub(super) unsafe fn sys_udp_close(id: u64) -> i64 {
++    if id >= net::udp::MAX_UDP_SOCKS as u64 {
++        return Errno::Inval.as_i64();
++    }
++    // SAFETY: udp_close serializes the bounded slot table.
++    unsafe { net::ownership::udp(id as usize,proc::current_pid(),||{net::udp::udp_close(id as usize);Ok(())}).map_or_else(Errno::as_i64,|()|0) }
++}
+diff --git a/kernel/src/syscall/net_server_sys.rs b/kernel/src/syscall/net_server_sys.rs
+new file mode 100644
+index 0000000..1294871
+--- /dev/null
++++ b/kernel/src/syscall/net_server_sys.rs
+@@ -0,0 +1,55 @@
++//! Privileged server socket operations for the bounded guest TCP/UDP stack.
++use super::handler::user_ptr_ok;
++use crate::{mm::vmm,net,proc};
++use onyx_core::errno::Errno;
++
++/// # Safety
++/// Syscall context. No user pointers; port is checked before conversion.
++pub(super) unsafe fn sys_net_listen(port:u64) -> i64 {
++    if port==0 || port>65535 {return Errno::Inval.as_i64();}
++    net::ownership::listen(port as u16,proc::current_pid()).map_or_else(Errno::as_i64,|id|id as i64)
++}
++/// # Safety
++/// Syscall context; accept is nonblocking after a bounded poll pass.
++pub(super) unsafe fn sys_net_accept(id:u64) -> i64 {
++    // SAFETY: net::poll serializes RX and accept validates the listener ID.
++    unsafe { net::poll(); }
++    net::ownership::listener(id as usize,proc::current_pid(),||net::tcp::listen::accept(id as usize)).map_or_else(Errno::as_i64,|cid|cid as i64)
++}
++/// # Safety
++/// Syscall context; the listener API validates the ID.
++pub(super) unsafe fn sys_net_unlisten(id:u64) -> i64 {
++    net::ownership::listener(id as usize,proc::current_pid(),||net::tcp::listen::close(id as usize)).map_or_else(Errno::as_i64,|()|0)
++}
++/// # Safety
++/// Syscall context; all user ranges are validated before dequeueing a datagram.
++pub(super) unsafe fn sys_udp_recvfrom(id:u64,ptr:u64,len:u64,peer:u64) -> i64 {
++    if id>=8 || len>1472 || !user_ptr_ok(ptr,len) || !user_ptr_ok(peer,8) {return Errno::Inval.as_i64();}
++    // SAFETY: writable pages checked first, copy helpers revalidate each page.
++    unsafe {
++        let root=proc::current().root_pa;
++        if vmm::check_user_range(root,ptr,len,true).is_err() || vmm::check_user_range(root,peer,8,true).is_err() {return Errno::Fault.as_i64();}
++        let mut buffer=[0;1472];net::poll();
++        match net::ownership::udp(id as usize,proc::current_pid(),||net::udp::udp_recv_from(id as usize,&mut buffer[..len as usize])) {
++            Ok((n,remote))=>{
++                let mut metadata=[0;8];metadata[..4].copy_from_slice(&remote.ip);
++                metadata[4..6].copy_from_slice(&remote.port.to_be_bytes());metadata[6]=remote.iface;
++                if vmm::copy_to_user(root,ptr,buffer.as_ptr(),n).is_err() || vmm::copy_to_user(root,peer,metadata.as_ptr(),8).is_err() {return Errno::Fault.as_i64();}
++                n as i64
++            },Err(error)=>error.as_i64(),
++        }
++    }
++}
++/// # Safety
++/// Syscall context; endpoint and bounded data copied from checked user pages.
++pub(super) unsafe fn sys_udp_sendfrom(id:u64,peer:u64,ptr:u64,len:u64) -> i64 {
++    if id>=8 || len>1472 || !user_ptr_ok(ptr,len) || !user_ptr_ok(peer,8) {return Errno::Inval.as_i64();}
++    // SAFETY: copy helpers validate each user page before reading.
++    unsafe {
++        let root=proc::current().root_pa;let mut metadata=[0;8];let mut data=[0;1472];
++        if vmm::copy_from_user(root,metadata.as_mut_ptr(),peer,8).is_err() || vmm::copy_from_user(root,data.as_mut_ptr(),ptr,len as usize).is_err() {return Errno::Fault.as_i64();}
++        let remote=net::udp::datagram::Peer {ip:metadata[..4].try_into().unwrap_or([0;4]),port:u16::from_be_bytes([metadata[4],metadata[5]]),iface:metadata[6]};
++        if remote.port==0 {return Errno::Inval.as_i64();}
++        net::ownership::udp(id as usize,proc::current_pid(),||net::udp::udp_send_from(id as usize,remote,&data[..len as usize])).map_or_else(Errno::as_i64,|()|len as i64)
++    }
++}

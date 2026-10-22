@@ -22,7 +22,12 @@ import net.minecraft.world.level.material.MapColor;
 public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
         implements EntityBlock {
     public RedstoneInterfaceBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -68,6 +73,22 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
     }
 
     @Override
+    //? if >=26.1 {
+    /*public void neighborChanged(
+            BlockState state,
+            Level worldIn,
+            BlockPos pos,
+            Block blockIn,
+            @javax.annotation.Nullable net.minecraft.world.level.redstone.Orientation orientation,
+            boolean isMoving) {
+        // Minecraft 26.x reports no source position, so every side is checked.
+        if (worldIn.getBlockEntity(pos) instanceof final RedstoneInterfaceBlockEntity ribe) {
+            for (final Direction side : Direction.values()) {
+                ribe.neighborChanged(pos.relative(side));
+            }
+        }
+    }
+    *///?} else {
     public void neighborChanged(
             BlockState state,
             Level worldIn,
@@ -81,6 +102,7 @@ public final class RedstoneInterfaceBlock extends HorizontalDirectionalBlock
             ribe.neighborChanged(fromPos);
         }
     }
+    //?}
 
     // EntityBlock
 

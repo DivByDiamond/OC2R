@@ -7,8 +7,10 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -21,6 +23,7 @@ public final class RobotSerializer {
     private static final String INVENTORY_TAG_NAME = "inventory";
     private static final String SELECTED_SLOT_TAG_NAME = "selected_slot";
     private static final String ENERGY_TAG_NAME = "energy";
+    private static final String ORIGIN_TAG_NAME = "origin";
 
     public static void save(final Robot robot, final CompoundTag tag) {
         final var provider = robot.registryAccess();
@@ -38,10 +41,25 @@ public final class RobotSerializer {
                 INVENTORY_TAG_NAME,
                 robot.getRobotInventory().getInventory().serializeNBT(provider));
         tag.putByte(SELECTED_SLOT_TAG_NAME, (byte) robot.getSelectedSlot());
+        if (robot.getOrigin() != null) {
+            GlobalPos.CODEC
+                    .encodeStart(NbtOps.INSTANCE, robot.getOrigin())
+                    .result()
+                    .ifPresent(originTag -> tag.put(ORIGIN_TAG_NAME, originTag));
+        }
     }
 
     public static void load(final Robot robot, final CompoundTag tag) {
         final var provider = robot.registryAccess();
+        //? if >=26.1 {
+        /*robot.getVirtualMachine().deserialize(tag.getCompoundOrEmpty(STATE_TAG_NAME));
+        NBTSerialization.deserialize(tag.getCompoundOrEmpty(TERMINAL_TAG_NAME), robot.getTerminal());
+        robot.getMovementController().deserialize(tag.getCompoundOrEmpty(COMMAND_PROCESSOR_TAG_NAME));
+        robot.getRobotInventory().deserializeBusElement(tag.getCompoundOrEmpty(BUS_ELEMENT_TAG_NAME));
+        robot.getRobotInventory().loadItems(provider, tag.getCompoundOrEmpty(ITEMS_TAG_NAME));
+        robot.getRobotInventory().loadDevices(provider, tag.getCompoundOrEmpty(DEVICES_TAG_NAME));
+        robot.getEnergyStorage().deserializeNBT(provider, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
+        *///?} else {
         robot.getVirtualMachine().deserialize(tag.getCompound(STATE_TAG_NAME));
         NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), robot.getTerminal());
         robot.getMovementController().deserialize(tag.getCompound(COMMAND_PROCESSOR_TAG_NAME));
@@ -49,10 +67,21 @@ public final class RobotSerializer {
         robot.getRobotInventory().loadItems(provider, tag.getCompound(ITEMS_TAG_NAME));
         robot.getRobotInventory().loadDevices(provider, tag.getCompound(DEVICES_TAG_NAME));
         robot.getEnergyStorage().deserializeNBT(provider, tag.getCompound(ENERGY_TAG_NAME));
+        //?}
         robot.getRobotInventory()
                 .getInventory()
+                //? if >=26.1 {
+                /*.deserializeNBT(provider, tag.getCompoundOrEmpty(INVENTORY_TAG_NAME));
+        robot.setSelectedSlot(tag.getByteOr(SELECTED_SLOT_TAG_NAME, (byte) 0));
+                *///?} else {
                 .deserializeNBT(provider, tag.getCompound(INVENTORY_TAG_NAME));
         robot.setSelectedSlot(tag.getByte(SELECTED_SLOT_TAG_NAME));
+                //?}
+        robot.setOrigin(
+                GlobalPos.CODEC
+                        .parse(NbtOps.INSTANCE, NBTUtils.getChildTag(tag, ORIGIN_TAG_NAME))
+                        .result()
+                        .orElse(null));
     }
 
     public static void exportToItemStack(final Robot robot, final ItemStack stack) {
@@ -81,7 +110,11 @@ public final class RobotSerializer {
             robot.getRobotInventory().loadItems(provider, itemsTag);
             robot.getRobotInventory()
                     .getInventory()
+                    //? if >=26.1 {
+                    /*.deserializeNBT(provider, itemsTag.getCompoundOrEmpty(INVENTORY_TAG_NAME));
+                    *///?} else {
                     .deserializeNBT(provider, itemsTag.getCompound(INVENTORY_TAG_NAME));
+                    //?}
         }
         robot.getEnergyStorage()
                 .deserializeNBT(

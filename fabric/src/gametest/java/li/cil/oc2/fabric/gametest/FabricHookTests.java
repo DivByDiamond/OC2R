@@ -55,7 +55,7 @@ public final class FabricHookTests implements FabricGameTest {
         return BlockEntityType.CHEST;
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_hooks")
     public void onLoadIsDeferredToTheNextTick(final GameTestHelper helper) {
         final BlockPos absolute = helper.absolutePos(POS);
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.CHEST);
@@ -76,7 +76,7 @@ public final class FabricHookTests implements FabricGameTest {
         });
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_hooks")
     public void onChunkUnloadedIsCalledWhenChunkClearsBlockEntities(final GameTestHelper helper) {
         // A private chunk, so no other test's block entities are affected.
         final LevelChunk chunk = new LevelChunk(
@@ -97,7 +97,7 @@ public final class FabricHookTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_hooks")
     public void updateTagRoundTrip(final GameTestHelper helper) {
         helper.setBlock(POS, Blocks.BUS_CABLE.get().defaultBlockState());
         final BusCableBlockEntity source = (BusCableBlockEntity) helper.getBlockEntity(POS);
@@ -126,7 +126,7 @@ public final class FabricHookTests implements FabricGameTest {
      * Vanilla only sends block entity data with a block update when the block entity supplies a packet;
      * without it a facade set on a loaded cable never reached the clients that were already tracking it.
      */
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_hooks")
     public void facadeIsSentWithTheBlockUpdate(final GameTestHelper helper) {
         helper.setBlock(POS, Blocks.BUS_CABLE.get().defaultBlockState());
         final BusCableBlockEntity source = (BusCableBlockEntity) helper.getBlockEntity(POS);
@@ -148,7 +148,7 @@ public final class FabricHookTests implements FabricGameTest {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY_STRUCTURE)
+    @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_hooks")
     public void configRegistrationReachedTheSpecs(final GameTestHelper helper) throws IOException {
         if (!CommonSpec.CONFIG_SPEC.isLoaded()) {
             helper.fail("the common config was registered but never loaded");

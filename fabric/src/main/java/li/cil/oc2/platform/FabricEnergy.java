@@ -32,7 +32,8 @@ final class FabricEnergy {
     @Nullable
     @SuppressWarnings("unchecked")
     static <T> T findBlock(
-            final BlockCapability<T> capability, final Level level, final BlockPos pos, @Nullable final Direction side) {
+            final BlockCapability<T> capability, final Level level, final BlockPos pos,
+            @Nullable final Direction side) {
         if (!ENERGY_KEY.equals(capability)) {
             return null;
         }
@@ -182,6 +183,7 @@ final class FabricEnergy {
         long out;
 
         Pending(final li.cil.oc2.platform.EnergyStorage target) {
+            super();
             this.target = target;
         }
 

@@ -1,6 +1,7 @@
 package li.cil.oc2.common.entity;
 
 import java.util.*;
+import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
@@ -14,15 +15,28 @@ import li.cil.oc2.common.entity.robot.misc.RobotBlockCollider;
 import li.cil.oc2.common.entity.robot.misc.RobotEventHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInteractionHandler;
 import li.cil.oc2.common.entity.robot.misc.RobotInventory;
+//? if <26.1 {
+import li.cil.oc2.common.entity.robot.movement.RobotMovementAction;
+//?}
 import li.cil.oc2.common.entity.robot.movement.RobotMovementController;
+//? if <26.1 {
+import li.cil.oc2.common.entity.robot.rotation.RobotRotationAction;
+//?}
 import li.cil.oc2.common.entity.robot.state.RobotAnimationState;
 import li.cil.oc2.common.entity.robot.state.RobotSerializer;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.robot.state.RobotInitializationMessage;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.ItemStackHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+//? if <26.1 {
+import net.minecraft.util.Mth;
+//?}
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -30,8 +44,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class Robot extends AbstractRobotEntity
         implements li.cil.oc2.api.capabilities.Robot,
@@ -46,6 +62,12 @@ public final class Robot extends AbstractRobotEntity
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.robotEnergyStorage);
     private final RobotAnimationState animationState;
     private final Set<Player> terminalUsers = Collections.newSetFromMap(new WeakHashMap<>());
+    @Nullable private GlobalPos origin;
+
+    //? if <26.1 {
+    private static final double MOVING_POSITION_SYNC_THRESHOLD = 1;
+    private static final float TURNING_ROTATION_SYNC_THRESHOLD = 45;
+    //?}
 
     public Robot(final EntityType<?> type, final Level world) {
         super(type, world);
@@ -126,7 +148,19 @@ public final class Robot extends AbstractRobotEntity
         if (!level().isClientSide()) virtualMachine.stop();
     }
 
+    public void shutdown() {
+        if (!level().isClientSide()) virtualMachine.shutdown();
+    }
+
+    public void reboot() {
+        if (!level().isClientSide()) virtualMachine.reboot();
+    }
+
     public void openTerminalScreen(final ServerPlayer player) {
+        // Re-send the VM snapshot with the menu open. Entity tracking can race the
+        // first terminal interaction after a world reload, leaving the client with
+        // the default SCAN_PENDING state even though the server bus is already ready.
+        NetworkMessages.sendToClient(new RobotInitializationMessage(this), player);
         RobotTerminalContainer.createServer(this, energy, virtualMachine.busController, player);
     }
 
@@ -159,10 +193,81 @@ public final class Robot extends AbstractRobotEntity
         RobotInteractionHandler.dropSelf(this);
     }
 
+    //? if <26.1 {
+    @Override
+    public void lerpTo(
+            final double x,
+            final double y,
+            final double z,
+            final float yRot,
+            final float xRot,
+            final int steps) {
+        // Applying server position and rotation while animating (which also runs on client) causes
+        // jitter, so only snap to the authoritative values when actually relevant.
+        if (RobotMovementAction.isComplete(this)
+                || position().distanceToSqr(x, y, z)
+                        > MOVING_POSITION_SYNC_THRESHOLD * MOVING_POSITION_SYNC_THRESHOLD) {
+            setPos(x, y, z);
+        }
+        if (RobotRotationAction.isComplete(this)
+                || Mth.degreesDifferenceAbs(getYRot(), yRot) > TURNING_ROTATION_SYNC_THRESHOLD) {
+            setRot(yRot, xRot);
+        }
+    }
+    //?}
+
+    @Nullable
+    public GlobalPos getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(@Nullable final GlobalPos origin) {
+        this.origin = origin;
+    }
+
+    /** Body block position (entity center), the anchor for {@link #getPosition()}. */
+    public BlockPos getBodyPosition() {
+        return BlockPos.containing(getBoundingBox().getCenter());
+    }
+
+    /** Points the localization origin at the current body position if unset or in another dimension. */
+    public void updateOrigin() {
+        if (origin == null || !origin.dimension().equals(level().dimension())) {
+            calibratePosition();
+        }
+    }
+
+    /** Resets the localization origin to the current body position. */
+    public void calibratePosition() {
+        origin = new GlobalPos(level().dimension(), getBodyPosition());
+    }
+
+    /** Compass name of the direction the robot is facing (north, south, east, west). */
+    public String getFacing() {
+        return getDirection().getSerializedName();
+    }
+
+    /** Body position relative to the localization origin (east/x, up/y, south/z). */
+    public Position getPosition() {
+        if (origin == null) {
+            calibratePosition();
+        }
+        final BlockPos body = getBodyPosition();
+        final BlockPos base = origin.pos();
+        return new Position(
+                body.getX() - base.getX(), body.getY() - base.getY(), body.getZ() - base.getZ());
+    }
+
+    public record Position(int x, int y, int z) {}
+
     @Override
     public void tick() {
+        // Entity.baseTick() (called by super.tick()) clears firstTick. Preserve it so the robot's
+        // lifecycle handler can initialize synchronized movement targets and register unload
+        // cleanup on the actual first server tick.
+        final boolean isFirstTick = firstTick;
         super.tick();
-        RobotTickHandler.tick(this, firstTick);
+        RobotTickHandler.tick(this, isFirstTick);
     }
 
     @Override
@@ -170,8 +275,14 @@ public final class Robot extends AbstractRobotEntity
         return RobotInteractionHandler.skipAttackInteraction(this, entity);
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public InteractionResult interact(
+            final Player player, final InteractionHand hand, final net.minecraft.world.phys.Vec3 location) {
+    *///?} else {
     @Override
     public InteractionResult interact(final Player player, final InteractionHand hand) {
+    //?}
         return RobotInteractionHandler.interact(this, player, hand);
     }
 

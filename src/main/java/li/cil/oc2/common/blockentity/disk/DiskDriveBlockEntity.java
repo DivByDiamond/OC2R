@@ -23,8 +23,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDriveContainer {
     final DiskDriveDevice<DiskDriveBlockEntity> device = new DiskDriveDevice<>(this);
@@ -134,7 +136,11 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     @Override
     public void handleUpdateTag(final CompoundTag tag, HolderLookup.Provider registries) {
         super.handleUpdateTag(tag, registries);
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override
@@ -148,7 +154,11 @@ public final class DiskDriveBlockEntity extends ModBlockEntity implements DiskDr
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
+        //? if >=26.1 {
+        /*itemHandler.deserializeNBT(registries, tag.getCompoundOrEmpty(Constants.ITEMS_TAG_NAME));
+        *///?} else {
         itemHandler.deserializeNBT(registries, tag.getCompound(Constants.ITEMS_TAG_NAME));
+        //?}
     }
 
     @Override

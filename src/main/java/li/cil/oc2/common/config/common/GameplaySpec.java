@@ -2,8 +2,13 @@ package li.cil.oc2.common.config.common;
 
 import java.util.Locale;
 import li.cil.oc2.common.config.Config;
+//? if >=26.1 {
+/*import li.cil.oc2.common.config.Tiers;
+*///?}
 import li.cil.oc2.common.vm.video.VideoCodec;
+//? if <26.1 {
 import net.minecraft.world.item.Tiers;
+//?}
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class GameplaySpec {

@@ -1,5 +1,125 @@
 package li.cil.oc2.client.renderer;
 
+//? if >=26.1 {
+/*import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import javax.annotation.Nullable;
+import li.cil.oc2.client.renderer.stage.RenderInfo;
+import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
+import net.minecraft.resources.ResourceLocation;
+
+//? if <26.1 {
+import net.neoforged.api.distmarker.Dist;
+//?}
+
+//? if <26.1 {
+import net.neoforged.api.distmarker.OnlyIn;
+//?}
+
+public class MonitorGUIRenderer {
+    private final transient Set<RendererModel> renderers =
+            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+
+    @OnlyIn(Dist.CLIENT)
+    public RendererView getRenderer(MonitorBlockEntity monitor) {
+        final Renderer renderer = new Renderer(monitor);
+        renderers.add(renderer);
+        return renderer;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void releaseRenderer(final MonitorGUIRenderer.RendererView renderer) {
+        if (renderer instanceof final MonitorGUIRenderer.RendererModel rendererModel) {
+            rendererModel.close();
+            renderers.remove(rendererModel);
+        }
+    }
+
+    private static void handleProjectorNoLongerRendering(
+            final RemovalNotification<MonitorBlockEntity, RenderInfo> notification) {
+        final MonitorBlockEntity monitor = notification.getKey();
+        if (monitor != null) {
+            monitor.video.setFrameConsumer(null);
+        }
+        final RenderInfo renderInfo = notification.getValue();
+        if (renderInfo != null) {
+            renderInfo.close();
+        }
+    }
+
+    public static void cleanUp() {
+        Renderer.RENDER_INFO.cleanUp();
+    }
+
+    private interface RendererModel {
+        void close();
+    }
+
+    // 26.x draws the framebuffer through a registered texture id (a render type in the world,
+    // a blit in GUIs) instead of binding the texture and drawing a retained vertex buffer.
+    public interface RendererView {
+        // The id of the framebuffer texture, or null if the monitor is gone. Also tells the
+        // monitor that it is being looked at.
+        @Nullable
+        ResourceLocation getTexture();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static final class Renderer implements RendererModel, RendererView {
+        private static final Cache<MonitorBlockEntity, RenderInfo> RENDER_INFO =
+                CacheBuilder.newBuilder()
+                        .expireAfterAccess(Duration.ofSeconds(5))
+                        .removalListener(MonitorGUIRenderer::handleProjectorNoLongerRendering)
+                        .build();
+
+        private final MonitorBlockEntity monitorBlock;
+
+        private Renderer(final MonitorBlockEntity monitorBlock) {
+            this.monitorBlock = monitorBlock;
+        }
+
+        private static RenderInfo getRenderInfo(final MonitorBlockEntity monitor) {
+            try {
+                return RENDER_INFO.get(
+                        monitor,
+                        () -> {
+                            // Initial size is the legacy default; RenderInfo recreates
+                            // the texture as soon as the first frame with the actual
+                            // GPU resolution arrives.
+                            final RenderInfo renderInfo =
+                                    new RenderInfo(MonitorDevice.WIDTH, MonitorDevice.HEIGHT);
+                            monitor.video.setFrameConsumer(renderInfo);
+                            return renderInfo;
+                        });
+            } catch (final ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void close() {}
+
+        @Override
+        @Nullable
+        public ResourceLocation getTexture() {
+            if (!monitorBlock.isValid()) {
+                return null;
+            }
+
+            final RenderInfo renderInfo = getRenderInfo(monitorBlock);
+            monitorBlock.video.onRendering();
+            return renderInfo.getTextureLocation();
+        }
+    }
+}
+*///?} else {
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
@@ -16,8 +136,10 @@ import li.cil.oc2.common.bus.device.vm.block.MonitorDevice;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 import org.joml.Matrix4f;
 
 public class MonitorGUIRenderer {
@@ -49,6 +171,10 @@ public class MonitorGUIRenderer {
         if (renderInfo != null) {
             renderInfo.close();
         }
+    }
+
+    public static void cleanUp() {
+        Renderer.RENDER_INFO.cleanUp();
     }
 
     private interface RendererModel {
@@ -172,3 +298,4 @@ public class MonitorGUIRenderer {
         }
     }
 }
+//?}

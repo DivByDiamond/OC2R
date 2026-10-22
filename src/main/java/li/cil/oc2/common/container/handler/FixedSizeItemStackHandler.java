@@ -1,7 +1,9 @@
 package li.cil.oc2.common.container.handler;
 
 import java.util.List;
+//? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
+//?}
 import li.cil.oc2.platform.ItemStackHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -31,7 +33,11 @@ public class FixedSizeItemStackHandler extends ItemStackHandler {
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
         // Our size is fixed, don't trust NBT data we're loading.
+        //? if >=26.1 {
+        /*if (tag.contains(SIZE_TAG_NAME)) {
+        *///?} else {
         if (tag.contains(SIZE_TAG_NAME, NBTTagIds.TAG_INT)) {
+        //?}
             final CompoundTag safeTag = tag.copy();
             safeTag.remove(SIZE_TAG_NAME);
             super.deserializeNBT(provider, safeTag);

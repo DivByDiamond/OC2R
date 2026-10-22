@@ -2,22 +2,12 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
-import org.apache.commons.io.IOUtils
 import net.ltgt.gradle.errorprone.errorprone
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("commons-io:commons-io:2.21.0")
-    }
-}
 
 plugins {
     id("idea")
     id("maven-publish")
-    id("net.neoforged.moddev") version "2.0.144"
+    id("net.neoforged.moddev") version "2.0.148"
 
     id("checkstyle")
     id("pmd")
@@ -51,10 +41,6 @@ val jei_version: String get() = property("jei_version") as String
 val pr_version: String get() = property("pr_version") as String
 val ccl_version: String get() = property("ccl_version") as String
 val cbm_version: String get() = property("cbm_version") as String
-val architectury_project_id: String get() = property("architectury_project_id") as String
-val architectury_file_id: String get() = property("architectury_file_id") as String
-val markdownmanual_project_id: String get() = property("markdownmanual_project_id") as String
-val markdownmanual_file_id: String get() = property("markdownmanual_file_id") as String
 val native_networking_repo: String get() = property("native_networking_repo") as String
 val network_lib_version: String get() = property("network_lib_version") as String
 val embeddium_project_id: String get() = property("embeddium_project_id") as String
@@ -70,8 +56,8 @@ val debug_embeddium_plus_plus: String get() = property("debug_embeddium_plus_plu
 val debug_oculus: String get() = property("debug_oculus") as String
 
 gradle.projectsEvaluated {
-    project.configurations.named("jarJar") {
-        val nativeLibsDir = file("src/main/resources/natives")
+    configurations.matching { it.name == "jarJar" }.configureEach {
+        val nativeLibsDir = rootProject.file("src/main/resources/natives")
         val nativeNetworkingBaseUrl = "https://github.com/${native_networking_repo}/releases/download/${network_lib_version}/"
 
         val targets = listOf(
@@ -95,7 +81,7 @@ gradle.projectsEvaluated {
                 val url = URI("${nativeNetworkingBaseUrl}${fileName}").toURL()
                 println("Downloading ${url} → ${targetFile}")
                 targetFile.outputStream().use { out ->
-                    url.openStream().use { stream -> IOUtils.copy(stream, out) }
+                    url.openStream().use { stream -> stream.copyTo(out) }
                 }
             }
 
@@ -104,18 +90,10 @@ gradle.projectsEvaluated {
     }
 }
 
-allprojects {
-    gradle.projectsEvaluated {
-        tasks.withType<JavaCompile>().configureEach {
-            options.compilerArgs.addAll(listOf("-Xmaxerrs", "1000", "-h", layout.buildDirectory.get().toString().replace("\\", "/") + "/c"))
-        }
-    }
-}
-
 version = if (System.getenv("RELEASE_TYPE") == "release") semver.trimStart('v') else "${semver.trimStart('v')}+${getGitRef()}"
 group = "li.cil.oc2"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of((property("java_version") as String).toInt())
 
 dependencyLocking {
     lockAllConfigurations()
@@ -123,6 +101,12 @@ dependencyLocking {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "utf-8"
+}
+
+// MDG 2.x on 26.x scans the Stonecutter output directory in createMinecraftArtifacts; Gradle 9 rejects
+// that without a declared ordering.
+tasks.matching { it.name == "createMinecraftArtifacts" }.configureEach {
+    mustRunAfter("stonecutterGenerate")
 }
 
 val hasGithubPackageCredentials =
@@ -140,7 +124,7 @@ repositories {
     maven {
         name = "Jared's maven"
         url = uri("https://maven.blamejared.com/")
-        content { includeGroupByRegex("mezz\\..*") }
+        content { includeGroupByRegex("mezz\\..*|net\\.mezzdev(\\..*)?") }
     }
     maven {
         url = uri("https://maven.covers1624.net/")
@@ -172,16 +156,19 @@ repositories {
     }
     maven {
         name = "localLibs"
-        url = uri("libs")
+        url = uri(rootProject.file("libs"))
     }
 }
 
 neoForge {
     version = neo_version
 
-    parchment {
-        mappingsVersion = parchment_mappings_version
-        minecraftVersion = parchment_minecraft_version
+    // Parchment publishes mappings only for 1.x Minecraft versions.
+    if (minecraft_version.startsWith("1.")) {
+        parchment {
+            mappingsVersion = parchment_mappings_version
+            minecraftVersion = parchment_minecraft_version
+        }
     }
 
     runs {
@@ -202,8 +189,18 @@ neoForge {
         }
 
         register("data") {
-            data()
-            programArguments.addAll("--mod", modId, "--all", "--output", file("src/generated/resources/").absolutePath, "--existing", file("src/main/resources/").absolutePath)
+            if (minecraft_version.startsWith("1.")) data() else serverData()
+            val generated = if (minecraft_version.startsWith("1.")) rootProject.file("src/generated/resources/")
+                else layout.buildDirectory.dir("generated/datagen/server").get().asFile
+            programArguments.addAll("--mod", modId, "--all", "--output", generated.absolutePath, "--existing", rootProject.file("src/main/resources/").absolutePath)
+            if (!minecraft_version.startsWith("1.")) programArguments.add("--flat")
+        }
+
+        if (!minecraft_version.startsWith("1.")) register("clientData") {
+            clientData()
+            programArguments.addAll("--mod", modId, "--all", "--flat", "--output",
+                layout.buildDirectory.dir("generated/datagen/client").get().asFile.absolutePath,
+                "--existing", rootProject.file("src/main/resources/").absolutePath)
         }
 
         configureEach {
@@ -217,7 +214,7 @@ neoForge {
         register(modId) {
             sourceSet(sourceSets.main.get())
             // core classes must live in the same mod module as the loader code that uses them.
-            sourceSet(project(":core").sourceSets["main"])
+            sourceSet(project(":core:${sc.current.version}").sourceSets["main"])
         }
     }
 }
@@ -229,36 +226,51 @@ dependencies {
     // Java 21 toolchain (Error Prone 2.43+ requires JDK 21 to run).
     errorprone("com.google.errorprone:error_prone_core:2.50.0")
 
-    implementation("li.cil.ceres:ceres:${ceres_version}")
-    add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
-
-    implementation("li.cil.sedna:sedna:${sedna_version}")
-    add("jarJar", "li.cil.sedna:sedna:${sedna_version}")
-
+    implementation("li.cil.ceres:ceres:${ceres_version}") {
+        // NeoForge 26.x pins ASM strictly (9.9.1) while ceres declares 9.10.1; the pinned one is enough at runtime.
+        if (!minecraft_version.startsWith("1.")) {
+            exclude(group = "org.ow2.asm")
+        }
+    }
+    implementation("li.cil.sedna:sedna:${sedna_version}") {
+        // sedna pulls ceres (and its ASM 9.10.1) transitively.
+        if (!minecraft_version.startsWith("1.")) {
+            exclude(group = "org.ow2.asm")
+        }
+    }
     implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
-    add("jarJar", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
 
-    add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
-    add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    if ("jarJar" in configurations.names) {
+        add("jarJar", "li.cil.ceres:ceres:${ceres_version}")
+        add("jarJar", "li.cil.sedna:sedna:${sedna_version}")
+        add("jarJar", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    }
 
-    implementation("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
-    implementation("maven.modrinth:13P81Hg3:1.3.1")
+    // MDG only wires an additional run classpath for 1.x Minecraft; on 26.x the configuration
+    // still exists but rejects dependencies ("no additional classpath anymore").
+    if (minecraft_version.startsWith("1.") && "additionalRuntimeClasspath" in configurations.names) {
+        add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
+        add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
+        add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    }
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}-api:${jei_version}")
 
     runtimeOnly("mezz.jei:jei-${minecraft_version}-${minecraft_sdk}:${jei_version}")
 
-    compileOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:api")
-    runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}") {
-        version { strictly("1.21.1-4.6.1.529") }
+    // ProjectRed/CodeChickenLib/CBMultipart are 1.21.1-only builds (roadmap multiversion-26-neoforge §3).
+    if (minecraft_version.startsWith("1.")) {
+        compileOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:api")
+        runtimeOnly("io.codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}") {
+            version { strictly("1.21.1-4.6.1.529") }
+        }
+        runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}") {
+            version { strictly("1.21.1-3.5.0.161") }
+        }
+        runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:core")
+        runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:transmission")
     }
-    runtimeOnly("io.codechicken:CBMultipart:${minecraft_version}-${cbm_version}") {
-        version { strictly("1.21.1-3.5.0.161") }
-    }
-    runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:core")
-    runtimeOnly("mrtjp:ProjectRed:${minecraft_version}-${pr_version}:transmission")
 
     if (debug_embeddium.toBoolean()) {
         runtimeOnly("curse.maven:embeddium-${embeddium_project_id}:${embeddium_file_id}")
@@ -273,7 +285,7 @@ dependencies {
     }
 
     // Loader-independent module; its classes are packed into the mod jar below (docs/MULTILOADER.md).
-    implementation(project(":core"))
+    implementation(project(":core:${sc.current.version}"))
 
     testImplementation("org.mockito:mockito-core:${mockito_version}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiter_version}")
@@ -299,20 +311,24 @@ configurations.named("testRuntimeClasspath") {
     extendsFrom(configurations.runtimeClasspath.get())
 }
 
-System.setProperty("line.separator", "\n")
+val archiveBaseName = "oc2r-${minecraft_version}-${minecraft_sdk}"
+
+extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
+    archivesName.set(archiveBaseName)
+}
 
 tasks.register<Zip>("packageScripts") {
     archiveFileName = "scripts.zip"
     destinationDirectory = file("${layout.buildDirectory.get()}/resources/main/data/oc2r/file_systems")
-    from("src/main/scripts")
-    from("src/main/resources/onyxos") {
+    from(rootProject.file("src/main/scripts"))
+    from(rootProject.file("src/main/resources/onyxos")) {
         include("fw_jump.bin")
         into("firmware_files")
     }
 }
 
 tasks.register<Copy>("copyLicensesToResources") {
-    from(".")
+    from(rootProject.projectDir)
     into(file("${layout.buildDirectory.get()}/resources/main"))
     include("LICENSE*")
 }
@@ -320,18 +336,141 @@ tasks.register<Copy>("copyLicensesToResources") {
 tasks.processResources {
     dependsOn("packageScripts")
     dependsOn("copyLicensesToResources")
+
+    if (!minecraft_version.startsWith("1.")) {
+        // The manifest is written for 1.21.1: retarget the Minecraft/NeoForge ranges.
+        val neoMajor = (project.property("neo_version") as String).split(".").take(2).joinToString(".")
+        val mcVersion = minecraft_version
+        inputs.property("modsTomlRetarget", "$mcVersion/$neoMajor")
+        filesMatching("META-INF/neoforge.mods.toml") {
+            var dependency = ""
+            filter { line: String ->
+                val trimmed = line.trim()
+                if (trimmed.startsWith("modId")) {
+                    dependency = trimmed.substringAfter("=").trim().trim('"')
+                }
+                when {
+                    dependency == "minecraft" && trimmed.startsWith("versionRange") ->
+                        "versionRange = \"[$mcVersion]\""
+                    dependency == "neoforge" && trimmed.startsWith("versionRange") ->
+                        "versionRange = \"[$neoMajor,)\""
+                    else -> line
+                }
+            }
+        }
+        inputs.property("modelLoaderStrip", "v6")
+        // The cable and monitor geometry loaders do not exist on 26.x: drop the loader key so the
+        // plain model JSON loads. Their dynamic geometry comes from the custom block state models
+        // registered as oc2r:bus_cable / oc2r:monitor (NeoForgeClientSetup), which the blockstates
+        // reference through "type" instead of the plain "model" of 1.21.
+        doLast {
+            listOf("cable_base", "monitor").forEach { name ->
+                val model = destinationDir.resolve("assets/oc2r/models/block/$name.json")
+                model.writeText(
+                    model.readText().replace(Regex(",\\s*\"loader\"\\s*:\\s*\"oc2r:[a-z_]+\""), ""))
+            }
+            val blockstates = destinationDir.resolve("assets/oc2r/blockstates")
+            blockstates.resolve("bus_cable.json").let { state ->
+                state.writeText(
+                    state.readText().replace("\"model\": \"oc2r:block/cable_base\"", "\"type\": \"oc2r:bus_cable\""))
+            }
+            blockstates.resolve("monitor.json").let { state ->
+                state.writeText(
+                    state.readText().replace("\"model\": \"oc2r:block/monitor\"", "\"type\": \"oc2r:monitor\""))
+            }
+            // The monitor model JSON is only the item's look now (the block draws through the
+            // dynamic model): a plain cube showing the single monitor's fragment textures.
+            destinationDir.resolve("assets/oc2r/models/block/monitor.json").writeText(
+                "{\"parent\":\"minecraft:block/cube\",\"textures\":{" +
+                    "\"particle\":\"oc2r:block/monitor_oc/bmm\"," +
+                    "\"down\":\"oc2r:block/monitor_oc/b\",\"up\":\"oc2r:block/monitor_oc/b\"," +
+                    "\"north\":\"oc2r:block/monitor_oc/f\",\"south\":\"oc2r:block/monitor_oc/b2\"," +
+                    "\"east\":\"oc2r:block/monitor_oc/b2\",\"west\":\"oc2r:block/monitor_oc/b2\"}}")
+            // Empty-slot background icons are looked up in the GUI atlas on 26.x, which only stitches
+            // what its atlas definition lists; add the slot icon textures (item/<category>/<id>_slot).
+            destinationDir.resolve("assets/minecraft/atlases").let { atlases ->
+                atlases.mkdirs()
+                atlases.resolve("gui.json").writeText(
+                    "{\"sources\":[{\"type\":\"minecraft:directory\",\"source\":\"item\",\"prefix\":\"item/\"}]}")
+            }
+            // 26.x resolves item models through assets/<ns>/items/<id>.json definitions; point each
+            // item at the model JSON it already has.
+            val itemModels = destinationDir.resolve("assets/oc2r/models/item")
+            val itemDefinitions = destinationDir.resolve("assets/oc2r/items")
+            itemDefinitions.mkdirs()
+            // Storage items are dyed on 1.21.1 by a colour handler that only tints layer 1 (the generated
+            // model gives each layerN quad tint index N). Mirror that with dye tint sources: index 0 stays
+            // white, index 1 takes the DYED_COLOR component, falling back to the item's default colour.
+            val dyedItemDefaults = mapOf(
+                "floppy" to 0xFF745C42.toInt(),
+                "floppy_modern" to 0xFF745C42.toInt(),
+                "hard_drive_small" to 0xFF9D9D97.toInt(),
+                "hard_drive_medium" to 0xFF5E7C16.toInt(),
+                "hard_drive_large" to 0xFF169C9C.toInt(),
+                "hard_drive_extra_large" to 0xFFFED83D.toInt(),
+                "hard_drive_onyxos" to 0xFFB02E26.toInt(),
+            )
+            // The robot is drawn by the oc2r:robot special model renderer (RobotSpecialModelRenderer) on 26.x.
+            itemDefinitions.resolve("robot.json").writeText(
+                "{\"model\":{\"type\":\"minecraft:special\",\"base\":\"oc2r:item/robot\",\"model\":{\"type\":\"oc2r:robot\"}}}")
+            itemModels.listFiles { f -> f.extension == "json" }?.forEach { model ->
+                val definition = itemDefinitions.resolve(model.name)
+                if (!definition.exists()) {
+                    val modelRef = "\"model\":\"oc2r:item/${model.nameWithoutExtension}\""
+                    val defaultColor = dyedItemDefaults[model.nameWithoutExtension]
+                    definition.writeText(
+                        if (defaultColor == null) {
+                            "{\"model\":{\"type\":\"minecraft:model\",$modelRef}}"
+                        } else {
+                            "{\"model\":{\"type\":\"minecraft:model\",$modelRef,\"tints\":[" +
+                                "{\"type\":\"minecraft:constant\",\"value\":-1}," +
+                                "{\"type\":\"minecraft:dye\",\"default\":$defaultColor}]}}"
+                        })
+                }
+            }
+            // 26.x rejects air as an item entry; the blocks that use it simply drop nothing.
+            destinationDir.resolve("data/oc2r/loot_table/blocks").listFiles { f -> f.extension == "json" }?.forEach { table ->
+                table.writeText(
+                    table.readText().replace(
+                        Regex("\\{\\s*\"type\"\\s*:\\s*\"minecraft:item\"\\s*,\\s*\"name\"\\s*:\\s*\"minecraft:air\"\\s*\\}"), ""))
+            }
+            // 26.x ingredients are plain strings ("ns:item" or "#ns:tag"), the {"item"|"tag": ...} objects
+            // of 1.21 no longer parse.
+            destinationDir.resolve("data/oc2r/recipe").listFiles { f -> f.extension == "json" }?.forEach { recipe ->
+                recipe.writeText(
+                    recipe.readText()
+                        .replace(Regex("\\{\\s*\"item\"\\s*:\\s*(\"[^\"]+\")\\s*\\}"), "$1")
+                        .replace(Regex("\\{\\s*\"tag\"\\s*:\\s*\"([^\"]+)\"\\s*\\}"), "\"#$1\""))
+            }
+        }
+    }
 }
 
-tasks.named("jarJar") { }
-
 tasks.register<Copy>("copyGeneratedResources") {
-    from("src/generated")
-    into("src/main")
+    onlyIf { minecraft_version.startsWith("1.") }
+    from(rootProject.file("src/generated"))
+    into(rootProject.file("src/main"))
     exclude("resources/.cache")
 }
 
+if (!minecraft_version.startsWith("1.")) tasks.processResources {
+    val generated = listOf("server", "client").map { layout.buildDirectory.dir("generated/datagen/$it") }
+    generated.forEach { directory -> inputs.files(directory.map { fileTree(it) { exclude(".cache/**") } }) }
+    // Datagen is an explicit task (it depends on classes). Overlay this node's generated
+    // resources after the legacy-asset compatibility conversion, never into shared 1.21 assets.
+    doLast {
+        generated.forEach { directory ->
+            project.copy {
+                from(directory)
+                into(destinationDir)
+                exclude(".cache/**")
+            }
+        }
+    }
+}
+
 tasks.jar {
-    from(project(":core").sourceSets["main"].output)
+    from(project(":core:${sc.current.version}").sourceSets["main"].output)
     manifest {
         attributes(
             mapOf(
@@ -339,11 +478,11 @@ tasks.jar {
                 "Specification-Title" to "oc2r",
                 "Specification-Vendor" to "North Western Development (Originally by Sangar)",
                 "Specification-Version" to "1",
-                "Implementation-Title" to project.name,
+                "Implementation-Title" to archiveBaseName,
                 "Implementation-Version" to semver.trimStart('v'),
                 "Implementation-Vendor" to "North Western Development (Originally by Sangar)",
                 "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
-                "MixinConfigs" to "mixins.oc2r.json",
+                "MixinConfigs" to "mixins.oc2r.json,mixins.oc2r.client.json",
                 "ContainedDeps" to "commons-collections4-4.4.jar"
             )
         )
@@ -357,7 +496,7 @@ java {
 tasks.named<Jar>("sourcesJar") {
     // Published sources must cover the loader-independent core module too; the mod jar
     // packs core classes (see tasks.jar above), so the sources jar has to as well.
-    from(project(":core").sourceSets["main"].allSource)
+    from(project(":core:${sc.current.version}").sourceSets["main"].allSource)
 }
 
 val apiJar = tasks.register<Jar>("apiJar") {
@@ -370,7 +509,7 @@ val apiJar = tasks.register<Jar>("apiJar") {
 idea {
     module {
         for (exclude in listOf("assets", "run", "out", "logs", "src/generated")) {
-            excludeDirs.add(file(exclude))
+            excludeDirs.add(rootProject.file(exclude))
         }
         isDownloadSources = true
         isDownloadJavadoc = true
@@ -385,10 +524,11 @@ publishing {
         register<MavenPublication>("gpr") {
             from(components["java"])
             artifact(tasks["apiJar"])
+            artifactId = archiveBaseName
             pom {
                 name = "OC2R"
                 description = "OpenComputers 2 Rewrite"
-                url = "https://github.com/TumRedSun/OC2R"
+                url = "https://github.com/DivByDiamond/OC2R"
                 licenses {
                     license {
                         name = "GNU General Public License v3.0"
@@ -410,16 +550,6 @@ publishing {
     }
 }
 
-allprojects {
-    tasks.withType<JavaCompile>().configureEach {
-        options.compilerArgs.addAll(listOf("-Xlint:all", "-Xlint:-classfile", "-Xlint:-processing", "-Xlint:-path", "-Xlint:-this-escape", "-Xlint:-serial", "-Xlint:-auxiliaryclass"))
-        // Preserve parameter names in bytecode so reflection (e.g. RPCParameter.getName()
-        // in li.cil.oc2.api.bus.device.object.Callbacks) can recover them at runtime without
-        // requiring every @Callback-annotated method to also use @Parameter annotations.
-        options.compilerArgs.add("-parameters")
-    }
-}
-
 checkstyle {
     toolVersion = "10.21.0"
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
@@ -432,7 +562,8 @@ tasks.withType<Checkstyle>().configureEach {
 }
 
 pmd {
-    toolVersion = "7.7.0"
+    // First PMD release that can resolve Minecraft 26.x / Java 25 class files.
+    toolVersion = "7.16.0"
     ruleSetConfig = rootProject.resources.text.fromFile(rootProject.file("config/pmd/ruleset.xml"))
     isIgnoreFailures = false
     isConsoleOutput = true
@@ -447,7 +578,7 @@ tasks.withType<Pmd>().configureEach {
 // (swallowed exceptions, disabled/assumed tests, tests without assertions).
 tasks.named<Pmd>("pmdTest") {
     ruleSetConfig = null
-    ruleSetFiles = files("config/pmd/ruleset.xml", "config/pmd/ruleset-test.xml", "config/pmd/ruleset-silent.xml")
+    ruleSetFiles = rootProject.files("config/pmd/ruleset.xml", "config/pmd/ruleset-test.xml", "config/pmd/ruleset-silent.xml")
 }
 
 // The in-game tests live in the main source set (excluded from pmdMain), so they get only the
@@ -455,10 +586,10 @@ tasks.named<Pmd>("pmdTest") {
 tasks.register<Pmd>("pmdGameTest") {
     group = "verification"
     description = "Checks the in-game test sources for swallowed failures."
-    source = fileTree("src/main/java/li/cil/oc2/gametest") { include("**/*.java") }
+    source = rootProject.fileTree("src/main/java/li/cil/oc2/gametest") { include("**/*.java") }
     classpath = sourceSets.main.get().compileClasspath + sourceSets.main.get().output
     ruleSetConfig = null
-    ruleSetFiles = files("config/pmd/ruleset-silent.xml")
+    ruleSetFiles = rootProject.files("config/pmd/ruleset-silent.xml")
     dependsOn("classes")
 }
 
@@ -470,7 +601,11 @@ spotbugs {
     ignoreFailures.set(false)
     showProgress.set(true)
     excludeFilter.set(rootProject.file("config/spotbugs/exclude-filter.xml"))
-    baselineFile.set(rootProject.file("config/spotbugs/baseline.xml"))
+    // One baseline per node: a baseline entry is matched by instance hash, so the entries of the
+    // 1.21.1 code do not match the same source compiled against 26.x. Nodes without a dedicated
+    // file (1.21.1, core) use the shared baseline.
+    val nodeBaseline = rootProject.file("config/spotbugs/baseline-${property("minecraft_version")}.xml")
+    baselineFile.set(if (nodeBaseline.isFile) nodeBaseline else rootProject.file("config/spotbugs/baseline.xml"))
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
@@ -556,8 +691,14 @@ tasks.register("lintRatchet") {
     // and count them below so a single ratchet run covers both source sets.
     dependsOn(
         "checkstyleMain", "checkstyleTest", "pmdMain", "pmdTest", "pmdGameTest",
-        ":core:checkstyleMain", ":core:checkstyleTest", ":core:pmdMain", ":core:pmdTest",
-        ":core:spotbugsMain", ":core:spotbugsTest",
+        ":core:${sc.current.version}:checkstyleMain", ":core:${sc.current.version}:checkstyleTest",
+        ":core:${sc.current.version}:pmdMain", ":core:${sc.current.version}:pmdTest",
+        ":core:${sc.current.version}:spotbugsMain", ":core:${sc.current.version}:spotbugsTest",
+        // The fabric node only exists for 1.21.1 (Loom does not remap 26.x) and has no test
+        // source set, so only its main sources are linted. Its SpotBugs task analyses the
+        // module's own classes only (see fabric/build.gradle.kts) and fails the build itself on
+        // any finding, so it needs no count here.
+        ":fabric:1.21.1:checkstyleMain", ":fabric:1.21.1:pmdMain", ":fabric:1.21.1:spotbugsMain",
     )
 
     val baseline = Properties()
@@ -568,22 +709,34 @@ tasks.register("lintRatchet") {
     }
 
     doLast {
-        fun count(file: java.io.File, tag: String): Int {
-            if (!file.exists()) return 0
+        // A missing report is an error, not "0 violations": counting a report that was never
+        // written as clean would turn a moved module or a renamed report into a silent pass of
+        // the ratchet.
+        fun count(name: String, file: java.io.File, tag: String): Int {
+            if (!file.isFile) {
+                throw org.gradle.api.GradleException(
+                    "Lint report for $name is missing: ${file.absolutePath} was not written. " +
+                        "The ratchet cannot check the baseline without it."
+                )
+            }
             val text = file.readText()
             return Regex("<$tag ").findAll(text).count()
         }
 
         val checks = listOf(
-            "checkstyleMain" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("main.xml").asFile, "error"),
-            "checkstyleTest" to count(layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
-            "pmdMain" to count(layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
-            "pmdTest" to count(layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
+            "checkstyleMain" to count("checkstyleMain", layout.buildDirectory.dir("reports/checkstyle").get().file("main.xml").asFile, "error"),
+            "checkstyleTest" to count("checkstyleTest", layout.buildDirectory.dir("reports/checkstyle").get().file("test.xml").asFile, "error"),
+            "pmdMain" to count("pmdMain", layout.buildDirectory.dir("reports/pmd").get().file("main.xml").asFile, "violation"),
+            "pmdTest" to count("pmdTest", layout.buildDirectory.dir("reports/pmd").get().file("test.xml").asFile, "violation"),
             // core module reports (core/build.gradle.kts applies the same tool configs).
-            "coreCheckstyleMain" to count(file("core/build/reports/checkstyle/main.xml"), "error"),
-            "coreCheckstyleTest" to count(file("core/build/reports/checkstyle/test.xml"), "error"),
-            "corePmdMain" to count(file("core/build/reports/pmd/main.xml"), "violation"),
-            "corePmdTest" to count(file("core/build/reports/pmd/test.xml"), "violation"),
+            "coreCheckstyleMain" to count("coreCheckstyleMain", rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/main.xml"), "error"),
+            "coreCheckstyleTest" to count("coreCheckstyleTest", rootProject.file("core/versions/${sc.current.version}/build/reports/checkstyle/test.xml"), "error"),
+            "corePmdMain" to count("corePmdMain", rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/main.xml"), "violation"),
+            "corePmdTest" to count("corePmdTest", rootProject.file("core/versions/${sc.current.version}/build/reports/pmd/test.xml"), "violation"),
+            // fabric module (the same tool config, see fabric/build.gradle.kts). The module has
+            // no test source set, so there is no fabricCheckstyleTest report.
+            "fabricCheckstyleMain" to count("fabricCheckstyleMain", rootProject.file("fabric/versions/1.21.1/build/reports/checkstyle/main.xml"), "error"),
+            "fabricPmdMain" to count("fabricPmdMain", rootProject.file("fabric/versions/1.21.1/build/reports/pmd/main.xml"), "violation"),
         )
 
         var failed = false
@@ -615,6 +768,10 @@ tasks.register("qodana") {
 
 tasks.test {
     useJUnitPlatform()
+    // Multiversion: this script is evaluated by the versions/<v>/ node, but the tests resolve
+    // repo-root-relative paths (ClientImportGuardTest walks src/main/java/...) exactly as they
+    // did when the source root was the project dir (Stage 2). Pin the CWD back to it.
+    workingDir = rootProject.layout.projectDirectory.asFile
     // The vttest harness regen mode (-Dvttest.regen=true) must reach the test worker JVM; a
     // command-line -D only lands on the Gradle daemon, so forward it explicitly.
     System.getProperty("vttest.regen")?.let { systemProperty("vttest.regen", it) }

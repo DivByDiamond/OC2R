@@ -50,6 +50,15 @@ class Robot:
         while not self.device.turn(direction):
             time.sleep(1)
 
+    def facing(self):
+        return self.device.getFacing()
+
+    def position(self):
+        return self.device.getPosition()
+
+    def calibrate(self):
+        self.device.calibratePosition()
+
     def _wait_for_last_action(self):
         id = self.device.getLastActionId()
         result = self.device.getActionResult(id)

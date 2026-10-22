@@ -73,7 +73,8 @@ public final class RobotTerminalContainer extends AbstractRobotContainer {
                             + 1
                             + slot * SLOT_SIZE;
             // NOPMD - the slot depends on the per-iteration slot index and position
-            addSlot(new RobotSlot(inventory, slot, x, terminalScreenHeight + 4)); // NOPMD allocation depends on loop iteration / per-item state
+            // allocation depends on loop iteration / per-item state
+            addSlot(new RobotSlot(inventory, slot, x, terminalScreenHeight + 4)); // NOPMD
         }
     }
 }

@@ -1,0 +1,28 @@
+diff --git a/libonyxc/src/io/stdio.c b/libonyxc/src/io/stdio.c
+index 0ef1b27..9d5c0a6 100755
+--- a/libonyxc/src/io/stdio.c
++++ b/libonyxc/src/io/stdio.c
+@@ -913,6 +913,7 @@ int fclose(FILE *fp) {
+ }
+ 
+ size_t fread(void *buf, size_t sz, size_t count, FILE *fp) {
++    streams_init();
+     if (!fp || !buf) { errno = EFAULT; return 0; }
+     size_t want = sz * count;
+     size_t got = 0;
+@@ -933,6 +934,7 @@ size_t fread(void *buf, size_t sz, size_t count, FILE *fp) {
+ }
+ 
+ size_t fwrite(const void *buf, size_t sz, size_t count, FILE *fp) {
++    streams_init();
+     if (!fp || !buf) { errno = EFAULT; return 0; }
+     size_t want = sz * count;
+     const char *in = (const char *)buf;
+@@ -961,6 +963,7 @@ size_t fwrite(const void *buf, size_t sz, size_t count, FILE *fp) {
+ }
+ 
+ int fgetc(FILE *fp) {
++    streams_init();
+     if (!fp) return -1;
+     if (fp->buf_start >= fp->buf_end) {
+         if (file_fill_locked(fp) <= 0) return -1;

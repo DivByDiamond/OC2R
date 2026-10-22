@@ -12,8 +12,7 @@ public final class FabricClientBlockEntityHooks {
     }
 
     public static void register() {
-        ClientBlockEntityEvents.BLOCK_ENTITY_LOAD.register(
-                (blockEntity, level) -> FabricBlockEntityHooks.enqueue(blockEntity, level));
+        ClientBlockEntityEvents.BLOCK_ENTITY_LOAD.register(FabricBlockEntityHooks::enqueue);
         ClientTickEvents.START_WORLD_TICK.register(FabricBlockEntityHooks::drain);
     }
 }

@@ -1,7 +1,9 @@
 package li.cil.oc2.client.renderer.cable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+//? if <26.2 {
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//?}
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -9,17 +11,40 @@ import javax.annotation.Nullable;
 import li.cil.oc2.client.renderer.stage.shader.ModRenderType;
 import li.cil.oc2.common.util.block.Vec3Utils;
 import li.cil.oc2.network.wire.WireGeometry;
+//? if <26.2 {
 import net.minecraft.client.Minecraft;
+//?}
+//? if >=26.2 {
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
+//? if >=26.1 && <26.2 {
+import net.minecraft.client.renderer.rendertype.RenderType;
+//?}
+*///?} else if >=26.1 {
+/*import net.minecraft.client.renderer.MultiBufferSource;
+//? if >=26.1 && <26.2 {
+import net.minecraft.client.renderer.rendertype.RenderType;
+//?}
+*///?} else {
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+//?}
 import net.minecraft.core.BlockPos;
+//? if >=26.1 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?}
 import net.minecraft.util.Mth;
+//? if >=26.1 {
+/*import net.minecraft.world.level.BlockAndLightGetter;
+*///?} else {
 import net.minecraft.world.level.BlockAndTintGetter;
+//?}
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+//? if <26.2 {
 import org.joml.Matrix4f;
+//?}
 import org.joml.Vector3f;
 
 final class CableRenderUtils {
@@ -30,16 +55,97 @@ final class CableRenderUtils {
     private static final Vector3f CABLE_COLOR = new Vector3f(0.15f, 0.4f, 0.9f);
     private static final int MAX_RENDER_DISTANCE = 100;
 
+    //? if <26.2 {
     private static final List<NetworkCablePoint> cablePoints = new ArrayList<>();
 
+    //?}
     private CableRenderUtils() {}
 
     static void renderCables(
+            //? if >=26.1 {
+            /*final BlockAndLightGetter level,
+*///?} else {
             final BlockAndTintGetter level,
+            //?}
             final PoseStack stack,
             final Vec3 eye,
             final List<NetworkCableConnection> connections,
-            final Predicate<AABB> filter) {
+            //? if >=26.2 {
+/*final Predicate<AABB> filter,
+            final SubmitNodeCollector collector
+            *///?} else {
+            final Predicate<AABB> filter
+            //?}
+            ) {
+        //? if >=26.2 {
+        /*final List<CableVertex> vertices = new ArrayList<>();
+        final float r = CABLE_COLOR.x();
+        final float g = CABLE_COLOR.y();
+        final float b = CABLE_COLOR.z();
+
+        for (final NetworkCableConnection connection : connections) {
+            final Vec3 p0 = connection.from;
+            final Vec3 p1 = connection.to;
+            if (!p0.closerThan(eye, MAX_RENDER_DISTANCE)
+                    && !p1.closerThan(eye, MAX_RENDER_DISTANCE)) {
+                continue;
+            }
+            if (!filter.test(connection.bounds)) {
+                continue;
+            }
+
+            final int vertexCount = WireGeometry.segments(p0.distanceTo(p1)) + 1;
+            final float thickness = WireGeometry.thickness();
+            final Vec3 p2 = animateCableSwing(
+                    lerp(p0, p1, 0.5f).subtract(0, computeCableHang(p0, p1), 0),
+                    connection.right,
+                    computeCableSwingAmount(p0, p1),
+                    connection.hashCode());
+            // Each iteration owns distinct geometry, coordinates or serialized state.
+            final List<NetworkCablePoint> points = new ArrayList<>(vertexCount); // NOPMD
+            for (int i = 0; i < vertexCount; i++) {
+                final float t = i / (vertexCount - 1f);
+                final Vec3 p = quadraticBezier(p0, p1, p2, t);
+                final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
+                // Each iteration owns distinct geometry, coordinates or serialized state.
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD
+                final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
+                final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
+                final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
+                points.add(new NetworkCablePoint(
+                        p.subtract(n).toVector3f(), p.add(n).toVector3f(), packedLight));
+            }
+
+            for (int i = 0; i < points.size() - 1; i++) {
+                final NetworkCablePoint a = points.get(i);
+                final NetworkCablePoint c = points.get(i + 1);
+                final float light = brightness(a.packedLight());
+                final float cr = r * light;
+                final float cg = g * light;
+                final float cb = b * light;
+                vertices.add(new CableVertex(a.v0().x(), a.v0().y(), a.v0().z(), cr, cg, cb));
+                vertices.add(new CableVertex(a.v1().x(), a.v1().y(), a.v1().z(), cr, cg, cb));
+                vertices.add(new CableVertex(c.v1().x(), c.v1().y(), c.v1().z(), cr, cg, cb));
+                vertices.add(new CableVertex(c.v0().x(), c.v0().y(), c.v0().z(), cr, cg, cb));
+            }
+        }
+
+        if (!vertices.isEmpty()) {
+            final List<CableVertex> snapshot = List.copyOf(vertices);
+            stack.pushPose();
+            stack.translate(-eye.x, -eye.y, -eye.z);
+            collector.submitCustomGeometry(
+                    stack,
+                    ModRenderType.getNetworkCable(),
+                    (pose, consumer) -> {
+                        for (final CableVertex vertex : snapshot) {
+                            consumer.addVertex(pose, vertex.x(), vertex.y(), vertex.z())
+                                    .setColor(vertex.r(), vertex.g(), vertex.b(), 1f);
+                        }
+                    });
+            stack.popPose();
+        }
+        *///?} else {
         final Matrix4f viewMatrix = stack.last().pose();
 
         final RenderType renderType = ModRenderType.getNetworkCable();
@@ -81,10 +187,15 @@ final class CableRenderUtils {
                 final Vec3 n = getExtrusionVector(eye, p, connection.forward, thickness);
 
                 // NOPMD - the block position depends on the per-iteration point p
-                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD allocation depends on loop iteration / per-item state
+                // allocation depends on loop iteration / per-item state
+                final BlockPos blockPos = new BlockPos(Vec3Utils.round(p)); // NOPMD
                 final int blockLight = level.getBrightness(LightLayer.BLOCK, blockPos);
                 final int skyLight = level.getBrightness(LightLayer.SKY, blockPos);
+                //? if >=26.1 {
+                /*final int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
+*///?} else {
                 final int packedLight = LightTexture.pack(blockLight, skyLight);
+                //?}
 
                 final Vector3f v0 = p.subtract(n).toVector3f();
                 final Vector3f v1 = p.add(n).toVector3f();
@@ -96,6 +207,18 @@ final class CableRenderUtils {
                 final NetworkCablePoint pa = cablePoints.get(i);
                 final NetworkCablePoint pb = cablePoints.get(i + 1);
 
+                //? if >=26.1 {
+                /*// The 26.x cable pipeline has no lightmap, so the light is baked into the color.
+                final float light = brightness(pa.packedLight());
+                consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pa.v1().x(), pa.v1().y(), pa.v1().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pb.v1().x(), pb.v1().y(), pb.v1().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+                consumer.addVertex(viewMatrix, pb.v0().x(), pb.v0().y(), pb.v0().z())
+                        .setColor(r * light, g * light, b * light, 1f);
+*///?} else {
                 consumer.addVertex(viewMatrix, pa.v0().x(), pa.v0().y(), pa.v0().z())
                         .setColor(r, g, b, 1f)
                         .setUv2(pa.packedLight(), 0);
@@ -108,12 +231,25 @@ final class CableRenderUtils {
                 consumer.addVertex(viewMatrix, pb.v0().x(), pb.v0().y(), pb.v0().z())
                         .setColor(r, g, b, 1f)
                         .setUv2(pa.packedLight(), 0);
+                //?}
             }
 
             bufferSource.endBatch(renderType);
         }
+        //?}
     }
 
+    //? if >=26.2 {
+    /*private record CableVertex(float x, float y, float z, float r, float g, float b) {}
+    *///?}
+
+    //? if >=26.1 {
+    /*private static float brightness(final int packedLight) {
+        final float level = Math.max(LightCoordsUtil.block(packedLight), LightCoordsUtil.sky(packedLight));
+        return 0.25f + 0.75f * level / 15f;
+    }
+
+*///?}
     private static Vec3 lerp(final Vec3 a, final Vec3 b, final float t) {
         return a.add(b.subtract(a).scale(t));
     }

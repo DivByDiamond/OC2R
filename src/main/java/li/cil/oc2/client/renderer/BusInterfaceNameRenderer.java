@@ -1,26 +1,44 @@
 package li.cil.oc2.client.renderer;
 
+//? if <26.2 {
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import li.cil.oc2.client.RenderCompat;
+//?}
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.integration.Wrenches;
 import li.cil.oc2.platform.event.ClientEvents;
 import li.cil.oc2.platform.event.LevelRenderContext;
+//? if <26.2 {
 import net.minecraft.client.Camera;
+//?}
 import net.minecraft.client.Minecraft;
+//? if <26.2 {
 import net.minecraft.client.gui.Font;
+//?}
+//? if <26.1 {
 import net.minecraft.client.renderer.LightTexture;
+//?}
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
+//? if <26.1 {
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=26.1 && <26.2 {
+/*import net.minecraft.util.LightCoordsUtil;
+*///?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
+//? if <26.2 {
 import org.joml.Matrix4f;
+//?}
 
 public enum BusInterfaceNameRenderer {
     INSTANCE;
@@ -29,6 +47,8 @@ public enum BusInterfaceNameRenderer {
         ClientEvents.RENDER_LEVEL.register(INSTANCE::handleRenderLastEvent);
     }
 
+    // The drawing block is version-dependent; keep its shared early guards intact.
+    @SuppressWarnings("PMD.UnnecessaryReturn")
     private void handleRenderLastEvent(final LevelRenderContext event) {
         if (event.stage() != LevelRenderContext.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             return;
@@ -67,13 +87,25 @@ public enum BusInterfaceNameRenderer {
             return;
         }
 
+        //? if >=26.2 {
+        /*// 26.2 draws world text through the submit pipeline instead of Font.drawInBatch with a
+        // buffer source; the interface name label is not drawn there yet.
+        *///?} else {
         final PoseStack stack = event.poseStack();
         stack.pushPose();
 
         stack.translate(0.5, 1, 0.5);
         stack.translate(side.getStepX() * 0.5f, 0, side.getStepZ() * 0.5f);
 
-        final Camera info = mc.gameRenderer.getMainCamera();
+        final Camera info = RenderCompat.mainCamera();
+        //? if >=26.1 {
+/*        stack.translate(
+                blockPos.getX() - info.position().x,
+                blockPos.getY() - info.position().y,
+                blockPos.getZ() - info.position().z);
+
+        stack.mulPose(info.rotation());
+*///?} else {
         stack.translate(
                 blockPos.getX() - info.getPosition().x,
                 blockPos.getY() - info.getPosition().y,
@@ -81,6 +113,7 @@ public enum BusInterfaceNameRenderer {
 
         final EntityRenderDispatcher renderManager = mc.getEntityRenderDispatcher();
         stack.mulPose(renderManager.cameraOrientation());
+        //?}
 
         stack.scale(0.025f, -0.025f, 0.025f);
 
@@ -93,13 +126,21 @@ public enum BusInterfaceNameRenderer {
         final float horizontalTextOffset = -font.width(name) * 0.5f;
         final float backgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
         final int backgroundColor = (int) (backgroundOpacity * 255.0F) << 24;
+        //? if >=26.1 {
+/*        final int packedLight = LightCoordsUtil.pack(15, 15);
+*///?} else {
         final int packedLight = LightTexture.pack(15, 15);
+        //?}
 
         font.drawInBatch(
                 name,
                 horizontalTextOffset,
                 0,
+                //? if >=26.1 {
+/*                0xFF000000,
+*///?} else {
                 0,
+                //?}
                 false,
                 matrix,
                 buffer,
@@ -121,5 +162,6 @@ public enum BusInterfaceNameRenderer {
         buffer.endBatch();
 
         stack.popPose();
+        //?}
     }
 }

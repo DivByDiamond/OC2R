@@ -3,6 +3,7 @@ package li.cil.oc2.common.bus.controller;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 import li.cil.oc2.api.bus.BlockDeviceBusElement;
 import li.cil.oc2.api.bus.DeviceBusElement;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
@@ -32,19 +33,32 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
      */
     private final Set<ChunkLocation> trackedChunks = new HashSet<>();
 
-    private final BlockEntity blockEntity;
+    private final Supplier<BlockPos> position;
+    private final Supplier<LevelAccessor> level;
 
     public BlockDeviceBusController(
             final DeviceBusElement root,
             final int baseEnergyConsumption,
             final BlockEntity blockEntity) {
+        this(root, baseEnergyConsumption, blockEntity::getBlockPos, blockEntity::getLevel);
+    }
+
+    // Resolve the host's current location lazily: the block entity can be detached from a level.
+    // Keeping these dependencies explicit also lets bus lifecycle tests run without constructing
+    // a loader-owned BlockEntity (NeoForge attachments require a running FML loader).
+    BlockDeviceBusController(
+            final DeviceBusElement root,
+            final int baseEnergyConsumption,
+            final Supplier<BlockPos> position,
+            final Supplier<LevelAccessor> level) {
         super(root, baseEnergyConsumption);
-        this.blockEntity = blockEntity;
+        this.position = position;
+        this.level = level;
     }
 
     @Override
     public long getOwnershipKey() {
-        return blockEntity.getBlockPos().asLong();
+        return position.get().asLong();
     }
 
     @Override
@@ -69,7 +83,7 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
     protected void onAfterBusScan() {
         super.onAfterBusScan();
 
-        final LevelAccessor level = blockEntity.getLevel();
+        final LevelAccessor level = this.level.get();
         if (level == null) {
             return;
         }
@@ -104,7 +118,7 @@ public final class BlockDeviceBusController extends CommonDeviceBusController {
         // Do not track the chunk the controller itself is in -- this is unneeded because
         // we expect the controller to be disposed if its chunk is unloaded.
         final ChunkLocation controllerChunkLocation =
-                ChunkLocation.of(level, blockEntity.getBlockPos());
+                ChunkLocation.of(level, position.get());
         busChunks.remove(controllerChunkLocation);
         newTrackedChunks.remove(controllerChunkLocation);
 

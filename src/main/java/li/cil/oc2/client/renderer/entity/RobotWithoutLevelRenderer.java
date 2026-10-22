@@ -1,5 +1,6 @@
 package li.cil.oc2.client.renderer.entity;
 
+//? if <26.1 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import li.cil.oc2.client.renderer.entity.model.RobotModel;
@@ -39,3 +40,4 @@ public final class RobotWithoutLevelRenderer extends BlockEntityWithoutLevelRend
         poseStack.popPose();
     }
 }
+//?}

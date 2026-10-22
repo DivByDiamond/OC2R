@@ -25,7 +25,8 @@ public final class RPCMethodJsonSerializer implements JsonSerializer<RPCMethod> 
         final RPCParameter[] parameters = method.getParameters();
         for (final RPCParameter parameter : parameters) {
             // NOPMD - fresh object required for each parameter
-            final JsonObject parameterJson = new JsonObject(); // NOPMD allocation depends on loop iteration / per-item state
+            // allocation depends on loop iteration / per-item state
+            final JsonObject parameterJson = new JsonObject(); // NOPMD
 
             parameter.getName().ifPresent(s -> parameterJson.addProperty("name", s));
             parameter.getDescription().ifPresent(s -> parameterJson.addProperty("description", s));

@@ -7,7 +7,11 @@ import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
+//? if >=26.2 {
+/*import net.minecraft.advancements.triggers.CriteriaTriggers;
+*///?} else {
 import net.minecraft.advancements.CriteriaTriggers;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,8 +25,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class BusCableItem extends ModBlockItem {
     public BusCableItem(final Block block) {
@@ -75,6 +81,10 @@ public final class BusCableItem extends ModBlockItem {
             stack.shrink(1);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 }

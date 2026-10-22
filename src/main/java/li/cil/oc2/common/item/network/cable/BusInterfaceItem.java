@@ -7,11 +7,18 @@ import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.config.Config;
+//? if >=26.1 {
+/*import li.cil.oc2.common.item.ItemProps;
+*///?}
 import li.cil.oc2.common.item.block.ModBlockItem;
 import li.cil.oc2.common.util.text.TooltipUtils;
 import li.cil.oc2.common.util.world.level.LevelUtils;
 import li.cil.oc2.platform.Platform;
+//? if >=26.2 {
+/*import net.minecraft.advancements.triggers.CriteriaTriggers;
+*///?} else {
 import net.minecraft.advancements.CriteriaTriggers;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -29,12 +36,18 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
 public final class BusInterfaceItem extends ModBlockItem {
     public BusInterfaceItem() {
+        //? if >=26.1 {
+        /*super(Blocks.BUS_CABLE.get(), ItemProps.of());
+        *///?} else {
         super(Blocks.BUS_CABLE.get());
+        //?}
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -52,7 +65,11 @@ public final class BusInterfaceItem extends ModBlockItem {
     public InteractionResult useOn(final UseOnContext context) {
         final Vec3 localHitPos =
                 context.getClickLocation().subtract(Vec3.atCenterOf(context.getClickedPos()));
+        //? if >=26.1 {
+        /*final Direction side = Direction.getApproximateNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        *///?} else {
         final Direction side = Direction.getNearest(localHitPos.x, localHitPos.y, localHitPos.z);
+        //?}
         final InteractionResult result = tryAddToBlock(context, side);
         return result.consumesAction() ? result : super.useOn(context);
     }
@@ -64,10 +81,12 @@ public final class BusInterfaceItem extends ModBlockItem {
         return result.consumesAction() ? result : super.place(context);
     }
 
+    //? if <26.1 {
     @Override
     public String getDescriptionId() {
         return getOrCreateDescriptionId();
     }
+    //?}
 
     @Override
     public void registerBlocks(final Map<Block, Item> map, final Item item) {}
@@ -116,6 +135,10 @@ public final class BusInterfaceItem extends ModBlockItem {
             stack.shrink(1);
         }
 
+        //? if >=26.1 {
+        /*return InteractionResult.SUCCESS;
+        *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
+        //?}
     }
 }

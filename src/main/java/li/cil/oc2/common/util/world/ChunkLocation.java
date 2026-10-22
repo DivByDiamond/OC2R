@@ -9,7 +9,11 @@ import net.minecraft.world.level.LevelAccessor;
 
 public record ChunkLocation(WeakReference<LevelAccessor> level, ChunkPos position) {
     public static ChunkLocation of(final LevelAccessor level, final BlockPos position) {
+        //? if >=26.1 {
+        /*return new ChunkLocation(new WeakReference<>(level), ChunkPos.containing(position));
+        *///?} else {
         return new ChunkLocation(new WeakReference<>(level), new ChunkPos(position));
+        //?}
     }
 
     public static ChunkLocation of(final LevelAccessor level, final ChunkPos position) {

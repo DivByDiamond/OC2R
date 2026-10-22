@@ -22,8 +22,6 @@ public interface LinkLocalLayer extends InternetDeviceLifecycle {
 
     String LAYER_NAME = "LinkLocal";
 
-    ////////////////////////////////////////////////////////////////////
-
     /**
      * Tries to get the next ethernet frame to send it to virtual computer later.
      *

@@ -12,6 +12,9 @@ import li.cil.oc2.common.network.message.network.NetworkInterfaceCardConfigurati
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=26.1 {
+/*import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -50,7 +53,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
     private double dragStartY;
 
     public NetworkInterfaceCardScreen(final Player player, final InteractionHand hand) {
-        super(Items.NETWORK_INTERFACE_CARD.get().getDescription());
+        super(Component.translatable(Items.NETWORK_INTERFACE_CARD.get().getDescriptionId()));
         this.player = player;
         this.hand = hand;
     }
@@ -73,9 +76,18 @@ public final class NetworkInterfaceCardScreen extends Screen {
         }
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+        final double mouseX = event.x();
+        final double mouseY = event.y();
+        final int button = event.button();
+        final boolean result = super.mouseClicked(event, doubleClick);
+*///?} else {
     @Override
     public boolean mouseClicked(final double mouseX, final double mouseY, final int button) {
         final boolean result = super.mouseClicked(mouseX, mouseY, button);
+        //?}
 
         if (!result && isMouseInBlockArea(mouseX, mouseY) && button == 0) {
             isDraggingBlock = true;
@@ -87,8 +99,14 @@ public final class NetworkInterfaceCardScreen extends Screen {
         return result;
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public boolean mouseReleased(final MouseButtonEvent event) {
+        final int button = event.button();
+*///?} else {
     @Override
     public boolean mouseReleased(final double mouseX, final double mouseY, final int button) {
+        //?}
         if (isDraggingBlock && button == 0) {
             isDraggingBlock = false;
             if (!hasDraggedBlock && focusedSide != null) {
@@ -102,6 +120,17 @@ public final class NetworkInterfaceCardScreen extends Screen {
             }
         }
 
+        //? if >=26.1 {
+/*        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean mouseDragged(
+            final MouseButtonEvent event, final double deltaX, final double deltaY) {
+        final double mouseX = event.x();
+        final double mouseY = event.y();
+        final int activeButton = event.button();
+*///?} else {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -112,6 +141,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
             final int activeButton,
             final double deltaX,
             final double deltaY) {
+        //?}
         if (isDraggingBlock && activeButton == 0) {
             if (!hasDraggedBlock) {
                 final double dx = mouseX - dragStartX;
@@ -134,6 +164,44 @@ public final class NetworkInterfaceCardScreen extends Screen {
         return true;
     }
 
+    //? if >=26.1 {
+/*    @Override
+    public void extractBackground(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTicks);
+        Sprites.NETWORK_INTERFACE_CARD_SCREEN.draw(graphics, left, top);
+    }
+
+    @Override
+    public void extractRenderState(
+            final GuiGraphics graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTicks) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
+
+        final int blockX = left + BLOCK_LEFT;
+        final int blockY = top + BLOCK_TOP;
+        focusedSide =
+                computerBlockItemRenderer.getFocusedSide(
+                        blockX - mouseX, blockY - mouseY, blockRotation);
+        computerBlockItemRenderer.render(
+                graphics, blockX, blockY, blockRotation, focusedSide, this);
+
+        // renderTooltip was here, left as comment for future reference
+
+        graphics.textWithWordWrap(
+                font,
+                INFO_TEXT,
+                left + INFO_TEXT_LEFT,
+                top + INFO_TEXT_TOP,
+                INFO_TEXT_WIDTH,
+                0xFFAAAAAA);
+    }
+*///?} else {
     @Override
     public void render(
             final GuiGraphics graphics,
@@ -162,6 +230,7 @@ public final class NetworkInterfaceCardScreen extends Screen {
                 INFO_TEXT_WIDTH,
                 0xAAAAAA);
     }
+    //?}
 
     @Override
     public boolean isPauseScreen() {

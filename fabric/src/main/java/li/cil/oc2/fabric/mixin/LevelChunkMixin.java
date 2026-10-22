@@ -22,8 +22,8 @@ public abstract class LevelChunkMixin {
     @Inject(method = "setBlockState", at = @At("RETURN"))
     private void oc2r$invalidateCapabilities(
             final BlockPos pos,
-            final BlockState state,
-            final boolean moved,
+            final BlockState ignoredState,
+            final boolean ignoredMoved,
             final CallbackInfoReturnable<BlockState> cir) {
         // A null return value means nothing changed.
         if (cir.getReturnValue() != null) {
@@ -33,7 +33,7 @@ public abstract class LevelChunkMixin {
 
     // NeoForge calls onChunkUnloaded on every block entity first thing in clearAllBlockEntities.
     @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
-    private void oc2r$notifyChunkUnloaded(final CallbackInfo ci) {
+    private void oc2r$notifyChunkUnloaded(final CallbackInfo ignoredCi) {
         for (final BlockEntity blockEntity : ((LevelChunk) (Object) this).getBlockEntities().values()) {
             if (blockEntity instanceof final PlatformBlockEntity platform) {
                 platform.onChunkUnloaded();

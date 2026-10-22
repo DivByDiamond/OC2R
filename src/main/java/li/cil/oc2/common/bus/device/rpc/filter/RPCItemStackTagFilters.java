@@ -37,17 +37,35 @@ public final class RPCItemStackTagFilters {
         CommonEvents.ADD_RELOAD_LISTENER.register(adder -> adder.accept(ReloadListener.INSTANCE));
     }
 
+    //? if >=26.1 {
+    /*private static final class ReloadListener extends SimpleJsonResourceReloadListener<JsonElement> {
+    *///?} else {
     private static final class ReloadListener extends SimpleJsonResourceReloadListener {
+    //?}
         private static final Gson GSON =
                 new GsonBuilder()
+                        //? if >=26.1 {
+                        /*.registerTypeAdapter(
+                                ResourceLocation.class,
+                                (com.google.gson.JsonDeserializer<ResourceLocation>)
+                                        (json, type, context) ->
+                                                ResourceLocation.parse(json.getAsString()))
+                        *///?} else {
                         .registerTypeAdapter(
                                 ResourceLocation.class, new ResourceLocation.Serializer())
+                        //?}
                         .create();
 
         public static final ReloadListener INSTANCE = new ReloadListener();
 
         public ReloadListener() {
+            //? if >=26.1 {
+            /*super(
+                    net.minecraft.util.ExtraCodecs.JSON,
+                    net.minecraft.resources.FileToIdConverter.json("item_tag_filters"));
+            *///?} else {
             super(GSON, "item_tag_filters");
+            //?}
         }
 
         @Override

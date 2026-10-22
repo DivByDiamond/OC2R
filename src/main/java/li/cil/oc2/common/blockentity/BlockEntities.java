@@ -27,7 +27,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-@SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
+@SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+        justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
 public final class BlockEntities {
     public static final Supplier<BlockEntityType<BusCableBlockEntity>>
             BUS_CABLE = register(Blocks.BUS_CABLE, BusCableBlockEntity::new);
@@ -80,6 +81,10 @@ public final class BlockEntities {
                     final BlockEntityType.BlockEntitySupplier<T> factory) {
         return Platform.registries().register("minecraft:block_entity_type", API.MOD_ID, 
                 block.getId().getPath(),
+                //? if >=26.1 {
+                /*() -> new BlockEntityType<>(factory, block.get()));
+                *///?} else {
                 () -> BlockEntityType.Builder.of(factory, block.get()).build(null));
+                //?}
     }
 }

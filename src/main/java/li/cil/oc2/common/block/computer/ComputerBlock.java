@@ -16,7 +16,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+//? if >=26.1 {
+/**///?} else {
 import net.minecraft.world.ItemInteractionResult;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,13 +40,25 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+//? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+//?}
 
+//? if >=26.1 {
+/*public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock,
+        li.cil.oc2.common.block.BlockTooltipProvider {
+*///?} else {
 public final class ComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
+//?}
 
     public ComputerBlock() {
-        super(Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1.5f, 6.0f));
+        // Split so that the 26.x replacement (li.cil.oc2.common.block.BlockProps.of()) stays
+        // within the 120 column limit of the generated source tree.
+        super(Properties.of()
+                .mapColor(MapColor.METAL)
+                .sound(SoundType.METAL)
+                .strength(1.5f, 6.0f));
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
 
@@ -59,8 +74,12 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final Item.TooltipContext context,
             final List<Component> tooltip,
             final TooltipFlag advanced) {
+        //? if >=26.1 {
+        /*TooltipUtils.addEnergyConsumption(Config.computerEnergyPerTick, tooltip);
+        *///?} else {
         super.appendHoverText(stack, context, tooltip, advanced);
         TooltipUtils.addEnergyConsumption(Config.computerEnergyPerTick, tooltip);
+        //?}
         TooltipUtils.addInventoryInformation(stack, tooltip);
     }
 
@@ -88,6 +107,16 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         return getSignal(state, level, pos, side);
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void neighborChanged(
+            final BlockState state,
+            final Level level,
+            final BlockPos pos,
+            final Block changedBlock,
+            @javax.annotation.Nullable final net.minecraft.world.level.redstone.Orientation orientation,
+            final boolean isMoving) {
+    *///?} else {
     @Override
     public void neighborChanged(
             final BlockState state,
@@ -96,6 +125,7 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final Block changedBlock,
             final BlockPos changedBlockPos,
             final boolean isMoving) {
+    //?}
         ComputerBlockRedstone.neighborChanged(level, pos);
     }
 
@@ -114,7 +144,11 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
     }
 
     @Override
+    //? if >=26.1 {
+    /*protected InteractionResult useItemOn(
+    *///?} else {
     protected ItemInteractionResult useItemOn(
+    //?}
             final ItemStack stack,
             final BlockState state,
             final Level level,
@@ -125,9 +159,19 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         final ComputerBlockEntity computer =
                 blockEntity instanceof ComputerBlockEntity c ? c : null;
+        //? if >=26.1 {
+        /*final InteractionResult result =
+        *///?} else {
         final ItemInteractionResult result =
+        //?}
                 ComputerBlockInteraction.useItemOn(stack, state, level, pos, player, hand, hitResult, computer);
-        return result != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        //? if >=26.1 {
+        /*return result != InteractionResult.TRY_WITH_EMPTY_HAND ? result
+                : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        *///?} else {
+        return result != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+                ? result : super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        //?}
     }
 
     @Override

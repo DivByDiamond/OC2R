@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerChunkCache.class)
 public abstract class ServerChunkCacheMixin {
     @Inject(method = "save", at = @At("HEAD"))
-    private void oc2r$applyLazyUnsavedChunks(final boolean flush, final CallbackInfo ci) {
+    private void oc2r$applyLazyUnsavedChunks(final boolean ignoredFlush, final CallbackInfo ignoredCi) {
         ChunkUtils.applyChunkLazyUnsaved();
     }
 }

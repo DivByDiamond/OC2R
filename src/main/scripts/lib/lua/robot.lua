@@ -72,4 +72,16 @@ M.turnAsync = function(direction)
   end
 end
 
+M.facing = function()
+  return robot:getFacing()
+end
+
+M.position = function()
+  return robot:getPosition()
+end
+
+M.calibrate = function()
+  robot:calibratePosition()
+end
+
 return M
