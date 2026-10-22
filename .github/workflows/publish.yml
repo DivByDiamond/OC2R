@@ -159,8 +159,13 @@ jobs:
             echo "modrinth_token=false" >> "$GITHUB_OUTPUT"
           fi
           # Modrinth project id: the one from gradle.properties.
-          MODRINTH_ID=$(grep -E '^modrinth_project_id=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
-          echo "modrinth_project_id=${MODRINTH_ID:-F1gm4RsH}" >> "$GITHUB_OUTPUT"
+          # The repository variable wins, so the project id can be changed without a commit;
+          # the tracked gradle.properties value is the fallback (and what a fork gets).
+          MODRINTH_ID='${{ vars.MODRINTH_PROJECT_ID }}'
+          if [ -z "$MODRINTH_ID" ]; then
+            MODRINTH_ID=$(grep -E '^modrinth_project_id=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          fi
+          echo "modrinth_project_id=${MODRINTH_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Collect release artifacts
         id: artifacts
