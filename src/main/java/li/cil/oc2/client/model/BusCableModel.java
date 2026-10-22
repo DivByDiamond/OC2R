@@ -93,8 +93,6 @@ import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 public final class BusCableModel implements IUnbakedGeometry<BusCableModel> {
     private static final ResourceLocation BUS_CABLE_STRAIGHT_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_straight");
-    private static final ResourceLocation BUS_CABLE_SUPPORT_MODEL =
-            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_support");
     private final IUnbakedGeometry<?> proxy;
 
     BusCableModel(final IUnbakedGeometry<?> proxy) {
@@ -117,36 +115,8 @@ public final class BusCableModel implements IUnbakedGeometry<BusCableModel> {
                     baker.bake(BUS_CABLE_STRAIGHT_MODEL, BlockModelRotation.X90_Y0, spriteGetter)),
             requireNonNull(baker.bake(BUS_CABLE_STRAIGHT_MODEL, modelTransform, spriteGetter))
         };
-        final BakedModel[] supportModelByFace = {
-            requireNonNull(
-                    baker.bake(
-                            BUS_CABLE_SUPPORT_MODEL,
-                            BlockModelRotation.X270_Y0,
-                            spriteGetter)), // -y
-            requireNonNull(
-                    baker.bake(
-                            BUS_CABLE_SUPPORT_MODEL,
-                            BlockModelRotation.X90_Y0,
-                            spriteGetter)), // +y
-            requireNonNull(
-                    baker.bake(
-                            BUS_CABLE_SUPPORT_MODEL,
-                            BlockModelRotation.X0_Y180,
-                            spriteGetter)), // -z
-            requireNonNull(baker.bake(BUS_CABLE_SUPPORT_MODEL, modelTransform, spriteGetter)), // +z
-            requireNonNull(
-                    baker.bake(
-                            BUS_CABLE_SUPPORT_MODEL,
-                            BlockModelRotation.X0_Y90,
-                            spriteGetter)), // -x
-            requireNonNull(
-                    baker.bake(
-                            BUS_CABLE_SUPPORT_MODEL,
-                            BlockModelRotation.X0_Y270,
-                            spriteGetter)) // +x
-        };
 
-        return new BusCableBakedModel(bakedBaseModel, straightModelByAxis, supportModelByFace);
+        return new BusCableBakedModel(bakedBaseModel, straightModelByAxis);
     }
 }
 //?}

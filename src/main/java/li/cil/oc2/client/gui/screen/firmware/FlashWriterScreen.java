@@ -43,9 +43,9 @@ public final class FlashWriterScreen extends Screen {
     private int sent;
     private volatile InputStream input;
     private volatile boolean closed;
-    private boolean busy;
-    private boolean completed;
-    private long lastReply = System.currentTimeMillis();
+    private volatile boolean busy;
+    private volatile boolean completed;
+    private volatile long lastReply = System.currentTimeMillis();
     private Component status = text("choose");
 
     private FlashWriterScreen(final BlockPos position, final UUID session, final int capacity, final String kind) {
@@ -134,7 +134,9 @@ public final class FlashWriterScreen extends Screen {
                     if (closed) return;
                     selected = path;
                     length = image.length();
-                    fileName = path.getFileName().toString();
+                    // The file name of a root path is null, so it must not be dereferenced blindly.
+                    final Path name = path.getFileName();
+                    fileName = name == null ? path.toString() : name.toString();
                     digest = image.checksum();
                     busy = false;
                     status = text("ready_to_write");
@@ -231,8 +233,21 @@ public final class FlashWriterScreen extends Screen {
         CompletableFuture.runAsync(() -> {
             try {
                 if (closed) return;
-                if (input == null) input = Files.newInputStream(selected);
-                final byte[] bytes = input.readNBytes(Math.min(FlashImageUpload.CHUNK_SIZE, length - offset));
+                // The render thread may close the input concurrently, so the stream is read once
+                // into a local variable and used from there. A runtime failure must not escape
+                // the future, or the transfer would stall until the timeout expires.
+                InputStream stream = input;
+                if (stream == null) {
+                    stream = Files.newInputStream(selected);
+                    input = stream;
+                    if (closed) {
+                        // The screen was closed while the file was being opened, so the stream
+                        // would never be closed by closeInput() and would leak the handle.
+                        closeInput();
+                        return;
+                    }
+                }
+                final byte[] bytes = stream.readNBytes(Math.min(FlashImageUpload.CHUNK_SIZE, length - offset));
                 if (bytes.length == 0) {
                     Minecraft.getInstance().execute(() -> localError("io_error"));
                     return;
@@ -242,7 +257,7 @@ public final class FlashWriterScreen extends Screen {
                     sent = bytes.length;
                     NetworkMessages.sendToServer(new FlashWriterChunkMessage(position, session, offset, bytes));
                 });
-            } catch (final IOException error) {
+            } catch (final Exception error) {
                 Minecraft.getInstance().execute(() -> localError("io_error"));
             }
         });

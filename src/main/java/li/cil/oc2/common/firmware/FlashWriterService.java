@@ -7,6 +7,7 @@ import java.nio.channels.FileChannel;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,7 +44,11 @@ public final class FlashWriterService {
     private static final int MAX_SESSIONS = 16;
     private static final int MAX_STORAGE_CAPACITY = 1024 * 1024 * 1024;
     private static final long TIMEOUT = Duration.ofMinutes(2).toMillis();
-    private static final Map<UUID, Session> SESSIONS = new HashMap<>(); // server thread only // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+    // Monitor for the one-time event registration below. It is a private object instead of the
+    // class monitor, so that no other class can lock the class itself (SEI CERT LCK00-J), and it
+    // guards exactly the state it protects: the `initialized` flag.
+    private static final Object INIT_LOCK = new Object();
+    private static final SessionRegistry SESSIONS = new SessionRegistry();
     private static final ExecutorService IO = new ThreadPoolExecutor(2, 2, 0, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<>(64), task -> {
         final Thread thread = new Thread(task, "oc2r-image-upload");
@@ -54,22 +59,33 @@ public final class FlashWriterService {
 
     private FlashWriterService() {}
 
-    public static synchronized void initialize() {
-        if (initialized) return;
-        initialized = true;
-        CommonEvents.SERVER_TICK_START.register(server -> {
-            for (final Session session : new ArrayList<>(SESSIONS.values())) {
-                if (session.player.level().getServer() == server && !valid(session)) { // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
-                    if (session.player.hasDisconnected()) discard(session);
-                    else fail(session, "expired");
+    /**
+     * Registers the session lifecycle events exactly once.
+     *
+     * <p>The monitor is a private object, so that no other class can lock this class itself
+     * (SEI CERT LCK00-J), and it guards exactly the state it protects: the {@code initialized}
+     * flag and the event registration. The session registry is not guarded by it; that registry
+     * is confined to the server thread by {@link SessionRegistry}.
+     */
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement") // one-time setup lock, not a hot path
+    public static void initialize() {
+        synchronized (INIT_LOCK) {
+            if (initialized) return;
+            initialized = true;
+            CommonEvents.SERVER_TICK_START.register(server -> {
+                for (final Session session : SESSIONS.values()) {
+                    if (session.player.level().getServer() == server && !valid(session)) { // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                        if (session.player.hasDisconnected()) discard(session);
+                        else fail(session, "expired");
+                    }
                 }
-            }
-        });
-        CommonEvents.SERVER_STOPPING.register(server -> {
-            for (final Session session : new ArrayList<>(SESSIONS.values())) {
-                if (session.player.level().getServer() == server) discard(session); // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
-            }
-        });
+            });
+            CommonEvents.SERVER_STOPPING.register(server -> {
+                for (final Session session : SESSIONS.values()) {
+                    if (session.player.level().getServer() == server) discard(session); // NOPMD - Instance identity is required for ownership, canonical states and recursion guards.
+                }
+            });
+        }
     }
 
     @javax.annotation.Nullable
@@ -196,8 +212,11 @@ public final class FlashWriterService {
                 throw new IllegalArgumentException("flat_image_required");
             }
             // Pad to the item's capacity without allocating the whole disk or putting it in NBT.
-            if (session.channel.size() < session.capacity) {
-                session.channel.position(session.capacity - 1L);
+            // The padding is bounded by the image limit, so a session cannot reserve the whole
+            // (up to 1 GiB) capacity of a large medium on the server.
+            final int padded = Math.min(session.capacity, FlashImageUpload.MAX_IMAGE_SIZE);
+            if (session.channel.size() < padded) {
+                session.channel.position(padded - 1L);
                 session.channel.write(ByteBuffer.wrap(new byte[1]));
             }
             session.channel.force(true);
@@ -292,8 +311,57 @@ public final class FlashWriterService {
         if (session.leased) session.owner.endWriting();
         // Wait for an in-flight write before closing/deleting its unpublished blob.
         session.job.whenComplete((unused, error) -> {
-            if (session.blob != null) BlobStorage.deleteAsync(session.blob);
+            final UUID blob = session.blob;
+            if (blob == null) return;
+            // The blob must be closed before it is deleted, because an open file cannot be
+            // deleted on Windows. Closing an already closed channel is a no-op, so a blob that
+            // was closed by the transfer itself is not closed twice.
+            final FileChannel channel = session.channel;
+            session.channel = null;
+            if (channel != null) {
+                try {
+                    channel.close();
+                } catch (final IOException ignored) {
+                    // The blob is deleted below, so a failed close must not stop the cleanup.
+                }
+            }
+            BlobStorage.deleteAsync(blob);
         });
+    }
+
+    /**
+     * Registry of the open flash-writer sessions.
+     *
+     * <p>The registry is confined to the server thread: it is only reached from the server's
+     * network handlers and from the server tick and stop events. Owning the map in a dedicated
+     * type states that confinement as part of the registry's contract, instead of leaving it to
+     * a comment on a static field, and it keeps the session state out of the class monitor that
+     * the one-time initialization uses.
+     */
+    private static final class SessionRegistry {
+        // Server thread only; the registry owns the map and confines it to that thread.
+        private final Map<UUID, Session> sessions = new HashMap<>(); // NOPMD - Map ownership is confined to one thread or protected by its explicit monitor.
+
+        Session get(final UUID player) {
+            return sessions.get(player);
+        }
+
+        void put(final UUID player, final Session session) {
+            sessions.put(player, session);
+        }
+
+        void remove(final UUID player, final Session session) {
+            sessions.remove(player, session);
+        }
+
+        int size() {
+            return sessions.size();
+        }
+
+        /** Snapshot of the open sessions, so that the callers can mutate the registry. */
+        List<Session> values() {
+            return new ArrayList<>(sessions.values());
+        }
     }
 
     private static final class Session {
@@ -307,9 +375,10 @@ public final class FlashWriterService {
         volatile boolean closed;
         boolean busy;
         boolean leased;
-        UUID blob;
-        FileChannel channel;
-        FlashImageUpload upload;
+        // Shared between the server thread and the upload pool, so they must be published safely.
+        volatile UUID blob;
+        volatile FileChannel channel;
+        volatile FlashImageUpload upload;
         CompletableFuture<Void> job = CompletableFuture.completedFuture(null);
 
         Session(final ServerPlayer player, final FlashMemoryFlasherBlockEntity owner) {

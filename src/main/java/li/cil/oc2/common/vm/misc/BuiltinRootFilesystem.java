@@ -74,7 +74,9 @@ public final class BuiltinRootFilesystem implements BlockDevice {
             @Override
             public long skip(final long length) throws IOException {
                 final long skipped = super.skip(length);
-                position += skipped;
+                // InputStream.skip returns -1 at the end of the stream; moving the position
+                // backwards would break the capacity guard of the bulk read below.
+                if (skipped > 0) position += skipped;
                 return skipped;
             }
         };

@@ -1,5 +1,6 @@
 package li.cil.oc2.common.network.message.firmware;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import li.cil.oc2.api.API;
@@ -12,6 +13,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        justification =
+                "the payload is a fresh array that the stream codec decoded for this message; the"
+                    + " receiver only reads it and never mutates it")
 public record FlashWriterChunkMessage(BlockPos pos, UUID session, int offset, byte[] data) implements AbstractMessage {
     public static final StreamCodec<ByteBuf, FlashWriterChunkMessage> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, FlashWriterChunkMessage::pos,

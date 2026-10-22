@@ -70,7 +70,13 @@ final class VMLifecycleSerialization {
         if (devices instanceof CompoundTag saved
                 && saved.get("onyxRootFilesystem") instanceof CompoundTag root
                 && root.contains("overlay")) {
-            if (root.contains("baseImageId") && !(root.get("baseImageId") instanceof net.minecraft.nbt.StringTag)) {
+            // The base identity selects the immutable image the sparse pages are restored onto.
+            // Without the tag the identity is unknown: resolving it would silently pick the
+            // legacy image and restore the pages onto the wrong base.
+            if (!root.contains("baseImageId")) {
+                throw new IOException("Missing OnyxOS root base identity; original snapshot retained");
+            }
+            if (!(root.get("baseImageId") instanceof net.minecraft.nbt.StringTag)) {
                 throw new IOException("Invalid OnyxOS root base identity; original snapshot retained");
             }
             //? if >=26.1 {
@@ -78,7 +84,7 @@ final class VMLifecycleSerialization {
             *///?} else {
             final String baseImageId = root.getString("baseImageId");
             //?}
-            if (root.contains("baseImageId") && baseImageId.isEmpty()) {
+            if (baseImageId.isEmpty()) {
                 throw new IOException("Empty OnyxOS root base identity; original snapshot retained");
             }
             vm.state.builtinDevices.prepareSavedOnyxRoot(baseImageId);

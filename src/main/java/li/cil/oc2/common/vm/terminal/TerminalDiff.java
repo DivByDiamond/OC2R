@@ -787,7 +787,13 @@ public final class TerminalDiff {
         final int cursorY = ByteBufCodecs.VAR_INT.decode(buf);
         final int lastRowToDisplay = ByteBufCodecs.VAR_INT.decode(buf);
         final int lastRowToDisplayMax = ByteBufCodecs.VAR_INT.decode(buf);
-        final int cursorMode = ByteBufCodecs.VAR_INT.decode(buf);
+        int cursorMode = ByteBufCodecs.VAR_INT.decode(buf);
+        // The cursor shape is selected by the mode; an out-of-range value selects no shape at
+        // all and leaves the vertex buffer empty, which fails when the buffer is built.
+        if (cursorMode < TerminalColors.CursorMode.DEFAULT
+                || cursorMode > TerminalColors.CursorMode.STEADY_BAR_LINE) {
+            cursorMode = TerminalColors.CursorMode.DEFAULT;
+        }
         final boolean cursorVisible = buf.readBoolean();
         final boolean bell = buf.readBoolean();
         final long inputModes = ByteBufCodecs.VAR_LONG.decode(buf);

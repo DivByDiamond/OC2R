@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.rpc.item.module;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.util.Comparator;
 import javax.annotation.Nullable;
@@ -7,9 +8,7 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.api.util.RobotOperationSide;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
-import li.cil.oc2.common.util.tick.TickUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -17,39 +16,60 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 
 public final class ScannerModuleDevice extends AbstractItemRPCDevice {
+    /**
+     * Result of an inspection.
+     *
+     * <p>The entity names are built for every call and are only serialised into the RPC reply
+     * that the guest receives; the array itself stays on the server and is never mutated
+     * afterwards.
+     */
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+            justification =
+                    "the entity names are built per call and only serialised into the RPC reply;"
+                        + " the guest never receives the array itself")
     public record Inspection(@Nullable String block, @Nullable String fluid, String[] entities) {
     }
 
+    /**
+     * Result of a scan.
+     *
+     * @param hardness one unsigned value per scanned block: 0 is air, 1 to 253 is the block
+     *     hardness, 254 a fluid and 255 an unbreakable or unscannable block. The values are
+     *     unsigned, so guests read 254 and 255 and not their signed byte counterparts.
+     * @param entities the types of the entities in the scanned cube.
+     */
+    @SuppressFBWarnings(
+            value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+            justification =
+                    "the hardness and entity arrays are built per scan and only serialised into"
+                        + " the RPC reply; the guest never receives the arrays themselves")
     public record ScanResult(byte[] hardness, String[] entities) {
     }
 
-    private static final String READY_AT_TAG_NAME = "ready_at";
     private static final String LAST_SCAN_TAG_NAME = "last_scan";
 
     private static final int SCAN_RADIUS = 3;
     private static final int SCAN_LENGTH = SCAN_RADIUS * 2 + 1;
     private static final int SCAN_LAYER_SIZE = SCAN_LENGTH * SCAN_LENGTH;
     private static final int SCAN_SIZE = SCAN_LAYER_SIZE * SCAN_LENGTH;
-    private static final int SCAN_COOLDOWN = TickUtils.toTicks(Duration.ofSeconds(5));
+    private static final Duration SCAN_COOLDOWN = Duration.ofSeconds(5);
     private static final int MAX_ENTITIES = 20;
 
-    private static final int HARDNESS_AIR = 0;
-    private static final int HARDNESS_MAX = 253;
-    private static final int HARDNESS_FLUID = 254;
-    private static final int HARDNESS_UNBREAKABLE = 255;
-
     private final Entity entity;
-    private long readyAt;
+    private final ScannerCooldown cooldown = new ScannerCooldown(SCAN_COOLDOWN);
     @Nullable private byte[] lastScan;
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification =
+                    "the module scans around the live robot entity; every scan needs the current"
+                        + " level and position of that very instance")
     public ScannerModuleDevice(final ItemStack identity, final Entity entity) {
         super(identity, "scanner");
         this.entity = entity;
@@ -57,7 +77,7 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
 
     @Override
     public void exportToItemStack(final CompoundTag nbt) {
-        nbt.putLong(READY_AT_TAG_NAME, readyAt);
+        cooldown.serializeNBT(nbt);
         if (lastScan != null) {
             nbt.putByteArray(LAST_SCAN_TAG_NAME, lastScan);
         }
@@ -65,11 +85,7 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
 
     @Override
     public void importFromItemStack(final CompoundTag nbt) {
-        //? if >=26.1 {
-        /*readyAt = nbt.getLongOr(READY_AT_TAG_NAME, 0);
-        *///?} else {
-        readyAt = nbt.getLong(READY_AT_TAG_NAME);
-        //?}
+        cooldown.deserializeNBT(nbt);
         //? if >=26.1 {
         /*lastScan = nbt.getByteArray(LAST_SCAN_TAG_NAME).orElse(null);
         *///?} else {
@@ -95,7 +111,7 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
                 state.isAir() ? null : BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString(),
                 fluid.isEmpty()
                         ? null
-                        : BuiltInRegistries.FLUID.getKey(getSourceFluid(fluid)).toString(),
+                        : BuiltInRegistries.FLUID.getKey(ScannerBlocks.sourceFluid(fluid)).toString(),
                 getEntities(new AABB(pos)));
     }
 
@@ -103,13 +119,15 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
             description =
                     "Measures the hardness of the blocks around the robot and lists nearby entities.",
             returnValueDescription =
-                    "a table with the block `hardness` as binary data and the list of `entities` in the scanned cube.")
+                    "a table with the block `hardness` as unsigned numbers (0 to 255, where 254 is a"
+                            + " fluid and 255 an unbreakable block) and the list of `entities` in the"
+                            + " scanned cube.")
     public ScanResult scan() {
         final Level level = entity.level();
-        if (level.getGameTime() < readyAt) {
+        if (cooldown.isRecharging()) {
             throw new IllegalStateException("scanner is recharging");
         }
-        readyAt = level.getGameTime() + SCAN_COOLDOWN;
+        cooldown.begin();
 
         final BlockPos center = getCenter();
         final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -119,12 +137,14 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
             for (int z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
                 for (int x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
                     pos.setWithOffset(center, x, y, z);
-                    hardness[index++] = (byte) getHardness(level, pos);
+                    hardness[index++] = ScannerBlocks.encode(ScannerBlocks.hardness(level, pos));
                 }
             }
         }
 
-        lastScan = hardness;
+        // The scan is kept for the per-layer queries, so it gets its own copy: the result
+        // handed to the guest must not alias the cached scan.
+        lastScan = hardness.clone();
         return new ScanResult(hardness, getEntities(new AABB(center).inflate(SCAN_RADIUS)));
     }
 
@@ -137,7 +157,8 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
 
     @Callback(
             description = "Reads one layer of the last scan. Fails if there was no scan yet.",
-            returnValueDescription = "49 bytes, the hardness of each block in the layer.")
+            returnValueDescription =
+                    "49 unsigned numbers (0 to 255), the hardness of each block in the layer.")
     public byte[] getScanLayer(
             @Parameter(value = "layer", description = "the layer, 0 to 6 from bottom to top.")
                     final int layer) {
@@ -164,7 +185,7 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
 
     private BlockState getBlockState(final BlockPos pos) {
         final Level level = entity.level();
-        return isLoaded(level, pos) ? level.getBlockState(pos) : Blocks.AIR.defaultBlockState();
+        return ScannerBlocks.isLoaded(level, pos) ? level.getBlockState(pos) : Blocks.AIR.defaultBlockState();
     }
 
     private String[] getEntities(final AABB bounds) {
@@ -173,41 +194,5 @@ public final class ScannerModuleDevice extends AbstractItemRPCDevice {
                 .limit(MAX_ENTITIES)
                 .map(other -> BuiltInRegistries.ENTITY_TYPE.getKey(other.getType()).toString())
                 .toArray(String[]::new);
-    }
-
-    // Mojang deprecated BlockStateBase.liquid() without documenting a replacement; the cached
-    // field read is still correct, and the sensitive NeoForge alternatives are unavailable from
-    // this shared source set (it also compiles on Fabric).
-    @SuppressWarnings("deprecation")
-    private static int getHardness(final Level level, final BlockPos pos) {
-        if (!isLoaded(level, pos)) {
-            return HARDNESS_UNBREAKABLE;
-        }
-
-        final BlockState state = level.getBlockState(pos);
-        if (state.isAir()) {
-            return HARDNESS_AIR;
-        }
-        if (state.liquid() || state.getBlock() instanceof LiquidBlock) {
-            return HARDNESS_FLUID;
-        }
-
-        final float hardness = state.getDestroySpeed(level, pos);
-        if (hardness < 0) {
-            return HARDNESS_UNBREAKABLE;
-        }
-        return Math.clamp(Math.round(hardness * 10), 1, HARDNESS_MAX);
-    }
-
-    private static Fluid getSourceFluid(final FluidState fluid) {
-        return fluid.getType() instanceof final FlowingFluid flowing
-                ? flowing.getSource()
-                : fluid.getType();
-    }
-
-    private static boolean isLoaded(final Level level, final BlockPos pos) {
-        return level.hasChunk(
-                SectionPos.blockToSectionCoord(pos.getX()),
-                SectionPos.blockToSectionCoord(pos.getZ()));
     }
 }

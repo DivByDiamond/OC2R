@@ -4,12 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Set;
 import li.cil.oc2.api.bus.device.Device;
 import org.junit.jupiter.api.Test;
 
 class DeviceGroupTest {
     @Test
+    @SuppressFBWarnings(
+            value = "NP_NONNULL_PARAM_VIOLATION",
+            justification =
+                    "the group is deliberately created without a block entity; the test only"
+                        + " exercises the member key bookkeeping")
     void sameDeviceTypeCanHaveDistinctStableMemberKeys() {
         final var group = new DeviceGroup(null);
         final var first = mock(Device.class);
@@ -23,6 +29,11 @@ class DeviceGroupTest {
     }
 
     @Test
+    @SuppressFBWarnings(
+            value = "NP_NONNULL_PARAM_VIOLATION",
+            justification =
+                    "the group is deliberately created without a block entity; the test only"
+                        + " exercises the member key bookkeeping")
     void duplicateMemberKeyCannotOverwriteAnotherDevice() {
         final var group = new DeviceGroup(null);
         group.addDevice("monitor", mock(Device.class));

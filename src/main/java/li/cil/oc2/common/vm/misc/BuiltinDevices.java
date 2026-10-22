@@ -47,7 +47,11 @@ public final class BuiltinDevices {
     // VirtIOBlockDevice does not serialize its backing BlockDevice. Persist the COW overlay
     // separately, restoring into the same instance already attached to rfs during construction.
     @Serialized public BuiltinRootFilesystem rootFilesystem;
-    @Serialized public BuiltinRootFilesystem onyxRootFilesystem;
+    // The Onyx overlay is the only one of these devices that is replaced after construction,
+    // when the root filesystem is selected or restored. It does not have to be public: Ceres
+    // serialises it by field name (it reads the declared fields reflectively), and the only
+    // other code that touches it lives in this package.
+    @Serialized BuiltinRootFilesystem onyxRootFilesystem;
     private BuiltinRootFilesystem attachedRootFilesystem;
 
     public BuiltinDevices(final GlobalVMContext context) {
@@ -124,6 +128,9 @@ public final class BuiltinDevices {
 
     /** Choose the saved immutable base before Ceres restores any sparse pages. */
     public void prepareSavedOnyxRoot(final String baseImageId) throws IOException {
+        // The root disk is missing when the buildroot image could not be loaded; the saved
+        // snapshot cannot be restored onto it, and dereferencing it would fail with an NPE.
+        if (rfs == null) throw new IOException("Built-in root disk is unavailable");
         final var image = OnyxOSBlockDeviceData.savedRootImage(baseImageId);
         onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
         rfs.setBlock(onyxRootFilesystem);

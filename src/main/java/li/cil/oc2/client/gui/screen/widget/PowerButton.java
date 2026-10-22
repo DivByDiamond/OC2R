@@ -1,5 +1,6 @@
 package li.cil.oc2.client.gui.screen.widget;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.widget.misc.ToggleImageButton;
@@ -26,6 +27,11 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class PowerButton extends ToggleImageButton {
     private final AbstractMachineContainer menu;
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification =
+                    "the button belongs to that menu: it sends the power action to it and reads"
+                        + " the virtual machine state from it")
     public PowerButton(final int x, final int y, final AbstractMachineContainer menu) {
         super(
                 x,

@@ -13,6 +13,17 @@ public final class RegistrationContext {
 
     private RegistrationContext() {}
 
+    /**
+     * Runs the given factory with the given registry id bound to the current thread.
+     * <p>
+     * The id is available to the factory via {@link #current()}, and the previous binding is
+     * restored once the factory returns.
+     *
+     * @param id      the id of the registry entry the factory creates.
+     * @param factory the factory creating the registry entry.
+     * @param <T>     the type of the registry entry.
+     * @return the value returned by the factory.
+     */
     public static <T> T with(final ResourceLocation id, final Supplier<T> factory) {
         final ResourceLocation previous = CURRENT_ID.get();
         CURRENT_ID.set(id);
@@ -27,6 +38,12 @@ public final class RegistrationContext {
         }
     }
 
+    /**
+     * The id of the registry entry whose factory is currently running on this thread.
+     *
+     * @return the id of the registry entry being created.
+     * @throws IllegalStateException if no registry factory is currently running on this thread.
+     */
     public static ResourceLocation current() {
         final ResourceLocation id = CURRENT_ID.get();
         if (id == null) {

@@ -20,7 +20,7 @@ class ModernModelDefinitionsTest {
     void allRegisteredItemModelsKeepTheirExistingTexturesAndDisplayTransforms() throws Exception {
         final Map<String, JsonObject> generated = ModernModelDefinitions.create();
         try (var paths = Files.list(ASSETS.resolve("models/item"))) {
-            final Set<String> existing = paths.map(path -> path.getFileName().toString())
+            final Set<String> existing = paths.map(ModernModelDefinitionsTest::fileName)
                     .filter(name -> !"network_switch.json".equals(name)).collect(Collectors.toSet());
             final Set<String> actual = generated.keySet().stream().filter(name -> name.startsWith("models/item/"))
                     .map(name -> name.substring("models/item/".length())).collect(Collectors.toSet());
@@ -50,7 +50,7 @@ class ModernModelDefinitionsTest {
         final Map<String, JsonObject> generated = ModernModelDefinitions.create();
         try (var files = Files.list(ASSETS.resolve("blockstates"))) {
             for (final Path file : files.toList()) {
-                final String name = file.getFileName().toString();
+                final String name = fileName(file);
                 if ("bus_cable.json".equals(name) || "monitor.json".equals(name)) continue;
                 final JsonObject expected = read("blockstates/" + name).getAsJsonObject("variants");
                 final JsonObject actual = generated.get("blockstates/" + name).getAsJsonObject("variants");
@@ -99,6 +99,12 @@ class ModernModelDefinitionsTest {
 
     private static JsonObject read(final String path) throws Exception {
         return JsonParser.parseString(Files.readString(ASSETS.resolve(path))).getAsJsonObject();
+    }
+
+    /** The file name of a listed path; the name of a root path is null, so it falls back. */
+    private static String fileName(final Path path) {
+        final Path name = path.getFileName();
+        return name == null ? path.toString() : name.toString();
     }
 
     private static JsonObject normalizeRotation(final JsonObject model) {

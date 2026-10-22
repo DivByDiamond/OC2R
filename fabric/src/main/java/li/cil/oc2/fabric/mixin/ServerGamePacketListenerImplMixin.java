@@ -10,9 +10,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplMixin {
-    // remap = false: the target is private and has no intermediary name either (matches the
-    // NeoForge counterpart, which needs it for the missing SRG name).
-    @Inject(method = "noBlocksAround", at = @At("RETURN"), cancellable = true, remap = false)
+    // The target is remapped like every other injection here (see ChunkMapMixin): Loom's
+    // intermediary mappings do carry a name for it (`method_29780`), so the default remapping
+    // resolves the selector. The NeoForge counterpart keeps `remap = false`, because that
+    // mapping set has no SRG name for the private method.
+    @Inject(method = "noBlocksAround", at = @At("RETURN"), cancellable = true)
     private void standingOnRobotIsNotFloating(
             final Entity entity, final CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()

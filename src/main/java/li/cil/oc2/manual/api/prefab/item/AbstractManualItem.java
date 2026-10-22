@@ -47,6 +47,16 @@ public abstract class AbstractManualItem extends li.cil.oc2.common.item.ModItem 
         //?}
     }
 
+    /**
+     * Opens the manual represented by this item when the item is used.
+     * <p>
+     * The manual is only opened on the client side.
+     *
+     * @param world  the world the item is used in.
+     * @param player the player using the item.
+     * @param hand   the hand the item is used with.
+     * @return the result of the use action.
+     */
     //? if >=26.1 {
     /*    @Override
     public InteractionResult use(final Level world, final Player player, final InteractionHand hand) {

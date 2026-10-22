@@ -191,8 +191,7 @@ public final class BusCableBakedModel implements IDynamicBakedModel {
     private final BakedModel proxy;
     private final BakedModel[] straightModelByAxis;
 
-    BusCableBakedModel(
-            BakedModel proxy, BakedModel[] straightModelByAxis, BakedModel... supportModelByFace) { // NOPMD - Legacy supports use procedural geometry; retain the shared bake signature.
+    BusCableBakedModel(BakedModel proxy, BakedModel[] straightModelByAxis) { // NOPMD - the array holds one baked model per axis and is always passed as an array.
         this.proxy = proxy;
         this.straightModelByAxis = straightModelByAxis.clone();
     }

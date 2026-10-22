@@ -35,6 +35,9 @@ final class EnergySpecValues {
         Config.blockOperationsModuleEnergyPerTick = spec.blockOperationsModuleEnergyPerTick.get();
         Config.inventoryOperationsModuleEnergyPerTick =
                 spec.inventoryOperationsModuleEnergyPerTick.get();
+        Config.scannerModuleEnergyPerTick = spec.scannerModuleEnergyPerTick.get();
+        Config.craftingModuleEnergyPerTick = spec.craftingModuleEnergyPerTick.get();
+        Config.networkTunnelEnergyPerTick = spec.networkTunnelEnergyPerTick.get();
         Config.gpuEnergyPerTickTier1 = spec.gpuEnergyPerTickTier1.get();
         Config.gpuEnergyPerTickTier2 = spec.gpuEnergyPerTickTier2.get();
         Config.gpuEnergyPerTickTier3 = spec.gpuEnergyPerTickTier3.get();

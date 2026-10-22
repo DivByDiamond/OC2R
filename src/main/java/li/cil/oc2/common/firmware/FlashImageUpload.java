@@ -1,5 +1,6 @@
 package li.cil.oc2.common.firmware;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.MessageDigest;
@@ -14,9 +15,16 @@ public final class FlashImageUpload {
     private final String expectedDigest;
     private final MessageDigest digest; // NOPMD - Each ordered upload exclusively owns its digest. // NOPMD - Each ordered upload owns its digest; it is not shared between uploads.
     private final OutputStream output;
-    private int offset;
-    private boolean finished;
+    // Written by the upload thread, read by the server thread when replying to the client.
+    private volatile int offset;
+    // Published with the upload state, so a reader on another thread cannot miss it.
+    private volatile boolean finished;
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification =
+                    "the upload writes the image into the caller's stream and is its only writer;"
+                        + " it cannot own a copy of a stream")
     public FlashImageUpload(final int length, final int capacity, final String expectedDigest,
                             final OutputStream output) {
         if (length <= 0 || length > capacity || length > MAX_IMAGE_SIZE
@@ -40,7 +48,10 @@ public final class FlashImageUpload {
         }
         output.write(bytes);
         digest.update(bytes);
-        offset += bytes.length;
+        // Only the upload thread writes the offset, so the update cannot race. It is published
+        // in two steps, because a compound assignment on a volatile field is not atomic.
+        final int next = offset + bytes.length;
+        offset = next;
     }
 
     public void finish() throws IOException {

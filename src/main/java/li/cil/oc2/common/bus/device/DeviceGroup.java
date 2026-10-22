@@ -14,10 +14,12 @@ public class DeviceGroup extends IdentityProxy<BlockEntity> implements Device {
         super(identity);
     }
 
-    public void addDevice(Device device) {
-        addDevice(device.getClass().getName(), device);
-    }
-
+    /**
+     * Adds a member to this group.
+     *
+     * <p>The key must be unique within the group and is what the guest sees; there is no
+     * derived default because a class name cannot distinguish two devices of the same class.
+     */
     public void addDevice(final String key, final Device device) {
         if (key.equals(devices.get(device))) return;
         if (key.isEmpty() || devices.containsValue(key)) {

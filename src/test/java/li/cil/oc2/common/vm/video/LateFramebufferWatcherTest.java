@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -20,6 +21,11 @@ import org.junit.jupiter.api.Test;
 
 class LateFramebufferWatcherTest {
     @Test
+    @SuppressFBWarnings(
+            value = "NP_NONNULL_PARAM_VIOLATION",
+            justification =
+                    "the monitor device is a stand-in without a block entity; the test replaces"
+                        + " its framebuffer through reflection and never mounts it")
     void lateMonitorWatcherReceivesAnIndependentStaticBaseline() throws Exception {
         verifyLateWatcher(new MonitorVideoController(null), new MonitorDevice(null, ignored -> {}));
     }

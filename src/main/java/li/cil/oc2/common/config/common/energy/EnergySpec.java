@@ -33,6 +33,8 @@ public class EnergySpec {
     public final ModConfigSpec.IntValue soundCardEnergyPerTick;
     public final ModConfigSpec.IntValue blockOperationsModuleEnergyPerTick;
     public final ModConfigSpec.IntValue inventoryOperationsModuleEnergyPerTick;
+    public final ModConfigSpec.IntValue scannerModuleEnergyPerTick;
+    public final ModConfigSpec.IntValue craftingModuleEnergyPerTick;
     public final ModConfigSpec.IntValue networkTunnelEnergyPerTick;
     public final ModConfigSpec.IntValue gpuEnergyPerTickTier1;
     public final ModConfigSpec.IntValue gpuEnergyPerTickTier2;
@@ -162,6 +164,12 @@ public class EnergySpec {
                                         + " modules")
                         .defineInRange(
                                 "inventoryOperationsModuleEnergyPerTick", 1, 0, Integer.MAX_VALUE);
+        scannerModuleEnergyPerTick =
+                builder.comment("The amount of energy consumed per tick for scanner modules")
+                        .defineInRange("scannerModuleEnergyPerTick", 2, 0, Integer.MAX_VALUE);
+        craftingModuleEnergyPerTick =
+                builder.comment("The amount of energy consumed per tick for crafting modules")
+                        .defineInRange("craftingModuleEnergyPerTick", 1, 0, Integer.MAX_VALUE);
         networkTunnelEnergyPerTick =
                 builder.comment("The amount of energy consumed per tick for network tunnels")
                         .defineInRange("networkTunnelEnergyPerTick", 2, 0, Integer.MAX_VALUE);

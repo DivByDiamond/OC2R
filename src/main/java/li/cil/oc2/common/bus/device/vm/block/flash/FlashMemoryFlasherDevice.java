@@ -22,8 +22,21 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
     private static final ByteBufferBlockDevice EMPTY_BLOCK_DEVICE =
             ByteBufferBlockDevice.create(0, false);
 
+    /**
+     * Monitor for the mount/unmount critical section.
+     *
+     * <p>The writing state that {@link #mount(VMContext)} has to observe belongs to the block
+     * entity, and {@code beginWriting()} / {@code endWriting()} on the block entity use that
+     * very monitor. The device therefore locks the block entity, but it keeps the reference
+     * private, so no other class can synchronize on it (SEI CERT LCK00-J). The previous code
+     * locked {@code identity}, which is a {@code protected} field of {@link
+     * li.cil.oc2.common.bus.device.util.IdentityProxy} and thus reachable from other packages.
+     */
+    private final Object writeLock;
+
     public FlashMemoryFlasherDevice(final T container) {
         super(container, false);
+        writeLock = container;
     }
 
     public boolean isMounted() {
@@ -32,7 +45,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
 
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
-        synchronized (identity) {
+        synchronized (writeLock) {
             if (identity.isWriting()) return VMDeviceLoadResult.fail();
             return super.mount(context);
         }
@@ -40,7 +53,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
 
     @Override
     public void unmount() {
-        synchronized (identity) {
+        synchronized (writeLock) {
             super.unmount();
         }
     }

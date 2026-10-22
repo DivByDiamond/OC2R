@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -11,6 +12,11 @@ import org.junit.jupiter.api.Test;
 
 class StreamingPcmSoundInstanceTest {
     @Test
+    @SuppressFBWarnings(
+            value = "NP_NONNULL_PARAM_VIOLATION",
+            justification =
+                    "the buffer library and the sound are not used by the streaming instance, so"
+                        + " the test passes null for them on purpose")
     void manualRestartPreservesPcmQueuedAfterAnUnderrun() throws Exception {
         final PcmSoundBuffer buffer = new PcmSoundBuffer();
         final StreamingPcmSoundInstance instance = instance(buffer);

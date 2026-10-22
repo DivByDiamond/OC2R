@@ -53,6 +53,9 @@ public class Manual implements ManualModel {
 
     // ----------------------------------------------------------------------- //
 
+    /**
+     * Creates a new manual with an empty navigation history.
+     */
     @SuppressWarnings("PMD.ConstructorCallsOverridableMethod") // Start-page/reset hooks are part of the upstream extension API.
     public Manual() {
         reset();
@@ -192,14 +195,34 @@ public class Manual implements ManualModel {
 
     // ----------------------------------------------------------------------- //
 
+    /**
+     * The path of the page the manual opens on.
+     *
+     * @return the path of the start page.
+     */
     protected String getStartPage() {
         return LANGUAGE_KEY + "/index.md";
     }
 
+    /**
+     * Creates a new navigation history entry for the given path.
+     *
+     * @param path the path the entry points to.
+     * @return the new history entry.
+     */
     protected History createHistoryEntry(final String path) {
         return new History(path);
     }
 
+    /**
+     * Finds the first entry of the given registry that matches this manual.
+     *
+     * @param key    the registry to look the entry up in.
+     * @param lookup the lookup to apply to each matching entry.
+     * @param <P>    the type of the registry entries.
+     * @param <R>    the type of the lookup result.
+     * @return the result of the first matching entry, if any.
+     */
     protected <P extends MarkdownManualRegistryEntry, R> Optional<R> find(final ResourceKey<Registry<P>> key, final Function<P, Optional<R>> lookup) {
         final ManualRegistry<P> registry = RegistryUtils.get(key);
         return registry.entrySet().stream()
@@ -208,6 +231,14 @@ public class Manual implements ManualModel {
             .sorted().map(lookup).filter(Optional::isPresent).findFirst().flatMap(x -> x);
     }
 
+    /**
+     * Checks whether the given registry entry applies to this manual.
+     *
+     * @param registry the registry the entry belongs to.
+     * @param entry    the entry to check.
+     * @param <T>      the type of the registry entries.
+     * @return {@code true} if the entry applies to this manual.
+     */
     protected <T extends MarkdownManualRegistryEntry> boolean matches(final ManualRegistry<T> registry, final T entry) {
         return switch (entry.matches(this)) {
             case PASS -> {

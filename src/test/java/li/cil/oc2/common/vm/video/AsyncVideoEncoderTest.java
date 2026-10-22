@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -171,8 +172,10 @@ final class AsyncVideoEncoderTest {
             }
             Thread.sleep(10);
         }
-        assertNotNull(null, "encoder did not complete a frame in time");
-        throw new IllegalStateException();
+        // The encoder did not publish a frame in time: fail the test with a readable message.
+        // `assertNotNull(null, ...)` would do the same, but passing null to a non-null
+        // parameter is exactly what the nullness checkers flag.
+        return fail("encoder did not complete a frame in time");
     }
 
     /** A codec whose encode call blocks until the test releases it. */

@@ -198,7 +198,10 @@ public final class FabricRegistryBridge implements RegistryBridge {
         }
 
         void registerInto(final Registry<Object> registry) {
-            final T created = factory.get();
+            // The id of the entry has to be known while the factory runs: on 26.x the block and
+            // item properties read it from the registration context. The NeoForge bridge does
+            // the same through DeferredRegister (see NeoForgeRegistryBridge#registerBlock).
+            final T created = RegistrationContext.with(id, factory);
             Registry.register(registry, id, created);
             value = created;
         }

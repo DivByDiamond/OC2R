@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.device.rpc.item.module;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -23,6 +24,11 @@ public final class CraftingModuleDevice extends AbstractItemRPCDevice {
     private final Entity entity;
     private final Robot robot;
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification =
+                    "the module crafts with the live robot entity and its live inventory; both"
+                        + " have to stay the instances the robot owns")
     public CraftingModuleDevice(
             final ItemStack identity, final Entity entity, final Robot robot) {
         super(identity, "crafting");

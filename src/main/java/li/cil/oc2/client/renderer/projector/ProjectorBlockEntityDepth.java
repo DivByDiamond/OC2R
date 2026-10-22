@@ -38,6 +38,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 //?}
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc2.api.API;
 //? if <26.2 {
 import li.cil.oc2.client.mixin.ProjectorRenderTypeAccessor;
@@ -62,6 +63,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -69,7 +72,14 @@ import org.lwjgl.system.MemoryStack;
 // Blended effects, text, item/moving-block submissions and non-quad custom pipelines are not
 // opaque occluders in this pass. No replacement bounds are emitted for unsupported geometry.
 public final class ProjectorBlockEntityDepth {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final int MAX_BLOCK_ENTITIES = 512;
+    // Vertex budget of one depth pass. The collector is created per call, so the budget is
+    // reset for every projector and frame; the batches of a pass share it.
+    private static final int MAX_DEPTH_VERTICES = 262144;
+    // Latch for the truncation warning: the collector is recreated every frame, so a plain
+    // flag would repeat the warning in the log on every frame.
+    private static final AtomicBoolean TRUNCATION_REPORTED = new AtomicBoolean();
     private static final RenderPipeline PIPELINE = pipeline();
 
     private ProjectorBlockEntityDepth() {}
@@ -282,9 +292,17 @@ public final class ProjectorBlockEntityDepth {
         }
 
         private void flushVertex() {
-            if (pending && collector.vertexCount < 262144) {
-                builder.addVertex(x, y, z).setUv(u, v).setColor(color);
-                collector.vertexCount++;
+            if (pending) {
+                if (collector.vertexCount < MAX_DEPTH_VERTICES) {
+                    builder.addVertex(x, y, z).setUv(u, v).setColor(color);
+                    collector.vertexCount++;
+                } else if (TRUNCATION_REPORTED.compareAndSet(false, true)) {
+                    // The dropped vertices leave holes in the depth pass, which shows up as
+                    // wrong occlusion; report it once instead of failing silently.
+                    LOGGER.warn(
+                            "Projector depth pass dropped geometry: the vertex budget of {} was reached",
+                            MAX_DEPTH_VERTICES);
+                }
             }
             pending = false;
         }

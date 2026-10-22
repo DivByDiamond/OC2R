@@ -66,9 +66,14 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
     }
 
     public void move(final Vec3 delta, final List<Entity> ignoredColliders) {
-        this.ignoredColliders = ignoredColliders; // NOPMD - read by canCollideWith during move
-        move(MoverType.SELF, delta);
-        this.ignoredColliders = List.of();
+        this.ignoredColliders = List.copyOf(ignoredColliders); // NOPMD - read by canCollideWith during move
+        try {
+            move(MoverType.SELF, delta);
+        } finally {
+            // The ignored colliders only apply to this movement; a failure must not leave
+            // them in place and suppress the collisions of unrelated movements.
+            this.ignoredColliders = List.of();
+        }
     }
 
     @Override
