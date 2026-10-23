@@ -1,165 +1,144 @@
 <div align="center">
 
-# OC2R
+# OpenComputers II: Modern
 
-Minecraft mod adding virtual computers with RISC-V emulation.
-Fork of [North-Western-Development/OC2R], itself a fork of [OpenComputers 2] by Sangar.
+Programmable computers, Linux, and robots inside Minecraft.
 
-![Java](https://img.shields.io/badge/Java-21+-orange?style=flat-square&logo=openjdk&logoColor=white)
-![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1-green?style=flat-square)
+![Java](https://img.shields.io/badge/Java-21%20%2F%2025-orange?style=flat-square&logo=openjdk&logoColor=white)
+![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1%20%2F%2026.1.2%20%2F%2026.2-green?style=flat-square)
 ![Fabric](https://img.shields.io/badge/Fabric-1.21.1-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
 ![GitHub Release](https://img.shields.io/github/v/release/DivByDiamond/OC2R?style=flat-square)
+
+[Downloads](https://github.com/DivByDiamond/OC2R/releases) · [Wiki](https://wiki.loki-code.dev/ru/item/index) · [Report a bug](https://github.com/DivByDiamond/OC2R/issues)
 
 [English](#english) | [Русский](#русский)
 
 </div>
 
----
-
 ![OC2R Screenshot](docs/images/screenshot.png)
-
----
 
 ## English
 
-### Overview
+### What is OC2R?
 
-OC2R is a Minecraft mod that adds fully functional virtual computers to the game. It runs a 64-bit RISC-V virtual machine (powered by [Sedna]) capable of booting Linux, with a high-level Lua API for interacting with in-game devices.
+**OpenComputers II: Modern (OC2R)** brings programmable computers and robots to Minecraft. Boot Linux, write Lua programs to control devices, connect machines over a network, and build displays with monitors and projectors.
 
-This repository is a **fork** of [North-Western-Development/OC2R], which was itself a **fork** of Sangar's original [OpenComputers 2]. The goal is to continue maintenance, fix bugs, and support newer Minecraft versions.
-
-### Quick Start
-
-1. Craft a computer and place it
-2. **Shift + Right-click** (empty hand) → power on
-3. **Right-click** (empty hand) → open terminal
-4. **Right-click with a wrench** → open inventory to install components
-
-The default Linux image is bundled with the mod - no extra download needed.
-
-> **Try a custom OS:** [OnyxOS] is a hobby operating system (custom kernel, FAT32/OnyxFS, RISC-V) that runs inside OC2R's virtual computers - build the flash image and boot it in-game.
+Each computer runs a 64-bit RISC-V virtual machine powered by [Sedna]. The Linux image and Lua runtime are bundled with the mod, so you can start programming without downloading an operating system.
 
 ### Features
 
-| Feature | Description |
-|---------|-------------|
-| RISC-V VM | Full 64-bit RISC-V emulation, boots real Linux |
-| Lua API | High-level device interaction without kernel drivers |
-| Custom hardware | Blocks, items, cables, screens, keyboards, and more |
-| Native networking | Cross-platform native networking library |
-| Persistence | Computer state saved between world reloads |
-| Device API | Simple Java API for adding virtual devices in addons |
+- **Programmable automation:** access redstone, inventories, and other exposed devices through the high-level Lua API.
+- **Modular hardware:** choose CPUs, RAM, firmware, storage, and expansion cards for each computer.
+- **Displays and sound:** use tiered GPUs and monitors, project images onto the world, and play tones or PCM audio through a speaker.
+- **Networking:** connect computers with network cards and cables; use an Internet Card for guest network access, subject to server configuration.
+- **Programmable robots:** run programs on mobile machines that can interact with the world.
+- **Terminal:** ANSI colors, cursor control, scroll regions, Unicode text, and a built-in computer terminal that works without a GPU.
+- **Saved VM state:** CPU, RAM, and device state persist across world reloads.
+- **Built-in manual:** English and Russian guides cover hardware, programming, and networking.
+- **Custom operating systems and addons:** experiment with [OnyxOS], or add virtual devices through the Java API.
 
-### Compatibility
+### Supported versions
 
-| Mod | Status |
-|-----|--------|
-| Create | ✅ Supported |
-| Create: Aeronautics | ✅ Supported |
-| Valkyrien Skies | ✅ Supported |
-| ProjectRed Transmission | ✅ Bundled redstone |
-| JEI | ✅ Recipe viewer integration |
-| Sable | ✅ Defensive capability lookups |
-| Any mod with `WRENCHES` tag | ✅ Automatic wrench support |
-| Any mod via IMC | ✅ Custom RPC type adapters |
+| Minecraft | Loader | Java |
+|-----------|--------|------|
+| 1.21.1 | NeoForge | 21 |
+| 1.21.1 | Fabric | 21 |
+| 26.1.2 | NeoForge | 25 |
+| 26.2 | NeoForge | 25 |
 
-### Dependencies
+Fabric 26.x support is planned. Download the file matching your Minecraft version and loader. Fabric 1.21.1 requires **Fabric API**; Team Reborn Energy and Forge Config API Port are bundled.
 
-- **Required:** Minecraft 1.21.1 with NeoForge 21.1.243+ or Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
-- **Optional:** JEI (recipe viewer, NeoForge)
+### Getting started
 
-| Minecraft | NeoForge | Fabric |
-|-----------|----------|--------|
-| 1.21.1 | ✅ supported | ✅ supported |
-| 26.1.2 / 26.2 | 🚧 in development: compiles, client run in progress, not released | ❌ not available (Fabric Loom cannot remap 26.x yet) |
+1. Install the matching OC2R JAR in your `mods/` folder, along with Fabric API if using Fabric.
+2. Craft and place a computer. Prepare a CPU and RAM; four 8 MiB memory modules (32 MiB total) are a practical starting configuration.
+3. Right-click with a scrench to open the component inventory. Install the CPU, RAM, and Linux firmware. The survival computer recipe includes the firmware chip; computers obtained another way may need one added separately.
+4. Supply energy, then right-click the front of the computer with an empty hand to open the terminal. Press its power button, wait for the login prompt, and log in as `root`. Shift + right-click with an empty hand also starts the computer.
+5. Use the built-in manual to explore scripting and devices. An extra hard drive and GPU are not required for the default Linux boot and built-in terminal.
 
-### Libraries
+For an external monitor, add a GPU, connect the display through bus interfaces and bus cables, and supply power to the display.
 
-OC2R builds on top of these libraries (links to their source):
+From the Lua interpreter, a connected Redstone Interface can be controlled with:
 
-- [Sedna] - 64-bit RISC-V CPU emulator (NWD fork of [Sedna upstream])
-- [Ceres] - annotation-driven (de)serialization
-- [Minux] - buildroot-based Linux images for the VM (sedna-buildroot)
-- [OC2R Native Networking] - cross-platform native networking library
-- [jcodec] - H.264 video decoding (vendored in `li.cil.oc2.jcodec`)
+```lua
+require("devices"):find("redstone"):setRedstoneOutput("up", 15)
+```
 
-### Installation
+See the [wiki item guide](https://wiki.loki-code.dev/ru/item/index) (Russian) and the [quickstart guide](src/main/resources/assets/oc2r/doc/en_us/getting_started.md).
 
-1. Download the jar from [Releases](../../releases)
-2. Place it in your `mods/` folder
-3. Restart the server or client
+### Create compatibility
 
----
+OC2R includes compatibility handling for **Create** and **Create: Aeronautics**, including computers on moving contraptions. Availability depends on the Minecraft, loader, and integration versions; check the relevant release notes when assembling a modpack.
+
+### For server owners
+
+Each running computer emulates a real machine and consumes host CPU time and memory. Size guest RAM and the number of active computers to suit your server, and review the energy and Internet Card settings before opening the server to players.
 
 ## Русский
 
-### Обзор
+### Что такое OC2R?
 
-OC2R - мод для Minecraft, добавляющий полноценные виртуальные компьютеры. Он запускает 64-битную RISC-V виртуальную машину (на базе [Sedna]), способную загружать Linux, с высокоуровневым Lua API для взаимодействия с игровыми устройствами.
+**OpenComputers II: Modern (OC2R)** добавляет в Minecraft программируемые компьютеры и роботов. Загружайте Linux, управляйте устройствами через Lua, объединяйте машины в сеть и создавайте экраны с мониторами и проекторами.
 
-Этот репозиторий является **форком** [North-Western-Development/OC2R], который сам был **форком** оригинального [OpenComputers 2] от Sangar. Цель - продолжать поддержку, исправлять баги и поддерживать актуальные версии Minecraft.
-
-### Быстрый старт
-
-1. Скрафтите компьютер и поставьте в мире
-2. **Shift + ПКМ** (пустой рукой) - включить
-3. **ПКМ** (пустой рукой) - открыть терминал
-4. **ПКМ с гаечным ключом** - открыть инвентарь для компонентов
-
-Стандартный Linux-образ уже встроен в мод - ничего качать не нужно.
-
-> **Попробуйте свою ОС:** [OnyxOS] - хобби-операционная система (свой кернел, FAT32/OnyxFS, RISC-V), которая запускается на виртуальных компьютерах OC2R - соберите flash-образ и загрузите его в игре.
+Каждый компьютер работает на 64-битной виртуальной машине RISC-V на базе [Sedna]. Linux и среда Lua уже входят в мод: отдельно скачивать операционную систему не требуется.
 
 ### Возможности
 
-| Возможность | Описание |
-|-------------|----------|
-| RISC-V VM | Полная эмуляция 64-битного RISC-V, загрузка реального Linux |
-| Lua API | Взаимодействие с устройствами без драйверов ядра |
-| Кастомное железо | Блоки, предметы, провода, экраны, клавиатуры и т.д. |
-| Нативная сеть | Кроссплатформенная нативная библиотека |
-| Персистентность | Состояние компьютера сохраняется между перезагрузками |
-| Device API | Простой Java API для добавления устройств в аддоны |
+- **Автоматизация:** управляйте редстоуном, инвентарями и другими доступными устройствами через высокоуровневый Lua API.
+- **Модульное железо:** выбирайте процессоры, память, прошивки, накопители и платы расширения.
+- **Изображение и звук:** используйте видеокарты разных уровней и мониторы, проецируйте изображение на мир, воспроизводите тоны и PCM-аудио через динамик.
+- **Сети:** соединяйте компьютеры сетевыми картами и кабелями; Internet Card даёт гостевой системе доступ к сети в пределах настроек сервера.
+- **Программируемые роботы:** запускайте программы на мобильных машинах, взаимодействующих с миром.
+- **Терминал:** ANSI-цвета, управление курсором, области прокрутки, Unicode и встроенный экран компьютера, работающий без видеокарты.
+- **Сохранение состояния ВМ:** процессор, оперативная память и устройства сохраняют состояние между загрузками мира.
+- **Встроенное руководство:** инструкции по железу, программированию и сетям на русском и английском.
+- **Свои ОС и аддоны:** экспериментируйте с [OnyxOS] или добавляйте виртуальные устройства через Java API.
 
-### Совместимость
+### Поддерживаемые версии
 
-| Мод | Статус |
-|-----|--------|
-| Create | ✅ Поддерживается |
-| Create: Aeronautics | ✅ Поддерживается |
-| Valkyrien Skies | ✅ Поддерживается |
-| ProjectRed Transmission | ✅ Bundled redstone |
-| JEI | ✅ Интеграция рецептов |
-| Sable | ✅ Защитные capability-запросы |
-| Любой мод с тегом `WRENCHES` | ✅ Автоматически, гаечный ключ |
-| Любой мод через IMC | ✅ Кастомные RPC type-адаптеры |
+| Minecraft | Загрузчик | Java |
+|-----------|-----------|------|
+| 1.21.1 | NeoForge | 21 |
+| 1.21.1 | Fabric | 21 |
+| 26.1.2 | NeoForge | 25 |
+| 26.2 | NeoForge | 25 |
 
-### Зависимости
+Поддержка Fabric 26.x запланирована. Скачивайте файл для своей версии Minecraft и загрузчика. Для Fabric 1.21.1 нужен **Fabric API**; Team Reborn Energy и Forge Config API Port уже включены в сборку.
 
-- **Обязательные:** Minecraft 1.21.1 с NeoForge 21.1.243+ или Fabric (Fabric API, Team Reborn Energy, Forge Config API Port), Java 21+
-- **Опциональные:** JEI (просмотр рецептов, NeoForge)
+### Быстрый старт
 
-| Minecraft | NeoForge | Fabric |
-|-----------|----------|--------|
-| 1.21.1 | ✅ поддерживается | ✅ поддерживается |
-| 26.1.2 / 26.2 | 🚧 в разработке: компилируется, клиент проверяется, не выпущено | ❌ недоступно (Fabric Loom пока не умеет ремапить 26.x) |
+1. Поместите подходящий JAR OC2R в папку `mods/`. Для Fabric также установите Fabric API.
+2. Скрафтите и поставьте компьютер. Подготовьте процессор и оперативную память; для начала подойдут четыре модуля по 8 МиБ (32 МиБ суммарно).
+3. Откройте инвентарь компонентов ПКМ с ключом и установите процессор, память и Linux-прошивку. Рецепт компьютера в выживании включает чип прошивки; при получении компьютера другим способом его может потребоваться добавить отдельно.
+4. Подайте питание и откройте терминал ПКМ пустой рукой по передней стороне компьютера. Нажмите кнопку питания, дождитесь приглашения входа и войдите как `root`. Shift + ПКМ пустой рукой также запускает компьютер.
+5. Откройте встроенное руководство, чтобы освоить программирование и устройства. Для стандартного Linux и встроенного терминала отдельный жёсткий диск и видеокарта не нужны.
 
-### Библиотеки
+Для внешнего монитора установите видеокарту, подключите экран через шинные интерфейсы и кабели, затем подайте питание на экран.
 
-OC2R построен поверх этих библиотек (ссылки на их исходный код):
+В интерпретаторе Lua подключённым редстоун-интерфейсом можно управлять так:
 
-- [Sedna] - 64-битный эмулятор RISC-V (форк NWD, оригинал - [Sedna upstream])
-- [Ceres] - аннотационная (де)сериализация
-- [Minux] - buildroot-образы Linux для ВМ (sedna-buildroot)
-- [OC2R Native Networking] - кроссплатформенная нативная сетевая библиотека
-- [jcodec] - декодирование H.264 видео (вендорится в `li.cil.oc2.jcodec`)
+```lua
+require("devices"):find("redstone"):setRedstoneOutput("up", 15)
+```
 
-### Установка
+Подробнее: [предметы и устройства на вики](https://wiki.loki-code.dev/ru/item/index) и [быстрый старт](src/main/resources/assets/oc2r/doc/ru_ru/getting_started.md).
 
-1. Скачайте jar из [Releases](../../releases)
-2. Поместите в папку `mods/`
-3. Перезапустите сервер или клиент
+### Совместимость с Create
+
+В OC2R предусмотрена совместимость с **Create** и **Create: Aeronautics**, включая компьютеры на движущихся конструкциях. Доступность зависит от версий Minecraft, загрузчика и интеграции; при сборке модпака сверяйтесь с примечаниями к релизам.
+
+### Владельцам серверов
+
+Каждый работающий компьютер эмулирует отдельную машину и использует процессорное время и память хоста. Подбирайте объём гостевой RAM и количество активных компьютеров под ресурсы сервера, а перед открытием сервера проверьте настройки энергии и Internet Card.
+
+## Project and credits
+
+OC2R continues [North-Western-Development/OC2R], a fork of Sangar's [OpenComputers 2], the spiritual successor to OpenComputers. This is an independent continuation, not an official OpenComputers project.
+
+Maintained by [TumRedSun](https://github.com/TumRedSun), [loki5512344](https://codeberg.org/loki5512344), and contributors. Thanks to [pocketprobe](https://github.com/pocketprobe) for upstream bug fixes.
+
+The mod builds on [Sedna], [Ceres], [Minux], [OC2R Native Networking], and vendored [jcodec].
 
 ---
 
@@ -173,7 +152,8 @@ The build multiplexes Minecraft versions through [Stonecutter](https://stonecutt
 ./gradlew :1.21.1:build :fabric:1.21.1:build   # NeoForge + Fabric on 1.21.1
 ./gradlew :1.21.1:gameTest                     # NeoForge GameTests
 ./gradlew :fabric:1.21.1:runGameTest           # Fabric GameTests
-./gradlew :26.1.2:compileJava                  # NeoForge on 26.1.2 (Java 25)
+./gradlew :26.1.2:assemble :26.2:assemble     # NeoForge on 26.x (Java 25)
+bash scripts/verify-stage3.sh --console=plain # Four-target acceptance matrix
 ```
 
 Switch the sources to another version with `./gradlew "Set active project to 26.1.2"` and reset with `./gradlew "Reset active project"` before committing.
