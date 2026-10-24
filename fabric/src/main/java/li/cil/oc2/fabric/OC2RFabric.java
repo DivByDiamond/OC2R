@@ -1,7 +1,12 @@
 package li.cil.oc2.fabric;
 
+//? if >=26.1 {
+/*import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
+*///?} else {
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents;
+//?}
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.capabilities.CapabilityProviders;
 import li.cil.oc2.common.config.AsyncConfig;
@@ -25,6 +30,15 @@ public final class OC2RFabric implements ModInitializer {
     public void onInitialize() {
         ModBootstrap.initializeLibraries();
 
+        //? if >=26.1 {
+        /*ConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.COMMON, CommonSpec.CONFIG_SPEC);
+        ConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.CLIENT, ClientSpec.CLIENT_CONFIG_SPEC);
+        ConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.SERVER, AsyncConfig.SERVER_SPEC);
+        ModConfigEvents.loading(API.MOD_ID)
+                .register(config -> ConfigManager.handleConfigLoaded(config.getType() == ModConfig.Type.CLIENT));
+        ModConfigEvents.reloading(API.MOD_ID)
+                .register(config -> ConfigManager.handleConfigLoaded(config.getType() == ModConfig.Type.CLIENT));
+        *///?} else {
         NeoForgeConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.COMMON, CommonSpec.CONFIG_SPEC);
         NeoForgeConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.CLIENT, ClientSpec.CLIENT_CONFIG_SPEC);
         NeoForgeConfigRegistry.INSTANCE.register(API.MOD_ID, ModConfig.Type.SERVER, AsyncConfig.SERVER_SPEC);
@@ -32,6 +46,7 @@ public final class OC2RFabric implements ModInitializer {
                 .register(config -> ConfigManager.handleConfigLoaded(config.getType() == ModConfig.Type.CLIENT));
         NeoForgeModConfigEvents.reloading(API.MOD_ID)
                 .register(config -> ConfigManager.handleConfigLoaded(config.getType() == ModConfig.Type.CLIENT));
+        //?}
 
         ModBootstrap.queueRegistrations();
         ModBootstrap.registerListeners();

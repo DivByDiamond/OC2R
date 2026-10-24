@@ -7,6 +7,8 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -158,7 +160,12 @@ public final class ModRenderType {
                         RenderType.create(
                                 API.MOD_ID + "/framebuffer",
                                 RenderSetup.builder(FRAMEBUFFER_PIPELINE)
-                                        .withTexture("Sampler0", key)
+                                        .withTexture(
+                                                "Sampler0",
+                                                key,
+                                                () ->
+                                                        RenderSystem.getSamplerCache()
+                                                                .getClampToEdge(FilterMode.LINEAR))
                                         .createRenderSetup()));
     }
 
@@ -190,6 +197,8 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Map;
@@ -337,7 +346,12 @@ public final class ModRenderType {
                         RenderType.create(
                                 API.MOD_ID + "/framebuffer",
                                 RenderSetup.builder(FRAMEBUFFER_PIPELINE)
-                                        .withTexture("Sampler0", key)
+                                        .withTexture(
+                                                "Sampler0",
+                                                key,
+                                                () ->
+                                                        RenderSystem.getSamplerCache()
+                                                                .getClampToEdge(FilterMode.LINEAR))
                                         .createRenderSetup()));
     }
 

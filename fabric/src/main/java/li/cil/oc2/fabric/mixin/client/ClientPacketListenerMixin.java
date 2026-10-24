@@ -28,7 +28,11 @@ public abstract class ClientPacketListenerMixin {
                     target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread("
                             + "Lnet/minecraft/network/protocol/Packet;"
                             + "Lnet/minecraft/network/PacketListener;"
+                            //? if >=26.1 {
+/*                            + "Lnet/minecraft/network/PacketProcessor;)V",
+*///?} else {
                             + "Lnet/minecraft/util/thread/BlockableEventLoop;)V",
+                            //?}
                     shift = At.Shift.AFTER),
             cancellable = true)
     private void oc2r$onDataPacket(final ClientboundBlockEntityDataPacket packet, final CallbackInfo ci) {

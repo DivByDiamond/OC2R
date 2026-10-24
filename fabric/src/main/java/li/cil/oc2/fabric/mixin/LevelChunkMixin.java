@@ -23,7 +23,11 @@ public abstract class LevelChunkMixin {
     private void oc2r$invalidateCapabilities(
             final BlockPos pos,
             final BlockState ignoredState,
+            //? if >=26.1 {
+            /*final int ignoredFlags,
+            *///?} else {
             final boolean ignoredMoved,
+            //?}
             final CallbackInfoReturnable<BlockState> cir) {
         // A null return value means nothing changed.
         if (cir.getReturnValue() != null) {

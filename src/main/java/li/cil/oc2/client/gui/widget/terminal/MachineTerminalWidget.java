@@ -92,7 +92,7 @@ public final class MachineTerminalWidget {
                     .scale(
                             getInnerWidth() / (float) terminal.getWidth(),
                             TERMINAL_HEIGHT / (float) terminal.getHeight());
-            final ScreenRectangle scissor = graphics.peekScissorStack();
+            final ScreenRectangle scissor = li.cil.oc2.client.ClientCompat.peekScissorStack(graphics);
             final ScreenRectangle area = new ScreenRectangle(
                             leftPos + TERMINAL_X,
                             topPos + TERMINAL_Y,
@@ -105,15 +105,15 @@ public final class MachineTerminalWidget {
                 return;
             }
             if (snapshot.backgroundVertexCount() > 0) {
-                graphics.submitGuiElementRenderState(new TerminalGuiElement.Background(
+                li.cil.oc2.client.ClientCompat.submitGuiElement(graphics, new TerminalGuiElement.Background(
                         snapshot, pose, bounds, bounds));
             }
             if (snapshot.textVertexCount() > 0) {
-                graphics.submitGuiElementRenderState(new TerminalGuiElement.Text(
+                li.cil.oc2.client.ClientCompat.submitGuiElement(graphics, new TerminalGuiElement.Text(
                         snapshot, pose, TerminalGuiElement.fontTexture(), bounds, bounds));
             }
             if (snapshot.cursorVisible()) {
-                graphics.submitGuiElementRenderState(
+                li.cil.oc2.client.ClientCompat.submitGuiElement(graphics,
                         new TerminalGuiElement.Cursor(snapshot, pose, bounds, bounds));
             }
 *///?} else {

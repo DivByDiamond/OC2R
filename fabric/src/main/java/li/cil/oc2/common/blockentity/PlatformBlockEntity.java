@@ -1,5 +1,24 @@
 package li.cil.oc2.common.blockentity;
 
+//? if >=26.1 {
+/*import javax.annotation.Nullable;
+import li.cil.oc2.common.util.nbt.NBTUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+*///?} else {
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -11,6 +30,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+//?}
 
 /**
  * Fabric side of the loader specific block entity base class; the NeoForge module has a class with the
@@ -34,7 +54,11 @@ public abstract class PlatformBlockEntity extends BlockEntity {
 
     /** Called on the client with the data of {@link #getUpdateTag}; by default the data is loaded. */
     public void handleUpdateTag(final CompoundTag tag, final HolderLookup.Provider registries) {
+        //? if >=26.1 {
+        /*loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registries, tag));
+        *///?} else {
         loadWithComponents(tag, registries);
+        //?}
     }
 
     /** Called on the client with the data of {@link #getUpdatePacket()}; by default the data is loaded. */
@@ -44,7 +68,9 @@ public abstract class PlatformBlockEntity extends BlockEntity {
             final HolderLookup.Provider registries) {
         final CompoundTag tag = packet.getTag();
         if (!tag.isEmpty()) {
-            loadWithComponents(tag, registries);
+            // Update packets carry getUpdateTag's client payload, not a complete world-save tag.
+            // Dispatch through the virtual hook so terminal envelopes and render caches are handled.
+            handleUpdateTag(tag, registries);
         }
     }
 
@@ -67,4 +93,28 @@ public abstract class PlatformBlockEntity extends BlockEntity {
     protected Object getCustomModelData() {
         return null;
     }
+
+    //? if >=26.1 {
+    /*protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+    }
+
+    protected void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+    }
+
+    @Override
+    protected final void saveAdditional(final ValueOutput output) {
+        super.saveAdditional(output);
+        final CompoundTag tag = new CompoundTag();
+        final Level level = getLevel();
+        saveAdditional(tag, level != null ? level.registryAccess() : RegistryAccess.EMPTY);
+        output.store(NBTUtils.TAG_MAP_CODEC, tag);
+    }
+
+    @Override
+    protected final void loadAdditional(final ValueInput input) {
+        super.loadAdditional(input);
+        loadAdditional(NBTUtils.toTag(input), input.lookup());
+    }
+    *///?}
+
 }

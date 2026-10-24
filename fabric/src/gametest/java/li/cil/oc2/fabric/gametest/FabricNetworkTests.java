@@ -9,12 +9,20 @@ import li.cil.oc2.platform.FabricMenuBridge;
 import li.cil.oc2.platform.FabricMessageRegistrar;
 import li.cil.oc2.platform.FabricNetworkBridge;
 import li.cil.oc2.platform.MessageContext;
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.gametest.v1.GameTest;
+*///?} else {
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.gametest.framework.GameTest;
+//?}
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+*///?} else {
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
@@ -48,7 +56,11 @@ import net.minecraft.world.level.ChunkPos;
  * decoding. Wire encoding and clientbound receivers (they only exist on the physical client, see
  * {@code FabricClientReceivers}) are not covered.
  */
-public final class FabricNetworkTests implements FabricGameTest {
+public final class FabricNetworkTests
+        //? if <26.1 {
+        implements FabricGameTest
+        //?}
+{
     private static final String NAMESPACE = "oc2r_gametest";
 
     private static final CustomPacketPayload.Type<Serverbound> SERVERBOUND = typeOf("serverbound");
@@ -157,10 +169,14 @@ public final class FabricNetworkTests implements FabricGameTest {
 
     private static CapturingConnection attach(final GameTestHelper helper, final ServerPlayer player)
             throws ReflectiveOperationException {
-        return new CapturingConnection(player.connection.connection);
+        return new CapturingConnection(li.cil.oc2.gametest.TestSupport.serverConnection(player));
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_network", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
+    //?}
     public void sendToPlayerReachesTheConnection(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -176,14 +192,18 @@ public final class FabricNetworkTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_network", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
+    //?}
     public void sendToTrackingPlayersDoesNotThrow(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
         final ServerPlayer other = helper.makeMockServerPlayerInLevel();
         final CapturingConnection connection = attach(helper, player);
         final FabricNetworkBridge bridge = new FabricNetworkBridge();
-        final ChunkPos chunk = new ChunkPos(player.blockPosition());
+        final ChunkPos chunk = player.chunkPosition();
 
         // Mock players are placed through the PlayerList, so the chunk map tracks them like real
         // ones, but the entity tracker only registers them after a few ticks. Keep sending until the
@@ -209,7 +229,11 @@ public final class FabricNetworkTests implements FabricGameTest {
         });
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_network", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
+    //?}
     public void serverboundReceiverRunsHandlerWithContext(final GameTestHelper helper)
             throws ReflectiveOperationException {
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -305,7 +329,11 @@ public final class FabricNetworkTests implements FabricGameTest {
         throw new NoSuchFieldException(name);
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_network", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_network")
+    //?}
     public void openMenuExtraDataRoundTrips(final GameTestHelper helper) throws ReflectiveOperationException {
         final MenuType<TestMenu> type = menuType();
         final ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -343,7 +371,11 @@ public final class FabricNetworkTests implements FabricGameTest {
                 final var dataMethod = payload.getClass().getDeclaredMethod("data");
                 dataMethod.setAccessible(true);
                 bytes = (byte[]) dataMethod.invoke(payload);
+                //? if >=26.1 {
+                /*final var syncMethod = payload.getClass().getDeclaredMethod("containerId");
+                *///?} else {
                 final var syncMethod = payload.getClass().getDeclaredMethod("syncId");
+                //?}
                 syncMethod.setAccessible(true);
                 syncId = (Integer) syncMethod.invoke(payload);
             }
@@ -358,11 +390,20 @@ public final class FabricNetworkTests implements FabricGameTest {
 
         // Client side: the type's codec carries the bytes over the wire and feeds the factory.
         @SuppressWarnings("unchecked")
+        //? if >=26.1 {
+        /*final ExtendedMenuType<TestMenu, byte[]> extended = (ExtendedMenuType<TestMenu, byte[]>) type;
+        *///?} else {
         final ExtendedScreenHandlerType<TestMenu, byte[]> extended = (ExtendedScreenHandlerType<TestMenu, byte[]>) type;
+        //?}
         final RegistryFriendlyByteBuf wire =
                 new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
-        extended.getPacketCodec().encode(wire, bytes);
-        final byte[] decoded = extended.getPacketCodec().decode(wire);
+        //? if >=26.1 {
+        /*final var codec = extended.getStreamCodec();
+        *///?} else {
+        final var codec = extended.getPacketCodec();
+        //?}
+        codec.encode(wire, bytes);
+        final byte[] decoded = codec.decode(wire);
         final FriendlyByteBuf data = extended.create(syncId, player.getInventory(), decoded).data;
         if (!pos.equals(data.readBlockPos()) || !"hello".equals(data.readUtf()) || data.readVarInt() != 300
                 || data.isReadable()) {

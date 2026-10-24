@@ -146,6 +146,8 @@ The mod builds on [Sedna], [Ceres], [Minux], [OC2R Native Networking], and vendo
 
 ### Building
 
+Run Gradle with Java 25 and keep a Java 21 toolchain installed for Minecraft 1.21.1. Loom 1.18 requires Java 25 even when selecting a legacy target.
+
 The build multiplexes Minecraft versions through [Stonecutter](https://stonecutter.kikugie.dev/); the working tree is kept on the `1.21.1` node. Modules: the root project (NeoForge), `core` (loader-independent code) and `fabric`.
 
 ```bash

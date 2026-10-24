@@ -105,12 +105,12 @@ public class ComputerBlockItemRenderer {
         }
         final int radius = BLOCK_RENDER_SIZE;
         final var pose = new Matrix3x2f(graphics.pose());
-        final var scissor = graphics.peekScissorStack();
+        final var scissor = li.cil.oc2.client.ClientCompat.peekScissorStack(graphics);
         final var area = new ScreenRectangle(x - radius, y - radius, radius * 2, radius * 2)
                 .transformMaxBounds(pose);
         final var bounds = scissor == null ? area : area.intersection(scissor);
         if (bounds != null) {
-            graphics.submitPictureInPictureRenderState(new ComputerPreviewRenderState(
+            li.cil.oc2.client.ClientCompat.submitPictureInPicture(graphics, new ComputerPreviewRenderState(
                     item, rotation.x, rotation.y, rotation.z, enabled, focusedSide,
                     x - radius, x + radius, y - radius, y + radius, BLOCK_RENDER_SIZE,
                     pose, scissor, bounds));

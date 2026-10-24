@@ -1,13 +1,39 @@
 package li.cil.oc2.platform;
 
+//? if >=26.1 {
+/*import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+*///?} else {
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,6 +41,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+//?}
 
 /**
  * {@link RegistryBridge} for Fabric. Fabric registries are immediate, so registrations are queued
@@ -87,6 +117,21 @@ public final class FabricRegistryBridge implements RegistryBridge {
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions") // The legacy vanilla builder accepts a null datafixer type.
+    //? if <26.1 {
+    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+            justification = "The legacy builder accepts null, as used by vanilla block entity types")
+    //?}
+    public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
+            final BiFunction<BlockPos, BlockState, T> factory, final Block... blocks) {
+        //? if >=26.1 {
+        /*return new BlockEntityType<>(factory::apply, Set.of(blocks));
+        *///?} else {
+        return BlockEntityType.Builder.of(factory::apply, blocks).build(null);
+        //?}
+    }
+
+    @Override
     public List<BlockHolder<?>> blocks(final String namespace) {
         lock.lock();
         try {
@@ -111,7 +156,11 @@ public final class FabricRegistryBridge implements RegistryBridge {
     public <T> Registry<T> createRegistry(final String registryId, final String namespace, final boolean synced) {
         return (Registry<T>) customRegistries.computeIfAbsent(registryId, id -> {
             final FabricRegistryBuilder<T, ? extends MappedRegistry<T>> builder =
+                    //? if >=26.1 {
+                    /*FabricRegistryBuilder.create(ResourceKey.<T>createRegistryKey(ResourceLocation.parse(id)));
+                    *///?} else {
                     FabricRegistryBuilder.createSimple(ResourceKey.<T>createRegistryKey(ResourceLocation.parse(id)));
+                    //?}
             if (synced) {
                 builder.attribute(RegistryAttribute.SYNCED);
             }
@@ -146,7 +195,11 @@ public final class FabricRegistryBridge implements RegistryBridge {
         if (custom != null) {
             return (Registry<Object>) custom;
         }
+        //? if >=26.1 {
+        /*final Registry<?> builtIn = BuiltInRegistries.REGISTRY.getValue(ResourceLocation.parse(registryId));
+        *///?} else {
         final Registry<?> builtIn = BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(registryId));
+        //?}
         if (builtIn == null) {
             throw new IllegalStateException("Unknown registry " + registryId);
         }
@@ -168,7 +221,11 @@ public final class FabricRegistryBridge implements RegistryBridge {
             // initializer) take registrations immediately; vanilla ones are frozen by then.
             final Registry<?> existing = customRegistries.get(entry.registryId) != null
                     ? customRegistries.get(entry.registryId)
+                    //? if >=26.1 {
+                    /*: BuiltInRegistries.REGISTRY.getValue(ResourceLocation.parse(entry.registryId));
+                    *///?} else {
                     : BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(entry.registryId));
+                    //?}
             if (existing == null || entry.registryId.startsWith("minecraft:")) {
                 throw new IllegalStateException(
                         "Registration of " + entry.identifier() + " after registries were bound");

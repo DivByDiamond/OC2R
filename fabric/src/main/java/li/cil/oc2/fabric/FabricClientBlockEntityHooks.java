@@ -13,6 +13,10 @@ public final class FabricClientBlockEntityHooks {
 
     public static void register() {
         ClientBlockEntityEvents.BLOCK_ENTITY_LOAD.register(FabricBlockEntityHooks::enqueue);
+        //? if >=26.1 {
+/*        ClientTickEvents.START_LEVEL_TICK.register(FabricBlockEntityHooks::drain);
+*///?} else {
         ClientTickEvents.START_WORLD_TICK.register(FabricBlockEntityHooks::drain);
+        //?}
     }
 }

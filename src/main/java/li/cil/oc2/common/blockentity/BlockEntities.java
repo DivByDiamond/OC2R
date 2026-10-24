@@ -1,6 +1,6 @@
 package li.cil.oc2.common.blockentity;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
@@ -23,12 +23,12 @@ import li.cil.oc2.common.blockentity.network.vxlan.VxlanBlockEntity;
 import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.platform.BlockHolder;
 import li.cil.oc2.platform.Platform;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
-@SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
-        justification = "Builder.build(Type) accepts null; vanilla passes null for the datafixer type")
 public final class BlockEntities {
     public static final Supplier<BlockEntityType<BusCableBlockEntity>>
             BUS_CABLE = register(Blocks.BUS_CABLE, BusCableBlockEntity::new);
@@ -74,17 +74,12 @@ public final class BlockEntities {
         // Calling this loads the class, which queues its registrations on the bridge.
     }
 
-    @SuppressWarnings("ConstantConditions") // .build(null) is fine
     private static <B extends Block, T extends BlockEntity>
             Supplier<BlockEntityType<T>> register(
                     final BlockHolder<B> block,
-                    final BlockEntityType.BlockEntitySupplier<T> factory) {
-        return Platform.registries().register("minecraft:block_entity_type", API.MOD_ID, 
+                    final BiFunction<BlockPos, BlockState, T> factory) {
+        return Platform.registries().register("minecraft:block_entity_type", API.MOD_ID,
                 block.getId().getPath(),
-                //? if >=26.1 {
-                /*() -> new BlockEntityType<>(factory, block.get()));
-                *///?} else {
-                () -> BlockEntityType.Builder.of(factory, block.get()).build(null));
-                //?}
+                () -> Platform.registries().createBlockEntityType(factory, block.get()));
     }
 }

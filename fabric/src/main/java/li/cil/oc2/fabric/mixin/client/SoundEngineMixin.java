@@ -21,7 +21,12 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(SoundEngine.class)
 public abstract class SoundEngineMixin {
     @WrapOperation(
+            //? if >=26.1 {
+/*            method = "play(Lnet/minecraft/client/resources/sounds/SoundInstance;)"
+                    + "Lnet/minecraft/client/sounds/SoundEngine$PlayResult;",
+*///?} else {
             method = "play(Lnet/minecraft/client/resources/sounds/SoundInstance;)V",
+            //?}
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/sounds/SoundBufferLibrary;getStream("

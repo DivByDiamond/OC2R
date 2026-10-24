@@ -1,0 +1,28 @@
+accessWidener v2 official
+
+# MessageContext.connection() needs the player's network connection, which is protected in vanilla.
+accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;
+
+# MenuScreens.register takes this non-public functional interface.
+accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
+
+# BlobStorage keeps its data in a world sub folder, which needs a custom level resource.
+accessible method net/minecraft/world/level/storage/LevelResource <init> (Ljava/lang/String;)V
+
+# Screen internals that NeoForge exposes through patched getters and that the shared client code uses.
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen leftPos I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen topPos I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen hoveredSlot Lnet/minecraft/world/inventory/Slot;
+accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
+
+# Fabric registers the shared robot special renderer in vanilla's codec registry.
+accessible field net/minecraft/client/renderer/special/SpecialModelRenderers ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
+
+# NeoForge exposes these extraction helpers; Fabric uses ClientCompat over vanilla state.
+accessible field net/minecraft/client/gui/GuiGraphicsExtractor guiRenderState Lnet/minecraft/client/renderer/state/gui/GuiRenderState;
+accessible field net/minecraft/client/gui/GuiGraphicsExtractor scissorStack Lnet/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack;
+accessible class net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack
+
+# Construct the same block entity types as the shared registries without NeoForge's public constructor patch.
+accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
+accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V

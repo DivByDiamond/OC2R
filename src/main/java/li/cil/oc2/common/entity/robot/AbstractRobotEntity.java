@@ -89,7 +89,7 @@ public abstract class AbstractRobotEntity extends Entity implements ICaptureInpu
     protected final void addAdditionalSaveData(final net.minecraft.world.level.storage.ValueOutput output) {
         final CompoundTag tag = new CompoundTag();
         addAdditionalSaveData(tag);
-        output.store(tag);
+        output.store(li.cil.oc2.common.util.nbt.NBTUtils.TAG_MAP_CODEC, tag);
     }
 
     @Override

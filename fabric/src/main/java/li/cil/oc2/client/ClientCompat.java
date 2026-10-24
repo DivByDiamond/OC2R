@@ -10,6 +10,9 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
+/*import net.minecraft.client.input.KeyEvent;
+*///?}
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.Slot;
@@ -48,13 +51,56 @@ public final class ClientCompat {
             final int x,
             final int y,
             final ItemStack stack) {
+        //? if >=26.1 {
+/*        graphics.setTooltipForNextFrame(
+                font, Language.getInstance().getVisualOrder(new ArrayList<>(tooltip)), x, y);
+*///?} else {
         graphics.renderTooltip(
                 font, Language.getInstance().getVisualOrder(new ArrayList<>(tooltip)), x, y);
+        //?}
     }
+
+    //? if >=26.1 {
+/*    @Nullable
+    public static net.minecraft.client.gui.navigation.ScreenRectangle peekScissorStack(
+            final GuiGraphics graphics) {
+        return graphics.scissorStack.peek();
+    }
+*///?}
+
+    //? if >=26.1 {
+/*    public static void submitGuiElement(final GuiGraphics graphics,
+            final net.minecraft.client.renderer.state.gui.GuiElementRenderState state) {
+        graphics.guiRenderState.addGuiElement(state);
+    }
+
+    public static void submitPictureInPicture(final GuiGraphics graphics,
+            final net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState state) {
+        graphics.guiRenderState.addPicturesInPictureState(state);
+    }
+
+    public static <E extends net.minecraft.world.level.block.entity.BlockEntity,
+            S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState>
+            net.minecraft.world.phys.AABB blockEntityRenderBounds(
+            final net.minecraft.client.renderer.blockentity.BlockEntityRenderer<E, S> renderer, final E entity) {
+        if (entity instanceof final li.cil.oc2.common.blockentity.energy.ChargerBlockEntity charger) {
+            return charger.getRenderBoundingBox();
+        }
+        if (entity instanceof final li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayBlockEntity gateway) {
+            return gateway.getRenderBoundingBox();
+        }
+        // Vanilla has no renderer bounds hook; a conservative block margin also covers chest lids and signs.
+        return new net.minecraft.world.phys.AABB(entity.getBlockPos()).inflate(1);
+    }
+*///?}
 
     public static boolean isActiveAndMatches(
             final KeyMapping mapping, final int keyCode, final int scanCode) {
+        //? if >=26.1 {
+/*        return mapping.matches(new KeyEvent(keyCode, scanCode, 0));
+*///?} else {
         return mapping.matches(keyCode, scanCode);
+        //?}
     }
 
     // Vanilla render targets have no stencil buffer.

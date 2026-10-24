@@ -19,7 +19,7 @@ name: ci
 on:
   workflow_dispatch:
   push:
-    branches: [ 'work' ]
+    branches: [ 'work', 'feat/fabric-26x' ]
     paths-ignore: [ '**.md', 'docs/**', 'LICENSE', 'SECURITY.md' ]
   pull_request:
     branches: [ 'work', '1.21.1' ]
@@ -55,7 +55,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '25'
-          set-default: false
       - name: Resolve toolchain paths
         id: jdks
         env:
@@ -120,6 +119,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
       - uses: actions/cache@v6
         with:
           path: |
@@ -186,6 +189,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
       - uses: actions/cache@v6
         with:
           path: |
@@ -340,6 +347,73 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  fabric-26x:
+    permissions:
+      contents: read
+    runs-on: pocketprobe-kube
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ['26.1.2', '26.2']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - name: Download dependencies
+        run: bash scripts/download-libs.sh
+      - name: Assemble Fabric
+        run: ./gradlew :fabric:${{ matrix.minecraft }}:assemble :fabric:${{ matrix.minecraft }}:checkstyleMain :fabric:${{ matrix.minecraft }}:pmdMain :fabric:${{ matrix.minecraft }}:spotbugsMain
+      - name: Install xvfb
+        run: |
+          command -v xvfb-run >/dev/null || {
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends xvfb
+          }
+      - name: Verify Fabric artifact
+        run: python3 scripts/verify-fabric-artifacts.py '${{ matrix.minecraft }}'
+      - name: Server GameTests
+        run: timeout --signal=TERM --kill-after=30s 12m ./gradlew :fabric:${{ matrix.minecraft }}:runGameTest
+      - name: Client acceptance
+        run: timeout --signal=TERM --kill-after=30s 20m ./gradlew :fabric:${{ matrix.minecraft }}:runClientGameTest -Pfabric.clientTests=true
+      - name: Upload Fabric results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametest-results-fabric-${{ matrix.minecraft }}
+          path: fabric/versions/${{ matrix.minecraft }}/build/test-results/gameTest/*.xml
+          if-no-files-found: error
+      - name: Upload Fabric diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fabric-${{ matrix.minecraft }}-diagnostics
+          path: |
+            fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/screenshots/
+            fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/logs/
+            fabric/versions/${{ matrix.minecraft }}/build/reports/
+            fabric/versions/${{ matrix.minecraft }}/build/run/gameTest/logs/
+          if-no-files-found: warn
+      - name: Upload Fabric artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: fabric-${{ matrix.minecraft }}
+          path: fabric/versions/${{ matrix.minecraft }}/build/libs/*.jar
+          if-no-files-found: error
+
   demo-scripts:
     permissions:
       contents: read
@@ -358,6 +432,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
 
       # The runner image is not guaranteed to ship a C compiler or python3
       # (the demo checks need both); install the missing packages the same
@@ -404,7 +482,7 @@ jobs:
     # require `ci` only. `if: always()` so the check still reports (red) when a
     # leg fails, instead of staying pending forever.
     name: ci
-    needs: [ lint, test, gametest, test-26x, demo-scripts ]
+    needs: [ lint, test, gametest, test-26x, fabric-26x, demo-scripts ]
     if: always()
     permissions:
       contents: read
@@ -417,11 +495,12 @@ jobs:
           TEST: ${{ needs.test.result }}
           GAMETEST: ${{ needs.gametest.result }}
           TEST_26X: ${{ needs.test-26x.result }}
+          FABRIC_26X: ${{ needs.fabric-26x.result }}
           DEMO_SCRIPTS: ${{ needs.demo-scripts.result }}
         run: |
-          for r in "$LINT" "$TEST" "$GAMETEST" "$TEST_26X" "$DEMO_SCRIPTS"; do
+          for r in "$LINT" "$TEST" "$GAMETEST" "$TEST_26X" "$FABRIC_26X" "$DEMO_SCRIPTS"; do
             if [ "$r" != "success" ]; then
-              echo "failure leg: lint=$LINT test=$TEST gametest=$GAMETEST test-26x=$TEST_26X demo-scripts=$DEMO_SCRIPTS"
+              echo "failure leg: lint=$LINT test=$TEST gametest=$GAMETEST test-26x=$TEST_26X fabric-26x=$FABRIC_26X demo-scripts=$DEMO_SCRIPTS"
               exit 1
             fi
           done

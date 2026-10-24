@@ -52,3 +52,11 @@ Open upstream branches worth a look only if the internet card is touched again: 
 - [x] Tank module texture tweak (`22a16d0`): nothing to port (no tank module here; take the PNG if the module is ever ported).
 - [x] Broken-link check (`083846d`): nothing to port (no in-game manual renderer here).
 - [x] Tests upstream changed along the way (`d153daa`, `cc16a81`, `ee02e3e`): reviewed. `cc16a81`/`ee02e3e` are mass cleanups of upstream's own test tree (81 and 61 files in a layout we do not have): nothing to port. `d153daa` adds `VMRunner.setLockstep(true)` for tests (VM runs inside the tick, so tick timeouts mean something; boot timeout 900k to 50k ticks). Not ported: it is a test-only behavior change in `VMRunner`; take it only if game tests start timing out nondeterministically.
+
+### Follow-up review — 2026-10-23
+
+The reference checkout was updated from `276b061` to `6e94a86` (17 commits).
+See [the detailed review](upstream-2026-10-23.md) for movement/destruction,
+cable lifecycle, block initialization, rendering and Velocity config-sync
+candidates. These are investigation items, not reproduced OC2R defects or
+completed ports. Sedna 5.3.0 is kept separate from the Fabric 26.x migration.

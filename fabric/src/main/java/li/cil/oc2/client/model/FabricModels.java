@@ -1,3 +1,125 @@
+//? if >=26.1 {
+/*
+package li.cil.oc2.client.model;
+
+import com.mojang.math.Quadrant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import li.cil.oc2.api.API;
+import li.cil.oc2.client.model.monitor.MonitorModelTypes;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
+import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.types.ConnectionType;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.Variant;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
+
+// Modern Fabric models use the same baked geometry as the other loader, with Fabric's dynamic mesh API.
+public final class FabricModels {
+    private static final ResourceLocation BASE = ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_base");
+    private static final ResourceLocation STRAIGHT =
+            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_straight");
+    private static final ResourceLocation LINK = ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_link");
+    private static final ResourceLocation PLUG = ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/cable_plug");
+    private static final Quadrant[] LINK_X = {Quadrant.R270, Quadrant.R90, Quadrant.R0,
+            Quadrant.R0, Quadrant.R0, Quadrant.R0};
+    private static final Quadrant[] LINK_Y = {Quadrant.R270, Quadrant.R270, Quadrant.R180,
+            Quadrant.R0, Quadrant.R90, Quadrant.R270};
+    private static final ModelDebugName DEBUG_NAME = () -> "oc2r:monitor";
+    private static final Map<String, Material> MONITOR_MATERIALS = new ConcurrentHashMap<>();
+
+    private FabricModels() {}
+
+    public static void register() {
+        ModelLoadingPlugin.register(context -> {
+            context.registerBlockStateResolver(Blocks.BUS_CABLE.get(), states -> {
+                final CableRoot root = new CableRoot();
+                for (final BlockState state : states.block().getStateDefinition().getPossibleStates()) {
+                    states.setModel(state, root);
+                }
+            });
+            context.registerBlockStateResolver(Blocks.MONITOR.get(), states -> {
+                final MonitorRoot root = new MonitorRoot();
+                for (final BlockState state : states.block().getStateDefinition().getPossibleStates()) {
+                    states.setModel(state, root);
+                }
+            });
+        });
+    }
+
+    private static final class CableRoot implements BlockStateModel.UnbakedRoot {
+        @Override
+        public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+            resolver.markDependency(BASE);
+            resolver.markDependency(STRAIGHT);
+            resolver.markDependency(LINK);
+            resolver.markDependency(PLUG);
+        }
+
+        @Override
+        public BlockStateModel bake(final BlockState state, final ModelBaker baker) {
+            final BlockStateModelPart base = new Variant(BASE).bake(baker);
+            final BlockStateModelPart[] straight = {
+                new Variant(STRAIGHT).withYRot(Quadrant.R90).bake(baker),
+                new Variant(STRAIGHT).withXRot(Quadrant.R90).bake(baker),
+                new Variant(STRAIGHT).bake(baker)
+            };
+            final List<BlockStateModelPart> connections = new ArrayList<>();
+            if (!state.getValue(BusCableStateProperties.HAS_FACADE)) {
+                for (final Direction direction : Direction.values()) {
+                    final ConnectionType connection = state.getValue(
+                            BusCableStateProperties.FACING_TO_CONNECTION_MAP.get(direction));
+                    if (connection == ConnectionType.NONE) continue;
+                    final int face = direction.get3DDataValue();
+                    connections.add(new Variant(connection == ConnectionType.CABLE ? LINK : PLUG)
+                            .withXRot(LINK_X[face]).withYRot(LINK_Y[face]).bake(baker));
+                }
+            }
+            return new FabricBusCableModel(state, base, straight, connections);
+        }
+
+        @Override
+        public Object visualEqualityGroup(final BlockState state) {
+            return state;
+        }
+    }
+
+    private static final class MonitorRoot implements BlockStateModel.UnbakedRoot {
+        @Override
+        public void resolveDependencies(final ResolvableModel.Resolver resolver) {}
+
+        @Override
+        public BlockStateModel bake(final BlockState state, final ModelBaker baker) {
+            final Map<String, Material.Baked> materials = new ConcurrentHashMap<>();
+            for (final String name : MonitorModelTypes.TEXTURE_NAMES) {
+                final Material material = MONITOR_MATERIALS.computeIfAbsent(name, FabricModels::monitorMaterial);
+                materials.put(name, baker.materials().get(material, DEBUG_NAME));
+            }
+            return new FabricMonitorModel(state, materials);
+        }
+
+        @Override
+        public Object visualEqualityGroup(final BlockState state) {
+            return MonitorModelTypes.dataFromState(state);
+        }
+    }
+
+    private static Material monitorMaterial(final String name) {
+        return new Material(MonitorModelTypes.texture(name));
+    }
+}
+*///?} else {
+
 package li.cil.oc2.client.model;
 
 import static java.util.Objects.requireNonNull;
@@ -93,3 +215,4 @@ public final class FabricModels {
         return new FabricMonitorModel(sprites, transforms);
     }
 }
+//?}

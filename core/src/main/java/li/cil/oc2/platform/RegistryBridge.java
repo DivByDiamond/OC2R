@@ -1,11 +1,16 @@
 package li.cil.oc2.platform;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Loader-independent entry point for registering game content.
@@ -32,6 +37,10 @@ public interface RegistryBridge {
 
     /** Queues an item for registration under {@code namespace:name}. */
     <I extends Item> ItemHolder<I> registerItem(String namespace, String name, Supplier<I> factory);
+
+    /** Creates a block entity type using the loader's constructor or builder access. */
+    <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
+            BiFunction<BlockPos, BlockState, T> factory, Block... blocks);
 
     /** All blocks registered through {@link #registerBlock} for {@code namespace}, in registration order. */
     List<BlockHolder<?>> blocks(String namespace);

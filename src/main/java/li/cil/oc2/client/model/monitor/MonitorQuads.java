@@ -9,8 +9,6 @@ import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.client.model.quad.BakedColors;
-import net.neoforged.neoforge.client.model.quad.BakedNormals;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -88,7 +86,7 @@ public final class MonitorQuads {
         }
 
         final BakedQuad.MaterialInfo info =
-                BakedQuad.MaterialInfo.of(material, material.sprite().transparency(), -1, true, 0, true);
+                BakedQuad.MaterialInfo.of(material, material.sprite().transparency(), -1, true, 0);
         return new BakedQuad(
                 positions[0],
                 positions[1],
@@ -99,11 +97,7 @@ public final class MonitorQuads {
                 packedUv[2],
                 packedUv[3],
                 side,
-                info,
-                BakedNormals.of(
-                        BakedNormals.computeQuadNormal(
-                                positions[0], positions[1], positions[2], positions[3])),
-                BakedColors.DEFAULT);
+                info);
     }
 
     // This parameter is a complete fixed-shape array, not a variable argument list.

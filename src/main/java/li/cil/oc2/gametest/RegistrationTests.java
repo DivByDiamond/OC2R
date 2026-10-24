@@ -41,8 +41,7 @@ public final class RegistrationTests {
                 new li.cil.oc2.common.network.message.computer.ComputerBusStateMessage(
                         helper.absolutePos(TestSupport.COMPUTER_POS),
                         li.cil.oc2.common.bus.controller.BusState.READY, 0);
-        TestSupport.assertTrue(helper, "computer payload channel must be negotiated",
-                player.connection.hasChannel(message.type().id()));
+        TestSupport.assertNeoForgePayloadChannel(helper, player, message.type().id());
         li.cil.oc2.platform.Platform.network().sendToPlayer(message, player);
         helper.succeed();
     }

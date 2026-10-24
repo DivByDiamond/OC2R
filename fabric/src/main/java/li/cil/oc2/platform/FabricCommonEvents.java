@@ -1,5 +1,17 @@
 package li.cil.oc2.platform;
 
+//? if >=26.1 {
+/*import li.cil.oc2.platform.event.CommonEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+*///?} else {
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import li.cil.oc2.platform.event.CommonEvents;
@@ -15,6 +27,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+//?}
 
 /** Fires the loader-independent {@link CommonEvents} from Fabric API callbacks (server side). */
 public final class FabricCommonEvents {
@@ -23,6 +36,7 @@ public final class FabricCommonEvents {
 
     private FabricCommonEvents() {}
 
+    /** Binds server lifecycle, chunk invalidation, and resource reload callbacks. */
     public static void register() {
         // Fabric has no "about to start" hook ahead of world loading; SERVER_STARTING is the
         // closest and runs before any level is loaded.
@@ -36,11 +50,23 @@ public final class FabricCommonEvents {
                 CommonEvents.SERVER_STOPPED.fire(listener -> listener.accept(server)));
         ServerTickEvents.START_SERVER_TICK.register(server ->
                 CommonEvents.SERVER_TICK_START.fire(listener -> listener.accept(server)));
+        //? if >=26.1 {
+        /*ServerTickEvents.START_LEVEL_TICK.register(level ->
+        *///?} else {
         ServerTickEvents.START_WORLD_TICK.register(level ->
+        //?}
                 CommonEvents.LEVEL_TICK_START.fire(listener -> listener.accept(level)));
+        //? if >=26.1 {
+        /*ServerLevelEvents.UNLOAD.register((server, level) ->
+        *///?} else {
         ServerWorldEvents.UNLOAD.register((server, level) ->
+        //?}
                 CommonEvents.LEVEL_UNLOAD.fire(listener -> listener.accept(level)));
+        //? if >=26.1 {
+        /*ServerChunkEvents.CHUNK_LOAD.register((level, chunk, generated) -> {
+        *///?} else {
         ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
+        //?}
             FabricCapabilityBridge.invalidateChunk(level, chunk.getPos());
             CommonEvents.CHUNK_LOAD.fire(listener -> listener.onChunk(level, chunk));
         });
@@ -62,9 +88,14 @@ public final class FabricCommonEvents {
     private static void addReloadListener(final PreparableReloadListener listener) {
         final ResourceLocation id =
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "reload_listener_" + reloadListenerCount++);
+        //? if >=26.1 {
+        /*ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(id, listener);
+        *///?} else {
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new Identified(id, listener));
+        //?}
     }
 
+    //? if <26.1 {
     private record Identified(ResourceLocation id, PreparableReloadListener delegate)
             implements IdentifiableResourceReloadListener {
         @Override
@@ -84,4 +115,5 @@ public final class FabricCommonEvents {
                     barrier, manager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
         }
     }
+    //?}
 }

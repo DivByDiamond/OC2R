@@ -79,6 +79,33 @@ public final class ClientCompat {
         //?}
     }
 
+    //? if >=26.1 {
+/*    @Nullable
+    public static net.minecraft.client.gui.navigation.ScreenRectangle peekScissorStack(
+            final GuiGraphics graphics) {
+        return graphics.peekScissorStack();
+    }
+*///?}
+
+    //? if >=26.1 {
+/*    public static void submitGuiElement(final GuiGraphics graphics,
+            final net.minecraft.client.renderer.state.gui.GuiElementRenderState state) {
+        graphics.submitGuiElementRenderState(state);
+    }
+
+    public static void submitPictureInPicture(final GuiGraphics graphics,
+            final net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState state) {
+        graphics.submitPictureInPictureRenderState(state);
+    }
+
+    public static <E extends net.minecraft.world.level.block.entity.BlockEntity,
+            S extends net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState>
+            net.minecraft.world.phys.AABB blockEntityRenderBounds(
+            final net.minecraft.client.renderer.blockentity.BlockEntityRenderer<E, S> renderer, final E entity) {
+        return renderer.getRenderBoundingBox(entity);
+    }
+*///?}
+
     public static boolean isActiveAndMatches(
             final KeyMapping mapping, final int keyCode, final int scanCode) {
         //? if >=26.1 {
