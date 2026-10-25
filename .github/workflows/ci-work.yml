@@ -225,7 +225,8 @@ jobs:
       # Exercises the Fabric bridges (registry/network/events/capabilities/energy) on a real
       # dedicated server; fails the job when a required Fabric game test fails.
       - name: Run Fabric game tests
-        run: ./gradlew :fabric:1.21.1:runGameTest
+        # Prefer sufficiently large tmpfs; small container /dev/shm uses RUNNER_TEMP.
+        run: bash scripts/run-fabric-gametest.sh 1.21.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -237,7 +238,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: gametest-results
-          path: 'versions/1.21.1/build/test-results/gameTest/*.xml'
+          path: |
+            versions/1.21.1/build/test-results/gameTest/*.xml
+            fabric/versions/1.21.1/build/test-results/gameTest/*.xml
+            fabric/versions/1.21.1/build/run/gameTest/logs/
+            fabric/versions/1.21.1/build/run/gameTest/crash-reports/
           if-no-files-found: error
           retention-days: 1
 
@@ -386,7 +391,7 @@ jobs:
       - name: Verify Fabric artifact
         run: python3 scripts/verify-fabric-artifacts.py '${{ matrix.minecraft }}'
       - name: Server GameTests
-        run: timeout --signal=TERM --kill-after=30s 12m ./gradlew :fabric:${{ matrix.minecraft }}:runGameTest
+        run: bash scripts/run-fabric-gametest.sh '${{ matrix.minecraft }}'
       - name: Client acceptance
         run: timeout --signal=TERM --kill-after=30s 20m ./gradlew :fabric:${{ matrix.minecraft }}:runClientGameTest -Pfabric.clientTests=true
       - name: Upload Fabric results
@@ -406,6 +411,7 @@ jobs:
             fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/logs/
             fabric/versions/${{ matrix.minecraft }}/build/reports/
             fabric/versions/${{ matrix.minecraft }}/build/run/gameTest/logs/
+            fabric/versions/${{ matrix.minecraft }}/build/run/gameTest/crash-reports/
           if-no-files-found: warn
       - name: Upload Fabric artifact
         uses: actions/upload-artifact@v7
@@ -461,6 +467,9 @@ jobs:
 
       - name: Check the demo shell scripts
         run: bash scripts/demo/run-checks.sh shell
+
+      - name: Test the Fabric GameTest runner
+        run: python3 scripts/test-fabric-gametest-runner.py
 
       - name: Compile the demo C sources (syntax only)
         run: bash scripts/demo/run-checks.sh c

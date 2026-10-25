@@ -13,8 +13,7 @@ fi
 ./gradlew :fabric:26.1.2:assemble :fabric:26.2:assemble "$@"
 python3 scripts/verify-fabric-artifacts.py 26.1.2 26.2
 for version in 26.1.2 26.2; do
-    timeout --signal=TERM --kill-after=30s 12m \
-        ./gradlew ":fabric:$version:runGameTest" "$@"
+    bash scripts/run-fabric-gametest.sh "$version" "$@"
     timeout --signal=TERM --kill-after=30s 20m \
         ./gradlew ":fabric:$version:runClientGameTest" -Pfabric.clientTests=true "$@"
 done

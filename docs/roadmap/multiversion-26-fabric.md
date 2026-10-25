@@ -1,9 +1,22 @@
-# Spike: the Fabric module against Minecraft 26.1
+# Historical spike: the Fabric module against Minecraft 26.1
 
 Feasibility spike of 2026-10-03 for stage 3 of [multiloader.md](multiloader.md) (multiversion 1.21.1 / 26.1 / 26.2, here: Fabric side, 26.1 only).
 Nothing was merged; the build changes below were made in a scratch worktree and discarded. This document is the only artifact.
 
-## Summary
+## Current status — 2026-10-24
+
+The implementation supersedes this spike: Fabric 26.1.2 and 26.2 compile,
+assemble and have completed local dedicated-server and client acceptance.
+The embedded manual replaced the external dependency, and the modern client,
+projector and persistence paths have runtime coverage. See
+[fabric-26-acceptance.md](fabric-26-acceptance.md) for the implemented layout,
+commands, exact results and remaining CI/release tracking.
+
+Everything below records the 2026-10-03 experiment, including its then-current
+blockers and effort estimates. It is preserved as historical evidence, not an
+open implementation plan. Local acceptance does not establish publication.
+
+## Historical summary
 
 - A Fabric build against 26.1 is **toolchain-feasible today**: JDK 25 can be downloaded in the sandbox, Loom, Loader, Fabric API, Forge Config API Port, Team Reborn Energy and Architectury all have 26.1 builds, the Gradle project configures and Loom sets up Minecraft 26.1.2.
 - **Markdown Manual has no 26.x build at all** (newest: 1.21.11). The in-game manual is a hard blocker on Fabric 26.1 until upstream ships one, or we drop/replace the manual dependency.

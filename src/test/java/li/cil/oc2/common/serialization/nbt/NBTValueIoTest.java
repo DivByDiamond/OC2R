@@ -12,12 +12,10 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import org.junit.jupiter.api.Test;
-*///?}
 
-/** The vanilla ValueInput bridge preserves the raw NBT used by existing VM snapshots. */
+// The vanilla ValueInput bridge preserves the raw NBT used by existing VM snapshots.
 class NBTValueIoTest {
-    //? if >=26.1 {
-    /*@Test
+    @Test
     void wholeMapBridgePreservesEveryNbtTypeAndNestedData() {
         final CompoundTag source = new CompoundTag();
         source.putByte("byte", (byte) -12);
@@ -46,5 +44,5 @@ class NBTValueIoTest {
         output.store(NBTUtils.TAG_MAP_CODEC, decoded);
         assertEquals(source, output.buildResult());
     }
-    *///?}
 }
+*///?}

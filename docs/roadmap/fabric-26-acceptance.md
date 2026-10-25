@@ -107,3 +107,8 @@ renderer compiled on all three versions. All modified workflow files parsed as
 YAML. Client acceptance used a private Xvfb display with sound disabled; logs
 and screenshots remain under `/tmp/oc2r-fabric26-client-*` and the local
 `fabric/versions/*/build/run/clientGameTest/screenshots` directories.
+
+## Branch closeout
+
+See [fabric-26-closeout.md](fabric-26-closeout.md) for portable disposable
+GameTest storage, fresh verification and CI/publication tracking.
