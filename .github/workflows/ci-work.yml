@@ -19,7 +19,7 @@ name: ci
 on:
   workflow_dispatch:
   push:
-    branches: [ 'work', 'feat/fabric-26x' ]
+    branches: [ 'work' ]
     paths-ignore: [ '**.md', 'docs/**', 'LICENSE', 'SECURITY.md' ]
   pull_request:
     branches: [ 'work', '1.21.1' ]
@@ -382,12 +382,19 @@ jobs:
         run: bash scripts/download-libs.sh
       - name: Assemble Fabric
         run: ./gradlew :fabric:${{ matrix.minecraft }}:assemble :fabric:${{ matrix.minecraft }}:checkstyleMain :fabric:${{ matrix.minecraft }}:pmdMain :fabric:${{ matrix.minecraft }}:spotbugsMain
-      - name: Install xvfb
+      - name: Install client runtime (Xvfb and fonts)
+        # Java2D initializes Fontconfig even for OC2R's bundled font. The
+        # minimal runner image has Mesa/Xvfb but may have no system fonts.
         run: |
-          command -v xvfb-run >/dev/null || {
+          if ! dpkg-query -W -f='${Status}\n' xvfb fontconfig fonts-dejavu-core 2>/dev/null | \
+              awk 'BEGIN { count=0 } /^install ok installed$/ { count++ } END { exit(count != 3) }'; then
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends xvfb
-          }
+            sudo apt-get install -y --no-install-recommends xvfb fontconfig fonts-dejavu-core
+          fi
+          command -v xvfb-run
+          FONT_FILE=$(fc-match -f '%{file}' monospace)
+          test -r "$FONT_FILE"
+          echo "Client font: $FONT_FILE"
       - name: Verify Fabric artifact
         run: python3 scripts/verify-fabric-artifacts.py '${{ matrix.minecraft }}'
       - name: Server GameTests
@@ -409,6 +416,7 @@ jobs:
           path: |
             fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/screenshots/
             fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/logs/
+            fabric/versions/${{ matrix.minecraft }}/build/run/clientGameTest/crash-reports/
             fabric/versions/${{ matrix.minecraft }}/build/reports/
             fabric/versions/${{ matrix.minecraft }}/build/run/gameTest/logs/
             fabric/versions/${{ matrix.minecraft }}/build/run/gameTest/crash-reports/

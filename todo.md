@@ -119,3 +119,5 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Complete moving-construction and Velocity backend-switch integration acceptance; see [upstream follow-up](docs/roadmap/upstream-followup-2026-10-25.md). Existing Config API Port sync is present; reproduce before adding another channel.
 - [x] Assess Sedna 5.3.0 separately: board snapshot migration, reset regressions and bundled Linux cold boot checked; see [assessment](docs/roadmap/sedna-5.3-assessment.md).
 - [ ] Upgrade Sedna in a separate change with real Minecraft warm snapshot/world migration acceptance; the Fabric release retains 5.2.0.
+
+- [x] Run current-source Onyx through real OC2R firmware, live monitor and private root on Fabric 26.1.2/26.2; minimal OnyxFS snapshot/rollback passes. The full system root reproduces `NoMem` at the 31-block snapshot limit and remains an Onyx filesystem follow-up; see [live acceptance](docs/roadmap/onyx-live-acceptance.md).

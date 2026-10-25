@@ -64,3 +64,32 @@ This is an example for the next prerelease, not a created tag or executed
 publication. Select the intended release tag and the workflow branch containing
 these fixes. A missing tag/release fails before artifact uploads. No publisher
 was dispatched during preparation.
+
+## Fresh closeout verification
+
+On 2026-10-25 the modern NeoForge unit suites passed 544 tests each, both
+modern test Checkstyle tasks passed, and legacy test sources compiled. The
+three NeoForge server suites passed 40/42/42 tests with zero failures/errors/
+skips, followed by successful main Checkstyle on all three targets.
+
+All three Fabric server suites passed through the disposable-directory wrapper:
+68 OC2R tests on 1.21.1 and 69 each on 26.1.2/26.2 (the modern reports also
+include vanilla's always-pass test). Both modern Fabric assemblies passed
+artifact validation, and both modern client acceptance runs passed, including
+bundled Linux boot, guest-generated display contents and real world save/reload.
+The first local artifact check correctly rejected old and new JARs together;
+previous builds were archived before the accepted repeat. Wrapper fixtures
+passed all 12 cases, including active-world lock retention and crash diagnostics.
+
+The first PR CI run confirmed legacy unit results (560 including core) and
+modern server execution, but its 26.2 client failed in Java2D with
+`Fontconfig head is null`: the minimal runner had no usable system fonts.
+The modern runner setup now installs Fontconfig and DejaVu alongside Xvfb and
+checks a readable font file before launching the client. The follow-up CI run,
+rather than this failed attempt, must establish final branch acceptance.
+
+The first remote run also proved the storage fallback: its Fabric 26.1.2
+server selected `/home/runner/_work/_temp/oc2r-fabric-gametest.*` and passed
+69/69 OC2R tests. Separate [live Onyx acceptance](onyx-live-acceptance.md)
+records firmware, guest framebuffer, VM/root restore and filesystem snapshot
+results using current Onyx source without replacing the bundled mod resources.
