@@ -176,6 +176,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     /** Server-thread rendezvous: keep persisted RUNNING state, but never schedule another worker. */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals") // Server identity scopes the shutdown to one live instance.
     public final void prepareForServerShutdown(final MinecraftServer server) {
         final Level level = getLevelForShutdown();
         if (level == null || level.getServer() != server) return;
