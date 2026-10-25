@@ -5,6 +5,7 @@ import li.cil.oc2.common.bus.device.rpc.filter.RPCItemStackTagFilters;
 import li.cil.oc2.common.bus.device.vm.item.network.NetworkTunnelDevice;
 import li.cil.oc2.common.serialization.BlobStorageEvents;
 import li.cil.oc2.common.util.world.chunk.ChunkUtils;
+import li.cil.oc2.common.vm.VirtualMachineShutdown;
 import li.cil.oc2.common.vm.memory.Allocator;
 
 /**
@@ -23,5 +24,6 @@ public final class CommonEventListeners {
         NetworkTunnelDevice.registerEvents();
         Allocator.register();
         ChunkUtils.register();
+        VirtualMachineShutdown.register();
     }
 }

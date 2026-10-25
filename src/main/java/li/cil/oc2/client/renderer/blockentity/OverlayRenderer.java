@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteId;
+import org.joml.Matrix4f;
 
 public final class OverlayRenderer {
     // TextureAtlas.LOCATION_BLOCKS is deprecated on 26.x without a runtime replacement; the blocks
@@ -44,13 +45,19 @@ public final class OverlayRenderer {
         collector.submitCustomGeometry(
                 stack,
                 ModRenderType.getUnlitBlock(sprite.atlasLocation()),
-                (pose, buffer) -> {
-                    final VertexConsumer consumer = atlasSprite.wrap(buffer);
-                    consumer.addVertex(pose, 0, 0, 0).setUv(0, 0);
-                    consumer.addVertex(pose, 0, 16, 0).setUv(0, 1);
-                    consumer.addVertex(pose, 16, 16, 0).setUv(1, 1);
-                    consumer.addVertex(pose, 16, 0, 0).setUv(1, 0);
-                });
+                (pose, buffer) -> renderQuad(pose.pose(), atlasSprite.wrap(buffer)));
+    }
+
+    static void renderQuad(final Matrix4f matrix, final VertexConsumer consumer) {
+        // SpriteCoordinateExpander.addVertex returns its delegate. Keep setUv on the wrapper.
+        consumer.addVertex(matrix, 0, 0, 0);
+        consumer.setUv(0, 0);
+        consumer.addVertex(matrix, 0, 16, 0);
+        consumer.setUv(0, 1);
+        consumer.addVertex(matrix, 16, 16, 0);
+        consumer.setUv(1, 1);
+        consumer.addVertex(matrix, 16, 0, 0);
+        consumer.setUv(1, 0);
     }
 }
 *///?} else {
@@ -86,10 +93,15 @@ public final class OverlayRenderer {
     }
 
     static void renderQuad(final Matrix4f matrix, final VertexConsumer consumer) {
-        consumer.addVertex(matrix, 0, 0, 0).setUv(0, 0);
-        consumer.addVertex(matrix, 0, 16, 0).setUv(0, 1);
-        consumer.addVertex(matrix, 16, 16, 0).setUv(1, 1);
-        consumer.addVertex(matrix, 16, 0, 0).setUv(1, 0);
+        // Material buffers can wrap a sprite; fluent setUv would bypass that wrapper.
+        consumer.addVertex(matrix, 0, 0, 0);
+        consumer.setUv(0, 0);
+        consumer.addVertex(matrix, 0, 16, 0);
+        consumer.setUv(0, 1);
+        consumer.addVertex(matrix, 16, 16, 0);
+        consumer.setUv(1, 1);
+        consumer.addVertex(matrix, 16, 0, 0);
+        consumer.setUv(1, 0);
     }
 }
 //?}
