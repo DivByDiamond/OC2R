@@ -26,6 +26,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
       - uses: actions/cache@v6
         with:
           path: |
@@ -37,29 +41,62 @@ jobs:
       - name: Download dependencies
         run: bash scripts/download-libs.sh
 
-      - name: build
-        # 5xx from any configured Maven repo aborts Gradle resolution (unlike 404,
-        # it is not treated as "not found"), which broke the beta.3.1 release via a
-        # transient 502 from maven.neoforged.net. One retry recovers on its own.
-        # Qualified to the 1.21.1 release nodes plus the 26.x compile check of the core and
-        # of the mod nodes: a bare `build` would also resolve the 26.x root nodes (neoforge
-        # module) with their tests, which this job does not run.
-        run: |
-          TASKS=":1.21.1:build :fabric:1.21.1:build :core:26.1.2:compileJava :core:26.2:compileJava :26.1.2:compileJava :26.2:compileJava"
-          ./gradlew $TASKS || {
-            echo "::warning::First gradle build failed (likely transient dependency resolution); retrying."
-            ./gradlew $TASKS --refresh-dependencies
-          }
+      - name: Assemble all six targets
+        # CI owns tests and static analysis. This job produces every release JAR;
+        # assemble also avoids starting legacy GameTests without an xvfb setup.
+        # Retry one transient Maven resolution failure before failing the build.
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TYPE: ${{ startsWith(github.ref, 'refs/tags/') && 'release' || '' }}
+          TAG_NAME: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        run: |
+          VERSION_ARGS=()
+          if [ -n "$TAG_NAME" ]; then
+            VERSION_ARGS+=("-Psemver=$TAG_NAME")
+          fi
+          TASKS=(:1.21.1:assemble :26.1.2:assemble :26.2:assemble
+                 :fabric:1.21.1:assemble :fabric:26.1.2:assemble :fabric:26.2:assemble)
+          ./gradlew "${VERSION_ARGS[@]}" "${TASKS[@]}" || {
+            echo "::warning::First Gradle assembly failed; retrying dependency resolution."
+            ./gradlew "${VERSION_ARGS[@]}" "${TASKS[@]}" --refresh-dependencies
+          }
+
+      - name: Stage all six release artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG_NAME#v}"
+          mkdir -p dist
+          shopt -s nullglob
+          collect() {
+            local directory="$1" output="$2" file
+            local candidates=()
+            for file in "$directory"/*.jar; do
+              case "$file" in
+                *-sources.jar|*-dev.jar|*-api.jar) continue ;;
+              esac
+              candidates+=("$file")
+            done
+            if [ "${#candidates[@]}" -ne 1 ]; then
+              echo "::error::Expected exactly one release JAR in $directory, found ${#candidates[@]}."
+              return 1
+            fi
+            cp -- "${candidates[0]}" "$output"
+          }
+          for NODE in 1.21.1 26.1.2 26.2; do
+            collect "versions/$NODE/build/libs" "dist/oc2r-$NODE-neoforge-$VERSION.jar"
+            collect "fabric/versions/$NODE/build/libs" "dist/oc2r-$NODE-fabric-$VERSION.jar"
+          done
 
       - uses: actions/upload-artifact@v7
         with:
           name: oc2r-artifacts
           path: |
             versions/1.21.1/build/libs/*.jar
-            fabric/versions/1.21.1/build/libs/*.jar
+            fabric/versions/*/build/libs/*.jar
+            versions/26.1.2/build/libs/*.jar
+            versions/26.2/build/libs/*.jar
 
       # The self-hosted pool does not guarantee gh is present: a beta.3.1 rerun
       # landed on a runner without gh and Create Release failed with exit 127.
@@ -77,18 +114,22 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+          RELEASE_COMMIT: ${{ github.sha }}
         run: |
           ARGS=()
           # Tags with a suffix (v0.1.1-beta.1, v0.2.0-rc1, ...) are prereleases.
-          if [[ "${{ github.ref_name }}" == *-* ]]; then
+          if [[ "$TAG_NAME" == *-* ]]; then
             ARGS+=(--prerelease)
           fi
-          if ! gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
-            gh release create "${{ github.ref_name }}" \
-              --title "${{ github.ref_name }}" \
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release create "$TAG_NAME" \
+              --title "$TAG_NAME" \
+              --target "$RELEASE_COMMIT" \
+              --verify-tag \
               --generate-notes \
               "${ARGS[@]}" \
-              versions/1.21.1/build/libs/*.jar
+              dist/*.jar
           else
             echo "Release already exists, skipping creation."
           fi

@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "li.cil.oc2.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ParticleEngineAccessor",
+    "ParticleGroupAccessor",
+    "ProjectorRenderTypeAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

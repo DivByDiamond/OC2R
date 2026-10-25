@@ -3,8 +3,13 @@ package li.cil.oc2.platform;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.function.Consumer;
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+*///?} else {
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+//?}
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -26,14 +31,22 @@ public final class FabricMenuBridge implements MenuBridge {
 
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenuType(final MenuFactory<T> factory) {
+        //? if >=26.1 {
+        /*return new ExtendedMenuType<>(
+        *///?} else {
         return new ExtendedScreenHandlerType<>(
+        //?}
                 (id, inventory, data) -> factory.create(id, inventory, wrap(data, inventory.player)), BYTES);
     }
 
     @Override
     public void openMenu(
             final ServerPlayer player, final MenuProvider provider, final Consumer<FriendlyByteBuf> extraData) {
+        //? if >=26.1 {
+        /*player.openMenu(new ExtendedMenuProvider<byte[]>() {
+        *///?} else {
         player.openMenu(new ExtendedScreenHandlerFactory<byte[]>() {
+        //?}
             @Override
             public byte[] getScreenOpeningData(final ServerPlayer opener) {
                 final RegistryFriendlyByteBuf buffer =

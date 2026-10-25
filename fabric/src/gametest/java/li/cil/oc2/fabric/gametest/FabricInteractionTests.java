@@ -8,10 +8,14 @@ import li.cil.oc2.common.item.Items;
 import li.cil.oc2.fabric.FabricInteractionHooks;
 import li.cil.oc2.fabric.PersistentDataHolder;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.gametest.v1.GameTest;
+*///?} else {
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.gametest.framework.GameTest;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,7 +27,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 /** Proves the Fabric side of the NeoForge-only interaction hooks on a real server. */
-public final class FabricInteractionTests implements FabricGameTest {
+public final class FabricInteractionTests
+        //? if <26.1 {
+        implements FabricGameTest
+        //?}
+{
     private static final BlockPos POS = new BlockPos(1, 2, 1);
 
     private static BlockHitResult hit(final GameTestHelper helper, final BlockPos pos, final Direction face) {
@@ -45,7 +53,11 @@ public final class FabricInteractionTests implements FabricGameTest {
                 hit(helper, POS, Direction.NORTH));
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_interaction", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
+    //?}
     public void wrenchSneakStillUsesBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -56,7 +68,11 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_interaction", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
+    //?}
     public void otherItemSneakDoesNotUseBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -67,7 +83,11 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_interaction", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
+    //?}
     public void nonSneakingUsesBlock(final GameTestHelper helper) {
         helper.setBlock(POS, net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
                 .setValue(LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
@@ -82,7 +102,11 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_interaction", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
+    //?}
     public void pickBlockOfBusCable(final GameTestHelper helper) {
         final BlockState state = Blocks.BUS_CABLE.get().defaultBlockState()
                 .setValue(BusCableStateProperties.HAS_CABLE, true)
@@ -107,7 +131,7 @@ public final class FabricInteractionTests implements FabricGameTest {
         }
 
         // Facade: the pick result is the facade item.
-        final BusCableBlockEntity cable = (BusCableBlockEntity) helper.getBlockEntity(POS);
+        final BusCableBlockEntity cable = li.cil.oc2.gametest.TestSupport.blockEntity(helper, POS, BusCableBlockEntity.class);
         cable.setFacade(new ItemStack(net.minecraft.world.item.Items.STONE));
         final ItemStack onFacade = FabricInteractionHooks.pickBlock(
                 helper.getLevel().getBlockState(absolute), hit(helper, POS, Direction.NORTH),
@@ -118,7 +142,11 @@ public final class FabricInteractionTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_interaction", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_interaction")
+    //?}
     public void persistentDataSurvivesRespawn(final GameTestHelper helper) {
         final ServerPlayer oldPlayer = helper.makeMockServerPlayerInLevel();
         final ServerPlayer newPlayer = helper.makeMockServerPlayerInLevel();
@@ -129,8 +157,16 @@ public final class FabricInteractionTests implements FabricGameTest {
         ServerPlayerEvents.COPY_FROM.invoker().copyFromPlayer(oldPlayer, newPlayer, false);
 
         final CompoundTag copied = ((PersistentDataHolder) newPlayer).oc2r$getPersistentData()
-                .getCompound("oc2r_gametest");
+                .getCompound("oc2r_gametest")
+                //? if >=26.1 {
+                /*.orElseThrow()
+                *///?}
+                ;
+        //? if >=26.1 {
+        /*if (copied.getIntOr("answer", 0) != 42) {
+        *///?} else {
         if (copied.getInt("answer") != 42) {
+        //?}
             helper.fail("persistent data was not copied: " + copied);
         }
         if (copied == marker) {

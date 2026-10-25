@@ -22,8 +22,8 @@ stonecutter {
         versions("1.21.1", "26.1.2", "26.2")
         // Loader-independent core module: same versions as the root branch.
         branch("core") { inherit() }
-        // Fabric module: 1.21.1 only (Loom 1.14 cannot remap 26.x, roadmap multiversion-26-fabric §5).
-        branch("fabric") { versions("1.21.1") }
+        // Fabric uses remapping for 1.21.1 and official, unobfuscated names for 26.x.
+        branch("fabric") { inherit() }
     }
 }
 

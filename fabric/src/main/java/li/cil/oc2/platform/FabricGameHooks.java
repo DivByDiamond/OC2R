@@ -1,5 +1,26 @@
 package li.cil.oc2.platform;
 
+//? if >=26.1 {
+/*import com.mojang.authlib.GameProfile;
+import li.cil.oc2.common.block.monitor.MonitorBlock;
+import li.cil.oc2.fabric.PersistentDataHolder;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+*///?} else {
 import com.mojang.authlib.GameProfile;
 import li.cil.oc2.common.block.monitor.MonitorBlock;
 import li.cil.oc2.fabric.PersistentDataHolder;
@@ -19,6 +40,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+//?}
 
 /** {@link GameHooks} for Fabric, built on Fabric API events and the mixins of this module. */
 public final class FabricGameHooks implements GameHooks {
@@ -63,7 +85,12 @@ public final class FabricGameHooks implements GameHooks {
 
     @Override
     public ItemStack getCraftingRemainder(final ItemStack stack) {
+        //? if >=26.1 {
+        /*final var remainder = stack.getItem().getCraftingRemainder();
+        return remainder != null ? remainder.create() : ItemStack.EMPTY;
+        *///?} else {
         return stack.getRecipeRemainder();
+        //?}
     }
 
     @Override
@@ -85,6 +112,10 @@ public final class FabricGameHooks implements GameHooks {
 
     @Override
     public CreativeModeTab.Builder creativeTabBuilder() {
+        //? if >=26.1 {
+        /*return FabricCreativeModeTab.builder();
+        *///?} else {
         return FabricItemGroup.builder();
+        //?}
     }
 }

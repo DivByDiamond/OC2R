@@ -1,7 +1,7 @@
 package li.cil.oc2.common.util.nbt;
 
 //? if >=26.1 {
-/*import com.mojang.serialization.Codec;
+/*import com.mojang.serialization.MapCodec;
 *///?}
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -11,9 +11,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-//? if >=26.1 {
-/*import net.minecraft.nbt.Tag;
-*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 //? if >=26.1 {
@@ -143,20 +140,13 @@ public final class NBTUtils {
     }
 
     //? if >=26.1 {
-    /*// Rebuilds the whole tag behind a ValueInput without the deprecated ValueInput.read(MapCodec):
-    // every top-level entry is read back through the pass-through codec and unwrapped to its raw
-    // Tag. Sound because vanilla's TagValueInput always runs on NbtOps, where a Tag already is the
-    // native value carried by the resulting Dynamic.
+    /*// Vanilla and Fabric do not expose NeoForge's ValueInput.keySet/raw-tag hooks. Treat
+    // the whole input as a map so every NBT type, including arrays and nested lists, survives.
+    public static final MapCodec<CompoundTag> TAG_MAP_CODEC = MapCodec.assumeMapUnsafe(CompoundTag.CODEC);
+
+    @SuppressWarnings("deprecation") // Vanilla's whole-map reader is the lossless bridge to legacy NBT hooks.
     public static CompoundTag toTag(final ValueInput input) {
-        final CompoundTag tag = new CompoundTag();
-        for (final String key : input.keySet()) {
-            input.read(key, Codec.PASSTHROUGH).ifPresent(value -> {
-                if (value.getValue() instanceof final Tag child) {
-                    tag.put(key, child);
-                }
-            });
-        }
-        return tag;
+        return input.read(TAG_MAP_CODEC).orElseGet(CompoundTag::new);
     }
     *///?}
 }

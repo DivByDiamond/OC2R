@@ -1,3 +1,44 @@
+//? if >=26.1 {
+/*
+package li.cil.oc2.client.model;
+
+import java.util.List;
+import java.util.Map;
+import li.cil.oc2.client.model.monitor.MonitorModelTypes;
+import li.cil.oc2.client.model.monitor.MonitorQuads;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
+
+// Each multiblock fragment is baked for its block state, without loader model-data extensions.
+public final class FabricMonitorModel implements BlockStateModel {
+    private final BlockStateModelPart part;
+
+    FabricMonitorModel(final BlockState state, final Map<String, Material.Baked> materials) {
+        part = new SimpleModelWrapper(MonitorQuads.quads(materials, MonitorModelTypes.dataFromState(state)),
+                true, materials.get(MonitorModelTypes.PARTICLE_TEXTURE));
+    }
+
+    @Override
+    public void collectParts(final RandomSource random, final List<BlockStateModelPart> parts) {
+        parts.add(part);
+    }
+
+    @Override
+    public Material.Baked particleMaterial() {
+        return part.particleMaterial();
+    }
+
+    @Override
+    public int materialFlags() {
+        return part.materialFlags();
+    }
+}
+*///?} else {
+
 package li.cil.oc2.client.model;
 
 import java.util.Collections;
@@ -80,3 +121,4 @@ public final class FabricMonitorModel implements BakedModel {
         return ItemOverrides.EMPTY;
     }
 }
+//?}

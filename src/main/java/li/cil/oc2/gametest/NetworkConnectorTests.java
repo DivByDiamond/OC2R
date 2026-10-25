@@ -178,6 +178,50 @@ public final class NetworkConnectorTests {
         helper.succeed();
     }
 
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void livePeerWithoutReciprocalLinkIsDroppedOnResolve(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        final NetworkConnectorBlockEntity first = connectorAt(helper, player, TestSupport.CABLE_POS);
+        final NetworkConnectorBlockEntity second = connectorAt(helper, player, TestSupport.DEVICE_POS);
+        TestSupport.assertTrue(helper, "initial connection succeeds",
+            NetworkConnectorBlockEntity.connect(first, second) == ConnectionResult.SUCCESS);
+        first.connectionManager.resolveConnectedInterface(second.getBlockPos());
+        TestSupport.assertTrue(helper, "live connection resolves",
+            first.connectionManager.connectors.containsKey(second.getBlockPos()));
+
+        // Unlike staleOneSidedLinkIsDroppedOnResolve, keep the peer block alive. This
+        // exercises reciprocal saved membership, rather than the missing-block branch.
+        second.disconnectFrom(first.getBlockPos(), false);
+        first.connectionManager.resolveConnectedInterface(second.getBlockPos());
+        TestSupport.assertTrue(helper, "live nonreciprocal peer must not remain routable",
+            first.getConnectedPositions().isEmpty() && first.connectionManager.connectors.isEmpty());
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void chunkUnloadRetainsSavedCableMembership(final GameTestHelper helper) {
+        final Player player = TestSupport.fakePlayer(helper);
+        final NetworkConnectorBlockEntity first = connectorAt(helper, player, TestSupport.CABLE_POS);
+        final NetworkConnectorBlockEntity second = connectorAt(helper, player, TestSupport.DEVICE_POS);
+        TestSupport.assertTrue(helper, "initial connection succeeds",
+            NetworkConnectorBlockEntity.connect(first, second) == ConnectionResult.SUCCESS);
+        first.connectionManager.resolveConnectedInterface(second.getBlockPos());
+        second.connectionManager.resolveConnectedInterface(first.getBlockPos());
+
+        // Drive the lifecycle seam synchronously: a real chunk unload also calls
+        // setRemoved afterwards. Neither call may turn unload into destruction.
+        first.onChunkUnloaded();
+        first.setRemoved();
+        TestSupport.assertTrue(helper, "both saved endpoints survive unload and removal callback",
+            first.getConnectedPositions().contains(second.getBlockPos())
+                && second.getConnectedPositions().contains(first.getBlockPos()));
+        TestSupport.assertTrue(helper, "the surviving peer stops routing to the unloaded instance",
+            !second.connectionManager.connectors.containsKey(first.getBlockPos()));
+        TestSupport.assertTrue(helper, "the owner retains the paid cable",
+            first.connectionManager.ownedCables.contains(second.getBlockPos()));
+        helper.succeed();
+    }
+
     // --------------------------------------------------------------------- //
 
     private static NetworkConnectorBlockEntity connectorAt(

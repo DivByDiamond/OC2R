@@ -4,7 +4,7 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
 # Keep every task qualified: the root project is Stonecutter's controller.
-# Fabric currently supports 1.21.1; the 26.x nodes are NeoForge-only.
+# This is the original four-target baseline; verify-fabric-26.sh adds modern Fabric.
 # Run datagen in its own invocation: processResources is also a prerequisite of
 # datagen and must run again afterwards to package the newly generated files.
 ./gradlew \
@@ -30,5 +30,4 @@ if ! command -v timeout >/dev/null 2>&1; then
     echo "ERROR: GNU timeout is required to bound the Fabric GameTest run" >&2
     exit 1
 fi
-timeout --signal=TERM --kill-after=30s 12m \
-    ./gradlew :fabric:1.21.1:runGameTest "$@"
+bash scripts/run-fabric-gametest.sh 1.21.1 "$@"

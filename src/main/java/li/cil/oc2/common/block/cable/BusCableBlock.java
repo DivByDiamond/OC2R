@@ -167,8 +167,8 @@ public final class BusCableBlock extends BaseEntityBlock {
     }
 
     //? if >=26.1 {
-    /*// Minecraft 26.x passes no hit result to the pick-block hook, so the interface pick falls back to the cable.
-    @Override
+    /*// NeoForge adds the player-aware overload; Fabric resolves hit-aware picking through its server mixin.
+    @SuppressWarnings({"MissingOverride", "PMD.MissingOverride"}) // Only NeoForge has this overload.
     public ItemStack getCloneItemStack(
             final LevelReader level,
             final BlockPos pos,
@@ -177,7 +177,7 @@ public final class BusCableBlock extends BaseEntityBlock {
             final Player player) {
         final ItemStack result =
                 BusCableItemHelper.getPickBlock(state, null, level, pos, player);
-        return result != null ? result : super.getCloneItemStack(level, pos, state, includeData, player);
+        return result != null ? result : super.getCloneItemStack(level, pos, state, includeData);
     }
     *///?} else {
     // Not annotated with @Override: the five-argument overload only exists in NeoForge's patched Block

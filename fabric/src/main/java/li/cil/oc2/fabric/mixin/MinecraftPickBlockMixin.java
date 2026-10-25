@@ -1,3 +1,15 @@
+//? if >=26.1 {
+/*
+package li.cil.oc2.fabric.mixin;
+
+import net.minecraft.client.Minecraft;
+import org.spongepowered.asm.mixin.Mixin;
+
+// Modern pick-block is handled by ServerGamePacketListenerImplMixin, because vanilla now resolves it server-side.
+@Mixin(Minecraft.class)
+public abstract class MinecraftPickBlockMixin {}
+*///?} else {
+
 package li.cil.oc2.fabric.mixin;
 
 import li.cil.oc2.fabric.FabricInteractionHooks;
@@ -40,3 +52,5 @@ public abstract class MinecraftPickBlockMixin {
         return FabricInteractionHooks.pickBlock(state, hitResult, level, pos, player);
     }
 }
+
+//?}

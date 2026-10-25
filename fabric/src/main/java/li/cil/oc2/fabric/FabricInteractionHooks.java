@@ -37,7 +37,11 @@ public final class FabricInteractionHooks {
         if (source.equals(target)) {
             return;
         }
+        //? if >=26.1 {
+        /*for (final String key : source.keySet()) {
+        *///?} else {
         for (final String key : source.getAllKeys()) {
+        //?}
             final Tag value = source.get(key);
             if (value != null) {
                 target.put(key, value.copy());
@@ -65,8 +69,18 @@ public final class FabricInteractionHooks {
             final BlockState state, final HitResult hit, final LevelReader level, final BlockPos pos,
             final Player player) {
         if (state.getBlock() instanceof final BusCableBlock cable) {
+            //? if >=26.1 {
+            /*final ItemStack picked = li.cil.oc2.common.block.cable.item.BusCableItemHelper
+                    .getPickBlock(state, hit, level, pos, player);
+            return picked != null ? picked : new ItemStack(cable);
+            *///?} else {
             return cable.getCloneItemStack(state, hit, level, pos, player);
+            //?}
         }
+        //? if >=26.1 {
+        /*return state.getCloneItemStack(level, pos, false);
+        *///?} else {
         return state.getBlock().getCloneItemStack(level, pos, state);
+        //?}
     }
 }

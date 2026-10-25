@@ -83,6 +83,23 @@ public final class TestSupport {
         return player;
     }
 
+    /** NeoForge requires explicit mock-channel setup; Fabric delivery has its own bridge tests. */
+    public static void assertNeoForgePayloadChannel(
+            final GameTestHelper helper, final ServerPlayer player,
+            final net.minecraft.resources.ResourceLocation id) {
+        if (!li.cil.oc2.platform.Platform.environment().isModLoaded("neoforge")) {
+            return;
+        }
+        try {
+            final boolean negotiated = (boolean) player.connection.getClass()
+                    .getMethod("hasChannel", net.minecraft.resources.ResourceLocation.class)
+                    .invoke(player.connection, id);
+            assertTrue(helper, "computer payload channel must be negotiated", negotiated);
+        } catch (final ReflectiveOperationException error) {
+            throw new IllegalStateException("Cannot check GameTest player channel", error);
+        }
+    }
+
     public static Connection serverConnection(final ServerPlayer player) {
         try {
             final java.lang.reflect.Field field = net.minecraft.server.network.ServerCommonPacketListenerImpl.class

@@ -38,7 +38,11 @@ public final class FabricBlockEntityHooks {
     /** Registers the hooks that apply to servers (and the integrated server). */
     public static void register() {
         ServerBlockEntityEvents.BLOCK_ENTITY_LOAD.register(FabricBlockEntityHooks::enqueue);
+        //? if >=26.1 {
+        /*ServerTickEvents.START_LEVEL_TICK.register(FabricBlockEntityHooks::drain);
+        *///?} else {
         ServerTickEvents.START_WORLD_TICK.register(FabricBlockEntityHooks::drain);
+        //?}
         UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
             final ItemStack stack = player.getItemInHand(hand);
             if (!player.isSpectator() && stack.getItem() instanceof final WrenchItem wrench) {

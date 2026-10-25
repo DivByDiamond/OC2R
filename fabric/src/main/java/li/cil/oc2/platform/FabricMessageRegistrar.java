@@ -21,7 +21,11 @@ public final class FabricMessageRegistrar implements MessageRegistrar {
             final CustomPacketPayload.Type<T> type,
             final StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
             final BiConsumer<T, MessageContext> handler) {
+        //? if >=26.1 {
+        /*PayloadTypeRegistry.serverboundPlay().register(type, codec);
+        *///?} else {
         PayloadTypeRegistry.playC2S().register(type, codec);
+        //?}
         registerServerReceiver(type, handler);
     }
 
@@ -30,7 +34,11 @@ public final class FabricMessageRegistrar implements MessageRegistrar {
             final CustomPacketPayload.Type<T> type,
             final StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
             final BiConsumer<T, MessageContext> handler) {
+        //? if >=26.1 {
+        /*PayloadTypeRegistry.clientboundPlay().register(type, codec);
+        *///?} else {
         PayloadTypeRegistry.playS2C().register(type, codec);
+        //?}
         registerClientReceiver(type, handler);
     }
 
@@ -40,8 +48,16 @@ public final class FabricMessageRegistrar implements MessageRegistrar {
             final StreamCodec<? super RegistryFriendlyByteBuf, T> codec,
             final BiConsumer<T, MessageContext> serverboundHandler,
             final BiConsumer<T, MessageContext> clientboundHandler) {
+        //? if >=26.1 {
+        /*PayloadTypeRegistry.serverboundPlay().register(type, codec);
+        *///?} else {
         PayloadTypeRegistry.playC2S().register(type, codec);
+        //?}
+        //? if >=26.1 {
+        /*PayloadTypeRegistry.clientboundPlay().register(type, codec);
+        *///?} else {
         PayloadTypeRegistry.playS2C().register(type, codec);
+        //?}
         registerServerReceiver(type, serverboundHandler);
         registerClientReceiver(type, clientboundHandler);
     }

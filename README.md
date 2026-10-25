@@ -6,7 +6,7 @@ Programmable computers, Linux, and robots inside Minecraft.
 
 ![Java](https://img.shields.io/badge/Java-21%20%2F%2025-orange?style=flat-square&logo=openjdk&logoColor=white)
 ![NeoForge](https://img.shields.io/badge/NeoForge-1.21.1%20%2F%2026.1.2%20%2F%2026.2-green?style=flat-square)
-![Fabric](https://img.shields.io/badge/Fabric-1.21.1-blue?style=flat-square)
+![Fabric](https://img.shields.io/badge/Fabric-1.21.1%20%2F%2026.1.2%20%2F%2026.2-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
 ![GitHub Release](https://img.shields.io/github/v/release/DivByDiamond/OC2R?style=flat-square)
 
@@ -45,9 +45,11 @@ Each computer runs a 64-bit RISC-V virtual machine powered by [Sedna]. The Linux
 | 1.21.1 | NeoForge | 21 |
 | 1.21.1 | Fabric | 21 |
 | 26.1.2 | NeoForge | 25 |
+| 26.1.2 | Fabric | 25 |
 | 26.2 | NeoForge | 25 |
+| 26.2 | Fabric | 25 |
 
-Fabric 26.x support is planned. Download the file matching your Minecraft version and loader. Fabric 1.21.1 requires **Fabric API**; Team Reborn Energy and Forge Config API Port are bundled.
+Fabric 26.1.2/26.2 is implemented and passed local server/client acceptance on 2026-10-24; CI confirmation and publication are tracked separately in the [acceptance report](docs/roadmap/fabric-26-acceptance.md). Check the release assets for available downloads and choose the file matching your Minecraft version and loader. All Fabric versions require **Fabric API**; Team Reborn Energy and Forge Config API Port are bundled.
 
 ### Getting started
 
@@ -102,9 +104,11 @@ Each running computer emulates a real machine and consumes host CPU time and mem
 | 1.21.1 | NeoForge | 21 |
 | 1.21.1 | Fabric | 21 |
 | 26.1.2 | NeoForge | 25 |
+| 26.1.2 | Fabric | 25 |
 | 26.2 | NeoForge | 25 |
+| 26.2 | Fabric | 25 |
 
-Поддержка Fabric 26.x запланирована. Скачивайте файл для своей версии Minecraft и загрузчика. Для Fabric 1.21.1 нужен **Fabric API**; Team Reborn Energy и Forge Config API Port уже включены в сборку.
+Fabric 26.1.2/26.2 реализован и прошёл локальную серверную и клиентскую приёмку 24 октября 2026 года; подтверждение CI и публикация отслеживаются отдельно в [отчёте приёмки](docs/roadmap/fabric-26-acceptance.md). Доступные файлы смотрите в релизах и выбирайте сборку для своей версии Minecraft и загрузчика. Для всех версий Fabric нужен **Fabric API**; Team Reborn Energy и Forge Config API Port уже включены в сборку.
 
 ### Быстрый старт
 
@@ -146,6 +150,8 @@ The mod builds on [Sedna], [Ceres], [Minux], [OC2R Native Networking], and vendo
 
 ### Building
 
+Run Gradle with Java 25 and keep a Java 21 toolchain installed for Minecraft 1.21.1. Loom 1.18 requires Java 25 even when selecting a legacy target.
+
 The build multiplexes Minecraft versions through [Stonecutter](https://stonecutter.kikugie.dev/); the working tree is kept on the `1.21.1` node. Modules: the root project (NeoForge), `core` (loader-independent code) and `fabric`.
 
 ```bash
@@ -153,7 +159,8 @@ The build multiplexes Minecraft versions through [Stonecutter](https://stonecutt
 ./gradlew :1.21.1:gameTest                     # NeoForge GameTests
 ./gradlew :fabric:1.21.1:runGameTest           # Fabric GameTests
 ./gradlew :26.1.2:assemble :26.2:assemble     # NeoForge on 26.x (Java 25)
-bash scripts/verify-stage3.sh --console=plain # Four-target acceptance matrix
+bash scripts/verify-stage3.sh --console=plain # Original four-target acceptance matrix
+bash scripts/verify-fabric-26.sh --console=plain # Fabric 26.x assembly/server/client acceptance
 ```
 
 Switch the sources to another version with `./gradlew "Set active project to 26.1.2"` and reset with `./gradlew "Reset active project"` before committing.

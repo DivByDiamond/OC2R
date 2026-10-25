@@ -135,7 +135,7 @@ public final class ProjectorBlockEntityDepth {
         final BlockEntityRenderer<E, S> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher()
                 .getRenderer(entity);
         if (renderer == null || !renderer.shouldRender(entity, projectorPos)
-                || !frustum.isVisible(renderer.getRenderBoundingBox(entity))) return;
+                || !frustum.isVisible(li.cil.oc2.client.ClientCompat.blockEntityRenderBounds(renderer, entity))) return;
         if (new Vec3(entity.getBlockPos().getX() + 0.5, entity.getBlockPos().getY() + 0.5,
                 entity.getBlockPos().getZ() + 0.5).distanceToSqr(projectorPos)
                 > (double) ProjectorBlockEntity.MAX_RENDER_DISTANCE * ProjectorBlockEntity.MAX_RENDER_DISTANCE) return;

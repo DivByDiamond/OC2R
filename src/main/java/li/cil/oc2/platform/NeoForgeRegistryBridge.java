@@ -1,16 +1,22 @@
 package li.cil.oc2.platform;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -119,6 +125,19 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    @SuppressWarnings("ConstantConditions") // The legacy vanilla builder accepts a null datafixer type.
+    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+            justification = "The legacy builder accepts null, as used by vanilla block entity types")
+    public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
+            final BiFunction<BlockPos, BlockState, T> factory, final Block... blocks) {
+        //? if >=26.1 {
+        /*return new BlockEntityType<>(factory::apply, blocks);
+        *///?} else {
+        return BlockEntityType.Builder.of(factory::apply, blocks).build(null);
+        //?}
     }
 
     @Override

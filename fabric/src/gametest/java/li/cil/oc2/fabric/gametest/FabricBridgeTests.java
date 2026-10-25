@@ -7,16 +7,24 @@ import li.cil.oc2.platform.EnergyStorage;
 import li.cil.oc2.platform.FabricCapabilityRegistrar;
 import li.cil.oc2.platform.Platform;
 import li.cil.oc2.platform.event.CommonEvents;
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.gametest.v1.GameTest;
+*///?} else {
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.gametest.framework.GameTest;
+//?}
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 
 /** Exercises the Fabric implementations of the platform bridges on a real server. */
-public final class FabricBridgeTests implements FabricGameTest {
+public final class FabricBridgeTests
+        //? if <26.1 {
+        implements FabricGameTest
+        //?}
+{
     private static final BlockCapability<String> TEST_CAPABILITY =
             BlockCapability.createVoid(ResourceLocation.fromNamespaceAndPath("oc2r_gametest", "marker"), String.class);
     private static final BlockCapability<EnergyStorage> ENERGY = BlockCapability.createSided(
@@ -30,7 +38,11 @@ public final class FabricBridgeTests implements FabricGameTest {
         REGISTRAR.registerBlock(ENERGY, (level, pos, state, entity, side) -> STORAGE, Blocks.DIAMOND_BLOCK);
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void platformEnvironment(final GameTestHelper helper) {
         if (Platform.environment().isClient()) {
             helper.fail("the game test server must not be the client");
@@ -44,7 +56,11 @@ public final class FabricBridgeTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void commonEventsFire(final GameTestHelper helper) {
         final AtomicInteger serverTicks = new AtomicInteger();
         final AtomicInteger levelTicks = new AtomicInteger();
@@ -57,7 +73,11 @@ public final class FabricBridgeTests implements FabricGameTest {
         });
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void capabilityLookup(final GameTestHelper helper) {
         final BlockPos pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, Blocks.GOLD_BLOCK);
@@ -76,7 +96,11 @@ public final class FabricBridgeTests implements FabricGameTest {
     }
 
     /** Checks that LevelChunkMixin reports block changes to invalidation listeners. */
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void invalidationOnBlockChange(final GameTestHelper helper) {
         final BlockPos pos = new BlockPos(1, 2, 1);
         final AtomicInteger invalidations = new AtomicInteger();
@@ -92,7 +116,11 @@ public final class FabricBridgeTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void energyInteropWithTeamReborn(final GameTestHelper helper) {
         final BlockPos pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, Blocks.DIAMOND_BLOCK);
@@ -127,7 +155,11 @@ public final class FabricBridgeTests implements FabricGameTest {
     }
 
     /** Operations in one transaction must see each other's effect, then commit together. */
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void energyTransactionAccountsForPendingOperations(final GameTestHelper helper) {
         final BlockPos pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, Blocks.DIAMOND_BLOCK);
@@ -167,7 +199,11 @@ public final class FabricBridgeTests implements FabricGameTest {
         helper.succeed();
     }
 
+    //? if >=26.1 {
+    /*@GameTest(structure = "oc2r:empty", environment = "oc2r_gametest:oc2r_fabric_bridge", maxTicks = 100)
+    *///?} else {
     @GameTest(template = EMPTY_STRUCTURE, batch = "oc2r_fabric_bridge")
+    //?}
     public void menuTypeCanBeCreated(final GameTestHelper helper) {
         if (Platform.menus().createMenuType((id, inventory, data) -> null) == null) {
             helper.fail("no menu type created");

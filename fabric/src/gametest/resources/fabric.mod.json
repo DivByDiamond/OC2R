@@ -10,6 +10,7 @@
       "li.cil.oc2.fabric.gametest.FabricNetworkTests",
       "li.cil.oc2.fabric.gametest.FabricInteractionTests",
       "li.cil.oc2.fabric.gametest.FabricHookTests",
+      "li.cil.oc2.fabric.gametest.FabricPersistenceTests",
       "li.cil.oc2.fabric.gametest.FabricRobotTests",
       "li.cil.oc2.fabric.gametest.FabricManualTests",
       "li.cil.oc2.gametest.DeviceBusTests",
@@ -19,7 +20,10 @@
       "li.cil.oc2.gametest.RedstoneInterfaceTests",
       "li.cil.oc2.gametest.RegistrationTests",
       "li.cil.oc2.gametest.TerminalTests",
-      "li.cil.oc2.gametest.RobotTests"
+      "li.cil.oc2.gametest.RobotTests",
+      "li.cil.oc2.gametest.FlashWriterTests",
+      "li.cil.oc2.gametest.RobotCarryTests",
+      "li.cil.oc2.gametest.ScannerModuleTests"
     ]
   },
   "depends": {

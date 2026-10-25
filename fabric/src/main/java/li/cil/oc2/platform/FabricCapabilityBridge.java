@@ -137,7 +137,11 @@ public final class FabricCapabilityBridge implements CapabilityBridge {
     public static void invalidateChunk(final Level level, final ChunkPos chunk) {
         for (final Long key : List.copyOf(LISTENERS.keySet())) {
             final BlockPos pos = BlockPos.of(key);
+            //? if >=26.1 {
+            /*if ((pos.getX() >> 4) == chunk.x() && (pos.getZ() >> 4) == chunk.z()) {
+            *///?} else {
             if ((pos.getX() >> 4) == chunk.x && (pos.getZ() >> 4) == chunk.z) {
+            //?}
                 invalidate(level, pos);
             }
         }

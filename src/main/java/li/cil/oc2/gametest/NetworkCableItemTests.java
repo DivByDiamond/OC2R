@@ -49,7 +49,7 @@ public final class NetworkCableItemTests {
             first.getConnectedPositions().isEmpty() && second.getConnectedPositions().isEmpty());
         TestSupport.assertEquals(helper, "removing a link must not consume a cable", 2, cable.getCount());
         TestSupport.assertTrue(helper, "the cable paid for the link should drop back into the world",
-            droppedCables(helper) > 0);
+            droppedCables(helper) == 1);
         helper.succeed();
     }
 

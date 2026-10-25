@@ -1,3 +1,14 @@
+//? if >=26.1 {
+/*
+package li.cil.oc2.fabric.mixin.client;
+
+import org.spongepowered.asm.mixin.Mixin;
+
+// The modern projector owns a dedicated depth pass and does not recurse through vanilla rendering.
+@Mixin(net.minecraft.client.Minecraft.class)
+public abstract class MinecraftMixin {}
+*///?} else {
+
 package li.cil.oc2.fabric.mixin.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -46,3 +57,4 @@ public abstract class MinecraftMixin implements MinecraftExt {
         }
     }
 }
+//?}
