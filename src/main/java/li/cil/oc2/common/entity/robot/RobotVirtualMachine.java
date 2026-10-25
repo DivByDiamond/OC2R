@@ -13,11 +13,13 @@ import li.cil.oc2.common.network.message.robot.state.RobotRunStateMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.common.vm.VirtualMachineShutdown;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.TerminalDiff;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 
 public final class RobotVirtualMachine extends AbstractVirtualMachine {
     private final Robot robot;
@@ -35,6 +37,13 @@ public final class RobotVirtualMachine extends AbstractVirtualMachine {
         this.movementController = movementController;
         state.vmAdapter.setBaseAddressProvider(
                 robot.getRobotInventory().getDeviceItems()::getDeviceAddressBase);
+        // Publish only after the owner and all constructor dependencies are initialized.
+        VirtualMachineShutdown.track(this);
+    }
+
+    @Override
+    protected Level getLevelForShutdown() {
+        return robot.level();
     }
 
     @Override

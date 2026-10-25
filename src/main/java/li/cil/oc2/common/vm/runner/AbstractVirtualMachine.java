@@ -8,6 +8,7 @@ import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.vm.VMErrorCalculator;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.VirtualMachine;
+import li.cil.oc2.common.vm.VirtualMachineShutdown;
 import li.cil.oc2.common.vm.context.global.GlobalVMContext;
 import li.cil.oc2.common.vm.lifecycle.VMLifecycle;
 import li.cil.oc2.common.vm.misc.BuiltinDevices;
@@ -15,6 +16,8 @@ import li.cil.oc2.common.vm.state.SerializedState;
 import li.cil.sedna.riscv.R5Board;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -38,6 +41,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     @Nullable public Component bootError;
 
     final VMLifecycle lifecycle;
+    private boolean preparingForServerShutdown;
 
     public AbstractVirtualMachine(final CommonDeviceBusController busController) {
         this.busController = busController;
@@ -62,6 +66,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     public void dispose() {
+        VirtualMachineShutdown.untrack(this);
         lifecycle.joinWorkerThread();
         state.context.invalidate();
         busController.dispose();
@@ -166,8 +171,26 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     }
 
     public void tick() {
+        if (preparingForServerShutdown) return;
         ticker.tick();
     }
+
+    /** Server-thread rendezvous: keep persisted RUNNING state, but never schedule another worker. */
+    public final void prepareForServerShutdown(final MinecraftServer server) {
+        final Level level = getLevelForShutdown();
+        if (level == null || level.getServer() != server) return;
+        preparingForServerShutdown = true;
+        if (runner == null || runState == VMRunState.STOPPED) return;
+        lifecycle.joinWorkerThread();
+        markUnsavedForShutdown();
+    }
+
+    @Nullable
+    protected Level getLevelForShutdown() {
+        return null;
+    }
+
+    protected void markUnsavedForShutdown() {}
 
     public CompoundTag serialize() {
         return lifecycle.serialize();

@@ -27,10 +27,12 @@ The minimal root ran a 3,145-byte root-ring probe as `/bin/init`. It recorded
 `snapshot_create=1`, `snapshot_list=1`, `snapshot_rollback=0`, then verified the
 original file bytes after mutation and emitted `OC2R_SNAPSHOT_QA_OK`. Thus the
 OC2R non-removable disk path supports the operation. The normal system image
-already needs 197 snapshot blocks before adding the probe and test files,
-while OnyxFS currently permits 31. Its `NoMem` failure is a filesystem snapshot
+needs 965 data blocks plus 12 metadata blocks before boot/test writes.
+The initial direct-pointer count of 197 omitted indirect file data; the old
+OnyxFS archive format permits only 31 input blocks. Its `NoMem` failure is a filesystem snapshot
 capacity limit, not evidence that OC2R's root disk is removable or unsavable.
-Full-system snapshot acceptance remains open until that limit is addressed.
+The subsequent full-root fix and shutdown investigation are recorded in
+[the runtime follow-up](onyx-runtime-followup.md).
 
 ## Exact source and artifacts
 

@@ -17,6 +17,7 @@ import li.cil.oc2.common.util.tick.TerminalUtils;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.common.vm.VirtualMachineShutdown;
 import li.cil.oc2.common.vm.memory.BaseAddressProvider;
 import li.cil.oc2.common.vm.runner.AbstractTerminalVMRunner;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
@@ -36,6 +37,8 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
         super(busController);
         this.owner = owner;
         state.vmAdapter.setBaseAddressProvider(baseAddressProvider);
+        // Publish only after the owner and all constructor dependencies are initialized.
+        VirtualMachineShutdown.track(this);
     }
 
     @Override
@@ -46,6 +49,23 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
             final Level level = owner.getLevel();
             ClientProxy.get().handleComputerRunStateChange(owner, value, level, MAX_RUNNING_SOUND_DELAY);
         }
+    }
+
+    @Override
+    @Nullable
+    protected Level getLevelForShutdown() {
+        return owner.getLevel();
+    }
+
+    @Override
+    protected void markUnsavedForShutdown() {
+        final Level level = owner.getLevel();
+        if (level == null || !level.hasChunkAt(owner.getBlockPos())) return;
+        final var chunk = level.getChunkAt(owner.getBlockPos());
+        ChunkUtils.setLazyUnsaved(chunk);
+        // Fabric fires unload before the final chunk save, which discards pending lazy flags.
+        // Materialize this joined VM's final dirty state while its owner is still loaded.
+        ChunkUtils.applyChunkLazyUnsaved(chunk);
     }
 
     @Override

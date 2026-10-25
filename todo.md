@@ -32,9 +32,9 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
   - [x] Port in-world terminal row-mesh construction to 26.2 `BufferBuilder`/`ByteBufferBuilder`; 26.1.2 and 26.2 compile.
   - [x] Port 26.2 network cable rendering to the level submit pipeline; both 26.1.2 and 26.2 compile.
   - [x] Verify 26.2 network cables and terminal backgrounds/glyphs/cursor in game (2026-10-16). Fixed the terminal text pipeline's forward-depth comparison for 26.2 reversed-Z; the in-world screen now shows glyphs, colored text/background and the blinking cursor. Screenshot: `build/reports/render-qa/26.2-terminal-world-after-depth-fix.png`.
-- [ ] Stage 4 release completion: confirm CI on the final Fabric 26.x commit, merge the branch and publish the two new Fabric targets. The port and six-target CI/release implementation are complete; local acceptance closed on 2026-10-24 (see [fabric-26-acceptance.md](docs/roadmap/fabric-26-acceptance.md)). Publication is a separate release step.
-  - [x] Wave B implementation and local acceptance: Fabric 26.1.2/26.2 server and client ports, six assemblies, all Fabric server suites, NeoForge regressions, modern client acceptance, static analysis and artifact checks. Recorded results: 1,682 NeoForge unit tests, 118 NeoForge GameTests and 66/67/67 Fabric GameTests.
-  - [ ] Confirm the final six-target CI run and release asset availability; do not infer publication from successful local acceptance.
+- [~] Stage 4: six-target implementation, acceptance, CI and merge completed in PR #59 (`88376085`). Release publication is deliberately deferred at the owner's request; development continues without a new beta.
+  - [x] Fabric 26.1.2/26.2 server and client ports, six-target CI/release wiring, independently reviewed and merged. Accepted PR CI: 1,682 unit tests, 330 OC2R server GameTests, modern client acceptance and static analysis.
+  - [ ] Publish a future release only when requested; the presence of six-target release workflows is not a release request.
 - [x] Implement four-target publishing (2026-10-22): `publish.yml` now stages and uploads NeoForge 1.21.1, NeoForge 26.1.2, NeoForge 26.2 and Fabric 1.21.1 to the GitHub release, CurseForge and Modrinth (one Modrinth version per Minecraft version, the mod version from the tag; `fabric.mod.json` now carries the real version instead of `unspecified`). Targets without a configured token or CurseForge project are skipped with a `::notice::` instead of failing the release. Owner-side setup still required: the `MODRINTH_TOKEN` secret and the `CURSEFORGE_PROJECT_ID_26_1_2` / `_26_2` / `_FABRIC` repository variables (see [multiloader.md](docs/roadmap/multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion), section 42, Stage 4 Wave A).
 - [x] Document the two `ChunkMapMixin` implementations (2026-10-22): both files now carry a Javadoc block that names the counterpart, explains why the class cannot be shared (the Fabric module compiles the shared tree from a separate source set, and the two mixin configs never co-exist) and why the `remap` attribute differs (Loom remaps the target to the intermediary name, NeoForge has no SRG name for the private target).
 - [x] Give the client mixin config its own refmap (2026-10-22): `mixins.oc2r.client.json` now points at `mixins.oc2r.client.refmap.json`, so a refmap emitted by an annotation processor can no longer be overwritten by the second config.
@@ -120,4 +120,13 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [x] Assess Sedna 5.3.0 separately: board snapshot migration, reset regressions and bundled Linux cold boot checked; see [assessment](docs/roadmap/sedna-5.3-assessment.md).
 - [ ] Upgrade Sedna in a separate change with real Minecraft warm snapshot/world migration acceptance; the Fabric release retains 5.2.0.
 
-- [x] Run current-source Onyx through real OC2R firmware, live monitor and private root on Fabric 26.1.2/26.2; minimal OnyxFS snapshot/rollback passes. The full system root reproduces `NoMem` at the 31-block snapshot limit and remains an Onyx filesystem follow-up; see [live acceptance](docs/roadmap/onyx-live-acceptance.md).
+- [x] Run current-source Onyx through real OC2R firmware, live monitor and private root on Fabric 26.1.2/26.2; full-root snapshot/create/list/mutate/rollback and rollback after world reload pass with OnyxKernel `54c4f34` on both versions; see [runtime follow-up](docs/roadmap/onyx-runtime-followup.md).
+
+## Active development order — release deferred
+
+1. Completed live acceptance: the OC2R shutdown/final-save fix passes six RGB/world-reload cycles with exact CPU/RAM comparison. All six server regression suites pass (354 OC2R GameTests); see [runtime follow-up](docs/roadmap/onyx-runtime-followup.md).
+2. Completed: OnyxKernel `54c4f34` removes the format limit; full-root and persisted archive checks pass on the actual OC2R private disk. Legacy archives remain readable; old-writer downgrades are unsupported.
+3. Upgrade Sedna to 5.3.0 separately; retain Buildroot 0.2.10, verify old 5.2.0 Minecraft worlds, computer/robot RAM, private disks, framebuffer continuation and repeated guest reboot.
+4. Terminal double-size rendering and the scoped vttest regressions; then DELTA acceptance and jcodec/H.264 removal; then VXLAN security, robot fixes and network work from their subsystem plans.
+
+Each fix has separate verification. No release tag or platform publication is part of this development sequence.
