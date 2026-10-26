@@ -59,8 +59,12 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     protected void markUnsavedForShutdown() {
+        markLoadedOwnerUnsaved();
+    }
+
+    private void markLoadedOwnerUnsaved() {
         final Level level = owner.getLevel();
-        if (level == null || !level.hasChunkAt(owner.getBlockPos())) return;
+        if (level == null || level.isClientSide() || !level.hasChunkAt(owner.getBlockPos())) return;
         final var chunk = level.getChunkAt(owner.getBlockPos());
         ChunkUtils.setLazyUnsaved(chunk);
         // Fabric fires unload before the final chunk save, which discards pending lazy flags.
@@ -128,6 +132,8 @@ public class ComputerVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     protected void handleRunStateChanged(final VMRunState value) {
+        // No later running tick or active-worker shutdown barrier will persist this transition.
+        if (value == VMRunState.STOPPED) markLoadedOwnerUnsaved();
         owner.terminalManager.sendToClientsTrackingComputer(new ComputerRunStateMessage(owner, value));
     }
 

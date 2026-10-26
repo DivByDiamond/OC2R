@@ -153,6 +153,64 @@ public final class RobotTests {
         helper.succeed();
     }
 
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void stoppedRobotRetainsItsPrivateRootAcrossEntityReload(final GameTestHelper helper) {
+        final Robot source = newRootSnapshotRobot(helper);
+        final Robot restored = newRootSnapshotRobot(helper);
+        final Vec3 position = helper.absoluteVec(new Vec3(2.5, 2, 4.5));
+        //? if >=26.1 {
+        /*source.snapTo(position.x, position.y, position.z, 0, 0);
+        *///?} else {
+        source.moveTo(position.x, position.y, position.z, 0, 0);
+        //?}
+        helper.getLevel().addFreshEntity(source);
+        final long offset = 64 * 1024L - 7;
+        final byte[] expected = "oc2r-stopped-robot-root".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        try {
+            TestSupport.assertTrue(helper, "fresh robot root must not contain the private marker",
+                    !java.util.Arrays.equals(expected, readRootMarker(restored.getVirtualMachine().state.builtinDevices.rootFilesystem, offset, expected.length)));
+            try (var output = source.getVirtualMachine().state.builtinDevices.rootFilesystem.getOutputStream(offset)) {
+                output.write(expected);
+            }
+            source.getVirtualMachine().start();
+            source.getVirtualMachine().stop();
+            TestSupport.assertTrue(helper, "stop itself must retain the source robot disk bytes",
+                    java.util.Arrays.equals(expected, readRootMarker(source.getVirtualMachine().state.builtinDevices.rootFilesystem, offset, expected.length)));
+            final CompoundTag saved = new CompoundTag();
+            li.cil.oc2.common.entity.robot.state.RobotSerializer.save(source, saved);
+            li.cil.oc2.common.entity.robot.state.RobotSerializer.load(restored, saved);
+            TestSupport.assertTrue(helper, "restored robot must remain powered off without a worker",
+                    restored.getVirtualMachine().getRunState() == li.cil.oc2.common.vm.VMRunState.STOPPED
+                            && restored.getVirtualMachine().runner == null && !restored.getVirtualMachine().state.board.isRunning());
+            TestSupport.assertTrue(helper, "stopped robot private disk bytes must survive entity save/load",
+                    java.util.Arrays.equals(expected, readRootMarker(restored.getVirtualMachine().state.builtinDevices.rootFilesystem, offset, expected.length)));
+            helper.succeed();
+        } catch (final java.io.IOException failure) {
+            throw TestSupport.failure(helper, "robot root roundtrip failed: " + failure);
+        } finally {
+            source.discard();
+            restored.getVirtualMachine().dispose();
+        }
+    }
+
+    private static Robot newRootSnapshotRobot(final GameTestHelper helper) {
+        //? if >=26.1 {
+        /*final Robot robot = Entities.ROBOT.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        *///?} else {
+        final Robot robot = Entities.ROBOT.get().create(helper.getLevel());
+        //?}
+        if (robot == null) throw TestSupport.failure(helper, "robot factory returned null");
+        RobotActions.initializeData(robot);
+        return robot;
+    }
+
+    private static byte[] readRootMarker(final li.cil.sedna.api.device.BlockDevice root,
+                                         final long offset, final int length) throws java.io.IOException {
+        try (var input = root.getInputStream(offset)) {
+            return input.readNBytes(length);
+        }
+    }
+
     private RobotTests() {
     }
 }
