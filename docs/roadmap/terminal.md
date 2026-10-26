@@ -135,38 +135,61 @@ in `TerminalCharRenderer`.
   `clear`/`clearScrollback`/`TerminalLineShifter` copy/blank attributes, `TerminalDiff` `PROTOCOL_VERSION 1->2` with a `lineAttrs`
   byte per row. Codes: `# 3` = DHL top, `# 4` = DHL bottom, `# 5` = SWL, `# 6` = DWL; `ESC # 7` does not exist; the attribute is per line
   and applies from column 0. Rendering is still a stub (single width).
-- [ ] **PR-B: double width and render** (the one open item). `# 6` needs 2 cells per character: breaks autowrap (pending wrap on the last
-  column), EL/DL/IL/copy path and the diff Cell model (1 codepoint = 1 column); needs a protocol extension (padding cells or a wide flag)
-  and a separate implementation plan. No renderer reads `lineAttrs` yet: DWL must draw a double-width line (or 2x glyph scale), DHL
-  top/bottom 2x-scale halves, SWL resets.
+- [ ] **PR-B: double width and render**. Keep the physical buffer stride at `width`, with one codepoint per logical column;
+  doubled rows expose the first `max(1, width / 2)` cells and render each at twice the pixel width. Existing per-row attributes and
+  protocol v2 suffice: padding cells, a per-character wide flag and a protocol extension are not required for whole-line scaling.
+  Unicode wide-character handling remains separate. Cursor bounds, delayed autowrap, tabs, editing and copy/scroll paths still need
+  row-aware behavior. No renderer reads `lineAttrs` yet: capture them in `FrameState`, render DWL at 2x width, clip the appropriate
+  half of a 2x-width/2x-height DHL glyph to its own row, and restore normal scale for SWL. Cover foreground, background, procedural
+  glyphs, decorations and cursor in the 1.21.1, 26.1.2 and 26.2 GUI/world render paths.
 - [x] MVP criterion: parsing #3/#4/#5/#6 without a warning, marks dirty.
 
 Audit of PR-A (9f472797) against EK-VT100-UG-003, 2026-09-19: lifecycle is complete (parsing, attribute transfer with rows, codec v2,
 clearBuffers, DECALN leaves attributes alone), rendering is absent. Notes for the render work:
 1. Render: verify against the screenshot `vt420.png`.
-2. Cursor clamp / truncation on conversion (manual DECDHL: characters right of the center are lost, cursor clamped to the right margin)
-   is moot until rendering exists; xterm does not clamp or truncate; decide manual accuracy vs xterm accuracy when rendering lands.
+2. Updated source audit (2026-10-25): xterm's `doublechr.c:repaint_line` clamps the cursor on conversion to double size; the earlier
+   statement that it does not clamp was incorrect. The DEC manuals specify loss of characters right of the center; xterm's conversion
+   does not erase that hidden tail. Proposed policy: follow DEC loss semantics, clear the discarded cells and their rendition, clamp
+   the cursor and clear pending wrap. Returning to SWL must not resurrect discarded text. This is still unimplemented.
 3. DHL top/bottom pairs are the application's duty, not enforced by the terminal (xterm is also laissez-faire); scrolling copies attributes 1:1.
+4. xterm ignores line-size changes while DECLRMM (left/right-margin mode) is enabled. Plan this explicitly instead of implicitly
+   scaling horizontal margins; verify the transition into DECLRMM with existing doubled rows before implementing that interaction.
+
+Primary references: [DECDHL](https://vt100.net/docs/vt510-rm/DECDHL.html),
+[DECDWL](https://vt100.net/docs/vt510-rm/DECDWL.html), [DECSWL](https://vt100.net/docs/vt510-rm/DECSWL.html),
+and [xterm doublechr.c](https://github.com/ThomasDickey/xterm-snapshots/blob/master/doublechr.c).
+
+Separate rendering follow-up (2026-10-25): `ModRenderType.getTerminalText` caches the world render type and calls
+`FontHandling.getAtlas()` only on first construction, while new glyphs are uploaded through `FontAtlas.getTextureId()`.
+Live 26.2 CPU/GPU readback showed 512 differing pixels in the newly rasterized glyph region before a fresh upload and zero afterwards.
+Ensure newly added glyphs reach the GPU during world-only rendering; also clear `textureIsDirty` after a successful upload.
+This remains open and is **not** the solved colored-block-atlas overlay bug: a controlled forced upload did not remove that overlay.
+The overlay fix (`eb032cac`) preserves sprite UV mapping by calling vertex addition and `setUv` separately on the sprite wrapper.
+Local acceptance evidence (not committed): `build/reports/terminal-world-diagnosis/INVESTIGATION.md` and
+`build/reports/onyx-live-acceptance/trap-diagnosis/postfix-final/26.2/terminal-render/` (normalized GPU readback and explicit-upload JSON).
 
 ### 44.4 vttest automation
 
-vttest is interactive and cannot run in CI directly. The escape sequences it emits are hard-coded, so fixed geometries (80x24 and 80x132)
+vttest is interactive and cannot run in CI directly. The escape sequences it emits are hard-coded, so fixed geometries (80x24 and 132x24)
 allow per-page golden cell grids run as tests.
 
 Layer 1 (cell-level, deterministic, no client):
-- [ ] Harvest streams: run each vttest page through a capture (tee/stdin logger or extraction from `screen_test.c`) into `.bytes` fixtures.
-- [ ] Data-driven test: resource files `<page>.bytes` + `<page>.cells` (golden grid of codes and styles), a parameterized JUnit test loads bytes
-  into a server `Terminal` (80x24, some pages 80x132) and compares cell by cell.
-- [ ] Assert styles and colors too, not only codepoints (otherwise strikethrough and DECSCNM pages are invisible to the test).
+- [ ] Harvest upstream streams: pin a vttest source revision and record page, geometry and capture provenance. The seven current
+  fixtures are hand-authored; recorded upstream page replay and its acceptance remain open.
+- [x] Data-driven harness: `VttestHarnessTest` discovers per-page `stream.bin`, `screen.expected` and optional `styles.expected`,
+  resizes a server `Terminal` to the requested geometry before replay, and compares cells/styles with an xfail ratchet.
+- [ ] Extend golden coverage to row attributes and foreground/background colors; optional style comparison already exists.
+  Add split-write replay alongside the current whole-stream replay, and review expected output independently of the implementation.
 - [ ] Contested pages are decided explicitly: request/response pages (DSR/DA/status line need a stub input), purely visual ones (blink,
   double-size) go into an exception list with a reason or to layer 2.
 - [ ] Golden grids are reviewed manually before merge, otherwise hallucinations become the spec.
 
 Layer 2 (pixels, catches render errors invisible in the buffer):
-- [ ] Through the GameTest infrastructure ([section 41.1](multiloader.md#411-gametest-ci-and-cd)): a guest script prints a pattern, capture the
-  terminal DynamicTexture, diff against a golden image. Covers the procedural glyphs of 44.1 and the scale of 44.3.
+- [ ] Through the GameTest infrastructure ([section 41.1](multiloader.md#411-gametest-ci-and-cd)): a guest script prints a deterministic
+  pattern; capture the rendered terminal GUI and world display and compare against reviewed pixel references. This still needs a
+  dedicated capture/golden test for the procedural glyphs of 44.1 and the scale of 44.3, across all three Minecraft versions.
 
-Priority: layer 1 first (also the acceptance of 44.1/44.2), layer 2 when a GameTest hook exists.
+Priority: layer 1 first (also the acceptance of 44.1/44.2), then terminal-specific pixel coverage using the existing client GameTest infrastructure.
 
 Narrowed scope (2026-09-16: not a universal stand, but a VT for shell/vim/tmux/OnyxOS):
 - Keep: `vttest` + `VttestHarnessTest` goldens as the regression format, `ref/vttest/charsets.c` only for contested VT tables, current scrolling property tests.
