@@ -16,7 +16,8 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | [devices-storage.md](devices-storage.md) | Cards, disks, CPU tiers, keyboard/mouse, UART tablet, flash builder / OS loader, OnyxOS delivery |
 | [robot.md](robot.md) | Robot fixes and robot audit rows |
 | [multiloader.md](multiloader.md) | NeoForge + Fabric multiloader, GameTest CI, dependency updates |
-| [fabric-26-acceptance.md](fabric-26-acceptance.md) | Completed local Fabric 26.x acceptance; CI/release tracked separately |
+| [fabric-26-acceptance.md](fabric-26-acceptance.md) | Fabric 26.x accepted, merged and CI-verified; publication deferred |
+| [sedna-5.3-upgrade.md](sedna-5.3-upgrade.md) | Sedna 5.3 development upgrade, old-world/robot migration and stopped-disk persistence |
 | [quality.md](quality.md) | Lint stages, tests, audits, code documentation, NOPMD review |
 | [upstream.md](upstream.md) | Sync with upstream fnuecke/oc2 v0.3.0 |
 | [qa-checklist.md](qa-checklist.md) | All "code ready, verify in game" boxes in one place |
@@ -73,7 +74,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | 41.3 | [upstream.md](upstream.md#413-not-applicable-or-already-closed) | |
 | 49 | [upstream.md](upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08) | |
 | 41.4 | [multiloader.md](multiloader.md#414-dependency-updates) | |
-| 42 | [multiloader.md](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion) | stages 1–3 complete; Fabric 26.x locally accepted 2026-10-24; final CI/release pending |
+| 42 | [multiloader.md](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion) | stages 1–3 complete; Fabric 26.x accepted, merged and CI-verified; publication deferred |
 | 43 | [network-overhaul.md](network-overhaul.md#43-cable-system-rebuild-from-scratch) | implemented part in [done.md](done.md#43-implemented-device-bus-part) |
 | 44 | [terminal.md](terminal.md#44-terminal-line-drawing-strikethrough-double-size) | |
 | 44.1 | [terminal.md](terminal.md#441-line-drawing-characters-dec-special-graphics) | done |

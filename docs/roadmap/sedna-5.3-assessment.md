@@ -1,9 +1,9 @@
 # Sedna 5.3.0 assessment — 2026-10-25
 
-Recommendation: upgrade in a separate change after the Fabric 26.x release
-closeout. The isolated checks below found a useful reset fix and no immediate
-boot or core snapshot blocker. They do not establish full OC2R world-save
-compatibility. Production remains on Sedna 5.2.0 and Buildroot 0.2.10.
+This records the initial isolated assessment before the dependency change. The
+subsequent [development upgrade and live-world acceptance](sedna-5.3-upgrade.md)
+cover actual OC2R snapshots, RAM, disks, robots and reboot/poweroff behavior.
+Buildroot remains 0.2.10. Release publication is deferred.
 
 ## Exact upstream change
 
@@ -52,20 +52,20 @@ on interrupt 7, matching those OC2R device choices. The kernel was Linux
 6.6.32; ext2 mounted and `/sbin/init`, networking and virtual filesystem setup
 completed. This is a standalone emulator boot, not a Minecraft client test.
 
-Local evidence and the executable probe remain under
+The initial evidence used temporary paths under
 `/tmp/oc2r-sedna-assessment/` (`Probe.java`, `run.py`, `reset.py`, `old.bin`,
 `boot.log`); the exact tag checkout is `/tmp/oc2r-sedna-assessment-src`.
 The 5.3.0 JAR SHA-256 is
 `c7fd24b7104641ac4258e9ef55bc423371ae086200b1d7f6226efbaa1e3c0742`.
-Those temporary paths are local evidence, not distributed project assets.
+Those initial temporary paths may be cleared between sessions. Reproducible later probes and results are retained under `build/reports/sedna53-migration/candidate-preparation/`; complete Minecraft acceptance is in the linked upgrade report.
 
-## Remaining upgrade acceptance
+## Original upgrade checklist
 
 The snapshot probe exercises Sedna's Ceres binary serialization, not OC2R's
 NBT visitor, RAM snapshots, disk overlays or complete mounted device graph.
 The cold boot does not exercise warm continuation or a second reboot.
 
-Before shipping a dependency bump:
+Items 1–4 are now verified by the development upgrade. Modern live-client acceptance in item 5 also passed; the dedicated legacy client remains a future release gate. No release was published. The original checklist was:
 
 1. Change only Sedna to 5.3.0 and record its verified dependency metadata;
    preserve Buildroot 0.2.10 to isolate emulator changes.

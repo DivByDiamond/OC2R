@@ -6,10 +6,12 @@ and compared with committed golden files. The harness lives in
 run it with:
 
 ```
-./gradlew test --tests 'li.cil.oc2.common.vm.terminal.vttest.*' --console=plain
+./gradlew :26.1.2:test --tests 'li.cil.oc2.common.vm.terminal.vttest.*' --console=plain
 ```
 
-Streams are currently hand-made; later they will be harvested from real `vttest`.
+The seven current streams are hand-made. Capturing real upstream `vttest` pages, with a pinned source revision,
+page/geometry/capture provenance and reviewed goldens, remains open. Double-size rendering and pixel acceptance are also still open;
+the replay harness alone does not establish them. See [terminal roadmap](../../../../docs/roadmap/terminal.md#444-vttest-automation).
 
 ## Layout
 
@@ -18,16 +20,16 @@ One directory per fixture: `vttest/<id>/` containing:
 | file | required | content |
 |---|---|---|
 | `page.properties` | yes | fixture metadata (below) |
-| `stream.bin` | yes | raw bytes fed to the terminal via `io.putOutput` (a single whole-file `ByteBuffer` is drained fully — no chunking needed) |
+| `stream.bin` | yes | raw bytes fed to the terminal via `io.putOutput`; current replay drains one whole-file `ByteBuffer`, with split-write replay still planned |
 | `screen.expected` | yes | golden: one line per visible screen row, one Unicode codepoint (UTF-8) per cell |
 | `styles.expected` | no | golden: per-cell style byte as two hex digits, cells separated by `\|` (e.g. `00\|01\|00`) |
 
 ### `page.properties`
 
 - `id` — fixture name (defaults to the directory name)
-- `geometry` — `WxH`, e.g. `80x24`. The harness replays against a default-constructed
-  `Terminal` (80x24); a fixture asking for anything else fails explicitly. 80x132 (DECCOLM)
-  support will come with a geometry-aware harness, not silently.
+- `geometry` — columns x rows, e.g. `80x24` or `132x24` for DECCOLM. The harness already calls
+  `resizeHeight`/`setWidth` before replay when the requested geometry differs from the default `Terminal` (80x24).
+  Use geometries within the terminal's supported limits (`Terminal.MAX_WIDTH`/`MAX_HEIGHT`).
 - `status` — `pass` or `xfail`
 - `reason` — optional free text; only meaningful with `xfail`
 
@@ -40,6 +42,9 @@ is space-filled on allocation) and codepoint 0 is additionally normalized to `' 
 
 `styles.expected`: compared only when the file exists. Trailing all-`00` cells may be trimmed,
 trailing blank rows may be omitted; everything missing counts as style byte `0x00`.
+
+Per-row double-size attributes and foreground/background colors do not yet have golden files in this harness.
+Their comparison is planned separately; existing codepoint/style fixtures cannot prove double-size geometry or color correctness.
 
 ## The xfail ratchet
 

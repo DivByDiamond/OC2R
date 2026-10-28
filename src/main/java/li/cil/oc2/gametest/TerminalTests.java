@@ -90,6 +90,68 @@ public final class TerminalTests {
     }
 
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void stoppingComputerMakesItsOwnerImmediatelySaveable(final GameTestHelper helper) {
+        final var computer = ComputerFixture.place(helper).blockEntity();
+        final var vm = computer.virtualMachine;
+        final var chunk = helper.getLevel().getChunkAt(computer.getBlockPos());
+        vm.setRunState(li.cil.oc2.common.vm.VMRunState.RUNNING);
+        // A previous save consumed the real flag; this tick only queued a lazy VM update.
+        //? if >=26.1 {
+        /*chunk.tryMarkSaved();
+        *///?} else {
+        chunk.setUnsaved(false);
+        //?}
+        li.cil.oc2.common.util.world.chunk.ChunkUtils.setLazyUnsaved(chunk);
+        vm.stop();
+        TestSupport.assertTrue(helper, "STOPPED transition must eagerly dirty the real owner before unload discards lazy flags",
+                chunk.isUnsaved());
+        // Repeating stop on a cold machine changes nothing and must not create a new save.
+        //? if >=26.1 {
+        /*chunk.tryMarkSaved();
+        *///?} else {
+        chunk.setUnsaved(false);
+        //?}
+        vm.stop();
+        TestSupport.assertTrue(helper, "an already stopped machine must not become dirty again", !chunk.isUnsaved());
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void stoppedComputerRetainsItsPrivateRootAcrossContainerReload(final GameTestHelper helper) {
+        final var fixture = ComputerFixture.place(helper);
+        final var source = fixture.blockEntity();
+        final var restored = new li.cil.oc2.common.blockentity.computer.ComputerBlockEntity(
+                source.getBlockPos(), source.getBlockState());
+        restored.setLevel(helper.getLevel());
+        final long offset = 64 * 1024L - 7; // Cross two sparse COW pages without starting a guest OS.
+        final byte[] expected = "oc2r-stopped-computer-root".getBytes(StandardCharsets.UTF_8);
+        try {
+            TestSupport.assertTrue(helper, "fresh computer root must not contain the private marker",
+                    !java.util.Arrays.equals(expected, readRootMarker(restored.virtualMachine.state.builtinDevices.rootFilesystem, offset, expected.length)));
+            try (var output = source.virtualMachine.state.builtinDevices.rootFilesystem.getOutputStream(offset)) {
+                output.write(expected);
+            }
+            source.virtualMachine.start();
+            source.virtualMachine.stop();
+            TestSupport.assertTrue(helper, "stop itself must retain the source disk bytes",
+                    java.util.Arrays.equals(expected, readRootMarker(source.virtualMachine.state.builtinDevices.rootFilesystem, offset, expected.length)));
+            final var saved = fixture.save();
+            li.cil.oc2.common.blockentity.computer.persistence.ComputerBlockEntityPersistence.loadAdditional(
+                    restored, saved, helper.getLevel().registryAccess());
+            TestSupport.assertTrue(helper, "restored computer must remain powered off without a worker",
+                    restored.virtualMachine.getRunState() == li.cil.oc2.common.vm.VMRunState.STOPPED
+                            && restored.virtualMachine.runner == null && !restored.virtualMachine.state.board.isRunning());
+            TestSupport.assertTrue(helper, "stopped computer private disk bytes must survive container save/load",
+                    java.util.Arrays.equals(expected, readRootMarker(restored.virtualMachine.state.builtinDevices.rootFilesystem, offset, expected.length)));
+            helper.succeed();
+        } catch (final java.io.IOException failure) {
+            throw TestSupport.failure(helper, "computer root roundtrip failed: " + failure);
+        } finally {
+            restored.virtualMachine.dispose();
+        }
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void shutdownMakesTheRealComputerChunkImmediatelySaveable(final GameTestHelper helper) {
         final var computer = ComputerFixture.place(helper).blockEntity();
         final var vm = computer.virtualMachine;
@@ -240,6 +302,13 @@ public final class TerminalTests {
     }
 
     // --------------------------------------------------------------------- //
+
+    private static byte[] readRootMarker(final li.cil.sedna.api.device.BlockDevice root,
+                                         final long offset, final int length) throws java.io.IOException {
+        try (var input = root.getInputStream(offset)) {
+            return input.readNBytes(length);
+        }
+    }
 
     private TerminalTests() {
     }

@@ -27,8 +27,9 @@ public final class RobotSerializer {
 
     public static void save(final Robot robot, final CompoundTag tag) {
         final var provider = robot.registryAccess();
+        // The VM state owns the private root disk even when its CPU is powered off.
+        tag.put(STATE_TAG_NAME, robot.getVirtualMachine().serialize());
         if (robot.getVirtualMachine().getRunState() != VMRunState.STOPPED) {
-            tag.put(STATE_TAG_NAME, robot.getVirtualMachine().serialize());
             tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(robot.getTerminal()));
         }
         tag.put(COMMAND_PROCESSOR_TAG_NAME, robot.getMovementController().serialize());

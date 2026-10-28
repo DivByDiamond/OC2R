@@ -152,8 +152,9 @@ public final class ComputerBlockEntityPersistence {
             final ComputerBlockEntity computer,
             final CompoundTag tag,
             final HolderLookup.Provider registries) {
+        // The VM state owns the private root disk even when its CPU is powered off.
+        tag.put(STATE_TAG_NAME, computer.virtualMachine.serialize());
         if (computer.virtualMachine.getRunState() != VMRunState.STOPPED) {
-            tag.put(STATE_TAG_NAME, computer.virtualMachine.serialize());
             tag.put(TERMINAL_TAG_NAME, NBTSerialization.serialize(computer.terminalManager.terminal));
         }
         tag.put(ENERGY_TAG_NAME, computer.energy.serializeNBT(registries));

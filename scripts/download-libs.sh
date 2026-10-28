@@ -29,22 +29,26 @@ mkdir -p libs
 FORCE=0
 [ "${1:-}" = "--force" ] && FORCE=1
 
-# install_maven <group-path> <artifact> <version> <release-url>
+# install_maven <group-path> <artifact> <version> <release-url> [metadata-url-prefix]
 #
 # group-path is the slash-separated Maven groupId, e.g. "li/cil/ceres".
-# Downloads the jar, writes a minimal POM, both into
+# Downloads the jar and published metadata when a prefix is provided; otherwise
+# writes a minimal POM. Files are installed into
 # libs/<group-path>/<artifact>/<version>/.
 install_maven() {
     local group_path="$1"
     local artifact="$2"
     local version="$3"
     local release_url="$4"
+    local metadata_url_prefix="${5:-}"
 
     local dir="libs/${group_path}/${artifact}/${version}"
     local jar="${dir}/${artifact}-${version}.jar"
     local pom="${dir}/${artifact}-${version}.pom"
+    local module="${dir}/${artifact}-${version}.module"
 
-    if [ "$FORCE" = "0" ] && [ -f "$jar" ] && [ -f "$pom" ]; then
+    if [ "$FORCE" = "0" ] && [ -f "$jar" ] && [ -f "$pom" ] \
+        && { [ -z "$metadata_url_prefix" ] || [ -f "$module" ]; }; then
         echo "[skip] ${jar#libs/} already exists"
         return 0
     fi
@@ -58,6 +62,22 @@ install_maven() {
     curl -fL --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 \
         "${release_url}" -o "${jar}.tmp"
     mv "${jar}.tmp" "$jar"
+
+    if [ -n "$metadata_url_prefix" ]; then
+        # Preserve upstream dependency metadata and its exact verified bytes.
+        # A synthetic POM has a different checksum and loses transitive dependencies.
+        local extension
+        for extension in pom module; do
+            curl -fL --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 \
+                "${metadata_url_prefix}.${extension}" -o "${dir}/${artifact}-${version}.${extension}.tmp"
+        done
+        mv "${pom}.tmp" "$pom"
+        mv "${module}.tmp" "$module"
+        echo "  -> ${jar#libs/}"
+        echo "  -> ${pom#libs/}"
+        echo "  -> ${module#libs/}"
+        return 0
+    fi
 
     # Group ID = group_path with '/' replaced by '.'
     local group_id="${group_path//\//.}"
@@ -79,7 +99,7 @@ EOF
 
 # Versions must match build.gradle / gradle.properties
 CERES_VERSION="0.0.7"
-SEDNA_VERSION="5.2.0"
+SEDNA_VERSION="5.3.0"
 # Upstream fnuecke line (was: custom minux 0.0.71 + kernel 6.12.104 with
 # CONFIG_9P_FS=y as 0.0.72-oc2r1, hosted on the OC2R "bundled-deps" release).
 # Verify /mnt/builtin (9p) still mounts in game after the switch.
@@ -89,7 +109,8 @@ install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
     "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"
 
 install_maven "li/cil/sedna" "sedna" "${SEDNA_VERSION}" \
-    "https://github.com/fnuecke/sedna/releases/download/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}.jar"
+    "https://github.com/fnuecke/sedna/releases/download/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}.jar" \
+    "https://repo.maven.apache.org/maven2/li/cil/sedna/sedna/${SEDNA_VERSION}/sedna-${SEDNA_VERSION}"
 
 install_maven "li/cil/sedna" "sedna-buildroot" "${SEDNA_BUILDROOT_VERSION}" \
     "https://fnuecke.github.io/maven/li/cil/sedna/sedna-buildroot/${SEDNA_BUILDROOT_VERSION}/sedna-buildroot-${SEDNA_BUILDROOT_VERSION}.jar"
@@ -101,4 +122,4 @@ install_maven "li/cil/sedna" "sedna-buildroot" "${SEDNA_BUILDROOT_VERSION}" \
 
 echo
 echo "Done. Maven layout under libs/:"
-find libs -type f \( -name '*.jar' -o -name '*.pom' \) | sort
+find libs -type f \( -name '*.jar' -o -name '*.pom' -o -name '*.module' \) | sort
