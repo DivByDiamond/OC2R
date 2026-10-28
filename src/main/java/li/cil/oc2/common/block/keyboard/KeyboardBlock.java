@@ -84,8 +84,14 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
             return super.useWithoutItem(state, level, pos, player, hitResult);
         }
 
-        if (level.isClientSide()) {
+        if (player.isShiftKeyDown()) {
+            if (!level.isClientSide()) {
+                li.cil.oc2.common.blockentity.keyboard.link.KeyboardPairing.select(player, keyboard);
+            }
+        } else if (level.isClientSide()) {
             openKeyboardScreen(keyboard);
+        } else if (player instanceof final net.minecraft.server.level.ServerPlayer serverPlayer) {
+            keyboard.capture.begin(serverPlayer);
         }
 
         //? if >=26.1 {
@@ -93,6 +99,15 @@ public final class KeyboardBlock extends HorizontalDirectionalBlock implements E
         *///?} else {
         return InteractionResult.sidedSuccess(level.isClientSide());
         //?}
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
+            final Level level, final BlockState state,
+            final net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return li.cil.oc2.common.blockentity.TickableBlockEntity.createServerTicker(
+                level, type, BlockEntities.KEYBOARD.get());
     }
 
     // EntityBlock

@@ -2,6 +2,7 @@ package li.cil.oc2.common.vm.provider;
 
 import li.cil.oc2.common.vm.device.PciRootPortDevice;
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
+import li.cil.oc2.common.vm.device.frame.FramePresentDevice;
 import li.cil.sedna.device.rtc.GoldfishRTC;
 import li.cil.sedna.device.serial.UART16550A;
 import li.cil.sedna.device.virtio.AbstractVirtIODevice;
@@ -18,6 +19,7 @@ public final class DeviceTreeProviders {
     public static void initialize() {
         DeviceTreeRegistry.putProvider(
                 SimpleFramebufferDevice.class, new SimpleFramebufferDeviceProvider());
+        DeviceTreeRegistry.putProvider(FramePresentDevice.class, new FramePresentDeviceProvider());
         DeviceTreeRegistry.putProvider(PciRootPortDevice.class, new PciRootPortDeviceProvider());
         // sedna's UART16550AProvider / VirtIOProvider don't implement createNode
         // (interface default returns empty) — without these the device tree has no

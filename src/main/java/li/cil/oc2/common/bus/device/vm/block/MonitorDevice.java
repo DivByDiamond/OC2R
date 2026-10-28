@@ -18,6 +18,7 @@ import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 //?}
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
+import li.cil.oc2.common.vm.device.frame.FramePresentAttachment;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -25,20 +26,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public final class MonitorDevice extends IdentityProxy<BlockEntity> implements VMDevice {
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String BLOB_HANDLE_TAG_NAME = "blob";
-
     public static final int WIDTH = 640;
     public static final int HEIGHT = 480;
-
     private final BooleanConsumer onMountedChanged;
-
     @Nullable private SimpleFramebufferDevice device;
-    // Resolution of the GPU installed in the hosting computer; 0 means "no GPU on the bus".
-    // Updated from CommonDeviceBusController after-device-scan listeners (MonitorGpuLink)
-    // before the VM mounts devices, so mount() always sees fresh values.
     private int gpuWidth;
     private int gpuHeight;
 
     private final OptionalAddress address = new OptionalAddress();
+    private final FramePresentAttachment presentation = new FramePresentAttachment();
     @Nullable private UUID blobHandle;
 
     public MonitorDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
@@ -85,8 +81,6 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     @Override
     public VMDeviceLoadResult mount(final VMContext context) {
         if (gpuWidth <= 0 || gpuHeight <= 0) {
-            // No GPU on the bus: the monitor mounts without a framebuffer and stays
-            // dark. The rest of the device set (keyboard, ...) is unaffected.
             return VMDeviceLoadResult.success();
         }
 
@@ -95,7 +89,8 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         }
 
         assert device != null;
-        if (!address.claim(context, device)) {
+        if (!address.claim(context, device) || !presentation.mount(context, device)) {
+            unmount();
             return VMDeviceLoadResult.fail();
         }
 
@@ -109,6 +104,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         final SimpleFramebufferDevice framebufferDevice = device;
         device = null;
         if (framebufferDevice != null) {
+            presentation.unmount(framebufferDevice);
             framebufferDevice.close();
         }
 
@@ -128,6 +124,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
         }
 
         address.clear();
+        presentation.clear();
     }
 
     @Override
@@ -145,11 +142,17 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
             tag.putLong(ADDRESS_TAG_NAME, address.getAsLong());
         }
 
+        tag.put("presentation", presentation.save(device));
         return tag;
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*presentation.load(tag.getCompoundOrEmpty("presentation"));
+        *///?} else {
+        presentation.load(tag.getCompound("presentation"));
+        //?}
         //? if >=26.1 {
         /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
             blobHandle = tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
@@ -175,7 +178,7 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
 
         try {
             device = createFrameBufferDevice();
-        } catch (final IOException e) {
+        } catch (final IOException | IllegalArgumentException e) {
             return false;
         }
 
@@ -183,12 +186,10 @@ public final class MonitorDevice extends IdentityProxy<BlockEntity> implements V
     }
 
     private SimpleFramebufferDevice createFrameBufferDevice() throws IOException {
-        final long required = (long) gpuWidth * gpuHeight * SimpleFramebufferDevice.STRIDE;
+        final int required = SimpleFramebufferDevice.checkedLength(gpuWidth, gpuHeight);
         blobHandle = BlobStorage.validateHandle(blobHandle);
         FileChannel channel = BlobStorage.getOrOpenAsync(blobHandle).join();
         if (channel.size() != required) {
-            // GPU (or its resolution) changed since the last mount: the stored framebuffer
-            // has the wrong size for the new mode, discard it and start with a fresh blob.
             BlobStorage.deleteAsync(blobHandle).join();
             blobHandle = BlobStorage.validateHandle(null);
             channel = BlobStorage.getOrOpenAsync(blobHandle).join();

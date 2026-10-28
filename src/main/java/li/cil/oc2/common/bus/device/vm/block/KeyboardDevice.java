@@ -12,7 +12,7 @@ import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 //? if <26.1 {
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 //?}
-import li.cil.sedna.device.virtio.VirtIOKeyboardDevice;
+import li.cil.oc2.common.vm.device.input.UnifiedInputDevice;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
@@ -21,7 +21,8 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
     private static final String ADDRESS_TAG_NAME = "address";
     private static final String INTERRUPT_TAG_NAME = "interrupt";
 
-    @Nullable private VirtIOKeyboardDevice device;
+    @Nullable private UnifiedInputDevice device;
+    @Nullable private Object mountedMachine;
 
     private final OptionalAddress address = new OptionalAddress();
     private final OptionalInterrupt interrupt = new OptionalInterrupt();
@@ -35,6 +36,17 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
         if (device != null) {
             device.sendKeyEvent(keycode, isDown);
         }
+    }
+
+    /** Sends a relative pointer axis (0=X, 1=Y, 8=wheel). */
+    public void sendRelativeEvent(final int axis, final int amount) {
+        if (device != null) device.sendRelativeEvent(axis, amount);
+    }
+
+    /** Returns whether both endpoints currently belong to the same mounted guest. */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals") // Opaque guest tokens require identity, never value equality.
+    public boolean sharesMachineWith(final KeyboardDevice<?> other) {
+        return mountedMachine != null && mountedMachine == other.mountedMachine;
     }
 
     @Override
@@ -60,12 +72,15 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
             NBTSerialization.deserialize(deviceTag, device);
         }
 
+        mountedMachine = context instanceof li.cil.oc2.common.vm.context.managed.ManagedVMContext managed
+                ? managed.getMachineIdentity() : context;
         return VMDeviceLoadResult.success();
     }
 
     @Override
     public void unmount() {
         device = null;
+        mountedMachine = null;
     }
 
     @Override
@@ -128,7 +143,7 @@ public final class KeyboardDevice<T> extends IdentityProxy<T> implements VMDevic
             return false;
         }
 
-        device = new VirtIOKeyboardDevice(context.getMemoryMap());
+        device = new UnifiedInputDevice(context.getMemoryMap());
 
         return true;
     }

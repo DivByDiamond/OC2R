@@ -13,6 +13,7 @@ import li.cil.sedna.api.device.InterruptController;
 import li.cil.sedna.api.memory.MemoryMap;
 
 public final class ManagedVMContext implements VMContext {
+    private final Object machineIdentity;
     private final ManagedMemoryMap memoryMap;
     private final ManagedInterruptController interruptController;
     private final ManagedMemoryRangeAllocator memoryRangeAllocator;
@@ -24,6 +25,7 @@ public final class ManagedVMContext implements VMContext {
             final VMContext parent,
             final VMContextManagerCollection managers,
             final Supplier<OptionalLong> baseAddressSupplier) {
+        this.machineIdentity = parent instanceof ManagedVMContext managed ? managed.machineIdentity : parent;
         this.memoryRangeAllocator =
                 new ManagedMemoryRangeAllocator(
                         parent.getMemoryRangeAllocator(),
@@ -38,6 +40,9 @@ public final class ManagedVMContext implements VMContext {
         this.memoryAllocator = new ManagedMemoryAllocator();
         this.eventBus = new ManagedEventBus(parent.getEventBus(), managers.getEventManager());
     }
+
+    /** Opaque identity shared by all managed device contexts belonging to one guest. */
+    public Object getMachineIdentity() { return machineIdentity; }
 
     public void freeze() {
         memoryRangeAllocator.freeze();

@@ -63,6 +63,17 @@ public final class ProjectorBlock extends HorizontalDirectionalBlock
     }
 
     @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(
+            final BlockState state, final Level level, final BlockPos pos,
+            final net.minecraft.world.entity.player.Player player,
+            final net.minecraft.world.phys.BlockHitResult hit) {
+        if (li.cil.oc2.common.blockentity.keyboard.link.KeyboardPairing.tryLink(player, pos)) {
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        return super.useWithoutItem(state, level, pos, player, hit);
+    }
+
+    @Override
     protected MapCodec<ProjectorBlock> codec() {
         return BlockCodecs.PROJECTOR.get();
     }

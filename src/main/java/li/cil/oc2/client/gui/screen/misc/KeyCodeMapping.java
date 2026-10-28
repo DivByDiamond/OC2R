@@ -10,6 +10,13 @@ public final class KeyCodeMapping {
 
     static {
         MAPPING.put(GLFW.GLFW_KEY_ESCAPE, EvdevKeys.KEY_ESC);
+        // Standard Linux input codes missing from Sedna's legacy key constants.
+        MAPPING.put(GLFW.GLFW_KEY_WORLD_1, 86);
+        MAPPING.put(GLFW.GLFW_KEY_WORLD_2, 89);
+        MAPPING.put(GLFW.GLFW_KEY_PRINT_SCREEN, 99);
+        MAPPING.put(GLFW.GLFW_KEY_LEFT_SUPER, 125);
+        MAPPING.put(GLFW.GLFW_KEY_RIGHT_SUPER, 126);
+        MAPPING.put(GLFW.GLFW_KEY_MENU, 127);
         MAPPING.put(GLFW.GLFW_KEY_0, EvdevKeys.KEY_0);
         MAPPING.put(GLFW.GLFW_KEY_1, EvdevKeys.KEY_1);
         MAPPING.put(GLFW.GLFW_KEY_2, EvdevKeys.KEY_2);

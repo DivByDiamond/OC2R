@@ -3,6 +3,7 @@
   "package": "li.cil.oc2.fabric.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "CaptureKeyboardMixin",
     "ClientPacketListenerMixin",
     "LevelChunkClientMixin",
     "EntityRendererMixin",

@@ -1,6 +1,11 @@
 # Rebuilding Onyx kernel and userspace candidates
 
-Source bases:
+The current kernel is now built directly from OnyxKernel `6506c16`; see
+[display/input acceptance](../../docs/roadmap/onyx-input-display-acceptance.md).
+The userspace base below is retained, with only its PSF payload updated. The
+remaining instructions document the older complete userspace/kernel rebuild.
+
+Historical source bases:
 
 - OnyxKernel: `dc3aa4bdfaa8d86d1b241d0056248685b1feac48`.
 - OnyxApps: `ef5d9cd8d1a7116670d32af4b4441ac89da7a9b3`.

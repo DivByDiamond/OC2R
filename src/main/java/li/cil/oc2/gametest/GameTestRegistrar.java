@@ -35,6 +35,7 @@ public final class GameTestRegistrar {
     // Every test class in this package. Add new classes here, or their tests are silently skipped.
     private static final List<Class<?>> TEST_CLASSES = List.of(
         DeviceBusTests.class,
+        KeyboardTests.class,
         FlashWriterTests.class,
         NetworkCableItemTests.class,
         NetworkConnectorTests.class,

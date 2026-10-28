@@ -29,6 +29,10 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     private static final String ENERGY_TAG_NAME = "energy";
     private static final String DEVICE_ID_TAG_NAME = "device_id";
 
+    public final li.cil.oc2.common.bus.device.vm.block.KeyboardDevice<ProjectorBlockEntity> keyboardDevice =
+            new li.cil.oc2.common.bus.device.vm.block.KeyboardDevice<>(this);
+    public final li.cil.oc2.common.bus.device.DeviceGroup inputDevices =
+            new li.cil.oc2.common.bus.device.DeviceGroup(this);
     public final ProjectorDevice projectorDevice =
             new ProjectorDevice(this, this::handleMountedChanged);
     public final ProjectorFrameSender frameSender = new ProjectorFrameSender(this);
@@ -37,10 +41,26 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     private final ProjectorRenderBounds renderBounds = new ProjectorRenderBounds();
 
     public UUID deviceId = UUID.randomUUID();
+    private boolean nativeInputEnabled;
 
     public ProjectorBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.PROJECTOR.get(), pos, state);
         renderBounds.update(state, pos);
+        inputDevices.addDevice("projector", projectorDevice);
+        inputDevices.addDevice("keyboard", keyboardDevice);
+    }
+
+    /** Whether explicit pairing has enabled native keyboard and mouse input. */
+    public boolean isNativeInputEnabled() {
+        return nativeInputEnabled;
+    }
+
+    /** Enables native input on explicit association; old worlds retain their original device list. */
+    public void enableNativeInput() {
+        if (nativeInputEnabled) return;
+        nativeInputEnabled = true;
+        setChanged();
+        li.cil.oc2.platform.Platform.capabilities().invalidateBlock(level, getBlockPos());
     }
 
     public boolean isProjecting() {
@@ -159,6 +179,7 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     protected void saveAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(ENERGY_TAG_NAME, energy.serializeNBT(registries));
+        tag.putBoolean("native_input_enabled", nativeInputEnabled);
         //? if >=26.1 {
         /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
         *///?} else {
@@ -170,11 +191,13 @@ public final class ProjectorBlockEntity extends ModBlockEntity implements Tickab
     public void loadAdditional(final CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         //? if >=26.1 {
-        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
+        /*nativeInputEnabled = tag.getBooleanOr("native_input_enabled", false);
+        energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
         if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
             deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
         }
         *///?} else {
+        nativeInputEnabled = tag.getBoolean("native_input_enabled");
         energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
         if (tag.hasUUID(DEVICE_ID_TAG_NAME)) deviceId = tag.getUUID(DEVICE_ID_TAG_NAME);
         //?}

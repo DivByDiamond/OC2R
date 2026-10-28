@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 //? if >=26.1 {
 /*import li.cil.oc2.client.gui.screen.computer.ComputerPreviewRenderer;
 *///?}
+import li.cil.oc2.client.input.CaptureKeyBinding;
 import li.cil.oc2.client.model.FabricModels;
 //? if >=26.1 {
 /*import li.cil.oc2.client.renderer.entity.RobotSpecialModelRenderer;
@@ -20,6 +21,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 //? if <26.1 {
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+//?}
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+*///?} else {
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//?}
+//? if <26.1 {
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 //?}
@@ -48,6 +56,11 @@ public final class FabricClientSetup {
 
     /** Registers the client callbacks and renderers for this loader. */
     public static void register() {
+        //? if >=26.1 {
+        /*KeyMappingHelper.registerKeyMapping(CaptureKeyBinding.RELEASE);
+        *///?} else {
+        KeyBindingHelper.registerKeyBinding(CaptureKeyBinding.RELEASE);
+        //?}
         FabricModels.register();
 
         //? if >=26.1 {

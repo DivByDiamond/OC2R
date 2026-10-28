@@ -20,6 +20,7 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     private final ComputerBlockEntity owner;
     private final Set<Device> devices = new HashSet<>();
     public UUID deviceId = UUID.randomUUID();
+    private boolean nativeInputEnabled;
 
     public ComputerBusElement(final ComputerBlockEntity owner) {
         super();
@@ -41,6 +42,10 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
         final Level level = owner.getLevel();
         assert level != null;
 
+        if (nativeInputEnabled) {
+            devices.add(owner.keyboardDevice);
+            super.addDevice(owner.keyboardDevice);
+        }
         collectDevices(level, getPosition(), null)
                 .ifPresent(
                         result -> {
@@ -49,6 +54,15 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
                                 super.addDevice(info.getDevice());
                             }
                         });
+    }
+
+    /** Installs native keyboard/mouse input only after explicit pairing, preserving legacy guests. */
+    public void enableNativeInput() {
+        if (nativeInputEnabled) return;
+        nativeInputEnabled = true;
+        devices.add(owner.keyboardDevice);
+        super.addDevice(owner.keyboardDevice);
+        owner.setChanged();
     }
 
     @Override
@@ -83,6 +97,8 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     @Override
     public CompoundTag save(final HolderLookup.Provider registries) {
         final CompoundTag tag = super.save(registries);
+        tag.put("native_input", owner.keyboardDevice.serializeNBT(registries));
+        tag.putBoolean("native_input_enabled", nativeInputEnabled);
         //? if >=26.1 {
         /*tag.store(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC, deviceId);
         *///?} else {
@@ -94,6 +110,13 @@ public class ComputerBusElement extends AbstractBlockDeviceBusElement {
     @Override
     public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        //? if >=26.1 {
+        /*nativeInputEnabled = tag.getBooleanOr("native_input_enabled", false);
+        owner.keyboardDevice.deserializeNBT(registries, tag.getCompoundOrEmpty("native_input"));
+        *///?} else {
+        nativeInputEnabled = tag.getBoolean("native_input_enabled");
+        owner.keyboardDevice.deserializeNBT(registries, tag.getCompound("native_input"));
+        //?}
         //? if >=26.1 {
         /*if (tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
             deviceId = tag.read(DEVICE_ID_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();

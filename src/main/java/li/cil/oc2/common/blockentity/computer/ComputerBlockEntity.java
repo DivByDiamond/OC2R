@@ -34,6 +34,8 @@ public final class ComputerBlockEntity extends ModBlockEntity
             GPU_SLOTS = 1;
     boolean hasAddedOwnDevices;
     public boolean isNeighborUpdateScheduled;
+    public final li.cil.oc2.common.bus.device.vm.block.KeyboardDevice<ComputerBlockEntity> keyboardDevice =
+            new li.cil.oc2.common.bus.device.vm.block.KeyboardDevice<>(this);
     public final ComputerBusElement busElement = new ComputerBusElement(this);
     public final ComputerItemStackHandlers deviceItems =
             new ComputerItemStackHandlers(this, () -> this.getLevel().registryAccess());

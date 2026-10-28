@@ -17,6 +17,11 @@ public final class ProjectorContraptionHelper {
                 || Math.abs(pos.getZ()) > VIRTUAL_POSITION_THRESHOLD;
     }
 
+    /** Snapshot of loaded client projectors for world-visible input focus selection. */
+    public static java.util.Collection<ProjectorBlockEntity> loadedProjectors() {
+        return java.util.List.copyOf(PRIMARY_BY_DEVICE_ID.values());
+    }
+
     @Nullable
     public static ProjectorBlockEntity getPrimaryForContraptionRendering(
             final ProjectorBlockEntity projector) {

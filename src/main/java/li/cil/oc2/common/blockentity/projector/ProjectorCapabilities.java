@@ -22,7 +22,7 @@ registrar.registerBlock(
                     if (!(be instanceof ProjectorBlockEntity self)) return null;
                     if (side != self.getBlockState().getValue(ProjectorBlock.FACING).getOpposite())
                         return null;
-                    return self.projectorDevice;
+                    return self.isNativeInputEnabled() ? self.inputDevices : self.projectorDevice;
                 },
                 Blocks.PROJECTOR.get());
     }

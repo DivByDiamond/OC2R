@@ -152,6 +152,9 @@ public final class MonitorBlock extends HorizontalDirectionalBlock
             final BlockPos pos,
             final Player player,
             final BlockHitResult hitResult) {
+        if (li.cil.oc2.common.blockentity.keyboard.link.KeyboardPairing.tryLink(player, pos)) {
+            return InteractionResult.SUCCESS;
+        }
         // Sub-blocks of a multiblock redirect interaction to the origin (master) block entity.
         final MonitorBlockEntity monitor;
         if (MonitorMultiblock.isOrigin(state)) {

@@ -19,6 +19,7 @@ import li.cil.oc2.common.serialization.BlobStorage;
 import li.cil.oc2.common.util.nbt.NBTTagIds;
 //?}
 import li.cil.oc2.common.vm.device.SimpleFramebufferDevice;
+import li.cil.oc2.common.vm.device.frame.FramePresentAttachment;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -39,6 +40,7 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
     @Nullable private SimpleFramebufferDevice device;
 
     private final OptionalAddress address = new OptionalAddress();
+    private final FramePresentAttachment presentation = new FramePresentAttachment();
     @Nullable private UUID blobHandle;
 
     public ProjectorDevice(final BlockEntity identity, final BooleanConsumer onMountedChanged) {
@@ -67,7 +69,8 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         }
 
         assert device != null;
-        if (!address.claim(context, device)) {
+        if (!address.claim(context, device) || !presentation.mount(context, device)) {
+            unmount();
             return VMDeviceLoadResult.fail();
         }
 
@@ -81,6 +84,7 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         final SimpleFramebufferDevice framebufferDevice = device;
         device = null;
         if (framebufferDevice != null) {
+            presentation.unmount(framebufferDevice);
             framebufferDevice.close();
         }
 
@@ -107,6 +111,7 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
         }
 
         address.clear();
+        presentation.clear();
     }
 
     @Override
@@ -124,11 +129,17 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
             tag.putLong(ADDRESS_TAG_NAME, address.getAsLong());
         }
 
+        tag.put("presentation", presentation.save(device));
         return tag;
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, final CompoundTag tag) {
+        //? if >=26.1 {
+        /*presentation.load(tag.getCompoundOrEmpty("presentation"));
+        *///?} else {
+        presentation.load(tag.getCompound("presentation"));
+        //?}
         //? if >=26.1 {
         /*if (tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).isPresent()) {
             blobHandle = tag.read(BLOB_HANDLE_TAG_NAME, net.minecraft.core.UUIDUtil.CODEC).orElseThrow();
@@ -154,7 +165,7 @@ public final class ProjectorDevice extends IdentityProxy<BlockEntity> implements
 
         try {
             device = createFrameBufferDevice();
-        } catch (final IOException e) {
+        } catch (final IOException | IllegalArgumentException e) {
             return false;
         }
 

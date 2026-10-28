@@ -63,7 +63,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Monitor/projector state duplicate sync and VS2 dimension filtering (see docs/roadmap/cables-bus-energy.md#29-world-sync-fixes)
 - [ ] Robot: verify and fix thread race in RobotActionProcessor (needs manual check) (see docs/roadmap/robot.md#28-robot-fixes)
 - [ ] Robot: collider chewing terrain, event handler leak, place() item consumption, export loses VM state (see docs/roadmap/robot.md#28-robot-fixes)
-- [ ] Keyboard/mouse capture and link mechanics (see docs/roadmap/devices-storage.md#15-keyboard-mouse-and-input-rework)
+- [x] Keyboard/mouse capture and links to PC, monitor and projector; remappable Right Ctrl release. All six client/server targets verified, including native Onyx input and completed display frames (2026-10-28; see docs/roadmap/onyx-input-display-acceptance.md)
 - [ ] UART tablet wire minigame and mirror terminal (shares an item base with the tower tablet) (see docs/roadmap/devices-storage.md#16-uart-tablet-item)
 - [ ] 3D floppy model for DiskDriveRenderer (see docs/roadmap/devices-storage.md#22-disks-cleanup-tiers-3d-models-dead-code)
 - [~] Flash/OS image writer: local-file and bundled firmware GUI implemented; verify client flow, then consider URL manifests (see docs/roadmap/devices-storage.md#25-flash-builder-gui-repository-manifest-custom-image)

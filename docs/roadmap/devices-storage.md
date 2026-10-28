@@ -17,10 +17,14 @@ Problem: Lua on the VM is slow, has no `sleep()`, and is inconvenient for real-t
 
 ## 15. Keyboard, mouse and input rework
 
-- [ ] **Connection to the computer/monitor**: Shift+RMB on the keyboard/mouse block (the block highlights), then RMB on a monitor or computer: "linked successfully". The link holds until the monitor or keyboard/mouse is broken.
-- [ ] **Control capture**: RMB on the keyboard/mouse block captures control (cursor capture).
-- [ ] **Input logic**: once control is captured, the player aims (raycast) at the wanted monitor and input focus moves to it. All key presses and mouse clicks are forwarded straight to the computer (mechanic as in Tom's Peripherals).
-- [ ] **ESC** is the only key the keyboard/mouse does not capture: it leaves input mode.
+- [x] **Combined keyboard/mouse block and linking**: keyboard and mouse are one block. Shift+RMB selects and highlights it, then RMB on a computer, monitor or projector establishes the link: "linked successfully". Persist the link until either endpoint is broken.
+- [x] **Control capture**: RMB on the keyboard/mouse block captures control (cursor capture).
+- [x] **Input logic**: once control is captured, the player aims (raycast) at the wanted monitor and input focus moves to it. All key presses and mouse clicks are forwarded straight to the computer (mechanic as in Tom's Peripherals).
+- [x] **Release capture**: Right Ctrl by default, remappable in Minecraft's Controls settings. Reserve the configured release key for leaving input mode; Escape and mouse buttons remain available to the guest. Release held guest keys/buttons when leaving capture or changing focus.
+
+Accepted on 2026-10-28 across NeoForge and Fabric 1.21.1, 26.1.2 and 26.2.
+Native Onyx input, font and completed-frame evidence is recorded in
+[onyx-input-display-acceptance.md](onyx-input-display-acceptance.md).
 
 ## 16. UART tablet (Item)
 

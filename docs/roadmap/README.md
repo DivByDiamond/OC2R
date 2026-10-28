@@ -17,6 +17,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | [robot.md](robot.md) | Robot fixes and robot audit rows |
 | [multiloader.md](multiloader.md) | NeoForge + Fabric multiloader, GameTest CI, dependency updates |
 | [fabric-26-acceptance.md](fabric-26-acceptance.md) | Fabric 26.x accepted, merged and CI-verified; publication deferred |
+| [onyx-input-display-acceptance.md](onyx-input-display-acceptance.md) | Native keyboard/mouse links, Onyx multi-input, font and completed display frames |
 | [sedna-5.3-upgrade.md](sedna-5.3-upgrade.md) | Sedna 5.3 development upgrade, old-world/robot migration and stopped-disk persistence |
 | [quality.md](quality.md) | Lint stages, tests, audits, code documentation, NOPMD review |
 | [upstream.md](upstream.md) | Sync with upstream fnuecke/oc2 v0.3.0 |

@@ -55,22 +55,14 @@ public final class ManagedMemoryRangeAllocator implements MemoryRangeAllocator {
             throw new IllegalStateException();
         }
 
-        final OptionalLong baseAddress = baseAddressSupplier.get();
-        if (baseAddress.isPresent()) {
-            final OptionalLong address =
-                    memoryRangeManager.findMemoryRange(device, baseAddress.getAsLong());
-            if (address.isPresent() && parent.claimMemoryRange(address.getAsLong(), device)) {
-                managedDevices.add(device);
-                return address;
-            }
-        } else {
-            final OptionalLong address = parent.claimMemoryRange(device);
-            if (address.isPresent()) {
-                managedDevices.add(device);
-                return address;
-            }
+        // Automatic allocations must also skip reservations belonging to devices
+        // that have not remounted yet. Explicit claims can reclaim those ranges.
+        final OptionalLong address = memoryRangeManager.findMemoryRange(
+                device, baseAddressSupplier.get().orElse(0));
+        if (address.isPresent() && parent.claimMemoryRange(address.getAsLong(), device)) {
+            managedDevices.add(device);
+            return address;
         }
-
         return OptionalLong.empty();
     }
 }

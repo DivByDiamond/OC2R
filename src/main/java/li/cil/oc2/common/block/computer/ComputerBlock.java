@@ -156,6 +156,13 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final Player player,
             final InteractionHand hand,
             final BlockHitResult hitResult) {
+        if (li.cil.oc2.common.blockentity.keyboard.link.KeyboardPairing.tryLink(player, pos)) {
+            //? if >=26.1 {
+            /*return InteractionResult.SUCCESS;
+            *///?} else {
+            return ItemInteractionResult.SUCCESS;
+            //?}
+        }
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         final ComputerBlockEntity computer =
                 blockEntity instanceof ComputerBlockEntity c ? c : null;
@@ -181,6 +188,9 @@ public final class ComputerBlock extends HorizontalDirectionalBlock implements E
             final BlockPos pos,
             final Player player,
             final BlockHitResult hitResult) {
+        if (li.cil.oc2.common.blockentity.keyboard.link.KeyboardPairing.tryLink(player, pos)) {
+            return InteractionResult.SUCCESS;
+        }
         final BlockEntity blockEntity = level.getBlockEntity(pos);
         final ComputerBlockEntity computer =
                 blockEntity instanceof ComputerBlockEntity c ? c : null;

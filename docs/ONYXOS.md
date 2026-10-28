@@ -1,10 +1,13 @@
 # Bundled OnyxOS images
 
-The current kernel and userspace in `src/main/resources/onyxos/` were rebuilt
-on 2026-10-18 from the source revisions and patches listed below. The
-2026-10-16 root base is retained
-separately for existing VM snapshots. Source revisions and permanent patches are
-listed below; full rebuild instructions are in `scripts/demo/README-Onyx-build.md`.
+The kernel was updated on 2026-10-28 from OnyxKernel `6506c16`, including
+font metrics, faster scaled console presentation, optional completed-frame
+publication and multiple native input queues. The userspace remains the
+2026-10-18 image with only its existing PSF font payload replaced. Both earlier
+2026-10-16 and 2026-10-18 roots are retained for saved sparse disks. See the
+[display/input acceptance](roadmap/onyx-input-display-acceptance.md) for this
+update's exact scope and evidence. Historical network/RPC checks below refer
+to their stated earlier checkpoints.
 
 The build includes OpenSBI jump firmware, the S-mode OnyxKernel, rebuilt
 init/login tools and shell, the RGB565 framebuffer diagnostic, and a raw
@@ -77,6 +80,9 @@ An existing custom override retains the previous override behavior for those
 unversioned snapshots: keep that override unchanged until each machine has been
 loaded and saved with a base identity. Do not replace the retained legacy image.
 Updating the default image does not install tools into existing private roots.
+The preceding identity `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`
+is also retained as `onyxfs-20261018.img`, so a world using that base can be
+restored on a fresh installation without its old local cache.
 
 If a saved base is missing or its bytes do not match its identity, the VM stops
 with an error and retains its original snapshot, including all writable pages.
@@ -84,6 +90,43 @@ Restore the corresponding cache image and reload the machine/world; it must not
 silently mount those pages over a different filesystem. For a disposable demo
 machine, a complete image can alternatively be imported through its private
 root output stream, persisting every shadow page independently of the base.
+
+### Updating the stock font in an existing root
+
+An existing private root also retains its installed `/font/default.psf`.
+Updating the JAR does not replace that file or normalize its old glyphs. To
+update only the stock font, program a new hard-drive item with the current
+OnyxOS image, attach it as an additional disk, and cold-boot the guest. Keep
+the original private root; do not import the new image over it.
+
+Check `ls /mnt` and the boot log for the secondary mount. The verified setup
+mounted the update disk at `/mnt/blk1`; other device layouts may use another
+`blkN`. After confirming that this is the new disk and that the guest is still
+using its original root, log in as `root` and run:
+
+```text
+ls /mnt
+ls /mnt/blk1/font
+cp /font/default.psf /font/default.psf.before-update
+cp /mnt/blk1/font/default.psf /font/default.psf
+```
+
+Substitute the actual secondary mount path and use an unused backup filename.
+Then stop and start the computer with its power controls for a cold guest boot.
+Do not replace a customized font unless that replacement is intentional. This
+is an explicit file copy, not automatic migration; the archived base and other
+user files remain intact. The kernel loads the font at boot, so restoring a
+running VM snapshot or reopening the world alone does not reload it.
+
+Standalone Sedna QA used the retained `onyxfs-20261018.img` as a private root
+and the current image as the secondary disk. After the guest copy and a fresh
+VM boot, the installed font matched the new 5,124-byte PSF exactly, the backup
+matched the old PSF, and a user marker survived. Comparing the contents of all existing
+regular files, only `/font/default.psf` changed. The stock PSF SHA-256 changed from
+`bcaba4723102d4d0d0e3618e420efd2cd5bb07d204611f6d4563567e9e211f55` to
+`3b02a883ee1e741499b99e3c9a85ef115948149b4d663591e407e438824d4133`.
+The probe, logs and byte-level checks are retained in the ignored development
+directory `build/reports/onyx-font-manual-update/`.
 
 ## Importing an OS inside Minecraft
 
@@ -159,12 +202,19 @@ would not repair already compiled applications.
 
 ## Input
 
-The computer terminal uses UART input. Native VirtIO keyboard input currently
-uses one primary keyboard; additional initialization returns `Busy` without
-resetting the working queue. The standalone smoke connects two real Sedna
-keyboards and verifies a character from the selected keyboard reaches a guest
-command. Multiple native keyboard aggregation remains separate work; all
-connected framebuffer outputs can be addressed independently.
+The computer terminal uses UART input. Native keyboard/mouse input uses VirtIO
+queues: Onyx now initializes up to 32 input devices and polls them fairly.
+Discovery scans up to 64 total VirtIO nodes shared with disks, serial and
+network devices. Independent key/button ownership and serialized dispatch keep
+modifier and release events ordered across queues and harts. A standalone real
+Sedna guest verifies ten separately initialized keyboards with a fresh command
+from each. Pointer snapshots retain all eight button bits in their existing ABI.
+
+The combined OC2R keyboard/mouse block can be paired with a computer, monitor
+or projector. Shift+right-click selects it; right-click an endpoint to link.
+Right-click the keyboard to capture controls. Right Ctrl releases capture by
+default and can be changed in Minecraft Controls. Escape and mouse buttons go
+to the guest; changing focus or ending capture releases held guest inputs.
 
 ## Console and TUI behavior
 
@@ -176,7 +226,13 @@ full resolution; this console limit does not reduce monitor or projector modes.
 
 The console patch fixes ANSI line erasure (`EL 1` and `EL 2`), moves routine
 file-open/ELF-segment traces to debug level, and publishes only the console
-viewport during console refreshes. The host does not impose a retro baud-rate
+viewport during console refreshes. Console publication negotiates the optional [frame completion aperture](FRAME_PRESENT.md),
+then issues BEGIN, draws the viewport and cursor, COMMIT, and DISABLE. The
+published snapshot remains unchanged during drawing, while unrelated legacy
+framebuffer applications retain immediate writes. A full console scroll still
+transfers the changed scrolling region; this is not a host-side blit command.
+
+The host does not impose a retro baud-rate
 delay: reducing the VM's 1,000-cycle service interval made the measured guest
 slower and was rejected. Heavy TUI redraws still execute inside the emulated
 CPU and consume its time quota.
@@ -193,7 +249,11 @@ Logs are in `build/reports/terminal-qa/`.
 
 ## Verified source revisions
 
-- OnyxKernel base: `dc3aa4b`, plus `onyx-console.patch`, `onyx-network.patch`,
+The current kernel is OnyxKernel `6506c16` (following font `e912892` and
+atomic publication `2e512ad`). Existing userspace sources below are unchanged;
+the previous kernel recipe is retained as historical build provenance.
+
+- Previous OnyxKernel base: `dc3aa4b`, plus `onyx-console.patch`, `onyx-network.patch`,
   `onyx-rpc.patch`, `onyx-console-scale.patch`,
   `onyx-login-passwordless.patch`, and `onyx-open-relative.patch` under
   `scripts/demo/`. The base follows the original
@@ -203,8 +263,9 @@ Logs are in `build/reports/terminal-qa/`.
   `onyxcc-large-member.patch` and `onyx-libc-stdio-init.patch`.
 - OnyxShell: `636fef68547f3431fc9ed8eb3ddcd06900567e0a`.
 - OnyxOS: `888f69a5d7dccfdad382bc93641e8ea03ae6a8de`.
-- Kernel SHA-256: `dc6162123327faab4c7542e6af632681285d37ac143106a5230ea57f7138846b`.
-- Current root image SHA-256: `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`.
+- Kernel SHA-256: `1a108abad44ad30ae8d70d637704ba262f75212b163dde36e07a1a0211cbb90a`.
+- Current root image SHA-256: `81c28f41486d64d6258aed1121ed49f8925b131b9d878ecb1bf06cc2fdc31cff`.
+- Retained 2026-10-18 root SHA-256: `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`.
 - Retained legacy root SHA-256: `bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
 
 The earlier integrated checkpoint (kernel `d8c700cd…`, root image `adc8de68…`)

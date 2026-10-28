@@ -66,6 +66,13 @@
         <Class name="li.cil.oc2.bus.topology.NetworkResolver$Result" />
         <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
     </Match>
+    <!-- The detached Snapshot record transfers a freshly copied array to persistence.
+         As with NetworkResolver$Result, its necessary EI_ record annotation triggers
+         the record-blind UselessSuppression detector. Keep this exclusion exact. -->
+    <Match>
+        <Class name="li.cil.oc2.common.vm.device.frame.FramePublication$Snapshot" />
+        <Bug pattern="US_USELESS_SUPPRESSION_ON_CLASS" />
+    </Match>
     <!-- Same detector limitation as NetworkResolver$Result: LevelGeometrySubmitContext is a
          record whose borrowed render-pass components really are flagged for exposing the
          internal representation, but SpotBugs 6.5.10 does not look at record accessors, so it

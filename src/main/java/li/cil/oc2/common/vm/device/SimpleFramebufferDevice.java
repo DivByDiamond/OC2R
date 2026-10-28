@@ -3,14 +3,14 @@ package li.cil.oc2.common.vm.device;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
-import java.util.concurrent.locks.ReentrantLock;
+import li.cil.oc2.common.vm.device.frame.FramePublication;
 import li.cil.sedna.api.device.MemoryMappedDevice;
 import li.cil.sedna.api.memory.MemoryAccessException;
 import li.cil.sedna.utils.DirectByteBufferUtils;
 
 public final class SimpleFramebufferDevice implements MemoryMappedDevice {
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final FramePublication publication = new FramePublication();
 
     public static final int STRIDE = 2;
 
@@ -20,18 +20,14 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     private final int width;
     private final int height;
     private final ByteBuffer buffer;
-    // load()/store() read this outside the lock (only mutations are guarded), so it must be volatile.
+    // Address discovery reads length outside synchronized operations.
     private volatile int length;
     private final BitSet dirtyLines;
 
     public SimpleFramebufferDevice(final int width, final int height, final ByteBuffer buffer) {
         this.width = width;
         this.height = height;
-        final long required = (long) width * height * STRIDE;
-        if (required > MAX_FRAMEBUFFER_BYTES) {
-            throw new IllegalArgumentException("Framebuffer too large: " + width + "x" + height);
-        }
-        this.length = (int) required;
+        this.length = checkedLength(width, height);
 
         if (buffer.capacity() < length) {
             throw new IllegalArgumentException("Buffer too small.");
@@ -42,17 +38,22 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         this.dirtyLines.set(0, (height + 1) / 2);
     }
 
-    public void close() {
-        lock.lock();
-        try {
-
-            length = 0;
-            dirtyLines.clear();
-            DirectByteBufferUtils.release(buffer);
-        
-        } finally {
-            lock.unlock();
+    /** Validates dimensions before callers map backing memory or reserve a snapshot. */
+    public static int checkedLength(final int width, final int height) {
+        final long required = (long) width * height * STRIDE;
+        if (width <= 0 || height <= 0 || required > MAX_FRAMEBUFFER_BYTES) {
+            throw new IllegalArgumentException("Invalid framebuffer dimensions: " + width + "x" + height);
         }
+        return (int) required;
+    }
+
+    public synchronized void close() {
+        if (length == 0) return;
+        // Preserve partial draw pixels for a CPU resuming an interrupted presentation.
+        publication.clear();
+        length = 0;
+        dirtyLines.clear();
+        DirectByteBufferUtils.release(buffer);
     }
 
     public int getWidth() {
@@ -68,26 +69,14 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     /** Copies a clean framebuffer too when a newly watching client needs a baseline. */
-    public boolean copyFrame(final ByteBuffer dst, final boolean force) {
-        lock.lock();
-        try {
+    public synchronized boolean copyFrame(final ByteBuffer dst, final boolean force) {
 
-            if (length == 0 || (!force && dirtyLines.isEmpty())) {
-                return false;
-            }
-
-            dst.clear();
-            final ByteBuffer src = buffer.duplicate().order(ByteOrder.LITTLE_ENDIAN);
-            src.position(0);
-            src.limit(length);
-            dst.put(src);
-            dst.flip();
-            dirtyLines.clear();
-
-        } finally {
-            lock.unlock();
-        }
-
+        if (length == 0 || (!force && dirtyLines.isEmpty())) return false;
+        dst.clear();
+        final ByteBuffer src = publication.visible(buffer).duplicate().order(ByteOrder.LITTLE_ENDIAN);
+        dst.put(src.clear().limit(length));
+        dst.flip();
+        dirtyLines.clear();
         return true;
     }
 
@@ -97,7 +86,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     @Override
-    public long load(final int offset, final int sizeLog2) throws MemoryAccessException {
+    public synchronized long load(final int offset, final int sizeLog2) throws MemoryAccessException {
         if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
             return switch (sizeLog2) {
                 case 0 -> buffer.get(offset);
@@ -112,26 +101,39 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
     }
 
     @Override
-    public void store(final int offset, final long value, final int sizeLog2)
+    public synchronized void store(final int offset, final long value, final int sizeLog2)
             throws MemoryAccessException {
-        // The bounds check must happen under the lock: length can drop to 0 in close()
-        // (which also releases the buffer) between an unlocked check and locking here,
-        // letting a stale offset through to a put() on a freed direct buffer.
-        lock.lock();
-        try {
-            if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
-                switch (sizeLog2) {
-                    case 0 -> buffer.put(offset, (byte) value);
-                    case 1 -> buffer.putShort(offset, (short) value);
-                    case 2 -> buffer.putInt(offset, (int) value);
-                    case 3 -> buffer.putLong(offset, value);
-                    default -> throw new IllegalArgumentException();
-                }
-                setDirty(offset);
+        if (offset >= 0 && offset <= length - (1 << sizeLog2)) {
+            switch (sizeLog2) {
+                case 0 -> buffer.put(offset, (byte) value);
+                case 1 -> buffer.putShort(offset, (short) value);
+                case 2 -> buffer.putInt(offset, (int) value);
+                case 3 -> buffer.putLong(offset, value);
+                default -> throw new IllegalArgumentException();
             }
-        } finally {
-            lock.unlock();
+            if (!publication.isNegotiated()) setDirty(offset);
         }
+    }
+
+    /** Processes a presentation command without holding any lock between guest stores. */
+    public synchronized void present(final int command) {
+        if (length != 0 && publication.command(command, buffer, length)) dirtyLines.set(0);
+    }
+
+    /** Returns the negotiated/active protocol flags. */
+    public synchronized int presentationStatus() { return publication.status(); }
+
+    /** Copies the completed snapshot for persistence; legacy mode has no extra state. */
+    public synchronized byte[] savePresentation() { return publication.save(); }
+
+    /** Captures status and an independently owned completed image under one lock. */
+    public synchronized FramePublication.Snapshot snapshotPresentation() {
+        return publication.snapshot();
+    }
+
+    /** Restores only a matching completed image; malformed or old state stays legacy. */
+    public synchronized void restorePresentation(final byte[] image, final int status) {
+        publication.restore(image, status, length);
     }
 
     private void setDirty(final int offset) {
@@ -139,12 +141,7 @@ public final class SimpleFramebufferDevice implements MemoryMappedDevice {
         dirtyLines.set(pixelY / 2);
     }
 
-    public boolean hasChanges() {
-        lock.lock();
-        try {
-            return !dirtyLines.isEmpty();
-        } finally {
-            lock.unlock();
-        }
+    public synchronized boolean hasChanges() {
+        return !dirtyLines.isEmpty();
     }
 }

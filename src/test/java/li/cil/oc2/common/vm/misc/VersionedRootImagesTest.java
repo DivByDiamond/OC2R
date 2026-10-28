@@ -99,6 +99,35 @@ class VersionedRootImagesTest {
         }
     }
 
+    @Test
+    void aFreshInstallationRestoresOldSparsePagesAgainstTheRetainedBundledBase() throws Exception {
+        final var old = new VersionedRootImages(bytes(2), bytes(1), cache.resolve("old"), false);
+        final var base = old.current();
+        final var original = new BuiltinRootFilesystemTest.Snapshot(new BuiltinRootFilesystem(base.device(), base.id()));
+        original.rootFilesystem.getOutputStream(65540).write(91);
+        final CompoundTag saved = NBTSerialization.serialize(original);
+        final Path freshCache = cache.resolve("fresh-install");
+        final var updated = new VersionedRootImages(bytes(3), bytes(1), freshCache, false, bytes(2));
+        assertFalse(Files.exists(freshCache.resolve(base.id() + ".img")));
+        final var retained = updated.resolve(base.id());
+        final var restored = new BuiltinRootFilesystemTest.Snapshot(
+                new BuiltinRootFilesystem(retained.device(), retained.id()));
+        NBTSerialization.deserialize(saved, restored);
+        assertEquals(2, restored.rootFilesystem.getInputStream(0).read());
+        assertEquals(91, restored.rootFilesystem.getInputStream(65540).read());
+        assertEquals(3, updated.current().device().getInputStream(0).read());
+    }
+
+    @Test
+    void previousBundledResourceRetainsItsExactContentAddress() throws Exception {
+        try (var input = getClass().getResourceAsStream("/onyxos/onyxfs-20261018.img")) {
+            assertNotNull(input);
+            final String hash = java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(input.readAllBytes()));
+            assertEquals("a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561", hash);
+        }
+    }
+
     private VersionedRootImages images(final int value) throws Exception {
         return new VersionedRootImages(bytes(value), bytes(1), cache, false);
     }

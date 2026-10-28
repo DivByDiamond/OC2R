@@ -67,6 +67,11 @@ public final class MonitorBlockEntity extends ModBlockEntity
         }
     }
 
+    /** Native input endpoint shared by the monitor GUI and linked keyboards. */
+    public li.cil.oc2.common.bus.device.vm.block.KeyboardDevice<?> getKeyboardDevice() {
+        return stateManager.keyboardDevice;
+    }
+
     public void handleInput(final int keycode, final boolean isDown) {
         if (!isOrigin()) {
             return;
