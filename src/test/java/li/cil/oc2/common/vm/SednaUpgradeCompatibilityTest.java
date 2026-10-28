@@ -80,15 +80,13 @@ class SednaUpgradeCompatibilityTest {
         try (ByteBufferMemory memory = new ByteBufferMemory(4096)) {
             assertTrue(board.addDevice(RAM, memory));
             // Enable FS, put 123 in f0, and set fcsr rounding/exception flags.
-            program(memory, 0, new int[] {
+            program(memory, 0,
                 0x000060B7, 0x3000A073, 0x07B00113, 0xF2010053,
-                0x09F00193, 0x00319073, 0x10500073
-            });
+                0x09F00193, 0x00319073, 0x10500073);
             // Read FS before enabling it, then read fcsr and f0 through guest instructions.
-            program(memory, 64, new int[] {
+            program(memory, 64,
                 0x300022F3, 0x000060B7, 0x3000A073, 0x00302373,
-                0xE20003D3, 0x10500073
-            });
+                0xE20003D3, 0x10500073);
             board.getCpu().reset(true, RAM);
             board.getCpu().step(100);
             board.getCpu().reset(true, RAM + 64);
@@ -100,7 +98,7 @@ class SednaUpgradeCompatibilityTest {
         }
     }
 
-    private static void program(final ByteBufferMemory memory, final int offset, final int[] instructions)
+    private static void program(final ByteBufferMemory memory, final int offset, final int... instructions)
             throws Exception {
         for (int i = 0; i < instructions.length; i++) {
             memory.store(offset + i * 4, instructions[i], 2);

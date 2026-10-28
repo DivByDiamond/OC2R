@@ -49,7 +49,7 @@ Each computer runs a 64-bit RISC-V virtual machine powered by [Sedna]. The Linux
 | 26.2 | NeoForge | 25 |
 | 26.2 | Fabric | 25 |
 
-Fabric 26.1.2/26.2 is implemented and passed local server/client acceptance on 2026-10-24; CI confirmation and publication are tracked separately in the [acceptance report](docs/roadmap/fabric-26-acceptance.md). Check the release assets for available downloads and choose the file matching your Minecraft version and loader. All Fabric versions require **Fabric API**; Team Reborn Energy and Forge Config API Port are bundled.
+Fabric 26.1.2/26.2 support is implemented, merged into `work` and CI-verified; publication is deferred. See the [acceptance report](docs/roadmap/fabric-26-acceptance.md). Check release assets for download availability and choose the file matching your Minecraft version and loader. All Fabric versions require **Fabric API**; Team Reborn Energy and Forge Config API Port are bundled.
 
 ### Getting started
 
@@ -108,7 +108,7 @@ Each running computer emulates a real machine and consumes host CPU time and mem
 | 26.2 | NeoForge | 25 |
 | 26.2 | Fabric | 25 |
 
-Fabric 26.1.2/26.2 реализован и прошёл локальную серверную и клиентскую приёмку 24 октября 2026 года; подтверждение CI и публикация отслеживаются отдельно в [отчёте приёмки](docs/roadmap/fabric-26-acceptance.md). Доступные файлы смотрите в релизах и выбирайте сборку для своей версии Minecraft и загрузчика. Для всех версий Fabric нужен **Fabric API**; Team Reborn Energy и Forge Config API Port уже включены в сборку.
+Поддержка Fabric 26.1.2/26.2 реализована, слита в `work` и подтверждена CI; публикация отложена. См. [отчёт приёмки](docs/roadmap/fabric-26-acceptance.md). Доступность сборок проверяйте в релизах и выбирайте файл для своей версии Minecraft и загрузчика. Для всех версий Fabric нужен **Fabric API**; Team Reborn Energy и Forge Config API Port уже включены в сборку.
 
 ### Быстрый старт
 
@@ -149,6 +149,8 @@ The mod builds on [Sedna], [Ceres], [Minux], [OC2R Native Networking], and vendo
 ## Development
 
 ### Building
+
+Development uses Sedna 5.3.0 with Buildroot 0.2.10 and Ceres 0.0.7. See [saved-world and robot acceptance](docs/roadmap/sedna-5.3-upgrade.md) for migration results and the known pre-existing checkpoint limitation. No new release is published by this update.
 
 Run Gradle with Java 25 and keep a Java 21 toolchain installed for Minecraft 1.21.1. Loom 1.18 requires Java 25 even when selecting a legacy target.
 

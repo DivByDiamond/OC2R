@@ -118,7 +118,8 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 
 - [ ] Complete moving-construction and Velocity backend-switch integration acceptance; see [upstream follow-up](docs/roadmap/upstream-followup-2026-10-25.md). Existing Config API Port sync is present; reproduce before adding another channel.
 - [x] Assess Sedna 5.3.0 separately: board snapshot migration, reset regressions and bundled Linux cold boot checked; see [assessment](docs/roadmap/sedna-5.3-assessment.md).
-- [ ] Upgrade Sedna in a separate change with real Minecraft warm snapshot/world migration acceptance; the Fabric release retains 5.2.0.
+- [x] Upgrade development to Sedna 5.3.0 separately: six builds, 1697 unit tests, 372 OC2R GameTests and six live 26.x computer/robot migration profiles pass; retain the known invalid original 26.1 checkpoint result separately. See [upgrade acceptance](docs/roadmap/sedna-5.3-upgrade.md). No release publication.
+- [ ] Before a future release, run dedicated legacy 1.21.1 live-client migration; automated 1.21.1 build/unit/server coverage already passes.
 
 - [x] Run current-source Onyx through real OC2R firmware, live monitor and private root on Fabric 26.1.2/26.2; full-root snapshot/create/list/mutate/rollback and rollback after world reload pass with OnyxKernel `54c4f34` on both versions; see [runtime follow-up](docs/roadmap/onyx-runtime-followup.md).
 
@@ -126,7 +127,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 
 1. Completed live acceptance: the OC2R shutdown/final-save fix passes six RGB/world-reload cycles with exact CPU/RAM comparison. All six server regression suites pass (354 OC2R GameTests); see [runtime follow-up](docs/roadmap/onyx-runtime-followup.md).
 2. Completed: OnyxKernel `54c4f34` removes the format limit; full-root and persisted archive checks pass on the actual OC2R private disk. Legacy archives remain readable; old-writer downgrades are unsupported.
-3. Upgrade Sedna to 5.3.0 separately; retain Buildroot 0.2.10, verify old 5.2.0 Minecraft worlds, computer/robot RAM, private disks, framebuffer continuation and repeated guest reboot.
+3. Completed local acceptance: Sedna 5.3.0 with Buildroot 0.2.10 retained; old 5.2 world/robot RAM, private disks, framebuffers, repeated reboot and saved power-off state checked. Pre-existing stopped-disk data loss fixed separately; see [results and scope](docs/roadmap/sedna-5.3-upgrade.md).
 4. Terminal double-size rendering and the scoped vttest regressions; then DELTA acceptance and jcodec/H.264 removal; then VXLAN security, robot fixes and network work from their subsystem plans.
 
 Each fix has separate verification. No release tag or platform publication is part of this development sequence.
