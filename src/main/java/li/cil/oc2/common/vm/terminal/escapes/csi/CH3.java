@@ -33,6 +33,11 @@ public class CH3 extends CSISequenceHandler { // Combined Handler 3 (RM & DECRST
     private void resetMode(final ModeTable mode) {
         switch (mode) {
             case DECCOLM -> resetDECCOLM();
+            case DECLRMM -> {
+                terminal.currentPrivateModeState.DECLRMM = false;
+                terminal.scrollColFirst = 0;
+                terminal.scrollColLast = terminal.width - 1;
+            }
             case DECOM -> {
                 terminal.currentPrivateModeState.DECOM = false;
                 terminal.setRelativeCursorPos(0, 0);

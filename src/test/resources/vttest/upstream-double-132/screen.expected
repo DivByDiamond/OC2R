@@ -1,0 +1,24 @@
+132 column mode
+
+
+
+                            v------- left margin
+
+                            This is a normal-sized line
+
+              This is a Double-width line
+
+              This is a Double-width-and-height line
+              This is a Double-width-and-height line
+
+              This is another such line
+              This is another such line
+
+                            ^------- left margin
+
+
+
+This is not a double-width line
+
+Push <RETURN>
+

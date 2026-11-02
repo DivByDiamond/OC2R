@@ -1,0 +1,24 @@
+There are 64 color combinations
+8x8 matrix of foreground/background colors, bright *off*
+        black   red     green   yellow  blue    magenta cyan    white
+black   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+red     Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+green   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+yellow  Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+blue    Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+magenta Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+cyan    Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+white   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+
+8x8 matrix of foreground/background colors, bright *on*
+        black   red     green   yellow  blue    magenta cyan    white
+black   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+red     Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+green   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+yellow  Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+blue    Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+magenta Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+cyan    Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+white   Hello   Hello   Hello   Hello   Hello   Hello   Hello   Hello
+Push <RETURN>
+

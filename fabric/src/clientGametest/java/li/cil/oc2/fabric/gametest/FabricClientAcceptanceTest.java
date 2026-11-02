@@ -285,7 +285,7 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
         }
     }
 
-    private static void setup(final MinecraftServer server) {
+    static void setup(final MinecraftServer server) {
         final ServerLevel level = server.overworld();
         level.setBlockAndUpdate(COMPUTER, Blocks.COMPUTER.get().defaultBlockState());
         level.setBlockAndUpdate(COMPUTER.below(), Blocks.CREATIVE_ENERGY.get().defaultBlockState());

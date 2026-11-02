@@ -15,3 +15,7 @@ src/main/resources/natives/** binary
 
 # Files provided to VM.
 src/main/scripts/**/*.lua text eol=lf
+
+# Terminal captures are byte-exact; empty final screen rows are meaningful golden data.
+src/test/resources/vttest/**/stream.bin binary
+src/test/resources/vttest/**/screen.expected whitespace=-blank-at-eof

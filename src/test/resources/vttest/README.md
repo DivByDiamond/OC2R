@@ -9,9 +9,11 @@ run it with:
 ./gradlew :26.1.2:test --tests 'li.cil.oc2.common.vm.terminal.vttest.*' --console=plain
 ```
 
-The seven current streams are hand-made. Capturing real upstream `vttest` pages, with a pinned source revision,
-page/geometry/capture provenance and reviewed goldens, remains open. Double-size rendering and pixel acceptance are also still open;
-the replay harness alone does not establish them. See [terminal roadmap](../../../../docs/roadmap/terminal.md#444-vttest-automation).
+Seven hand-authored regressions are joined by four captured upstream pages (cursor movements,
+80/132-column double-size and ANSI colors), pinned to `d37932dc8a7e5dab702ba34020bdbb12cdf12858`.
+Goldens for those pages were authored with independent libvterm 0.3.3 and reviewed against upstream C.
+See [capture provenance and reproduction](../../../../docs/roadmap/terminal-vttest-capture.md).
+Every fixture runs whole and in 1-, 7- and 64-byte chunks.
 
 ## Layout
 
@@ -20,9 +22,11 @@ One directory per fixture: `vttest/<id>/` containing:
 | file | required | content |
 |---|---|---|
 | `page.properties` | yes | fixture metadata (below) |
-| `stream.bin` | yes | raw bytes fed to the terminal via `io.putOutput`; current replay drains one whole-file `ByteBuffer`, with split-write replay still planned |
+| `stream.bin` | yes | raw bytes fed to the terminal via `io.putOutput`; replayed whole and in chunks of 1, 7 and 64 bytes |
 | `screen.expected` | yes | golden: one line per visible screen row, one Unicode codepoint (UTF-8) per cell |
 | `styles.expected` | no | golden: per-cell style byte as two hex digits, cells separated by `\|` (e.g. `00\|01\|00`) |
+| `lineattrs.expected` | no | exactly one decimal attribute per row: 0=SWL, 1=DWL, 2=DHL top, 3=DHL bottom |
+| `foreground.expected` / `background.expected` | no | full rows of `\|`-separated semantic color tokens: `default`, `index:N`, `#RRGGBB` |
 
 ### `page.properties`
 
@@ -32,6 +36,8 @@ One directory per fixture: `vttest/<id>/` containing:
   Use geometries within the terminal's supported limits (`Terminal.MAX_WIDTH`/`MAX_HEIGHT`).
 - `status` — `pass` or `xfail`
 - `reason` — optional free text; only meaningful with `xfail`
+- Recorded pages additionally carry `source.revision`, `source.url`, `source.page`, `source.input`,
+  `stream.sha256`, `oracle` and `oracle.command`. The stream hash is verified before every replay.
 
 ### Golden comparison semantics
 
@@ -43,8 +49,8 @@ is space-filled on allocation) and codepoint 0 is additionally normalized to `' 
 `styles.expected`: compared only when the file exists. Trailing all-`00` cells may be trimmed,
 trailing blank rows may be omitted; everything missing counts as style byte `0x00`.
 
-Per-row double-size attributes and foreground/background colors do not yet have golden files in this harness.
-Their comparison is planned separately; existing codepoint/style fixtures cannot prove double-size geometry or color correctness.
+Optional row/color files have exact dimensions and token comparisons, including erased blank cells.
+All four recorded pages supply every file. These grids establish terminal state; rendered scale still requires pixel tests.
 
 ## The xfail ratchet
 
@@ -61,12 +67,13 @@ Their comparison is planned separately; existing codepoint/style fixtures cannot
 ./gradlew test -Dvttest.regen=true --tests 'li.cil.oc2.common.vm.terminal.vttest.*' --console=plain
 ```
 
-writes the actual grid over `screen.expected` (and over `styles.expected`, but only if that file
+For hand-authored fixtures, writes the actual grid over `screen.expected` (and over `styles.expected`, but only if that file
 already exists — styles stay opt-in) in the **source tree** `src/test/resources/vttest/`, never
 into `build/`. In regen mode nothing is asserted. Regen output is a golden-authoring draft for
 humans and AIs alike and **must be reviewed before committing** — a regen run happily bakes the
 current (possibly wrong) terminal behavior into the goldens. The committed goldens are written in
-the canonical regen shape, so a regen run over them is a no-op diff.
+the canonical regen shape. Recorded upstream fixtures are skipped: use the independent capture tool instead.
+Existing optional row/color goldens are also refreshed for hand-authored fixtures.
 
 ## How the snapshot is taken
 

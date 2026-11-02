@@ -385,35 +385,41 @@ class TerminalOutput { // NOPMD CyclomaticComplexity: dense VT100 state-machine 
             else if (ch == '4') attr = Terminal.LINE_ATTR_DOUBLE_HEIGHT_BOTTOM;
             else if (ch == '6') attr = Terminal.LINE_ATTR_DOUBLE_WIDTH;
             else attr = Terminal.LINE_ATTR_SINGLE;
-            final int y = terminal.y;
-            // xterm ignores line-size changes while DECLRMM is set; scaling the left/right margins
-            // implicitly would be worse than leaving the row alone.
-            if (terminal.currentPrivateModeState.DECLRMM) return;
-            if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
-                if (terminal.altLineAttrs != null && y >= 0 && y < terminal.altLineAttrs.length) {
-                    terminal.altLineAttrs[y] = attr;
-                }
-            } else {
-                final int absRow = terminal.lastRowToDisplayMax - terminal.height + y;
-                if (terminal.lineAttrs != null
-                        && absRow >= 0
-                        && absRow < terminal.lineAttrs.length) {
-                    terminal.lineAttrs[absRow] = attr;
-                }
-            }
-            // DEC loses the characters right of the centre when a row becomes double-size: blank the
-            // discarded cells (text and rendition) so returning to single width cannot resurrect them,
-            // then pull the cursor back into the visible half.
-            final int last = terminal.lastColumn(y);
-            if (last < terminal.width - 1) {
-                terminal.bufferManager.clearChars(y, last + 1, terminal.width - 1 - last);
-                if (terminal.x > last) {
-                    terminal.x = last;
-                    terminal.autowrapPending = false;
-                }
-            }
-            // Attribute change needs repaint and network sync for that screen row.
-            terminal.markDirty(1L << y);
+            setLineAttribute(attr);
         }
     }
+
+    /** Apply one DEC row rendition, including hidden-cell loss and row invalidation. */
+    private void setLineAttribute(final byte attr) {
+        final int y = terminal.y;
+        // xterm ignores line-size changes while DECLRMM is set; scaling the left/right margins
+        // implicitly would be worse than leaving the row alone.
+        if (terminal.currentPrivateModeState.DECLRMM) return;
+        if (terminal.currentPrivateModeState.isAltBufferEnabled()) {
+            if (terminal.altLineAttrs != null && y >= 0 && y < terminal.altLineAttrs.length) {
+                terminal.altLineAttrs[y] = attr;
+            }
+        } else {
+            final int absRow = terminal.lastRowToDisplayMax - terminal.height + y;
+            if (terminal.lineAttrs != null
+                    && absRow >= 0
+                    && absRow < terminal.lineAttrs.length) {
+                terminal.lineAttrs[absRow] = attr;
+            }
+        }
+        // DEC loses the characters right of the centre when a row becomes double-size: blank the
+        // discarded cells (text and rendition) so returning to single width cannot resurrect them,
+        // then pull the cursor back into the visible half.
+        final int last = terminal.lastColumn(y);
+        if (last < terminal.width - 1) {
+            terminal.bufferManager.clearChars(y, last + 1, terminal.width - 1 - last);
+            if (terminal.x > last) {
+                terminal.x = last;
+                terminal.autowrapPending = false;
+            }
+        }
+        // Attribute change needs repaint and network sync for that screen row.
+        terminal.markDirty(1L << y);
+    }
+
 }

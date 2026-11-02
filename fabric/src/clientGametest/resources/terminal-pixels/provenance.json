@@ -1,0 +1,30 @@
+{
+  "profile": {
+    "window": "854x480",
+    "modernGuiScale": 2,
+    "legacyGuiScale": 1,
+    "fov": 30,
+    "driverEnvironment": "LIBGL_ALWAYS_SOFTWARE=true",
+    "audioEnvironment": "ALSOFT_DRIVERS=null",
+    "comparison": "exact RGB; zero differing pixels allowed",
+    "draftEnvironment": "OC2R_TERMINAL_PIXEL_DRAFTS=true",
+    "mesa": "mesa 1:26.2.5-1",
+    "time": "noon; ADVANCE_TIME=false",
+    "weather": "clear; ADVANCE_WEATHER=false",
+    "gamma": 0.0
+  },
+  "images": {
+    "1.21.1/legacy-gui.png": "f2bb58f86a0cb78c8808e736f98df9c95378fb8f5857b73d8dd1cc3f8b727d0f",
+    "1.21.1/legacy-world-path.png": "f2bb58f86a0cb78c8808e736f98df9c95378fb8f5857b73d8dd1cc3f8b727d0f",
+    "26.1.2/gui.png": "ad44592be38fa169e278a8f27d5fa8241ebe9e625a0cd44199cd5c86b4625bce",
+    "26.1.2/world.png": "2effa691752a84ebbaaeff5083dd704275773e061b902d384099c11be53d7c2a",
+    "26.2/gui.png": "ad44592be38fa169e278a8f27d5fa8241ebe9e625a0cd44199cd5c86b4625bce",
+    "26.2/world.png": "2effa691752a84ebbaaeff5083dd704275773e061b902d384099c11be53d7c2a"
+  },
+  "fontSha256": {
+    "monocraft-b.ttf": "91bc1bcda88d83ac46a940279755d62fd1c3d98f211c984a68dcc87627b75505",
+    "monocraft-bi.ttf": "7b88249ed9625d11f6f928b699abcc1fde364bc042d4365d9fe75321aa56bfb6",
+    "monocraft-i.ttf": "a0b20d8b01f52b9c9365678c8f76a59043dcc82744e98570330e27710265ac0d",
+    "monocraft-r.ttf": "515091e143d910e3e24388c0366354794c0aa53ccf336a3af934ffe92d6687dd"
+  }
+}

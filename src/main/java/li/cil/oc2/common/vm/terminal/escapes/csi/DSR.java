@@ -27,14 +27,18 @@ public class DSR extends CSISequenceHandler {
                 terminal.io.putResponse("\033[0n");
             }
         } else if (args[0] == 6) {
+            final boolean origin = terminal.currentPrivateModeState.DECOM;
+            final int row = terminal.y + 1 - (origin ? terminal.scrollFirst : 0);
+            final int column = terminal.x + 1
+                    - (origin && terminal.currentPrivateModeState.DECLRMM ? terminal.scrollColFirst : 0);
             if (state.questionMark) {
                 /* DECXCPR — Extended Cursor Position Report (with page number) */
                 terminal.io.putResponse(
-                        String.format(Locale.ROOT, "\033[?%d;%d;1R", terminal.y + 1, terminal.x + 1));
+                        String.format(Locale.ROOT, "\033[?%d;%d;1R", row, column));
             } else {
                 /* DSR-CPR — Standard Cursor Position Report */
                 terminal.io.putResponse(
-                        String.format(Locale.ROOT, "\033[%d;%dR", terminal.y + 1, terminal.x + 1));
+                        String.format(Locale.ROOT, "\033[%d;%dR", row, column));
             }
         }
     }

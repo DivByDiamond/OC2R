@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vm.terminal.escapes.csi;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -54,6 +55,7 @@ public class CH2 extends CSISequenceHandler {
             terminal.resetRendition();
             terminal.setWidth(132);
         });
+        actions.put(ModeTable.DECLRMM, CH2::enableColumnMargins);
         actions.put(ModeTable.DECOM, terminal -> {
             terminal.currentPrivateModeState.DECOM = true;
             terminal.setRelativeCursorPos(0, 0);
@@ -112,6 +114,18 @@ public class CH2 extends CSISequenceHandler {
             terminal.markAllDirty();
         });
         return actions;
+    }
+
+    /** DECLRMM disables double-size rendition on the active screen without erasing its cells. */
+    private static void enableColumnMargins(final Terminal terminal) {
+        terminal.currentPrivateModeState.DECLRMM = true;
+        final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
+        final byte[] attributes = alt ? terminal.altLineAttrs : terminal.lineAttrs;
+        final int first = alt ? 0 : terminal.lastRowToDisplayMax - terminal.height;
+        if (attributes != null) {
+            Arrays.fill(attributes, first, first + terminal.height, Terminal.LINE_ATTR_SINGLE);
+        }
+        terminal.markAllDirty();
     }
 
     private static void setMouseTracking(

@@ -24,22 +24,37 @@ public class ED extends CSISequenceHandler {
         } else {
             switch (args[0]) {
                 case 0 -> { // From cursor to end of screen
-                    terminal.bufferManager.clearLine(terminal.y, x, terminal.width);
+                    eraseLine(terminal.y, x, terminal.width);
                     for (int iy = terminal.y + 1; iy < terminal.height; iy++) {
-                        terminal.bufferManager.clearLine(iy);
+                        eraseLine(iy, 0, terminal.width);
                     }
                 }
                 case 1 -> { // From beginning of screen to cursor
                     for (int iy = 0; iy < terminal.y; iy++) {
-                        terminal.bufferManager.clearLine(iy);
+                        eraseLine(iy, 0, terminal.width);
                     }
-                    terminal.bufferManager.clearLine(terminal.y, 0, x + 1);
+                    eraseLine(terminal.y, 0, x + 1);
                 }
                 case 2 -> // Entire screen
                         terminal.bufferManager.clear();
                 case 3 -> // Erase scrollback (xterm E3)
                         terminal.bufferManager.clearScrollback();
                 default -> {}
+            }
+        }
+    }
+
+    /** ED resets the line rendition only when it erases the entire visible line (VT510 ED). */
+    private void eraseLine(final int row, final int from, final int to) {
+        final boolean entireLine = from == 0 && to > terminal.lastColumn(row);
+        // Resetting to SWL exposes the hidden half, which must receive the erase rendition too.
+        terminal.bufferManager.clearLine(row, from, entireLine ? terminal.width : to);
+        if (entireLine) {
+            final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
+            final byte[] attributes = alt ? terminal.altLineAttrs : terminal.lineAttrs;
+            final int index = alt ? row : terminal.lastRowToDisplayMax - terminal.height + row;
+            if (attributes != null && index >= 0 && index < attributes.length) {
+                attributes[index] = Terminal.LINE_ATTR_SINGLE;
             }
         }
     }

@@ -22,6 +22,8 @@ public class SavedCursorState {
      * xterm's "after CursorSet/ResetWrap" ordering.
      */
     public boolean autowrapPending;
+    public boolean originMode;
+    public boolean autowrapMode = true;
     public byte style = TerminalColors.DEFAULT_STYLE;
     public boolean useG0 = true;
     public int drawingModeG0;

@@ -15,8 +15,8 @@ import li.cil.oc2.common.vm.terminal.Terminal;
  * attributes, charsets, autowrap, origin); SCOSC is the same save. So {@link #restore} restores
  * the full saved state, not position-only.
  *
- * <p>{@link #restore} clears {@code autowrapPending} (a cursor move clears the pending wrap,
- * matching xterm's {@code ResetWrap} called from {@code CursorSet} inside {@code CursorRestoreFlags}).
+ * <p>{@link #restore} restores the saved pending-wrap flag after positioning the cursor,
+ * matching xterm's {@code CursorRestoreFlags}.
  */
 public final class SavedCursor {
     private SavedCursor() {
@@ -35,7 +35,7 @@ public final class SavedCursor {
 
     /**
      * Saves the cursor position and rendition to the saved-state fields for the active buffer.
-     * Used by DECSC (ESC 7), SCOSC (CSI s), and SAVE_CURSOR (DECSET ?1047/?1049).
+     * Used by DECSC (ESC 7), SCOSC (CSI s), and SAVE_CURSOR (DECSET ?1048/?1049).
      */
     public static void save(final Terminal terminal) {
         final SavedCursorState saved = terminal.currentPrivateModeState.isAltBufferEnabled()
@@ -44,6 +44,8 @@ public final class SavedCursor {
         saved.x = terminal.x;
         saved.y = terminal.y;
         saved.autowrapPending = terminal.autowrapPending;
+        saved.originMode = terminal.currentPrivateModeState.DECOM;
+        saved.autowrapMode = terminal.currentPrivateModeState.DECAWM;
         saved.style = terminal.style;
         saved.useG0 = terminal.useG0;
         saved.drawingModeG0 = terminal.drawingModeG0;
@@ -60,7 +62,7 @@ public final class SavedCursor {
     /**
      * Restores the cursor position and rendition from the saved-state fields for the active
      * buffer. Used by DECRC (ESC 8), SCORC (CSI u), and SAVE_CURSOR / SAVE_CLEAR_AND_SWITCH
-     * (DECRST ?1047/?1049). Restores the full saved state (matching xterm's DECSC_FLAGS scope),
+     * (DECRST ?1048/?1049). Restores the full saved state (matching xterm's DECSC_FLAGS scope),
      * not position-only. The saved {@code autowrapPending} is restored AFTER the cursor move
      * (via {@code setCursorPos}), mirroring xterm's {@code CursorRestoreFlags} which sets
      * {@code do_wrap = sc->wrap_flag} after {@code CursorSet}/ResetWrap — so a cursor that was
@@ -72,6 +74,8 @@ public final class SavedCursor {
         final SavedCursorState saved = terminal.currentPrivateModeState.isAltBufferEnabled()
                 ? terminal.altSavedCursor
                 : terminal.savedCursor;
+        terminal.currentPrivateModeState.DECOM = saved.originMode;
+        terminal.currentPrivateModeState.DECAWM = saved.autowrapMode;
         terminal.setCursorPos(saved.x, saved.y);
         terminal.style = saved.style;
         terminal.useG0 = saved.useG0;

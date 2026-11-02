@@ -36,7 +36,8 @@ public class TerminalCharRenderer {
         // DEC line attribute: a doubled row shows only its first half of the cells, each twice as wide.
         final LineScale scale = frame.lineScale(row);
         final float advance = Terminal.CHAR_WIDTH * scale.xScale();
-        for (int col = 0, visible = scale.visibleColumns(frame.width()); col < visible; col++, index++) {
+        final int visible = scale.visibleColumns(frame.width());
+        for (int col = 0; col < visible; col++, index++) {
             final byte style = activeStyles[index];
             if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) {
                 tx += advance; // a hidden cell still occupies its column

@@ -36,7 +36,7 @@ In-game checks and the vttest run for this section are in [qa-checklist.md](qa-c
 Follow-ups from the review of PR #10 (2026-08-21). Small, isolated.
 
 - [x] CH10/CH11 use the new buffer helpers (`deleteChars`/`insertChars`); `System.out.println` replaced by `LOGGER.warn`.
-- [ ] **DEC Special Graphics render** (medium): `drawingMode`/`SPECIAL_GRAPHICS` was parsed but not used in rendering.
+- [x] **DEC Special Graphics render** (medium): the historical missing-render item is implemented.
   Superseded by [section 44.1](#441-line-drawing-characters-dec-special-graphics) (implemented 2026-09-16). Acceptance:
   `ESC ( 0` plus box-drawing in vttest suite 2 (see [44.4](#444-vttest-automation)).
 - [x] **DECSLRM + DECSTR** (implemented 2026-09-17):
@@ -60,9 +60,10 @@ blockers, majors, minors and nits are in [done.md](done.md#36-closed-items). For
 
 - [x] **m2: CPR reports column width+1** (closed by `64763921`): the immediate-wrap model was replaced by `Terminal.autowrapPending`;
   the cursor stays on `width-1`, so `DSR.java` reports a column inside the row and ECH/DCH/ICH/HTS work in the last column.
-- [ ] **m5: mode 1048 saves only x/y, restore does a full DECRC** `[escapes/csi/CH2.java:110-113]`: restore overwrites
-  style/colors/charset with init defaults. Related: SCOSC (`CH6 's'`) in the alt buffer writes main slots savedX/savedY while
-  DECRC in the alt buffer reads altSaved*.
+- [x] **m5: mode 1048 save/restore** (2026-11-02): the earlier position-only and wrong-alt-slot paths had already
+  been unified through `SavedCursor`. Added `CursorSaveModesTest` for SGR/colors/charset, separate main/alt slots,
+  SCOSC/SCORC, 1049 return and pending wrap. Fixed the remaining omission: save/restore DECOM and DECAWM as part of
+  the full DECSC state. The saved position remains absolute; origin mode is restored before positioning.
 - [ ] **m6: keyboard queues bytes while capture is off** `[TerminalKeyboardHandler.java:29-41]`: only ESC is checked; key presses
   leak into the VM outside terminal focus (`MachineTerminalWidget.tick` sends unconditionally).
 - [ ] **m10: `lastRowToDisplay/Max` is a plain int pair with three unsynchronized writers** (Netty IND/NEL, main mouseScrolled,
@@ -99,12 +100,12 @@ synchronizedSet + AtomicInteger, correct. Main risks: M3/M4/m9/m10.
 
 ### Tests (gaps)
 
-Current coverage is dense: 87 tests / ~367 assertions (SGRTest 17, SGRColorParserTest 8, TerminalBufferTest 62). Not covered:
+Historical audit baseline: 87 tests / ~367 assertions (2026-08-23), not the current suite size. Remaining gaps listed by that audit:
 
-- [ ] `Utf8Decoder`: multibyte, sequence cut between chunks, invalid continuation, 4-byte sequences.
+- [x] `Utf8DecoderTest`: consecutive 2/3/4-byte scalars, split calls/writes and invalid continuation/lead resync. Fixed acceptance of overlong, surrogate and out-of-range scalars; malformed sequences keep the existing discard policy.
 - [ ] CSIManager on garbage input: more than 10 arguments, CAN/SUB abort, control chars inside CSI.
-- [ ] CUU/CUD/CUF/CUB have zero tests (the most frequent ncurses sequences).
-- [ ] Reply DSR/DA (reply format in the input queue), HTS/TBC tabs and tabs interaction with DECCOLM.
+- [x] `CursorMotionReplyTabsTest`: CUU/CUD/CUF/CUB default/zero/saturated counts, screen and scroll-region bounds, and no accidental scroll.
+- [x] Exact ordered DSR/DA replies, pending-wrap CPR, HT/CHT/CBT/HTS/TBC and DECCOLM tab reset in `CursorMotionReplyTabsTest`. Fixed CPR to report origin-relative row/column under DECOM and DECLRMM.
 - [ ] `?1047l` exit semantics.
 - [ ] Regressions for blockers B1/B2 (one parameterized test).
 
@@ -133,29 +134,42 @@ in `TerminalCharRenderer`.
   `lineAttrs`/`altLineAttrs`, `handleHash` sets the attribute on the whole current line (xterm `doublechr.c`), `setWidth`/`resizeHeight`/
   `clear`/`clearScrollback`/`TerminalLineShifter` copy/blank attributes, `TerminalDiff` `PROTOCOL_VERSION 1->2` with a `lineAttrs`
   byte per row. Codes: `# 3` = DHL top, `# 4` = DHL bottom, `# 5` = SWL, `# 6` = DWL; `ESC # 7` does not exist; the attribute is per line
-  and applies from column 0. Rendering is still a stub (single width).
-- [~] **PR-B: double width and render** (code and unit tests 2026-10-28, in-game check open). The physical buffer stride stays `width`;
+  and applies from column 0. Rendering was added in PR-B below.
+- [x] **PR-B: double width and render** (code and unit tests 2026-10-28; repeatable Fabric 26.x client acceptance added 2026-11-02). The physical buffer stride stays `width`;
   a doubled row exposes the first `max(1, width / 2)` cells. Rendering: `LineScale` (shared arithmetic), `FrameState.lineScale(row)`,
   `TerminalCharRenderer` (glyphs, procedural quads, decorations), `TerminalBackgroundRenderer` and `TerminalCursorRenderer` draw DWL at
   2x width and crop a 2x-width/2x-height DHL glyph to the half its row owns through the atlas V range; SWL restores normal scale. All
   three render paths share these classes and compile on 1.21.1, 26.1.2 and 26.2. Terminal behaviour: `Terminal.lastColumn(row)` bounds
   the cursor (`setCursorPos`), the autowrap margin, HT/CHT and ICH/DCH on doubled rows; converting a row blanks the discarded right half
   and clamps the cursor (DEC loss semantics, see audit note 2); line-size changes are ignored while DECLRMM is set (note 4, xterm).
-  Tests: `LineScaleTest`, `DoubleSizeLineTest`, `FrameStateTest.lineScaleReadsTheAttributeOfTheDisplayedRow`.
-  Still open: look at it in a real client (compare with `vt420.png`), a layer-2 pixel test, ECH/EL/ED and scrolling-region edge cases on
-  doubled rows, and the world mesh cache invalidation when only the attribute changes.
+  Tests: `LineScaleTest`, `DoubleSizeLineTest`, `DoubleSizeEraseScrollTest`, `FrameStateTest.lineScaleReadsTheAttributeOfTheDisplayedRow`.
+  Follow-up acceptance (2026-11-02): ECH, EL 0/1/2, ED 0/1/2 and restricted-region IND/RI, SU/SD and IL/DL
+  are covered in the main and alternative buffers. Fixed ED 0/1 retaining DWL/DHL on completely erased lines; these now reset to SWL,
+  including an entirely erased cursor row and its newly exposed half with the current erase background; partial rows keep their rendition (VT510 ED).
+  `DoubleSizeCursorTest` checks exact steady-block vertices at the last visible column for SWL/DWL/DHL top/bottom on both buffers
+  on 26.x. The retained client scenario boots Linux and captures GUI and close world views, including the last-column cursor;
+  it also checks attribute-only invalidation on the existing world renderer, unchanged cells, replacement of its cached row mesh
+  and changed vertex bytes. See [repeatable acceptance](terminal-double-size-acceptance.md) for commands and evidence paths.
+  Layer 2: six reviewed PNG references now assert exact GUI/world pixels on 26.1.2/26.2 and GUI/retained-world GL paths
+  on 1.21.1. Frozen noon/clear weather/gamma remove lighting drift; normal checks pass with zero RGB differences.
+  The legacy scenario exercises production GL paths in a dedicated screen, not placed-block camera/depth integration.
+  The historical screenshot-only check is superseded by pinned upstream replay and retained pixel references.
+  `DeclrmmDoubleSizeTest` covers the transition with pre-existing
+  DWL/DHL rows in both buffers: enabling DECLRMM resets active row rendition to SWL without erasing text, ignores later size changes,
+  and disabling it resets horizontal margins and permits double-size again. Screenshots and cache assertions alone do not replace pixel goldens.
 - [x] MVP criterion: parsing #3/#4/#5/#6 without a warning, marks dirty.
 
 Audit of PR-A (9f472797) against EK-VT100-UG-003, 2026-09-19: lifecycle is complete (parsing, attribute transfer with rows, codec v2,
-clearBuffers, DECALN leaves attributes alone), rendering is absent. Notes for the render work:
-1. Render: verify against the screenshot `vt420.png`.
+clearBuffers, DECALN leaves attributes alone); rendering was absent in that audited revision and is implemented by PR-B. Notes:
+1. Historical note: "Render: verify against the screenshot `vt420.png`." Superseded on 2026-11-02 by reproducible
+   captures from pinned `ref/vttest` and reviewed pixel references; the unavailable image is not an acceptance gate.
 2. Updated source audit (2026-10-25): xterm's `doublechr.c:repaint_line` clamps the cursor on conversion to double size; the earlier
    statement that it does not clamp was incorrect. The DEC manuals specify loss of characters right of the center; xterm's conversion
    does not erase that hidden tail. Proposed policy: follow DEC loss semantics, clear the discarded cells and their rendition, clamp
-   the cursor and clear pending wrap. Returning to SWL must not resurrect discarded text. This is still unimplemented.
+   the cursor and clear pending wrap. Returning to SWL must not resurrect discarded text. Implemented by PR-B, with regression tests.
 3. DHL top/bottom pairs are the application's duty, not enforced by the terminal (xterm is also laissez-faire); scrolling copies attributes 1:1.
-4. xterm ignores line-size changes while DECLRMM (left/right-margin mode) is enabled. Plan this explicitly instead of implicitly
-   scaling horizontal margins; verify the transition into DECLRMM with existing doubled rows before implementing that interaction.
+4. xterm ignores line-size changes while DECLRMM is enabled. Implemented and tested: enabling it normalizes existing active
+   doubled rows to SWL; resetting it restores full-width horizontal margins. See `DeclrmmDoubleSizeTest`.
 
 Primary references: [DECDHL](https://vt100.net/docs/vt510-rm/DECDHL.html),
 [DECDWL](https://vt100.net/docs/vt510-rm/DECDWL.html), [DECSWL](https://vt100.net/docs/vt510-rm/DECSWL.html),
@@ -176,20 +190,25 @@ vttest is interactive and cannot run in CI directly. The escape sequences it emi
 allow per-page golden cell grids run as tests.
 
 Layer 1 (cell-level, deterministic, no client):
-- [ ] Harvest upstream streams: pin a vttest source revision and record page, geometry and capture provenance. The seven current
-  fixtures are hand-authored; recorded upstream page replay and its acceptance remain open.
+- [x] Harvested four real pages from pinned vttest `d37932dc8a7e5dab702ba34020bdbb12cdf12858` (20140305): cursor movements,
+  80/132-column double-size and ANSI color matrices. Each records revision/page/geometry/menu inputs/SHA-256 and oracle version.
+  Goldens were authored by independent libvterm 0.3.3 and reviewed against pinned source, not regenerated from OC2R.
+  Capture was reproduced byte-for-byte; see [capture acceptance](terminal-vttest-capture.md). The seven hand-authored regressions remain.
 - [x] Data-driven harness: `VttestHarnessTest` discovers per-page `stream.bin`, `screen.expected` and optional `styles.expected`,
   resizes a server `Terminal` to the requested geometry before replay, and compares cells/styles with an xfail ratchet.
-- [ ] Extend golden coverage to row attributes and foreground/background colors; optional style comparison already exists.
-  Add split-write replay alongside the current whole-stream replay, and review expected output independently of the implementation.
-- [ ] Contested pages are decided explicitly: request/response pages (DSR/DA/status line need a stub input), purely visual ones (blink,
-  double-size) go into an exception list with a reason or to layer 2.
-- [ ] Golden grids are reviewed manually before merge, otherwise hallucinations become the spec.
+- [x] Optional row-attribute and semantic foreground/background grids, alongside cells/styles, supplied by all four recorded pages.
+  All eleven fixtures run whole and in 1-, 7- and 64-byte chunks (44 replays per version). Recorded capture hashes are checked;
+  OC2R regen skips oracle-authored fixtures.
+- [x] Scope is explicit: captured pages need no interactive replies after the startup DA handshake. Interactive DSR/DA/status-line
+  pages are not claimed as captured; reply contracts have dedicated unit tests. Blink and double-size appearance belong to layer 2.
+- [x] Recorded grids reviewed against the upstream cursor-frame/double-line layout and both 8x8 color matrices. Normal code review
+  before merge remains required; capture/oracle provenance and permission notice are retained.
 
 Layer 2 (pixels, catches render errors invisible in the buffer):
-- [ ] Through the GameTest infrastructure ([section 41.1](multiloader.md#411-gametest-ci-and-cd)): a guest script prints a deterministic
-  pattern; capture the rendered terminal GUI and world display and compare against reviewed pixel references. This still needs a
-  dedicated capture/golden test for the procedural glyphs of 44.1 and the scale of 44.3, across all three Minecraft versions.
+- [x] Retained pixel references for procedural glyphs and double-size scale: modern Fabric client GameTests boot Linux and
+  compare actual GUI/block-screen crops; a separate legacy client compares GUI and retained world-GL branches. Six reviewed PNGs
+  cover 1.21.1, 26.1.2 and 26.2. Comparisons are exact RGB, fail on missing references and write actual/diff evidence.
+  See [acceptance and scope](terminal-double-size-acceptance.md). The old screenshot reference is retained as audit history.
 
 Priority: layer 1 first (also the acceptance of 44.1/44.2), then terminal-specific pixel coverage using the existing client GameTest infrastructure.
 
@@ -200,7 +219,7 @@ Narrowed scope (2026-09-16: not a universal stand, but a VT for shell/vim/tmux/O
 - VT regressions only on demand: DEC graphics U+2500 (tmux) done, SGR bold done, margins/DECOM done (`decom-margins` fixture), wrap done
   (`line-wrap` + `no-autowrap`), scrollback done (`scrollback` fixture), `simcity`/`nInvaders`.
 - Defer: headless xterm runner, mass fuzz, `terminal-core` module, kitty/sixel/hyperlinks/clipboard, wide Unicode/emoji matrix, copying
-  `libvterm`/`kitty` without need. `TerminalBufferTest` stays disabled until the core split of [section 42](multiloader.md#42-multiloader-neoforge-and-fabric-and-multiversion).
+  `libvterm`/`kitty` without need. `TerminalBufferTest` is enabled in the current versioned unit-test suites.
 - Done criterion of the next stage: 44.1/44.2 green (`dec-special-graphics` xfail to pass) + the 6 tests, without extending the harness.
 - [ ] Reference links: invisible-island.net/xterm/ctlseqs/ctlseqs.html; Wikipedia "DEC Special Graphics"; xterm `convtbl.c`; VT510 manual (bitsavers pdf/dec/terminal/vt510).
 

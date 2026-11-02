@@ -33,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.fail;
  * <p>{@code -Dvttest.regen=true} turns the replay into a golden authoring tool: it writes the
  * actual grid over {@code screen.expected} (and {@code styles.expected}, only if it already
  * exists) in the source tree. Regen output is a draft — for humans and AIs alike — and must be
- * reviewed before committing.
+ * reviewed before committing. Recorded upstream fixtures are skipped by regen; optional row/color
+ * goldens on hand-authored fixtures are refreshed only when their files already exist.
  */
 public class VttestHarnessTest {
     private static final boolean REGEN = Boolean.getBoolean("vttest.regen");
@@ -43,13 +44,15 @@ public class VttestHarnessTest {
         @Override
         public Stream<? extends Arguments> provideArguments(
                 ParameterDeclarations declarations, ExtensionContext context) {
-            return VttestFixtures.discover().stream().map(Arguments::of);
+            return VttestFixtures.discover().stream().flatMap(fixture ->
+                    (REGEN ? Stream.of(0) : Stream.of(0, 1, 7, 64))
+                            .map(chunk -> Arguments.of(fixture, chunk)));
         }
     }
 
-    @ParameterizedTest(name = "[{index}] {0}")
+    @ParameterizedTest(name = "[{index}] {0}, chunk={1}")
     @ArgumentsSource(FixtureArguments.class)
-    void replayFixture(final VttestFixtures.Fixture fixture) throws IOException {
+    void replayFixture(final VttestFixtures.Fixture fixture, final int chunkSize) throws IOException {
         final Terminal terminal = new Terminal();
         if (terminal.height != fixture.height()) {
             terminal.resizeHeight(fixture.height());
@@ -64,7 +67,12 @@ public class VttestHarnessTest {
         terminal.renderers.add(renderer);
 
         final byte[] stream = Files.readAllBytes(fixture.dir().resolve(VttestFixtures.STREAM_FILE));
-        terminal.io.putOutput(ByteBuffer.wrap(stream)); // one whole-file ByteBuffer drains fully
+        final boolean recorded = VttestProvenance.verify(fixture, stream);
+        if (REGEN && recorded) return; // Recorded goldens are authored only by capture-vttest.py/libvterm.
+        final int step = chunkSize == 0 ? Math.max(1, stream.length) : chunkSize;
+        for (int offset = 0; offset < stream.length; offset += step) {
+            terminal.io.putOutput(ByteBuffer.wrap(stream, offset, Math.min(step, stream.length - offset)));
+        }
 
         final int[][] cells = visibleCells(terminal);
         final byte[][] styles = visibleStyles(terminal);
@@ -78,10 +86,12 @@ public class VttestHarnessTest {
                 return;
             }
             writeGoldens(fixture, cells, styles);
+            VttestAttributes.writeGoldens(fixture, terminal);
             return;
         }
 
         final List<String> mismatches = compare(fixture, cells, styles);
+        VttestAttributes.compare(fixture, terminal, mismatches);
         if (fixture.xfail()) {
             if (mismatches.isEmpty()) {
                 fail("fixture " + fixture.id() + " now passes — promote status to pass");

@@ -20,6 +20,7 @@ plugins {
 
 val minecraft_version: String = property("minecraft_version").toString()
 val modernFabric = !minecraft_version.startsWith("1.")
+val legacyTerminalAcceptance = !modernFabric && providers.gradleProperty("fabric.legacyTerminalTests").orNull == "true"
 val clientAcceptance = modernFabric && providers.gradleProperty("fabric.clientTests").orNull == "true"
 val javaVersion = property("java_version").toString().toInt()
 // Both plugin implementations ship in the same Loom artifact. Legacy Minecraft needs
@@ -448,7 +449,14 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
 sourceSets.named("gametest") {
     java.srcDir(sharedGameTestsDir)
     if (modernFabric) resources.srcDir(layout.buildDirectory.dir("generated/gametestResources"))
-    if (clientAcceptance) java.srcDir(rootProject.file("fabric/src/clientGametest/java"))
+    if (clientAcceptance) {
+        java.srcDir(rootProject.file("fabric/src/clientGametest/java"))
+    }
+    if (clientAcceptance || legacyTerminalAcceptance) {
+        java.srcDir(rootProject.file("fabric/src/clientPixelTest/java"))
+        resources.srcDir(rootProject.file("fabric/src/clientGametest/resources"))
+    }
+    if (legacyTerminalAcceptance) java.srcDir(rootProject.file("fabric/src/legacyClientTest/java"))
 }
 
 tasks.named("compileGametestJava") {
@@ -457,11 +465,24 @@ tasks.named("compileGametestJava") {
 tasks.named<ProcessResources>("processGametestResources") {
     dependsOn(sharedGameTestSources)
     inputs.property("clientAcceptance", clientAcceptance)
+    inputs.property("legacyTerminalAcceptance", legacyTerminalAcceptance)
+    val terminalAcceptance = providers.gradleProperty("fabric.terminalTests").orNull == "true"
+    inputs.property("terminalAcceptance", terminalAcceptance)
+    val clientTestClass = if (terminalAcceptance) "FabricDoubleSizeTerminalTest" else "FabricClientAcceptanceTest"
+    if (legacyTerminalAcceptance) {
+        filesMatching("fabric.mod.json") {
+            filter { line: String ->
+                if (line.contains("\"entrypoints\"")) line +
+                    "\n    \"client\": [\"li.cil.oc2.fabric.gametest.LegacyTerminalPixelTest\"],"
+                else line
+            }
+        }
+    }
     if (clientAcceptance) {
         filesMatching("fabric.mod.json") {
             filter { line: String ->
                 if (line.contains("\"entrypoints\"")) line +
-                    "\n    \"fabric-client-gametest\": [\"li.cil.oc2.fabric.gametest.FabricClientAcceptanceTest\"],"
+                    "\n    \"fabric-client-gametest\": [\"li.cil.oc2.fabric.gametest.$clientTestClass\"],"
                 else line
             }
         }
@@ -556,4 +577,29 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
     // The excluded classes still have to be resolvable as types (auxiliary classpath entries are
     // never analysed), otherwise every reference into the shared tree is reported as missing.
     auxClassPaths.from(sourceSets["main"].output.classesDirs)
+}
+
+// 1.21.1 predates Fabric client GameTests: a test-only client exercises both retained GL paths.
+if (legacyTerminalAcceptance) {
+    loomExtension.runConfigs.create("terminalPixelTest") {
+        client()
+        source(sourceSets.named("gametest").get())
+        runDirectory.set(layout.buildDirectory.dir("run/terminalPixels"))
+        vmArg("-Dfabric.noGui=true")
+    }
+    tasks.named<net.fabricmc.loom.task.RunGameTask>("runTerminalPixelTest") {
+        timeout.set(Duration.ofMinutes(10))
+        environment("ALSOFT_DRIVERS", "null")
+        doFirst {
+            val options = layout.buildDirectory.file("run/terminalPixels/options.txt").get().asFile
+            options.parentFile.mkdirs()
+            options.writeText("soundCategory_master:0.0\nguiScale:1\nonboardAccessibility:false\n")
+            options.parentFile.resolve("terminal-pixels.success").delete()
+        }
+        doLast {
+            check(layout.buildDirectory.file("run/terminalPixels/terminal-pixels.success").get().asFile.isFile) {
+                "Legacy pixel client exited without completing its checks"
+            }
+        }
+    }
 }

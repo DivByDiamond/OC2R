@@ -80,7 +80,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | 44 | [terminal.md](terminal.md#44-terminal-line-drawing-strikethrough-double-size) | |
 | 44.1 | [terminal.md](terminal.md#441-line-drawing-characters-dec-special-graphics) | done |
 | 44.2 | [terminal.md](terminal.md#442-strikethrough-sgr-929) | done |
-| 44.3 | [terminal.md](terminal.md#443-double-sized-characters-esc-3-4-5-6) | PR-B open |
+| 44.3 | [terminal.md](terminal.md#443-double-sized-characters-esc-3-4-5-6) | done: PR-B implementation, upstream replay and pixel acceptance |
 | 44.4 | [terminal.md](terminal.md#444-vttest-automation) | |
 | 44.5 | [terminal.md](terminal.md#445-remaining-tofu-glyphs) | keep procedural quads until a font with glyphs lands |
 | 45 | [multiloader.md](multiloader.md#45-gametest-ci-a-real-baseline) | done, one residual |
