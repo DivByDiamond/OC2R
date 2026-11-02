@@ -288,8 +288,30 @@ public class Terminal {
     public void setCursorPos(final int x, final int y) {
         autowrapPending = false; // any explicit cursor move clears the pending wrap (xterm ResetWrap)
         lastPrintedChar = -1; // a cursor move means no preceding graphic char for REP (xterm lastchar)
-        this.x = Math.clamp(x, 0, width - 1);
         this.y = Math.clamp(y, 0, height - 1);
+        this.x = Math.clamp(x, 0, lastColumn(this.y));
+    }
+
+    /** DEC line attribute (ESC #3/#4/#5/#6) of screen row {@code row} in the active buffer. */
+    public byte lineAttrOfScreenRow(final int row) {
+        final boolean alt = currentPrivateModeState.isAltBufferEnabled();
+        final byte[] attrs = alt ? altLineAttrs : lineAttrs;
+        final int index = alt ? row : lastRowToDisplayMax - height + row;
+        return attrs != null && index >= 0 && index < attrs.length ? attrs[index] : LINE_ATTR_SINGLE;
+    }
+
+    /**
+     * Last usable column (inclusive) of screen row {@code row}. A double-width or double-height row
+     * shows only the first {@code max(1, width / 2)} cells, so the cursor, the autowrap margin and tab
+     * stops stop there.
+     */
+    public int lastColumn(final int row) {
+        return lineAttrOfScreenRow(row) == LINE_ATTR_SINGLE ? width - 1 : Math.max(1, width / 2) - 1;
+    }
+
+    /** Last usable column (inclusive) of the cursor's row. */
+    public int lastColumn() {
+        return lastColumn(y);
     }
 
     public void setClampedCursorPos(final int x, final int y) {

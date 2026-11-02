@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
+import li.cil.oc2.common.vm.terminal.render.LineScale;
 //? if >=26.1 && <26.2 {
 /*import net.minecraft.client.renderer.rendertype.RenderTypes;
 *///?}
@@ -46,9 +47,10 @@ public class TerminalCursorRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         //?}
+        final LineScale scale = cursorScale(terminal, useAltBuffer, localY);
         stack.pushPose();
         stack.translate(
-                terminal.x * Terminal.CHAR_WIDTH,
+                terminal.x * Terminal.CHAR_WIDTH * scale.xScale(),
                 (useAltBuffer ? terminal.y : localY) * Terminal.CHAR_HEIGHT,
                 0);
 
@@ -75,7 +77,7 @@ public class TerminalCursorRenderer {
         final float g = ((foreground >> 8) & 0xFF) / 255f;
         final float b = (foreground & 0xFF) / 255f;
 
-        drawCursorShape(buffer, matrix, terminal.cursorMode, r, g, b);
+        drawCursorShape(buffer, matrix, scale, terminal.cursorMode, r, g, b);
 
         MeshData rb = buffer.buildOrThrow();
         //? if >=26.1 {
@@ -114,13 +116,15 @@ public class TerminalCursorRenderer {
         final int foreground = terminal.currentPrivateModeState.DECSCNM
                 ? TerminalColors.defaultBackgroundRgb()
                 : TerminalColors.defaultForegroundRgb(false);
+        final LineScale scale = cursorScale(terminal, useAltBuffer, localY);
         final Matrix4f matrix = new Matrix4f(base).translate(
-                terminal.x * Terminal.CHAR_WIDTH,
+                terminal.x * Terminal.CHAR_WIDTH * scale.xScale(),
                 (useAltBuffer ? terminal.y : localY) * Terminal.CHAR_HEIGHT,
                 0);
         drawCursorShape(
                 consumer,
                 matrix,
+                scale,
                 terminal.cursorMode,
                 ((foreground >> 16) & 0xFF) / 255f,
                 ((foreground >> 8) & 0xFF) / 255f,
@@ -134,7 +138,7 @@ public class TerminalCursorRenderer {
             final int globalY,
             final int localY) {
         return terminal.x >= 0
-                && terminal.x < terminal.width
+                && terminal.x < cursorScale(terminal, useAltBuffer, localY).visibleColumns(terminal.width)
                 && (useAltBuffer || localY >= 0)
                 && terminal.y >= 0
                 && (useAltBuffer || localY < terminal.height)
@@ -142,9 +146,42 @@ public class TerminalCursorRenderer {
                 && (useAltBuffer || globalY <= terminal.lastRowToDisplay);
     }
 
+    /** Line scale of the row holding the cursor; {@code localY} is its row in the visible window. */
+    private static LineScale cursorScale(
+            final Terminal terminal, final boolean useAltBuffer, final int localY) {
+        return useAltBuffer
+                ? LineScale.of(terminal.altLineAttrs, terminal.y)
+                : LineScale.of(terminal.lineAttrs, terminal.lastRowToDisplay - terminal.height + localY);
+    }
+
+    // Quad in cell space; the line scale widens it and, on double-height rows, doubles and crops it
+    // to the half owned by the cursor's row.
+    private static void cursorQuad(
+            final VertexConsumer buffer,
+            final Matrix4f matrix,
+            final LineScale scale,
+            final float x0,
+            final float y0,
+            final float x1,
+            final float y1,
+            final float r,
+            final float g,
+            final float b) {
+        final float sy0 = Math.max(0f, scale.mapY(y0, Terminal.CHAR_HEIGHT));
+        final float sy1 = Math.min(Terminal.CHAR_HEIGHT, scale.mapY(y1, Terminal.CHAR_HEIGHT));
+        if (sy0 >= sy1) return;
+        final float sx0 = x0 * scale.xScale();
+        final float sx1 = x1 * scale.xScale();
+        buffer.addVertex(matrix, sx0, sy1, 0).setColor(r, g, b, 1);
+        buffer.addVertex(matrix, sx1, sy1, 0).setColor(r, g, b, 1);
+        buffer.addVertex(matrix, sx1, sy0, 0).setColor(r, g, b, 1);
+        buffer.addVertex(matrix, sx0, sy0, 0).setColor(r, g, b, 1);
+    }
+
     private static void drawCursorShape(
             final VertexConsumer buffer,
             final Matrix4f matrix,
+            final LineScale scale,
             final int cursorMode,
             final float r,
             final float g,
@@ -152,27 +189,14 @@ public class TerminalCursorRenderer {
         switch (cursorMode) {
             case TerminalColors.CursorMode.DEFAULT,
                     TerminalColors.CursorMode.BLINK_BLOCK,
-                    TerminalColors.CursorMode.STEADY_BLOCK -> {
-                buffer.addVertex(matrix, 0, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT, 0)
-                        .setColor(r, g, b, 1);
-                buffer.addVertex(matrix, Terminal.CHAR_WIDTH, 0, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, 0, 0, 0).setColor(r, g, b, 1);
-            }
+                    TerminalColors.CursorMode.STEADY_BLOCK ->
+                    cursorQuad(buffer, matrix, scale, 0, 0, Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT, r, g, b);
             case TerminalColors.CursorMode.BLINK_UNDERLINE,
-                    TerminalColors.CursorMode.STEADY_UNDERLINE -> {
-                buffer.addVertex(matrix, 0, 1, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, Terminal.CHAR_WIDTH, 1, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, Terminal.CHAR_WIDTH, 0, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, 0, 0, 0).setColor(r, g, b, 1);
-            }
+                    TerminalColors.CursorMode.STEADY_UNDERLINE ->
+                    cursorQuad(buffer, matrix, scale, 0, 0, Terminal.CHAR_WIDTH, 1, r, g, b);
             case TerminalColors.CursorMode.BLINKING_BAR_LINE,
-                    TerminalColors.CursorMode.STEADY_BAR_LINE -> {
-                buffer.addVertex(matrix, 0, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, 1, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, 1, 0, 0).setColor(r, g, b, 1);
-                buffer.addVertex(matrix, 0, 0, 0).setColor(r, g, b, 1);
-            }
+                    TerminalColors.CursorMode.STEADY_BAR_LINE ->
+                    cursorQuad(buffer, matrix, scale, 0, 0, 1, Terminal.CHAR_HEIGHT, r, g, b);
             default -> {}
         }
     }

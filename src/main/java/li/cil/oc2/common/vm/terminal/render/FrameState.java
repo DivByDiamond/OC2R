@@ -34,13 +34,22 @@ public record FrameState(
         ColorData[] altColors,
         ColorData[] altColorsBackground,
         byte[] altStyles,
-        int[] palette) {
+        int[] palette,
+        byte[] lineAttrs,
+        byte[] altLineAttrs) {
 
     /** Index of cell (x, row) in the ACTIVE buffer arrays for this frame. */
     public int index(final int x, final int row) {
         return useAltBuffer
                 ? x + row * width
                 : x + (row + lastRowToDisplay - height) * width;
+    }
+
+    /** Scale of display row {@code row} (0 = top visible row) under its DEC line attribute. */
+    public LineScale lineScale(final int row) {
+        return useAltBuffer
+                ? LineScale.of(altLineAttrs, row)
+                : LineScale.of(lineAttrs, row + lastRowToDisplay - height);
     }
 
     /**
@@ -70,7 +79,9 @@ public record FrameState(
                 terminal.altColors,
                 terminal.altColorsBackground,
                 terminal.altStyles,
-                terminal.palette256);
+                terminal.palette256,
+                terminal.lineAttrs,
+                terminal.altLineAttrs);
         return terminal.getGeometryVersion() == version ? frame : null;
     }
 

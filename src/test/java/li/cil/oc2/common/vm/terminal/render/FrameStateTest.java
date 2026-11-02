@@ -147,4 +147,24 @@ class FrameStateTest {
                 + captures.get() + ", " + skipped.get() + " skipped)");
         assertEquals(0, torn.get(), "no retrying capture may mix geometry with buffer arrays");
     }
+
+    @Test
+    void lineScaleReadsTheAttributeOfTheDisplayedRow() {
+        final Terminal terminal = new Terminal();
+        // The default window shows the last `height` rows of the scrollback ring.
+        final int firstShownRow = terminal.lastRowToDisplay - terminal.height;
+        terminal.lineAttrs[firstShownRow + 2] = Terminal.LINE_ATTR_DOUBLE_HEIGHT_BOTTOM;
+        terminal.altLineAttrs[3] = Terminal.LINE_ATTR_DOUBLE_WIDTH;
+
+        final FrameState main = FrameState.capture(terminal);
+        assertNotNull(main);
+        assertEquals(LineScale.of(Terminal.LINE_ATTR_DOUBLE_HEIGHT_BOTTOM), main.lineScale(2));
+        assertEquals(LineScale.SINGLE, main.lineScale(3));
+
+        terminal.currentPrivateModeState.SWITCH_ALT_BUFFER = true;
+        final FrameState alt = FrameState.capture(terminal);
+        assertNotNull(alt);
+        assertEquals(LineScale.of(Terminal.LINE_ATTR_DOUBLE_WIDTH), alt.lineScale(3));
+        assertEquals(LineScale.SINGLE, alt.lineScale(2));
+    }
 }

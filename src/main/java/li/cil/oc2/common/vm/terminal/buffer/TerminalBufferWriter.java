@@ -49,7 +49,7 @@ public class TerminalBufferWriter {
         // edge — printing outside the margins (DECLRMM was toggled off mid-line, or DECOM is off
         // and the cursor was placed past the margin) still wraps at the physical edge, matching
         // xterm's WrapLine (screen.c) margin check.
-        final int wrapColumn = rightWrapBoundary();
+        final int wrapColumn = effectiveWrapColumn();
         if (terminal.x == wrapColumn) {
             if (terminal.currentPrivateModeState.DECAWM) {
                 terminal.autowrapPending = true;
@@ -64,6 +64,11 @@ public class TerminalBufferWriter {
             return terminal.scrollColLast;
         }
         return terminal.width - 1;
+    }
+
+    /** Right margin of the cursor's row: the DECSLRM/physical edge, or the visible half of a doubled row. */
+    private int effectiveWrapColumn() {
+        return Math.min(rightWrapBoundary(), terminal.lastColumn());
     }
 
     private void setChar(final int x, final int y, final int ch) { // NOPMD: data-driven foreground color-mode switch

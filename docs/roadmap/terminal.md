@@ -134,13 +134,16 @@ in `TerminalCharRenderer`.
   `clear`/`clearScrollback`/`TerminalLineShifter` copy/blank attributes, `TerminalDiff` `PROTOCOL_VERSION 1->2` with a `lineAttrs`
   byte per row. Codes: `# 3` = DHL top, `# 4` = DHL bottom, `# 5` = SWL, `# 6` = DWL; `ESC # 7` does not exist; the attribute is per line
   and applies from column 0. Rendering is still a stub (single width).
-- [ ] **PR-B: double width and render**. Keep the physical buffer stride at `width`, with one codepoint per logical column;
-  doubled rows expose the first `max(1, width / 2)` cells and render each at twice the pixel width. Existing per-row attributes and
-  protocol v2 suffice: padding cells, a per-character wide flag and a protocol extension are not required for whole-line scaling.
-  Unicode wide-character handling remains separate. Cursor bounds, delayed autowrap, tabs, editing and copy/scroll paths still need
-  row-aware behavior. No renderer reads `lineAttrs` yet: capture them in `FrameState`, render DWL at 2x width, clip the appropriate
-  half of a 2x-width/2x-height DHL glyph to its own row, and restore normal scale for SWL. Cover foreground, background, procedural
-  glyphs, decorations and cursor in the 1.21.1, 26.1.2 and 26.2 GUI/world render paths.
+- [~] **PR-B: double width and render** (code and unit tests 2026-10-28, in-game check open). The physical buffer stride stays `width`;
+  a doubled row exposes the first `max(1, width / 2)` cells. Rendering: `LineScale` (shared arithmetic), `FrameState.lineScale(row)`,
+  `TerminalCharRenderer` (glyphs, procedural quads, decorations), `TerminalBackgroundRenderer` and `TerminalCursorRenderer` draw DWL at
+  2x width and crop a 2x-width/2x-height DHL glyph to the half its row owns through the atlas V range; SWL restores normal scale. All
+  three render paths share these classes and compile on 1.21.1, 26.1.2 and 26.2. Terminal behaviour: `Terminal.lastColumn(row)` bounds
+  the cursor (`setCursorPos`), the autowrap margin, HT/CHT and ICH/DCH on doubled rows; converting a row blanks the discarded right half
+  and clamps the cursor (DEC loss semantics, see audit note 2); line-size changes are ignored while DECLRMM is set (note 4, xterm).
+  Tests: `LineScaleTest`, `DoubleSizeLineTest`, `FrameStateTest.lineScaleReadsTheAttributeOfTheDisplayedRow`.
+  Still open: look at it in a real client (compare with `vt420.png`), a layer-2 pixel test, ECH/EL/ED and scrolling-region edge cases on
+  doubled rows, and the world mesh cache invalidation when only the attribute changes.
 - [x] MVP criterion: parsing #3/#4/#5/#6 without a warning, marks dirty.
 
 Audit of PR-A (9f472797) against EK-VT100-UG-003, 2026-09-19: lifecycle is complete (parsing, attribute transfer with rows, codec v2,

@@ -5,6 +5,7 @@ import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors;
 import li.cil.oc2.common.vm.terminal.color.TerminalColors.ColorData;
 import li.cil.oc2.common.vm.terminal.render.FrameState;
+import li.cil.oc2.common.vm.terminal.render.LineScale;
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -31,9 +32,15 @@ public class TerminalBackgroundRenderer {
         final int end = index + frame.width();
         if (index < 0 || end > activeStyles.length
                 || end > activeColors.length || end > activeColorsBackground.length) return;
-        for (int col = 0; col < frame.width(); col++, index++) {
+        // DEC line attribute: a doubled row shows only its first half of the cells, each twice as wide.
+        final LineScale scale = frame.lineScale(row);
+        final float advance = Terminal.CHAR_WIDTH * scale.xScale();
+        for (int col = 0, visible = scale.visibleColumns(frame.width()); col < visible; col++, index++) {
             final byte style = activeStyles[index];
-            if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
+            if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) {
+                tx += advance; // a hidden cell still occupies its column
+                continue;
+            }
 
             // DECSCNM screen inverse: XOR the per-cell SGR 7 invert with the screen-inverse mode.
             final boolean screenInverted = frame.decscnm();
@@ -51,7 +58,7 @@ public class TerminalBackgroundRenderer {
             }
 
             run.advance(tx, background, matrix, buffer);
-            tx += Terminal.CHAR_WIDTH;
+            tx += advance;
         }
 
         if (run.active()) {

@@ -135,11 +135,13 @@ public class TerminalBuffer {
      * cursor sits inside the horizontal DECSLRM margins, otherwise the physical edge — xterm only
      * bounds these operations by DECSLRM when the cursor started inside it (util.c margin checks).
      */
-    private int rightEditBoundary(final int x) {
+    private int rightEditBoundary(final int y, final int x) {
+        // A doubled row only has its left half; insert/delete must not push text into the hidden tail.
+        final int visible = terminal.lastColumn(y) + 1;
         if (x >= terminal.scrollColFirst && x <= terminal.scrollColLast) {
-            return terminal.scrollColLast + 1;
+            return Math.min(visible, terminal.scrollColLast + 1);
         }
-        return terminal.width;
+        return visible;
     }
 
     /**
@@ -147,11 +149,11 @@ public class TerminalBuffer {
      * characters left and filling blanks at the end.
      */
     public void deleteChars(final int y, final int x, final int count) {
-        final int n = Math.clamp(count, 0, rightEditBoundary(x) - x);
+        final int n = Math.clamp(count, 0, rightEditBoundary(y, x) - x);
         if (n == 0) return;
-        final int remaining = rightEditBoundary(x) - x - n;
+        final int remaining = rightEditBoundary(y, x) - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, rightEditBoundary(x) - x);
+            clearChars(y, x, rightEditBoundary(y, x) - x);
             return;
         }
         final ColorData c = terminal.currentBackgroundColor();
@@ -220,11 +222,11 @@ public class TerminalBuffer {
      * existing characters right. Characters pushed past the line width are lost.
      */
     public void insertChars(final int y, final int x, final int count) {
-        final int n = Math.clamp(count, 0, rightEditBoundary(x) - x);
+        final int n = Math.clamp(count, 0, rightEditBoundary(y, x) - x);
         if (n == 0) return;
-        final int remaining = rightEditBoundary(x) - x - n;
+        final int remaining = rightEditBoundary(y, x) - x - n;
         if (remaining <= 0) {
-            clearChars(y, x, rightEditBoundary(x) - x);
+            clearChars(y, x, rightEditBoundary(y, x) - x);
             return;
         }
         final ColorData c = terminal.currentBackgroundColor();

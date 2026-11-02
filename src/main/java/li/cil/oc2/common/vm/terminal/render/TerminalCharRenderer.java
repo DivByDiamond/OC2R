@@ -33,9 +33,15 @@ public class TerminalCharRenderer {
         final int end = index + frame.width();
         if (index < 0 || end > activeStyles.length || end > activeBuffer.length
                 || end > activeColors.length || end > activeColorsBackground.length) return;
-        for (int col = 0; col < frame.width(); col++, index++) {
+        // DEC line attribute: a doubled row shows only its first half of the cells, each twice as wide.
+        final LineScale scale = frame.lineScale(row);
+        final float advance = Terminal.CHAR_WIDTH * scale.xScale();
+        for (int col = 0, visible = scale.visibleColumns(frame.width()); col < visible; col++, index++) {
             final byte style = activeStyles[index];
-            if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) continue;
+            if ((style & Terminal.STYLE_HIDDEN_MASK) != 0) {
+                tx += advance; // a hidden cell still occupies its column
+                continue;
+            }
 
             // DECSCNM screen inverse: XOR the per-cell SGR 7 invert with the screen-inverse mode.
             final boolean screenInverted = frame.decscnm();
@@ -50,15 +56,15 @@ public class TerminalCharRenderer {
             // background blinks instead (see TerminalBackgroundRenderer) — xterm semantics
             // where blink affects the background of reverse-video text.
             if (isBlinking && !invertBackground && blinkOff && !isBold) {
-                tx += Terminal.CHAR_WIDTH;
+                tx += advance;
                 continue;
             }
 
             final int character = activeBuffer[index];
             final int foreground =
                     getForegroundColor(frame, style, index, invertBackground, isBold, isBlinking, blinkOff);
-            renderForegroundChar(matrix, buffer, tx, character, foreground, style);
-            tx += Terminal.CHAR_WIDTH;
+            renderForegroundChar(matrix, buffer, scale, tx, character, foreground, style);
+            tx += advance;
         }
     }
 
@@ -106,6 +112,7 @@ public class TerminalCharRenderer {
     private static void renderForegroundChar(
             final Matrix4f matrix,
             final BufferBuilder buffer,
+            final LineScale scale,
             final float offset,
             final int character,
             final int color,
@@ -114,71 +121,52 @@ public class TerminalCharRenderer {
         final float g = ((color >> 8) & 0xFF) / 255f;
         final float b = (color & 0xFF) / 255f;
 
+        final float cellWidth = Terminal.CHAR_WIDTH;
         if (isBoxDrawingCharacter(character)) {
-            renderBoxDrawing(matrix, buffer, offset, character, r, g, b);
+            renderBoxDrawing(matrix, buffer, scale, offset, character, r, g, b);
         } else if (isPrintableCharacter(character)) {
-            FontHandling.FontStyle font = getFontStyle(style);
-            Glyph glyph = FontHandling.getGlyph(character, font);
-
-            if (font == FontHandling.FontStyle.ITALIC
-                    || font == FontHandling.FontStyle.BOLD_ITALIC) {
-                buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uStart, glyph.vEnd);
-                buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH + 8, Terminal.CHAR_HEIGHT, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uEnd, glyph.vEnd);
-                buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH + 8, 0, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uEnd, glyph.vStart);
-                buffer.addVertex(matrix, offset, 0, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uStart, glyph.vStart);
-            } else {
-                buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uStart, glyph.vEnd);
-                buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uEnd, glyph.vEnd);
-                buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, 0, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uEnd, glyph.vStart);
-                buffer.addVertex(matrix, offset, 0, 0)
-                        .setColor(r, g, b, 1)
-                        .setUv(glyph.uStart, glyph.vStart);
-            }
+            final FontHandling.FontStyle font = getFontStyle(style);
+            final Glyph glyph = FontHandling.getGlyph(character, font);
+            // Italic glyphs lean 8 px past the cell, like the single-width path.
+            final boolean italic = font == FontHandling.FontStyle.ITALIC
+                    || font == FontHandling.FontStyle.BOLD_ITALIC;
+            glyphQuad(buffer, matrix, scale, offset, italic ? cellWidth + 8 : cellWidth, glyph, r, g, b);
         }
 
         if ((style & Terminal.STYLE_UNDERLINE_MASK) != 0) {
             // Solid color quad at the bottom of the cell. UV (0,0) samples the opaque white
-            // reference square in the font atlas — POSITION_TEX_COLOR needs a valid texel, but the
-            // color comes from the vertex color. Vertex order: BL -> BR -> TR -> TL (CCW).
-            buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT, 0)
-                    .setColor(r, g, b, 1)
-                    .setUv(0, 0);
-            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT, 0)
-                    .setColor(r, g, b, 1)
-                    .setUv(0, 0);
-            buffer.addVertex(matrix, offset + Terminal.CHAR_WIDTH, Terminal.CHAR_HEIGHT - 2, 0)
-                    .setColor(r, g, b, 1)
-                    .setUv(0, 0);
-            buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT - 2, 0)
-                    .setColor(r, g, b, 1)
-                    .setUv(0, 0);
+            // reference square in the font atlas: POSITION_TEX_COLOR needs a valid texel, but the
+            // color comes from the vertex color.
+            quad(buffer, matrix, scale, offset,
+                    offset, Terminal.CHAR_HEIGHT - 2, offset + cellWidth, Terminal.CHAR_HEIGHT, r, g, b);
         }
 
         if (isPrintableCharacter(character) && !isBoxDrawingCharacter(character)
                 && (style & Terminal.STYLE_CROSSED_OUT_MASK) != 0) {
             // Strikethrough: thickness derived from cell height, centered on midline.
-            // Use quad() to keep winding consistent with box-drawing (CCW) and avoid
-            // culling mismatch between the two paths.
             final float tStrike = Math.max(1f, Terminal.CHAR_HEIGHT / 8f);
             final float cyStrike = Terminal.CHAR_HEIGHT / 2f;
             final float y0 = Math.max(0, cyStrike - tStrike / 2f);
             final float y1 = Math.min(Terminal.CHAR_HEIGHT, cyStrike + tStrike / 2f);
-            quad(buffer, matrix, offset, y0, offset + Terminal.CHAR_WIDTH, y1, r, g, b);
+            quad(buffer, matrix, scale, offset, offset, y0, offset + cellWidth, y1, r, g, b);
         }
+    }
+
+    /**
+     * Textured glyph quad. {@code width} is the unscaled advance; the line scale widens it and,
+     * on double-height rows, crops the glyph to the half this row owns by narrowing the V range.
+     */
+    private static void glyphQuad(final BufferBuilder buffer, final Matrix4f matrix, final LineScale scale,
+            final float offset, final float width, final Glyph glyph,
+            final float r, final float g, final float b) {
+        final float x1 = offset + width * scale.xScale();
+        final float vSpan = glyph.vEnd - glyph.vStart;
+        final float vTop = glyph.vStart + vSpan * scale.visibleStart();
+        final float vBottom = glyph.vStart + vSpan * scale.visibleEnd();
+        buffer.addVertex(matrix, offset, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1).setUv(glyph.uStart, vBottom);
+        buffer.addVertex(matrix, x1, Terminal.CHAR_HEIGHT, 0).setColor(r, g, b, 1).setUv(glyph.uEnd, vBottom);
+        buffer.addVertex(matrix, x1, 0, 0).setColor(r, g, b, 1).setUv(glyph.uEnd, vTop);
+        buffer.addVertex(matrix, offset, 0, 0).setColor(r, g, b, 1).setUv(glyph.uStart, vTop);
     }
 
     private static FontHandling.FontStyle getFontStyle(byte style) {
@@ -222,70 +210,79 @@ public class TerminalCharRenderer {
     // and keeps geometry derived from live CHAR_WIDTH/HEIGHT (resize-aware). Atlas
     // pre-tessellation is deferred pending profiling; not a bottleneck vs glyph path.
     private static void renderBoxDrawing(final Matrix4f matrix, final BufferBuilder buffer, // NOPMD
-            final float offset, final int ch, final float r, final float g, final float b) {
+            final LineScale scale, final float offset, final int ch, final float r, final float g, final float b) {
         final float w = Terminal.CHAR_WIDTH;
         final float h = Terminal.CHAR_HEIGHT;
         final float t = 2f; // thickness
         final float cx = w / 2f - t / 2f;
         final float cy = h / 2f - t / 2f;
         switch (ch) {
-            case 0x2500 -> quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b); // ─
-            case 0x2502 -> quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b); // │
+            case 0x2500 -> quad(buffer, matrix, scale, offset, offset, cy, offset + w, cy + t, r, g, b); // ─
+            case 0x2502 -> quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, h, r, g, b); // │
             case 0x250C -> { // ┌
-                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + cx + t, h, r, g, b);
             }
             case 0x2510 -> { // ┐
-                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + cx + t, h, r, g, b);
             }
             case 0x2514 -> { // └
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + w, cy + t, r, g, b);
             }
             case 0x2518 -> { // ┘
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
-                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + cx + t, cy + t, r, g, b);
             }
             case 0x251C -> { // ├
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
-                quad(buffer, matrix, offset + cx, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + w, cy + t, r, g, b);
             }
             case 0x2524 -> { // ┤
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
-                quad(buffer, matrix, offset, cy, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + cx + t, cy + t, r, g, b);
             }
             case 0x252C -> { // ┬
-                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, cy, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, cy, offset + cx + t, h, r, g, b);
             }
             case 0x2534 -> { // ┴
-                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, cy + t, r, g, b);
             }
             case 0x253C -> { // ┼
-                quad(buffer, matrix, offset, cy, offset + w, cy + t, r, g, b);
-                quad(buffer, matrix, offset + cx, 0, offset + cx + t, h, r, g, b);
+                quad(buffer, matrix, scale, offset, offset, cy, offset + w, cy + t, r, g, b);
+                quad(buffer, matrix, scale, offset, offset + cx, 0, offset + cx + t, h, r, g, b);
             }
-            case 0x23BA -> quad(buffer, matrix, offset, h * SCAN_1_Y,
+            case 0x23BA -> quad(buffer, matrix, scale, offset, offset, h * SCAN_1_Y,
                     offset + w, h * SCAN_1_Y + t, r, g, b); // ⎺ scan 1
-            case 0x23BB -> quad(buffer, matrix, offset, h * SCAN_3_Y,
+            case 0x23BB -> quad(buffer, matrix, scale, offset, offset, h * SCAN_3_Y,
                     offset + w, h * SCAN_3_Y + t, r, g, b); // ⎻ scan 3
-            case 0x23BC -> quad(buffer, matrix, offset, h * SCAN_7_Y,
+            case 0x23BC -> quad(buffer, matrix, scale, offset, offset, h * SCAN_7_Y,
                     offset + w, h * SCAN_7_Y + t, r, g, b); // ⎼ scan 7
-            case 0x23BD -> quad(buffer, matrix, offset, h * SCAN_9_Y,
+            case 0x23BD -> quad(buffer, matrix, scale, offset, offset, h * SCAN_9_Y,
                     offset + w, h * SCAN_9_Y + t, r, g, b); // ⎽ scan 9
             default -> {}
         }
     }
 
-    private static void quad(final BufferBuilder buffer, final Matrix4f matrix,
-            final float x0, final float y0, final float x1, final float y1,
+    /**
+     * Solid quad in cell space; x is absolute (it includes {@code offset}). The line scale widens it
+     * around the cell origin and, on double-height rows, doubles and crops it to this row's half.
+     */
+    private static void quad(final BufferBuilder buffer, final Matrix4f matrix, final LineScale scale,
+            final float offset, final float x0, final float y0, final float x1, final float y1,
             final float r, final float g, final float b) {
-        buffer.addVertex(matrix, x0, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
-        buffer.addVertex(matrix, x1, y1, 0).setColor(r, g, b, 1).setUv(0, 0);
-        buffer.addVertex(matrix, x1, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
-        buffer.addVertex(matrix, x0, y0, 0).setColor(r, g, b, 1).setUv(0, 0);
+        final float sx0 = offset + (x0 - offset) * scale.xScale();
+        final float sx1 = offset + (x1 - offset) * scale.xScale();
+        final float sy0 = Math.max(0f, scale.mapY(y0, Terminal.CHAR_HEIGHT));
+        final float sy1 = Math.min(Terminal.CHAR_HEIGHT, scale.mapY(y1, Terminal.CHAR_HEIGHT));
+        if (sy0 >= sy1) return;
+        buffer.addVertex(matrix, sx0, sy1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, sx1, sy1, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, sx1, sy0, 0).setColor(r, g, b, 1).setUv(0, 0);
+        buffer.addVertex(matrix, sx0, sy0, 0).setColor(r, g, b, 1).setUv(0, 0);
     }
 
     private static boolean isPrintableCharacter(final int ch) {

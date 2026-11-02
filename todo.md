@@ -40,7 +40,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [x] Give the client mixin config its own refmap (2026-10-22): `mixins.oc2r.client.json` now points at `mixins.oc2r.client.refmap.json`, so a refmap emitted by an annotation processor can no longer be overwritten by the second config.
 - [x] Sedna 5.2.0 + buildroot 0.2.10 + upstream §49 ports (branch feat/sedna-5.2; upstream master moved past the 5.1.0 recorded before — ported 5.2.0/0.3.0/0.2.10 instead; see docs/roadmap/upstream.md#49-fnuecke-oc2-since-f37735d-checked-2026-10-08)
 - [x] Remove the `required = false` flag from 9 GameTests after fixing them: already done in `db7abe14` (2026-09-16); verified 2026-10-17 (snapshot: `:1.21.1:gameTest` ran 35 tests, all required, 0 failures; the suite grew to 38 tests on 1.21.1 in the 2026-10-20 matrix) (see docs/roadmap/multiloader.md#45-gametest-ci-a-real-baseline)
-- [ ] Terminal double-size PR-B: double width and render of `lineAttrs` (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
+- [~] Terminal double-size PR-B: rendering, cursor/wrap/tab bounds and row conversion are implemented with unit tests (2026-10-28); real-client check and pixel test open (see docs/roadmap/terminal.md#443-double-sized-characters-esc-3-4-5-6)
 - [ ] vttest golden-grid tests (layer 1): record real upstream pages, row attributes and colors; the 6 UTF-8/resize regressions are done in `TerminalRegressionsTest` (see docs/roadmap/terminal.md#444-vttest-automation)
 - [ ] Line-drawing glyphs in the font, then drop the procedural quads (see docs/roadmap/terminal.md#445-remaining-tofu-glyphs)
 - [ ] Terminal: mode 1048 save/restore (m5); the pending-wrap flag (m2) is done (`64763921`) (see docs/roadmap/terminal.md#minor-open)

@@ -22,7 +22,7 @@ public class CHT extends CSISequenceHandler {
         terminal.autowrapPending = false; // cursor move — clears the pending wrap (xterm ResetWrap)
         final boolean[] tabs = terminal.currentPrivateModeState.isAltBufferEnabled()
                 ? terminal.altTabs : terminal.tabs;
-        final int last = terminal.width - 1;
+        final int last = terminal.lastColumn();
         for (int i = 0; i < args[0] && terminal.x < last; i++) {
             int x = terminal.x + 1;
             while (x < last && !tabs[x]) {

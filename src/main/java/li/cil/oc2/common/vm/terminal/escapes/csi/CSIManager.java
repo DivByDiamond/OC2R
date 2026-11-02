@@ -104,10 +104,11 @@ public class CSIManager {
             case 0x0A, 0x0B -> handleControlLineFeed(); /* LF / VT — respect LNM like normal path */
             case 0x09 -> { /* HT — respect tab stops, like TerminalOutput.handleTab */
                 terminal.autowrapPending = false; // cursor move clears pending (xterm ResetWrap)
-                if (terminal.x < terminal.width - 1) {
+                final int last = terminal.lastColumn();
+                if (terminal.x < last) {
                     do {
                         terminal.x++;
-                    } while (terminal.x < terminal.width - 1
+                    } while (terminal.x < last
                             && (terminal.currentPrivateModeState.isAltBufferEnabled()
                                     ? !terminal.altTabs[terminal.x]
                                     : !terminal.tabs[terminal.x]));
