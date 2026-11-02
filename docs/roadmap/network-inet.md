@@ -27,7 +27,7 @@ type 3 code 4 for fragments with MTU 1500, type 11 code 0 for TTL=1, delivered o
 Bugs found while writing tests (all fixed): `MacAddressUtils` sign extension (`MacAddressUtilsTest`); `InetUtils.quickICMPBody` `put()` instead of `get()`; `IcmpHandler.reject` source
 address 0.0.0.0 (documented by `IcmpHandlerTest`); Mockito 4.3.1 -> 5.17.0 (byte-buddy 1.12.7 does not support Java 21). Total +29 unit tests (152 in total, green).
 
-- [ ] **`IcmpHandler.reject` source address 0.0.0.0**: still needs a fix: pass the unreachable host address as src (behavior is only documented by the test).
+- [x] **`IcmpHandler.reject` source address 0.0.0.0**: fixed; the reply carries the unreachable host as source and `IcmpHandlerTest.rejectThenConsumeWritesReplyIntoMessage` asserts it.
 - [ ] **User documentation**: no DHCP, the card is a point-to-point link (the guest assigns any IP, the card answers ARP). Write it in the README/docs with a `deniedHosts` warning.
 - [ ] Answer issue #13 after the ping/DNS fixes and attach the instructions from the previous item.
 
@@ -52,15 +52,15 @@ Audit 2026-08-25. Lint stages of this section are in [quality.md](quality.md#39-
 
 ### Security items (open)
 
-- [ ] **C1: VXLAN, unauthenticated incoming UDP -> frame injection into the world** `[vxlan/TunnelManager.java:85-121]`: the socket is not connected to remoteHost, the source is not checked; port 4789 is
+- [x] (closed `672e7a32`: the tunnel channel is connected to the configured peer, so the kernel drops other sources; a pre-shared key/HMAC was skipped on purpose to stay compatible with standard VXLAN endpoints) **C1: VXLAN, unauthenticated incoming UDP -> frame injection into the world** `[vxlan/TunnelManager.java:85-121]`: the socket is not connected to remoteHost, the source is not checked; port 4789 is
   standard VXLAN. Anyone able to send UDP to the server port (bind 0.0.0.0 = internet) injects arbitrary Ethernet frames into any computer's virtual network. Fix: `socket.connect()` + check
   `packet.getAddress()` + pre-shared key/HMAC; VNI is not the only id.
-- [ ] **C2: VXLAN, vti=1000 hard-coded for all blocks and loaded from NBT without checks** `[VxlanBlockEntity.java:32,109-111]`: all hubs of a server register one VNI, `tunnels.put()` overwrites another tunnel
+- [x] (closed `672e7a32`: random per-hub VNI, range-validated on NBT load) **C2: VXLAN, vti=1000 hard-coded for all blocks and loaded from NBT without checks** `[VxlanBlockEntity.java:32,109-111]`: all hubs of a server register one VNI, `tunnels.put()` overwrites another tunnel
   (player isolation broken); forged NBT joins someone else's network. Fix: random vti at creation (from the item UUID), range validation on load.
 - [ ] **C3: guest spoofing of srcIpAddress** `[DefaultNetworkLayer.java:117-137]`, `SendHandler.java:69-105`: only dst is checked; the guest assigns any IP (`DefaultLinkLocalLayer.java:162`). Through the host's real
   internet: spoofing attacks / server IP impersonation. Fix: compare src with the ARP-learned card address, drop on mismatch. Note: C3 is claimed closed by the ARP-claim filter in C8 (see
   [done.md](done.md#39-closed-items)) but this needs confirmation.
-- [ ] **C4: `deniedHosts` lacks 169.254.0.0/16** (`InternetCardSpec.java:62-68`): on a public VPS the guest reads cloud metadata (IAM tokens) via 169.254.169.254. Also add 0.0.0.0/8, 255.255.255.255/32, TEST-NET
+- [x] (closed: `InternetCardSpec` defaults now include 0.0.0.0/8, 169.254.0.0/16, 100.64.0.0/10, 224.0.0.0/4 and the TEST-NET ranges) **C4: `deniedHosts` lacks 169.254.0.0/16** (`InternetCardSpec.java:62-68`): on a public VPS the guest reads cloud metadata (IAM tokens) via 169.254.169.254. Also add 0.0.0.0/8, 255.255.255.255/32, TEST-NET
   ranges. Hostname entries are resolved once at startup (`Ipv4Space.java:131-146`), so DNS rebinding of the config applies: document and recommend CIDR.
 - [ ] Resource limits missing: bandwidth per card/tick, number of cards per player (`InternetManagerImpl.connect:76`), rate limit for ICMP/PCM/framebuffer (PCM and C2S limits done, see done.md).
 

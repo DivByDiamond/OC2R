@@ -4,20 +4,20 @@ Everything here is "code ready, verify in game". Each box links back to the sect
 
 ### From section 12
 Source: [12](video-gpu.md#12-multi-monitor-fragment-model)
-- [ ] Build + multi-monitor of different sizes: assemble 2x2/3x3 in any order, break one block and see the re-partition.
+- [x] Multi-monitor on 26.x (2026-10-20, [stage3-acceptance.md](stage3-acceptance.md)): single and 3x2 merged screens, all four facings, distinct frames per screen; re-partition of cached devices after a merge is covered by `DeviceBusTests.monitorMergeReplacesCachedDevices`. Not yet checked live: 2x2/3x3 in any order with a block broken afterwards, and NeoForge/Fabric 1.21.1.
 
 ### From section 19
 Source: [19](terminal.md#19-terminal-diff-instead-of-raw-uart-on-the-client)
-- [ ] Computer GUI and robot GUI, two clients near one computer (tracking-chunk broadcast), scrollback with the mouse, alt-screen applications (vim/less), mouse in mc/midnight, bell.
+- [ ] (computer/robot GUI scrolling and GUI scaling verified on both 26.x versions, see stage3-acceptance.md; still open: two clients, vim/less, mouse in mc, bell) Computer GUI and robot GUI, two clients near one computer (tracking-chunk broadcast), scrollback with the mouse, alt-screen applications (vim/less), mouse in mc/midnight, bell.
 - [ ] Run vttest inside the guest (the server parser was not touched, but confirm after the dirty-routing refactor).
 
 ### From section 21
 Source: [21](done.md#21-sound-tone-generator-pcm-streaming-speaker-block) (checked in v0.1.0+383c4ec)
-- [ ] **Speaker is silent**: `lua -e 'local d=require("devices"); d:find("speaker"):beep(880,500)'`: RPC without errors but no sound. The chain is intact: callback -> `SoundClientMessages.sendBeep` -> `SoundCardBeepMessage` -> `SoundClientManager.playTone` ->
+- [x] (2026-10-16: a real guest RPC beep produced 880 Hz for 500 ms on 26.1.2, see todo.md) **Speaker is silent**: `lua -e 'local d=require("devices"); d:find("speaker"):beep(880,500)'`: RPC without errors but no sound. The chain is intact: callback -> `SoundClientMessages.sendBeep` -> `SoundCardBeepMessage` -> `SoundClientManager.playTone` ->
   `ToneSoundInstance` (stream `sound_card_beep`); POST beeps (same sound registration) do play. Check: (1) client log for `Unable to play unknown soundEvent`/exceptions in `enqueueWork`; (2) distance (`Attenuation.LINEAR`, range 16 blocks);
   (3) a silent failure in the `SoundEngine` streaming path (an exception in `CompletableFuture.thenAccept` is not logged): if needed, play without `stream=true` and return sound from `SoundBufferLibrary` (fallback `.ogg`).
-- [ ] `d:find("sound")` returned nil: this was a consequence of the computer being off (energy shortage, config 256/t). After the fix (transfer 1024/t, computer buffer 8000) check again.
-- [ ] Check `write` (PCM streaming) once the tone is fixed.
+- [x] (the speaker device is found and beeps in the 2026-10-16 run) `d:find("sound")` returned nil: this was a consequence of the computer being off (energy shortage, config 256/t). After the fix (transfer 1024/t, computer buffer 8000) check again.
+- [x] Check `write` (PCM streaming) once the tone is fixed (2026-10-16: all 44 packets played, 0.51042 s captured against 0.51084 s supplied).
 
 ### From section 22
 Source: [22](devices-storage.md#22-disks-cleanup-tiers-3d-models-dead-code)
@@ -39,10 +39,10 @@ Source: [26a](video-gpu.md#26a-video-codec-switchable-raw-and-h264)
 Source: [34](cables-bus-energy.md#34-manual-in-game-testing-wires-and-screens)
 - [ ] **Cable/energy**: a chain of 3+ cables to a generator and a consumer: energy must reach the last one (ping-pong fix); world restart must not lose network energy; IC2 EU bridge (if present).
 - [ ] **Switch (NetworkSwitch)**: chunk load with a switch must not crash the server (empty `adj` list fix); several clients through a switch: frames flow, no empty-frame spam.
-- [ ] **NetworkConnector**: connection through connectors and disconnect on break (empty-frame fix `frame.length > 0`).
+- [x] (26.x, 2026-10-20: connect/disconnect on loaded chunks and after reload; both guest NICs worked, TCP echo passed) **NetworkConnector**: connection through connectors and disconnect on break (empty-frame fix `frame.length > 0`).
 - [ ] **PCI Card Cage**: installing a card starts energy consumption, `has_energy` in the UI updates on the server.
 - [ ] **Bundled Redstone**: write/read a bundled signal on the same face (`.getOpposite()` fix). The "check all 4 horizontal faces at FACING != NORTH" line is closed: side index bug is fixed (ec49a41).
-- [ ] **Monitor**: frame rendering must not chew CPU without changes (`dirtyLines.clear()` fix); terminal text renders correctly; monitor multiblock (merge/split/break) works.
+- [ ] (merge/split and terminal text verified on 26.x; the idle CPU check is still open) **Monitor**: frame rendering must not chew CPU without changes (`dirtyLines.clear()` fix); terminal text renders correctly; monitor multiblock (merge/split/break) works.
 - [ ] **Speaker**: the new Charger-style texture/model shows correctly from all sides.
 
 - [ ] Network wires: check the blue color and the sag on long (up to 16 block) wires in game (see network-overhaul.md)

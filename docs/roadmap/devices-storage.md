@@ -60,7 +60,7 @@ Problem: writing custom firmware currently needs the guest OS and `flash.sh` (no
 
 ### Mod (oc2r)
 
-- [ ] **`Config.flashMemorySize = 15`** (MB) in `StorageSpec`/`Config`, read everywhere instead of hard-coded 12 MB: `Items.java` (flash_memory), `ByteBufferFlashStorageDevice` (`claimMemory`/`allocate`), `FlashMemoryFlasherDevice`, `MinuxFirmware`, `src/main/scripts/bin/flash.sh`.
+- [x] (superseded: flash sizes come from `flashMemorySizeTier1/2/3` in `Config`; no hard-coded 12 MB remains in the Java sources or `flash.sh`) **`Config.flashMemorySize = 15`** (MB) in `StorageSpec`/`Config`, read everywhere instead of hard-coded 12 MB: `Items.java` (flash_memory), `ByteBufferFlashStorageDevice` (`claimMemory`/`allocate`), `FlashMemoryFlasherDevice`, `MinuxFirmware`, `src/main/scripts/bin/flash.sh`.
 - [ ] **Flasher GUI** (`flash_memory_flasher`): container + screen (currently no GUI at all, only physical insert/eject). Field "repository URL" + a "Write" button.
 - [ ] **`FirmwareManifest`** (manifest parser): reads `oc2r-firmware.json` -> `{name, version, layout, image}`.
 - [ ] **`FirmwareDownloader`**: downloads the manifest and the `.img` through `java.net.http.HttpClient` (async, on a worker pool), **allowlist**: only `github.com`, `raw.githubusercontent.com`, `objects.githubusercontent.com` (host list in config).

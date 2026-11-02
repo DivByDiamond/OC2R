@@ -58,9 +58,8 @@ blockers, majors, minors and nits are in [done.md](done.md#36-closed-items). For
 
 ### Minor (open)
 
-- [ ] **m2: CPR reports column width+1 (no pending-wrap flag)** `[escapes/csi/DSR.java:22-31]`: `x+1` without clamp; state
-  `x == width` is legal (`putChar:31`). Systemic artifact of the immediate-wrap model: ECH/DCH/ICH at `x==width` are no-ops, HTS
-  silently loses the last-column tab stop. Full fix: a pending-wrap flag instead of `x == width`.
+- [x] **m2: CPR reports column width+1** (closed by `64763921`): the immediate-wrap model was replaced by `Terminal.autowrapPending`;
+  the cursor stays on `width-1`, so `DSR.java` reports a column inside the row and ECH/DCH/ICH/HTS work in the last column.
 - [ ] **m5: mode 1048 saves only x/y, restore does a full DECRC** `[escapes/csi/CH2.java:110-113]`: restore overwrites
   style/colors/charset with init defaults. Related: SCOSC (`CH6 's'`) in the alt buffer writes main slots savedX/savedY while
   DECRC in the alt buffer reads altSaved*.
@@ -193,7 +192,7 @@ Priority: layer 1 first (also the acceptance of 44.1/44.2), then terminal-specif
 
 Narrowed scope (2026-09-16: not a universal stand, but a VT for shell/vim/tmux/OnyxOS):
 - Keep: `vttest` + `VttestHarnessTest` goldens as the regression format, `ref/vttest/charsets.c` only for contested VT tables, current scrolling property tests.
-- Add exactly 6 regressions: UTF-8 (`split write`, `0xFF` + resync, `wide at EOL`) and resize (`altBuffer`, `scroll region`, `DECCOLM 132->80`
+- [x] Done: `TerminalRegressionsTest` holds exactly 6 regressions: UTF-8 (`split write`, `0xFF` + resync, `wide at EOL`) and resize (`altBuffer`, `scroll region`, `DECCOLM 132->80`
   with cursor/visible rows/buffer).
 - VT regressions only on demand: DEC graphics U+2500 (tmux) done, SGR bold done, margins/DECOM done (`decom-margins` fixture), wrap done
   (`line-wrap` + `no-autowrap`), scrollback done (`scrollback` fixture), `simcity`/`nInvaders`.
