@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
+import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -119,7 +120,7 @@ public final class GpsTowerBlock extends HorizontalDirectionalBlock implements E
         if (!GpsTowerStructure.isComplete(level, pos.below(state.getValue(PART)))) {
             level.destroyBlock(pos, true);
         } else if (state.getValue(PART) == 0
-                && level.getBlockEntity(pos) instanceof final li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity tower) {
+                && level.getBlockEntity(pos) instanceof final GpsTowerBlockEntity tower) {
             tower.refreshNetwork();
         }
     }

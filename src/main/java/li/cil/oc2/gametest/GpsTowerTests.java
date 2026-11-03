@@ -48,7 +48,7 @@ public final class GpsTowerTests {
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void everyObstructedUpperSlotRejectsPlacement(final GameTestHelper helper) {
         for (int slot = 1; slot < 5; slot++) {
-            final BlockPos base = BASE.offset(slot * 5, 0, 0);
+            final BlockPos base = BASE;
             TestSupport.placeFloor(helper, base);
             helper.setBlock(base.above(slot), net.minecraft.world.level.block.Blocks.STONE);
             final ItemStack stack = new ItemStack(Items.GPS_TOWER.get());
@@ -57,6 +57,7 @@ public final class GpsTowerTests {
             for (int i = 0; i < 5; i++) {
                 TestSupport.assertTrue(helper, "no partial tower", !helper.getBlockState(base.above(i)).is(Blocks.GPS_TOWER.get()));
             }
+            helper.getLevel().removeBlock(helper.absolutePos(base.above(slot)), false);
         }
         helper.succeed();
     }
@@ -64,11 +65,14 @@ public final class GpsTowerTests {
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void destroyingAnyPartDropsOneWholeTower(final GameTestHelper helper) {
         for (int part = 0; part < 5; part++) {
-            final BlockPos base = BASE.offset(part * 6, 0, 0);
+            final BlockPos base = BASE;
             place(helper, base);
             helper.getLevel().destroyBlock(helper.absolutePos(base.above(part)), true);
             assertGone(helper, base);
             TestSupport.assertTrue(helper, "exactly one drop for part " + part, drops(helper, base) == 1);
+            // Reuse the loaded 9x9 fixture; do not leak structures or drops into other tests.
+            final AABB bounds = new AABB(helper.absolutePos(base)).inflate(1).expandTowards(0, 5, 0);
+            helper.getLevel().getEntitiesOfClass(ItemEntity.class, bounds).forEach(ItemEntity::discard);
         }
         helper.succeed();
     }

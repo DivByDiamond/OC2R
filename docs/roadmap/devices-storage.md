@@ -159,19 +159,20 @@ Tasks:
 
 ## 52. Pocket computer
 
-A handheld computer item: the player carries a full VM with a small screen and a keyboard, opened in a GUI from the item.
+Owner-approved update, 2026-11-03: the handheld tablet uses a lightweight host runtime with Onyx-style graphics, pointer-controlled widgets and small sandboxed scripts. Heavy equipment programs run on networked PCs.
+The previous default of a full emulated VM with CPU/RAM inventory is superseded. The real OnyxOS remains a RISC-V operating system.
 
-How it should work: an item with a computer inventory (CPU, memory, flash, one or two card slots), a terminal screen opened by right click, a power state that persists in the item data and runs only while the owner holds it (or in a background mode with a cost). It uses the same VM, terminal and device code as the block computer, with a device bus that exposes only the item's own components plus the wireless card from [section 51](network-overhaul.md#51-wireless-networking-and-positioning).
-It is the same item base as the tablet in [section 16](#16-uart-tablet-item) and [section 48](network-overhaul.md#48-network-overhaul-wires-towers-tablet-create-radars): the pocket computer is the general mode, the UART and tower modes are special apps of it.
-
-Pros: programmable tools in the field (GPS client, remote control of robots and doors, a terminal for any computer in range); a natural user of the wireless network; low extra code because the VM, GUI and persistence already exist.
+Canonical scope, shared service contract and implementation order: [tablet-radio.md](tablet-radio.md).
+UART remote terminal (section 16) and tower dashboards (section 48) are apps/modes of the same item family.
 
 Tasks:
-- [ ] Item, data components for state and inventory, power/energy model (battery in the item).
-- [ ] Reuse `ComputerTerminalManager` and the VM lifecycle for a non-block owner; define what happens on drop, death and dimension change.
-- [ ] GUI screen with a compact terminal and a slot panel.
-- [ ] Persistence on both loaders and the multiversion nodes.
-- [ ] Recipes, manual pages and a game test (boot, save, reload).
+- [ ] Portable widget/data-binding/input/rendering core in the Onyx repositories, with native tests and a runnable first demo.
+- [ ] Tablet item, mouse GUI and persistent widget configuration, with portable-core integration.
+- [ ] Authorized telemetry subscriptions, named device services, command IDs and honest stale/offline states.
+- [ ] Stable radio addresses, per-device credentials, revocation and permission-controlled actions.
+- [ ] Bounded Lua execution, memory and API access; presets for common dashboards.
+- [ ] Define item power and runtime lifetime, transfer/drop/death/logout handling and duplicate-identity prevention.
+- [ ] Both loaders/multiversion persistence and multiplayer acceptance before release.
 
 ## 54. More peripherals
 

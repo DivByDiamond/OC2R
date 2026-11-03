@@ -70,6 +70,7 @@ require("devices"):find("redstone"):setRedstoneOutput("up", 15)
 See the [wiki item guide](https://wiki.loki-code.dev/ru/item/index) (Russian) and the [quickstart guide](src/main/resources/assets/oc2r/doc/en_us/getting_started.md).
 
 GPS tower networks can use relative coordinates for navigation-focused modpacks. See [configuration and setup](docs/GPS.md).
+The development radio bridge and ORA address allocation are explained in [Russian and English](docs/RADIO-NETWORK.md).
 
 ### Create compatibility
 
@@ -131,6 +132,7 @@ require("devices"):find("redstone"):setRedstoneOutput("up", 15)
 Подробнее: [предметы и устройства на вики](https://wiki.loki-code.dev/ru/item/index) и [быстрый старт](src/main/resources/assets/oc2r/doc/ru_ru/getting_started.md).
 
 Для навигационных сборок у GPS-башен есть режим относительных координат. [Настройка и подключение сети](docs/GPS.md).
+Радиомост рабочей версии и выдача адресов ORA описаны [на русском и английском](docs/RADIO-NETWORK.md).
 
 ### Совместимость с Create
 

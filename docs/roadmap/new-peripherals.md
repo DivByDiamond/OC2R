@@ -6,9 +6,11 @@ Planning only: the owner requested a roadmap update, not implementation. The new
 
 Plan first for future implementation. Proposed architecture: an access point bridges the existing wired Ethernet network to nearby access points in the same dimension. Computers retain their existing network card and Linux TCP/IP tools; this first block does not require a new guest driver. Connect a network connector to each access point to bridge two wired segments.
 
-Proposed MVP (not yet finalized): configurable network name and shared key, server-authoritative configuration, configurable radius (initially 64 blocks), deterministic delivery inside the radius, bounded packets/frame size and TTL. No dimension crossing, chunk loading, real-world network access or simulated packet loss. Matching keys select a private in-game network; this is not cryptographic encryption. Two access points communicate directly; a chain requires wired interconnection between radio segments rather than implicit radio repeaters.
+Owner-approved update, 2026-11-03: [tablet-radio.md](tablet-radio.md) is the canonical radio/tablet scope and acceptance plan. It supersedes the previous 64-block/shared-key/direct-link-only MVP and any height bonus.
 
-Acceptance: real block/capability registration and placement, two wired endpoints exchange Ethernet frames through the radio, range/key/dimension isolation, cycles remain bounded, chunk unload/removal/reload cleans registrations, settings survive save/reload. Keep the driver/API documentation and recipe/model/localization with the feature. Height bonuses, GUI scanning and moving-construction acceptance are details to consider when designing this block.
+The robot dock station (existing charger) is a short-range access point covering 10 blocks, with no separate station block, and towers cover 45 blocks in a circular X/Z radius with unrestricted Y. Towers relay over radio, including saved unloaded relay nodes. Per-device approved enrollment, short radio addresses, scoped permissions, tick-scheduled latency, hop TTL and TLS-capable application streams are separate work items. Existing Ethernet and TCP/IP compatibility remain required.
+
+Acceptance includes authorized wired endpoints exchanging frames over radio, isolation by network/dimension, bounded loops and queues, revocation, radio range boundaries, chunk unload/removal/reload reconciliation, and save/reload of stable identities. Full details and implementation order are in the canonical plan.
 
 ## 2. Printer
 
@@ -34,7 +36,7 @@ The owner-approved workflow is PC file import (for example MP3) -> record a phys
 
 ## 7. Long-range radio antenna
 
-After access points: a dedicated large antenna extends range between fixed sites. Range depends on a documented height/open-sky rule, with server caps and an energy budget. Keep the same Ethernet medium and dimension restriction. No new cable tiers. Model and installation mechanics need a separate design pass.
+The existing GPS tower is the selected long-range radio hardware for the first implementation. Its recipe and 45-block circular X/Z range are implemented for GPS connectivity; data relaying is pending. Height and open sky do not affect coverage. See [tablet-radio.md](tablet-radio.md). No additional antenna block or new cable tiers are required by this decision.
 
 ## 8. Creative command chip
 
@@ -42,7 +44,9 @@ Use an installable computer chip/card, not a separate command computer block. It
 
 ## Existing hardware — avoid duplicates
 
-- **Robot charger already exists:** `ChargerBlockEntity` charges neighboring blocks and nearby entities. No separate robot dock is scheduled.
+- **Robot charger already exists:** `ChargerBlockEntity` charges neighboring blocks and nearby entities. The charger doubles as the robot dock station and gains a 10-block radio access point (see tablet-radio.md section 2); no separate dock block is scheduled.
 - **Redstone relay already exists in substance:** the redstone interface block exposes analog/bundled input and output and change events over the device bus. Reuse and document it instead of adding a second block with the same purpose.
 
 Status: roadmap only. The owner requested wireless access point planning, an adapted positioning concept, environment sensor, document reader, writable audio discs/media player, long-range antenna and a creative command chip. Printer mechanics and numerical radio defaults are proposals, not finalized requirements. No implementation, release tag or platform upload is authorized by this plan.
+
+The 2026-11-03 radio/tablet decisions and initial Onyx widget implementation supersede earlier planning-only and unfinalized radio-default statements above. Other peripheral proposals retain their existing status.

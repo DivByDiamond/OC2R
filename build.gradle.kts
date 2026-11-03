@@ -297,6 +297,16 @@ dependencies {
         runtimeOnly("curse.maven:oculus-${oculus_project_id}:${oculus_file_id}")
     }
 
+    // JSSE provides TLS; these maintained libraries construct endpoint certificates.
+    for (artifact in listOf("bcprov-jdk18on", "bcutil-jdk18on", "bcpkix-jdk18on")) {
+        val dependency = "org.bouncycastle:$artifact:${property("bouncycastle_version")}"
+        implementation(dependency)
+        if ("jarJar" in configurations.names) add("jarJar", dependency)
+        if (minecraft_version.startsWith("1.") && "additionalRuntimeClasspath" in configurations.names) {
+            add("additionalRuntimeClasspath", dependency)
+        }
+    }
+
     // Loader-independent module; its classes are packed into the mod jar below (docs/MULTILOADER.md).
     implementation(project(":core:${sc.current.version}"))
 

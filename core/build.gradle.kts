@@ -30,6 +30,7 @@ repositories {
 val jupiter_version: String = providers.gradleProperty("jupiter_version").get()
 
 dependencies {
+    implementation("org.bouncycastle:bcpkix-jdk18on:${property("bouncycastle_version")}")
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiter_version")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiter_version")

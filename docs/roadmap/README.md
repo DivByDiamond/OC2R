@@ -11,6 +11,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | [terminal.md](terminal.md) | VT100/xterm terminal: rendering, diff sync, audits, line drawing, double-size, vttest automation |
 | [video-gpu.md](video-gpu.md) | Multi-monitor, GPU items, video codec (RAW/H.264/DELTA), jcodec removal, video performance items |
 | [network-inet.md](network-inet.md) | TCP/IP stack and internet card, VXLAN, network performance, security hardening, library notes |
+| [tablet-radio.md](tablet-radio.md) | Approved tablet widgets, radio addressing, enrollment, latency, TTL and TLS plan |
 | [network-overhaul.md](network-overhaul.md) | Wires, towers, tablet, Create Radars (section 48) with historical sections 20 and 43 |
 | [cables-bus-energy.md](cables-bus-energy.md) | Bus cable, energy transfer, world sync fixes, cable in-game tests |
 | [devices-storage.md](devices-storage.md) | Cards, disks, CPU tiers, keyboard/mouse, UART tablet, flash builder / OS loader, OnyxOS delivery |

@@ -41,6 +41,8 @@ Open list (stays open):
 
 ## 48. Network overhaul: wires, towers, tablet, Create Radars
 
+Owner-approved update (2026-11-03): [tablet and radio implementation plan](tablet-radio.md) supersedes older tower geometry, shared-key-only enrollment and full-VM tablet assumptions below.
+
 Decision (supersedes the removal plan in section 43): `NetworkConnector` stays and is reworked. Hub and switch are re-evaluated after the new node model exists. Reference code lives in `ref/`
 (gitignored): `ref/createaddition` (Create Crafts & Additions 1.20.1, wire nodes, spool, wire renderer), `ref/Create-Radar` (Create: Radars 1.20.1, official repo),
 `ref/Create-radars-port-1.21.1-neoforge` (1.21.1 NeoForge port, has a ComputerCraft peripheral layer to mirror).
@@ -51,7 +53,7 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 - [x] Wire spool: two clicks link two connectors (result message plus sound for every outcome); using the cable on two already linked connectors removes the link and returns the owner's cable. Result enum has `DISCONNECTED`.
 - [ ] Wire tiers were tried and removed: the plan is a single network cable (improve the existing one, blue). Revisit only if requested.
 - [x] Wire renderer (needs in-game check): the existing hanging ribbon is now blue (matching the cable item), its sag and segment count follow the length (`WireGeometry` in core, unit tested), and the culling box covers the sag. Rendering is client only and was not run.
-- [ ] DEFERRED (far backlog, needs a block model and a design agreement first): Towers: antenna block with a range that depends on height and surroundings. Nearby cards join the tower network without wires. Towers relay to each other by wire or radio.
+- [ ] Tower data bridge: approved 45-block circular X/Z coverage with unrestricted Y; short-range stations cover 10 blocks. GPS topology exists; packet transport is pending. See [the implementation plan](tablet-radio.md).
 - [ ] DEFERRED with towers: Signal model: bandwidth and latency depend on distance; the guest can read signal strength over RPC.
 - [ ] Wrench UX (moved here from section 43).
 - [ ] Tablet item family with two modes sharing one item base: the UART tablet (see [section 16](devices-storage.md#16-uart-tablet-item): wire-minigame link to a computer, UART mirror terminal) and
@@ -63,10 +65,12 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 
 ## 51. Wireless networking and positioning
 
+Current owner decisions and acceptance gates: [tablet-radio.md](tablet-radio.md). Per-device enrollment, short radio addresses, latency/TTL and TLS replace the earlier shared-key-only outline.
+
 Goal: computers, robots and pocket computers talk without cables, and a program can find where it is.
 
 How it should work:
-- **Wireless access point**: a block bridging the existing Ethernet network over radio, configured by network name and shared key. Computers use existing NICs and TCP/IP. Range and signal rules remain proposed mechanics; no additional wireless card or robot module is scheduled in this owner-selected device list.
+- **Wireless access point**: a block bridging the existing Ethernet network over radio, configured by network identity and individually approved device credentials. Computers use existing NICs and TCP/IP. Range and signal rules remain proposed mechanics; no additional wireless card or robot module is scheduled in this owner-selected device list.
 - **Signal model**: delivery probability and latency depend on distance, the guest reads signal strength (this is the deferred item "Signal model" in [section 48](#48-network-overhaul-wires-towers-tablet-create-radars); the first version can be a simple range check).
 - **Positioning service**: dedicated reference beacons advertise site IDs, dimension and known coordinates and answer ranging requests. A Linux client computes position from several beacons; a single beacon gives destination/distance. Do not require four full computers or an omniscient admin fallback. See [owner decisions](new-peripherals.md#3-positioning-beacon-oc2r-navigation).
 - **Native face** ([section 50](devices-storage.md#50-driver-layer-every-device-reachable-without-lua)): traffic uses the existing NIC and guest network stack; specify access-point configuration/status access during design.
@@ -75,9 +79,9 @@ Pros: removes the need to run cable for remote machines and robots; makes pocket
 
 Tasks:
 - [ ] Wireless medium on the server: registry of transceivers per dimension, range query with a spatial index, rate limit per transmitter.
-- [ ] Plan `WirelessAccessPoint` as a radio bridge for existing Ethernet NICs and wired connectors; see [MVP and acceptance](new-peripherals.md#1-wireless-access-point).
-- [ ] Range config, height bonus, dimension rule, performance budget (max packets per tick).
+- [ ] Plan `WirelessAccessPoint` as a radio bridge for existing Ethernet NICs and wired connectors; see [approved scope and acceptance](tablet-radio.md).
+- [ ] Circular X/Z range config without height restrictions, dimension isolation, scheduled latency and bounded per-tick work.
 - [ ] Dedicated positioning beacon, protocol and reference Linux service/client; docs.
 - [ ] Interaction with Create contraptions and Valkyrien Skies (ships move, positions change).
-- [ ] Game tests (two computers talk, out-of-range drops, key mismatch drops).
-- [ ] Later: towers as the long-range tier from [section 48](#48-network-overhaul-wires-towers-tablet-create-radars).
+- [ ] Game tests (two computers talk, out-of-range drops, unapproved/revoked devices are rejected).
+- [ ] Implement tower relay transport alongside short-range stations according to [the phased plan](tablet-radio.md).

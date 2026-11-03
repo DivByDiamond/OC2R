@@ -39,6 +39,7 @@ public final class GameTestRegistrar {
         MachineInterfaceTests.class,
         MachineTransferTests.class,
         GpsTowerTests.class,
+        RadioBridgeTests.class,
         GpsTowerDeviceTests.class,
         GpsRelativeCoordinateTests.class,
         GpsTowerPlacementTests.class,

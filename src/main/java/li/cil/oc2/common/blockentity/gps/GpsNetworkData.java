@@ -4,6 +4,9 @@ import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+//? if <26.1 {
+import net.minecraft.core.HolderLookup;
+//?}
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
@@ -12,7 +15,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 /*import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.saveddata.SavedDataType;
 *///?} else {
-import net.minecraft.core.HolderLookup;
 //?}
 
 /** Persists radio membership across chunk unloads and world restarts, separately per dimension. */

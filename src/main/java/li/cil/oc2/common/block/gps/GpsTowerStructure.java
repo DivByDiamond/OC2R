@@ -83,6 +83,7 @@ public final class GpsTowerStructure {
         final BlockPos base = pos.below(part);
         if (level instanceof final net.minecraft.server.level.ServerLevel server) {
             li.cil.oc2.common.blockentity.gps.GpsNetworkData.get(server).removeAt(base);
+            li.cil.oc2.common.blockentity.radio.RadioNetworkData.get(server).removeAt(base);
         }
         final Mutation mutation = new Mutation(level, base.immutable());
         if (!MUTATIONS.add(mutation)) return;

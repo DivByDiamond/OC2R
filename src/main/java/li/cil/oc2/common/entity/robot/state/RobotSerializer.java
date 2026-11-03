@@ -7,6 +7,7 @@ import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
+
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -27,6 +28,7 @@ public final class RobotSerializer {
 
     public static void save(final Robot robot, final CompoundTag tag) {
         final var provider = robot.registryAccess();
+        robot.getRadioEndpoint().save(tag);
         // The VM state owns the private root disk even when its CPU is powered off.
         tag.put(STATE_TAG_NAME, robot.getVirtualMachine().serialize());
         if (robot.getVirtualMachine().getRunState() != VMRunState.STOPPED) {
@@ -51,6 +53,7 @@ public final class RobotSerializer {
     }
 
     public static void load(final Robot robot, final CompoundTag tag) {
+        robot.getRadioEndpoint().load(tag);
         final var provider = robot.registryAccess();
         //? if >=26.1 {
         /*robot.getVirtualMachine().deserialize(tag.getCompoundOrEmpty(STATE_TAG_NAME));
@@ -73,11 +76,11 @@ public final class RobotSerializer {
                 .getInventory()
                 //? if >=26.1 {
                 /*.deserializeNBT(provider, tag.getCompoundOrEmpty(INVENTORY_TAG_NAME));
-        robot.setSelectedSlot(tag.getByteOr(SELECTED_SLOT_TAG_NAME, (byte) 0));
-                *///?} else {
+                robot.setSelectedSlot(tag.getByteOr(SELECTED_SLOT_TAG_NAME, (byte) 0));
+                        *///?} else {
                 .deserializeNBT(provider, tag.getCompound(INVENTORY_TAG_NAME));
         robot.setSelectedSlot(tag.getByte(SELECTED_SLOT_TAG_NAME));
-                //?}
+        //?}
         robot.setOrigin(
                 GlobalPos.CODEC
                         .parse(NbtOps.INSTANCE, NBTUtils.getChildTag(tag, ORIGIN_TAG_NAME))
@@ -88,7 +91,8 @@ public final class RobotSerializer {
     public static void exportToItemStack(final Robot robot, final ItemStack stack) {
         final var container = new RestrictedContainer();
         robot.getRobotInventory().saveItems(container);
-        stack.set(li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
+        stack.set(
+                li.cil.oc2.common.components.DataComponents.RESTRICTED_CONTAINER.get(), container);
         CustomData.update(
                 DataComponents.CUSTOM_DATA,
                 stack,
@@ -113,9 +117,9 @@ public final class RobotSerializer {
                     .getInventory()
                     //? if >=26.1 {
                     /*.deserializeNBT(provider, itemsTag.getCompoundOrEmpty(INVENTORY_TAG_NAME));
-                    *///?} else {
+                     *///?} else {
                     .deserializeNBT(provider, itemsTag.getCompound(INVENTORY_TAG_NAME));
-                    //?}
+            //?}
         }
         robot.getEnergyStorage()
                 .deserializeNBT(

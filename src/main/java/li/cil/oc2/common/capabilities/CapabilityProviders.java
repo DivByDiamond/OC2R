@@ -38,6 +38,7 @@ public final class CapabilityProviders {
         BusCableCapabilities.registerCapabilities(registrar);
         NetworkConnectorLifecycle.registerCapabilities(registrar);
         NetworkHubBlockEntity.registerCapabilities(registrar);
+        li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity.registerRadioCapabilities(registrar);
         VxlanBlockEntity.registerCapabilities(registrar);
         RedstoneInterfaceCardItemDevice.registerCapabilities(registrar);
         NetworkInterfaceCardDevice.registerCapabilities(registrar);

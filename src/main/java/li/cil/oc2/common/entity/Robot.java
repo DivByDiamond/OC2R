@@ -30,6 +30,7 @@ import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.ItemStackHandler;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
@@ -47,11 +48,23 @@ import net.minecraft.world.level.Level;
 //? if <26.1 {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+
 //?}
 
 public final class Robot extends AbstractRobotEntity
-        implements li.cil.oc2.api.capabilities.Robot,
-                TerminalUserProvider {
+        implements li.cil.oc2.api.capabilities.Robot, TerminalUserProvider {
+    private final li.cil.oc2.common.blockentity.radio.OraEndpoint radioEndpoint =
+            new li.cil.oc2.common.blockentity.radio.OraEndpoint(
+                    () -> (net.minecraft.server.level.ServerLevel) level(),
+                    this::getUUID,
+                    this::getX,
+                    this::getZ,
+                    () -> isAlive() && !isRemoved());
+
+    public li.cil.oc2.common.blockentity.radio.OraEndpoint getRadioEndpoint() {
+        return radioEndpoint;
+    }
+
     private RobotEventHandler eventHandler;
     private RobotBlockCollider blockCollider;
 
@@ -67,6 +80,7 @@ public final class Robot extends AbstractRobotEntity
     //? if <26.1 {
     private static final double MOVING_POSITION_SYNC_THRESHOLD = 1;
     private static final float TURNING_ROTATION_SYNC_THRESHOLD = 45;
+
     //?}
 
     public Robot(final EntityType<?> type, final Level world) {
@@ -90,12 +104,10 @@ public final class Robot extends AbstractRobotEntity
         virtualMachine = new RobotVirtualMachine(this, busController, terminal, movementController);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(world);
         animationState =
-                new RobotAnimationState(
-                        virtualMachine, movementController::hasQueuedActions);
+                new RobotAnimationState(virtualMachine, movementController::hasQueuedActions);
         eventHandler = new RobotEventHandler(this, virtualMachine);
         blockCollider = new RobotBlockCollider(this);
-        robotInventory.setOnDeviceChanged(
-                virtualMachine.busController::scheduleBusScan);
+        robotInventory.setOnDeviceChanged(virtualMachine.busController::scheduleBusScan);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -214,6 +226,7 @@ public final class Robot extends AbstractRobotEntity
             setRot(yRot, xRot);
         }
     }
+
     //?}
 
     @Nullable
@@ -230,7 +243,9 @@ public final class Robot extends AbstractRobotEntity
         return BlockPos.containing(getBoundingBox().getCenter());
     }
 
-    /** Points the localization origin at the current body position if unset or in another dimension. */
+    /**
+     * Points the localization origin at the current body position if unset or in another dimension.
+     */
     public void updateOrigin() {
         if (origin == null || !origin.dimension().equals(level().dimension())) {
             calibratePosition();
@@ -282,7 +297,7 @@ public final class Robot extends AbstractRobotEntity
     *///?} else {
     @Override
     public InteractionResult interact(final Player player, final InteractionHand hand) {
-    //?}
+        //?}
         return RobotInteractionHandler.interact(this, player, hand);
     }
 

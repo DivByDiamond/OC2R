@@ -14,6 +14,17 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class GameplaySpec {
     public final ModConfigSpec.BooleanValue relativeCoordinates;
     public final ModConfigSpec.IntValue gpsTowerRange;
+    public final ModConfigSpec.IntValue radioInviteLifetimeTicks;
+    public final ModConfigSpec.IntValue radioHopDelayTicks;
+    public final ModConfigSpec.IntValue radioMaxHops;
+    public final ModConfigSpec.IntValue radioMaxFrameBytes;
+    public final ModConfigSpec.IntValue radioLinkBytesPerTick;
+    public final ModConfigSpec.IntValue radioMaxDeliveryTicks;
+    public final ModConfigSpec.IntValue radioQueueLimit;
+    public final ModConfigSpec.IntValue radioNetworkQueueLimit;
+    public final ModConfigSpec.IntValue radioDeviceQueueLimit;
+    public final ModConfigSpec.IntValue radioPacketLifetimeTicks;
+
     public final ModConfigSpec.EnumValue<Tiers> blockOperationsModuleToolTier;
     public final ModConfigSpec.LongValue soundCardCoolDownSeconds;
     public final ModConfigSpec.IntValue soundCardPcmBytesPerSecond;
@@ -31,15 +42,40 @@ public class GameplaySpec {
     GameplaySpec(ModConfigSpec.Builder builder) {
         relativeCoordinates =
                 builder.comment(
-                                "GPS towers report offsets from their explicitly selected network reference instead of world XYZ.",
+                                "GPS towers report offsets from their explicitly selected network reference.",
+                                "Relative mode hides absolute world XYZ from this API.",
                                 "Robot positions already use their own placement/calibration origin.",
                                 "This controls the device API, not Minecraft's world save format.")
                         .define("relative_coordinates", false);
 
         gpsTowerRange =
-                builder.comment("Maximum horizontal distance in blocks between paired GPS towers (circular X/Z range; height is ignored).",
+                builder.comment("Maximum horizontal distance in blocks between paired GPS towers.",
+                                "Circular X/Z coverage; height is ignored.",
                                 "Unloaded stations relay using their persisted membership without loading chunks.")
                         .defineInRange("gps_tower_range", 45, 1, 1024);
+
+        radioInviteLifetimeTicks = builder.comment("Radio invitation lifetime in server ticks.")
+                .defineInRange("radioInviteLifetimeTicks", 1200, 1, 72000);
+        radioHopDelayTicks = builder.comment("Base server ticks per radio hop.",
+                "One tick is nominally 50 ms at 20 TPS.")
+                .defineInRange("radioHopDelayTicks", 1, 1, 200);
+        radioMaxHops = builder.comment("Maximum radio hop TTL.")
+                .defineInRange("radioMaxHops", 64, 1, 256);
+        radioMaxFrameBytes = builder.comment("Maximum Ethernet frame bytes accepted by the radio bridge.")
+                .defineInRange("radioMaxFrameBytes", 2048, 64, 65536);
+        radioLinkBytesPerTick = builder.comment("Radio link bandwidth per sender in bytes per server tick (1024 is about 20 KB/s at 20 TPS).")
+                .defineInRange("radioLinkBytesPerTick", 1024, 1, 1048576);
+        radioMaxDeliveryTicks = builder.comment("Upper bound on the propagation delay in server ticks, regardless of hop count (2 ticks = 0.1 s).")
+                .defineInRange("radioMaxDeliveryTicks", 2, 1, 200);
+        radioQueueLimit = builder.comment("Maximum queued deliveries per dimension.")
+                .defineInRange("radioQueueLimit", 4096, 1, 65536);
+        radioNetworkQueueLimit = builder.comment("Maximum queued deliveries per radio network.")
+                .defineInRange("radioNetworkQueueLimit", 1024, 1, 65536);
+        radioDeviceQueueLimit = builder.comment("Maximum queued deliveries involving one radio endpoint.")
+                .defineInRange("radioDeviceQueueLimit", 256, 1, 65536);
+        radioPacketLifetimeTicks = builder.comment("Maximum queued radio packet lifetime in server ticks.",
+                "Restart after changing radio limits.")
+                .defineInRange("radioPacketLifetimeTicks", 200, 1, 12000);
 
         blockOperationsModuleToolTier =
                 builder.comment("The mining tool equivalent of the block operations module")
@@ -135,6 +171,17 @@ public class GameplaySpec {
     public void loadValues() {
         Config.relativeCoordinates = relativeCoordinates.get();
         Config.gpsTowerRange = gpsTowerRange.get();
+        Config.radioInviteLifetimeTicks = radioInviteLifetimeTicks.get();
+        Config.radioHopDelayTicks = radioHopDelayTicks.get();
+        Config.radioMaxHops = radioMaxHops.get();
+        Config.radioMaxFrameBytes = radioMaxFrameBytes.get();
+        Config.radioLinkBytesPerTick = radioLinkBytesPerTick.get();
+        Config.radioMaxDeliveryTicks = radioMaxDeliveryTicks.get();
+        Config.radioQueueLimit = radioQueueLimit.get();
+        Config.radioNetworkQueueLimit = radioNetworkQueueLimit.get();
+        Config.radioDeviceQueueLimit = radioDeviceQueueLimit.get();
+        Config.radioPacketLifetimeTicks = radioPacketLifetimeTicks.get();
+
         Config.blockOperationsModuleToolTier = blockOperationsModuleToolTier.get().name();
         Config.soundCardCoolDownSeconds = soundCardCoolDownSeconds.get();
         Config.soundCardPcmBytesPerSecond = soundCardPcmBytesPerSecond.get();

@@ -27,6 +27,40 @@ public final class RobotTickHandler {
 
         if (!isClient) {
             robot.updateOrigin();
+            robot.getRadioEndpoint().tick();
+            if (robot.tickCount % 20 == 0 && robot.getRadioEndpoint().enrolled()) {
+                robot.getRadioEndpoint()
+                        .publish(
+                                "robot",
+                                "energy",
+                                "{\"stored\":"
+                                        + robot.getEnergyStorage().getEnergyStored()
+                                        + ",\"capacity\":"
+                                        + robot.getEnergyStorage().getMaxEnergyStored()
+                                        + "}");
+                int occupied = 0;
+                for (int slot = 0; slot < robot.getInventory().getSlots(); slot++) {
+                    if (!robot.getInventory().getStackInSlot(slot).isEmpty()) occupied++;
+                }
+                robot.getRadioEndpoint()
+                        .publish(
+                                "robot",
+                                "storage",
+                                "{\"occupiedSlots\":"
+                                        + occupied
+                                        + ",\"slots\":"
+                                        + robot.getInventory().getSlots()
+                                        + "}");
+                robot.getRadioEndpoint()
+                        .publish(
+                                "robot",
+                                "tasks",
+                                "{\"queued\":"
+                                        + robot.getMovementController().getQueuedActionCount()
+                                        + ",\"lastActionId\":"
+                                        + robot.getMovementController().getLastActionId()
+                                        + "}");
+            }
             robot.getVirtualMachine().tick();
         }
 

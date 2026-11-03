@@ -58,6 +58,16 @@ public final class Config {
     /** Whether position-reporting devices hide absolute world coordinates from guest programs. */
     public static volatile boolean relativeCoordinates = false;
     public static volatile int gpsTowerRange = 45;
+    public static volatile int radioInviteLifetimeTicks = 1200;
+    public static volatile int radioHopDelayTicks = 1;
+    public static volatile int radioMaxHops = 64;
+    public static volatile int radioMaxFrameBytes = 2048;
+    public static volatile int radioLinkBytesPerTick = 1024;
+    public static volatile int radioMaxDeliveryTicks = 2;
+    public static volatile int radioQueueLimit = 4096;
+    public static volatile int radioNetworkQueueLimit = 1024;
+    public static volatile int radioDeviceQueueLimit = 256;
+    public static volatile int radioPacketLifetimeTicks = 200;
 
     public static volatile double memoryEnergyPerMegabytePerTick = 0.5;
     public static volatile double hardDriveEnergyPerMegabytePerTick = 1;

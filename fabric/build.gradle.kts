@@ -81,6 +81,12 @@ repositories {
 }
 
 dependencies {
+    for (artifact in listOf("bcprov-jdk18on", "bcutil-jdk18on", "bcpkix-jdk18on")) {
+        val dependency = "org.bouncycastle:$artifact:${property("bouncycastle_version")}"
+        implementation(dependency)
+        add("include", dependency)
+    }
+
     add("minecraft", "com.mojang:minecraft:$minecraft_version")
     // Same Mojang names as the NeoForm-based core and neoforge modules.
     if (!modernFabric) add("mappings", loomExtension.officialMojangMappings())
