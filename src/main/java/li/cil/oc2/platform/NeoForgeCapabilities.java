@@ -636,7 +636,7 @@ final class NeoForgeCapabilities {
             return net.neoforged.neoforge.fluids.FluidStack.EMPTY;
         }
         return new net.neoforged.neoforge.fluids.FluidStack(
-                stack.getFluid(), stack.getAmount());
+                stack.getFluid().builtInRegistryHolder(), stack.getAmount(), stack.getComponentsPatch());
     }
 
     @Nullable
@@ -645,7 +645,7 @@ final class NeoForgeCapabilities {
         if (stack == null || stack.isEmpty()) {
             return FluidStack.EMPTY;
         }
-        return new FluidStack(stack.getFluid(), stack.getAmount());
+        return new FluidStack(stack.getFluid(), stack.getAmount(), stack.getComponentsPatch());
     }
 
     private static IFluidHandler.FluidAction toNeoForgeAction(

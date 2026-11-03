@@ -1,5 +1,8 @@
 # 电脑操作员手册
 
+[OC2R Wiki：指南与合成配方](https://wiki.loki-code.dev)
+
+
 你好，欢迎阅读！你来到这里可能是无心之举，或者是想要[组装你的第一台电脑](getting_started.md)，又或者你正在寻找某个特定[方块](block/index.md)或[物品](item/index.md)的资料？
 
 ## 概述
@@ -31,3 +34,5 @@
 - [脚本编写](scripting.md)
 - [机器人技术](robotics.md)
 - [网络](networking.md)
+
+[Wiki 合成配方](https://wiki.loki-code.dev/zh/recipes).

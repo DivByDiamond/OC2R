@@ -70,8 +70,8 @@ final class CardRecipes {
                 .define('Q', Tags.Items.GEMS_QUARTZ)
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_disk_drive",
-                        ModRecipesProvider.inventoryChange(Items.DISK_DRIVE.get()))
+                        "has_media_station",
+                        ModRecipesProvider.inventoryChange(Items.MEDIA_STATION.get()))
                 .save(consumer);
 
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.FLOPPY_MODERN.get())
@@ -83,8 +83,8 @@ final class CardRecipes {
                 .define('Q', Tags.Items.GEMS_QUARTZ)
                 .define('B', Items.CIRCUIT_BOARD.get())
                 .unlockedBy(
-                        "has_disk_drive",
-                        ModRecipesProvider.inventoryChange(Items.DISK_DRIVE.get()))
+                        "has_media_station",
+                        ModRecipesProvider.inventoryChange(Items.MEDIA_STATION.get()))
                 .save(consumer);
     }
 }

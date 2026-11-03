@@ -10,7 +10,7 @@ Programmable computers, Linux, and robots inside Minecraft.
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square&logo=gnu&logoColor=white)
 ![GitHub Release](https://img.shields.io/github/v/release/DivByDiamond/OC2R?style=flat-square)
 
-[Downloads](https://github.com/DivByDiamond/OC2R/releases) · [Wiki](https://wiki.loki-code.dev/ru/item/index) · [Report a bug](https://github.com/DivByDiamond/OC2R/issues)
+[Downloads](https://github.com/DivByDiamond/OC2R/releases) · [Wiki](https://wiki.loki-code.dev) · [Report a bug](https://github.com/DivByDiamond/OC2R/issues)
 
 [English](#english) | [Русский](#русский)
 
@@ -68,6 +68,8 @@ require("devices"):find("redstone"):setRedstoneOutput("up", 15)
 ```
 
 See the [wiki item guide](https://wiki.loki-code.dev/ru/item/index) (Russian) and the [quickstart guide](src/main/resources/assets/oc2r/doc/en_us/getting_started.md).
+
+GPS tower networks can use relative coordinates for navigation-focused modpacks. See [configuration and setup](docs/GPS.md).
 
 ### Create compatibility
 
@@ -127,6 +129,8 @@ require("devices"):find("redstone"):setRedstoneOutput("up", 15)
 ```
 
 Подробнее: [предметы и устройства на вики](https://wiki.loki-code.dev/ru/item/index) и [быстрый старт](src/main/resources/assets/oc2r/doc/ru_ru/getting_started.md).
+
+Для навигационных сборок у GPS-башен есть режим относительных координат. [Настройка и подключение сети](docs/GPS.md).
 
 ### Совместимость с Create
 

@@ -1,5 +1,8 @@
 # The Computerists Handbook
 
+[OC2R wiki: guides and crafting recipes](https://wiki.loki-code.dev)
+
+
 Hello, greetings, welcome! If you've come here, you either stumbled in by accident, are interested in [building your first computer](getting_started.md), or maybe you are looking for information on a particular [block](block/index.md) or [item](item/index.md)?
 
 ## Overview
@@ -31,3 +34,5 @@ If you're interested in a particular topic, there are some overview entries for 
 - [Scripting](scripting.md)
 - [Robotics](robotics.md)
 - [Networking](networking.md)
+
+[All crafting recipes on the wiki](https://wiki.loki-code.dev/en/recipes).

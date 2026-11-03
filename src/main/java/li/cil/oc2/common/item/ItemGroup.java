@@ -50,12 +50,13 @@ public final class ItemGroup {
                                                         ComputerBlockFactory
                                                                 .getPreconfiguredComputer());
                                                 output.accept(Items.CREATIVE_ENERGY.get());
-                                                output.accept(Items.DISK_DRIVE.get());
-                                                output.accept(Items.FLASH_MEMORY_FLASHER.get());
+                                                output.accept(Items.MEDIA_STATION.get());
                                                 output.accept(Items.KEYBOARD.get());
                                                 output.accept(Items.SPEAKER.get());
                                                 output.accept(Items.NETWORK_CONNECTOR.get());
                                                 output.accept(Items.NETWORK_HUB.get());
+                                                output.accept(Items.GPS_TOWER.get());
+                                                output.accept(Items.MACHINE_INTERFACE.get());
                                                 output.accept(Items.PROJECTOR.get());
                                                 output.accept(Items.MONITOR.get());
                                                 output.accept(Items.REDSTONE_INTERFACE.get());

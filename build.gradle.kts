@@ -185,7 +185,9 @@ neoForge {
 
         register("gameTestServer") {
             type.set("gameTestServer")
-            systemProperty("neoforge.enabledGameTestNamespaces", modId)
+            val createAcceptance = minecraft_version == "1.21.1"
+                && providers.gradleProperty("createTestJar").isPresent
+            systemProperty("neoforge.enabledGameTestNamespaces", if (createAcceptance) "oc2r_create" else modId)
         }
 
         register("data") {
@@ -252,6 +254,17 @@ dependencies {
         add("additionalRuntimeClasspath", "li.cil.ceres:ceres:${ceres_version}")
         add("additionalRuntimeClasspath", "li.cil.sedna:sedna:${sedna_version}")
         add("additionalRuntimeClasspath", "li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")
+    }
+
+    // Opt-in acceptance with a real Create jar; absent from normal builds and dependency locks.
+    if (minecraft_version == "1.21.1") {
+        providers.gradleProperty("createTestJar").orNull?.let { path ->
+            val createJar = rootProject.file(path)
+            require(createJar.isFile) { "createTestJar does not exist: $path" }
+            runtimeOnly(files(createJar))
+            sourceSets.main.get().java.srcDir(rootProject.file("src/createTest/java"))
+            sourceSets.main.get().resources.srcDir(rootProject.file("src/createTest/resources"))
+        }
     }
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
@@ -467,6 +480,12 @@ if (!minecraft_version.startsWith("1.")) tasks.processResources {
             }
         }
     }
+}
+
+// Acceptance fixtures can remain in processed outputs after toggling createTestJar.
+// Exclude them from every distributable regardless of the current source-set selection.
+tasks.withType<Jar>().configureEach {
+    exclude("data/oc2r_create/**", "**/CreateControlsAcceptanceTests.*")
 }
 
 tasks.jar {

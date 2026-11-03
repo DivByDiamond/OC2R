@@ -12,6 +12,8 @@ import net.minecraft.world.item.Tiers;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class GameplaySpec {
+    public final ModConfigSpec.BooleanValue relativeCoordinates;
+    public final ModConfigSpec.IntValue gpsTowerRange;
     public final ModConfigSpec.EnumValue<Tiers> blockOperationsModuleToolTier;
     public final ModConfigSpec.LongValue soundCardCoolDownSeconds;
     public final ModConfigSpec.IntValue soundCardPcmBytesPerSecond;
@@ -27,6 +29,18 @@ public class GameplaySpec {
     public final ModConfigSpec.ConfigValue<String> videoCodec;
 
     GameplaySpec(ModConfigSpec.Builder builder) {
+        relativeCoordinates =
+                builder.comment(
+                                "GPS towers report offsets from their explicitly selected network reference instead of world XYZ.",
+                                "Robot positions already use their own placement/calibration origin.",
+                                "This controls the device API, not Minecraft's world save format.")
+                        .define("relative_coordinates", false);
+
+        gpsTowerRange =
+                builder.comment("Maximum horizontal distance in blocks between paired GPS towers (circular X/Z range; height is ignored).",
+                                "Unloaded stations relay using their persisted membership without loading chunks.")
+                        .defineInRange("gps_tower_range", 45, 1, 1024);
+
         blockOperationsModuleToolTier =
                 builder.comment("The mining tool equivalent of the block operations module")
                         .defineEnum("blockOperationsModuleToolTier", Tiers.DIAMOND);
@@ -119,6 +133,8 @@ public class GameplaySpec {
     }
 
     public void loadValues() {
+        Config.relativeCoordinates = relativeCoordinates.get();
+        Config.gpsTowerRange = gpsTowerRange.get();
         Config.blockOperationsModuleToolTier = blockOperationsModuleToolTier.get().name();
         Config.soundCardCoolDownSeconds = soundCardCoolDownSeconds.get();
         Config.soundCardPcmBytesPerSecond = soundCardPcmBytesPerSecond.get();

@@ -7,8 +7,7 @@ To quickly access the manual entry for a block in the world, simply use this [ma
 - [Bus Interface](bus_interface.md)
 - [Charger](charger.md)
 - [Computer](computer.md)
-- [Disk Drive](disk_drive.md)
-- [Flash Memory Flasher](flash_memory_flasher.md)
+- [Media Station](media_station.md)
 - [Keyboard](keyboard.md)
 - [Monitor](monitor.md)
 - [Network Connector](network_connector.md)
@@ -18,3 +17,8 @@ To quickly access the manual entry for a block in the world, simply use this [ma
 
 - [Speaker](speaker.md)
 - [Internet Gateway](internet_gateway.md)
+- [Machine interface](machine_interface.md)
+- [GPS tower](gps_tower.md)
+- [VXLAN hub](vxlan_hub.md)
+- [PCI card cage](pci_card_cage.md)
+- [Creative energy source](creative_energy.md)

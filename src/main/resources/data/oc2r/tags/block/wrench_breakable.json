@@ -5,8 +5,10 @@
     "oc2r:network_connector",
     "oc2r:network_hub",
     "oc2r:redstone_interface",
-    "oc2r:disk_drive",
+    "oc2r:media_station",
     "oc2r:charger",
-    "oc2r:projector"
+    "oc2r:projector",
+    "oc2r:gps_tower",
+    "oc2r:machine_interface"
   ]
 }

@@ -7,6 +7,7 @@ license = "GPL-3.0-or-later"
 modId = "oc2r"
 version = "${file.jarVersion}"
 displayName = "OpenComputers II: Modern"
+displayURL = "https://wiki.loki-code.dev"
 authors = "TumRedSun, loki5512344, North Western Development (Originally by Sangar)"
 description = '''
 Modern computers for the modern player.

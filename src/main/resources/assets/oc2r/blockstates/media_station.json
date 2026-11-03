@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "oc2r:block/media_station",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "oc2r:block/media_station"
+    },
+    "facing=south": {
+      "model": "oc2r:block/media_station",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "oc2r:block/media_station",
+      "y": 270
+    }
+  }
+}

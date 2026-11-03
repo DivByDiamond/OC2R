@@ -66,18 +66,18 @@ Decision (supersedes the removal plan in section 43): `NetworkConnector` stays a
 Goal: computers, robots and pocket computers talk without cables, and a program can find where it is.
 
 How it should work:
-- **Wireless card** (item) and **wireless block** (a transceiver on the device bus): both join a wireless medium. Range is a config value with a bonus for height above the ground and for placing the antenna in the open; a computer in another dimension is out of range unless a special long-range tier exists. The card is a network interface like the existing NIC (guest sees an Ethernet-like device), so existing tools and the TCP/IP stack work over it, with a channel or SSID, a shared key and optional encryption flag.
+- **Wireless access point**: a block bridging the existing Ethernet network over radio, configured by network name and shared key. Computers use existing NICs and TCP/IP. Range and signal rules remain proposed mechanics; no additional wireless card or robot module is scheduled in this owner-selected device list.
 - **Signal model**: delivery probability and latency depend on distance, the guest reads signal strength (this is the deferred item "Signal model" in [section 48](#48-network-overhaul-wires-towers-tablet-create-radars); the first version can be a simple range check).
-- **Positioning service**: a few anchor computers (block with a known position) answer a ranging request; a client that hears at least four anchors computes its position. A server-side fallback can answer for ops who do not want to build anchors.
-- **Native face** ([section 50](devices-storage.md#50-driver-layer-every-device-reachable-without-lua)): the wireless card is a virtio-net style device so it works with no custom driver; signal strength and scan are small extra registers/RPC.
+- **Positioning service**: dedicated reference beacons advertise site IDs, dimension and known coordinates and answer ranging requests. A Linux client computes position from several beacons; a single beacon gives destination/distance. Do not require four full computers or an omniscient admin fallback. See [owner decisions](new-peripherals.md#3-positioning-beacon-oc2r-navigation).
+- **Native face** ([section 50](devices-storage.md#50-driver-layer-every-device-reachable-without-lua)): traffic uses the existing NIC and guest network stack; specify access-point configuration/status access during design.
 
 Pros: removes the need to run cable for remote machines and robots; makes pocket computers and robots genuinely mobile; builds on the existing network stack instead of a parallel messaging system; positioning enables navigation programs.
 
 Tasks:
 - [ ] Wireless medium on the server: registry of transceivers per dimension, range query with a spatial index, rate limit per transmitter.
-- [ ] `WirelessNetworkCard` item and `WirelessAccessPoint` block entity reusing `NetworkInterface`; GUI for channel and key.
+- [ ] Plan `WirelessAccessPoint` as a radio bridge for existing Ethernet NICs and wired connectors; see [MVP and acceptance](new-peripherals.md#1-wireless-access-point).
 - [ ] Range config, height bonus, dimension rule, performance budget (max packets per tick).
-- [ ] Positioning protocol and a reference anchor program; docs.
+- [ ] Dedicated positioning beacon, protocol and reference Linux service/client; docs.
 - [ ] Interaction with Create contraptions and Valkyrien Skies (ships move, positions change).
 - [ ] Game tests (two computers talk, out-of-range drops, key mismatch drops).
 - [ ] Later: towers as the long-range tier from [section 48](#48-network-overhaul-wires-towers-tablet-create-radars).

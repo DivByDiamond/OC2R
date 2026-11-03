@@ -6,9 +6,6 @@ import li.cil.oc2.data.recipe.RecipeBuilders;
 import li.cil.oc2.data.recipe.WrenchRecipeOutputAdapter;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-//? if <26.2 {
-import net.minecraft.tags.ItemTags;
-//?}
 import net.neoforged.neoforge.common.Tags;
 
 public final class StorageRecipes {
@@ -16,24 +13,6 @@ public final class StorageRecipes {
     private static final String UNLOCK_ROBOT = "has_robot";
 
     public static void build(final RecipeOutput consumer) {
-        RecipeBuilders.shaped(RecipeCategory.MISC, Items.DISK_DRIVE.get())
-                .pattern("IUI")
-                .pattern("XTD")
-                .pattern("IBI")
-                .define('I', Tags.Items.INGOTS_IRON)
-                //? if >=26.2 {
-/*                .define('U', net.minecraft.tags.BlockItemTags.BUTTONS.item())
-*///?} else {
-                .define('U', ItemTags.BUTTONS)
-                //?}
-                .define('T', Items.TRANSISTOR.get())
-                .define('X', Items.BUS_INTERFACE.get())
-                .define('D', net.minecraft.world.item.Items.DISPENSER)
-                .define('B', Items.CIRCUIT_BOARD.get())
-                .unlockedBy(
-                        UNLOCK_COMPUTER, ModRecipesProvider.inventoryChange(Items.COMPUTER.get()))
-                .save(consumer);
-
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEMORY_SMALL.get(), 2)
                 .pattern("ITI")
                 .pattern(" B ")

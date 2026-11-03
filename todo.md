@@ -92,7 +92,7 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 - [ ] Wireless card, wireless block and a positioning service (see docs/roadmap/network-overhaul.md#51-wireless-networking-and-positioning)
 - [ ] Pocket computer, shared item base with the tablet (see docs/roadmap/devices-storage.md#52-pocket-computer)
 - [ ] Robot as a full worker: fuel, tool slots, upgrades, more actions, after the section 28 fixes (see docs/roadmap/robot.md#53-robot-as-a-full-worker)
-- [ ] Printer and paper, media player, redstone relay, command computer (see docs/roadmap/devices-storage.md#54-more-peripherals)
+- [ ] Owner-selected devices only: wireless access point, printer, positioning beacon, environment sensor, document reader, media player with writable audio discs, long-range radio antenna and creative command chip (see [plan](docs/roadmap/new-peripherals.md)).
 - [ ] Uniform inventory/fluid/energy devices with push/pull and stable method names (see docs/roadmap/devices-storage.md#55-uniform-block-access-inventory-fluid-energy)
 - [ ] Software shipped with the image: help, everyday tools, robot programs, first-run hint (see docs/roadmap/devices-storage.md#56-software-shipped-with-the-image)
 - [x] Fix `:26.1.2:runGameTestServer` crashing in the first computer test with `Payload oc2r:computer_bus_state_message may not be sent to the client!` (the mock-player channels are now configured before the mod payload broadcasts; the 26.x suites pass 40/40 on 26.1.2 and 40/40 on 26.2 — see [stage3-acceptance.md](docs/roadmap/stage3-acceptance.md))
@@ -129,6 +129,6 @@ Index of open work. Details live in [docs/roadmap/](docs/roadmap/README.md) (Eng
 2. Completed: OnyxKernel `54c4f34` removes the format limit; full-root and persisted archive checks pass on the actual OC2R private disk. Legacy archives remain readable; old-writer downgrades are unsupported.
 3. Completed local acceptance: Sedna 5.3.0 with Buildroot 0.2.10 retained; old 5.2 world/robot RAM, private disks, framebuffers, repeated reboot and saved power-off state checked. Pre-existing stopped-disk data loss fixed separately; see [results and scope](docs/roadmap/sedna-5.3-upgrade.md).
 4. Completed: terminal layer-1 captures, mode/decoder/cursor/reply/tab tests and PR-B pixel acceptance. The historical screenshot-only check is superseded by reproducible upstream and pixel references.
-5. Next requested feature stage (2026-11-02): new blocks. The concrete block set and mechanics are not specified yet. DELTA acceptance/jcodec removal, robot fixes and network work remain open backlog items.
+5. Planning stage (owner decisions, 2026-11-02; no implementation requested): plan the wireless access point first. Also record a proposed printer design, OC2R positioning beacon, environment sensor, document reader, writable audio discs/media player, long-range antenna and creative command chip. Reuse the existing robot charger and redstone interface. See [mechanics and acceptance](docs/roadmap/new-peripherals.md). DELTA acceptance/jcodec removal and robot fixes remain separate backlog items.
 
 Each fix has separate verification. No release tag or platform publication is part of this development sequence.

@@ -177,11 +177,13 @@ Tasks:
 
 Each device here follows [section 50](#50-driver-layer-every-device-reachable-without-lua) (RPC face and native face).
 
-- [ ] **Printer and paper**: a block that takes ink and paper and prints pages from a program. Pages are items with text and a title that can be bound into a book and read in game. Pro: physical output, documentation and in-world signs without screens.
-- [ ] **Media player (record drive)**: a drive that plays music discs and custom audio from a program; audio is streamed as compressed PCM through the existing sound card path. Pro: music, announcements and alarms that share one audio pipeline with the sound card.
-- [ ] **Redstone relay**: a separate block on the bus with its own six redstone sides, so one computer controls many places through a cable instead of needing an interface card at each location; analog and bundled output. Pro: cheap automation of large builds.
-- [ ] **Command computer**: an operator-only block that can run server commands from a program; only creative-mode operators can place it, gated by a permission and a config flag (off by default on servers). Pro: map makers and admins script worlds.
-- [ ] **Lectern/pedestal link** and other display peripherals as follow-ups once the printer exists.
+Only the owner-selected new devices are planned here. Scope and proposed mechanics: [new peripherals](new-peripherals.md).
+
+- [ ] **Printer and paper**: transactional text pages from paper + dye, persistent unfinished jobs, readable page items and ordered books; native and RPC faces share one backend.
+- [ ] **Media player and writable music discs**: import MP3/audio on a PC, record a persistent custom disc, play it through the existing sound pipeline; retain vanilla disc support.
+- [ ] **Creative command chip**: an installable admin-only chip enables commands on an ordinary PC, subject to server configuration and authorization. Replaces the proposed command computer block.
+- [ ] **Environment sensor**: local biome/light/time/weather/temperature, bounded sampling and events.
+- [ ] **Document reader**: read books and printed pages as text via an automatable inventory.
 
 ## 55. Uniform block access (inventory, fluid, energy)
 

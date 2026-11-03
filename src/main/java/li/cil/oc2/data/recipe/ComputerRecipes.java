@@ -68,6 +68,38 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.NETWORK_CONNECTOR.get()))
                 .save(consumer);
 
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEDIA_STATION.get())
+                .pattern("ICI").pattern("DFD").pattern("IBI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('C', Items.CIRCUIT_BOARD.get())
+                .define('D', net.minecraft.world.item.Items.REDSTONE)
+                .define('F', net.minecraft.world.item.Items.COMPARATOR)
+                .define('B', Items.BUS_INTERFACE.get())
+                .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.MACHINE_INTERFACE.get())
+                .pattern("IRI").pattern("HCH").pattern("IBI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('R', net.minecraft.world.item.Items.COMPARATOR)
+                .define('H', net.minecraft.world.item.Items.HOPPER)
+                .define('C', Items.CIRCUIT_BOARD.get())
+                .define('B', Items.BUS_INTERFACE.get())
+                .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.GPS_TOWER.get())
+                .pattern("IRI")
+                .pattern("CPC")
+                .pattern("BBB")
+                .define('I', net.minecraft.world.item.Items.IRON_BARS)
+                .define('R', net.minecraft.world.item.Items.COPPER_INGOT)
+                .define('C', Items.CIRCUIT_BOARD.get())
+                .define('P', Items.CPU_TIER_3.get())
+                .define('B', Tags.Items.INGOTS_IRON)
+                .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.REDSTONE_INTERFACE.get())
                 .pattern("ICI")
                 .pattern("XTX")

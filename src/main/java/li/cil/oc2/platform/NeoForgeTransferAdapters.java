@@ -483,7 +483,7 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
                 } else {
                     handler.drain(
                             // Each iteration owns distinct geometry, coordinates or serialized state.
-                            new FluidStack(operation.getFluid(), -operation.getAmount()), // NOPMD
+                            operation.withAmount(-operation.getAmount()), // NOPMD
                             FluidHandler.FluidAction.EXECUTE);
                 }
             }
@@ -518,7 +518,7 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             final FluidStack stack = handler.getFluidInTank(index);
             return stack == null || stack.isEmpty()
                     ? FluidResource.EMPTY
-                    : FluidResource.of(stack.getFluid());
+                    : FluidResource.of(stack.getFluid(), stack.getComponentsPatch());
         }
 
         @Override
@@ -534,7 +534,7 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
 
         @Override
         public boolean isValid(final int index, final FluidResource resource) {
-            return handler.isFluidValid(index, new FluidStack(resource.getFluid(), 1));
+            return handler.isFluidValid(index, new FluidStack(resource.getFluid(), 1, resource.getComponentsPatch()));
         }
 
         @Override
@@ -546,11 +546,11 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             if (resource.isEmpty() || amount <= 0 || !isValid(index, resource)) {
                 return 0;
             }
-            final FluidStack stack = new FluidStack(resource.getFluid(), amount);
+            final FluidStack stack = new FluidStack(resource.getFluid(), amount, resource.getComponentsPatch());
             final int accepted = handler.fill(stack, FluidHandler.FluidAction.SIMULATE);
             if (accepted > 0) {
                 journal.updateSnapshots(transaction);
-                journal.operations.add(new FluidStack(resource.getFluid(), accepted));
+                journal.operations.add(new FluidStack(resource.getFluid(), accepted, resource.getComponentsPatch()));
             }
             return accepted;
         }
@@ -567,13 +567,14 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             }
             final FluidStack drained =
                     handler.drain(
-                            new FluidStack(resource.getFluid(), amount),
+                            new FluidStack(resource.getFluid(), amount, resource.getComponentsPatch()),
                             FluidHandler.FluidAction.SIMULATE);
             if (drained == null || drained.isEmpty()) {
                 return 0;
             }
             journal.updateSnapshots(transaction);
-            journal.operations.add(new FluidStack(resource.getFluid(), -drained.getAmount()));
+            journal.operations.add(new FluidStack(resource.getFluid(),
+                    -drained.getAmount(), resource.getComponentsPatch()));
             return drained.getAmount();
         }
 
@@ -607,7 +608,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             final FluidResource resource = handler.getResource(tank);
             return resource.isEmpty()
                     ? FluidStack.EMPTY
-                    : new FluidStack(resource.getFluid(), handler.getAmountAsInt(tank));
+                    : new FluidStack(resource.getFluid(),
+                            handler.getAmountAsInt(tank), resource.getComponentsPatch());
         }
 
         @Override
@@ -617,7 +619,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
 
         @Override
         public boolean isFluidValid(final int tank, final FluidStack stack) {
-            return !stack.isEmpty() && handler.isValid(tank, FluidResource.of(stack.getFluid()));
+            return !stack.isEmpty() && handler.isValid(tank,
+                    FluidResource.of(stack.getFluid(), stack.getComponentsPatch()));
         }
 
         @Override
@@ -627,7 +630,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             }
             try (Transaction transaction = Transaction.openRoot()) {
                 final int moved =
-                        handler.insert(FluidResource.of(stack.getFluid()), stack.getAmount(), transaction);
+                        handler.insert(FluidResource.of(stack.getFluid(), stack.getComponentsPatch()),
+                                stack.getAmount(), transaction);
                 if (action == FluidAction.EXECUTE) {
                     transaction.commit();
                 }
@@ -640,7 +644,7 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
             if (stack.isEmpty()) {
                 return FluidStack.EMPTY;
             }
-            return drain(FluidResource.of(stack.getFluid()), stack.getAmount(), action);
+            return drain(FluidResource.of(stack.getFluid(), stack.getComponentsPatch()), stack.getAmount(), action);
         }
 
         @Override
@@ -661,7 +665,8 @@ final class NeoForgeTransferAdapters { // NOPMD - Namespace for loader-specific 
                 if (action == FluidAction.EXECUTE) {
                     transaction.commit();
                 }
-                return moved > 0 ? new FluidStack(resource.getFluid(), moved) : FluidStack.EMPTY;
+                return moved > 0
+                        ? new FluidStack(resource.getFluid(), moved, resource.getComponentsPatch()) : FluidStack.EMPTY;
             }
         }
 

@@ -1,0 +1,1681 @@
+{
+  "parent": "minecraft:block/block",
+  "credit": "OC2R GPS tower v4; separate structural materials and continuous coax",
+  "ambientocclusion": true,
+  "textures": {
+    "tower": "oc2r:block/gps_tower/tower_v3",
+    "steel": "oc2r:block/gps_tower/steel_v4",
+    "painted": "oc2r:block/gps_tower/painted_v4",
+    "cable": "oc2r:block/gps_tower/cable_v4",
+    "particle": "#tower"
+  },
+  "elements": [
+    {
+      "name": "Flange north",
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        1,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange south",
+      "from": [
+        2,
+        0,
+        12
+      ],
+      "to": [
+        14,
+        1,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange west",
+      "from": [
+        2,
+        0,
+        4
+      ],
+      "to": [
+        4,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange east",
+      "from": [
+        12,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange north",
+      "from": [
+        2,
+        15,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange south",
+      "from": [
+        2,
+        15,
+        12
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange west",
+      "from": [
+        2,
+        15,
+        4
+      ],
+      "to": [
+        4,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "name": "Flange east",
+      "from": [
+        12,
+        15,
+        4
+      ],
+      "to": [
+        14,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "name": "Corner column",
+      "from": [
+        2,
+        1,
+        2
+      ],
+      "to": [
+        4,
+        15,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Corner column",
+      "from": [
+        2,
+        1,
+        12
+      ],
+      "to": [
+        4,
+        15,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Corner column",
+      "from": [
+        12,
+        1,
+        2
+      ],
+      "to": [
+        14,
+        15,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Corner column",
+      "from": [
+        12,
+        1,
+        12
+      ],
+      "to": [
+        14,
+        15,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Front/back diagonal",
+      "from": [
+        7.55,
+        0.9289321881345245,
+        2.6
+      ],
+      "to": [
+        8.45,
+        15.071067811865476,
+        3.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.7999999999999998
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.7999999999999998
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          3
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Front/back diagonal",
+      "from": [
+        7.55,
+        0.9289321881345245,
+        2.6
+      ],
+      "to": [
+        8.45,
+        15.071067811865476,
+        3.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.7999999999999998
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.7999999999999998
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          3
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Front/back diagonal",
+      "from": [
+        7.55,
+        0.9289321881345245,
+        12.6
+      ],
+      "to": [
+        8.45,
+        15.071067811865476,
+        13.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.8000000000000007
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.8000000000000007
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          13
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Front/back diagonal",
+      "from": [
+        7.55,
+        0.9289321881345245,
+        12.6
+      ],
+      "to": [
+        8.45,
+        15.071067811865476,
+        13.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.8000000000000007
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            0.8000000000000007
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          13
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Side diagonal",
+      "from": [
+        2.6,
+        0.9289321881345245,
+        7.55
+      ],
+      "to": [
+        3.4,
+        15.071067811865476,
+        8.45
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            0.8999999999999995
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            0.8999999999999995
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          3,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Side diagonal",
+      "from": [
+        2.6,
+        0.9289321881345245,
+        7.55
+      ],
+      "to": [
+        3.4,
+        15.071067811865476,
+        8.45
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            0.8999999999999995
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.7999999999999998,
+            0.8999999999999995
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          3,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Side diagonal",
+      "from": [
+        12.6,
+        0.9289321881345245,
+        7.55
+      ],
+      "to": [
+        13.4,
+        15.071067811865476,
+        8.45
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            0.8999999999999995
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            0.8999999999999995
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          13,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Side diagonal",
+      "from": [
+        12.6,
+        0.9289321881345245,
+        7.55
+      ],
+      "to": [
+        13.4,
+        15.071067811865476,
+        8.45
+      ],
+      "faces": {
+        "north": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "south": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            14.142135623730951
+          ]
+        },
+        "east": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "west": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8999999999999995,
+            14.142135623730951
+          ]
+        },
+        "up": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            0.8999999999999995
+          ]
+        },
+        "down": {
+          "texture": "#painted",
+          "uv": [
+            0,
+            0,
+            0.8000000000000007,
+            0.8999999999999995
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          13,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Internal coax",
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#cable",
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "Cable clip",
+      "from": [
+        6.5,
+        1,
+        6.5
+      ],
+      "to": [
+        9.5,
+        1.6,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6000000000000001
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6000000000000001
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6000000000000001
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.6000000000000001
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        }
+      }
+    },
+    {
+      "name": "Cable clip",
+      "from": [
+        6.5,
+        14,
+        6.5
+      ],
+      "to": [
+        9.5,
+        14.6,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.5999999999999996
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.5999999999999996
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.5999999999999996
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            0.5999999999999996
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ]
+        }
+      }
+    }
+  ]
+}

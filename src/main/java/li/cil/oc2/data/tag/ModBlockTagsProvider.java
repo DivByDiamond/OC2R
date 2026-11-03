@@ -36,8 +36,8 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
 /*        tag(DEVICES)
                 .add(COMPUTER.key())
                 .add(REDSTONE_INTERFACE.key())
-                .add(DISK_DRIVE.key())
-                .add(PROJECTOR.key());
+                .add(PROJECTOR.key())
+                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key());
         tag(CABLES).add(BUS_CABLE.key());
         tag(WRENCH_BREAKABLE)
                 .add(COMPUTER.key())
@@ -45,12 +45,13 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(NETWORK_CONNECTOR.key())
                 .add(NETWORK_HUB.key())
                 .add(REDSTONE_INTERFACE.key())
-                .add(DISK_DRIVE.key())
                 .add(CHARGER.key())
-                .add(PROJECTOR.key());
+                .add(PROJECTOR.key())
+                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key());
 *///?} else {
         tag(DEVICES)
-                .add(COMPUTER.get(), REDSTONE_INTERFACE.get(), DISK_DRIVE.get(), PROJECTOR.get());
+                .add(COMPUTER.get(), REDSTONE_INTERFACE.get(), PROJECTOR.get(),
+                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get());
         tag(CABLES).add(BUS_CABLE.get());
         tag(WRENCH_BREAKABLE)
                 .add(
@@ -59,9 +60,9 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                         NETWORK_CONNECTOR.get(),
                         NETWORK_HUB.get(),
                         REDSTONE_INTERFACE.get(),
-                        DISK_DRIVE.get(),
                         CHARGER.get(),
-                        PROJECTOR.get());
+                        PROJECTOR.get(),
+                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get());
         //?}
     }
 }

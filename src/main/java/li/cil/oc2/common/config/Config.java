@@ -55,6 +55,10 @@ public final class Config {
     public static volatile int robotEnergyPerTick = 5;
     public static volatile int robotEnergyStorage = 750000;
 
+    /** Whether position-reporting devices hide absolute world coordinates from guest programs. */
+    public static volatile boolean relativeCoordinates = false;
+    public static volatile int gpsTowerRange = 45;
+
     public static volatile double memoryEnergyPerMegabytePerTick = 0.5;
     public static volatile double hardDriveEnergyPerMegabytePerTick = 1;
     public static volatile double cpuEnergyPerMegahertzPerTick = 0.1;

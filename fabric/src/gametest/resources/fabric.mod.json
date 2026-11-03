@@ -7,6 +7,7 @@
   "entrypoints": {
     "fabric-gametest": [
       "li.cil.oc2.fabric.gametest.FabricBridgeTests",
+      "li.cil.oc2.fabric.gametest.FabricMachineStorageTests",
       "li.cil.oc2.fabric.gametest.FabricNetworkTests",
       "li.cil.oc2.fabric.gametest.FabricInteractionTests",
       "li.cil.oc2.fabric.gametest.FabricHookTests",
@@ -14,6 +15,12 @@
       "li.cil.oc2.fabric.gametest.FabricRobotTests",
       "li.cil.oc2.fabric.gametest.FabricManualTests",
       "li.cil.oc2.gametest.DeviceBusTests",
+      "li.cil.oc2.gametest.MediaStationTests",
+      "li.cil.oc2.gametest.MachineInterfaceTests",
+      "li.cil.oc2.gametest.MachineTransferTests",
+      "li.cil.oc2.gametest.GpsTowerTests",
+      "li.cil.oc2.gametest.GpsTowerDeviceTests",
+      "li.cil.oc2.gametest.GpsTowerPlacementTests",
       "li.cil.oc2.gametest.KeyboardTests",
       "li.cil.oc2.gametest.NetworkCableItemTests",
       "li.cil.oc2.gametest.NetworkConnectorTests",

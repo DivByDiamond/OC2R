@@ -5,13 +5,14 @@ import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.computer.ComputerBlockEntity;
-import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;
 import li.cil.oc2.common.blockentity.energy.CreativeEnergyBlockEntity;
+import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
+import li.cil.oc2.common.blockentity.machine.MachineInterfaceBlockEntity;
+import li.cil.oc2.common.blockentity.media.MediaStationBlockEntity;
 import li.cil.oc2.common.blockentity.misc.PciCardCageBlockEntity;
 import li.cil.oc2.common.blockentity.misc.SpeakerBlockEntity;
-import li.cil.oc2.common.blockentity.misc.flash.FlashMemoryFlasherBlockEntity;
 import li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayBlockEntity;
 import li.cil.oc2.common.blockentity.misc.redstone.RedstoneInterfaceBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
@@ -40,11 +41,6 @@ public final class BlockEntities {
             MONITOR = register(Blocks.MONITOR, MonitorBlockEntity::new);
     public static final Supplier<BlockEntityType<CreativeEnergyBlockEntity>>
             CREATIVE_ENERGY = register(Blocks.CREATIVE_ENERGY, CreativeEnergyBlockEntity::new);
-    public static final Supplier<BlockEntityType<DiskDriveBlockEntity>>
-            DISK_DRIVE = register(Blocks.DISK_DRIVE, DiskDriveBlockEntity::new);
-    public static final Supplier<BlockEntityType<FlashMemoryFlasherBlockEntity>>
-            FLASH_MEMORY_FLASHER =
-                    register(Blocks.FLASH_MEMORY_FLASHER, FlashMemoryFlasherBlockEntity::new);
     public static final Supplier<BlockEntityType<KeyboardBlockEntity>>
             KEYBOARD = register(Blocks.KEYBOARD, KeyboardBlockEntity::new);
     public static final Supplier<BlockEntityType<NetworkConnectorBlockEntity>>
@@ -52,6 +48,12 @@ public final class BlockEntities {
                     register(Blocks.NETWORK_CONNECTOR, NetworkConnectorBlockEntity::new);
     public static final Supplier<BlockEntityType<NetworkHubBlockEntity>>
             NETWORK_HUB = register(Blocks.NETWORK_HUB, NetworkHubBlockEntity::new);
+    public static final Supplier<BlockEntityType<MediaStationBlockEntity>> MEDIA_STATION =
+            register(Blocks.MEDIA_STATION, MediaStationBlockEntity::new);
+    public static final Supplier<BlockEntityType<MachineInterfaceBlockEntity>> MACHINE_INTERFACE =
+            register(Blocks.MACHINE_INTERFACE, MachineInterfaceBlockEntity::new);
+    public static final Supplier<BlockEntityType<GpsTowerBlockEntity>>
+            GPS_TOWER = register(Blocks.GPS_TOWER, GpsTowerBlockEntity::new);
     public static final Supplier<BlockEntityType<NetworkSwitchBlockEntity>>
             NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH, NetworkSwitchBlockEntity::new);
     public static final Supplier<BlockEntityType<ProjectorBlockEntity>>

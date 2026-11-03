@@ -11,9 +11,8 @@ import li.cil.sedna.api.device.BlockDevice;
 import li.cil.sedna.device.block.ByteBufferBlockDevice;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
-public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer>
+public final class DiskDriveDevice<T extends DiskDriveContainer>
         extends AbstractBlockStorageDevice<BlockDevice, T> {
     private static final ByteBufferBlockDevice EMPTY_BLOCK_DEVICE =
             ByteBufferBlockDevice.create(0, false);
@@ -26,6 +25,8 @@ public final class DiskDriveDevice<T extends BlockEntity & DiskDriveContainer>
         joinOpenJob();
 
         if (device == null) {
+            blobHandle = null;
+            importFromItemStack(tag);
             return;
         }
 

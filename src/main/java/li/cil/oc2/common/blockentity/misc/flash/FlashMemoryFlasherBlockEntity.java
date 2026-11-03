@@ -3,19 +3,14 @@ package li.cil.oc2.common.blockentity.misc.flash;
 import java.time.Duration;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.Constants;
-import li.cil.oc2.common.block.common.Blocks;
-import li.cil.oc2.common.block.disk.FlashMemoryFlasherBlock;
-import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.bus.device.vm.block.flash.FlashMemoryFlasherContainer;
 import li.cil.oc2.common.bus.device.vm.block.flash.FlashMemoryFlasherDevice;
-import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.tags.ItemTags;
 import li.cil.oc2.common.util.item.ItemStackUtils;
 import li.cil.oc2.common.util.item.LocationSupplierUtils;
 import li.cil.oc2.common.util.sound.SoundEvents;
 import li.cil.oc2.common.util.sound.ThrottledSoundEmitter;
-import li.cil.oc2.platform.CapabilityRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -28,17 +23,18 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 //?}
 
-public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
+public abstract class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         implements FlashMemoryFlasherContainer {
     private final FlashMemoryItemStackHandler itemHandler = new FlashMemoryItemStackHandler(this);
-    final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device =
+    protected final FlashMemoryFlasherDevice<FlashMemoryFlasherBlockEntity> device =
             new FlashMemoryFlasherDevice<>(this);
     private volatile boolean writing;
     private final ThrottledSoundEmitter insertSoundEmitter;
     private final ThrottledSoundEmitter ejectSoundEmitter;
 
-    public FlashMemoryFlasherBlockEntity(final BlockPos pos, final BlockState state) {
-        super(BlockEntities.FLASH_MEMORY_FLASHER.get(), pos, state);
+    protected FlashMemoryFlasherBlockEntity(final net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+                                            final BlockPos pos, final BlockState state) {
+        super(type, pos, state);
 
         this.insertSoundEmitter =
                 new ThrottledSoundEmitter(
@@ -96,7 +92,8 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
 
         final ItemStack stack = itemHandler.extractItem(0, 1, false);
         if (!stack.isEmpty()) {
-            final Direction facing = getBlockState().getValue(FlashMemoryFlasherBlock.FACING);
+            final Direction facing = getBlockState().getValue(
+                    net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING);
             ejectSoundEmitter.play();
             ItemStackUtils.spawnAsEntity(level, getBlockPos().relative(facing), stack, facing)
                     .ifPresent(
@@ -118,29 +115,9 @@ public final class FlashMemoryFlasherBlockEntity extends ModBlockEntity
         itemHandler.setStackInSlot(0, stack);
     }
 
-    public static void registerCapabilities(final CapabilityRegistrar registrar) {
-        registrar.registerBlock(
-                Capabilities.ItemHandler.BLOCK,
-                (level, pos, state, be, side) -> {
-                    if (be instanceof final FlashMemoryFlasherBlockEntity self) {
-                        return self.itemHandler;
-                    }
-                    return null;
-                },
-                Blocks.FLASH_MEMORY_FLASHER.get());
-        registrar.registerBlock(
-                Capabilities.Device.BLOCK,
-                (level, pos, state, be, side) -> {
-                    if (be instanceof final FlashMemoryFlasherBlockEntity self
-                            && side
-                                    == self.getBlockState()
-                                            .getValue(FlashMemoryFlasherBlock.FACING)
-                                            .getOpposite()) {
-                        return self.device;
-                    }
-                    return null;
-                },
-                Blocks.FLASH_MEMORY_FLASHER.get());
+    /** Exposes the existing flash slot to subclasses composing a multi-slot device. */
+    protected final li.cil.oc2.platform.ItemHandler flashInventory() {
+        return itemHandler;
     }
 
     @Override

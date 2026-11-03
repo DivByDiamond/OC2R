@@ -9,9 +9,9 @@ import java.util.Map;
 /** Version-26 model data. Geometry authored by hand remains in models/block. */
 public final class ModernModelDefinitions {
     private static final String PARENT = "parent";
-    private static final List<String> HORIZONTAL_BLOCKS = List.of("charger", "computer", "disk_drive",
-            "flash_memory_flasher", "keyboard", "network_hub", "network_switch", "pci_card_cage",
-            "projector", "redstone_interface", "vxlan_hub");
+    private static final List<String> HORIZONTAL_BLOCKS = List.of(
+            "charger", "computer", "keyboard", "network_hub", "network_switch", "pci_card_cage",
+            "projector", "redstone_interface", "vxlan_hub", "machine_interface", "media_station");
     private static final List<String> SIMPLE = List.of("creative_energy", "internet_gateway", "speaker");
     private static final List<String> FACES = List.of("north", "east", "south", "west");
     private static final Map<String, Integer> DYE_DEFAULTS = Map.of(
@@ -34,6 +34,7 @@ public final class ModernModelDefinitions {
         HORIZONTAL_BLOCKS.forEach(name -> output.put("blockstates/" + name + ".json", horizontal(name)));
         SIMPLE.forEach(name -> output.put("blockstates/" + name + ".json",
                 variants(single("model", "oc2r:block/" + name))));
+        output.put("blockstates/gps_tower.json", gpsTower());
         output.put("blockstates/monitor.json", variants(single("type", "oc2r:monitor")));
         output.put("blockstates/bus_cable.json", cable());
         output.put("blockstates/network_connector.json", connector());
@@ -79,6 +80,7 @@ public final class ModernModelDefinitions {
             if (!"network_switch".equals(name)) result.put(name, single(PARENT, "oc2r:block/" + name));
         }
         for (final String name : SIMPLE) result.put(name, single(PARENT, "oc2r:block/" + name));
+        result.put("gps_tower", single(PARENT, "oc2r:block/gps_tower_inventory"));
         result.put("monitor", single(PARENT, "oc2r:block/monitor"));
         final JsonObject robot = single(PARENT, "minecraft:item/template_shulker_box");
         robot.add("textures", single("particle", "oc2r:entity/robot/robot"));
@@ -86,6 +88,21 @@ public final class ModernModelDefinitions {
         result.put("network_connector", connectorItem());
         result.put("bus_cable", cableItem(false));
         result.put("bus_interface", cableItem(true));
+        return result;
+    }
+
+    private static JsonObject gpsTower() {
+        final JsonObject states = new JsonObject();
+        for (int direction = 0; direction < FACES.size(); direction++) {
+            for (int part = 0; part < 5; part++) {
+                final String suffix = part == 0 ? "base" : part == 4 ? "head" : "segment";
+                final JsonObject model = single("model", "oc2r:block/gps_tower_" + suffix);
+                if (direction != 0) model.addProperty("y", direction * 90);
+                states.add("facing=" + FACES.get(direction) + ",part=" + part, model);
+            }
+        }
+        final JsonObject result = new JsonObject();
+        result.add("variants", states);
         return result;
     }
 

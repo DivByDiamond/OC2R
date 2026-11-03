@@ -98,7 +98,7 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
 
         tag(DEVICE_NEEDS_REBOOT)
                 .add(
-                        Items.DISK_DRIVE.key(),
+                        Items.MEDIA_STATION.key(),
                         Items.FLASH_MEMORY_SMALL.key(),
                         Items.FLASH_MEMORY_MEDIUM.key(),
                         Items.FLASH_MEMORY.key(),
@@ -196,7 +196,7 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
 
         tag(DEVICE_NEEDS_REBOOT)
                 .add(
-                        Items.DISK_DRIVE.get(),
+                        Items.MEDIA_STATION.get(),
                         Items.FLASH_MEMORY_SMALL.get(),
                         Items.FLASH_MEMORY_MEDIUM.get(),
                         Items.FLASH_MEMORY.get(),

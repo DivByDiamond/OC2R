@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "oc2r:bus_interface"
+    },
+    "C": {
+      "item": "oc2r:circuit_board"
+    },
+    "D": {
+      "item": "minecraft:redstone"
+    },
+    "F": {
+      "item": "minecraft:comparator"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "DFD",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:media_station"
+  }
+}

@@ -5,11 +5,12 @@ import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.cable.BusCableBlock;
 import li.cil.oc2.common.block.computer.ComputerBlock;
-import li.cil.oc2.common.block.disk.DiskDriveBlock;
-import li.cil.oc2.common.block.disk.FlashMemoryFlasherBlock;
 import li.cil.oc2.common.block.energy.ChargerBlock;
 import li.cil.oc2.common.block.energy.CreativeEnergyBlock;
+import li.cil.oc2.common.block.gps.GpsTowerBlock;
 import li.cil.oc2.common.block.keyboard.KeyboardBlock;
+import li.cil.oc2.common.block.machine.MachineInterfaceBlock;
+import li.cil.oc2.common.block.media.MediaStationBlock;
 import li.cil.oc2.common.block.misc.InternetGatewayBlock;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.block.misc.RedstoneInterfaceBlock;
@@ -37,10 +38,6 @@ public final class BlockCodecs {
             register("computer", () -> MapCodec.unit(ComputerBlock::new));
     public static final Supplier<MapCodec<MonitorBlock>> MONITOR =
             register("monitor", () -> MapCodec.unit(MonitorBlock::new));
-    public static final Supplier<MapCodec<DiskDriveBlock>> DISK_DRIVE =
-            register("disk_drive", () -> MapCodec.unit(DiskDriveBlock::new));
-    public static final Supplier<MapCodec<FlashMemoryFlasherBlock>> FLASH_MEMORY_FLASHER =
-            register("flash_memory_flasher", () -> MapCodec.unit(FlashMemoryFlasherBlock::new));
     public static final Supplier<MapCodec<KeyboardBlock>> KEYBOARD =
             register("keyboard", () -> MapCodec.unit(KeyboardBlock::new));
     public static final Supplier<MapCodec<NetworkConnectorBlock>> NETWORK_CONNECTOR =
@@ -51,6 +48,12 @@ public final class BlockCodecs {
             register("creative_energy", () -> MapCodec.unit(CreativeEnergyBlock::new));
     public static final Supplier<MapCodec<NetworkHubBlock>> NETWORK_HUB =
             register("network_hub", () -> MapCodec.unit(NetworkHubBlock::new));
+    public static final Supplier<MapCodec<MediaStationBlock>> MEDIA_STATION =
+            register("media_station", () -> MapCodec.unit(MediaStationBlock::new));
+    public static final Supplier<MapCodec<MachineInterfaceBlock>> MACHINE_INTERFACE =
+            register("machine_interface", () -> MapCodec.unit(MachineInterfaceBlock::new));
+    public static final Supplier<MapCodec<GpsTowerBlock>> GPS_TOWER =
+            register("gps_tower", () -> MapCodec.unit(GpsTowerBlock::new));
     public static final Supplier<MapCodec<NetworkSwitchBlock>> NETWORK_SWITCH =
             register("network_switch", () -> MapCodec.unit(NetworkSwitchBlock::new));
     public static final Supplier<MapCodec<ProjectorBlock>> PROJECTOR =

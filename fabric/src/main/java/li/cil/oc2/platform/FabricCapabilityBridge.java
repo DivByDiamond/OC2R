@@ -62,6 +62,10 @@ public final class FabricCapabilityBridge implements CapabilityBridge {
         if (own != null) {
             return own;
         }
+        final T items = FabricItems.findBlock(capability, level, pos, actualSide);
+        if (items != null) return items;
+        final T fluids = FabricFluids.findBlock(capability, level, pos, actualSide);
+        if (fluids != null) return fluids;
         return FabricEnergy.findBlock(capability, level, pos, actualSide);
     }
 

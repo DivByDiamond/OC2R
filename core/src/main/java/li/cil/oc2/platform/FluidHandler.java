@@ -2,8 +2,7 @@ package li.cil.oc2.platform;
 
 /**
  * Loader-independent fluid tank contract, mirroring the shape of NeoForge's {@code IFluidHandler}.
- * Only reading paths exist in the mod today, but the full contract is declared so a loader
- * implementation can expose a storage it also exposes to other mods without loss.
+ * Reads and transfers preserve the complete fluid variant, including its component patch.
  */
 public interface FluidHandler {
     /** Whether a fluid operation actually changes the tank, or only reports what would happen. */
@@ -26,7 +25,7 @@ public interface FluidHandler {
     /** Whether {@code stack} could ever be filled into {@code tank}, ignoring current contents. */
     boolean isFluidValid(int tank, FluidStack stack);
 
-    /** Fills {@code stack} into the tanks, returning the amount that did not fit. */
+    /** Fills {@code stack} into the tanks, returning the amount accepted. */
     int fill(FluidStack stack, FluidAction action);
 
     /** Drains up to {@code maxDrain} millibuckets matching {@code stack}, returning what was taken. */

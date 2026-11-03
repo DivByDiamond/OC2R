@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_disk_drive": {
+    "has_media_station": {
       "conditions": {
         "items": [
           {
-            "items": "oc2r:disk_drive"
+            "items": "oc2r:media_station"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_disk_drive"
+      "has_media_station"
     ]
   ],
   "rewards": {

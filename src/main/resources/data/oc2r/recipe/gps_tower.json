@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:ingots/iron"
+    },
+    "C": {
+      "item": "oc2r:circuit_board"
+    },
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "R": {
+      "item": "minecraft:copper_ingot"
+    },
+    "P": {
+      "item": "oc2r:cpu_tier_3"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "CPC",
+    "BBB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:gps_tower"
+  }
+}

@@ -4,11 +4,12 @@ import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.cable.BusCableBlock;
 import li.cil.oc2.common.block.computer.ComputerBlock;
-import li.cil.oc2.common.block.disk.DiskDriveBlock;
-import li.cil.oc2.common.block.disk.FlashMemoryFlasherBlock;
 import li.cil.oc2.common.block.energy.ChargerBlock;
 import li.cil.oc2.common.block.energy.CreativeEnergyBlock;
+import li.cil.oc2.common.block.gps.GpsTowerBlock;
 import li.cil.oc2.common.block.keyboard.KeyboardBlock;
+import li.cil.oc2.common.block.machine.MachineInterfaceBlock;
+import li.cil.oc2.common.block.media.MediaStationBlock;
 import li.cil.oc2.common.block.misc.InternetGatewayBlock;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.block.misc.RedstoneInterfaceBlock;
@@ -34,16 +35,17 @@ public final class Blocks {
             register("monitor", MonitorBlock::new);
     public static final BlockHolder<CreativeEnergyBlock> CREATIVE_ENERGY =
             register("creative_energy", CreativeEnergyBlock::new);
-    public static final BlockHolder<DiskDriveBlock> DISK_DRIVE =
-            register("disk_drive", DiskDriveBlock::new);
-    public static final BlockHolder<FlashMemoryFlasherBlock> FLASH_MEMORY_FLASHER =
-            register("flash_memory_flasher", FlashMemoryFlasherBlock::new);
     public static final BlockHolder<KeyboardBlock> KEYBOARD =
             register("keyboard", KeyboardBlock::new);
     public static final BlockHolder<NetworkConnectorBlock> NETWORK_CONNECTOR =
             register("network_connector", NetworkConnectorBlock::new);
     public static final BlockHolder<NetworkHubBlock> NETWORK_HUB =
             register("network_hub", NetworkHubBlock::new);
+    public static final BlockHolder<MediaStationBlock> MEDIA_STATION =
+            register("media_station", MediaStationBlock::new);
+    public static final BlockHolder<MachineInterfaceBlock> MACHINE_INTERFACE =
+            register("machine_interface", MachineInterfaceBlock::new);
+    public static final BlockHolder<GpsTowerBlock> GPS_TOWER = register("gps_tower", GpsTowerBlock::new);
     public static final BlockHolder<NetworkSwitchBlock> NETWORK_SWITCH =
             register("network_switch", NetworkSwitchBlock::new);
     public static final BlockHolder<ProjectorBlock> PROJECTOR =

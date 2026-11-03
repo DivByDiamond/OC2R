@@ -1,0 +1,79 @@
+{
+  "variants": {
+    "facing=north,part=0": {
+      "model": "oc2r:block/gps_tower_base"
+    },
+    "facing=north,part=1": {
+      "model": "oc2r:block/gps_tower_segment"
+    },
+    "facing=north,part=2": {
+      "model": "oc2r:block/gps_tower_segment"
+    },
+    "facing=north,part=3": {
+      "model": "oc2r:block/gps_tower_segment"
+    },
+    "facing=north,part=4": {
+      "model": "oc2r:block/gps_tower_head"
+    },
+    "facing=east,part=0": {
+      "model": "oc2r:block/gps_tower_base",
+      "y": 90
+    },
+    "facing=east,part=1": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 90
+    },
+    "facing=east,part=2": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 90
+    },
+    "facing=east,part=3": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 90
+    },
+    "facing=east,part=4": {
+      "model": "oc2r:block/gps_tower_head",
+      "y": 90
+    },
+    "facing=south,part=0": {
+      "model": "oc2r:block/gps_tower_base",
+      "y": 180
+    },
+    "facing=south,part=1": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 180
+    },
+    "facing=south,part=2": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 180
+    },
+    "facing=south,part=3": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 180
+    },
+    "facing=south,part=4": {
+      "model": "oc2r:block/gps_tower_head",
+      "y": 180
+    },
+    "facing=west,part=0": {
+      "model": "oc2r:block/gps_tower_base",
+      "y": 270
+    },
+    "facing=west,part=1": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 270
+    },
+    "facing=west,part=2": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 270
+    },
+    "facing=west,part=3": {
+      "model": "oc2r:block/gps_tower_segment",
+      "y": 270
+    },
+    "facing=west,part=4": {
+      "model": "oc2r:block/gps_tower_head",
+      "y": 270
+    }
+  }
+}

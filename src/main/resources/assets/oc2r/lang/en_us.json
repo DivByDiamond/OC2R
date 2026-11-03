@@ -16,10 +16,6 @@
   "block.oc2r.network_hub.desc": "Distributes network packets among all attached Network Connectors.",
   "block.oc2r.redstone_interface": "Redstone Interface",
   "block.oc2r.redstone_interface.desc": "Emits and reads redstone signals.",
-  "block.oc2r.disk_drive": "Disk Drive",
-  "block.oc2r.disk_drive.desc": "Used to access Floppy Disks.",
-  "block.oc2r.flash_memory_flasher": "Flash Memory Flasher",
-  "block.oc2r.flash_memory_flasher.desc": "Used to flash a new firmware onto a flash memory chip.",
   "block.oc2r.charger": "Charger",
   "block.oc2r.charger.desc": "Charges entities and items in containers on top of it.",
   "block.oc2r.creative_energy": "Infinite Energy Cube",
@@ -218,5 +214,9 @@
   "gui.oc2r.flash_writer.format_flash": "Raw .bin: OpenSBI + payload at 2 MiB.",
   "gui.oc2r.flash_writer.format_disk": "Raw disk .img; no ELF/ISO conversion.",
   "gui.oc2r.flash_writer.format_empty": "Use a raw .bin firmware or .img disk image.",
-  "gui.oc2r.flash_writer.builtin_hint": "Built-in OnyxOS needs no hard drive."
+  "gui.oc2r.flash_writer.builtin_hint": "Built-in OnyxOS needs no hard drive.",
+  "block.oc2r.gps_tower": "Positioning Tower",
+  "block.oc2r.gps_tower.desc": "Five-block positioning reference. Place one item with four free blocks above.",
+  "block.oc2r.machine_interface": "Machine Interface",
+  "block.oc2r.media_station": "Media Station"
 }

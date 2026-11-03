@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.gps.GpsTowerItem;
 import li.cil.oc2.common.bus.device.data.FirmwareRegistry;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.item.block.ChargerItem;
@@ -44,12 +45,12 @@ public final class Items {
     public static final ItemHolder<Item> COMPUTER = register(Blocks.COMPUTER);
     public static final ItemHolder<Item> MONITOR = register(Blocks.MONITOR);
     public static final ItemHolder<Item> CREATIVE_ENERGY = register(Blocks.CREATIVE_ENERGY);
-    public static final ItemHolder<Item> DISK_DRIVE = register(Blocks.DISK_DRIVE);
-    public static final ItemHolder<Item> FLASH_MEMORY_FLASHER =
-            register(Blocks.FLASH_MEMORY_FLASHER);
     public static final ItemHolder<Item> KEYBOARD = register(Blocks.KEYBOARD);
     public static final ItemHolder<Item> NETWORK_CONNECTOR = register(Blocks.NETWORK_CONNECTOR);
     public static final ItemHolder<Item> NETWORK_HUB = register(Blocks.NETWORK_HUB);
+    public static final ItemHolder<Item> MEDIA_STATION = register(Blocks.MEDIA_STATION);
+    public static final ItemHolder<Item> MACHINE_INTERFACE = register(Blocks.MACHINE_INTERFACE);
+    public static final ItemHolder<Item> GPS_TOWER = register(Blocks.GPS_TOWER, GpsTowerItem::new);
     // public static final ItemHolder<Item> NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH);
     public static final ItemHolder<Item> PROJECTOR = register(Blocks.PROJECTOR);
     public static final ItemHolder<Item> REDSTONE_INTERFACE = register(Blocks.REDSTONE_INTERFACE);

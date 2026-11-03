@@ -54,14 +54,15 @@ public final class ModLootTableProvider extends LootTableProvider {
         protected void generate() {
             dropSelf(Blocks.CHARGER.get());
             add(Blocks.COMPUTER.get(), this::droppingWithInventory);
-            dropSelf(Blocks.DISK_DRIVE.get());
             dropSelf(Blocks.KEYBOARD.get());
             dropSelf(Blocks.NETWORK_CONNECTOR.get());
             dropSelf(Blocks.NETWORK_HUB.get());
+            dropSelf(Blocks.GPS_TOWER.get());
+            dropSelf(Blocks.MACHINE_INTERFACE.get());
+            dropSelf(Blocks.MEDIA_STATION.get());
             dropSelf(Blocks.PROJECTOR.get());
             dropSelf(Blocks.REDSTONE_INTERFACE.get());
             dropSelf(Blocks.MONITOR.get());
-            dropSelf(Blocks.FLASH_MEMORY_FLASHER.get());
             // This block has no registered item; generating a self-drop would encode air.
             add(Blocks.NETWORK_SWITCH.get(), LootTable.lootTable());
             dropSelf(Blocks.VXLAN_HUB.get());

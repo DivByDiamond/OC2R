@@ -42,7 +42,7 @@ public final class FlashWriterTests {
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 300)
     public static void imageUploadIsLeasedAuthorizedAndStoredInWorldBlob(final GameTestHelper helper) throws Exception {
         final BlockPos relative = new BlockPos(1, 2, 1);
-        helper.setBlock(relative, Blocks.FLASH_MEMORY_FLASHER.get());
+        helper.setBlock(relative, Blocks.MEDIA_STATION.get());
         final FlashMemoryFlasherBlockEntity writer = TestSupport.blockEntity(helper, relative, FlashMemoryFlasherBlockEntity.class);
         final ServerPlayer player = TestSupport.serverPlayer(helper);
         final ServerPlayer intruder = TestSupport.serverPlayer(helper);
@@ -96,7 +96,7 @@ public final class FlashWriterTests {
                         final UUID blob = blobOf(writer.getDiskItemStack());
                         final var registries = helper.getLevel().registryAccess();
                         final CompoundTag saved = writer.getUpdateTag(registries);
-                        final FlashMemoryFlasherBlockEntity restored = new FlashMemoryFlasherBlockEntity(pos, writer.getBlockState());
+                        final FlashMemoryFlasherBlockEntity restored = new li.cil.oc2.common.blockentity.media.MediaStationBlockEntity(pos, writer.getBlockState());
                         restored.loadAdditional(saved, registries);
                         restored.setLevel(helper.getLevel());
                         // A real restored server BE subsequently exports/syncs its slot again.

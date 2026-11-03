@@ -468,7 +468,20 @@ tasks.named<ProcessResources>("processGametestResources") {
     inputs.property("legacyTerminalAcceptance", legacyTerminalAcceptance)
     val terminalAcceptance = providers.gradleProperty("fabric.terminalTests").orNull == "true"
     inputs.property("terminalAcceptance", terminalAcceptance)
-    val clientTestClass = if (terminalAcceptance) "FabricDoubleSizeTerminalTest" else "FabricClientAcceptanceTest"
+    val gpsAcceptance = providers.gradleProperty("fabric.gpsTests").orNull == "true"
+    inputs.property("gpsAcceptance", gpsAcceptance)
+    val machineAcceptance = providers.gradleProperty("fabric.machineTests").orNull == "true"
+    inputs.property("machineAcceptance", machineAcceptance)
+    val mediaAcceptance = providers.gradleProperty("fabric.mediaTests").orNull == "true"
+    inputs.property("mediaAcceptance", mediaAcceptance)
+    val clientTestClass = when {
+        mediaAcceptance -> "FabricMediaStationTest"
+        machineAcceptance -> "FabricMachineInterfaceTest"
+        gpsAcceptance -> "FabricGpsTowerTest"
+        terminalAcceptance -> "FabricDoubleSizeTerminalTest"
+        else -> "FabricClientAcceptanceTest"
+    }
+    inputs.property("selectedClientTestClass", clientTestClass)
     if (legacyTerminalAcceptance) {
         filesMatching("fabric.mod.json") {
             filter { line: String ->

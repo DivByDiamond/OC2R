@@ -7,4 +7,4 @@ The bundled Linux firmware is a small boot ROM; it loads the kernel from the bui
 
 To obtain bundled firmware through crafting, combine the largest blank flash chip with a [scrench](wrench.md) for Linux; combine the resulting Linux chip with a scrench again for OnyxOS firmware. The tool is returned. Do not confuse a firmware recipe with the recipe that clears a chip.
 
-The [flash memory flasher](../block/flash_memory_flasher.md) also accepts bundled firmware and local images through its interface. Shut down before replacing a computer's firmware. Custom firmware must match the emulated hardware and provide its own boot requirements.
+The [flash memory flasher](../block/media_station.md) also accepts bundled firmware and local images through its interface. Shut down before replacing a computer's firmware. Custom firmware must match the emulated hardware and provide its own boot requirements.

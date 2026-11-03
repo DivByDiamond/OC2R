@@ -7,6 +7,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **GPS tower**: a five-block positioning multiblock placed with one item, with placement clearance checks, a shared outline and dismantling when any part breaks; exposes position and dimension to connected computers.
+- **Machine interface**: transfer items, fluids and energy through adjacent machine capabilities, inspect block properties and control supported Create settings through their setters.
+- **Media station**: independent floppy and flash-memory/HDD bays on one bus connection, with the image-writing GUI, separate insertion/ejection and a direct crafting recipe.
+
 - **Fabric 26.x**: support Minecraft 26.1.2 and 26.2 alongside Fabric 1.21.1 and the three NeoForge targets. Modern client/server adapters, projector and terminal rendering, persistence acceptance, artifact validation and the CI/release matrix now cover all six targets.
 
 - **CI**: the 26.x nodes are tested like 1.21.1 — a `test-26x` job runs the unit suites of both mod and both core nodes and both 26.x GameTest suites on a Java 25 runner (measured locally: 543+543 and 17+17 unit tests), and a `demo-scripts` job syntax-checks the shell and C demo tools, runs the RPC test, compiles the demo Java harnesses and fails on hardcoded public demo endpoints.
@@ -77,6 +81,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Changed
 
+- **Device models**: standardize recessed bus ports, use evenly spaced geometric vents and update GPS tower, media station and minimalist machine interface assets.
+
 - **Lint**: `LineLength` is enforced again for every `*.java` (120 columns, matching `.editorconfig`), including the generated 26.x trees; the imported MarkdownManual package keeps its upstream line breaks under a documented file scope, and the foreign `Properties`/`BlockProps` call in block constructors is split so the longer 26.x replacement fits.
 - **Manual content**: audit English and Russian instructions against current devices, recipes and bundled Linux; add CPU/GPU, Internet, speaker, scanner and crafting coverage in Russian, and correct firmware/root-disk boot, Lua library setup, scanner arrays, tone/PCM APIs and absent helper scripts.
 - **Terminal**: the client render thread draws from a per-frame consistent snapshot (`FrameState`) captured under a geometry seqlock instead of reading live terminal state, closing the unsynchronized-reads-during-render race; row renderers' blink phase is keyed to the terminal identity so line rebuilds and the visible phase stay in step
@@ -87,6 +93,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 - **Sedna**: updated to 5.2.0 (from 4.0.1) with sedna-buildroot 0.2.10 (from 0.0.72-oc2r1): the firmware is now a minimal boot ROM that loads the kernel from disk, so flash holds only `firmware.bin` and the single `rootfs.ext2` replaces the bootfs+rootfs pair (9p and `/mnt/builtin` verified working)
 - **Codebase**: address the 108 `javac` warnings identified in the earlier audit through API and behavior fixes (inlined deprecated-API defaults with behavior proofs, a `ValueInput`-to-tag bridge without deprecated calls, version-conditional replacements named by the deprecating patches themselves)
 - **Stage 3**: the multiversion stage is closed for the four verified targets (NeoForge 1.21.1, 26.1.2, 26.2 and Fabric 1.21.1); publishing and the six-target CI/release matrix moved to Stage 4, split into Wave A (publish the four verified targets) and Wave B (Fabric 26.x port, then six targets). Known limitations of the accepted targets are recorded in [docs/roadmap/stage3-acceptance.md](docs/roadmap/stage3-acceptance.md): legacy grouped monitor/keyboard state needs one cold computer restart, and projector entity/particle shadows use bounding boxes and billboard bounds instead of exact model meshes.
+
+### Removed
+
+- **Legacy storage blocks**: remove `oc2r:disk_drive` and `oc2r:flash_memory_flasher`, their items, recipes and resources in favor of the media station. Existing instances in saved worlds are not migrated.
 
 ## [0.1.1-beta.3.1] — 2026-09-15
 

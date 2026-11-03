@@ -91,7 +91,7 @@ Sections 4 and 5 never existed. Split sections (closed part in `done.md`, open p
 | 51 | [network-overhaul.md](network-overhaul.md#51-wireless-networking-and-positioning) | wireless card, positioning |
 | 52 | [devices-storage.md](devices-storage.md#52-pocket-computer) | pocket computer |
 | 53 | [robot.md](robot.md#53-robot-as-a-full-worker) | fuel, tools, upgrades, actions |
-| 54 | [devices-storage.md](devices-storage.md#54-more-peripherals) | printer, media player, relay, command computer |
+| 54 | [devices-storage.md](devices-storage.md#54-more-peripherals) | printer, media player, environment sensor, document reader, creative command chip; see [selected devices](new-peripherals.md) |
 | 55 | [devices-storage.md](devices-storage.md#55-uniform-block-access-inventory-fluid-energy) | generic block devices |
 | 56 | [devices-storage.md](devices-storage.md#56-software-shipped-with-the-image) | bundled programs and help |
 | 57 | [icebox.md](icebox.md#57-oc2r-outside-minecraft) | standalone / browser runner |

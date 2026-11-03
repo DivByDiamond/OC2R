@@ -1,12 +1,10 @@
 package li.cil.oc2.common.capabilities;
 
 import li.cil.oc2.common.blockentity.computer.capability.ComputerBlockEntityCapabilities;
-import li.cil.oc2.common.blockentity.disk.DiskDriveBlockEntity;
 import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;
 import li.cil.oc2.common.blockentity.energy.CreativeEnergyBlockCapabilities;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.blockentity.misc.PciCardCageBlockEntity;
-import li.cil.oc2.common.blockentity.misc.flash.FlashMemoryFlasherBlockEntity;
 import li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayCapabilities;
 import li.cil.oc2.common.blockentity.monitor.misc.MonitorCapabilities;
 import li.cil.oc2.common.blockentity.network.cable.BusCableCapabilities;
@@ -27,12 +25,12 @@ public final class CapabilityProviders {
     private CapabilityProviders() {}
 
     public static void registerAll(final CapabilityRegistrar registrar) {
+        li.cil.oc2.common.blockentity.machine.MachineInterfaceBlockEntity.registerCapabilities(registrar);
         ComputerBlockEntityCapabilities.registerCapabilities(registrar);
-        DiskDriveBlockEntity.registerCapabilities(registrar);
+        li.cil.oc2.common.blockentity.media.MediaStationBlockEntity.registerMediaCapabilities(registrar);
         ChargerBlockEntity.registerCapabilities(registrar);
         CreativeEnergyBlockCapabilities.registerCapabilities(registrar);
         KeyboardBlockEntity.registerCapabilities(registrar);
-        FlashMemoryFlasherBlockEntity.registerCapabilities(registrar);
         InternetGateWayCapabilities.registerCapabilities(registrar);
         PciCardCageBlockEntity.registerCapabilities(registrar);
         MonitorCapabilities.registerCapabilities(registrar);

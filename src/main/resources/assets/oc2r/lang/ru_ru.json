@@ -11,10 +11,6 @@
   "block.oc2r.computer.preconfigured": "Собранный компьютер",
   "block.oc2r.creative_energy": "Энергокуб бесконечности",
   "block.oc2r.creative_energy.desc": "Подает бесконечную энергию на соседние блоки. Применять только в тестовых целях.",
-  "block.oc2r.disk_drive": "Дисковод",
-  "block.oc2r.disk_drive.desc": "Нужен для работы с дискетами.",
-  "block.oc2r.flash_memory_flasher": "Программатор карты памяти",
-  "block.oc2r.flash_memory_flasher.desc": "Используется для загрузки/чтения прошивки карты памяти.",
   "block.oc2r.keyboard": "Клавиатура",
   "block.oc2r.keyboard.desc": "Клавиатура и мышь. Shift+ПКМ — выбрать; ПКМ по компьютеру, монитору или проектору — связать.",
   "block.oc2r.monitor": "Монитор",
@@ -218,5 +214,9 @@
   "message.oc2r.connector.disconnected": "Соединение удалено, кабель возвращён.",
   "message.oc2r.connector.link_started": "Кабель прикреплён. Используйте его на другом разъёме для соединения или на соединённом для удаления связи.",
   "tooltip.oc2r.internet.disabled": "Доступ в интернет отключён. Администратор может включить его в настройках мода и ограничить доступные адреса. Подключения выполняются через реальный сервер.",
-  "tooltip.oc2r.internet.energy_per_packet": "Расход энергии на отправку пакета: %s"
+  "tooltip.oc2r.internet.energy_per_packet": "Расход энергии на отправку пакета: %s",
+  "block.oc2r.gps_tower": "GPS-вышка",
+  "block.oc2r.gps_tower.desc": "Опорная GPS-вышка высотой пять блоков. Для установки нужны четыре свободных блока сверху.",
+  "block.oc2r.machine_interface": "Машинный интерфейс",
+  "block.oc2r.media_station": "Медиастанция"
 }

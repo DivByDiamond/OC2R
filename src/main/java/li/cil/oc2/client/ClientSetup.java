@@ -42,7 +42,7 @@ public final class ClientSetup {
 
         registrar.registerBlockEntityRenderer(BlockEntities.COMPUTER, ComputerRenderer::new);
         registrar.registerBlockEntityRenderer(BlockEntities.MONITOR, MonitorRenderer::new);
-        registrar.registerBlockEntityRenderer(BlockEntities.DISK_DRIVE, DiskDriveRenderer::new);
+        registrar.registerBlockEntityRenderer(BlockEntities.MEDIA_STATION, DiskDriveRenderer::forMediaStation);
         registrar.registerBlockEntityRenderer(BlockEntities.CHARGER, ChargerRenderer::new);
         registrar.registerBlockEntityRenderer(BlockEntities.PROJECTOR, ProjectorRenderer::new);
         registrar.registerBlockEntityRenderer(

@@ -33,6 +33,7 @@ import li.cil.oc2.common.bus.device.rpc.block.BlockStateObjectDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.EnergyStorageBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.FluidHandlerBlockDeviceProvider;
 import li.cil.oc2.common.bus.device.rpc.block.adapter.ItemHandlerBlockDeviceProvider;
+import li.cil.oc2.common.integration.create.CreateControlsProvider;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.Registry;
 
@@ -110,5 +111,6 @@ public final class ProviderRegistry {
         registerBlockProvider("energy_storage", EnergyStorageBlockDeviceProvider::new);
         registerBlockProvider("fluid_handler", FluidHandlerBlockDeviceProvider::new);
         registerBlockProvider("item_handler", ItemHandlerBlockDeviceProvider::new);
+        registerBlockProvider("create_controls", CreateControlsProvider::new);
     }
 }

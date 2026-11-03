@@ -5,6 +5,7 @@ package li.cil.oc2.data.model;
 import li.cil.oc2.api.API;
 import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.Blocks;
+import li.cil.oc2.common.block.gps.GpsTowerBlock;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.platform.BlockHolder;
@@ -34,8 +35,6 @@ public final class ModBlockStateProvider extends BlockStateProvider {
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/computer");
     private static final ResourceLocation MONITOR_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/monitor");
-    private static final ResourceLocation DISK_DRIVE_MODEL =
-            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/disk_drive");
     private static final ResourceLocation KEYBOARD_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/keyboard");
     private static final ResourceLocation NETWORK_CONNECTOR_MODEL =
@@ -57,6 +56,10 @@ public final class ModBlockStateProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
+        horizontalBlock(Blocks.MEDIA_STATION, Items.MEDIA_STATION,
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/media_station"));
+        horizontalBlock(Blocks.MACHINE_INTERFACE, Items.MACHINE_INTERFACE,
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/machine_interface"));
         horizontalBlock(Blocks.CHARGER, Items.CHARGER, CHARGER_MODEL);
         horizontalBlock(Blocks.COMPUTER, Items.COMPUTER, COMPUTER_MODEL);
         // Monitor uses a hand-written blockstate (multiblock size properties) + custom model
@@ -65,7 +68,6 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 .getBuilder(Items.MONITOR.getId().getPath())
                 .parent(models().getExistingFile(MONITOR_MODEL));
         simpleBlock(Blocks.CREATIVE_ENERGY, Items.CREATIVE_ENERGY);
-        horizontalBlock(Blocks.DISK_DRIVE, Items.DISK_DRIVE, DISK_DRIVE_MODEL);
         horizontalBlock(Blocks.KEYBOARD, Items.KEYBOARD, KEYBOARD_MODEL);
         horizontalFaceBlock(
                         Blocks.NETWORK_CONNECTOR, Items.NETWORK_CONNECTOR, NETWORK_CONNECTOR_MODEL)
@@ -81,6 +83,8 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 .scale(1, 1, 1)
                 .end()
                 .end();
+        getVariantBuilder(Blocks.GPS_TOWER.get()).forAllStates(this::gpsTowerModel);
+        itemModels().withExistingParent("gps_tower", "oc2r:block/gps_tower_inventory");
         horizontalBlock(Blocks.NETWORK_HUB, Items.NETWORK_HUB, NETWORK_HUB_MODEL);
         // horizontalBlock(Blocks.NETWORK_SWITCH, Items.NETWORK_SWITCH, NETWORK_HUB_MODEL);
         horizontalBlock(Blocks.PROJECTOR, Items.PROJECTOR, PROJECTOR_MODEL);
@@ -89,6 +93,15 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         // horizontalBlock(Blocks.PCI_CARD_CAGE, Items.PCI_CARD_CAGE, PCI_CARD_CAGE_MODEL);
 
         registerCableStates();
+    }
+
+    private ConfiguredModel[] gpsTowerModel(final net.minecraft.world.level.block.state.BlockState state) {
+        final int part = state.getValue(GpsTowerBlock.PART);
+        final String suffix = part == 0 ? "base" : part == 4 ? "head" : "segment";
+        final var model = models().getExistingFile(
+                ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/gps_tower_" + suffix));
+        return ConfiguredModel.builder().modelFile(model)
+                .rotationY(((int) state.getValue(GpsTowerBlock.FACING).toYRot() + 180) % 360).build();
     }
 
     private void registerCableStates() {
