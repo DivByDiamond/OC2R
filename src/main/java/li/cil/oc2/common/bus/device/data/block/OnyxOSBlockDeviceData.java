@@ -32,15 +32,15 @@ public final class OnyxOSBlockDeviceData implements BlockDeviceData {
         final Path override = config.resolve("onyxfs.img");
         final boolean custom = Files.isRegularFile(override);
         try (InputStream current = custom ? Files.newInputStream(override)
-                        : OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs.img");
-                InputStream legacy = OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs-20261016.img");
-                InputStream previous = OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs-20261018.img")) {
-            if (current == null || legacy == null || previous == null) {
+                : OnyxOSBlockDeviceData.class.getResourceAsStream("/onyxos/onyxfs.img")) {
+            if (current == null) {
                 throw new IllegalStateException("Bundled OnyxOS root image is missing");
             }
             if (custom) LOGGER.info("OnyxOS: using override {}", override);
-            return new VersionedRootImages(current.readAllBytes(), legacy.readAllBytes(),
-                    config.resolve("root-images"), custom, previous.readAllBytes());
+            // Only the newest image is bundled. Older bases of saved computers are
+            // restored from the pinned config/oc2r/root-images cache.
+            final byte[] bytes = current.readAllBytes();
+            return new VersionedRootImages(bytes, bytes, config.resolve("root-images"), true);
         } catch (final IOException e) {
             throw new IllegalStateException("Cannot load and preserve OnyxOS root images", e);
         }

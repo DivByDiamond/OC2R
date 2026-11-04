@@ -43,10 +43,10 @@ sent as a host-side scroll/blit command.
 - Root SHA256: `81c28f41486d64d6258aed1121ed49f8925b131b9d878ecb1bf06cc2fdc31cff`.
   Only the existing 5124-byte PSF payload at byte offset 4878336 changed from the
   preceding bundled root; app binaries and all other filesystem bytes are unchanged.
-- The preceding root remains `onyxfs-20261018.img`, SHA256
-  `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`.
-  The older `onyxfs-20261016.img` is also retained. Saved sparse pages resolve
-  their exact original base, including on a fresh installation without its cache.
+- The preceding root had SHA256
+  `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`. It is no
+  longer bundled; saved sparse pages resolve their original base from the
+  pinned `config/oc2r/root-images/` cache.
   Existing private roots retain their files, including their installed font.
   A [manual stock-font update](../ONYXOS.md#updating-the-stock-font-in-an-existing-root)
   was verified with a secondary disk: only the font changed, its backup and all

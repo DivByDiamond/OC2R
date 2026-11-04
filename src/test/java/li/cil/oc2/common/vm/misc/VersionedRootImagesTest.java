@@ -90,16 +90,6 @@ class VersionedRootImagesTest {
     }
 
     @Test
-    void retainedLegacyResourceIsByteIdenticalToTheReleasedBase() throws Exception {
-        try (var input = getClass().getResourceAsStream("/onyxos/onyxfs-20261016.img")) {
-            assertNotNull(input);
-            final String hash = java.util.HexFormat.of().formatHex(
-                    java.security.MessageDigest.getInstance("SHA-256").digest(input.readAllBytes()));
-            assertEquals("bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b", hash);
-        }
-    }
-
-    @Test
     void aFreshInstallationRestoresOldSparsePagesAgainstTheRetainedBundledBase() throws Exception {
         final var old = new VersionedRootImages(bytes(2), bytes(1), cache.resolve("old"), false);
         final var base = old.current();
@@ -116,16 +106,6 @@ class VersionedRootImagesTest {
         assertEquals(2, restored.rootFilesystem.getInputStream(0).read());
         assertEquals(91, restored.rootFilesystem.getInputStream(65540).read());
         assertEquals(3, updated.current().device().getInputStream(0).read());
-    }
-
-    @Test
-    void previousBundledResourceRetainsItsExactContentAddress() throws Exception {
-        try (var input = getClass().getResourceAsStream("/onyxos/onyxfs-20261018.img")) {
-            assertNotNull(input);
-            final String hash = java.util.HexFormat.of().formatHex(
-                    java.security.MessageDigest.getInstance("SHA-256").digest(input.readAllBytes()));
-            assertEquals("a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561", hash);
-        }
     }
 
     private VersionedRootImages images(final int value) throws Exception {

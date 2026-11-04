@@ -1,10 +1,14 @@
 # Bundled OnyxOS images
 
+The default image was rebuilt on 2026-11-04 and now includes the `ochat` radio
+messenger (`ochat` CLI and `ochat-gui`). Existing private roots keep their old
+base and do not receive it; new computers do.
+
 The kernel was updated on 2026-10-28 from OnyxKernel `6506c16`, including
 font metrics, faster scaled console presentation, optional completed-frame
 publication and multiple native input queues. The userspace remains the
-2026-10-18 image with only its existing PSF font payload replaced. Both earlier
-2026-10-16 and 2026-10-18 roots are retained for saved sparse disks. See the
+2026-10-18 image with only its existing PSF font payload replaced. Only the
+current image is bundled; older roots are not kept in the jar. See the
 [display/input acceptance](roadmap/onyx-input-display-acceptance.md) for this
 update's exact scope and evidence. Historical network/RPC checks below refer
 to their stated earlier checkpoints.
@@ -73,16 +77,16 @@ reading a retained legacy root or using a complete hard-drive image. After an im
 update, saved machines select their original base before their writable pages
 are restored; newly created roots use the updated image.
 
-Snapshots created before `baseImageId` existed select the retained
-`onyxfs-20261016.img` resource, whose SHA-256 is
-`bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
-An existing custom override retains the previous override behavior for those
-unversioned snapshots: keep that override unchanged until each machine has been
-loaded and saved with a base identity. Do not replace the retained legacy image.
-Updating the default image does not install tools into existing private roots.
-The preceding identity `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`
-is also retained as `onyxfs-20261018.img`, so a world using that base can be
-restored on a fresh installation without its old local cache.
+Only the newest image is bundled: `src/main/resources/onyxos/` holds one
+`onyxfs.img` and the matching `onyx-kernel.bin`. When the image changes, delete
+the old image and replace it; do not add dated copies. Computers saved on an
+older base keep working while that base is still pinned in
+`config/oc2r/root-images/` on the same installation. A fresh installation or a
+wiped cache has no copy of the old base, so those computers stop with the
+missing-base error below until the cache file is restored. Snapshots created
+before `baseImageId` existed have no base identity and are mounted over the
+current image. Updating the default image does not install tools into existing
+private roots.
 
 If a saved base is missing or its bytes do not match its identity, the VM stops
 with an error and retains its original snapshot, including all writable pages.
@@ -118,7 +122,7 @@ is an explicit file copy, not automatic migration; the archived base and other
 user files remain intact. The kernel loads the font at boot, so restoring a
 running VM snapshot or reopening the world alone does not reload it.
 
-Standalone Sedna QA used the retained `onyxfs-20261018.img` as a private root
+Standalone Sedna QA used the previous 2026-10-18 image as a private root
 and the current image as the secondary disk. After the guest copy and a fresh
 VM boot, the installed font matched the new 5,124-byte PSF exactly, the backup
 matched the old PSF, and a user marker survived. Comparing the contents of all existing

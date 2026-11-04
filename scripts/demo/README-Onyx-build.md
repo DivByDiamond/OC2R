@@ -100,11 +100,11 @@ empty-password hash and protected, wrong-password, locked and malformed account
 records; kernel tests alone do not establish login behavior. Console scaling
 also needs actual framebuffer/TUI checks, including the smaller robot display.
 
-Preserve `src/main/resources/onyxos/onyxfs-20261016.img` byte for byte. Saved
-private roots select their original base identity and will not acquire a new
-login or HTTP client by updating the default image. A tested candidate may
-replace only the current `onyxfs.img` and the matching current kernel; retain
-all base-cache files used by existing snapshots. Filesystem timestamps can make
+Keep only one image in `src/main/resources/onyxos/`: replace `onyxfs.img` and
+the matching kernel and delete old images. Saved private roots keep their
+original base only through the `config/oc2r/root-images/` cache, and will not
+acquire a new login or HTTP client by updating the default image. Test a
+candidate before replacing the current image. Filesystem timestamps can make
 freshly repacked images differ even when their file contents are identical.
 
 A host HTTP-reader regression supplies a close-delimited response and then EOF;
