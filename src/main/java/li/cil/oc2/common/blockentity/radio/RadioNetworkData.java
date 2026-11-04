@@ -221,6 +221,7 @@ public final class RadioNetworkData extends SavedData {
     private void tick(final ServerLevel level) {
         reconcile(level);
         if (registry.expireInvites(level.getGameTime()) > 0) setDirty();
+        if (registry.expireEnrollmentRequests(level.getGameTime()) > 0) setDirty();
         broker.tick(level.getGameTime());
         applicationLink.tick();
         scheduler.tick(

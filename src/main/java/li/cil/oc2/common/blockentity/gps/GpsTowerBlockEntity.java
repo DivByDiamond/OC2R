@@ -284,6 +284,170 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
                 .collect(java.util.stream.Collectors.toSet());
     }
 
+    /** Pending enrollment as shown to an administrator; scopes use {@link #describe}. */
+    public record PendingEnrollment(
+            String request, String endpointId, java.util.List<String> scopes, long expiresAtTick) {}
+
+    /**
+     * Like {@link #issueRadioInviteWithPermissions} but the invitation only opens a pending
+     * request; an administrator must approve it with {@link #approveEnrollment}.
+     */
+    @Callback
+    public Map<String, String> issueRadioInviteForApproval(
+            @Parameter("adminSecret") String adminSecret,
+            @Parameter("endpointId") String endpointId,
+            @Parameter("permissions") String[] permissions,
+            @Parameter("targetEndpointId") String target,
+            @Parameter("service") String service) {
+        requireAssembled();
+        final var admin = requireAdmin();
+        final var data = radioData();
+        final var invite =
+                data.registry()
+                        .invite(
+                                admin.network(),
+                                adminSecret,
+                                getDimension(),
+                                UUID.fromString(endpointId),
+                                scopes(permissions, target, service),
+                                level.getGameTime(),
+                                Config.radioInviteLifetimeTicks,
+                                true);
+        data.setDirty();
+        return Map.of("invite", invite.invite().toString(), "secret", invite.secret());
+    }
+
+    /**
+     * Presents an approval-required invitation. Grants nothing until approved; returns the request
+     * id. Once approved, call {@link #completeRadioEnrollment} to join the radio topology.
+     */
+    @Callback
+    public String requestRadioEnrollment(
+            @Parameter("invite") final String invitation,
+            @Parameter("secret") final String secret) {
+        requireAssembled();
+        final var data = radioData();
+        final UUID id = UUID.fromString(invitation);
+        final var invite =
+                data.registry().exportState().invites().stream()
+                        .filter(value -> value.id().equals(id))
+                        .findFirst()
+                        .orElseThrow(() -> new SecurityException("Invalid invitation"));
+        if (!invite.device().equals(radioEndpoint) || !invite.dimension().equals(getDimension()))
+            throw new SecurityException("Invitation belongs to another endpoint");
+        final var ticket = data.registry().requestEnrollment(id, secret, level.getGameTime());
+        radioCredential = ticket.secret();
+        setChanged();
+        data.setDirty();
+        return ticket.request().toString();
+    }
+
+    /** True once a pending request was approved; registers this tower in the radio topology. */
+    @Callback
+    public boolean completeRadioEnrollment() {
+        requireAssembled();
+        return refreshRadio();
+    }
+
+    @Callback
+    public java.util.List<PendingEnrollment> listPendingEnrollments(
+            @Parameter("adminSecret") final String adminSecret) {
+        requireAssembled();
+        final var admin = requireAdmin();
+        return radioData()
+                .registry()
+                .pendingEnrollments(admin.network(), adminSecret, level.getGameTime())
+                .stream()
+                .map(
+                        request ->
+                                new PendingEnrollment(
+                                        request.id().toString(),
+                                        request.device().toString(),
+                                        request.requestedScopes().stream()
+                                                .map(GpsTowerBlockEntity::describe)
+                                                .sorted()
+                                                .toList(),
+                                        request.expiresAtTick()))
+                .toList();
+    }
+
+    /**
+     * Approves with exactly the listed scopes, each either a bare permission name (all requested
+     * scopes of that permission) or a full description from the pending list. An empty list admits
+     * the device with no permissions; names that were not requested are rejected.
+     */
+    @Callback
+    public void approveEnrollment(
+            @Parameter("adminSecret") final String adminSecret,
+            @Parameter("requestId") final String requestId,
+            @Parameter("scopes") final String[] scopes) {
+        requireAssembled();
+        final var admin = requireAdmin();
+        final var data = radioData();
+        final UUID id = UUID.fromString(requestId);
+        final var request =
+                data.registry()
+                        .pendingEnrollments(admin.network(), adminSecret, level.getGameTime())
+                        .stream()
+                        .filter(value -> value.id().equals(id))
+                        .findFirst()
+                        .orElseThrow(() -> new SecurityException("Unknown enrollment request"));
+        final Set<li.cil.oc2.common.radio.RadioRegistry.Scope> approved = new java.util.HashSet<>();
+        for (final String name : scopes) {
+            final var matched =
+                    request.requestedScopes().stream()
+                            .filter(
+                                    scope ->
+                                            describe(scope).equals(name)
+                                                    || scope.permission().name().equals(name))
+                            .toList();
+            if (matched.isEmpty())
+                throw new SecurityException("Scope was not requested: " + name);
+            approved.addAll(matched);
+        }
+        data.registry()
+                .approveEnrollment(admin.network(), adminSecret, id, approved, level.getGameTime());
+        data.setDirty();
+    }
+
+    @Callback
+    public void denyEnrollment(
+            @Parameter("adminSecret") final String adminSecret,
+            @Parameter("requestId") final String requestId) {
+        requireAssembled();
+        final var admin = requireAdmin();
+        final var data = radioData();
+        data.registry()
+                .denyEnrollment(
+                        admin.network(), adminSecret, UUID.fromString(requestId), level.getGameTime());
+        data.setDirty();
+    }
+
+    /** The tower must itself be a live member holding NETWORK_ADMIN; checked on every call. */
+    private li.cil.oc2.common.radio.RadioRegistry.Member requireAdmin() {
+        final var registry = radioData().registry();
+        final var member =
+                registry.authenticate(radioEndpoint, radioCredential)
+                        .orElseThrow(() -> new SecurityException("Tower is not enrolled"));
+        if (!registry.authorized(
+                radioEndpoint,
+                radioCredential,
+                li.cil.oc2.common.radio.RadioRegistry.Permission.NETWORK_ADMIN,
+                null,
+                null)) throw new SecurityException("Tower lacks network administration");
+        return member;
+    }
+
+    private static String describe(final li.cil.oc2.common.radio.RadioRegistry.Scope scope) {
+        return scope.device() == null && scope.service() == null
+                ? scope.permission().name()
+                : scope.permission().name()
+                        + ":"
+                        + (scope.device() == null ? "*" : scope.device())
+                        + ":"
+                        + (scope.service() == null ? "*" : scope.service());
+    }
+
     @Callback
     public void joinRadioNetwork(
             @Parameter("invite") final String invitation,

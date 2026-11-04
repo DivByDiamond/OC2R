@@ -53,7 +53,7 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 
 ## 4. Enrollment, identity and permissions
 
-- [ ] Network owner approves enrollment from a PC (first a command-line approval over the tower RPC, a graphical list later); proximity alone and knowledge of a UUID do not grant access.
+- [x] Network owner approves enrollment from a PC via the tower RPC (`listPendingEnrollments`/`approveEnrollment`/`denyEnrollment`, approval-gated invites, bounded and expiring requests); proximity alone and knowledge of a UUID do not grant access. A graphical list remains future work.
 - [ ] Issue per-device credentials using a cryptographically secure source; authenticate sessions against server-owned enrollment records.
 - [x] Support separate telemetry-read, command-send and network-admin permissions, scoped to devices/services (`RadioRegistry.Permission`/`Scope`; the broker rechecks them on send, delivery, subscription and command completion).
 - [ ] Enforce network membership/routing and host operations on the server; the service endpoint separately authorizes subscriptions and commands before execution. Encrypted relays need not inspect application payloads.

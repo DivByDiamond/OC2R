@@ -3,6 +3,10 @@ package li.cil.oc2.gametest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import li.cil.oc2.common.blockentity.radio.RadioNetworkData;
+import li.cil.oc2.common.radio.RadioRegistry;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.block.common.Blocks;
@@ -281,6 +285,98 @@ public final class RadioBridgeTests {
         pc.revokeRadioEndpoint(created.get("adminSecret"), relay.getRadioEndpointId());
         TestSupport.assertTrue(
                 helper, "revoked device disappears", pc.listRadioDevices().size() == 1);
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void approvedEnrollmentAdmitsOnlyApprovedScopes(final GameTestHelper helper) {
+        final GpsTowerBlockEntity admin = tower(helper, SOURCE);
+        final GpsTowerBlockEntity joiner = tower(helper, TARGET);
+        final var created = admin.createRadioNetwork();
+        final String secret = created.get("adminSecret");
+        final var invite = admin.issueRadioInviteForApproval(secret, joiner.getRadioEndpointId(),
+                new String[] {"MESSAGE_SEND", "COMMAND_SEND"}, null, null);
+        try {
+            joiner.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
+            throw TestSupport.failure(helper, "approval-required invite admitted directly");
+        } catch (final SecurityException expected) {
+        }
+        final String request = joiner.requestRadioEnrollment(invite.get("invite"), invite.get("secret"));
+        TestSupport.assertTrue(helper, "pending request grants nothing",
+                joiner.getRadioStatus().get("enrolled").equals(false) && !joiner.completeRadioEnrollment());
+        final var listed = admin.listPendingEnrollments(secret);
+        TestSupport.assertTrue(helper, "request is listed",
+                listed.size() == 1 && listed.get(0).request().equals(request)
+                        && listed.get(0).endpointId().equals(joiner.getRadioEndpointId())
+                        && listed.get(0).scopes().equals(List.of("COMMAND_SEND", "MESSAGE_SEND")));
+        try {
+            admin.approveEnrollment("wrong-admin-secret", request, new String[] {"MESSAGE_SEND"});
+            throw TestSupport.failure(helper, "approval without admin secret");
+        } catch (final SecurityException expected) {
+        }
+        try {
+            admin.approveEnrollment(secret, request, new String[] {"NETWORK_ADMIN"});
+            throw TestSupport.failure(helper, "approved a scope that was not requested");
+        } catch (final SecurityException expected) {
+        }
+        try {
+            joiner.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
+            throw TestSupport.failure(helper, "unenrolled tower approved itself");
+        } catch (final SecurityException expected) {
+        }
+        admin.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
+        TestSupport.assertTrue(helper, "approved device enrolled and joins topology",
+                joiner.getRadioStatus().get("enrolled").equals(true) && joiner.completeRadioEnrollment());
+        final var registry = RadioNetworkData.get(helper.getLevel()).registry();
+        final var member = registry.member(UUID.fromString(joiner.getRadioEndpointId())).orElseThrow();
+        TestSupport.assertTrue(helper, "only the approved scope is granted",
+                member.scopes().equals(Set.of(new RadioRegistry.Scope(RadioRegistry.Permission.MESSAGE_SEND, null, null))));
+        try {
+            admin.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
+            throw TestSupport.failure(helper, "double approval succeeded");
+        } catch (final SecurityException expected) {
+        }
+        try {
+            joiner.listPendingEnrollments(secret);
+            throw TestSupport.failure(helper, "device without NETWORK_ADMIN listed requests");
+        } catch (final SecurityException expected) {
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void deniedAndExpiredEnrollmentsNeverAdmit(final GameTestHelper helper) {
+        final GpsTowerBlockEntity admin = tower(helper, SOURCE);
+        final GpsTowerBlockEntity denied = tower(helper, TARGET);
+        final GpsTowerBlockEntity expiring = tower(helper, SOURCE.offset(0, 0, 8));
+        final var created = admin.createRadioNetwork();
+        final String secret = created.get("adminSecret");
+        final var first = admin.issueRadioInviteForApproval(secret, denied.getRadioEndpointId(),
+                new String[] {"MESSAGE_SEND"}, null, null);
+        final var second = admin.issueRadioInviteForApproval(secret, expiring.getRadioEndpointId(),
+                new String[] {"MESSAGE_SEND"}, null, null);
+        final String deniedRequest = denied.requestRadioEnrollment(first.get("invite"), first.get("secret"));
+        final String expiringRequest = expiring.requestRadioEnrollment(second.get("invite"), second.get("secret"));
+        TestSupport.assertTrue(helper, "two requests pending", admin.listPendingEnrollments(secret).size() == 2);
+        admin.denyEnrollment(secret, deniedRequest);
+        try {
+            admin.approveEnrollment(secret, deniedRequest, new String[] {"MESSAGE_SEND"});
+            throw TestSupport.failure(helper, "denied request approved");
+        } catch (final SecurityException expected) {
+        }
+        TestSupport.assertTrue(helper, "denied device not enrolled",
+                denied.getRadioStatus().get("enrolled").equals(false));
+        final var registry = RadioNetworkData.get(helper.getLevel()).registry();
+        TestSupport.assertTrue(helper, "request expires after the fixed window",
+                registry.expireEnrollmentRequests(helper.getLevel().getGameTime()
+                        + RadioRegistry.PENDING_LIFETIME_TICKS) == 1);
+        try {
+            admin.approveEnrollment(secret, expiringRequest, new String[] {"MESSAGE_SEND"});
+            throw TestSupport.failure(helper, "expired request approved");
+        } catch (final SecurityException expected) {
+        }
+        TestSupport.assertTrue(helper, "expired device not enrolled",
+                expiring.getRadioStatus().get("enrolled").equals(false) && admin.listPendingEnrollments(secret).isEmpty());
         helper.succeed();
     }
 

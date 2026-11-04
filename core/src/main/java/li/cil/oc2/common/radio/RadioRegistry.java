@@ -14,6 +14,10 @@ public final class RadioRegistry {
     public static final int MAX_SCOPES = 64;
     public static final int MAX_RESERVATIONS = 65536;
     public static final long DEFAULT_INVITE_LIFETIME_TICKS = 1200;
+    /** Pending approval requests allowed per network at one time. */
+    public static final int MAX_PENDING_PER_NETWORK = 16;
+    /** Fixed lifetime of a pending approval request (five minutes at 20 TPS). */
+    public static final long PENDING_LIFETIME_TICKS = 6000;
 
     public enum Permission {
         MESSAGE_SEND,
@@ -64,7 +68,13 @@ public final class RadioRegistry {
             UUID device,
             Set<Scope> scopes,
             String secretHash,
-            long expiresAtTick) {
+            long expiresAtTick,
+            boolean requiresApproval) {
+        public Invite(final UUID id, final UUID network, final String dimension, final UUID device,
+                      final Set<Scope> scopes, final String secretHash, final long expiresAtTick) {
+            this(id, network, dimension, device, scopes, secretHash, expiresAtTick, false);
+        }
+
         public Invite {
             Objects.requireNonNull(id);
             Objects.requireNonNull(network);
@@ -76,6 +86,33 @@ public final class RadioRegistry {
             if (scopes.size() > MAX_SCOPES) throw new IllegalArgumentException("Too many scopes");
         }
     }
+
+    /**
+     * A device that presented a valid approval-required invitation. It holds no membership and no
+     * permission; credentialHash is the hash of the claim secret that becomes the device credential
+     * only if an administrator approves.
+     */
+    public record EnrollmentRequest(
+            UUID id,
+            UUID network,
+            String dimension,
+            UUID device,
+            Set<Scope> requestedScopes,
+            String credentialHash,
+            long expiresAtTick) {
+        public EnrollmentRequest {
+            Objects.requireNonNull(id);
+            Objects.requireNonNull(network);
+            Objects.requireNonNull(device);
+            requireDimension(dimension);
+            requireHash(credentialHash);
+            if (expiresAtTick < 0) throw new IllegalArgumentException("Invalid request expiry");
+            requestedScopes = Set.copyOf(requestedScopes);
+            if (requestedScopes.size() > MAX_SCOPES) throw new IllegalArgumentException("Too many scopes");
+        }
+    }
+
+    public record PendingTicket(UUID request, String secret) {}
 
     /** A permanent reservation, including addresses retired by revocation or reenrollment. */
     public record Reservation(UUID network, int number) {
@@ -89,12 +126,23 @@ public final class RadioRegistry {
             List<Network> networks,
             List<Member> members,
             List<Invite> invites,
-            List<Reservation> reservations) {
+            List<Reservation> reservations,
+            List<EnrollmentRequest> pending) {
         public State {
             networks = List.copyOf(networks);
             members = List.copyOf(members);
             invites = List.copyOf(invites);
             reservations = reservations == null ? List.of() : List.copyOf(reservations);
+            pending = pending == null ? List.of() : List.copyOf(pending);
+        }
+
+        public State(
+                final int nextPrefix,
+                final List<Network> networks,
+                final List<Member> members,
+                final List<Invite> invites,
+                final List<Reservation> reservations) {
+            this(nextPrefix, networks, members, invites, reservations, List.of());
         }
 
         public State(
@@ -115,6 +163,7 @@ public final class RadioRegistry {
     private final Map<UUID, Network> networks = new HashMap<>();
     private final Map<UUID, Member> members = new HashMap<>();
     private final Map<UUID, Invite> invites = new HashMap<>();
+    private final Map<UUID, EnrollmentRequest> pending = new HashMap<>();
     private final SecureRandom random = new SecureRandom();
     private final SecureRandom addressRandom;
     private final Set<Reservation> reservations = new HashSet<>();
@@ -152,6 +201,14 @@ public final class RadioRegistry {
     public Invitation invite(
             final UUID network, final String adminSecret, final String dimension,
             final UUID device, final Set<Scope> scopes, final long now, final long lifetimeTicks) {
+        return invite(network, adminSecret, dimension, device, scopes, now, lifetimeTicks, false);
+    }
+
+    /** With requiresApproval the invite can only open a pending request, never admit directly. */
+    public Invitation invite(
+            final UUID network, final String adminSecret, final String dimension,
+            final UUID device, final Set<Scope> scopes, final long now, final long lifetimeTicks,
+            final boolean requiresApproval) {
         requireAdmin(network, adminSecret);
         if (now < 0 || lifetimeTicks < 1 || lifetimeTicks > 72000)
             throw new IllegalArgumentException("Invalid invitation lifetime");
@@ -162,7 +219,8 @@ public final class RadioRegistry {
         final UUID id = UUID.randomUUID();
         final String secret = secret();
         final long expires = now > Long.MAX_VALUE - lifetimeTicks ? Long.MAX_VALUE : now + lifetimeTicks;
-        invites.put(id, new Invite(id, network, dimension, device, scopes, hash(secret), expires));
+        invites.put(id, new Invite(id, network, dimension, device, scopes, hash(secret), expires,
+                requiresApproval));
         return new Invitation(id, secret);
     }
 
@@ -176,36 +234,108 @@ public final class RadioRegistry {
         if (invite == null || !matches(invite.secretHash(), invitationSecret))
             throw new SecurityException("Invalid invitation");
         if (invite.expiresAtTick() <= now) throw new SecurityException("Invitation expired");
-        final Member previous = members.get(invite.device());
+        if (invite.requiresApproval()) throw new SecurityException("Invitation requires approval");
+        final String secret = secret();
+        final Member member = admit(invite.device(), invite.network(), invite.dimension(),
+                invite.scopes(), hash(secret));
+        invites.remove(invitation);
+        return new Enrollment(member, secret);
+    }
+
+    /** Shared admission: capacity, duplicate and address checks, then a fresh random address. */
+    private Member admit(final UUID device, final UUID networkId, final String dimension,
+                         final Set<Scope> scopes, final String credentialHash) {
+        final Member previous = members.get(device);
         if (previous == null && members.size() >= MAX_MEMBERS)
             throw new IllegalStateException("Member registry capacity");
         if (previous != null && !previous.revoked())
             throw new SecurityException("Device already enrolled");
-        final Network network = networks.get(invite.network());
+        final Network network = networks.get(networkId);
         if (reservations.size() >= MAX_RESERVATIONS)
             throw new IllegalStateException("Address reservation capacity");
-        final int number =
-                selectAvailable(
-                        network.nextDevice(),
-                        reservations.stream()
-                                .filter(value -> value.network().equals(network.id()))
-                                .map(Reservation::number)
-                                .toList());
-        final String secret = secret();
-        final Member member =
-                new Member(
-                        invite.device(),
-                        network.id(),
-                        invite.dimension(),
-                        number,
-                        previous == null ? 1 : previous.generation() + 1,
-                        hash(secret),
-                        invite.scopes(),
-                        false);
+        final int number = selectAvailable(network.nextDevice(), reservations.stream()
+                .filter(value -> value.network().equals(network.id()))
+                .map(Reservation::number)
+                .toList());
+        final Member member = new Member(device, network.id(), dimension, number,
+                previous == null ? 1 : previous.generation() + 1, credentialHash, scopes, false);
         reservations.add(new Reservation(network.id(), number));
         members.put(member.id(), member);
+        return member;
+    }
+
+    /**
+     * Turns a valid approval-required invitation into a pending request. The invitation is consumed,
+     * so one invitation yields at most one request. Returns a claim secret that becomes the device
+     * credential on approval; it grants nothing before that.
+     */
+    public PendingTicket requestEnrollment(final UUID invitation, final String invitationSecret, final long now) {
+        if (now < 0) throw new IllegalArgumentException("Invalid invitation clock");
+        final Invite invite = invites.get(invitation);
+        if (invite == null || !matches(invite.secretHash(), invitationSecret))
+            throw new SecurityException("Invalid invitation");
+        if (invite.expiresAtTick() <= now) throw new SecurityException("Invitation expired");
+        if (!invite.requiresApproval()) throw new SecurityException("Invitation does not use approval");
+        expireEnrollmentRequests(now);
+        final Member previous = members.get(invite.device());
+        if (previous != null && !previous.revoked()) throw new SecurityException("Device already enrolled");
+        if (pending.values().stream().anyMatch(value -> value.device().equals(invite.device())))
+            throw new IllegalStateException("Enrollment already pending");
+        if (pending.values().stream().filter(value -> value.network().equals(invite.network())).count()
+                >= MAX_PENDING_PER_NETWORK)
+            throw new IllegalStateException("Pending enrollment capacity");
+        final String secret = secret();
+        final UUID id = UUID.randomUUID();
+        final long expires = now > Long.MAX_VALUE - PENDING_LIFETIME_TICKS
+                ? Long.MAX_VALUE : now + PENDING_LIFETIME_TICKS;
+        pending.put(id, new EnrollmentRequest(id, invite.network(), invite.dimension(), invite.device(),
+                invite.scopes(), hash(secret), expires));
         invites.remove(invitation);
-        return new Enrollment(member, secret);
+        return new PendingTicket(id, secret);
+    }
+
+    /** Live pending requests of one network, oldest expiry first. Requires the network admin secret. */
+    public List<EnrollmentRequest> pendingEnrollments(final UUID network, final String adminSecret, final long now) {
+        requireAdmin(network, adminSecret);
+        expireEnrollmentRequests(now);
+        return pending.values().stream()
+                .filter(value -> value.network().equals(network))
+                .sorted(Comparator.comparingLong(EnrollmentRequest::expiresAtTick)
+                        .thenComparing(EnrollmentRequest::id))
+                .toList();
+    }
+
+    /** Admits the requester with exactly the approved scopes, which must be a subset of those requested. */
+    public Member approveEnrollment(final UUID network, final String adminSecret, final UUID request,
+                                    final Set<Scope> approved, final long now) {
+        requireAdmin(network, adminSecret);
+        final EnrollmentRequest value = livePending(network, request, now);
+        if (!value.requestedScopes().containsAll(approved))
+            throw new SecurityException("Approved scopes exceed requested scopes");
+        final Member member = admit(value.device(), network, value.dimension(), approved, value.credentialHash());
+        pending.remove(request);
+        return member;
+    }
+
+    public void denyEnrollment(final UUID network, final String adminSecret, final UUID request, final long now) {
+        requireAdmin(network, adminSecret);
+        livePending(network, request, now);
+        pending.remove(request);
+    }
+
+    public int expireEnrollmentRequests(final long now) {
+        if (now < 0) throw new IllegalArgumentException("Invalid request clock");
+        final int before = pending.size();
+        pending.values().removeIf(value -> value.expiresAtTick() <= now);
+        return before - pending.size();
+    }
+
+    private EnrollmentRequest livePending(final UUID network, final UUID request, final long now) {
+        expireEnrollmentRequests(now);
+        final EnrollmentRequest value = pending.get(request);
+        if (value == null || !value.network().equals(network))
+            throw new SecurityException("Unknown enrollment request");
+        return value;
     }
 
     public Optional<Member> authenticate(final UUID device, final String secret) {
@@ -317,7 +447,8 @@ public final class RadioRegistry {
                 List.copyOf(networks.values()),
                 List.copyOf(members.values()),
                 List.copyOf(invites.values()),
-                List.copyOf(reservations));
+                List.copyOf(reservations),
+                List.copyOf(pending.values()));
     }
 
     public static RadioRegistry importState(final State state) {
@@ -369,6 +500,15 @@ public final class RadioRegistry {
             if (!result.networks.containsKey(invite.network())
                     || result.invites.putIfAbsent(invite.id(), invite) != null)
                 throw new IllegalArgumentException("Invalid invitation record");
+        }
+        final Map<UUID, Integer> perNetwork = new HashMap<>();
+        final Set<UUID> pendingDevices = new HashSet<>();
+        for (final EnrollmentRequest request : state.pending()) {
+            if (!result.networks.containsKey(request.network())
+                    || !pendingDevices.add(request.device())
+                    || perNetwork.merge(request.network(), 1, Integer::sum) > MAX_PENDING_PER_NETWORK
+                    || result.pending.putIfAbsent(request.id(), request) != null)
+                throw new IllegalArgumentException("Invalid enrollment request record");
         }
         if (state.nextPrefix() < 1
                 || state.nextPrefix() > RadioAddress.MAX + 1

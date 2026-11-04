@@ -182,7 +182,7 @@ Each group theoretically supports 1,048,575 nonzero values; current practical re
 
 ### Enrollment and RPC
 
-Initial network creation requires trusted local physical access to the tower's device bus. The blue cable carries Ethernet; the device bus is the current RPC management path. Ongoing frame forwarding does not require leaving that management bus attached. The creator receives the administrator secret once. Subsequent invitations and revocation require that secret. Invites are endpoint-specific, dimension-scoped and single-use, but do not expire yet.
+Initial network creation requires trusted local physical access to the tower's device bus. The blue cable carries Ethernet; the device bus is the current RPC management path. Ongoing frame forwarding does not require leaving that management bus attached. The creator receives the administrator secret once. Subsequent invitations and revocation require that secret. Invites are endpoint-specific, dimension-scoped, single-use and expire after `radioInviteLifetimeTicks`.
 
 The `gps_tower` device exposes:
 
@@ -195,6 +195,25 @@ The `gps_tower` device exposes:
 | `getRadioAddress()` | Display the endpoint ORA |
 | `getRadioStatus()` | Enrollment, endpoint UUID, security mode |
 | `revokeRadioEndpoint(adminSecret, endpointId)` | Revoke one endpoint |
+| `issueRadioInviteForApproval(adminSecret, endpointId, permissions, targetEndpointId, service)` | Invite that can only open a pending request (see below) |
+| `requestRadioEnrollment(invite, secret)` | Present an approval-required invite; returns the request id, grants nothing |
+| `completeRadioEnrollment()` | After approval, registers this tower in the topology; `false` while not approved |
+| `listPendingEnrollments(adminSecret)` | Pending requests: `request`, `endpointId`, requested `scopes`, `expiresAtTick` |
+| `approveEnrollment(adminSecret, requestId, scopes)` | Admit the requester with exactly the listed scopes |
+| `denyEnrollment(adminSecret, requestId)` | Remove a pending request |
+
+#### Approval-gated enrollment
+
+Invites are either direct (`issueRadioInvite*`, `joinRadioNetwork` admits at once) or approval-gated, chosen per invite by calling `issueRadioInviteForApproval`. A gated invite cannot be used with `joinRadioNetwork`; the joining tower calls `requestRadioEnrollment`, which consumes the invite and creates a PENDING request holding no membership and no permission. An administrator PC then lists and decides:
+
+```lua
+local pending = tower:listPendingEnrollments(adminSecret)   -- request, endpointId, scopes, expiresAtTick
+tower:approveEnrollment(adminSecret, pending[1].request, {"MESSAGE_SEND"})
+-- or: tower:denyEnrollment(adminSecret, pending[1].request)
+-- on the joining PC, after approval: tower:completeRadioEnrollment()
+```
+
+Rules: the three admin callbacks need the network admin secret and the calling tower must itself be an enrolled member holding `NETWORK_ADMIN`, both rechecked on every call. Approval scopes are bare permission names or full descriptions from the list and must have been requested; the device gets exactly those (an empty list admits it with no permissions). The device credential is a claim secret generated at request time (stored only as a hash) and becomes valid only on approval. Limits: at most 16 pending requests per network, one per device, a fixed lifetime of 6000 ticks (five minutes), and one request per invite (replay of a consumed invite fails). Deny, expiry, double approval and approval of an unknown or foreign request fail with `SecurityException`. Pending requests are saved with the radio registry in the world and survive restarts. The ORA address is assigned at approval, so it is not shown in the pending list.
 
 Obtain the second tower's endpoint UUID, issue its invite on the first tower, then pass the invite ID and secret to the second tower. Enroll intermediate relays too. Example on the first PC, once. Retain `adminSecret` for future administration:
 
