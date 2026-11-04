@@ -99,11 +99,11 @@ EOF
 
 # Versions must match build.gradle / gradle.properties
 CERES_VERSION="0.0.7"
-SEDNA_VERSION="5.3.0"
+SEDNA_VERSION="5.4.0"
 # Upstream fnuecke line (was: custom minux 0.0.71 + kernel 6.12.104 with
 # CONFIG_9P_FS=y as 0.0.72-oc2r1, hosted on the OC2R "bundled-deps" release).
 # Verify /mnt/builtin (9p) still mounts in game after the switch.
-SEDNA_BUILDROOT_VERSION="0.2.10"
+SEDNA_BUILDROOT_VERSION="0.2.12"
 
 install_maven "li/cil/ceres" "ceres" "${CERES_VERSION}" \
     "https://github.com/fnuecke/ceres/releases/download/${CERES_VERSION}/ceres-${CERES_VERSION}.jar"

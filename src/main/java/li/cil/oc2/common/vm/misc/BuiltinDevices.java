@@ -121,7 +121,7 @@ public final class BuiltinDevices {
         }
         final BuiltinRootFilesystem selected = onyx ? onyxRootFilesystem : rootFilesystem;
         if (selected != attachedRootFilesystem) {
-            rfs.setBlock(selected);
+            rfs.setBlock(selected, true);
             attachedRootFilesystem = selected;
         }
     }
@@ -133,7 +133,7 @@ public final class BuiltinDevices {
         if (rfs == null) throw new IOException("Built-in root disk is unavailable");
         final var image = OnyxOSBlockDeviceData.savedRootImage(baseImageId);
         onyxRootFilesystem = new BuiltinRootFilesystem(image.device(), image.id());
-        rfs.setBlock(onyxRootFilesystem);
+        rfs.setBlock(onyxRootFilesystem, false);
         attachedRootFilesystem = onyxRootFilesystem;
     }
 

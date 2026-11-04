@@ -63,7 +63,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
 
         if (device != null) {
             try {
-                device.setBlock(EMPTY_BLOCK_DEVICE);
+                device.setBlock(EMPTY_BLOCK_DEVICE, true);
             } catch (final IOException e) {
                 LOGGER.error(e);
             }
@@ -82,7 +82,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
                         .thenAcceptAsync(
                                 blockDevice -> {
                                     try {
-                                        device.setBlock(blockDevice);
+                                        device.setBlock(blockDevice, true);
                                     } catch (final IOException e) {
                                         throw new RuntimeException(e);
                                     }
@@ -95,7 +95,7 @@ public final class FlashMemoryFlasherDevice<T extends BlockEntity & FlashMemoryF
 
         if (device != null) {
             try {
-                device.setBlock(EMPTY_BLOCK_DEVICE);
+                device.setBlock(EMPTY_BLOCK_DEVICE, true);
             } catch (final IOException e) {
                 LOGGER.error(e);
             }

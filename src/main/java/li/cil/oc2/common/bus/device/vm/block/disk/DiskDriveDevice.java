@@ -31,7 +31,7 @@ public final class DiskDriveDevice<T extends DiskDriveContainer>
         }
 
         try {
-            device.setBlock(EMPTY_BLOCK_DEVICE);
+            device.setBlock(EMPTY_BLOCK_DEVICE, true);
         } catch (final IOException e) {
             LOGGER.error(e);
         }
@@ -48,7 +48,7 @@ public final class DiskDriveDevice<T extends DiskDriveContainer>
                         .thenAcceptAsync(
                                 blockDevice -> {
                                     try {
-                                        device.setBlock(blockDevice);
+                                        device.setBlock(blockDevice, true);
                                     } catch (final IOException e) {
                                         throw new RuntimeException(e);
                                     }
@@ -64,7 +64,7 @@ public final class DiskDriveDevice<T extends DiskDriveContainer>
         }
 
         try {
-            device.setBlock(EMPTY_BLOCK_DEVICE);
+            device.setBlock(EMPTY_BLOCK_DEVICE, true);
         } catch (final IOException e) {
             LOGGER.error(e);
         }

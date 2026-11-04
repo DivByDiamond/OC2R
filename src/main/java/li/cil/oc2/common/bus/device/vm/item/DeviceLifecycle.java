@@ -82,7 +82,7 @@ final class DeviceLifecycle {
                                 final ListenableBlockDevice listenableData =
                                         new ListenableBlockDevice(blockDevice);
                                 listenableData.accessCallbacks.add(onDataAccess);
-                                device.setBlock(listenableData);
+                                device.setBlock(listenableData, false);
                             } catch (final IOException e) {
                                 throw new RuntimeException(e);
                             }

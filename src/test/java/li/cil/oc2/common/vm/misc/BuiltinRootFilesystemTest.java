@@ -112,8 +112,8 @@ class BuiltinRootFilesystemTest {
         devices.selectRootFilesystem(true);
         devices.selectRootFilesystem(true);
         devices.selectRootFilesystem(false);
-        verify(devices.rfs, times(2)).setBlock(devices.rootFilesystem);
-        verify(devices.rfs, times(1)).setBlock(devices.onyxRootFilesystem);
+        verify(devices.rfs, times(2)).setBlock(devices.rootFilesystem, true);
+        verify(devices.rfs, times(1)).setBlock(devices.onyxRootFilesystem, true);
         assertEquals(41, devices.rootFilesystem.getInputStream(12).read());
         assertEquals(82, devices.onyxRootFilesystem.getInputStream(12).read());
     }
