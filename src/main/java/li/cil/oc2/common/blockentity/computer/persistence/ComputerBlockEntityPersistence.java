@@ -170,6 +170,7 @@ public final class ComputerBlockEntityPersistence {
         //? if >=26.1 {
         /*computer.energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
         computer.busElement.loadAdditional(tag.getCompoundOrEmpty(BUS_ELEMENT_TAG_NAME), registries);
+        computer.deviceItems.resetDevices();
         computer.deviceItems.loadItems(registries, tag.getCompoundOrEmpty(ITEMS_TAG_NAME));
         computer.deviceItems.loadDevices(registries, tag.getCompoundOrEmpty(DEVICES_TAG_NAME));
         computer.virtualMachine.deserialize(tag.getCompoundOrEmpty(STATE_TAG_NAME));
@@ -177,6 +178,7 @@ public final class ComputerBlockEntityPersistence {
         *///?} else {
         computer.energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
         computer.busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
+        computer.deviceItems.resetDevices();
         computer.deviceItems.loadItems(registries, tag.getCompound(ITEMS_TAG_NAME));
         computer.deviceItems.loadDevices(registries, tag.getCompound(DEVICES_TAG_NAME));
         computer.virtualMachine.deserialize(tag.getCompound(STATE_TAG_NAME));

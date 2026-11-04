@@ -16,12 +16,15 @@ public final class RobotAnimationState {
     private static final float MAX_ROTATION_SPEED = 0.060f;
     private static final float HOVER_ANIMATION_SPEED = 0.01f;
 
-    public float topRenderOffsetY = TOP_IDLE_Y;
-    public float baseRenderOffsetY = BASE_IDLE_Y;
-    public float topRenderRotationY;
-    public float topRenderTargetRotationY;
-    public float topRenderRotationSpeed;
-    public float topRenderHover;
+    private float topRenderOffsetY = TOP_IDLE_Y;
+    private float baseRenderOffsetY = BASE_IDLE_Y;
+    private float topRenderRotationY;
+    private float topRenderOffsetYO = TOP_IDLE_Y;
+    private float baseRenderOffsetYO = BASE_IDLE_Y;
+    private float topRenderRotationYO;
+    private float topRenderTargetRotationY;
+    private float topRenderRotationSpeed;
+    private float topRenderHover;
 
     private final VirtualMachine virtualMachine;
     private final Supplier<Boolean> hasQueuedActions;
@@ -33,21 +36,33 @@ public final class RobotAnimationState {
         topRenderHover = -(hashCode() & 0xFFFF);
     }
 
-    public void update(final float deltaTime, final RandomSource random) {
+    public float getTopRenderOffsetY(final float partialTicks) {
+        return Mth.lerp(partialTicks, topRenderOffsetYO, topRenderOffsetY);
+    }
+
+    public float getBaseRenderOffsetY(final float partialTicks) {
+        return Mth.lerp(partialTicks, baseRenderOffsetYO, baseRenderOffsetY);
+    }
+
+    public float getTopRenderRotationY(final float partialTicks) {
+        return Mth.lerp(partialTicks, topRenderRotationYO, topRenderRotationY);
+    }
+
+    /** Advances the animation by one game tick; never call this from a render pass. */
+    public void tick(final RandomSource random) {
+        topRenderOffsetYO = topRenderOffsetY;
+        baseRenderOffsetYO = baseRenderOffsetY;
+        topRenderRotationYO = topRenderRotationY;
+
         if (virtualMachine.isRunning() || hasQueuedActions.get()) {
-            topRenderHover = topRenderHover + deltaTime * HOVER_ANIMATION_SPEED;
+            topRenderHover = topRenderHover + HOVER_ANIMATION_SPEED;
             final float topOffsetY = Mth.sin(topRenderHover) / 32f;
 
-            topRenderOffsetY =
-                    lerpClamped(topRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
-            baseRenderOffsetY =
-                    lerpClamped(baseRenderOffsetY, topOffsetY, deltaTime * TRANSLATION_SPEED);
+            topRenderOffsetY = lerpClamped(topRenderOffsetY, topOffsetY, TRANSLATION_SPEED);
+            baseRenderOffsetY = lerpClamped(baseRenderOffsetY, topOffsetY, TRANSLATION_SPEED);
 
             topRenderRotationY =
-                    lerpClamped(
-                            topRenderRotationY,
-                            topRenderTargetRotationY,
-                            deltaTime * topRenderRotationSpeed);
+                    lerpClamped(topRenderRotationY, topRenderTargetRotationY, topRenderRotationSpeed);
             if (topRenderRotationY == topRenderTargetRotationY) {
                 topRenderTargetRotationY =
                         remapFrom01To(random.nextFloat(), -MAX_ROTATION, MAX_ROTATION);
@@ -55,12 +70,9 @@ public final class RobotAnimationState {
                         remapFrom01To(random.nextFloat(), MIN_ROTATION_SPEED, MAX_ROTATION_SPEED);
             }
         } else {
-            topRenderOffsetY =
-                    lerpClamped(topRenderOffsetY, TOP_IDLE_Y, deltaTime * TRANSLATION_SPEED * 2);
-            baseRenderOffsetY =
-                    lerpClamped(baseRenderOffsetY, BASE_IDLE_Y, deltaTime * TRANSLATION_SPEED);
-
-            topRenderRotationY = lerpClamped(topRenderRotationY, 0, deltaTime * ROTATION_SPEED);
+            topRenderOffsetY = lerpClamped(topRenderOffsetY, TOP_IDLE_Y, TRANSLATION_SPEED * 2);
+            baseRenderOffsetY = lerpClamped(baseRenderOffsetY, BASE_IDLE_Y, TRANSLATION_SPEED);
+            topRenderRotationY = lerpClamped(topRenderRotationY, 0, ROTATION_SPEED);
         }
     }
 

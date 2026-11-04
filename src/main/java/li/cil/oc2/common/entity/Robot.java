@@ -282,6 +282,9 @@ public final class Robot extends AbstractRobotEntity
         // cleanup on the actual first server tick.
         final boolean isFirstTick = firstTick;
         super.tick();
+        if (level().isClientSide()) {
+            animationState.tick(random);
+        }
         RobotTickHandler.tick(this, isFirstTick);
     }
 

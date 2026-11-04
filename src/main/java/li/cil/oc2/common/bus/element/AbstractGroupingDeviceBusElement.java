@@ -42,6 +42,26 @@ public abstract class AbstractGroupingDeviceBusElement<E extends GroupEntry, Q>
         groupManager.loadAdditional(tag, registries);
     }
 
+    /**
+     * Drops all group entries and their saved device data. Called before loading saved
+     * state so devices of a previous state cannot be merged into the loaded one.
+     */
+    public void reset() {
+        final boolean hadEntries = groups.stream().anyMatch(group -> !group.isEmpty());
+        for (int i = 0; i < groupCount; i++) {
+            for (final E entry : groups.get(i)) {
+                devices.removeInt(entry.getDevice());
+                onEntryRemoved(entry);
+            }
+            groups.get(i).clear();
+            groupData[i] = new CompoundTag();
+        }
+
+        if (hadEntries) {
+            scanDevices();
+        }
+    }
+
     @Override
     public Optional<UUID> getDeviceIdentifier(final Device device) {
         return groupManager.getDeviceIdentifier(device);

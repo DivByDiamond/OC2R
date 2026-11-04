@@ -34,10 +34,9 @@ public final class RobotRenderer extends EntityRenderer<Robot, RobotRenderState>
         super.extractRenderState(entity, state, partialTicks);
 
         final RobotAnimationState animation = entity.getAnimationState();
-        animation.update(partialTicks, entity.getRandom());
-        state.baseOffsetY = animation.baseRenderOffsetY;
-        state.topOffsetY = animation.topRenderOffsetY;
-        state.topRotationY = animation.topRenderRotationY;
+        state.baseOffsetY = animation.getBaseRenderOffsetY(partialTicks);
+        state.topOffsetY = animation.getTopRenderOffsetY(partialTicks);
+        state.topRotationY = animation.getTopRenderRotationY(partialTicks);
 
         // NB: we don't entityYaw given to use because that uses a plain lerp which can lead to ugly
         //     jumps in case we get a wrapped rotationYaw synced from the server (leading to ~360
@@ -88,7 +87,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import li.cil.oc2.client.renderer.entity.model.RobotModel;
 import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.entity.robot.state.RobotAnimationState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -117,9 +115,6 @@ public final class RobotRenderer extends EntityRenderer<Robot> {
             final PoseStack stack,
             final MultiBufferSource bufferSource,
             final int packedLight) {
-        final RobotAnimationState state = entity.getAnimationState();
-        state.update(partialTicks, entity.level().random);
-
         stack.pushPose();
         // NB: we don't entityYaw given to use because that uses a plain lerp which can lead to ugly
         //     jumps in case we get a wrapped rotationYaw synced from the server (leading to ~360
@@ -130,7 +125,7 @@ public final class RobotRenderer extends EntityRenderer<Robot> {
         final float rotation = Mth.approachDegrees(entity.yRotO, entity.getYRot(), partialRotation);
         stack.mulPose(Axis.YN.rotationDegrees(rotation));
 
-        model.setupAnim(entity, 0, 0, 0, 0, 0);
+        model.setupAnim(entity, 0, 0, partialTicks, 0, 0);
 
         final VertexConsumer consumer =
                 bufferSource.getBuffer(model.renderType(getTextureLocation(entity)));

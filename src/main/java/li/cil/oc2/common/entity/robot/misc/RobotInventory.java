@@ -72,6 +72,10 @@ public class RobotInventory {
         return deviceItems.saveDevices(registries);
     }
 
+    public void resetDevices() {
+        deviceItems.resetDevices();
+    }
+
     public void loadItems(final HolderLookup.Provider provider, final CompoundTag tag) {
         deviceItems.loadItems(provider, tag);
     }

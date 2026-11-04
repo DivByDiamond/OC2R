@@ -117,6 +117,10 @@ public abstract class AbstractVMItemStackHandlers implements VMItemStackHandlers
         VMItemStackHandlerSerialization.loadItems(itemHandlers, provider, container);
     }
 
+    public void resetDevices() {
+        itemHandlers.values().forEach(handler -> handler.getBusElement().reset());
+    }
+
     public void loadItems(HolderLookup.Provider provider, final CompoundTag tag) {
         VMItemStackHandlerSerialization.loadItems(itemHandlers, provider, tag);
     }

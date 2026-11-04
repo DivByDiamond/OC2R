@@ -60,6 +60,7 @@ public final class RobotSerializer {
         NBTSerialization.deserialize(tag.getCompoundOrEmpty(TERMINAL_TAG_NAME), robot.getTerminal());
         robot.getMovementController().deserialize(tag.getCompoundOrEmpty(COMMAND_PROCESSOR_TAG_NAME));
         robot.getRobotInventory().deserializeBusElement(tag.getCompoundOrEmpty(BUS_ELEMENT_TAG_NAME));
+        robot.getRobotInventory().resetDevices();
         robot.getRobotInventory().loadItems(provider, tag.getCompoundOrEmpty(ITEMS_TAG_NAME));
         robot.getRobotInventory().loadDevices(provider, tag.getCompoundOrEmpty(DEVICES_TAG_NAME));
         robot.getEnergyStorage().deserializeNBT(provider, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
@@ -68,6 +69,7 @@ public final class RobotSerializer {
         NBTSerialization.deserialize(tag.getCompound(TERMINAL_TAG_NAME), robot.getTerminal());
         robot.getMovementController().deserialize(tag.getCompound(COMMAND_PROCESSOR_TAG_NAME));
         robot.getRobotInventory().deserializeBusElement(tag.getCompound(BUS_ELEMENT_TAG_NAME));
+        robot.getRobotInventory().resetDevices();
         robot.getRobotInventory().loadItems(provider, tag.getCompound(ITEMS_TAG_NAME));
         robot.getRobotInventory().loadDevices(provider, tag.getCompound(DEVICES_TAG_NAME));
         robot.getEnergyStorage().deserializeNBT(provider, tag.getCompound(ENERGY_TAG_NAME));

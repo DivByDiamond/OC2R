@@ -140,9 +140,10 @@ public final class RobotModel extends EntityModel<Robot> {
             final float netHeadYaw,
             final float headPitch) {
         final RobotAnimationState state = entity.getAnimationState();
-        baseY = state.baseRenderOffsetY;
-        topY = state.topRenderOffsetY;
-        topRotation[1] = state.topRenderRotationY;
+        // ageInTicks carries the partial tick here, see RobotRenderer.render.
+        baseY = state.getBaseRenderOffsetY(ageInTicks);
+        topY = state.getTopRenderOffsetY(ageInTicks);
+        topRotation[1] = state.getTopRenderRotationY(ageInTicks);
     }
 
     @Override

@@ -194,7 +194,7 @@ public final class ProjectorDepthRenderer {
                                         new DynamicTexture(
                                                 ProjectorDevice.WIDTH,
                                                 ProjectorDevice.HEIGHT,
-                                                false);
+                                                true);
                                 texture.upload();
                                 final ProjectorDepthRenderInfo renderInfo =
                                         new ProjectorDepthRenderInfo(texture);
