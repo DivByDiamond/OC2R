@@ -129,6 +129,7 @@ print(tower:getRadioAddress())
 
 ```toml
 gps_tower_range = 45
+robot_dock_range = 10
 radioHopDelayTicks = 1
     radioMaxDeliveryTicks = 2
     radioLinkBytesPerTick = 1024
@@ -142,9 +143,21 @@ radioPacketLifetimeTicks = 200
 
 После изменения параметров радиопакетов перезапустите сервер. При низком TPS тик длится дольше 50 мс. Настройки дальности, GPS-начала координат и сетевого IP внутри гостевой ОС решают разные задачи.
 
+### Док-станция робота как точка доступа
+
+Док-станция робота — это существующий блок зарядного устройства; отдельного блока нет. Она сама является короткой точкой доступа с круглым радиусом **10 блоков** по X/Z (высота не учитывается), параметр `robot_dock_range` в секции `[gameplay]` (`Config.robotDockRange` в коде; по умолчанию 10, допустимо 1–64). Расстояние считается от центра блока дока до центра робота, граница включительна: ровно 10 блоков ещё подключает.
+
+- Робот с регистрацией в сети подключается к вышке напрямую, если она в радиусе вышки (`gps_tower_range`, по умолчанию 45 блоков). Иначе он подключается к ближайшей док-станции в радиусе 10 блоков, у которой есть вышка, а док-станция выходит в сеть через ближайшую вышку этой же сети в радиусе вышки от дока.
+- Док-станция не ретранслирует между вышками, радиусы не складываются: робот обязан быть в радиусе дока, а док — в радиусе вышки.
+- Док без вышки поблизости изолирован. Док не входит ни в какую сеть и нигде не регистрируется: сервер ищет зарядные устройства только в уже загруженных чанках вокруг робота и не загружает чанки. Сломанный, заменённый или выгруженный док сразу перестаёт находиться; в другом измерении связи нет.
+- Через док робот управляется так же, как на вышке: телеметрия, команды, ping, список устройств, проверка прав. Маршрут получает ещё одно радиозвено; верхний предел задержки доставки и полоса канала не меняются.
+- Выход из радиуса даёт потерю связи, возвращение подключает робота заново. Команда, отправленная во время потери связи, завершается как `DISCONNECTED` или `TIMED_OUT` и не повторяется после возвращения.
+
+Результат команды робота определяется только реальным результатом его действия. Гостевая программа вызывает `bindRadioCommand(requestId, actionId)` для действия робота (`move`/`turn`), поставленного в очередь после получения команды; привязка к более раннему, ещё не поставленному или уже занятому другой командой действию отклоняется. `COMPLETED` или `FAILED` сервер выдаёт сам, когда действие реально завершилось; действие, которое робот отбросил без результата (например, при остановке компьютера), даёт `FAILED` с результатом `CANCELLED`. Через `updateRadioCommand` гостевая программа может сообщить только `RUNNING`.
+
 ### Что ещё предстоит
 
-Короткая станция на 10 блоков, беспроводные клиенты-роботы и планшеты, их переключение между точками, пользовательский ping, прикладные права на сервисы, TLS, подписки на показатели и живые виджеты остаются следующими этапами. В Onyx уже есть отдельный прототип графических виджетов; его демонстрационные данные пока не приходят из этой радиосети.
+Планшеты и их переключение между точками, Ethernet-подключение дока, пользовательский ping, прикладные права на сервисы, TLS, подписки на показатели и живые виджеты остаются следующими этапами. В Onyx уже есть отдельный прототип графических виджетов; его демонстрационные данные пока не приходят из этой радиосети.
 
 ## English
 
@@ -247,9 +260,20 @@ The registry stores credential hashes; the endpoint's own bearer secret remains 
 
 The `[gameplay]` settings are shown in the TOML example above. Restart after changing scheduler limits. The IPv4 configuration inside the guest remains separate from radio range and GPS coordinate settings.
 
+### Robot dock station as access point
+
+The robot dock station is the existing charger block; there is no separate block. It is its own short-range access point with a circular 10-block X/Z radius (Y ignored), configured by `robot_dock_range` in `[gameplay]` (`Config.robotDockRange` in code; default 10, allowed 1-64). The distance is measured from the dock's block centre to the robot's centre and the boundary is inclusive: exactly 10 blocks still attaches.
+
+- An enrolled robot attaches directly to a tower within tower range (`gps_tower_range`, 45 blocks by default). Otherwise it attaches to the nearest dock within 10 blocks that has a tower uplink, and the dock reaches the network through the nearest tower of the same network within tower range of the dock.
+- A dock does not relay between towers and radii are never added: the robot must be inside the dock radius and the dock inside a tower radius. A dock with no tower in range is isolated. A dock belongs to no network and is never registered anywhere: the server looks for chargers only in the already loaded chunks around the robot and never loads a chunk, so a broken, replaced or unloaded dock stops counting at once. Nothing crosses dimensions.
+- Through a dock a robot is controlled exactly like one on a tower: telemetry, commands, ping, device list and permission rechecks. The route gains one radio leg; the delivery-delay cap and link bandwidth are unchanged.
+- Leaving the radius is signal loss and returning reconnects. A command sent during signal loss ends as `DISCONNECTED` or `TIMED_OUT` and is never replayed after the reconnect.
+
+A robot command result is authoritative. The guest program calls `bindRadioCommand(requestId, actionId)` for a robot action (`move`/`turn`) queued after the command arrived; binding an earlier action, an action not queued yet, or one already bound to another command is refused. The server reports `COMPLETED` or `FAILED` only when that action really finishes; an action the robot drops without a result (for example when its computer stops) ends the command as `FAILED` with the result `CANCELLED`. Through `updateRadioCommand` the guest can only report `RUNNING`.
+
 ### Next steps
 
-The 10-block radio of the robot dock station (charger), wireless robots/tablets and roaming, user-facing ping, service-scoped application permissions, TLS, telemetry subscriptions and live dashboards remain pending. The Onyx widget prototype currently uses an explicitly separate demonstration backend.
+Tablets and their roaming, an Ethernet connector on the dock, user-facing ping, service-scoped application permissions, TLS, telemetry subscriptions and live dashboards remain pending. The Onyx widget prototype currently uses an explicitly separate demonstration backend.
 
 ## References
 

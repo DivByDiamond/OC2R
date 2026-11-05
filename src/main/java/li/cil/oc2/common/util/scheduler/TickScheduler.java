@@ -7,9 +7,10 @@ import li.cil.oc2.common.util.scheduler.runnable.ScheduledRunnable;
 class TickScheduler {
     private final Queue<ScheduledRunnable> queue = new PriorityQueue<>();
     private int currentTick;
+    private long nextSequence;
 
     public void schedule(final Runnable runnable, final int afterTicks) {
-        queue.add(new ScheduledRunnable(currentTick + afterTicks, runnable));
+        queue.add(new ScheduledRunnable(currentTick + afterTicks, nextSequence++, runnable));
     }
 
     public void processQueue() {

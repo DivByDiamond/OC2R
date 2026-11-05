@@ -404,8 +404,8 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
                 line.contains("GameTestHolder") || line.contains("PrefixGameTestTemplate") -> ""
                 else -> line
                     .replace(
-                        "template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE",
-                        "template = TestSupport.TEMPLATE_NAMESPACE + \":\" + TestSupport.TEMPLATE")
+                        Regex("template = ([\\w.]+), templateNamespace = TestSupport\\.TEMPLATE_NAMESPACE"),
+                        "template = TestSupport.TEMPLATE_NAMESPACE + \":\" + \$1")
                     .replace(Regex("private (\\w+Tests)\\(\\)"), "public \$1()")
             }
         }
@@ -427,8 +427,9 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
                     if (source.name.endsWith("Tests.java")) {
                         text = text.replace("public static void ", "public void ")
                     }
-                    text = text.replace("template = TestSupport.TEMPLATE_NAMESPACE + \":\" + TestSupport.TEMPLATE",
-                        "structure = TestSupport.TEMPLATE_NAMESPACE + \":\" + TestSupport.TEMPLATE")
+                    text = text.replace(
+                        Regex("template = (TestSupport\\.TEMPLATE_NAMESPACE \\+ \":\" \\+ [\\w.]+)"),
+                        "structure = \$1")
                     text = text.replace("timeoutTicks =", "maxTicks =")
                     val environment = layout.buildDirectory.file(
                         "generated/gametestResources/data/oc2r_gametest/test_environment/$batch.json").get().asFile

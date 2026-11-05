@@ -7,15 +7,18 @@ import net.minecraft.core.BlockPos;
 //? if <26.1 {
 import net.minecraft.core.HolderLookup;
 //?}
+//? if <26.1 {
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+//?}
+//? if >=26.1 {
+/*import net.minecraft.resources.Identifier;
+*///?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 //? if >=26.1 {
-/*import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.saveddata.SavedDataType;
-*///?} else {
-//?}
+/*import net.minecraft.world.level.saveddata.SavedDataType;
+*///?}
 
 /** Persists radio membership across chunk unloads and world restarts, separately per dimension. */
 public final class GpsNetworkData extends SavedData {

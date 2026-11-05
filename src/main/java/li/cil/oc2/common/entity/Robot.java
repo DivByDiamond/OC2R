@@ -3,6 +3,7 @@ package li.cil.oc2.common.entity;
 import java.util.*;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
+import li.cil.oc2.common.blockentity.radio.OraEndpoint;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
@@ -30,7 +31,6 @@ import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.runner.AbstractVirtualMachine;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.platform.ItemStackHandler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
@@ -53,15 +53,15 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public final class Robot extends AbstractRobotEntity
         implements li.cil.oc2.api.capabilities.Robot, TerminalUserProvider {
-    private final li.cil.oc2.common.blockentity.radio.OraEndpoint radioEndpoint =
-            new li.cil.oc2.common.blockentity.radio.OraEndpoint(
+    private final OraEndpoint radioEndpoint =
+            new OraEndpoint(
                     () -> (net.minecraft.server.level.ServerLevel) level(),
                     this::getUUID,
                     this::getX,
                     this::getZ,
                     () -> isAlive() && !isRemoved());
 
-    public li.cil.oc2.common.blockentity.radio.OraEndpoint getRadioEndpoint() {
+    public OraEndpoint getRadioEndpoint() {
         return radioEndpoint;
     }
 
@@ -94,6 +94,25 @@ public final class Robot extends AbstractRobotEntity
 
         robotInventory = new RobotInventory(this);
         movementController = new RobotMovementController(this);
+        // Radio command results come from the real action outcome, never from the guest program.
+        radioEndpoint.authoritativeCommands(
+                new OraEndpoint.Actions() {
+                    @Override
+                    public int lastActionId() {
+                        return movementController.getLastActionId();
+                    }
+
+                    @Override
+                    public OraEndpoint.ActionOutcome outcome(final int actionId) {
+                        final var result = movementController.findActionResult(actionId);
+                        if (result == null) return OraEndpoint.ActionOutcome.UNKNOWN;
+                        return switch (result) {
+                            case INCOMPLETE -> OraEndpoint.ActionOutcome.PENDING;
+                            case SUCCESS -> OraEndpoint.ActionOutcome.SUCCEEDED;
+                            case FAILURE -> OraEndpoint.ActionOutcome.FAILED;
+                        };
+                    }
+                });
         final CommonDeviceBusController busController =
                 new CommonDeviceBusController(
                         robotInventory.getBusElement(),

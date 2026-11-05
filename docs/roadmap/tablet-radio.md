@@ -17,9 +17,9 @@ The reference tower defines the coordinate origin; ordinary data routes must not
 
 ## 2. Network hardware and compatibility
 
-- [ ] The robot dock station (the existing charger block) is its own short-range access point (it attaches nearby clients and reaches the wider network through the nearest tower; it does not relay like a tower): it provides a 10-block horizontal client attachment radius for the robots and devices around it. There is no separate station block.
-- [ ] A tower provides a 45-block horizontal client attachment radius and 45-block tower hops by default.
-- [ ] Use circular X/Z coverage without height limits for both access-point types (dock station 10 blocks, tower 45 blocks).
+- [x] The robot dock station (the existing charger block) is its own short-range access point (it attaches nearby clients and reaches the wider network through the nearest tower; it does not relay like a tower): it provides a 10-block horizontal client attachment radius for the robots and devices around it. There is no separate station block. Radius: `gameplay.robot_dock_range` (default 10). Implemented for robots; tablets do not exist yet.
+- [x] A tower provides a 45-block horizontal client attachment radius and 45-block tower hops by default.
+- [x] Use circular X/Z coverage without height limits for both access-point types (dock station 10 blocks, tower 45 blocks).
 - [ ] Connect a PC's existing Ethernet network to a dock station or tower using the existing blue network cable and compatible connectors.
 - [ ] Authorized robots and tablets attach wirelessly to an access point in range, with no new mandatory radio card/module item.
 - [ ] Clients roam between reachable access points of their own network; radii are not added together to extend attachment range.
@@ -75,7 +75,7 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 - [ ] One tick is nominally 50 ms at 20 TPS. Label estimates accordingly; measure actual RTT with a monotonic clock.
 - [ ] Do not claim millisecond delivery precision from a tick scheduler or mix wall-clock deadlines with tick ordering.
 - [x] Use bounded per-device, per-network and global queues, finite payload/frame size and backpressure.
-- [ ] Expire or reject commands to offline recipients. Never replay an old movement command automatically when a robot reconnects.
+- [x] Expire or reject commands to offline recipients. Never replay an old movement command automatically when a robot reconnects.
 
 ### Hop TTL and duplicate suppression
 
@@ -199,3 +199,17 @@ No Lua, real telemetry connection, Minecraft item or TLS adapter is present yet.
 Owner clarification: ORA prefixes and device numbers are random, not sequential. Existing addresses remain stable; legacy allocation history and persisted reservations prevent reuse after revocation or re-enrollment.
 
 Random-allocation follow-up: 15 core radio tests and 6 persistence tests on each of NeoForge 1.21.1 and 26.1.2 passed. Snapshot storage now writes UTF-8 byte arrays while reading legacy NBT strings; an actual binary NBT round trip above 64 KiB protects large reservation histories.
+
+## 11. Robot dock station increment (step 7, partial)
+
+The charger doubles as a 10-block access point (`gameplay.robot_dock_range`, `Config.robotDockRange`, 1-64, circular X/Z, inclusive boundary). A robot that no tower covers but a loaded dock covers attaches through that dock and uplinks through the nearest tower of its own network within tower range of the dock.
+The dock does not relay between towers, and the dock and tower radii are never added together to extend attachment. Docks are not registered or saved: the server reads chargers from the loaded chunks around the robot, so unloading or breaking a dock ends its coverage and no chunk is loaded for it.
+Through a dock a robot is controlled exactly like one on a tower (telemetry, commands, ping, device list, permission rechecks); the dock adds one radio leg to the route estimate and the delivery-delay cap and link bandwidth are unchanged.
+
+Robot command results are authoritative: the robot's guest program binds a received command to a robot action queued after the command arrived (`bindRadioCommand`), and COMPLETED or FAILED is produced only by that action's real outcome. The guest can no longer declare a result through `updateRadioCommand`; only RUNNING is accepted there. Signal loss ends a command as DISCONNECTED or TIMED_OUT, and a stale command is never replayed or completable after the reconnect.
+
+Transport fix found by these tests: the server tick scheduler did not keep scheduling order for tasks due on the same tick, so two TLS records of one radio stream scheduled in different phases of a server tick could swap. The receiver then failed with `bad_record_mac`, the stream closed and its in-flight messages were lost (seen as a ping or command that never arrived). Tasks due on the same tick now run in scheduling order.
+
+Verification: `RadioAccessPointsTest` covers the inclusive circular dock boundary, ignored heights, nearest-tower uplink, isolated docks, other networks and dimensions. The `RobotDockRadioTests` GameTests run in their own 68-block test structure with a booted robot whose actions are queued through its guest-facing device: attachment at exactly 10 blocks and none at 10.01, an isolated dock, telemetry, ping, device list, permission withdrawal, a three-leg route estimate within the delay cap, signal loss and reconnect without replay, and COMPLETED or FAILED following the robot's real move result.
+
+Not done in this increment: the dock has no Ethernet connector; tablets do not exist, so tablet roaming is untested; only movement and turn actions are bound, not inventory or module operations; the guest-side Lua helper for `bindRadioCommand` is not written; link bandwidth through a dock is not measured by a dedicated test.

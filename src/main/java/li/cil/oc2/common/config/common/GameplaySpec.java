@@ -14,6 +14,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class GameplaySpec {
     public final ModConfigSpec.BooleanValue relativeCoordinates;
     public final ModConfigSpec.IntValue gpsTowerRange;
+    public final ModConfigSpec.IntValue robotDockRange;
     public final ModConfigSpec.IntValue radioInviteLifetimeTicks;
     public final ModConfigSpec.IntValue radioHopDelayTicks;
     public final ModConfigSpec.IntValue radioMaxHops;
@@ -54,6 +55,15 @@ public class GameplaySpec {
                                 "Unloaded stations relay using their persisted membership without loading chunks.")
                         .defineInRange("gps_tower_range", 45, 1, 1024);
 
+        robotDockRange =
+                builder.comment("Horizontal client attachment radius in blocks of a robot dock station (the charger).",
+                                "Circular X/Z coverage; height is ignored.",
+                                "A dock attaches robots in range and reaches the network "
+                                        + "through the nearest tower in tower range.",
+                                "It does not relay between towers and the radii are not added together.",
+                                "Only loaded docks count; the bound keeps the search to nearby loaded chunks.")
+                        .defineInRange("robot_dock_range", 10, 1, 64);
+
         radioInviteLifetimeTicks = builder.comment("Radio invitation lifetime in server ticks.")
                 .defineInRange("radioInviteLifetimeTicks", 1200, 1, 72000);
         radioHopDelayTicks = builder.comment("Base server ticks per radio hop.",
@@ -63,9 +73,11 @@ public class GameplaySpec {
                 .defineInRange("radioMaxHops", 64, 1, 256);
         radioMaxFrameBytes = builder.comment("Maximum Ethernet frame bytes accepted by the radio bridge.")
                 .defineInRange("radioMaxFrameBytes", 2048, 64, 65536);
-        radioLinkBytesPerTick = builder.comment("Radio link bandwidth per sender in bytes per server tick (1024 is about 20 KB/s at 20 TPS).")
+        radioLinkBytesPerTick = builder.comment("Radio link bandwidth per sender in bytes per server tick "
+                        + "(1024 is about 20 KB/s at 20 TPS).")
                 .defineInRange("radioLinkBytesPerTick", 1024, 1, 1048576);
-        radioMaxDeliveryTicks = builder.comment("Upper bound on the propagation delay in server ticks, regardless of hop count (2 ticks = 0.1 s).")
+        radioMaxDeliveryTicks = builder.comment("Upper bound on the propagation delay in server ticks, "
+                        + "regardless of hop count (2 ticks = 0.1 s).")
                 .defineInRange("radioMaxDeliveryTicks", 2, 1, 200);
         radioQueueLimit = builder.comment("Maximum queued deliveries per dimension.")
                 .defineInRange("radioQueueLimit", 4096, 1, 65536);
@@ -171,6 +183,7 @@ public class GameplaySpec {
     public void loadValues() {
         Config.relativeCoordinates = relativeCoordinates.get();
         Config.gpsTowerRange = gpsTowerRange.get();
+        Config.robotDockRange = robotDockRange.get();
         Config.radioInviteLifetimeTicks = radioInviteLifetimeTicks.get();
         Config.radioHopDelayTicks = radioHopDelayTicks.get();
         Config.radioMaxHops = radioMaxHops.get();

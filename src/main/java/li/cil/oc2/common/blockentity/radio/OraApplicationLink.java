@@ -1,14 +1,12 @@
 package li.cil.oc2.common.blockentity.radio;
 
+import java.util.*;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.radio.RadioTopology;
+import li.cil.oc2.common.radio.RadioAccessPoints;
 import li.cil.oc2.common.radio.security.*;
 import li.cil.oc2.common.radio.service.RadioServiceBroker;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
-
 import net.minecraft.server.level.ServerLevel;
-
-import java.util.*;
 
 /** Reliable application stream over scheduled ciphertext; clients are leaves, never relays. */
 final class OraApplicationLink implements RadioServiceBroker.Link {
@@ -72,29 +70,38 @@ final class OraApplicationLink implements RadioServiceBroker.Link {
                 && relay(id).isPresent();
     }
 
-    private Optional<RadioTopology.Node> relay(UUID id) {
+    private Optional<RadioAccessPoints.Attachment> relay(UUID id) {
         var endpoint = endpoints.get(id);
         if (endpoint == null) return Optional.empty();
         var own = data.topology().node(id);
-        if (own.isPresent() && own.get().online()) return own;
-        return data.attachment(level, id, endpoint.credential(), endpoint.x(), endpoint.z());
+        if (own.isPresent() && own.get().online())
+            return Optional.of(new RadioAccessPoints.Attachment(own.get(), null));
+        return data.access(level, id, endpoint.credential(), endpoint.x(), endpoint.z());
+    }
+
+    /** A tower endpoint has no access leg; a client has one, or two through a dock station. */
+    private static int accessLegs(UUID id, RadioAccessPoints.Attachment attachment) {
+        return id.equals(attachment.tower().device()) ? 0 : attachment.accessLegs();
     }
 
     private List<UUID> route(UUID source, UUID target) {
         if (!online(source) || !online(target)) return List.of();
-        var first = relay(source).orElseThrow();
-        var last = relay(target).orElseThrow();
-        return data.topology().route(first.device(), last.device());
+        return route(relay(source).orElseThrow(), relay(target).orElseThrow());
+    }
+
+    private List<UUID> route(RadioAccessPoints.Attachment first, RadioAccessPoints.Attachment last) {
+        return data.topology().route(first.tower().device(), last.tower().device());
     }
 
     @Override
     public RadioServiceBroker.Estimate estimate(UUID source, UUID target) {
-        var path = route(source, target);
+        if (!online(source) || !online(target)) return new RadioServiceBroker.Estimate(-1, -1);
+        var first = relay(source).orElseThrow();
+        var last = relay(target).orElseThrow();
+        var path = route(first, last);
         if (path.isEmpty()) return new RadioServiceBroker.Estimate(-1, -1);
         if (path.size() - 1 > Config.radioMaxHops) return new RadioServiceBroker.Estimate(-1, -1);
-        int legs = path.size() - 1;
-        if (!source.equals(path.getFirst())) legs++;
-        if (!target.equals(path.getLast())) legs++;
+        int legs = path.size() - 1 + accessLegs(source, first) + accessLegs(target, last);
         return new RadioServiceBroker.Estimate(
                 legs,
                 Math.max(

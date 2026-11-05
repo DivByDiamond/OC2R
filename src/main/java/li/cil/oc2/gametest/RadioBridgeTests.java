@@ -13,11 +13,9 @@ import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
-import li.cil.oc2.common.entity.Robot;
-import li.cil.oc2.common.entity.Entities;
+import li.cil.oc2.common.entity.robot.movement.MovementDirection;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.radio.service.RadioServiceBroker;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -142,7 +140,7 @@ public final class RadioBridgeTests {
 
     /** The first message on a pair pays for the TLS handshake over delayed radio legs, hence the long first wait.
      * PC tower to robot over the relay tower: telemetry, a command lifecycle, signal loss and reconnect. */
-    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 200)
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 400)
     public static void towerControlsRobotAndSurvivesSignalLoss(final GameTestHelper helper) {
         final GpsTowerBlockEntity pc = tower(helper, SOURCE);
         final GpsTowerBlockEntity relay = tower(helper, TARGET);
@@ -151,15 +149,8 @@ public final class RadioBridgeTests {
         final var relayInvite = pc.issueRadioInvite(admin, relay.getRadioEndpointId());
         relay.joinRadioNetwork(relayInvite.get("invite"), relayInvite.get("secret"));
 
-        //? if >=26.1 {
-        /*final Robot robot = Entities.ROBOT.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-        *///?} else {
-        final Robot robot = Entities.ROBOT.get().create(helper.getLevel());
-        //?}
-        final Vec3 home = helper.absoluteVec(Vec3.atCenterOf(TARGET.offset(2, 0, 0)));
-        robot.setPos(home.x, home.y, home.z);
-        helper.getLevel().addFreshEntity(robot);
-        final var endpoint = robot.getRadioEndpoint();
+        final RadioTestRobot robot = RadioTestRobot.spawn(helper, TARGET.offset(1, 0, 2));
+        final var endpoint = robot.endpoint();
         final String robotId = endpoint.id().toString();
         final var robotInvite = pc.issueRadioInvite(admin, robotId);
         endpoint.joinRadioNetwork(robotInvite.get("invite"), robotInvite.get("secret"));
@@ -170,48 +161,66 @@ public final class RadioBridgeTests {
         final String command = java.util.UUID.randomUUID().toString();
         final String subscription = pc.subscribeRadioTelemetry(robotAddress, "robot", new String[] {"energy"}, 100);
         endpoint.publish("robot", "energy", "{\"stored\":42}");
+        robot.boot();
+        final List<RadioServiceBroker.Event> events = new ArrayList<>();
+        final java.util.function.Predicate<RadioServiceBroker.State> saw = state -> {
+            events.addAll(pc.pollRadioEvents());
+            return events.stream().anyMatch(e -> e.requestId().toString().equals(command) && e.state() == state);
+        };
+        final boolean[] received = new boolean[1];
 
-        helper.runAfterDelay(40, () -> {
-            final var events = pc.pollRadioEvents();
-            TestSupport.assertTrue(helper, "subscriber received robot telemetry",
-                    events.stream().anyMatch(e -> e.message() != null
-                            && new String(e.message().payload(), java.nio.charset.StandardCharsets.UTF_8).contains("42")));
-            final String state = pc.sendRadioCommand(robotAddress, "robot", "move", command, "north", 100);
-            TestSupport.assertTrue(helper, "command is accepted", state.equals("ACCEPTED"));
-        });
-        helper.runAfterDelay(47, () -> {
-            TestSupport.assertTrue(helper, "robot received the command",
-                    endpoint.pollMessages().stream().anyMatch(m -> m.requestId().toString().equals(command)));
-            endpoint.commandStatus(command, "RUNNING", "");
-        });
-        helper.runAfterDelay(54, () -> {
-            TestSupport.assertTrue(helper, "running state reached the PC",
-                    pc.pollRadioEvents().stream().anyMatch(e -> e.requestId().toString().equals(command)
-                            && e.state() == RadioServiceBroker.State.RUNNING));
-            endpoint.commandStatus(command, "COMPLETED", "ok");
-        });
-        helper.runAfterDelay(62, () -> {
-            TestSupport.assertTrue(helper, "completed result reached the PC",
-                    pc.pollRadioEvents().stream().anyMatch(e -> e.requestId().toString().equals(command)
-                            && e.state() == RadioServiceBroker.State.COMPLETED));
-            // Leave every tower's 45-block radius.
-            robot.setPos(home.x + 200, home.y, home.z);
-            boolean refused = false;
-            try {
-                pc.sendRadioCommand(robotAddress, "robot", "move", java.util.UUID.randomUUID().toString(), "south", 100);
-            } catch (final RuntimeException expected) {
-                refused = true;
-            }
-            TestSupport.assertTrue(helper, "command to an out-of-range robot is refused", refused);
-            robot.setPos(home.x, home.y, home.z);
-        });
-        helper.runAfterDelay(70, () -> {
-            final String again = java.util.UUID.randomUUID().toString();
-            TestSupport.assertTrue(helper, "reconnected robot accepts a new command",
-                    pc.sendRadioCommand(robotAddress, "robot", "move", again, "east", 100).equals("ACCEPTED"));
-            pc.unsubscribeRadioTelemetry(subscription);
-            helper.succeed();
-        });
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    events.addAll(pc.pollRadioEvents());
+                    TestSupport.assertTrue(helper, "subscriber received robot telemetry",
+                            events.stream().anyMatch(e -> e.message() != null
+                                    && new String(e.message().payload(), java.nio.charset.StandardCharsets.UTF_8).contains("42")));
+                })
+                .thenWaitUntil(robot::assertRunning)
+                .thenExecute(() -> TestSupport.assertTrue(helper, "command is accepted",
+                        pc.sendRadioCommand(robotAddress, "robot", "move", command, "up", 100).equals("ACCEPTED")))
+                .thenWaitUntil(() -> {
+                    received[0] |= endpoint.pollMessages().stream().anyMatch(m -> m.requestId().toString().equals(command));
+                    events.addAll(pc.pollRadioEvents());
+                    TestSupport.assertTrue(helper, "robot received the command (PC saw "
+                            + events.stream().filter(e -> e.requestId().toString().equals(command)).map(e -> e.state().name()).toList()
+                            + ", robot attached " + robot.attached() + ")", received[0]);
+                })
+                .thenExecute(() -> {
+                    // The result is the real outcome of a robot action; the guest cannot declare success.
+                    try {
+                        endpoint.commandStatus(command, "COMPLETED", "ok");
+                        throw TestSupport.failure(helper, "robot accepted a nominal COMPLETED result");
+                    } catch (final IllegalArgumentException expected) {
+                    }
+                    endpoint.bindCommandAction(command, robot.move(MovementDirection.UPWARD));
+                })
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "running state reached the PC",
+                        saw.test(RadioServiceBroker.State.RUNNING)))
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "completed result reached the PC",
+                        saw.test(RadioServiceBroker.State.COMPLETED)))
+                .thenExecute(() -> {
+                    TestSupport.assertTrue(helper, "robot really moved up one block",
+                            Math.abs(robot.robot.getY() - robot.home.y - 1) < 1e-3);
+                    // Leave every tower's 45-block radius.
+                    robot.placeAtOffset(200);
+                    boolean refused = false;
+                    try {
+                        pc.sendRadioCommand(robotAddress, "robot", "move", java.util.UUID.randomUUID().toString(), "south", 100);
+                    } catch (final RuntimeException expected) {
+                        refused = true;
+                    }
+                    TestSupport.assertTrue(helper, "command to an out-of-range robot is refused", refused);
+                    robot.placeAtOffset(0);
+                })
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "returning robot attaches again", robot.attached()))
+                .thenExecute(() -> {
+                    final String again = java.util.UUID.randomUUID().toString();
+                    TestSupport.assertTrue(helper, "reconnected robot accepts a new command",
+                            pc.sendRadioCommand(robotAddress, "robot", "move", again, "east", 100).equals("ACCEPTED"));
+                    pc.unsubscribeRadioTelemetry(subscription);
+                })
+                .thenSucceed();
     }
 
     /** At the default 1024 B/tick a 2 KiB frame needs two ticks, so the second frame trails the first. */
@@ -380,7 +389,7 @@ public final class RadioBridgeTests {
         helper.succeed();
     }
 
-    private static GpsTowerBlockEntity tower(final GameTestHelper helper, final BlockPos pos) {
+    static GpsTowerBlockEntity tower(final GameTestHelper helper, final BlockPos pos) {
         TestSupport.placeFloor(helper, pos);
         TestSupport.place(
                 helper, TestSupport.fakePlayer(helper), new ItemStack(Items.GPS_TOWER.get()), pos);

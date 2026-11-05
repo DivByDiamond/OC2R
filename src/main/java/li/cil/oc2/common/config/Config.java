@@ -58,6 +58,7 @@ public final class Config {
     /** Whether position-reporting devices hide absolute world coordinates from guest programs. */
     public static volatile boolean relativeCoordinates = false;
     public static volatile int gpsTowerRange = 45;
+    public static volatile int robotDockRange = 10;
     public static volatile int radioInviteLifetimeTicks = 1200;
     public static volatile int radioHopDelayTicks = 1;
     public static volatile int radioMaxHops = 64;

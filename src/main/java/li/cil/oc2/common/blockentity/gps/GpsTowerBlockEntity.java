@@ -1,5 +1,10 @@
 package li.cil.oc2.common.blockentity.gps;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.api.bus.device.object.Parameter;
@@ -15,19 +20,12 @@ import li.cil.oc2.common.radio.RadioTopology;
 import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.platform.CapabilityRegistrar;
 import li.cil.oc2.platform.Platform;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 /** A wired RPC endpoint and an explicitly paired radio navigation station. */
 public final class GpsTowerBlockEntity extends ModBlockEntity
@@ -258,10 +256,10 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
     private Set<li.cil.oc2.common.radio.RadioRegistry.Scope> scopes(
             String[] permissions, String target, String service) {
         UUID device =
-                target == null || target.isEmpty() || target.equals("*")
+                target == null || target.isEmpty() || "*".equals(target)
                         ? null
                         : UUID.fromString(target);
-        String name = service == null || service.isEmpty() || service.equals("*") ? null : service;
+        String name = service == null || service.isEmpty() || "*".equals(service) ? null : service;
         if (device != null) {
             var data = radioData();
             var own =

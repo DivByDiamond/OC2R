@@ -3,35 +3,34 @@ package li.cil.oc2.common.blockentity.radio;
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-
-import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
-import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.radio.RadioRegistry;
-import li.cil.oc2.common.radio.RadioScheduler;
-import li.cil.oc2.common.radio.RadioTopology;
-import li.cil.oc2.common.util.scheduler.ServerScheduler;
-
-import net.minecraft.core.BlockPos;
-//? if <26.1 {
-import net.minecraft.core.HolderLookup;
-//?}
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.saveddata.SavedData;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
-
+import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
+import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.radio.RadioAccessPoints;
+import li.cil.oc2.common.radio.RadioRegistry;
+import li.cil.oc2.common.radio.RadioScheduler;
+import li.cil.oc2.common.radio.RadioTopology;
+import li.cil.oc2.common.util.scheduler.ServerScheduler;
+import net.minecraft.core.BlockPos;
+//? if <26.1 {
+import net.minecraft.core.HolderLookup;
+//?}
+//? if <26.1 {
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+//?}
 //? if >=26.1 {
 /*import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.saveddata.SavedDataType;
-*///?} else {
-
-//?}
+*///?}
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
+//? if >=26.1 {
+/*import net.minecraft.world.level.saveddata.SavedDataType;
+*///?}
 
 /** Dimension-private enrollment and saved relay topology; unloaded nodes never receive frames. */
 public final class RadioNetworkData extends SavedData {
@@ -173,8 +172,12 @@ public final class RadioNetworkData extends SavedData {
                         });
     }
 
-    /** Clients attach only to a loaded own-network relay. Height does not affect coverage. */
-    public java.util.Optional<RadioTopology.Node> attachment(
+    /**
+     * Clients attach only through a loaded own-network relay: directly to a tower in range, or
+     * else to a loaded robot dock station in range that uplinks through the nearest tower within
+     * tower range of the dock. Height does not affect coverage.
+     */
+    public java.util.Optional<RadioAccessPoints.Attachment> access(
             final ServerLevel level,
             final UUID endpoint,
             final String credential,
@@ -183,20 +186,13 @@ public final class RadioNetworkData extends SavedData {
         reconcile(level);
         final var member = registry.authenticate(endpoint, credential);
         if (member.isEmpty()) return java.util.Optional.empty();
-        return topology.nodes().stream()
-                .filter(
-                        node ->
-                                node.online()
-                                        && node.network().equals(member.get().network())
-                                        && node.dimension().equals(member.get().dimension())
-                                        && square(node.x() - x) + square(node.z() - z) <= 45 * 45)
-                .min(
-                        java.util.Comparator.comparingDouble(
-                                node -> square(node.x() - x) + square(node.z() - z)));
-    }
-
-    private static double square(final double value) {
-        return value * value;
+        return RadioAccessPoints.resolve(
+                topology.nodes(),
+                DockStations.near(level, x, z),
+                member.get().network(),
+                member.get().dimension(),
+                x,
+                z);
     }
 
     public void transmit(

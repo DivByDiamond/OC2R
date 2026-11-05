@@ -1,15 +1,13 @@
 package li.cil.oc2.common.entity.robot.state;
 
+import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.common.entity.Robot;
 import li.cil.oc2.common.entity.robot.action.RobotActionResult;
 import li.cil.oc2.common.entity.robot.movement.MovementDirection;
 import li.cil.oc2.common.entity.robot.rotation.RotationDirection;
-
 import net.minecraft.world.item.ItemStack;
-
-import javax.annotation.Nullable;
 
 public final class RobotDevice {
     private final Robot robot;
@@ -100,6 +98,13 @@ public final class RobotDevice {
             @Parameter("state") String state,
             @Parameter("result") String result) {
         robot.getRadioEndpoint().commandStatus(request, state, result);
+    }
+
+    /** Binds a received command to a queued robot action; the result is then reported by the host. */
+    @Callback
+    public void bindRadioCommand(
+            @Parameter("requestId") String request, @Parameter("actionId") int actionId) {
+        robot.getRadioEndpoint().bindCommandAction(request, actionId);
     }
 
     @Callback
