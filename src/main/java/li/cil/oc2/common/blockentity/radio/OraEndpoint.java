@@ -10,12 +10,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 
 /** A client identity is bound to its host; it never enters the saved relay topology. */
+// Fields back their same-named accessors; the endpoint is only touched on the server thread.
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName", "PMD.UseConcurrentHashMap"})
 public final class OraEndpoint implements RadioServiceBroker.Endpoint {
     private final Supplier<ServerLevel> level;
     private final Supplier<UUID> owner;
-    private final java.util.function.DoubleSupplier x, z;
+    private final java.util.function.DoubleSupplier x;
+    private final java.util.function.DoubleSupplier z;
     private final java.util.function.BooleanSupplier online;
-    private UUID id = UUID.randomUUID(), binding;
+    private UUID id = UUID.randomUUID();
+    private UUID binding;
     private String credential = "";
     private RadioServiceBroker.Session session;
     private long sessionGeneration = -1;
@@ -202,6 +206,7 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
      * Reports only what the host says about the bound action. An action the host dropped without
      * an outcome did not happen, so it fails. Disconnect and timeout are decided by the broker.
      */
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault") // Checkstyle MissingSwitchDefault wants the default.
     private void resolveBoundCommands() {
         if (actions == null) return;
         for (var binding : List.copyOf(commandBindings.entrySet())) {

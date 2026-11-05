@@ -18,6 +18,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
 
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION",
+        justification = "Only the compiler-generated generic bridge lacks the @Nullable of breakProgress.")
 public final class DiskDriveRenderer<T extends net.minecraft.world.level.block.entity.BlockEntity
         & li.cil.oc2.common.blockentity.disk.FloppyVisualSource>
         implements BlockEntityRenderer<T, DiskDriveRenderer.State> {

@@ -167,6 +167,7 @@ public final class RobotDockRadioTests {
                         site.robot.endpoint().bindCommandAction(lost, site.robot.lastActionId());
                         throw TestSupport.failure(helper, "the lost command is still known after the reconnect");
                     } catch (final IllegalArgumentException expected) {
+                        TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
                     }
                     TestSupport.assertTrue(helper, "reconnected robot accepts a new command",
                             site.sendCommand(after, "forward").equals("ACCEPTED"));
@@ -212,6 +213,7 @@ public final class RobotDockRadioTests {
                             site.robot.endpoint().commandStatus(command, nominal, "claimed");
                             throw TestSupport.failure(helper, "guest declared " + nominal);
                         } catch (final IllegalArgumentException expected) {
+                            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
                         }
                     }
                     expectBindRefused(helper, site, command, earlier[0], "an action queued before the command arrived");
@@ -223,6 +225,7 @@ public final class RobotDockRadioTests {
                         site.robot.endpoint().bindCommandAction(other, blocked[0]);
                         throw TestSupport.failure(helper, "one action was bound to two commands");
                     } catch (final IllegalStateException expected) {
+                        TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
                     }
                     site.drain();
                     TestSupport.assertTrue(helper, "no result is invented before the action ends",
@@ -250,6 +253,7 @@ public final class RobotDockRadioTests {
             site.robot.endpoint().bindCommandAction(command, actionId);
             throw TestSupport.failure(helper, "command was bound to " + what);
         } catch (final IllegalArgumentException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
     }
 
@@ -307,7 +311,7 @@ public final class RobotDockRadioTests {
             boolean refused = false;
             try {
                 sendCommand(UUID.randomUUID().toString(), "forward");
-            } catch (final RuntimeException expected) {
+            } catch (final RuntimeException expected) { // NOPMD - recorded in refused, asserted below
                 refused = true;
             }
             TestSupport.assertTrue(helper, what, refused);

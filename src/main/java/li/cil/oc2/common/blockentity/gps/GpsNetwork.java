@@ -11,6 +11,8 @@ import net.minecraft.core.BlockPos;
 
 /** Radio topology independent of chunk loading; callers own the server-thread lifetime. */
 public final class GpsNetwork {
+    // Server-thread only; nodes() returns a copy of this map's values.
+    @SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName", "PMD.UseConcurrentHashMap"})
     private final Map<UUID, GpsNetworkNode> nodes = new HashMap<>();
 
     public boolean put(final GpsNetworkNode node) {

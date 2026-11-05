@@ -39,7 +39,7 @@ class RadioTlsTest {
 
     @Test void encryptsActualTransportAndChunksLargeMessages() {
         Pair pair = new Pair(false);
-        byte[] payload = new byte[180000]; new Random(42).nextBytes(payload);
+        byte[] payload = new byte[180000]; new SplittableRandom(42).nextBytes(payload);
         assertTrue(pair.client.send(payload)); pair.drain();
         assertTrue(pair.client.isOpen()); assertTrue(pair.server.isOpen());
         assertEquals(1, pair.received.size()); assertArrayEquals(payload, pair.received.getFirst());
@@ -99,9 +99,10 @@ class RadioTlsTest {
     }
 
     private static boolean contains(byte[] haystack, byte[] needle) {
-        outer: for (int i = 0; i <= haystack.length - needle.length; i++) {
-            for (int j = 0; j < needle.length; j++) if (haystack[i + j] != needle[j]) continue outer;
-            return true;
+        for (int i = 0; i <= haystack.length - needle.length; i++) {
+            boolean match = true;
+            for (int j = 0; j < needle.length && match; j++) match = haystack[i + j] == needle[j];
+            if (match) return true;
         }
         return false;
     }

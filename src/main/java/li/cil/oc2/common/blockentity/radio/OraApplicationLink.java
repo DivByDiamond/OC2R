@@ -9,6 +9,7 @@ import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import net.minecraft.server.level.ServerLevel;
 
 /** Reliable application stream over scheduled ciphertext; clients are leaves, never relays. */
+@SuppressWarnings("PMD.UseConcurrentHashMap") // Owned and driven by the server thread only.
 final class OraApplicationLink implements RadioServiceBroker.Link {
     private record PairKey(UUID first, UUID second) {
         static PairKey of(UUID a, UUID b) {
@@ -24,8 +25,8 @@ final class OraApplicationLink implements RadioServiceBroker.Link {
     private final Map<UUID, RadioTlsIdentity> identities = new HashMap<>();
     private final Map<PairKey, Pair> pairs = new HashMap<>();
     private final RadioTlsTrust trust = new RadioTlsTrust();
-    private final Map<UUID, Integer> networkFrames = new HashMap<>(),
-            deviceFrames = new HashMap<>();
+    private final Map<UUID, Integer> networkFrames = new HashMap<>();
+    private final Map<UUID, Integer> deviceFrames = new HashMap<>();
     private final Map<UUID, Long> networkDelivery = new HashMap<>();
     private int queuedFrames;
 
@@ -42,7 +43,7 @@ final class OraApplicationLink implements RadioServiceBroker.Link {
         if (!member.dimension().equals(endpoint.dimension()))
             throw new SecurityException("Endpoint changed dimension");
         var previous = endpoints.get(endpoint.id());
-        if (previous != null && previous != endpoint && previous.online())
+        if (previous != null && previous != endpoint && previous.online()) // NOPMD - same live endpoint
             throw new SecurityException("Endpoint identity is already active");
         endpoints.put(endpoint.id(), endpoint);
         var identity = identities.get(endpoint.id());
@@ -166,10 +167,14 @@ final class OraApplicationLink implements RadioServiceBroker.Link {
 
     private final class Pair {
         final PairKey key;
-        final long firstGeneration, secondGeneration;
-        final RadioTlsChannel first, second;
-        final ArrayDeque<Pending> toFirst = new ArrayDeque<>(), toSecond = new ArrayDeque<>();
-        long firstDelivery, secondDelivery;
+        final long firstGeneration;
+        final long secondGeneration;
+        final RadioTlsChannel first;
+        final RadioTlsChannel second;
+        final ArrayDeque<Pending> toFirst = new ArrayDeque<>();
+        final ArrayDeque<Pending> toSecond = new ArrayDeque<>();
+        long firstDelivery;
+        long secondDelivery;
         int queuedCiphertext;
         boolean closed;
 

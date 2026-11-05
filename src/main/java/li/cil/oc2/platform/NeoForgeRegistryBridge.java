@@ -1,6 +1,5 @@
 package li.cil.oc2.platform;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -129,8 +128,10 @@ public final class NeoForgeRegistryBridge implements RegistryBridge {
 
     @Override
     @SuppressWarnings("ConstantConditions") // The legacy vanilla builder accepts a null datafixer type.
-    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+    //? if <26.1 {
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
             justification = "The legacy builder accepts null, as used by vanilla block entity types")
+    //?}
     public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
             final BiFunction<BlockPos, BlockState, T> factory, final Block... blocks) {
         //? if >=26.1 {

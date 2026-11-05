@@ -1,5 +1,6 @@
 package li.cil.oc2.common.config.common;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Locale;
 import li.cil.oc2.common.config.Config;
 //? if >=26.1 {
@@ -180,6 +181,8 @@ public class GameplaySpec {
                         .defineInRange("cpuFrequencyTier4", 400, 1, Integer.MAX_VALUE);
     }
 
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+            justification = "Config is the static snapshot that every config reload republishes.")
     public void loadValues() {
         Config.relativeCoordinates = relativeCoordinates.get();
         Config.gpsTowerRange = gpsTowerRange.get();

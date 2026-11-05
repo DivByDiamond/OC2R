@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 final class RadioAccessPointsTest {
     private static final UUID NETWORK = UUID.randomUUID();
     private static final String DIM = "minecraft:overworld";
-    private static final double TOWER_RANGE = 45, DOCK_RANGE = 10;
+    private static final double TOWER_RANGE = 45;
+    private static final double DOCK_RANGE = 10;
 
     private static RadioTopology.Node tower(final double x, final double z) {
         return new RadioTopology.Node(UUID.randomUUID(), NETWORK, DIM, x, 64, z, TOWER_RANGE, true);
@@ -66,10 +67,11 @@ final class RadioAccessPointsTest {
     @Test
     void heightNeverLimitsAttachment() {
         // Towers and docks at extreme heights still cover the client by X/Z distance alone.
-        for (final double towerY : new double[] {-2048, -64, 320, 4096}) {
-            for (final double dockY : new double[] {-2048, -64, 320, 4096}) {
+        final double[] heights = {-2048, -64, 320, 4096};
+        for (final double towerY : heights) {
+            for (final double dockY : heights) {
                 final var tower = towerAt(0, towerY, 0);
-                final var dock = new RadioAccessPoints.Dock(DIM, 40, dockY, 0, DOCK_RANGE);
+                final var dock = new RadioAccessPoints.Dock(DIM, 40, dockY, 0, DOCK_RANGE); // NOPMD - one per case
                 final var through = resolve(List.of(tower), List.of(dock), 50, 0);
                 assertTrue(through.isPresent() && through.get().viaDock(), "dock at y=" + dockY + ", tower at y=" + towerY);
                 assertTrue(resolve(List.of(tower), List.of(dock), 50.001, 0).isEmpty());

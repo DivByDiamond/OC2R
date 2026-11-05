@@ -1,5 +1,6 @@
 package li.cil.oc2.common.bus.element;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.bus.device.Device;
@@ -16,6 +17,8 @@ public abstract class AbstractGroupingDeviceBusElement<E extends GroupEntry, Q>
     public final int groupCount;
     public final List<Set<E>> groups;
     public final UUID[] groupIds;
+    @SuppressFBWarnings(value = "PA_PUBLIC_ARRAY_ATTRIBUTE",
+            justification = "GroupManager reads and replaces the per-group tags in place.")
     public final CompoundTag[] groupData;
 
     protected AbstractGroupingDeviceBusElement(final int groupCount) {

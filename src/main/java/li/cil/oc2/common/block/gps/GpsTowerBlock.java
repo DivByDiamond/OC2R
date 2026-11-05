@@ -103,6 +103,8 @@ public final class GpsTowerBlock extends HorizontalDirectionalBlock implements E
 
     //? if >=26.1 {
     /*@Override
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION",
+            justification = "Vanilla passes a null orientation; the parameter is not used.")
     public void neighborChanged(final BlockState state, final Level level, final BlockPos pos,
                                 final Block changedBlock,
                                 @Nullable final net.minecraft.world.level.redstone.Orientation orientation,

@@ -42,9 +42,11 @@ public final class RadioMessageCodec {
             var sourceAddress = RadioAddress.parse(input.readUTF());
             var destination = uuid(input);
             var destinationAddress = RadioAddress.parse(input.readUTF());
-            String service = input.readUTF(), channel = input.readUTF();
+            String service = input.readUTF();
+            String channel = input.readUTF();
             var request = uuid(input);
-            int type = input.readUnsignedByte(), length = input.readInt();
+            int type = input.readUnsignedByte();
+            int length = input.readInt();
             if (type >= RadioMessage.Type.values().length
                     || length < 0
                     || length > RadioMessage.MAX_PAYLOAD

@@ -10,17 +10,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 final class RadioAllocationTest {
     private static final class Slots extends SecureRandom {
-        private final ArrayDeque<Integer> slots = new ArrayDeque<>();
+        private final ArrayDeque<Integer> values = new ArrayDeque<>();
         private final ArrayDeque<Integer> bounds = new ArrayDeque<>();
 
-        Slots(final Integer... values) {
-            slots.addAll(List.of(values));
+        Slots(final Integer... slots) {
+            super();
+            values.addAll(List.of(slots));
         }
 
         @Override
         public int nextInt(final int bound) {
             bounds.add(bound);
-            final int value = slots.remove();
+            final int value = values.remove();
             assertTrue(value >= 0 && value < bound);
             return value;
         }
@@ -127,7 +128,7 @@ final class RadioAllocationTest {
                 new RadioRegistry.Reservation(network.network(), 0),
                 new RadioRegistry.Reservation(network.network(), RadioAddress.MAX + 1))) {
             assertThrows(IllegalArgumentException.class, () -> RadioRegistry.importState(
-                new RadioRegistry.State(saved.nextPrefix(), saved.networks(), List.of(), List.of(),
+                new RadioRegistry.State(saved.nextPrefix(), saved.networks(), List.of(), List.of(), // NOPMD - per case
                     List.of(reservation))));
         }
         final var reservation = new RadioRegistry.Reservation(network.network(), 5);

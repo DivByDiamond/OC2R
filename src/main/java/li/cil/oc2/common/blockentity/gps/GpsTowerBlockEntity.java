@@ -28,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** A wired RPC endpoint and an explicitly paired radio navigation station. */
+@SuppressWarnings("PMD.CyclomaticComplexity") // Many small RPC callbacks, each with its own guards.
 public final class GpsTowerBlockEntity extends ModBlockEntity
         implements NamedDevice, NetworkInterface {
     private UUID stationId = UUID.randomUUID();
@@ -39,8 +40,8 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
             new li.cil.oc2.common.blockentity.radio.OraEndpoint(
                     () -> (ServerLevel) level,
                     () -> radioEndpoint,
-                    () -> worldPosition.getX(),
-                    () -> worldPosition.getZ(),
+                    worldPosition::getX,
+                    worldPosition::getZ,
                     () -> !isRemoved() && isAssembled());
 
     private li.cil.oc2.common.blockentity.radio.OraEndpoint ora() {
@@ -284,7 +285,11 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
 
     /** Pending enrollment as shown to an administrator; scopes use {@link #describe}. */
     public record PendingEnrollment(
-            String request, String endpointId, java.util.List<String> scopes, long expiresAtTick) {}
+            String request, String endpointId, java.util.List<String> scopes, long expiresAtTick) {
+        public PendingEnrollment {
+            scopes = java.util.List.copyOf(scopes);
+        }
+    }
 
     /**
      * Like {@link #issueRadioInviteWithPermissions} but the invitation only opens a pending
@@ -378,7 +383,7 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
     public void approveEnrollment(
             @Parameter("adminSecret") final String adminSecret,
             @Parameter("requestId") final String requestId,
-            @Parameter("scopes") final String[] scopes) {
+            @Parameter("scopes") final String... scopes) {
         requireAssembled();
         final var admin = requireAdmin();
         final var data = radioData();
@@ -529,7 +534,7 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
                                     null,
                                     level.getBlockEntity(pos),
                                     side.getOpposite());
-            if (iface != null && iface != this)
+            if (iface != null && iface != this) // NOPMD - skip only this exact block entity
                 iface.writeEthernetFrame(this, frame.clone(), ttl - 1);
         }
     }
@@ -663,11 +668,12 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
     public void joinNetwork(@Parameter("networkId") final String id) {
         requireRelativeMode();
         requireAssembled();
+        if (id == null) throw new IllegalArgumentException("Invalid GPS network ID");
         final UUID selected;
         try {
             selected = UUID.fromString(id);
-        } catch (final IllegalArgumentException | NullPointerException invalid) {
-            throw new IllegalArgumentException("Invalid GPS network ID");
+        } catch (final IllegalArgumentException invalid) {
+            throw new IllegalArgumentException("Invalid GPS network ID", invalid);
         }
         final GpsNetworkData data = data();
         if (selected.equals(networkId)) return;

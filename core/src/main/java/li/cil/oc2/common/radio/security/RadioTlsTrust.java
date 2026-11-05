@@ -7,6 +7,7 @@ import java.util.*;
 public final class RadioTlsTrust {
     private record Pin(long generation, byte[] certificate) {}
 
+    @SuppressWarnings("PMD.UseConcurrentHashMap") // Accessed from the server thread only.
     private final Map<UUID, Pin> pins = new HashMap<>();
 
     public void enroll(UUID id, long generation, byte[] certificate) {

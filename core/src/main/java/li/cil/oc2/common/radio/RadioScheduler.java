@@ -1,8 +1,10 @@
 package li.cil.oc2.common.radio;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 
 /** Tick-thread-only trusted local Ethernet scheduler. This transport does not provide TLS. */
+@SuppressWarnings("PMD.UseConcurrentHashMap") // Tick thread only, see above.
 public final class RadioScheduler {
     public record Config(
             int hopDelay,
@@ -105,6 +107,8 @@ public final class RadioScheduler {
     private long sequence;
     private long clock = -1;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2",
+            justification = "The scheduler works on the live registry and topology of its level.")
     public RadioScheduler(
             final RadioRegistry registry, final RadioTopology topology, final Config config) {
         this.registry = Objects.requireNonNull(registry);
@@ -116,6 +120,7 @@ public final class RadioScheduler {
      * Source identity must come from the server-owned, physically attached endpoint, never a guest
      * payload.
      */
+    @SuppressWarnings("PMD.CyclomaticComplexity") // One guard per admission limit.
     public Result submit(
             final UUID packet,
             final UUID source,

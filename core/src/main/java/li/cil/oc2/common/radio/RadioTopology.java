@@ -3,6 +3,7 @@ package li.cil.oc2.common.radio;
 import java.util.*;
 
 /** Saved relays remain traversable while unloaded; only online endpoints send and receive. */
+@SuppressWarnings("PMD.UseConcurrentHashMap") // Owned by the server tick thread.
 public final class RadioTopology {
     public record Node(
             UUID device,
@@ -25,6 +26,7 @@ public final class RadioTopology {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // nodes() returns a sorted copy.
     private final Map<UUID, Node> nodes = new HashMap<>();
     private final LinkedHashMap<UUID, Map<UUID, UUID>> routeTrees = new LinkedHashMap<>(8, 0.75F, true);
 
@@ -47,7 +49,8 @@ public final class RadioTopology {
     }
 
     public List<UUID> route(final UUID source, final UUID target) {
-        final Node start = nodes.get(source), end = nodes.get(target);
+        final Node start = nodes.get(source);
+        final Node end = nodes.get(target);
         if (start == null
                 || end == null
                 || !start.online()
@@ -95,7 +98,8 @@ public final class RadioTopology {
 
     private static boolean connected(final Node first, final Node second) {
         final double radius = Math.min(first.range(), second.range());
-        final double dx = first.x() - second.x(), dz = first.z() - second.z();
+        final double dx = first.x() - second.x();
+        final double dz = first.z() - second.z();
         return dx * dx + dz * dz <= radius * radius;
     }
 }

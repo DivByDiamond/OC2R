@@ -1,11 +1,14 @@
 package li.cil.oc2.common.radio.service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import java.util.function.LongSupplier;
 import li.cil.oc2.common.radio.RadioAddress;
 import li.cil.oc2.common.radio.RadioRegistry;
 
 /** Server-thread application broker. Link implementations must schedule both directions. */
+// Server thread only; sessions, pings and subscriptions are matched by identity on purpose.
+@SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.CompareObjectsWithEquals"})
 public final class RadioServiceBroker {
     public static final int MAX_ENDPOINTS = 4096,
             MAX_EVENTS = 256,
@@ -106,8 +109,11 @@ public final class RadioServiceBroker {
     private final Map<String, Freshness> freshness = new HashMap<>();
     private final Map<UUID, Long> deliveredSequences = new HashMap<>();
     private final Map<UUID, Subscription> subscriptions = new LinkedHashMap<>();
-    private long tick, sequence;
+    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // tick(long) advances this clock.
+    private long tick;
+    private long sequence;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "The broker works on the live registry.")
     public RadioServiceBroker(RadioRegistry registry, Link link, LongSupplier nanos) {
         this.registry = Objects.requireNonNull(registry);
         this.link = Objects.requireNonNull(link);
@@ -165,6 +171,7 @@ public final class RadioServiceBroker {
     }
 
     public final class Session implements AutoCloseable {
+        @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // Backs device().
         private final UUID device;
         private final String secret;
         private final long generation;
@@ -250,15 +257,14 @@ public final class RadioServiceBroker {
                     RadioMessageCodec.encode(envelope),
                     tick,
                     () -> {
-                        if (allowed(
+                        if (!allowed(
                                 this,
                                 member.id(),
                                 member.generation(),
                                 RadioRegistry.Permission.MESSAGE_SEND,
-                                service)) {
-                            var endpoint = endpoint(member.id(), service);
-                            if (endpoint != null) endpoint.message(envelope);
-                        }
+                                service)) return;
+                        var endpoint = endpoint(member.id(), service);
+                        if (endpoint != null) endpoint.message(envelope);
                     })) throw new IllegalStateException("Transport unavailable");
         }
 
@@ -458,6 +464,7 @@ public final class RadioServiceBroker {
         private final long generation;
         private final RadioMessage message;
         private final long deadline;
+        @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // Backs state().
         private State state = State.ACCEPTED;
         private long finishedAt = -1;
 
@@ -504,14 +511,15 @@ public final class RadioServiceBroker {
         private void finish(State next, byte[] result) {
             bounded(result);
             if (!active()) return;
-            if (tick >= deadline) next = State.TIMED_OUT;
+            State outcome = next;
+            if (tick >= deadline) outcome = State.TIMED_OUT;
             else if (!allowed(
                     session,
                     target,
                     generation,
                     RadioRegistry.Permission.COMMAND_SEND,
-                    message.service())) next = State.DISCONNECTED;
-            state = next;
+                    message.service())) outcome = State.DISCONNECTED;
+            state = outcome;
             if (!active()) finishedAt = tick;
             emit(result);
         }
@@ -558,6 +566,8 @@ public final class RadioServiceBroker {
         }
     }
 
+    // One pass over every pending request kind; events are fresh immutable records per entry.
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.AvoidInstantiatingObjectsInLoops"})
     public void tick(long now) {
         if (now < tick) throw new IllegalArgumentException("Ticks must be monotonic");
         tick = now;

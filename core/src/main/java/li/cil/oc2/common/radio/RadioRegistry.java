@@ -7,6 +7,8 @@ import java.security.SecureRandom;
 import java.util.*;
 
 /** Server-owned enrollment registry. Exported records contain hashes only, never bearer secrets. */
+// Owned by the server thread; the class bundles many small validated operations.
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UseConcurrentHashMap"})
 public final class RadioRegistry {
     public static final int MAX_NETWORKS = 256;
     public static final int MAX_MEMBERS = 4096;
@@ -455,6 +457,8 @@ public final class RadioRegistry {
         return importState(state, new SecureRandom());
     }
 
+    // Validates every imported record in one pass before anything is accepted.
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     static RadioRegistry importState(final State state, final SecureRandom addressRandom) {
         if (state.networks().size() > MAX_NETWORKS
                 || state.members().size() > MAX_MEMBERS

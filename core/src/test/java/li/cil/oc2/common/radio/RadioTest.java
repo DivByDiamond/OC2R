@@ -5,14 +5,15 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class RadioTest {
+    private static final String DIMENSION = "overworld";
     private final RadioRegistry registry = new RadioRegistry();
     private final RadioRegistry.CreatedNetwork network = registry.createNetwork();
     private final RadioTopology topology = new RadioTopology();
     private RadioRegistry.Enrollment add(final double x, final double y, final double z, final boolean online) {
         final UUID id = UUID.randomUUID();
-        final var invite = registry.invite(network.network(), network.adminSecret(), "overworld", id, Set.of());
+        final var invite = registry.invite(network.network(), network.adminSecret(), DIMENSION, id, Set.of());
         final var enrollment = registry.enroll(invite.invite(), invite.secret());
-        topology.upsert(new RadioTopology.Node(id, network.network(), "overworld", x, y, z, 45, online));
+        topology.upsert(new RadioTopology.Node(id, network.network(), DIMENSION, x, y, z, 45, online));
         return enrollment;
     }
     @Test void canonicalAddressesRejectReservedAndAmbiguousInput() {
@@ -33,13 +34,14 @@ final class RadioTest {
         topology.remove(relay);
         assertTrue(topology.route(a, b).isEmpty());
         assertTrue(topology.route(a, corner).isEmpty());
-        topology.upsert(new RadioTopology.Node(b, network.network(), "overworld", 0, 0, 0, 45, false));
+        topology.upsert(new RadioTopology.Node(b, network.network(), DIMENSION, 0, 0, 0, 45, false));
         assertTrue(topology.route(a, b).isEmpty());
     }
     @Test void scopesRevocationAndPersistence() {
-        final UUID id = UUID.randomUUID(), target = UUID.randomUUID();
-        assertThrows(SecurityException.class, () -> registry.invite(network.network(), "wrong", "overworld", id, Set.of()));
-        final var invite = registry.invite(network.network(), network.adminSecret(), "overworld", id,
+        final UUID id = UUID.randomUUID();
+        final UUID target = UUID.randomUUID();
+        assertThrows(SecurityException.class, () -> registry.invite(network.network(), "wrong", DIMENSION, id, Set.of()));
+        final var invite = registry.invite(network.network(), network.adminSecret(), DIMENSION, id,
             Set.of(new RadioRegistry.Scope(RadioRegistry.Permission.COMMAND_SEND, target, "motor")));
         final var member = registry.enroll(invite.invite(), invite.secret());
         assertThrows(SecurityException.class, () -> registry.enroll(invite.invite(), invite.secret()));
@@ -50,7 +52,7 @@ final class RadioTest {
         assertTrue(restored.authenticate(id, member.secret()).isPresent());
         restored.revoke(network.network(), network.adminSecret(), id);
         assertTrue(restored.authenticate(id, member.secret()).isEmpty());
-        final var next = restored.invite(network.network(), network.adminSecret(), "overworld", id, Set.of());
+        final var next = restored.invite(network.network(), network.adminSecret(), DIMENSION, id, Set.of());
         final var reenrolled = restored.enroll(next.invite(), next.secret());
         assertNotEquals(member.member().number(), reenrolled.member().number());
         assertEquals(2, reenrolled.member().generation());
@@ -75,7 +77,8 @@ final class RadioTest {
         scheduler.tick(4, (source, target, frame, ttl) -> fail("Revoked relay delivered"));
     }
     @Test void linkBandwidthSerializesFramesPerSender() {
-        final UUID a = add(0, 0, 0, true).member().id(), b = add(10, 0, 0, true).member().id();
+        final UUID a = add(0, 0, 0, true).member().id();
+        final UUID b = add(10, 0, 0, true).member().id();
         // 100 bytes per tick, one hop: a 250-byte frame occupies 3 ticks.
         final RadioScheduler scheduler = new RadioScheduler(registry, topology,
                 new RadioScheduler.Config(1, 8, 2048, 64, 64, 64, 64, 50, 100));
@@ -104,21 +107,23 @@ final class RadioTest {
         assertEquals(List.of(2L), arrivals);
     }
     @Test void backlogBeyondLifetimeIsRefused() {
-        final UUID a = add(0, 0, 0, true).member().id(), b = add(10, 0, 0, true).member().id();
+        final UUID a = add(0, 0, 0, true).member().id();
+        final UUID b = add(10, 0, 0, true).member().id();
         final RadioScheduler scheduler = new RadioScheduler(registry, topology,
                 new RadioScheduler.Config(1, 8, 2048, 64, 64, 64, 64, 4, 100));
         assertEquals(RadioScheduler.Result.ACCEPTED, scheduler.submit(UUID.randomUUID(), a, b, new byte[300], 4, 0));
         assertEquals(RadioScheduler.Result.QUEUE_FULL, scheduler.submit(UUID.randomUUID(), a, b, new byte[300], 4, 0));
     }
     @Test void boundsLifetimeAndIsolation() {
-        final UUID a = add(0, 0, 0, true).member().id(), b = add(45, 0, 0, true).member().id();
+        final UUID a = add(0, 0, 0, true).member().id();
+        final UUID b = add(45, 0, 0, true).member().id();
         final RadioScheduler scheduler = new RadioScheduler(registry, topology, new RadioScheduler.Config(3, 8, 8, 1, 1, 1, 2, 2));
         assertEquals(RadioScheduler.Result.INVALID_FRAME, scheduler.submit(UUID.randomUUID(), a, b, new byte[9], 4, 0));
         assertEquals(RadioScheduler.Result.ACCEPTED, scheduler.submit(UUID.randomUUID(), a, b, new byte[]{1}, 4, 0));
         assertEquals(RadioScheduler.Result.QUEUE_FULL, scheduler.submit(UUID.randomUUID(), a, b, new byte[]{1}, 4, 0));
         scheduler.tick(3, (source, target, frame, ttl) -> fail("Expired frame delivered"));
         final var foreign = registry.createNetwork();
-        final var invitation = registry.invite(foreign.network(), foreign.adminSecret(), "overworld", UUID.randomUUID(), Set.of());
+        final var invitation = registry.invite(foreign.network(), foreign.adminSecret(), DIMENSION, UUID.randomUUID(), Set.of());
         final var member = registry.enroll(invitation.invite(), invitation.secret());
         assertEquals(RadioScheduler.Result.UNAUTHORIZED, scheduler.submit(UUID.randomUUID(), a, member.member().id(), new byte[]{1}, 4, 3));
         assertTrue(registry.resolve(member.member().id(), member.secret(), registry.address(a)).isEmpty());
@@ -141,11 +146,11 @@ final class RadioTest {
         final RadioScheduler scheduler = new RadioScheduler(registry, topology, RadioScheduler.Config.defaults());
         scheduler.submit(UUID.randomUUID(), a, b, new byte[]{1}, 4, 0);
         registry.revoke(network.network(), network.adminSecret(), relay);
-        final var invitation = registry.invite(network.network(), network.adminSecret(), "overworld", relay, Set.of());
+        final var invitation = registry.invite(network.network(), network.adminSecret(), DIMENSION, relay, Set.of());
         registry.enroll(invitation.invite(), invitation.secret());
         scheduler.tick(2, (source, target, frame, ttl) -> fail("Stale relay generation delivered"));
         scheduler.submit(UUID.randomUUID(), a, b, new byte[]{1}, 4, 2);
-        topology.upsert(new RadioTopology.Node(b, network.network(), "overworld", 90, 0, 0, 45, false));
+        topology.upsert(new RadioTopology.Node(b, network.network(), DIMENSION, 90, 0, 0, 45, false));
         scheduler.tick(4, (source, target, frame, ttl) -> fail("Offline recipient delivered"));
         assertEquals(RadioScheduler.Result.NO_ROUTE, scheduler.submit(UUID.randomUUID(), a, b, new byte[]{1}, 4, 4));
     }
@@ -157,7 +162,7 @@ final class RadioTest {
         assertEquals(List.of(a, relay, b), topology.route(a, b));
         topology.upsert(saved);
         assertEquals(List.of(a, relay, b), topology.route(a, b));
-        topology.upsert(new RadioTopology.Node(relay, network.network(), "overworld", 45, 0, 46, 45, false));
+        topology.upsert(new RadioTopology.Node(relay, network.network(), DIMENSION, 45, 0, 46, 45, false));
         assertTrue(topology.route(a, b).isEmpty());
         topology.upsert(saved);
         assertEquals(List.of(a, relay, b), topology.route(a, b));

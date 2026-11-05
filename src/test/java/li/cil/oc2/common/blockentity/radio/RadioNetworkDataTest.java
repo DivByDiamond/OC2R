@@ -26,6 +26,8 @@ import net.minecraft.nbt.NbtOps;
 import org.junit.jupiter.api.Test;
 
 class RadioNetworkDataTest {
+    private static final String OVERWORLD = "minecraft:overworld";
+
     @Test
     void revokedUnloadedShortestRelayIsPrunedSoValidLongerRouteRemainsUsable() {
         final RadioNetworkData data = new RadioNetworkData();
@@ -78,7 +80,7 @@ class RadioNetworkDataTest {
                         .invite(
                                 network.network(),
                                 network.adminSecret(),
-                                "minecraft:overworld",
+                                OVERWORLD,
                                 endpoint,
                                 Set.of());
         data.registry().enroll(invitation.invite(), invitation.secret());
@@ -86,7 +88,7 @@ class RadioNetworkDataTest {
                 new RadioTopology.Node(
                         endpoint,
                         network.network(),
-                        "minecraft:overworld",
+                        OVERWORLD,
                         x,
                         64,
                         z,
@@ -102,7 +104,7 @@ class RadioNetworkDataTest {
         final UUID network = UUID.randomUUID();
         final var original =
                 new RadioTopology.Node(
-                        device, network, "minecraft:overworld", 10, 64, 10, 45, true);
+                        device, network, OVERWORLD, 10, 64, 10, 45, true);
         assertTrue(data.register(original));
         data.setDirty(false);
         assertTrue(data.register(original));
@@ -110,7 +112,7 @@ class RadioNetworkDataTest {
         assertFalse(
                 data.register(
                         new RadioTopology.Node(
-                                device, network, "minecraft:overworld", 20, 64, 10, 45, true)));
+                                device, network, OVERWORLD, 20, 64, 10, 45, true)));
         assertEquals(original, data.topology().nodes().getFirst());
     }
 
@@ -124,13 +126,13 @@ class RadioNetworkDataTest {
                         .invite(
                                 network.network(),
                                 network.adminSecret(),
-                                "minecraft:overworld",
+                                OVERWORLD,
                                 endpoint,
                                 Set.of());
         final var enrollment = data.registry().enroll(invitation.invite(), invitation.secret());
         data.register(
                 new RadioTopology.Node(
-                        endpoint, network.network(), "minecraft:overworld", 10, 250, 20, 45, true));
+                        endpoint, network.network(), OVERWORLD, 10, 250, 20, 45, true));
         final var nbt = RadioNetworkData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
         final var payload = NbtOps.INSTANCE.getMap(nbt).getOrThrow().get("radio");
         final String json = StandardCharsets.UTF_8.decode(
@@ -153,11 +155,11 @@ class RadioNetworkDataTest {
         final var network = data.registry().createNetwork();
         final UUID device = UUID.randomUUID();
         final var invite = data.registry().invite(network.network(), network.adminSecret(),
-                "minecraft:overworld", device, Set.of());
+                OVERWORLD, device, Set.of());
         final var first = data.registry().enroll(invite.invite(), invite.secret());
         data.registry().revoke(network.network(), network.adminSecret(), device);
         final var next = data.registry().invite(network.network(), network.adminSecret(),
-                "minecraft:overworld", device, Set.of());
+                OVERWORLD, device, Set.of());
         final var second = data.registry().enroll(next.invite(), next.secret());
         final var nbt = RadioNetworkData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
         final var restored = RadioNetworkData.CODEC.parse(NbtOps.INSTANCE, nbt).getOrThrow();
@@ -177,11 +179,11 @@ class RadioNetworkDataTest {
         final var created = data.registry().createNetwork();
         final UUID device = UUID.randomUUID();
         final var invite = data.registry().invite(created.network(), created.adminSecret(),
-                "minecraft:overworld", device, Set.of());
+                OVERWORLD, device, Set.of());
         final var enrolled = data.registry().enroll(invite.invite(), invite.secret());
         final var original = data.registry().exportState().networks().getFirst();
         final var network = new RadioRegistry.Network(original.id(), 17, original.adminHash(), 4);
-        final var member = new RadioRegistry.Member(device, original.id(), "minecraft:overworld",
+        final var member = new RadioRegistry.Member(device, original.id(), OVERWORLD,
                 3, 1, enrolled.member().credentialHash(), Set.of(), false);
         final var legacy = new RadioRegistry.State(18, List.of(network), List.of(member), List.of());
         final var registryJson = new Gson().toJsonTree(legacy).getAsJsonObject();
@@ -198,7 +200,7 @@ class RadioNetworkDataTest {
         assertTrue(restored.registry().exportState().reservations().isEmpty());
         restored.registry().revoke(network.id(), created.adminSecret(), device);
         final var next = restored.registry().invite(network.id(), created.adminSecret(),
-                "minecraft:overworld", device, Set.of());
+                OVERWORLD, device, Set.of());
         final var reenrolled = restored.registry().enroll(next.invite(), next.secret());
         assertTrue(reenrolled.member().number() >= 4);
     }
@@ -209,7 +211,7 @@ class RadioNetworkDataTest {
         final var network = data.registry().createNetwork();
         final UUID device = UUID.randomUUID();
         final var invite = data.registry().invite(network.network(), network.adminSecret(),
-                "minecraft:overworld", device, Set.of());
+                OVERWORLD, device, Set.of());
         final var enrolled = data.registry().enroll(invite.invite(), invite.secret());
         final var saved = data.registry().exportState();
         final var reservations = new java.util.HashSet<>(saved.reservations());

@@ -99,7 +99,8 @@ public final class RadioAccessPoints {
 
     private static double distanceSquared(
             final double ax, final double az, final double bx, final double bz) {
-        final double dx = ax - bx, dz = az - bz;
+        final double dx = ax - bx;
+        final double dz = az - bz;
         return dx * dx + dz * dz;
     }
 }

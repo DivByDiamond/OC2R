@@ -14,6 +14,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 /**
  * Server-private, independently generated device identity. Never send the private blob to guests.
  */
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // Fields back their same-named accessors.
 public final class RadioTlsIdentity {
     private final UUID id;
     private final long generation;
@@ -29,6 +30,7 @@ public final class RadioTlsIdentity {
         this.certificate = certificate;
     }
 
+    @SuppressWarnings("PMD.ReplaceJavaUtilDate") // The certificate builder takes java.util.Date.
     public static RadioTlsIdentity create(UUID id, long generation) {
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
@@ -92,6 +94,8 @@ public final class RadioTlsIdentity {
         }
     }
 
+    // Every validation failure is reported uniformly as an invalid identity.
+    @SuppressWarnings("PMD.ExceptionAsFlowControl")
     public static RadioTlsIdentity restore(UUID id, long generation, byte[] blob) {
         if (blob == null || blob.length > 16384)
             throw new IllegalArgumentException("Invalid identity blob");

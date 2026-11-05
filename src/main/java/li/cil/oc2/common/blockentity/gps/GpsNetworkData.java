@@ -1,6 +1,7 @@
 package li.cil.oc2.common.blockentity.gps;
 
 import com.mojang.serialization.Codec;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 *///?}
 
 /** Persists radio membership across chunk unloads and world restarts, separately per dimension. */
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // The network field backs network().
 public final class GpsNetworkData extends SavedData {
     static final Codec<GpsNetworkData> CODEC = GpsNetworkNode.CODEC.listOf().fieldOf("nodes")
             .codec().xmap(GpsNetworkData::new, data -> List.copyOf(data.network.nodes()));
@@ -35,9 +37,12 @@ public final class GpsNetworkData extends SavedData {
 
     private final GpsNetwork network = new GpsNetwork();
 
-    public GpsNetworkData() {}
+    public GpsNetworkData() {
+        super();
+    }
 
     private GpsNetworkData(final List<GpsNetworkNode> nodes) {
+        super();
         nodes.forEach(network::put);
     }
 
@@ -49,6 +54,7 @@ public final class GpsNetworkData extends SavedData {
         //?}
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Callers query the live network of this level.")
     public GpsNetwork network() {
         return network;
     }

@@ -58,21 +58,24 @@ public final class RadioTlsChannel implements AutoCloseable {
             managers.init(keys, password);
             X509TrustManager pinned =
                     new X509TrustManager() {
+                        @Override
                         public X509Certificate[] getAcceptedIssuers() {
                             return new X509Certificate[0];
                         }
 
+                        @Override
                         public void checkClientTrusted(X509Certificate[] chain, String auth)
                                 throws CertificateException {
                             check(chain);
                         }
 
+                        @Override
                         public void checkServerTrusted(X509Certificate[] chain, String auth)
                                 throws CertificateException {
                             check(chain);
                         }
 
-                        private void check(X509Certificate[] chain) throws CertificateException {
+                        private void check(X509Certificate... chain) throws CertificateException {
                             if (chain == null || chain.length != 1)
                                 throw new CertificateException(
                                         "Expected enrolled endpoint certificate");
@@ -151,13 +154,17 @@ public final class RadioTlsChannel implements AutoCloseable {
     public void tick() {
         if (closed) return;
         if (!started) start();
-        if (++age > 200 && !isOpen()) {
+        age++;
+        if (age > 200 && !isOpen()) {
             close();
             return;
         }
-        if ((network.position() > 0 || plain.position() > 0) && ++incompleteAge > 200) {
-            close();
-            return;
+        if (network.position() > 0 || plain.position() > 0) {
+            incompleteAge++;
+            if (incompleteAge > 200) {
+                close();
+                return;
+            }
         }
         if (peerCertificate != null && !trust.accepts(peer, generation, peerCertificate)) {
             close();
@@ -166,6 +173,8 @@ public final class RadioTlsChannel implements AutoCloseable {
         pump();
     }
 
+    // A single bounded loop over the SSLEngine state machine; splitting it would scatter the state.
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     private void pump() {
         if (pumping || closed || !started) return;
         pumping = true;
@@ -193,7 +202,7 @@ public final class RadioTlsChannel implements AutoCloseable {
                     queuedBytes -= result.bytesConsumed();
                     if (!source.hasRemaining()
                             && !queued.isEmpty()
-                            && source == queued.peek()) queued.remove();
+                            && source == queued.peek()) queued.remove(); // NOPMD - same buffer
                     if (result.getStatus() == SSLEngineResult.Status.CLOSED
                             || result.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW) {
                         close();
@@ -201,7 +210,7 @@ public final class RadioTlsChannel implements AutoCloseable {
                     }
                     target.flip();
                     if (target.hasRemaining()) {
-                        byte[] bytes = new byte[target.remaining()];
+                        byte[] bytes = new byte[target.remaining()]; // NOPMD - handed off to the link
                         target.get(bytes);
                         outbound.accept(bytes);
                     }
@@ -221,7 +230,7 @@ public final class RadioTlsChannel implements AutoCloseable {
                 if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) break;
                 if (result.bytesConsumed() == 0 && result.bytesProduced() == 0) break;
             }
-        } catch (Exception exception) {
+        } catch (SSLException | RuntimeException exception) {
             close();
         } finally {
             pumping = false;
@@ -241,7 +250,7 @@ public final class RadioTlsChannel implements AutoCloseable {
                 plain.reset();
                 break;
             }
-            byte[] message = new byte[length];
+            byte[] message = new byte[length]; // NOPMD - handed off to the receiver
             plain.get(message);
             if (!isOpen() || !trust.accepts(peer, generation, peerCertificate)) {
                 close();

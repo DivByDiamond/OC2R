@@ -116,6 +116,7 @@ public final class RadioBridgeTests {
             source.issueRadioInvite("wrong-admin-secret", target.getRadioEndpointId());
             throw TestSupport.failure(helper, "administrator credential was not checked");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         final var invite =
                 source.issueRadioInvite(created.get("adminSecret"), target.getRadioEndpointId());
@@ -123,6 +124,7 @@ public final class RadioBridgeTests {
             source.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
             throw TestSupport.failure(helper, "invite intended for target enrolled source");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         target.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
         TestSupport.assertTrue(
@@ -133,6 +135,7 @@ public final class RadioBridgeTests {
             target.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
             throw TestSupport.failure(helper, "one-use invitation reused");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         helper.succeed();
     }
@@ -192,6 +195,7 @@ public final class RadioBridgeTests {
                         endpoint.commandStatus(command, "COMPLETED", "ok");
                         throw TestSupport.failure(helper, "robot accepted a nominal COMPLETED result");
                     } catch (final IllegalArgumentException expected) {
+                        TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
                     }
                     endpoint.bindCommandAction(command, robot.move(MovementDirection.UPWARD));
                 })
@@ -207,7 +211,7 @@ public final class RadioBridgeTests {
                     boolean refused = false;
                     try {
                         pc.sendRadioCommand(robotAddress, "robot", "move", java.util.UUID.randomUUID().toString(), "south", 100);
-                    } catch (final RuntimeException expected) {
+                    } catch (final RuntimeException expected) { // NOPMD - recorded in refused, asserted below
                         refused = true;
                     }
                     TestSupport.assertTrue(helper, "command to an out-of-range robot is refused", refused);
@@ -309,6 +313,7 @@ public final class RadioBridgeTests {
             joiner.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
             throw TestSupport.failure(helper, "approval-required invite admitted directly");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         final String request = joiner.requestRadioEnrollment(invite.get("invite"), invite.get("secret"));
         TestSupport.assertTrue(helper, "pending request grants nothing",
@@ -322,16 +327,19 @@ public final class RadioBridgeTests {
             admin.approveEnrollment("wrong-admin-secret", request, new String[] {"MESSAGE_SEND"});
             throw TestSupport.failure(helper, "approval without admin secret");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         try {
             admin.approveEnrollment(secret, request, new String[] {"NETWORK_ADMIN"});
             throw TestSupport.failure(helper, "approved a scope that was not requested");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         try {
             joiner.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
             throw TestSupport.failure(helper, "unenrolled tower approved itself");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         admin.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
         TestSupport.assertTrue(helper, "approved device enrolled and joins topology",
@@ -344,11 +352,13 @@ public final class RadioBridgeTests {
             admin.approveEnrollment(secret, request, new String[] {"MESSAGE_SEND"});
             throw TestSupport.failure(helper, "double approval succeeded");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         try {
             joiner.listPendingEnrollments(secret);
             throw TestSupport.failure(helper, "device without NETWORK_ADMIN listed requests");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         helper.succeed();
     }
@@ -372,6 +382,7 @@ public final class RadioBridgeTests {
             admin.approveEnrollment(secret, deniedRequest, new String[] {"MESSAGE_SEND"});
             throw TestSupport.failure(helper, "denied request approved");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         TestSupport.assertTrue(helper, "denied device not enrolled",
                 denied.getRadioStatus().get("enrolled").equals(false));
@@ -383,6 +394,7 @@ public final class RadioBridgeTests {
             admin.approveEnrollment(secret, expiringRequest, new String[] {"MESSAGE_SEND"});
             throw TestSupport.failure(helper, "expired request approved");
         } catch (final SecurityException expected) {
+            TestSupport.assertNotNull(helper, expected.getMessage(), "rejection reason");
         }
         TestSupport.assertTrue(helper, "expired device not enrolled",
                 expiring.getRadioStatus().get("enrolled").equals(false) && admin.listPendingEnrollments(secret).isEmpty());

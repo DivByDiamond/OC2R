@@ -1,5 +1,6 @@
 package li.cil.oc2.common.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.capabilities.TerminalUserProvider;
@@ -61,6 +62,7 @@ public final class Robot extends AbstractRobotEntity
                     this::getZ,
                     () -> isAlive() && !isRemoved());
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "The endpoint is the robot's live radio identity.")
     public OraEndpoint getRadioEndpoint() {
         return radioEndpoint;
     }

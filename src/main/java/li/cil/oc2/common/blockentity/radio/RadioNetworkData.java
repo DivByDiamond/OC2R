@@ -3,6 +3,7 @@ package li.cil.oc2.common.blockentity.radio;
 import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 *///?}
 
 /** Dimension-private enrollment and saved relay topology; unloaded nodes never receive frames. */
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // Fields back their same-named accessors.
 public final class RadioNetworkData extends SavedData {
     private record Snapshot(RadioRegistry.State registry, List<RadioTopology.Node> nodes) {}
 
@@ -76,6 +78,7 @@ public final class RadioNetworkData extends SavedData {
     }
 
     private RadioNetworkData(final RadioRegistry registry) {
+        super();
         this.registry = registry;
         scheduler =
                 new RadioScheduler(
@@ -115,6 +118,7 @@ public final class RadioNetworkData extends SavedData {
         return data;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Callers use the live broker of this level.")
     public li.cil.oc2.common.radio.service.RadioServiceBroker broker() {
         if (broker == null) throw new IllegalStateException("Radio data has no server level");
         return broker;
@@ -124,6 +128,7 @@ public final class RadioNetworkData extends SavedData {
         applicationLink.attach(endpoint);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Callers use the live registry of this level.")
     public RadioRegistry registry() {
         return registry;
     }
@@ -230,7 +235,7 @@ public final class RadioNetworkData extends SavedData {
                                                 && level.getBlockEntity(position(node))
                                                         instanceof final GpsTowerBlockEntity tower
                                                 && tower.matchesRadio(node)) {
-                                            delivering = true;
+                                            delivering = true; // NOPMD - read by re-entrant transmit
                                             try {
                                                 tower.receiveRadioFrame(frame, ttl);
                                             } finally {
@@ -255,6 +260,7 @@ public final class RadioNetworkData extends SavedData {
                                 && tower.matchesRadio(node));
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Nodes are immutable records.
     void reconcile(final Predicate<BlockPos> loaded, final Predicate<RadioTopology.Node> matches) {
         for (final RadioTopology.Node node : topology.nodes()) {
             final var member = registry.member(node.device());
@@ -298,6 +304,7 @@ public final class RadioNetworkData extends SavedData {
         return GSON.toJson(new Snapshot(registry.exportState(), topology.nodes()));
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Nodes are immutable records.
     private static RadioNetworkData decode(final String json) {
         final Snapshot snapshot = GSON.fromJson(json, Snapshot.class);
         final RadioNetworkData data =
@@ -319,7 +326,7 @@ public final class RadioNetworkData extends SavedData {
 
     //? if <26.1 {
     private static RadioNetworkData load(
-            final CompoundTag tag, final HolderLookup.Provider registries) {
+            final CompoundTag tag, final HolderLookup.Provider registries) { // NOPMD - SavedData.Factory signature
         return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
     }
 
