@@ -112,14 +112,26 @@ A secure remote-control acceptance milestone requires the authentication and enc
 - [ ] Existing Linux/Onyx applications retain TCP/UDP compatibility; the simple widget service sits above the transport.
 - [ ] Define version negotiation, framing, bounds, error codes and subscription cleanup before connecting independent implementations.
 
-## 7. Lightweight tablet environment
+## 7. Tablet: a pocket mini computer running OnyxOS
 
-The approved tablet uses a lightweight host runtime with Onyx-style graphics, not an emulated RISC-V computer.
-The real OnyxOS continues to run on supported RISC-V machines. Share portable UI/service components where practical.
-This direction replaces the section 52 default of carrying a full VM and CPU/RAM inventory.
+Owner decision, 2026-11-05 (replaces the earlier "lightweight host runtime, not an emulated RISC-V computer"):
+the tablet is a pocket computer that runs the standard OnyxOS in a small virtual machine, like a computer or robot with
+less power. The full design and the contract for software authors are in [../TABLET.md](../TABLET.md).
+Widget code stays in the Onyx repositories and runs inside the guest; there is no separate Java widget runtime.
 
-- [ ] Minecraft tablet item and mouse-driven GUI, with persistent application/widget configuration.
-  Owner decisions, 2026-11-04: the tablet is an item. Held in hand it shows a small live screen; right-click opens the large version. The large screen takes typed keys (WASD and text) and mouse clicks. Input is released with the same single key as the monitor/keyboard capture, `CaptureKeyBinding.RELEASE` (Right Ctrl by default, rebindable): reuse that binding, do not add a second one.
+- [ ] Tablet item with a small virtual machine. Slots: one CPU and one disk/flash item. RAM and screen are fixed at crafting
+  (first targets: 256 x 160 screen, 16 MiB RAM, CPU clock capped to a quarter of a PC). No energy use.
+- [ ] Machine state is stored in world data under the item's UUID; the item itself stays small.
+- [ ] The machine runs only while the tablet is in hand or its screen is open; otherwise it is suspended with its state kept.
+  Drop, death and logout suspend without data loss. No background work in the first version.
+- [ ] Small live screen in hand; right-click opens the large screen. The full QWERTY keyboard and the mouse go to the guest,
+  so any program can use typing, shortcuts and clicks. Input is released with `CaptureKeyBinding.RELEASE` (Right Ctrl, rebindable);
+  reuse that binding, do not add another.
+- [ ] Reflashing: take the disk or flash out of the tablet, write it in the flash writer (bundled images or a file), put it back.
+  The default tablet ships with a flash carrying the tablet build of OnyxOS. A tablet without a disk does not boot.
+- [ ] The tablet attaches to a tower or dock station as a radio device, is admitted by an approved invitation and uses the
+  guest device bus (`/dev/hvc0`) like computers do, so `ochat` and later tablet applications work unchanged.
+- [ ] Developer documentation for C applications, Lua scripts and replacement operating systems stays current in docs/TABLET.md.
 - [ ] A portable widget/state core separate from framebuffer, Minecraft GUI, network and clock adapters.
 - [ ] Initial widgets: text, button, progress/status indicator, then bounded graphs and lists.
 - [ ] Define a widget by its placement, source device/service/field and optional authorized action.
@@ -129,8 +141,7 @@ This direction replaces the section 52 default of carrying a full VM and CPU/RAM
 - [ ] Add UTF-8 text and host font/fallback handling for localized dashboards; the first demo font is printable ASCII only.
 - [ ] Short Lua scripts may format values and process UI events; bound instructions, memory and event/command frequency. First scope (owner, 2026-11-04): a minimal example implementation, not a full scripting platform.
 - [ ] Expose a small explicit host API. No unrestricted host files, Minecraft internals or arbitrary remote code execution.
-- [ ] Heavy calculations and equipment programs execute on PCs. The tablet caches presentation state and displays connection loss.
-- [ ] Define execution lifetime while carried/open, and behavior on drop/death/logout, before adding background execution.
+- [ ] Heavy calculations and equipment programs execute on PCs; tablet programs show connection loss instead of stale data.
 - [ ] UART remote terminal remains an app/mode on this item; revisit the earlier wiring minigame only as its own interaction.
 
 ## 8. Implementation order and acceptance
@@ -142,7 +153,7 @@ This direction replaces the section 52 default of carrying a full VM and CPU/RAM
 5. Server scheduling, hop TTL, duplicate suppression, queue bounds, ping and timeout UI.
 6. Authenticated TLS-capable application transport and real PC telemetry/command service.
 7. Robot attachment/roaming and authoritative task results.
-8. Minecraft tablet item, graphical adapter and live service binding.
+8. Minecraft tablet item (mini computer with OnyxOS), screen and input, reflashing, and live radio binding.
 9. Sandboxed script hooks, dashboard presets, persistence and multiplayer lifecycle checks.
 
 Test acceptance includes circular radius boundaries and extreme vertical separation; isolated networks; broken alternate routes;
