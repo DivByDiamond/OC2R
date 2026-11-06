@@ -8,10 +8,13 @@ import li.cil.oc2.common.container.monitor.MonitorDisplayContainer;
 import li.cil.oc2.common.container.network.NetworkTunnelContainer;
 import li.cil.oc2.common.container.robot.RobotInventoryContainer;
 import li.cil.oc2.common.container.robot.RobotTerminalContainer;
+import li.cil.oc2.common.container.tablet.TabletInventoryContainer;
+import li.cil.oc2.common.container.tablet.TabletTerminalContainer;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.world.inventory.MenuType;
 
 public final class Containers {
+    private static final String MENU = "minecraft:menu";
     public static final Supplier<MenuType<ComputerInventoryContainer>> COMPUTER =
             Platform.registries().register("minecraft:menu", API.MOD_ID, 
                     "computer",
@@ -36,6 +39,14 @@ public final class Containers {
                     Platform.registries().register("minecraft:menu", API.MOD_ID, 
                             "robot_terminal",
                             () -> Platform.menus().createMenuType(RobotTerminalContainer::createClient));
+    public static final Supplier<MenuType<TabletInventoryContainer>> TABLET =
+            Platform.registries().register(MENU, API.MOD_ID,
+                    "tablet",
+                    () -> Platform.menus().createMenuType(TabletInventoryContainer::createClient));
+    public static final Supplier<MenuType<TabletTerminalContainer>> TABLET_TERMINAL =
+            Platform.registries().register(MENU, API.MOD_ID,
+                    "tablet_terminal",
+                    () -> Platform.menus().createMenuType(TabletTerminalContainer::createClient));
     public static final Supplier<MenuType<NetworkTunnelContainer>>
             NETWORK_TUNNEL =
                     Platform.registries().register("minecraft:menu", API.MOD_ID, 

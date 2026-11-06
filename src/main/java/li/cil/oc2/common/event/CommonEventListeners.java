@@ -25,5 +25,6 @@ public final class CommonEventListeners {
         Allocator.register();
         ChunkUtils.register();
         VirtualMachineShutdown.register();
+        li.cil.oc2.common.tablet.TabletManager.register();
     }
 }

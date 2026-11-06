@@ -23,6 +23,7 @@ import li.cil.oc2.common.item.storage.MemoryItem;
 import li.cil.oc2.common.item.storage.flash.FlashMemoryItem;
 import li.cil.oc2.common.item.storage.flash.FlashMemoryWithExternalDataItem;
 import li.cil.oc2.common.item.storage.flash.HardDriveWithExternalDataItem;
+import li.cil.oc2.common.item.tablet.TabletItem;
 import li.cil.oc2.common.item.tool.BlockOperationsModule;
 import li.cil.oc2.common.item.tool.ManualItem;
 import li.cil.oc2.common.item.tool.RobotItem;
@@ -63,6 +64,7 @@ public final class Items {
     public static final ItemHolder<Item> MANUAL = register("manual", ManualItem::new);
 
     public static final ItemHolder<Item> ROBOT = register("robot", RobotItem::new);
+    public static final ItemHolder<TabletItem> TABLET = register("tablet", TabletItem::new);
     public static final ItemHolder<NetworkCableItem> NETWORK_CABLE =
             register("network_cable", NetworkCableItem::new);
 

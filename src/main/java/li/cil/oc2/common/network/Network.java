@@ -39,6 +39,10 @@ import li.cil.oc2.common.network.message.robot.state.RobotRunStateMessage;
 import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalInputMessage;
+import li.cil.oc2.common.network.message.tablet.TabletActionMessage;
+import li.cil.oc2.common.network.message.tablet.TabletInputMessage;
+import li.cil.oc2.common.network.message.tablet.TabletStateMessage;
+import li.cil.oc2.common.network.message.tablet.TabletTerminalDiffMessage;
 import li.cil.oc2.platform.MessageRegistrar;
 
 public final class Network {
@@ -121,6 +125,20 @@ public final class Network {
         bridge.registerServerbound(OpenRobotTerminalMessage.TYPE,
                 OpenRobotTerminalMessage.STREAM_CODEC,
                 OpenRobotTerminalMessage::handleMessage);
+
+        // Tablet
+        bridge.registerClientbound(TabletTerminalDiffMessage.TYPE,
+                TabletTerminalDiffMessage.STREAM_CODEC,
+                TabletTerminalDiffMessage::handleMessage);
+        bridge.registerClientbound(TabletStateMessage.TYPE,
+                TabletStateMessage.STREAM_CODEC,
+                TabletStateMessage::handleMessage);
+        bridge.registerServerbound(TabletInputMessage.TYPE,
+                TabletInputMessage.STREAM_CODEC,
+                TabletInputMessage::handleMessage);
+        bridge.registerServerbound(TabletActionMessage.TYPE,
+                TabletActionMessage.STREAM_CODEC,
+                TabletActionMessage::handleMessage);
 
         bridge.registerServerbound(
                 li.cil.oc2.common.network.message.firmware.FlashWriterActionMessage.TYPE,

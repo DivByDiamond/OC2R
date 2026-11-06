@@ -127,7 +127,7 @@ public final class VMLifecycle {
             vm.error(Component.translatable(Constants.COMPUTER_ERROR_MISSING_CPU));
             return false;
         }
-        vm.state.board.getCpu().setFrequency(cpu.get().getFrequency());
+        vm.state.board.getCpu().setFrequency(vm.limitFrequency(cpu.get().getFrequency()));
         return true;
     }
 

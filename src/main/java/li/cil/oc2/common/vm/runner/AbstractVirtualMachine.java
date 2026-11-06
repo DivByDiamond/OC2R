@@ -205,6 +205,11 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
 
     public abstract boolean consumeEnergy(int amount, boolean simulate);
 
+    /** Lets a machine cap the clock of whichever processor item is inserted. */
+    public int limitFrequency(final int requested) {
+        return requested;
+    }
+
     protected void handleBusStateChanged(final BusState value) {}
 
     protected void handleBusOverflowChanged(final int value) {}

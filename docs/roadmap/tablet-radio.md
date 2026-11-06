@@ -121,10 +121,11 @@ Widget code stays in the Onyx repositories and runs inside the guest; there is n
 
 - [ ] Tablet item with a small virtual machine. Slots: one CPU and one disk/flash item. RAM and screen are fixed at crafting
   (first targets: 256 x 160 screen, 16 MiB RAM, CPU clock capped to a quarter of a PC). No energy use.
-- [ ] Machine state is stored in world data under the item's UUID; the item itself stays small.
-- [ ] The machine runs only while the tablet is in hand or its screen is open; otherwise it is suspended with its state kept.
+  Done: item, recipe, one CPU slot, one flash slot (no hard drive slot yet), fixed 16 MiB, clock cap, no energy. Missing: the 256 x 160 framebuffer screen.
+- [x] Machine state is stored in world data under the item's UUID; the item itself stays small.
+- [x] The machine runs only while the tablet is in hand or its screen is open; otherwise it is suspended with its state kept.
   Drop, death and logout suspend without data loss. No background work in the first version.
-- [ ] Small live screen in hand; right-click opens the large screen. The full QWERTY keyboard and the mouse go to the guest,
+- [ ] Small live screen in hand; right-click opens the large screen. (Done: right-click opens the terminal screen with keyboard capture and the shared release key. Missing: framebuffer, live screen in hand, mouse pointer for the guest.) The full QWERTY keyboard and the mouse go to the guest,
   so any program can use typing, shortcuts and clicks. Input is released with `CaptureKeyBinding.RELEASE` (Right Ctrl, rebindable);
   reuse that binding, do not add another.
 - [ ] Reflashing: take the disk or flash out of the tablet, write it in the flash writer (bundled images or a file), put it back.
@@ -153,7 +154,7 @@ Widget code stays in the Onyx repositories and runs inside the guest; there is n
 5. Server scheduling, hop TTL, duplicate suppression, queue bounds, ping and timeout UI.
 6. Authenticated TLS-capable application transport and real PC telemetry/command service.
 7. Robot attachment/roaming and authoritative task results.
-8. Minecraft tablet item (mini computer with OnyxOS), screen and input, reflashing, and live radio binding.
+8. Minecraft tablet item (mini computer with OnyxOS), screen and input, reflashing, and live radio binding. (Item, machine, persistence and terminal screen done; framebuffer and radio binding open.)
 9. Sandboxed script hooks, dashboard presets, persistence and multiplayer lifecycle checks.
 
 Test acceptance includes circular radius boundaries and extreme vertical separation; isolated networks; broken alternate routes;

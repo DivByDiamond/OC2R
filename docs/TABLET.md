@@ -1,9 +1,21 @@
 # Tablet
 
-> **Status: design, not implemented.** No tablet item exists yet. This page records the agreed design
-> and the contract for software authors so that applications and operating systems written today
-> keep working when the item lands. Items below the "Planned" markers are targets, not features.
-> Progress is tracked in [roadmap/tablet-radio.md](roadmap/tablet-radio.md).
+> **Status: first version in the game, terminal screen only.** The tablet item, its machine, the world-data
+> persistence and the terminal screen with keyboard capture exist. There is no framebuffer screen, no small
+> screen in hand, no radio attachment and no mouse pointer for the guest yet. Items marked "Planned" below
+> are targets. Progress is tracked in [roadmap/tablet-radio.md](roadmap/tablet-radio.md).
+
+## Implemented now
+
+- Item `oc2r:tablet` (stack of one) with a crafting recipe; right click opens the screen.
+- One processor slot and one flash slot, edited from the inventory button of the screen. A new tablet comes with
+  16 MiB of memory (no slot) and an OnyxOS flash. Without a flash it reports a missing firmware and does not boot.
+- The processor clock is capped to a quarter of the computer clock whatever processor is inserted. No energy use.
+- The machine state is written to `<world>/data/oc2r_tablets/<uuid>.dat` under the id stored in the item.
+- The machine runs only while the tablet is in a hand or its screen is open. Two seconds after that it is saved and
+  released, so dropping, dying and logging out lose nothing. A server crash loses what happened since the last save.
+- The screen is the guest terminal. Keyboard input goes to the guest, released with `CaptureKeyBinding.RELEASE`.
+- The guest device bus is on `/dev/hvc0` like in a computer. No radio device is attached to it yet.
 
 ## What it is
 

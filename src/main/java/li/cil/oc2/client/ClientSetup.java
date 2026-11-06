@@ -9,6 +9,8 @@ import li.cil.oc2.client.gui.screen.monitor.MonitorDisplayScreen;
 import li.cil.oc2.client.gui.screen.network.NetworkTunnelScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotContainerScreen;
 import li.cil.oc2.client.gui.screen.robot.RobotTerminalScreen;
+import li.cil.oc2.client.gui.screen.tablet.TabletInventoryScreen;
+import li.cil.oc2.client.gui.screen.tablet.TabletTerminalScreen;
 import li.cil.oc2.client.item.CustomItemColors;
 import li.cil.oc2.client.item.CustomItemModelProperties;
 import li.cil.oc2.client.renderer.BusInterfaceNameRenderer;
@@ -53,6 +55,8 @@ public final class ClientSetup {
         registrar.registerScreen(Containers.MONITOR, MonitorDisplayScreen::new);
         registrar.registerScreen(Containers.ROBOT, RobotContainerScreen::new);
         registrar.registerScreen(Containers.ROBOT_TERMINAL, RobotTerminalScreen::new);
+        registrar.registerScreen(Containers.TABLET, TabletInventoryScreen::new);
+        registrar.registerScreen(Containers.TABLET_TERMINAL, TabletTerminalScreen::new);
         registrar.registerScreen(Containers.NETWORK_TUNNEL, NetworkTunnelScreen::new);
 
         registrar.registerEntityRenderer(Entities.ROBOT, RobotRenderer::new);

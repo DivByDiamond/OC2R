@@ -26,6 +26,22 @@ public final class RobotRecipes {
                         ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
                 .save(consumer);
 
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.TABLET.get())
+                .pattern("IGI")
+                .pattern("BTB")
+                .pattern("III")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('G', net.minecraft.world.item.Items.GLASS_PANE)
+                .define('T', Items.TRANSISTOR.get())
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .unlockedBy(
+                        "has_transistor",
+                        ModRecipesProvider.inventoryChange(Items.TRANSISTOR.get()))
+                .unlockedBy(
+                        "has_circuit_board",
+                        ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.INVENTORY_OPERATIONS_MODULE.get())
                 .pattern("TCG")
                 .pattern(" B ")

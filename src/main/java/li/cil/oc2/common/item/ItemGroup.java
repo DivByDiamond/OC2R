@@ -63,6 +63,7 @@ public final class ItemGroup {
                                                 output.accept(Items.WRENCH.get());
                                                 output.accept(Items.MANUAL.get());
                                                 output.accept(RobotItem.getRobotWithFlash());
+                                                output.accept(Items.TABLET.get());
                                                 output.accept(Items.NETWORK_CABLE.get());
                                                 output.accept(Items.MEMORY_SMALL.get());
                                                 output.accept(Items.MEMORY_MEDIUM.get());

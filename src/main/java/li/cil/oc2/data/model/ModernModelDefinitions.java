@@ -49,6 +49,7 @@ public final class ModernModelDefinitions {
         flat(result, "wrench", "tools/wrench");
         flat(result, "manual", "tools/manual");
         flat(result, "network_cable", "components/materials/network_cable");
+        flat(result, "tablet", "tablet/tablet");
         for (final String size : List.of("small", "medium", "large", "extra_large")) {
             flat(result, "memory_" + size, "components/memory/memory_" + size);
             flat(result, "hard_drive_" + size, "storage/hard_drive/hard_drive_base",

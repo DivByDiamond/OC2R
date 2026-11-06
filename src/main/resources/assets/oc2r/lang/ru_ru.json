@@ -134,6 +134,8 @@
   "item.oc2r.redstone_interface_card.desc": "Подает и считывает редстоун сигналы от блока компьютера.",
   "item.oc2r.robot": "Робот",
   "item.oc2r.robot.desc": "Портативный компьютер. Используйте ключ, чтобы убрать его",
+  "item.oc2r.tablet": "Планшет",
+  "item.oc2r.tablet.desc": "Карманный компьютер с OnyxOS. Правый клик открывает экран; работает только в руке или с открытым экраном.",
   "item.oc2r.silicon": "Кремний",
   "item.oc2r.silicon.desc": "Материал крафта.",
   "item.oc2r.silicon_blend": "Смесь кремния",
