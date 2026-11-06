@@ -42,6 +42,11 @@ public final class RadioRegistry {
             Objects.requireNonNull(id);
             requireHash(adminHash);
         }
+
+        @Override
+        public String toString() {
+            return "Network[" + id + ", prefix=" + prefix + "]";
+        }
     }
 
     public record Member(
@@ -60,6 +65,13 @@ public final class RadioRegistry {
             requireHash(credentialHash);
             scopes = Set.copyOf(scopes);
             if (scopes.size() > MAX_SCOPES) throw new IllegalArgumentException("Too many scopes");
+        }
+
+        // Credential hashes never appear in logs.
+        @Override
+        public String toString() {
+            return "Member[" + id + ", network=" + network + ", number=" + number
+                    + ", generation=" + generation + ", revoked=" + revoked + "]";
         }
     }
 
@@ -87,6 +99,11 @@ public final class RadioRegistry {
             scopes = Set.copyOf(scopes);
             if (scopes.size() > MAX_SCOPES) throw new IllegalArgumentException("Too many scopes");
         }
+
+        @Override
+        public String toString() {
+            return "Invite[" + id + ", device=" + device + ", requiresApproval=" + requiresApproval + "]";
+        }
     }
 
     /**
@@ -112,9 +129,20 @@ public final class RadioRegistry {
             requestedScopes = Set.copyOf(requestedScopes);
             if (requestedScopes.size() > MAX_SCOPES) throw new IllegalArgumentException("Too many scopes");
         }
+
+        @Override
+        public String toString() {
+            return "EnrollmentRequest[" + id + ", device=" + device + "]";
+        }
     }
 
-    public record PendingTicket(UUID request, String secret) {}
+    /** The secret is returned to the caller once and is never part of the string form. */
+    public record PendingTicket(UUID request, String secret) {
+        @Override
+        public String toString() {
+            return "PendingTicket[" + request + "]";
+        }
+    }
 
     /** A permanent reservation, including addresses retired by revocation or reenrollment. */
     public record Reservation(UUID network, int number) {
@@ -156,11 +184,27 @@ public final class RadioRegistry {
         }
     }
 
-    public record CreatedNetwork(UUID network, String adminSecret) {}
+    /** Records that carry a bearer secret redact it from their string form so it cannot reach a log. */
+    public record CreatedNetwork(UUID network, String adminSecret) {
+        @Override
+        public String toString() {
+            return "CreatedNetwork[" + network + "]";
+        }
+    }
 
-    public record Invitation(UUID invite, String secret) {}
+    public record Invitation(UUID invite, String secret) {
+        @Override
+        public String toString() {
+            return "Invitation[" + invite + "]";
+        }
+    }
 
-    public record Enrollment(Member member, String secret) {}
+    public record Enrollment(Member member, String secret) {
+        @Override
+        public String toString() {
+            return "Enrollment[" + member + "]";
+        }
+    }
 
     private final Map<UUID, Network> networks = new HashMap<>();
     private final Map<UUID, Member> members = new HashMap<>();
@@ -345,6 +389,27 @@ public final class RadioRegistry {
         return member != null && !member.revoked() && matches(member.credentialHash(), secret)
                 ? Optional.of(member)
                 : Optional.empty();
+    }
+
+    /** Authenticates and also requires the credential to belong to the given enrollment generation. */
+    public Optional<Member> authenticate(final UUID device, final String secret, final long generation) {
+        return authenticate(device, secret).filter(member -> member.generation() == generation);
+    }
+
+    /**
+     * Replaces one device credential with a fresh random one and advances its generation. The old
+     * secret stops working at once, as do packets, sessions and TLS identities of the old
+     * generation; no other device, address or permission changes.
+     */
+    public Enrollment rotateCredential(final UUID device, final String currentSecret) {
+        final Member member = authenticate(device, currentSecret)
+                .orElseThrow(() -> new SecurityException("Authentication failed"));
+        if (member.generation() == Long.MAX_VALUE) throw new IllegalStateException("Generation exhausted");
+        final String secret = secret();
+        final Member rotated = new Member(member.id(), member.network(), member.dimension(), member.number(),
+                member.generation() + 1, hash(secret), member.scopes(), false);
+        members.put(device, rotated);
+        return new Enrollment(rotated, secret);
     }
 
     public boolean authorized(
