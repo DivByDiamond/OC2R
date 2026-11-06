@@ -408,7 +408,7 @@ public final class RadioBridgeTests {
         return TestSupport.blockEntity(helper, pos, GpsTowerBlockEntity.class);
     }
 
-    private static NetworkConnectorBlockEntity connector(
+    static NetworkConnectorBlockEntity connector(
             final GameTestHelper helper, final BlockPos pos) {
         helper.setBlock(
                 pos,

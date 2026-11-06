@@ -21,6 +21,8 @@
       "li.cil.oc2.gametest.GpsTowerTests",
       "li.cil.oc2.gametest.GpsRelativeCoordinateTests",
       "li.cil.oc2.gametest.RobotDockRadioTests",
+      "li.cil.oc2.gametest.RadioDockEthernetTests",
+      "li.cil.oc2.gametest.RadioIdentityTests",
       "li.cil.oc2.gametest.RadioBridgeTests",
       "li.cil.oc2.gametest.GpsTowerDeviceTests",
       "li.cil.oc2.gametest.GpsTowerPlacementTests",

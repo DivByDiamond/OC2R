@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import java.util.function.LongSupplier;
 import li.cil.oc2.common.radio.RadioAddress;
+import li.cil.oc2.common.radio.RadioDuplicateFilter;
 import li.cil.oc2.common.radio.RadioRegistry;
 
 /** Server-thread application broker. Link implementations must schedule both directions. */
@@ -37,6 +38,11 @@ public final class RadioServiceBroker {
         OFFLINE
     }
 
+    /**
+     * One outcome delivered to a session. roundTripNanos is a measured monotonic-clock round trip of a
+     * ping and is -1 for everything else. route is the hop count and nominal one-way estimate that
+     * applied when a ping completed; it is null for other events and is never a measurement.
+     */
     public record Event(
             UUID requestId,
             State state,
@@ -44,9 +50,35 @@ public final class RadioServiceBroker {
             long sequence,
             Freshness freshness,
             long sampleTick,
-            long roundTripNanos) {}
+            long roundTripNanos,
+            Estimate route) {
+        public Event(UUID requestId, State state, RadioMessage message, long sequence,
+                     Freshness freshness, long sampleTick, long roundTripNanos) {
+            this(requestId, state, message, sequence, freshness, sampleTick, roundTripNanos, null);
+        }
+    }
 
-    public record Estimate(int hops, long nominalTicks) {}
+    /** Milliseconds one server tick lasts at the nominal 20 TPS; real ticks are longer when the server lags. */
+    public static final long NOMINAL_TICK_MILLIS = 50;
+
+    /**
+     * Route estimate, not a measurement: radio legs (hops), the scheduled one-way delivery delay in
+     * ticks and that delay in milliseconds at the nominal tick rate. hops is -1 when there is no route.
+     */
+    public record Estimate(int hops, long nominalTicks, long nominalMillis) {
+        public Estimate(int hops, long nominalTicks) {
+            this(hops, nominalTicks, nominalTicks < 0 ? -1 : nominalTicks * NOMINAL_TICK_MILLIS);
+        }
+    }
+
+    /**
+     * Age and state of one telemetry field of a subscription. ageTicks counts server ticks since the
+     * sample was published and ageMillis converts it at the nominal tick rate. state is OFFLINE when
+     * the publisher or the link is gone, STALE once the age reaches the subscription's stale limit,
+     * otherwise ONLINE.
+     */
+    public record FieldStatus(
+            String field, Freshness state, long sampleTick, long ageTicks, long ageMillis, long sequence) {}
 
     /** One member of the caller's radio network; the address is a label, never a credential. */
     public record Peer(String address, boolean online, boolean self) {}
@@ -108,6 +140,8 @@ public final class RadioServiceBroker {
     private final Map<RequestKey, Ping> pings = new HashMap<>();
     private final Map<String, Freshness> freshness = new HashMap<>();
     private final Map<UUID, Long> deliveredSequences = new HashMap<>();
+    private final RadioDuplicateFilter<RequestKey> seenMessages =
+            new RadioDuplicateFilter<>(MAX_REQUESTS, FINISHED_RETENTION_TICKS);
     private final Map<UUID, Subscription> subscriptions = new LinkedHashMap<>();
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName") // tick(long) advances this clock.
     private long tick;
@@ -250,6 +284,9 @@ public final class RadioServiceBroker {
                             request,
                             RadioMessage.Type.MESSAGE,
                             payload);
+            // A retry with the same request ID, for example after a reconnect, is delivered only once.
+            var messageKey = new RequestKey(device, request);
+            if (seenMessages.contains(messageKey, tick)) return;
             if (!link.send(
                     device,
                     member.id(),
@@ -266,6 +303,7 @@ public final class RadioServiceBroker {
                         var endpoint = endpoint(member.id(), service);
                         if (endpoint != null) endpoint.message(envelope);
                     })) throw new IllegalStateException("Transport unavailable");
+            seenMessages.firstSeen(messageKey, tick);
         }
 
         public Command command(
@@ -284,6 +322,7 @@ public final class RadioServiceBroker {
                         || !previous.message.channel().equals(channel)
                         || !Arrays.equals(previous.message.payload(), payload))
                     throw new IllegalArgumentException("Request ID reused with different command");
+                if (previous.session != this) previous.adopt(this);
                 return previous;
             }
             if (deadline <= tick || deadline - tick > 1200)
@@ -365,6 +404,46 @@ public final class RadioServiceBroker {
             return id;
         }
 
+        /**
+         * Age and online/stale/offline state of every field the subscription has a sample for, ordered
+         * by field name. A field with no sample yet is absent, not reported as live.
+         */
+        public List<FieldStatus> telemetryStatus(UUID id) {
+            valid(this);
+            var subscription = subscriptions.get(id);
+            if (subscription == null || subscription.session != this)
+                throw new IllegalArgumentException("Unknown subscription");
+            boolean reachable =
+                    endpoint(subscription.target, subscription.service) != null
+                            && allowed(
+                                    this,
+                                    subscription.target,
+                                    subscription.generation,
+                                    RadioRegistry.Permission.TELEMETRY_READ,
+                                    subscription.service);
+            return samples.getOrDefault(new EndpointKey(subscription.target, subscription.service), Map.of())
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> subscription.fields.contains(entry.getKey()))
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(
+                            entry -> {
+                                long age = Math.max(0, tick - entry.getValue().tick);
+                                return new FieldStatus(
+                                        entry.getKey(),
+                                        !reachable
+                                                ? Freshness.OFFLINE
+                                                : age >= subscription.staleTicks
+                                                        ? Freshness.STALE
+                                                        : Freshness.ONLINE,
+                                        entry.getValue().tick,
+                                        age,
+                                        age * NOMINAL_TICK_MILLIS,
+                                        entry.getValue().sequence);
+                            })
+                    .toList();
+        }
+
         public void unsubscribe(UUID id) {
             var subscription = subscriptions.get(id);
             if (subscription != null && subscription.session == this) removeSubscription(id);
@@ -435,7 +514,8 @@ public final class RadioServiceBroker {
                                                         tick,
                                                         Math.max(
                                                                 0,
-                                                                nanos.getAsLong() - ping.started)));
+                                                                nanos.getAsLong() - ping.started),
+                                                        link.estimate(device, member.id())));
                                     }
                                 });
                     })) {
@@ -459,7 +539,8 @@ public final class RadioServiceBroker {
     }
 
     public final class Command {
-        private final Session session;
+        private Session session;
+        private byte[] lastResult = new byte[0];
         private final UUID target;
         private final long generation;
         private final RadioMessage message;
@@ -504,6 +585,34 @@ public final class RadioServiceBroker {
             return state == State.ACCEPTED || state == State.RUNNING;
         }
 
+        /**
+         * A retry with a known request ID after a reconnect: later results go to the new session and
+         * the state reached so far is reported again. The command is never executed a second time.
+         */
+        private void adopt(Session next) {
+            session = next;
+            offer(
+                    next,
+                    new Event(
+                            message.requestId(),
+                            state,
+                            new RadioMessage(
+                                    1,
+                                    target,
+                                    message.destinationAddress(),
+                                    next.device,
+                                    message.sourceAddress(),
+                                    message.service(),
+                                    message.channel(),
+                                    message.requestId(),
+                                    RadioMessage.Type.RESULT,
+                                    lastResult),
+                            ++sequence,
+                            Freshness.ONLINE,
+                            tick,
+                            -1));
+        }
+
         private void disconnect() {
             finish(State.DISCONNECTED, new byte[0]);
         }
@@ -537,6 +646,7 @@ public final class RadioServiceBroker {
                             message.requestId(),
                             RadioMessage.Type.RESULT,
                             result);
+            lastResult = result.clone();
             var event =
                     new Event(
                             message.requestId(),

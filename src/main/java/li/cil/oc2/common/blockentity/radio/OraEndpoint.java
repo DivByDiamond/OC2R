@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
 import li.cil.oc2.common.radio.RadioAddress;
+import li.cil.oc2.common.radio.RadioDuplicateFilter;
 import li.cil.oc2.common.radio.service.RadioMessage;
 import li.cil.oc2.common.radio.service.RadioServiceBroker;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,9 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
     private final ArrayDeque<RadioMessage> messages = new ArrayDeque<>();
     private final Map<UUID, RadioServiceBroker.Command> commands = new LinkedHashMap<>();
     private final Set<String> services = new HashSet<>();
+    // Request IDs of commands already received, kept across reconnects so a retry never runs twice.
+    private final RadioDuplicateFilter<UUID> receivedCommands =
+            new RadioDuplicateFilter<>(1024, RadioServiceBroker.FINISHED_RETENTION_TICKS);
     private byte[] tlsPrivateMaterial = new byte[0];
     // Set only for hosts whose command results must come from a real action (robots).
     private Actions actions;
@@ -147,6 +151,7 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
             commandBindings.clear();
             messages.clear();
             services.clear();
+            receivedCommands.clear();
         }
     }
 
@@ -296,6 +301,11 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
                 .toString();
     }
 
+    /** Age and online/stale/offline state of every sampled field of one of this endpoint's subscriptions. */
+    public List<RadioServiceBroker.FieldStatus> telemetryStatus(String subscription) {
+        return session().telemetryStatus(UUID.fromString(subscription));
+    }
+
     public void unsubscribe(String subscription) {
         session().unsubscribe(UUID.fromString(subscription));
     }
@@ -350,9 +360,9 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
 
     @Override
     public void command(RadioMessage message, RadioServiceBroker.Command command) {
-        if (commands.containsKey(message.requestId())
-                || commands.size() >= 256
-                || messages.size() >= 256) {
+        // A repeated delivery of a command already received is ignored; it is not a new command.
+        if (!receivedCommands.firstSeen(message.requestId(), level.get().getGameTime())) return;
+        if (commands.size() >= 256 || messages.size() >= 256) {
             command.failed(bytes("Inbox full"));
             return;
         }

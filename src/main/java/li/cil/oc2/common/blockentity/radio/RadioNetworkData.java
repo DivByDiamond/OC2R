@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
+import li.cil.oc2.common.blockentity.radio.dock.DockBridge;
+import li.cil.oc2.common.blockentity.radio.dock.DockBridges;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.radio.RadioAccessPoints;
+import li.cil.oc2.common.radio.RadioClientLeases;
+import li.cil.oc2.common.radio.RadioFrameFilter;
 import li.cil.oc2.common.radio.RadioRegistry;
 import li.cil.oc2.common.radio.RadioScheduler;
 import li.cil.oc2.common.radio.RadioTopology;
@@ -68,6 +72,9 @@ public final class RadioNetworkData extends SavedData {
     private final RadioRegistry registry;
     private final RadioTopology topology = new RadioTopology();
     private final RadioScheduler scheduler;
+    private final RadioClientLeases leases;
+    private final DockBridges bridges = new DockBridges();
+    private final RadioFrameFilter frames = new RadioFrameFilter();
     private li.cil.oc2.common.radio.service.RadioServiceBroker broker;
     private OraApplicationLink applicationLink;
     private boolean ticking;
@@ -80,6 +87,7 @@ public final class RadioNetworkData extends SavedData {
     private RadioNetworkData(final RadioRegistry registry) {
         super();
         this.registry = registry;
+        leases = new RadioClientLeases(registry);
         scheduler =
                 new RadioScheduler(
                         registry,
@@ -131,6 +139,16 @@ public final class RadioNetworkData extends SavedData {
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Callers use the live registry of this level.")
     public RadioRegistry registry() {
         return registry;
+    }
+
+    /** Active-holder rules for clients whose identity travels in an item; see {@link RadioClientLeases}. */
+    public RadioClientLeases leases() {
+        return leases;
+    }
+
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Docks register themselves with the live level data.")
+    public DockBridges bridges() {
+        return bridges;
     }
 
     RadioTopology topology() {
@@ -208,14 +226,35 @@ public final class RadioNetworkData extends SavedData {
             final int ttl) {
         if (delivering || registry.authenticate(source, credential).isEmpty()) return;
         reconcile(level);
+        flood(level, source, source, frame, ttl);
+    }
+
+    /**
+     * A frame from a connector on a dock station. It enters the radio through the tower the dock
+     * attaches to; a dock that no tower of its own network covers sends nothing.
+     */
+    public void transmitFromBridge(
+            final ServerLevel level, final DockBridge bridge, final byte[] frame, final int ttl) {
+        if (delivering || !bridge.enrolled()) return;
+        access(level, bridge.id(), bridge.credential(), bridge.x(), bridge.z())
+                .ifPresent(attachment -> flood(level, attachment.tower().device(), bridge.id(), frame, ttl));
+    }
+
+    /** Floods one frame to every online tower of the source's network; origin is where it entered. */
+    private void flood(
+            final ServerLevel level, final UUID source, final UUID origin, final byte[] frame, final int ttl) {
         final var member = registry.member(source).orElseThrow();
+        final long now = level.getGameTime();
+        if (!frames.admit(member.network(), frame, ttl, now)) return; // looped copy of a recent frame
         final UUID packet = UUID.randomUUID();
+        // The source tower itself only needs a copy when a dock attached to it, or the origin dock, takes it.
+        final boolean self = !origin.equals(source) || bridges.anyAttachedTo(level, this, source);
         for (final RadioTopology.Node node : topology.nodes()) {
             if (node.online()
                     && node.network().equals(member.network())
                     && node.dimension().equals(member.dimension())
-                    && !node.device().equals(source))
-                scheduler.submit(packet, source, node.device(), frame, ttl, level.getGameTime());
+                    && (self || !node.device().equals(source)))
+                scheduler.submit(packet, source, origin, node.device(), frame, ttl, now);
         }
     }
 
@@ -227,28 +266,34 @@ public final class RadioNetworkData extends SavedData {
         applicationLink.tick();
         scheduler.tick(
                 level.getGameTime(),
-                (source, target, frame, ttl) -> {
-                    topology.node(target)
-                            .ifPresent(
-                                    node -> {
-                                        if (level.hasChunkAt(position(node))
-                                                && level.getBlockEntity(position(node))
-                                                        instanceof final GpsTowerBlockEntity tower
-                                                && tower.matchesRadio(node)) {
-                                            delivering = true; // NOPMD - read by re-entrant transmit
-                                            try {
-                                                tower.receiveRadioFrame(frame, ttl);
-                                            } finally {
-                                                delivering = false;
-                                            }
-                                        }
-                                    });
+                (source, origin, target, frame, ttl) -> {
+                    delivering = true; // NOPMD - read by re-entrant transmit
+                    try {
+                        topology.node(target).ifPresent(node -> deliver(level, node, origin, frame, ttl));
+                    } finally {
+                        delivering = false;
+                    }
                 });
         ticking = false;
         if (broker != null || scheduler.queued() > 0) {
             ticking = true;
             ServerScheduler.schedule(level, () -> tick(level), 1);
         }
+    }
+
+    private void deliver(
+            final ServerLevel level,
+            final RadioTopology.Node node,
+            final UUID origin,
+            final byte[] frame,
+            final int ttl) {
+        if (!level.hasChunkAt(position(node))
+                || !(level.getBlockEntity(position(node)) instanceof final GpsTowerBlockEntity tower)
+                || !tower.matchesRadio(node)) return;
+        // A tower is also the source of a frame its own cable gave it; only its docks need a copy then.
+        if (!origin.equals(node.device())) tower.receiveRadioFrame(frame, ttl);
+        for (final DockBridge bridge : bridges.attachedTo(level, this, node.device(), origin))
+            bridge.ethernetOut(frame, ttl);
     }
 
     private void reconcile(final ServerLevel level) {

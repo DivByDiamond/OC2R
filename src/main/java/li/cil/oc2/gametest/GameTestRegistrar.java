@@ -41,6 +41,8 @@ public final class GameTestRegistrar {
         GpsTowerTests.class,
         RadioBridgeTests.class,
         RobotDockRadioTests.class,
+        RadioDockEthernetTests.class,
+        RadioIdentityTests.class,
         GpsTowerDeviceTests.class,
         GpsRelativeCoordinateTests.class,
         GpsTowerPlacementTests.class,

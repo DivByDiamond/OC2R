@@ -137,4 +137,90 @@ final class RadioServiceBrokerTest {
         assertEquals(RadioServiceBroker.State.DISCONNECTED, command.state());
     }
 
+    @Test void commandRetryAfterReconnectKeepsOneExecutionAndReportsTheKnownState() {
+        var enrollment = enroll(source, RadioRegistry.Permission.COMMAND_SEND); enroll(target);
+        var first = broker.connect(source, enrollment.secret()); var count = new AtomicLong();
+        final RadioServiceBroker.Command[] pending = new RadioServiceBroker.Command[1];
+        broker.register(target, STATUS, new RadioServiceBroker.Endpoint() {
+            @Override
+            public void command(RadioMessage message, RadioServiceBroker.Command command) { count.incrementAndGet(); pending[0] = command; command.running(); }
+        });
+        var id = UUID.randomUUID(); var command = first.command(registry.address(target), STATUS, "move", id, new byte[]{1}, 100);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        var second = broker.connect(source, enrollment.secret());
+        assertSame(command, second.command(registry.address(target), STATUS, "move", id, new byte[]{1}, 100));
+        assertTrue(deliveries.isEmpty(), "a retry sends nothing new");
+        assertEquals(RadioServiceBroker.State.RUNNING, second.poll().getFirst().state());
+        pending[0].completed(new byte[]{7}); while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(RadioServiceBroker.State.COMPLETED, second.poll().getLast().state());
+        assertEquals(1, count.get());
+        var third = broker.connect(source, enrollment.secret());
+        assertSame(command, third.command(registry.address(target), STATUS, "move", id, new byte[]{1}, 100));
+        assertArrayEquals(new byte[]{7}, third.poll().getFirst().message().payload());
+        assertEquals(1, count.get(), "the finished command is not executed again");
+        assertThrows(IllegalArgumentException.class, () -> second.command(registry.address(target), STATUS, "move", id, new byte[]{2}, 100));
+    }
+    @Test void aClosedSessionsCommandIsNotReplayedByTheRetry() {
+        var enrollment = enroll(source, RadioRegistry.Permission.COMMAND_SEND); enroll(target); var count = new AtomicLong();
+        var first = broker.connect(source, enrollment.secret());
+        broker.register(target, STATUS, new RadioServiceBroker.Endpoint() {
+            @Override
+            public void command(RadioMessage message, RadioServiceBroker.Command command) { count.incrementAndGet(); }
+        });
+        var id = UUID.randomUUID(); first.command(registry.address(target), STATUS, "move", id, new byte[0], 100);
+        first.close(); var second = broker.connect(source, enrollment.secret());
+        var again = second.command(registry.address(target), STATUS, "move", id, new byte[0], 100);
+        assertEquals(RadioServiceBroker.State.DISCONNECTED, again.state());
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(0, count.get(), "a command disconnected before delivery never executes");
+        assertEquals(RadioServiceBroker.State.DISCONNECTED, second.poll().getFirst().state());
+    }
+    @Test void aRetriedMessageIsDeliveredOnce() {
+        var session = session(RadioRegistry.Permission.MESSAGE_SEND); var count = new AtomicLong();
+        broker.register(target, STATUS, new RadioServiceBroker.Endpoint() {
+            @Override
+            public void message(RadioMessage message) { count.incrementAndGet(); }
+        });
+        var id = UUID.randomUUID();
+        session.message(registry.address(target), STATUS, "note", id, new byte[]{1});
+        session.message(registry.address(target), STATUS, "note", id, new byte[]{1});
+        session.message(registry.address(target), STATUS, "note", UUID.randomUUID(), new byte[]{1});
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(2, count.get());
+        broker.tick(RadioServiceBroker.FINISHED_RETENTION_TICKS + 1);
+        session.message(registry.address(target), STATUS, "note", id, new byte[]{1});
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(3, count.get(), "the request ID is forgotten after the retention window");
+    }
+    @Test void pingReportsRttHopsAndNominalDelayAsSeparateValues() {
+        var session = session(); var request = UUID.randomUUID(); session.ping(registry.address(target), request);
+        nanos.set(10); deliveries.remove().run(); nanos.set(7_000_010); deliveries.remove().run();
+        var result = session.poll().getFirst();
+        assertEquals(7_000_010, result.roundTripNanos(), "measured with the monotonic clock supplier");
+        assertEquals(2, result.route().hops());
+        assertEquals(2, result.route().nominalTicks());
+        assertEquals(2 * RadioServiceBroker.NOMINAL_TICK_MILLIS, result.route().nominalMillis());
+        assertNotEquals(result.roundTripNanos() / 1_000_000, result.route().nominalMillis(), "estimate and measurement differ");
+        assertEquals(new RadioServiceBroker.Estimate(-1, -1).nominalMillis(), -1);
+    }
+    @Test void telemetryAgeAndOnlineStaleOfflineStateAreQueryable() {
+        var session = session(RadioRegistry.Permission.TELEMETRY_READ);
+        broker.register(target, STATUS, new RadioServiceBroker.Endpoint() {});
+        var subscription = session.subscribe(registry.address(target), STATUS, Set.of(ENERGY, "heat"), 10);
+        assertTrue(session.telemetryStatus(subscription).isEmpty(), "no sample is not reported as live");
+        broker.tick(5); broker.publish(target, STATUS, ENERGY, new byte[]{1});
+        broker.tick(8); broker.publish(target, STATUS, "heat", new byte[]{1});
+        broker.tick(14);
+        var status = session.telemetryStatus(subscription);
+        assertEquals(List.of("energy", "heat"), status.stream().map(RadioServiceBroker.FieldStatus::field).toList());
+        assertEquals(RadioServiceBroker.Freshness.ONLINE, status.get(0).state());
+        assertEquals(9, status.get(0).ageTicks()); assertEquals(450, status.get(0).ageMillis());
+        broker.tick(15);
+        assertEquals(RadioServiceBroker.Freshness.STALE, session.telemetryStatus(subscription).get(0).state());
+        assertEquals(RadioServiceBroker.Freshness.ONLINE, session.telemetryStatus(subscription).get(1).state());
+        offline.add(target);
+        assertTrue(session.telemetryStatus(subscription).stream().allMatch(field -> field.state() == RadioServiceBroker.Freshness.OFFLINE));
+        assertThrows(IllegalArgumentException.class, () -> session.telemetryStatus(UUID.randomUUID()));
+    }
+
 }

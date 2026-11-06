@@ -86,6 +86,13 @@ public final class GpsTowerBlockEntity extends ModBlockEntity
         return ora().subscribe(address, service, fields, staleTicks);
     }
 
+    /** Per field sample age (ticks and nominal milliseconds) with online, stale or offline state. */
+    @Callback
+    public java.util.List<li.cil.oc2.common.radio.service.RadioServiceBroker.FieldStatus>
+            getRadioTelemetryStatus(@Parameter("subscription") String subscription) {
+        return ora().telemetryStatus(subscription);
+    }
+
     @Callback
     public void unsubscribeRadioTelemetry(@Parameter("subscription") String subscription) {
         ora().unsubscribe(subscription);

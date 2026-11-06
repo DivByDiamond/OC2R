@@ -20,7 +20,7 @@ The reference tower defines the coordinate origin; ordinary data routes must not
 - [x] The robot dock station (the existing charger block) is its own short-range access point (it attaches nearby clients and reaches the wider network through the nearest tower; it does not relay like a tower): it provides a 10-block horizontal client attachment radius for the robots and devices around it. There is no separate station block. Radius: `gameplay.robot_dock_range` (default 10). Implemented for robots; tablets do not exist yet.
 - [x] A tower provides a 45-block horizontal client attachment radius and 45-block tower hops by default.
 - [x] Use circular X/Z coverage without height limits for both access-point types (dock station 10 blocks, tower 45 blocks).
-- [ ] Connect a PC's existing Ethernet network to a dock station or tower using the existing blue network cable and compatible connectors.
+- [x] Connect a PC's existing Ethernet network to a dock station or tower using the existing blue network cable and compatible connectors (the dock is invited like any client and then bridges its connectors through the nearest tower in range).
 - [ ] Authorized robots and tablets attach wirelessly to an access point in range, with no new mandatory radio card/module item.
 - [ ] Clients roam between reachable access points of their own network; radii are not added together to extend attachment range.
 - [ ] Towers relay between each other. Walls do not attenuate the first implementation.
@@ -43,7 +43,7 @@ See the [Russian/English explanation](../RADIO-NETWORK.md). This is a custom rad
 - [x] A saved server registry randomly allocates free nonzero network prefixes and device numbers, excludes occupied and retired values, and reports exhaustion.
 - [x] Keep full network/device UUIDs as authoritative identities; display addresses and aliases are not credentials.
 - [ ] Persist addresses across restarts and access-point roaming. Moving to another network requires explicit enrollment.
-- [ ] Reserve `0000` values; do not immediately reuse revoked addresses, and reject credentials from prior enrollment generations.
+- [x] Reserve `0000` values; do not immediately reuse revoked addresses, and reject credentials from prior enrollment generations.
 - [ ] Resolve an address only inside the authenticated radio-network namespace and dimension.
 - [ ] Custom addresses have no automatic Internet, cross-dimension or cross-network route. Any future gateway is explicit and permission controlled.
 - [ ] A service directory maps a radio address plus service name to an authorized endpoint and its compatible transport.
@@ -54,12 +54,12 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 ## 4. Enrollment, identity and permissions
 
 - [x] Network owner approves enrollment from a PC via the tower RPC (`listPendingEnrollments`/`approveEnrollment`/`denyEnrollment`, approval-gated invites, bounded and expiring requests); proximity alone and knowledge of a UUID do not grant access. A graphical list remains future work.
-- [ ] Issue per-device credentials using a cryptographically secure source; authenticate sessions against server-owned enrollment records.
+- [x] Issue per-device credentials using a cryptographically secure source; authenticate sessions against server-owned enrollment records.
 - [x] Support separate telemetry-read, command-send and network-admin permissions, scoped to devices/services (`RadioRegistry.Permission`/`Scope`; the broker rechecks them on send, delivery, subscription and command completion).
 - [ ] Enforce network membership/routing and host operations on the server; the service endpoint separately authorizes subscriptions and commands before execution. Encrypted relays need not inspect application payloads.
-- [ ] Allow individual revocation, reconnect, re-enrollment and key rotation without resetting other clients.
-- [ ] Define item cloning, transfer, drop, death, logout and dimension-change behavior. Duplicated item data must not create a second authenticated identity.
-- [ ] Keep secrets out of logs, widget definitions, public discovery, addresses and telemetry payloads.
+- [x] Allow individual revocation, reconnect, re-enrollment and key rotation without resetting other clients.
+- [x] Define item cloning, transfer, drop, death, logout and dimension-change behavior. Duplicated item data must not create a second authenticated identity. (Registry and API side only, `RadioClientLeases`; the tablet item that calls it does not exist yet.)
+- [x] Keep secrets out of logs, widget definitions, public discovery, addresses and telemetry payloads. (Radio layer: redacted string forms, status maps, ORA addresses and message envelopes carry no secrets; widget definitions do not exist yet.)
 - [ ] Rate-limit enrollment and failed authorization; return bounded, explicit errors.
 
 ## 5. Latency, TTL and TLS are separate features
@@ -71,8 +71,8 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 - [x] Per-sender link bandwidth (`radioLinkBytesPerTick`, default 1024 B/tick, about 20 KB/s) for Ethernet frames and ORA messages.
 - [ ] Account for ingress/egress radio legs, relay hops and packet size under a configured link bandwidth budget.
 - [ ] Preserve packet ordering within a reliable stream; drop expired packets and cancel stale scheduled deliveries after topology/auth changes.
-- [ ] Display hop count, estimated one-way delivery time and measured ping RTT as separate values.
-- [ ] One tick is nominally 50 ms at 20 TPS. Label estimates accordingly; measure actual RTT with a monotonic clock.
+- [x] Display hop count, estimated one-way delivery time and measured ping RTT as separate values. (Exposed through the tower RPC, `pollRadioEvents` and `estimateRadioRoute`; no GUI.)
+- [x] One tick is nominally 50 ms at 20 TPS. Label estimates accordingly; measure actual RTT with a monotonic clock.
 - [ ] Do not claim millisecond delivery precision from a tick scheduler or mix wall-clock deadlines with tick ordering.
 - [x] Use bounded per-device, per-network and global queues, finite payload/frame size and backpressure.
 - [x] Expire or reject commands to offline recipients. Never replay an old movement command automatically when a robot reconnects.
@@ -80,10 +80,10 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 ### Hop TTL and duplicate suppression
 
 - [x] Give each packet an identifier and bounded hop TTL, and decrement it at each relay.
-- [ ] Suppress duplicate delivery, looped broadcasts and duplicate command execution with bounded expiring state.
+- [x] Suppress duplicate delivery, looped broadcasts and duplicate command execution with bounded expiring state.
 - [x] Keep a separate packet lifetime/deadline; hop TTL is not time in milliseconds.
 - [ ] Bound service discovery and broadcasts so a ring of towers cannot multiply traffic without limit.
-- [ ] Define route-change/retry behavior and idempotent request IDs across reconnections.
+- [x] Define route-change/retry behavior and idempotent request IDs across reconnections.
 
 ### TLS
 
@@ -105,10 +105,10 @@ A secure remote-control acceptance milestone requires the authentication and enc
 - [ ] A message carries a protocol version, source/destination identity, service/channel, request ID and bounded typed payload.
 - [ ] Transport scheduling/authentication metadata comes from the server, not untrusted UI payloads.
 - [ ] PCs publish named telemetry fields; clients subscribe to selected fields and receive snapshots plus ordered updates.
-- [ ] Show last-update age and online/stale/offline state; stale samples must not look live.
+- [x] Show last-update age and online/stale/offline state; stale samples must not look live. (Through `getRadioTelemetryStatus`; no GUI.)
 - [ ] Commands have distinct accepted, running, completed, failed, timed-out and disconnected outcomes.
 - [ ] A transport acknowledgement is not confirmation that a robot moved or an inventory operation succeeded.
-- [ ] Use request IDs/idempotency handling for retries, and explicit deadlines for side effects.
+- [x] Use request IDs/idempotency handling for retries, and explicit deadlines for side effects.
 - [ ] Existing Linux/Onyx applications retain TCP/UDP compatibility; the simple widget service sits above the transport.
 - [ ] Define version negotiation, framing, bounds, error codes and subscription cleanup before connecting independent implementations.
 
@@ -212,4 +212,16 @@ Transport fix found by these tests: the server tick scheduler did not keep sched
 
 Verification: `RadioAccessPointsTest` covers the inclusive circular dock boundary, ignored heights, nearest-tower uplink, isolated docks, other networks and dimensions. The `RobotDockRadioTests` GameTests run in their own 68-block test structure with a booted robot whose actions are queued through its guest-facing device: attachment at exactly 10 blocks and none at 10.01, an isolated dock, telemetry, ping, device list, permission withdrawal, a three-leg route estimate within the delay cap, signal loss and reconnect without replay, and COMPLETED or FAILED following the robot's real move result.
 
-Not done in this increment: the dock has no Ethernet connector; tablets do not exist, so tablet roaming is untested; only movement and turn actions are bound, not inventory or module operations; the guest-side Lua helper for `bindRadioCommand` is not written; link bandwidth through a dock is not measured by a dedicated test.
+Not done in this increment: tablets do not exist, so tablet roaming is untested; only movement and turn actions are bound, not inventory or module operations; the guest-side Lua helper for `bindRadioCommand` is not written; link bandwidth through a dock is not measured by a dedicated test.
+
+## 12. Dock Ethernet, credentials, duplicate suppression and latency increment
+
+The dock station (charger) takes the blue cable through a normal network connector and bridges it into the radio. It owns an enrolled client identity, so a cabled but uninvited or revoked dock passes nothing; frames from its connectors enter through the nearest tower of its network within tower range and frames of the network are written to its connectors. It never relays between towers and loads no chunk.
+
+Credentials: device secrets are 256 random bits from `SecureRandom`, stored as hashes only. `RadioRegistry.rotateCredential` replaces one secret and advances that device's generation without touching other clients; a secret of an earlier generation, a revoked device or a rotated key never authenticates. Records that carry secrets redact them from their string form. `RadioClientLeases` defines the registry side of an item-borne identity: one active holder, a rotated secret on every activation (so duplicated item data holds a stale generation), suspension without loss for drop, death, logout, dimension change and transfer, and activation only in the enrollment dimension. Nothing here creates the tablet item.
+
+Duplicates: `RadioFrameFilter` drops a byte-identical frame that comes back with a lower TTL inside a 5 tick window (bounded to 4096 entries). A repeated request ID returns the known command, also on a new session after a reconnect, and is never executed twice; the endpoint remembers received command IDs for 1200 ticks and a repeated `MESSAGE` is delivered once. The RPC reports ping as measured RTT (monotonic clock), hop count and nominal one-way estimate, and `getRadioTelemetryStatus` reports sample age with online, stale or offline state.
+
+Limits: the frame filter is a loop guard for byte-identical frames, not a general broadcast limiter, so the unchecked "bound broadcasts so a ring of towers cannot multiply traffic" item stays open. Wired loops that close synchronously were already stopped by the re-entrancy guard of the delivery tick. There is no GUI for any of these values.
+
+Verification: 98 core and 693 (NeoForge 1.21.1) or 702 (26.1.2, 26.2) mod unit tests pass on each node. Six new GameTests (`RadioDockEthernetTests`: cable bridging in both directions, uninvited and revoked docks, a wired tower-dock loop; `RadioIdentityTests`: rotation, revocation and re-enrollment without resetting other clients, ping and telemetry latency values, retried requests) pass in full suites of 102 (NeoForge 1.21.1), 104 (NeoForge 26.1.2 and 26.2) and 131 (Fabric 1.21.1) GameTests. Checkstyle, PMD and SpotBugs are at zero on the 1.21.1 node for the changed modules.

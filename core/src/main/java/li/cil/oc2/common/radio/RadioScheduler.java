@@ -80,10 +80,17 @@ public final class RadioScheduler {
         void deliver(UUID source, UUID target, byte[] frame, int remainingTtl);
     }
 
+    /** Like {@link Delivery}, also naming the endpoint that originally put the frame on the radio. */
+    @FunctionalInterface
+    public interface OriginDelivery {
+        void deliver(UUID source, UUID origin, UUID target, byte[] frame, int remainingTtl);
+    }
+
     private record Key(UUID packet, UUID source, UUID target) {}
 
     private record Pending(
             Key key,
+            UUID origin,
             UUID network,
             long sourceGeneration,
             long targetGeneration,
@@ -120,10 +127,25 @@ public final class RadioScheduler {
      * Source identity must come from the server-owned, physically attached endpoint, never a guest
      * payload.
      */
-    @SuppressWarnings("PMD.CyclomaticComplexity") // One guard per admission limit.
     public Result submit(
             final UUID packet,
             final UUID source,
+            final UUID target,
+            final byte[] frame,
+            final int ttl,
+            final long tick) {
+        return submit(packet, source, source, target, frame, ttl, tick);
+    }
+
+    /**
+     * Same as the six-argument form for a frame that entered the radio at origin, a wired or
+     * short-range endpoint attached through the source tower. The origin only travels with the frame.
+     */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveParameterList"}) // One guard per admission limit.
+    public Result submit(
+            final UUID packet,
+            final UUID source,
+            final UUID origin,
             final UUID target,
             final byte[] frame,
             final int ttl,
@@ -175,6 +197,7 @@ public final class RadioScheduler {
         queue.add(
                 new Pending(
                         key,
+                        origin,
                         from.get().network(),
                         from.get().generation(),
                         to.get().generation(),
@@ -191,6 +214,10 @@ public final class RadioScheduler {
     }
 
     public void tick(final long tick, final Delivery delivery) {
+        tick(tick, (source, origin, target, frame, ttl) -> delivery.deliver(source, target, frame, ttl));
+    }
+
+    public void tick(final long tick, final OriginDelivery delivery) {
         advance(tick);
         while (!queue.isEmpty() && queue.peek().due() <= tick) {
             final Pending pending = queue.remove();
@@ -217,6 +244,7 @@ public final class RadioScheduler {
                             .equals(pending.route())) continue;
             delivery.deliver(
                     pending.key().source(),
+                    pending.origin(),
                     pending.key().target(),
                     pending.frame().clone(),
                     pending.remainingTtl());

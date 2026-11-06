@@ -117,7 +117,7 @@ print(tower:getRadioAddress())
 Это разные механизмы:
 
 - **Задержка:** кадр ставится в очередь сервера. По умолчанию каждый радиопереход занимает один тик. Два перехода дают минимум два тика, номинально 100 мс при 20 TPS. Это время одного направления, не ping.
-- **Ping:** время туда и обратно, измеряемое по фактическому ответу. Готового пользовательского ping/RPC в текущем мосте пока нет.
+- **Ping:** время туда и обратно, измеряемое монотонными часами (`System.nanoTime`) по фактическому ответу; в RPC вышки это `pingRadio(address, requestId)`, результат приходит в `pollRadioEvents()` как `roundTripNanos`. Число радиозвеньев (`route.hops`) и оценка времени в одну сторону (`route.nominalTicks` и `route.nominalMillis` при номинальных 50 мс на тик) — отдельные значения: это оценка расписания, а не измерение, при просадке TPS реальная задержка больше.
 - **TTL:** сколько переходов разрешено пакету. Радиопереходы уменьшают остаток TTL, проводные узлы также учитывают свой расход. Это внутренний TTL сетевой шины OC2R, отдельный от поля TTL в заголовке IP. Число переходов не является временем жизни в миллисекундах.
 - **Срок жизни:** слишком старый пакет удаляется из очереди. Пакеты в очереди не сохраняются при перезапуске.
 - **Авторизация:** сервер проверяет регистрацию узлов и разрыв/отзыв доступа до доставки. Идентификаторы пакетов и ограниченные очереди сдерживают повторы и переполнение.
@@ -155,9 +155,29 @@ radioPacketLifetimeTicks = 200
 
 Результат команды робота определяется только реальным результатом его действия. Гостевая программа вызывает `bindRadioCommand(requestId, actionId)` для действия робота (`move`/`turn`), поставленного в очередь после получения команды; привязка к более раннему, ещё не поставленному или уже занятому другой командой действию отклоняется. `COMPLETED` или `FAILED` сервер выдаёт сам, когда действие реально завершилось; действие, которое робот отбросил без результата (например, при остановке компьютера), даёт `FAILED` с результатом `CANCELLED`. Через `updateRadioCommand` гостевая программа может сообщить только `RUNNING`.
 
+### Ethernet-подключение дока
+
+Док-станция принимает синий сетевой кабель через обычный сетевой коннектор, как и вышка. Кабель сам по себе в сеть не включает: у дока есть собственный клиентский идентификатор, и администратор сети должен пригласить его, как любое устройство. Устройство `charger` получило методы `getRadioEndpointId()`, `joinRadioNetwork(invite, secret)`, `getRadioAddress()` и `getRadioStatus()`; приглашение выдаёт вышка: `issueRadioInvite(adminSecret, endpointId)`.
+
+Кадры из коннектора дока уходят в радиосеть через ближайшую вышку своей сети в радиусе вышки, кадры радиосети записываются во все коннекторы дока. Док по-прежнему не ретранслирует между вышками. Неприглашённый или отозванный док ничего не передаёт, выгруженный или сломанный док перестаёт быть мостом (чанки ради дока не загружаются).
+
+### Учётные данные, отзыв и ротация
+
+Секрет устройства — 256 случайных бит из `SecureRandom` (base64url без заполнения); реестр хранит только SHA-256 хэш. Отзыв действует на одно устройство и не затрагивает остальные; повторное приглашение выдаёт новое поколение, новый случайный адрес и новый секрет, а секрет прежнего поколения никогда не проходит проверку (`authenticate(device, secret, generation)`). Ротация (`rotateCredential`) заменяет секрет одного устройства и увеличивает его поколение; адрес и права сохраняются, остальные клиенты не сбрасываются. Строковые формы записей с секретами (`Enrollment`, `Invitation`, `CreatedNetwork`, `PendingTicket`, `Member`) не содержат секретов и хэшей, поэтому они не попадают в журналы.
+
+Для клиента, чья личность хранится в предмете (будущий планшет), правила заданы на уровне реестра (`RadioClientLeases`): у личности не больше одного активного держателя; каждая активация меняет секрет, и держатель обязан сохранить новый в предмете, поэтому копия предмета со старым секретом никогда не станет второй аутентифицированной личностью; выбрасывание, смерть, выход из игры, смена измерения и передача другому игроку только приостанавливают личность (адрес, права и секрет сохраняются); активация возможна только в измерении регистрации. Состояние активности не сохраняется: перезапуск сервера приостанавливает всех.
+
+### Дубликаты и повторы
+
+Кадр Ethernet, вернувшийся в сеть по петле, узнаётся по содержимому и меньшему TTL в окне 5 тиков и отбрасывается (`RadioFrameFilter`, до 4096 записей); намеренный повтор с тем же TTL проходит. Повторный запрос с тем же request ID от того же устройства возвращает прежнюю команду и не выполняется второй раз, в том числе после переподключения: новая сессия получает известное состояние, а команда, оборванная закрытием сессии, остаётся `DISCONNECTED` и не запускается заново. Принимающая сторона хранит принятые request ID 1200 тиков и игнорирует повторную доставку; повторное сообщение (`MESSAGE`) с тем же request ID доставляется один раз. Вся память о дубликатах ограничена по размеру и времени, при переполнении первой забывается самая старая запись.
+
+### Возраст телеметрии
+
+`getRadioTelemetryStatus(subscription)` возвращает по каждому полю с отсчётом `ageTicks`, `ageMillis` (номинально, 50 мс на тик), `sampleTick`, `sequence` и состояние `ONLINE`, `STALE` или `OFFLINE`. `STALE` наступает, когда возраст достигает порога подписки; `OFFLINE`, когда источник или связь пропали. Поле без отсчёта не показывается как живое.
+
 ### Что ещё предстоит
 
-Планшеты и их переключение между точками, Ethernet-подключение дока, пользовательский ping, прикладные права на сервисы, TLS, подписки на показатели и живые виджеты остаются следующими этапами. В Onyx уже есть отдельный прототип графических виджетов; его демонстрационные данные пока не приходят из этой радиосети.
+Планшеты и их переключение между точками, прикладные права на сервисы, TLS и живые виджеты остаются следующими этапами. В Onyx уже есть отдельный прототип графических виджетов; его демонстрационные данные пока не приходят из этой радиосети.
 
 ## English
 
@@ -252,7 +272,7 @@ The registry stores credential hashes; the endpoint's own bearer secret remains 
 ### Delay, TTL and security
 
 - Delivery uses the server tick queue: one tick per radio hop, but the propagation delay is capped at `radioMaxDeliveryTicks` (2 ticks, 100 ms at 20 TPS) however many towers are chained. Each sender is limited to `radioLinkBytesPerTick` (1024 B/tick, about 20 KB/s). Lower TPS increases real delay.
-- Measured ping is round-trip time; there is no user-facing ping RPC yet.
+- Ping is the round-trip time measured with the monotonic clock (`System.nanoTime`) from the actual reply. On the tower RPC call `pingRadio(address, requestId)`; the result arrives in `pollRadioEvents()` as `roundTripNanos`. The hop count (`route.hops`) and the one-way estimate (`route.nominalTicks` and `route.nominalMillis`, 50 ms per tick at the nominal 20 TPS) are separate values: they are a schedule estimate, not a measurement, and the real delay is longer when TPS drops.
 - Hop TTL limits traversed nodes and is reduced by radio and wired forwarding. It is the OC2R network-bus TTL, separate from the IP header TTL and the packet lifetime deadline.
 - Pending packets expire and do not persist through restarts. Route loss, revocation or an offline recipient prevents queued delivery.
 - Bounded queues, packet IDs and enrollment generations support admission control and duplicate/revocation checks. The first bridge has no bandwidth serialization or interference simulation.
@@ -271,9 +291,29 @@ The robot dock station is the existing charger block; there is no separate block
 
 A robot command result is authoritative. The guest program calls `bindRadioCommand(requestId, actionId)` for a robot action (`move`/`turn`) queued after the command arrived; binding an earlier action, an action not queued yet, or one already bound to another command is refused. The server reports `COMPLETED` or `FAILED` only when that action really finishes; an action the robot drops without a result (for example when its computer stops) ends the command as `FAILED` with the result `CANCELLED`. Through `updateRadioCommand` the guest can only report `RUNNING`.
 
+### Dock station Ethernet
+
+The dock station takes the blue network cable through an ordinary network connector, like a tower. A cable alone does not join a network: the dock has its own client identity and the network administrator has to invite it like any device. The `charger` device gained `getRadioEndpointId()`, `joinRadioNetwork(invite, secret)`, `getRadioAddress()` and `getRadioStatus()`; the invitation is issued on a tower with `issueRadioInvite(adminSecret, endpointId)`.
+
+Frames from a connector on the dock enter the radio through the nearest tower of the dock's own network within tower range, and frames of the radio network are written to every connector on the dock. The dock still does not relay between towers. An uninvited or revoked dock passes nothing, and an unloaded or broken dock stops bridging (no chunk is loaded for a dock).
+
+### Credentials, revocation and rotation
+
+A device secret is 256 random bits from `SecureRandom` (unpadded base64url); the registry stores only its SHA-256 hash. Revocation acts on one device and leaves the others untouched; re-inviting issues a new generation, a new random address and a new secret, and a secret of an earlier generation never authenticates again (`authenticate(device, secret, generation)`). Rotation (`rotateCredential`) replaces one device's secret and advances its generation; address and permissions stay and no other client is reset. The string forms of records that carry secrets (`Enrollment`, `Invitation`, `CreatedNetwork`, `PendingTicket`, `Member`) contain neither secrets nor hashes, so they cannot reach a log.
+
+For a client whose identity travels inside an item (the future tablet) the registry defines the rules (`RadioClientLeases`): an identity has at most one active holder; every activation rotates the secret and the holder must store the new one in the item, so a copy of the item holding the old secret never becomes a second authenticated identity; dropping, death, logout, dimension change and transfer to another player only suspend the identity (address, permissions and secret are kept); activation works only in the dimension of enrollment. Activity is not saved, so a server restart suspends every client.
+
+### Duplicates and retries
+
+An Ethernet frame that comes back into the network through a loop is recognised by its content and a lower TTL within a 5 tick window and dropped (`RadioFrameFilter`, at most 4096 entries); a deliberate resend with the same TTL passes. A repeated request ID from the same device returns the earlier command and never runs it a second time, also after a reconnect: the new session is told the known state, and a command cut off by closing its session stays `DISCONNECTED` and is not started again. The receiving side remembers received request IDs for 1200 ticks and ignores a repeated delivery; a repeated `MESSAGE` with the same request ID is delivered once. All duplicate memory is bounded in size and lifetime and forgets its oldest entry first when full.
+
+### Telemetry age
+
+`getRadioTelemetryStatus(subscription)` returns for every sampled field `ageTicks`, `ageMillis` (nominal, 50 ms per tick), `sampleTick`, `sequence` and a state of `ONLINE`, `STALE` or `OFFLINE`. `STALE` starts when the age reaches the subscription's limit, `OFFLINE` when the publisher or the link is gone. A field without a sample is not shown as live.
+
 ### Next steps
 
-Tablets and their roaming, an Ethernet connector on the dock, user-facing ping, service-scoped application permissions, TLS, telemetry subscriptions and live dashboards remain pending. The Onyx widget prototype currently uses an explicitly separate demonstration backend.
+Tablets and their roaming, service-scoped application permissions, TLS and live dashboards remain pending. The Onyx widget prototype currently uses an explicitly separate demonstration backend.
 
 ## References
 

@@ -7,14 +7,18 @@ import java.util.List;
 import java.util.function.Predicate;
 import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
+import li.cil.oc2.api.bus.device.object.Parameter;
+import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+import li.cil.oc2.common.blockentity.radio.dock.DockBridge;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.energy.FixedEnergyStorage;
+import li.cil.oc2.common.util.scheduler.ServerScheduler;
 import li.cil.oc2.common.util.world.chunk.ChunkUtils;
 import li.cil.oc2.platform.CapabilityRegistrar;
 import li.cil.oc2.platform.EnergyStorage;
@@ -24,6 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.item.ItemStack;
@@ -31,14 +36,17 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
+/** The robot dock station: charges what is on top and bridges a wired Ethernet network into the radio. */
 public final class ChargerBlockEntity extends ModBlockEntity
-        implements NamedDevice, TickableBlockEntity {
+        implements NamedDevice, TickableBlockEntity, NetworkInterface {
     private static final Predicate<Entity> ENTITY_PREDICATE =
             EntitySelector.NO_SPECTATORS.and(EntitySelector.ENTITY_STILL_ALIVE);
 
     private final FixedEnergyStorage energy = new FixedEnergyStorage(Config.chargerEnergyStorage);
     private boolean charging;
     private final AABB renderBoundingBox;
+    private final DockBridge bridge = new DockBridge(
+            () -> level instanceof final ServerLevel server ? server : null, this::getBlockPos, this::isValid, this);
 
     public ChargerBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.CHARGER.get(), pos, state);
@@ -74,6 +82,7 @@ public final class ChargerBlockEntity extends ModBlockEntity
         super.saveAdditional(tag, registries);
 
         tag.put(Constants.ENERGY_TAG_NAME, energy.serializeNBT(registries));
+        bridge.save(tag);
     }
 
     @Override
@@ -85,11 +94,57 @@ public final class ChargerBlockEntity extends ModBlockEntity
         *///?} else {
         energy.deserializeNBT(registries, tag.getCompound(Constants.ENERGY_TAG_NAME));
         //?}
+        bridge.load(tag);
+    }
+
+    @Override
+    protected void loadServer() {
+        super.loadServer();
+        if (level != null) ServerScheduler.schedule(level, bridge::refresh);
+    }
+
+    @Override
+    protected void unloadServer(final boolean removed) {
+        super.unloadServer(removed);
+        bridge.unload();
     }
 
     @Callback
     public boolean isCharging() {
         return charging;
+    }
+
+    @Callback
+    public String getRadioEndpointId() {
+        return bridge.endpointId();
+    }
+
+    /** Enrolls this dock as a radio client with an invitation issued for its endpoint id. */
+    @Callback
+    public void joinRadioNetwork(
+            @Parameter("invite") final String invitation, @Parameter("secret") final String secret) {
+        bridge.join(invitation, secret);
+        setChanged();
+    }
+
+    @Callback
+    public String getRadioAddress() {
+        return bridge.address();
+    }
+
+    @Callback
+    public java.util.Map<String, Object> getRadioStatus() {
+        return bridge.status();
+    }
+
+    @Override
+    public byte[] readEthernetFrame() {
+        return new byte[0]; // a dock never originates frames itself
+    }
+
+    @Override
+    public void writeEthernetFrame(final NetworkInterface source, final byte[] frame, final int ttl) {
+        bridge.ethernetIn(frame, ttl);
     }
 
     @Override
@@ -106,6 +161,10 @@ registrar.registerBlock(
                     }
                     return null;
                 },
+                Blocks.CHARGER.get());
+        registrar.registerBlock(
+                Capabilities.NetworkInterface.BLOCK,
+                (level, pos, state, be, side) -> be instanceof final ChargerBlockEntity self ? self : null,
                 Blocks.CHARGER.get());
     }
 
