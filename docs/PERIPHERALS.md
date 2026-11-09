@@ -49,3 +49,14 @@ A nearby stopped computer or an unattached bus does not light the sensor. Its tw
 disconnected/off and mounted/on; no extra frames are invented. Direct diagnostic reads remain bounded to the
 same sampling interval. Sampling and events stop when it unloads, and event subscriptions are cleared when
 their controller disconnects. No neighboring chunks are loaded for measurements.
+
+## Acceptance
+
+The updated Fabric 26.1.2 client run passed with both devices in a live scene. All 16 orientation/on-off
+model states matched their expected baked sprites and bounds. The access point's original three-frame
+pulse advanced between two captures six ticks apart, while the mounted sensor showed its on indicator.
+
+Integrated verification at source revision `92319182` passed 134/136/136 NeoForge GameTests and
+163/163 Fabric 1.21.1 GameTests, with zero failures. Core and mod unit tests, all six platform compile
+targets and the feature static-analysis checks also passed; see the
+[integrated acceptance matrix](roadmap/tablet-radio.md#14-integrated-acceptance) for counts.

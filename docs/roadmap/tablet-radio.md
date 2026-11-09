@@ -247,12 +247,32 @@ change. This prevents the first message or ping from being discarded while the t
 The tablet terminal handles the shared keyboard/mouse release binding and receives native captured key
 events before vanilla shortcuts, with modifiers preserved on both loaders.
 
-Verification: 100 core tests per node; 713 mod unit tests on NeoForge 1.21.1 and 722 on each
-26.x node; complete NeoForge GameTest suites of 119 (1.21.1), 121 (26.1.2) and 121 (26.2), all passing.
-Fabric 1.21.1 main sources and the focused Fabric 26.2 client fixture compile. The opt-in client
-fixture (`-Pfabric.clientTests=true -Pfabric.tabletTests=true`) opens both tablet menus, checks CPU slot
-synchronization and messenger device discovery, and releases native keyboard capture through the
-shared binding. Its runtime screenshots remain a separate client acceptance check.
+The tablet attachment increment, before the integrated peripheral follow-up, passed 100 core tests
+per node, 713 mod unit tests on NeoForge 1.21.1 and 722 on each 26.x node, and full NeoForge GameTest
+suites of 119 (1.21.1), 121 (26.1.2) and 121 (26.2). These are historical increment counts.
+
+The focused Fabric 26.1.2 client acceptance run subsequently passed: the tablet terminal displayed
+Onyx boot output, terminal/inventory switching and CPU/flash slot synchronization worked, guest radio
+RPC was discovered, and the shared native input-release binding closed capture. The opt-in fixture is
+selected with `-Pfabric.clientTests=true -Pfabric.tabletTests=true`.
 
 NeoForge 1.21.1 Checkstyle (main/test), PMD (main/test) and SpotBugs main reports are at zero;
 core Checkstyle and PMD (main/test) are also at zero. SpotBugs reports no missing classes or analysis errors.
+
+## 14. Integrated acceptance
+
+Source revision `92319182` combines the tablet, access-point control and peripheral indicator updates.
+All tests below passed with zero failures:
+
+| NeoForge version | Core unit tests | Mod unit tests | GameTests |
+| --- | ---: | ---: | ---: |
+| 1.21.1 | 104 | 719 | 134 |
+| 26.1.2 | 104 | 728 | 136 |
+| 26.2 | 104 | 728 | 136 |
+
+Fabric 1.21.1 passed 163/163 GameTests. Main sources compiled for NeoForge and Fabric on all three
+versions (six platform targets). Feature Checkstyle, PMD and SpotBugs checks were at zero.
+
+The updated real Fabric 26.1.2 peripheral scene also passed client acceptance. All 16 orientation/on-off
+model states had the expected baked sprites and bounds. Two live captures six ticks apart confirmed
+that the access point's three-frame pulse advanced; the connected, mounted sensor indicator was lit.
