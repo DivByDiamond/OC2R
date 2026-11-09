@@ -107,6 +107,18 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.runOnClient(client -> ((TabletInventoryScreen) RenderCompat.currentScreen()).getMenu().switchToTerminal());
             context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletTerminalScreen, 100);
             context.runOnClient(client -> {
+                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+                screen.showGraphics(true);
+                screen.getMenu().setCaptureInputState(true);
+                if (!CaptureKeyboardHook.handle(client.getWindow().handle(), GLFW.GLFW_KEY_Q, 0, GLFW.GLFW_PRESS, 0)
+                        || !CaptureKeyboardHook.handle(client.getWindow().handle(), GLFW.GLFW_KEY_Q, 0, GLFW.GLFW_RELEASE, 0)) {
+                    throw new AssertionError("Guest Q was not routed through captured VirtIO keyboard input");
+                }
+            });
+            waitForGuest(context, world.getServer(), "OTABLET_EXIT");
+            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(false));
+            context.takeScreenshot("oc2r-tablet-console-after-guest-key");
+            context.runOnClient(client -> {
                 final boolean captured = CaptureKeyboardHook.handle(client.getWindow().handle(),
                         CaptureKeyBinding.RELEASE.getDefaultKey().getValue(), 0, GLFW.GLFW_PRESS, 0);
                 if (!captured || RenderCompat.currentScreen() != null) {
