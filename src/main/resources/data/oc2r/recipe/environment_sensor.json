@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "D": {
+      "item": "minecraft:daylight_detector"
+    },
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "X": {
+      "item": "oc2r:bus_interface"
+    }
+  },
+  "pattern": [
+    "IGI",
+    "DBD",
+    " X "
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:environment_sensor"
+  }
+}

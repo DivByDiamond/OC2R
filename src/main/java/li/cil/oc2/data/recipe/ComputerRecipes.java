@@ -88,6 +88,25 @@ final class ComputerRecipes {
                 .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
                 .save(consumer);
 
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.WIRELESS_ACCESS_POINT.get())
+                .pattern(" C ").pattern("IBI").pattern(" N ")
+                .define('C', net.minecraft.world.item.Items.COPPER_INGOT)
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .define('N', Items.NETWORK_CONNECTOR.get())
+                .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.ENVIRONMENT_SENSOR.get())
+                .pattern("IGI").pattern("DBD").pattern(" X ")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('D', net.minecraft.world.item.Items.DAYLIGHT_DETECTOR)
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .define('X', Items.BUS_INTERFACE.get())
+                .unlockedBy("has_circuit_board", ModRecipesProvider.inventoryChange(Items.CIRCUIT_BOARD.get()))
+                .save(consumer);
+
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.GPS_TOWER.get())
                 .pattern("IRI")
                 .pattern("CPC")

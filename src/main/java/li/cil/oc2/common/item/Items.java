@@ -42,6 +42,8 @@ public final class Items {
             register(Blocks.BUS_CABLE, BusCableItem::new);
     public static final ItemHolder<BusInterfaceItem> BUS_INTERFACE =
             register("bus_interface", BusInterfaceItem::new);
+    public static final ItemHolder<Item> WIRELESS_ACCESS_POINT = register(Blocks.WIRELESS_ACCESS_POINT);
+    public static final ItemHolder<Item> ENVIRONMENT_SENSOR = register(Blocks.ENVIRONMENT_SENSOR);
     public static final ItemHolder<Item> CHARGER = register(Blocks.CHARGER, ChargerItem::new);
     public static final ItemHolder<Item> COMPUTER = register(Blocks.COMPUTER);
     public static final ItemHolder<Item> MONITOR = register(Blocks.MONITOR);

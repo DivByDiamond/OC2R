@@ -217,6 +217,8 @@
   "gui.oc2r.flash_writer.format_disk": "Raw disk .img; no ELF/ISO conversion.",
   "gui.oc2r.flash_writer.format_empty": "Use a raw .bin firmware or .img disk image.",
   "gui.oc2r.flash_writer.builtin_hint": "Built-in OnyxOS needs no hard drive.",
+  "block.oc2r.wireless_access_point": "Wireless Access Point",
+  "block.oc2r.environment_sensor": "Environment Sensor",
   "block.oc2r.gps_tower": "Positioning Tower",
   "block.oc2r.gps_tower.desc": "Five-block positioning reference. Place one item with four free blocks above.",
   "block.oc2r.machine_interface": "Machine Interface",

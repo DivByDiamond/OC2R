@@ -27,20 +27,31 @@ public final class DockBridge {
     private final Supplier<BlockPos> positionSource;
     private final BooleanSupplier validity;
     private final NetworkInterface self;
+    private final java.util.function.Predicate<Direction> cableSides;
     private UUID host = UUID.randomUUID();
     private final OraEndpoint endpoint;
 
     /** The dock block entity passes itself as the cable-facing interface, so frames never loop back into it. */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "The dock passes itself as its own cable interface.")
     public DockBridge(
             final Supplier<ServerLevel> level,
             final Supplier<BlockPos> position,
             final BooleanSupplier valid,
             final NetworkInterface self) {
+        this(level, position, valid, self, side -> true);
+    }
+
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Keeps the host's live cable interface.")
+    public DockBridge(
+            final Supplier<ServerLevel> level,
+            final Supplier<BlockPos> position,
+            final BooleanSupplier valid,
+            final NetworkInterface self,
+            final java.util.function.Predicate<Direction> cableSides) {
         this.level = level;
         this.positionSource = position;
         this.validity = valid;
         this.self = self;
+        this.cableSides = cableSides;
         endpoint = new OraEndpoint(
                 level,
                 () -> host,
@@ -62,8 +73,13 @@ public final class DockBridge {
         return endpoint.address();
     }
 
+    @SuppressWarnings("PMD.UseConcurrentHashMap") // Local builder; only an immutable snapshot escapes.
     public Map<String, Object> status() {
-        return endpoint.status();
+        final Map<String, Object> status = new java.util.HashMap<>(endpoint.status());
+        final ServerLevel server = level.get();
+        if (server == null || !endpoint.enrolled()
+                || !RadioNetworkData.get(server).bridges().register(this)) status.put("attached", false);
+        return Map.copyOf(status);
     }
 
     /** Makes an enrolled dock known to its level so it receives radio frames; harmless otherwise. */
@@ -98,6 +114,15 @@ public final class DockBridge {
         return endpoint.credential();
     }
 
+    /** Authenticated membership, used to scope an access point to its enrolled network. */
+    public boolean belongsTo(final UUID network) {
+        final ServerLevel server = level.get();
+        return server != null && validity.getAsBoolean()
+                && RadioNetworkData.get(server).registry().authenticate(id(), credential())
+                        .filter(member -> member.network().equals(network)).isPresent()
+                && RadioNetworkData.get(server).bridges().register(this);
+    }
+
     public double x() {
         return endpoint.x();
     }
@@ -112,7 +137,7 @@ public final class DockBridge {
         if (server == null || !validity.getAsBoolean() || ttl <= 0 || !validFrame(frame)) return;
         if (!endpoint.enrolled()) return;
         final RadioNetworkData data = RadioNetworkData.get(server);
-        data.bridges().register(this);
+        if (!data.bridges().register(this)) return;
         data.transmitFromBridge(server, this, frame, ttl);
     }
 
@@ -121,6 +146,7 @@ public final class DockBridge {
         final ServerLevel server = level.get();
         if (server == null || ttl <= 0) return;
         for (final Direction side : Direction.values()) {
+            if (!cableSides.test(side)) continue;
             final BlockPos pos = positionSource.get().relative(side);
             if (!server.hasChunkAt(pos)) continue;
             final NetworkInterface iface = Platform.capabilities().getBlockCapability(

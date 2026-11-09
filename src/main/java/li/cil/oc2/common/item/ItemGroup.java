@@ -56,6 +56,8 @@ public final class ItemGroup {
                                                 output.accept(Items.NETWORK_CONNECTOR.get());
                                                 output.accept(Items.NETWORK_HUB.get());
                                                 output.accept(Items.GPS_TOWER.get());
+                                                output.accept(Items.WIRELESS_ACCESS_POINT.get());
+                                                output.accept(Items.ENVIRONMENT_SENSOR.get());
                                                 output.accept(Items.MACHINE_INTERFACE.get());
                                                 output.accept(Items.PROJECTOR.get());
                                                 output.accept(Items.MONITOR.get());

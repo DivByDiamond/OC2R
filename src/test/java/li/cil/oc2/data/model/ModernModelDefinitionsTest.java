@@ -55,7 +55,9 @@ class ModernModelDefinitionsTest {
                 final JsonObject expected = read("blockstates/" + name).getAsJsonObject("variants");
                 final JsonObject actual = generated.get("blockstates/" + name).getAsJsonObject("variants");
                 for (final var entry : expected.entrySet()) {
-                    final String selector = entry.getKey().replace(",lit=false", "").replace(",lit=true", "");
+                    // Most old devices dropped an unused lit selector in 26.x; peripheral indicators use it.
+                    final String selector = actual.has(entry.getKey()) ? entry.getKey()
+                            : entry.getKey().replace(",lit=false", "").replace(",lit=true", "");
                     assertTrue(actual.has(selector), name + ": " + selector);
                     assertEquals(normalizeRotation(entry.getValue().getAsJsonObject()),
                             normalizeRotation(actual.getAsJsonObject(selector)), name + ": " + selector);
