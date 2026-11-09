@@ -183,7 +183,7 @@ Only the owner-selected new devices are planned here. Scope and proposed mechani
 - [ ] **Printer and paper**: transactional text pages from paper + dye, persistent unfinished jobs, readable page items and ordered books; native and RPC faces share one backend.
 - [ ] **Media player and writable music discs**: import MP3/audio on a PC, record a persistent custom disc, play it through the existing sound pipeline; retain vanilla disc support.
 - [ ] **Creative command chip**: an installable admin-only chip enables commands on an ordinary PC, subject to server configuration and authorization. Replaces the proposed command computer block.
-- [ ] **Environment sensor**: local biome/light/time/weather/temperature, bounded sampling and events.
+- [x] **Environment sensor**: local biome/light/time/weather/temperature, bounded 20-tick sampling and change events; see [PERIPHERALS.md](../PERIPHERALS.md).
 - [ ] **Document reader**: read books and printed pages as text via an automatable inventory.
 
 ## 55. Uniform block access (inventory, fluid, energy)

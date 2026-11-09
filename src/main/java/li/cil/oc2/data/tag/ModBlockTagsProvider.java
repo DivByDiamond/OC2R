@@ -37,7 +37,8 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(COMPUTER.key())
                 .add(REDSTONE_INTERFACE.key())
                 .add(PROJECTOR.key())
-                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key());
+                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key())
+                .add(WIRELESS_ACCESS_POINT.key()).add(ENVIRONMENT_SENSOR.key());
         tag(CABLES).add(BUS_CABLE.key());
         tag(WRENCH_BREAKABLE)
                 .add(COMPUTER.key())
@@ -47,11 +48,13 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(REDSTONE_INTERFACE.key())
                 .add(CHARGER.key())
                 .add(PROJECTOR.key())
-                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key());
+                .add(GPS_TOWER.key()).add(MACHINE_INTERFACE.key()).add(MEDIA_STATION.key())
+                .add(WIRELESS_ACCESS_POINT.key()).add(ENVIRONMENT_SENSOR.key());
 *///?} else {
         tag(DEVICES)
                 .add(COMPUTER.get(), REDSTONE_INTERFACE.get(), PROJECTOR.get(),
-                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get());
+                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get(),
+                        WIRELESS_ACCESS_POINT.get(), ENVIRONMENT_SENSOR.get());
         tag(CABLES).add(BUS_CABLE.get());
         tag(WRENCH_BREAKABLE)
                 .add(
@@ -62,7 +65,8 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                         REDSTONE_INTERFACE.get(),
                         CHARGER.get(),
                         PROJECTOR.get(),
-                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get());
+                        GPS_TOWER.get(), MACHINE_INTERFACE.get(), MEDIA_STATION.get(),
+                        WIRELESS_ACCESS_POINT.get(), ENVIRONMENT_SENSOR.get());
         //?}
     }
 }

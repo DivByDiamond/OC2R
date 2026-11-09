@@ -1,10 +1,10 @@
 # New peripherals — owner decisions, 2026-11-02
 
-Planning only: the owner requested a roadmap update, not implementation. The new-device list contains only the eight directions selected by the owner; no additional devices are scheduled. Wireless access points are first; the remaining order is provisional. Mechanics below distinguish the owner's requested direction from suggested details. No new blocks or items are implemented by this update.
+The wireless access point and environment sensor are implemented; the other entries remain planning. The new-device list contains only the eight directions selected by the owner; no additional devices are scheduled. Wireless access points are first; the remaining order is provisional. Mechanics below distinguish the owner's requested direction from suggested details. See [PERIPHERALS.md](../PERIPHERALS.md) for the implemented hardware and RPC.
 
 ## 1. Wireless access point
 
-Plan first for future implementation. Proposed architecture: an access point bridges the existing wired Ethernet network to nearby access points in the same dimension. Computers retain their existing network card and Linux TCP/IP tools; this first block does not require a new guest driver. Connect a network connector to each access point to bridge two wired segments.
+Initial planning proposed: an access point bridges the existing wired Ethernet network to nearby access points in the same dimension. Computers retain their existing network card and Linux TCP/IP tools; this first block does not require a new guest driver. Connect a network connector to each access point to bridge two wired segments.
 
 Owner-approved update, 2026-11-03: [tablet-radio.md](tablet-radio.md) is the canonical radio/tablet scope and acceptance plan. It supersedes the previous 64-block/shared-key/direct-link-only MVP and any height bonus.
 
@@ -24,7 +24,7 @@ A physical reference station advertises its ID, dimension, configured site name 
 
 ## 4. Environment sensor
 
-A bus peripheral reports local biome, light, time, weather and temperature data with documented units and sampling intervals. Only query loaded surroundings. Events report threshold changes; avoid a per-tick scan of every attached sensor. It is not a replacement for the robot scanner module.
+Implemented as `oc2r:environment_sensor`: a wall-mounted bus peripheral reports local biome, light, time, weather and temperature data with documented units and a 20-tick sampling interval. Only query loaded surroundings. Events report threshold changes; avoid a per-tick scan of every attached sensor. It is not a replacement for the robot scanner module.
 
 ## 5. Document reader
 
@@ -47,6 +47,8 @@ Use an installable computer chip/card, not a separate command computer block. It
 - **Robot charger already exists:** `ChargerBlockEntity` charges neighboring blocks and nearby entities. The charger doubles as the robot dock station and gains a 10-block radio access point (see tablet-radio.md section 2); no separate dock block is scheduled.
 - **Redstone relay already exists in substance:** the redstone interface block exposes analog/bundled input and output and change events over the device bus. Reuse and document it instead of adding a second block with the same purpose.
 
-Status: roadmap only. The owner requested wireless access point planning, an adapted positioning concept, environment sensor, document reader, writable audio discs/media player, long-range antenna and a creative command chip. Printer mechanics and numerical radio defaults are proposals, not finalized requirements. No implementation, release tag or platform upload is authorized by this plan.
+Status: the wireless access point and environment sensor have been implemented following the 2026-11-09 request. The document reader, writable audio discs/media player, navigation extensions and creative command chip remain planned. The existing tower remains the selected long-range hardware. No release tag or platform upload is included.
 
 The 2026-11-03 radio/tablet decisions and initial Onyx widget implementation supersede earlier planning-only and unfinalized radio-default statements above. Other peripheral proposals retain their existing status.
+
+2026-11-09 implementation: `wireless_access_point` uses the supplied modem model with a bottom-only Ethernet port, owner-approved enrollment, 10-block client coverage and an own-network tower uplink. `environment_sensor` uses the supplied wall model and emits bounded environment-change events. See [PERIPHERALS.md](../PERIPHERALS.md).

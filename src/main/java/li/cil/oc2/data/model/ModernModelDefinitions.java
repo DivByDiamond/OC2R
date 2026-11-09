@@ -34,6 +34,8 @@ public final class ModernModelDefinitions {
         HORIZONTAL_BLOCKS.forEach(name -> output.put("blockstates/" + name + ".json", horizontal(name)));
         SIMPLE.forEach(name -> output.put("blockstates/" + name + ".json",
                 variants(single("model", "oc2r:block/" + name))));
+        for (final String name : List.of("wireless_access_point", "environment_sensor"))
+            output.put("blockstates/" + name + ".json", litPeripheral(name));
         output.put("blockstates/gps_tower.json", gpsTower());
         output.put("blockstates/monitor.json", variants(single("type", "oc2r:monitor")));
         output.put("blockstates/bus_cable.json", cable());
@@ -81,6 +83,8 @@ public final class ModernModelDefinitions {
             if (!"network_switch".equals(name)) result.put(name, single(PARENT, "oc2r:block/" + name));
         }
         for (final String name : SIMPLE) result.put(name, single(PARENT, "oc2r:block/" + name));
+        for (final String name : List.of("wireless_access_point", "environment_sensor"))
+            result.put(name, peripheralItem(name));
         result.put("gps_tower", single(PARENT, "oc2r:block/gps_tower_inventory"));
         result.put("monitor", single(PARENT, "oc2r:block/monitor"));
         final JsonObject robot = single(PARENT, "minecraft:item/template_shulker_box");
@@ -89,6 +93,32 @@ public final class ModernModelDefinitions {
         result.put("network_connector", connectorItem());
         result.put("bus_cable", cableItem(false));
         result.put("bus_interface", cableItem(true));
+        return result;
+    }
+
+    private static JsonObject peripheralItem(final String name) {
+        final JsonObject model = single(PARENT, "oc2r:block/" + name + "_off");
+        final JsonObject gui = new JsonObject();
+        gui.add("rotation", vector(30, 225, 0));
+        gui.add("translation", vector(0, "wireless_access_point".equals(name) ? 3 : 0, 0));
+        gui.add("scale", vector(1.1, 1.1, 1.1));
+        final JsonObject display = new JsonObject();
+        display.add("gui", gui);
+        model.add("display", display);
+        return model;
+    }
+
+    private static JsonObject litPeripheral(final String name) {
+        final JsonObject states = new JsonObject();
+        for (int direction = 0; direction < FACES.size(); direction++) {
+            for (final boolean lit : List.of(false, true)) {
+                final JsonObject model = single("model", "oc2r:block/" + name + (lit ? "_on" : "_off"));
+                if (direction != 0) model.addProperty("y", direction * 90);
+                states.add("facing=" + FACES.get(direction) + ",lit=" + lit, model);
+            }
+        }
+        final JsonObject result = new JsonObject();
+        result.add("variants", states);
         return result;
     }
 
@@ -240,7 +270,7 @@ public final class ModernModelDefinitions {
         return result;
     }
 
-    private static JsonArray vector(final float x, final float y, final float z) {
+    private static JsonArray vector(final double x, final double y, final double z) {
         final JsonArray result = new JsonArray();
         result.add(x);
         result.add(y);

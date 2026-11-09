@@ -29,6 +29,7 @@ public final class CapabilityProviders {
         ComputerBlockEntityCapabilities.registerCapabilities(registrar);
         li.cil.oc2.common.blockentity.media.MediaStationBlockEntity.registerMediaCapabilities(registrar);
         ChargerBlockEntity.registerCapabilities(registrar);
+        li.cil.oc2.common.blockentity.network.WirelessAccessPointBlockEntity.registerCapabilities(registrar);
         CreativeEnergyBlockCapabilities.registerCapabilities(registrar);
         KeyboardBlockEntity.registerCapabilities(registrar);
         InternetGateWayCapabilities.registerCapabilities(registrar);

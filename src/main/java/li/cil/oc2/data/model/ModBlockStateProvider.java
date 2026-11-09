@@ -16,6 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.model.generators.*;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
@@ -92,7 +94,22 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 Blocks.REDSTONE_INTERFACE, Items.REDSTONE_INTERFACE, REDSTONE_INTERFACE_MODEL);
         // horizontalBlock(Blocks.PCI_CARD_CAGE, Items.PCI_CARD_CAGE, PCI_CARD_CAGE_MODEL);
 
+        litPeripheral(Blocks.WIRELESS_ACCESS_POINT, "wireless_access_point");
+        litPeripheral(Blocks.ENVIRONMENT_SENSOR, "environment_sensor");
         registerCableStates();
+    }
+
+    private void litPeripheral(final BlockHolder<? extends Block> block, final String name) {
+        getVariantBuilder(block.get()).forAllStates(state -> ConfiguredModel.builder()
+                .modelFile(models().getExistingFile(ResourceLocation.fromNamespaceAndPath(API.MOD_ID,
+                        "block/" + name + (state.getValue(BlockStateProperties.LIT)
+                                ? "_on" : "_off"))))
+                .rotationY(((int) state.getValue(HorizontalDirectionalBlock.FACING)
+                        .toYRot() + 180) % 360).build());
+        itemModels().withExistingParent(name, "oc2r:block/" + name + "_off")
+                .transforms().transform(ItemDisplayContext.GUI).rotation(30, 225, 0)
+                .translation(0, "wireless_access_point".equals(name) ? 3 : 0, 0)
+                .scale(1.1f, 1.1f, 1.1f);
     }
 
     private ConfiguredModel[] gpsTowerModel(final net.minecraft.world.level.block.state.BlockState state) {
@@ -117,7 +134,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         //     insert supports where appropriate, as well as for replacing it with a facade block
         // model.
 
-        builder.part().modelFile(baseModel).addModel().end();
+        builder.part().modelFile(baseModel).addModel();
 
         BusCableStateProperties.FACING_TO_CONNECTION_MAP.forEach(
                 (direction, connectionType) -> {
@@ -137,8 +154,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                             .rotationX(rotationX)
                             .addModel()
                             .condition(connectionType, ConnectionType.CABLE)
-                            .condition(BusCableStateProperties.HAS_FACADE, false)
-                            .end();
+                            .condition(BusCableStateProperties.HAS_FACADE, false);
 
                     builder.part()
                             .modelFile(plugModel)
@@ -146,8 +162,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                             .rotationX(rotationX)
                             .addModel()
                             .condition(connectionType, ConnectionType.INTERFACE)
-                            .condition(BusCableStateProperties.HAS_FACADE, false)
-                            .end();
+                            .condition(BusCableStateProperties.HAS_FACADE, false);
                 });
 
         CableItemTransforms.buildBusCableModel(itemModels(), straightModel);

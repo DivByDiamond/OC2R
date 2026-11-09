@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "item": "oc2r:circuit_board"
+    },
+    "N": {
+      "item": "oc2r:network_connector"
+    }
+  },
+  "pattern": [
+    " C ",
+    "IBI",
+    " N "
+  ],
+  "result": {
+    "count": 1,
+    "id": "oc2r:wireless_access_point"
+  }
+}

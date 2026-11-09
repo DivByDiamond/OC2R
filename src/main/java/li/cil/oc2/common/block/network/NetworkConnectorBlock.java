@@ -68,7 +68,10 @@ public final class NetworkConnectorBlock extends FaceAttachedHorizontalDirection
         // onto a fence post is a common and reasonable attachment (issue #225).
         final Direction attachedDirection = getFacing(state).getOpposite();
         final BlockPos attachedPos = pos.relative(attachedDirection);
-        return level.getBlockState(attachedPos).is(BlockTags.FENCES);
+        return level.getBlockState(attachedPos).is(BlockTags.FENCES)
+                || (attachedDirection == Direction.UP
+                        && level.getBlockState(attachedPos)
+                                .is(li.cil.oc2.common.block.common.Blocks.WIRELESS_ACCESS_POINT.get()));
     }
 
     @Override

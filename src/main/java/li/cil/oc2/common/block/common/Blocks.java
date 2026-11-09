@@ -10,6 +10,7 @@ import li.cil.oc2.common.block.gps.GpsTowerBlock;
 import li.cil.oc2.common.block.keyboard.KeyboardBlock;
 import li.cil.oc2.common.block.machine.MachineInterfaceBlock;
 import li.cil.oc2.common.block.media.MediaStationBlock;
+import li.cil.oc2.common.block.misc.EnvironmentSensorBlock;
 import li.cil.oc2.common.block.misc.InternetGatewayBlock;
 import li.cil.oc2.common.block.misc.PciCardCageBlock;
 import li.cil.oc2.common.block.misc.RedstoneInterfaceBlock;
@@ -19,6 +20,7 @@ import li.cil.oc2.common.block.network.NetworkConnectorBlock;
 import li.cil.oc2.common.block.network.NetworkHubBlock;
 import li.cil.oc2.common.block.network.NetworkSwitchBlock;
 import li.cil.oc2.common.block.network.VxlanBlock;
+import li.cil.oc2.common.block.network.WirelessAccessPointBlock;
 import li.cil.oc2.common.block.projector.ProjectorBlock;
 import li.cil.oc2.platform.BlockHolder;
 import li.cil.oc2.platform.Platform;
@@ -66,6 +68,11 @@ public final class Blocks {
     private static <B extends Block> BlockHolder<B> register(final String name, final Supplier<B> factory) {
         return Platform.registries().registerBlock(API.MOD_ID, name, factory);
     }
+
+    public static final BlockHolder<WirelessAccessPointBlock> WIRELESS_ACCESS_POINT =
+            register("wireless_access_point", WirelessAccessPointBlock::new);
+    public static final BlockHolder<EnvironmentSensorBlock> ENVIRONMENT_SENSOR =
+            register("environment_sensor", EnvironmentSensorBlock::new);
 
     public static void initialize() {
         // Calling this loads the class, which queues its registrations on the bridge.

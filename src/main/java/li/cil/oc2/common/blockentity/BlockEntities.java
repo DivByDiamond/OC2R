@@ -11,11 +11,13 @@ import li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity;
 import li.cil.oc2.common.blockentity.keyboard.KeyboardBlockEntity;
 import li.cil.oc2.common.blockentity.machine.MachineInterfaceBlockEntity;
 import li.cil.oc2.common.blockentity.media.MediaStationBlockEntity;
+import li.cil.oc2.common.blockentity.misc.EnvironmentSensorBlockEntity;
 import li.cil.oc2.common.blockentity.misc.PciCardCageBlockEntity;
 import li.cil.oc2.common.blockentity.misc.SpeakerBlockEntity;
 import li.cil.oc2.common.blockentity.misc.gateway.InternetGateWayBlockEntity;
 import li.cil.oc2.common.blockentity.misc.redstone.RedstoneInterfaceBlockEntity;
 import li.cil.oc2.common.blockentity.monitor.MonitorBlockEntity;
+import li.cil.oc2.common.blockentity.network.WirelessAccessPointBlockEntity;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
 import li.cil.oc2.common.blockentity.network.connector.NetworkConnectorBlockEntity;
 import li.cil.oc2.common.blockentity.network.hub.NetworkHubBlockEntity;
@@ -71,6 +73,11 @@ public final class BlockEntities {
 
     public static final Supplier<BlockEntityType<SpeakerBlockEntity>>
             SPEAKER = register(Blocks.SPEAKER, SpeakerBlockEntity::new);
+
+    public static final Supplier<BlockEntityType<WirelessAccessPointBlockEntity>> WIRELESS_ACCESS_POINT =
+            register(Blocks.WIRELESS_ACCESS_POINT, WirelessAccessPointBlockEntity::new);
+    public static final Supplier<BlockEntityType<EnvironmentSensorBlockEntity>> ENVIRONMENT_SENSOR =
+            register(Blocks.ENVIRONMENT_SENSOR, EnvironmentSensorBlockEntity::new);
 
     public static void initialize() {
         // Calling this loads the class, which queues its registrations on the bridge.

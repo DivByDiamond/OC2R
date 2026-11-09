@@ -211,7 +211,7 @@ public final class RadioNetworkData extends SavedData {
         if (member.isEmpty()) return java.util.Optional.empty();
         return RadioAccessPoints.resolve(
                 topology.nodes(),
-                DockStations.near(level, x, z),
+                DockStations.near(level, x, z, member.get().network()),
                 member.get().network(),
                 member.get().dimension(),
                 x,

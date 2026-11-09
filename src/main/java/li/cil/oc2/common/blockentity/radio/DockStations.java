@@ -3,6 +3,7 @@ package li.cil.oc2.common.blockentity.radio;
 import java.util.ArrayList;
 import java.util.List;
 import li.cil.oc2.common.blockentity.energy.ChargerBlockEntity;
+import li.cil.oc2.common.blockentity.network.WirelessAccessPointBlockEntity;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.radio.RadioAccessPoints;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,8 @@ public final class DockStations {
     private DockStations() {}
 
     /** Every loaded dock whose square bounds may cover the given X/Z position. */
-    public static List<RadioAccessPoints.Dock> near(final ServerLevel level, final double x, final double z) {
+    public static List<RadioAccessPoints.Dock> near(
+            final ServerLevel level, final double x, final double z, final java.util.UUID network) {
         final int range = Config.robotDockRange;
         final String dimension = dimension(level);
         final int minChunkX = SectionPos.blockToSectionCoord(Mth.floor(x) - range - 1);
@@ -34,7 +36,10 @@ public final class DockStations {
                 final LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
                 if (chunk == null) continue;
                 for (final BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-                    if (!(blockEntity instanceof ChargerBlockEntity) || blockEntity.isRemoved()) continue;
+                    if (blockEntity.isRemoved()) continue;
+                    if (!(blockEntity instanceof ChargerBlockEntity)
+                            && !(blockEntity instanceof final WirelessAccessPointBlockEntity point
+                                    && point.belongsTo(network))) continue;
                     final BlockPos pos = blockEntity.getBlockPos();
                     // The access point sits at the block centre, like a tower's radio.
                     result.add(new RadioAccessPoints.Dock(
