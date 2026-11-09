@@ -3,6 +3,7 @@ package li.cil.oc2.common.block.cable;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.provider.SidedBlockDevice;
 import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.block.types.ConnectionType;
 import li.cil.oc2.common.blockentity.network.cable.BusCableBlockEntity;
@@ -92,6 +93,7 @@ public final class BusCableStateProperties {
         if (state.getValue(HAS_FACADE)) {
             return false;
         }
+        if (!SidedBlockDevice.permits(level.getBlockState(pos.relative(side)), side.getOpposite())) return false;
         final EnumProperty<ConnectionType> property = FACING_TO_CONNECTION_MAP.get(side);
         if (state.getValue(property) != ConnectionType.NONE) {
             return false;

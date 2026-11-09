@@ -16,6 +16,7 @@ import li.cil.oc2.common.block.misc.EnvironmentSensorBlock;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
+import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,6 +33,17 @@ public final class EnvironmentSensorBlockEntity extends ModBlockEntity
 
     public EnvironmentSensorBlockEntity(final BlockPos pos, final BlockState state) {
         super(BlockEntities.ENVIRONMENT_SENSOR.get(), pos, state);
+    }
+
+    @Override
+    public void setBlockState(final BlockState state) {
+        final BlockState previous = getBlockState();
+        super.setBlockState(state);
+        // The physical socket can move while the block entity itself remains the same object.
+        if (level != null && !level.isClientSide()
+                && previous.getValue(EnvironmentSensorBlock.FACING) != state.getValue(EnvironmentSensorBlock.FACING)) {
+            Platform.capabilities().invalidateBlock(level, worldPosition);
+        }
     }
 
     @Override

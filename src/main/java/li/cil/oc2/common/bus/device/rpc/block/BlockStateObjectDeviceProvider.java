@@ -5,6 +5,7 @@ import li.cil.oc2.api.bus.device.Device;
 import li.cil.oc2.api.bus.device.object.Callbacks;
 import li.cil.oc2.api.bus.device.object.ObjectDevice;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
+import li.cil.oc2.api.bus.device.provider.SidedBlockDevice;
 import li.cil.oc2.common.bus.device.provider.util.AbstractBlockDeviceProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
@@ -19,7 +20,7 @@ public final class BlockStateObjectDeviceProvider extends AbstractBlockDevicePro
 
         final BlockState blockState = level.getBlockState(position);
 
-        if (blockState.isAir()) {
+        if (blockState.isAir() || !SidedBlockDevice.permits(blockState, query.getQuerySide())) {
             return Optional.empty();
         }
 
