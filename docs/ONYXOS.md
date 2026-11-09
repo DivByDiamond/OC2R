@@ -263,13 +263,13 @@ Logs are in `build/reports/terminal-qa/`.
 The 2026-11-09 image is built from these selected clean source revisions:
 
 - OnyxKernel: `7b2d6554e792ada9d28b6b2bdc286923cdba468f`.
-- OnyxApps: `6a3ad99d76f5ff371a41b035451a8fec93a0a108`.
+- OnyxApps: `5130d7ab8711647283bbdd2f4ca98bfcf779695f`.
 - OnyxOS: `8c8d3fa` (records the exact component lock).
 - OnyxShell: `e25e912561f18fb2a7bfe52b56cfe6524d17f185`.
 - OnyxCompiller: `9f9ecb5a25378d7009937b2df94f1507cda25252`.
 - OnyxBoot: `9d572e3301d6f9711c3d0cdaafe8f7c1f0d2f19e`.
 - Kernel SHA-256: `34b38649d85c373b3194d96f8e8fcd34303b8c9d5b579cf5c07d58528476a95d`.
-- Root SHA-256: `ffd874d2eeded1eb81d43df90820e1e48b92e5386b5578b0d0e9df3f63731e21`.
+- Root SHA-256: `e1963b0d4983c6b5e84b21bae33f22c2eb7b751533995d28f312a2bf13e544d0`.
 
 All ten current OnyxApps programs are rebuilt. The seven OC2R tools are rebuilt
 from `scripts/demo/guest/`: netcfg, udpdemo, tcpdemo, tcpserve, udpserve,
@@ -277,7 +277,7 @@ tcpstream and oc2ctl. The previous stock root
 `f9371dbaf9da5ddf12adea6d0316962be3fcf3d016dc827e81f45d22cb60d71b`
 supplies only its otherwise missing `/bin/dnstest`, `/bin/oed` and `/bin/ohttp`
 binaries, retained byte-for-byte through later stock rebuilds. No previous user directory or account data is imported. The assembled
-filesystem uses 16,117,760 bytes and is padded to 16 MiB.
+filesystem uses 16,121,856 bytes and is padded to 16 MiB.
 
 Build the locked source image using OnyxOS `scripts/build-oc2r.sh`, then assemble
 the OC2R stock root outside the resource directory:

@@ -13,6 +13,7 @@ import li.cil.oc2.common.tablet.TabletManager;
 import li.cil.oc2.common.tablet.TabletClientView;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -104,6 +105,13 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.runOnClient(client -> hostTab(true));
             context.waitTicks(10);
             context.takeScreenshot("oc2r-tablet-desktop-after-app");
+            guestClick(context, world.getServer(), 80, 148, "OTABLET_ACTION=2");
+            context.runOnClient(client -> {
+                GLFW.glfwSetClipboardString(client.getWindow().handle(), "paste_in_screen");
+                ((TabletTerminalScreen) RenderCompat.currentScreen()).keyPressed(
+                        new KeyEvent(GLFW.GLFW_KEY_V, 0, GLFW.GLFW_MOD_CONTROL));
+            });
+            context.waitTicks(20);
             world.getServer().runOnServer(server -> {
                 final var player = server.getPlayerList().getPlayers().getFirst();
                 final var machine = TabletManager.machineOf(server, TabletItem.getId(player.getMainHandItem()).orElseThrow());
@@ -128,7 +136,14 @@ public final class FabricTabletTest implements FabricClientGameTest {
             guestClick(context, world.getServer(), 224, 148, "OTABLET_EXIT");
             type(world.getServer(), "cat /users/tablet-notes.txt\r");
             waitForGuest(context, world.getServer(), "hello");
+            waitForGuest(context, world.getServer(), "paste_in_screen");
             context.runOnClient(client -> hostTab(false));
+            context.runOnClient(client -> {
+                GLFW.glfwSetClipboardString(client.getWindow().handle(), "echo PASTE_TABLET\r");
+                ((TabletTerminalScreen) RenderCompat.currentScreen()).keyPressed(
+                        new KeyEvent(GLFW.GLFW_KEY_V, 0, GLFW.GLFW_MOD_CONTROL));
+            });
+            waitForGuest(context, world.getServer(), "PASTE_TABLET");
             context.takeScreenshot("oc2r-tablet-console-after-guest-key");
             context.runOnClient(client -> {
                 final boolean captured = CaptureKeyboardHook.handle(client.getWindow().handle(),

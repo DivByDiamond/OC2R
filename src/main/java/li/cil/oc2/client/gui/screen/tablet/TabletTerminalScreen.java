@@ -189,6 +189,19 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
         return true;
     }
 
+    /**
+     * Ctrl+V pastes the host clipboard into the guest terminal stream. In
+     * Screen mode the same stream is the graphical application's stdin, so a
+     * console prompt shown there and text fields in the desktop both receive
+     * the text instead of a bare Ctrl+V key event.
+     */
+    private boolean pasteToGuest(final int key, final int scan, final int modifiers) {
+        if (!graphical || !menu.getCaptureInputState()) return false;
+        if (key != GLFW.GLFW_KEY_V || (modifiers & GLFW.GLFW_MOD_CONTROL) == 0) return false;
+        console.key(key, scan, modifiers);
+        return true;
+    }
+
     private boolean click(final double x, final double y, final int button, final boolean down) {
         if (CaptureKeyBinding.matchesMouse(button)) {
             if (down) onClose();
@@ -226,6 +239,7 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
             onClose();
             return true;
         }
+        if (pasteToGuest(event.key(), event.scancode(), event.modifiers())) return true;
         return guestKey(event.key(), event.scancode(), GLFW.GLFW_PRESS, event.modifiers()) || super.keyPressed(event);
     }
 
@@ -254,6 +268,7 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
             onClose();
             return true;
         }
+        if (pasteToGuest(key, scan, modifiers)) return true;
         return guestKey(key, scan, GLFW.GLFW_PRESS, modifiers) || super.keyPressed(key, scan, modifiers);
     }
 

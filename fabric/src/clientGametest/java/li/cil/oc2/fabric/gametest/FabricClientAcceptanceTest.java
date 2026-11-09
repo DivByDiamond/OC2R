@@ -1,6 +1,7 @@
 package li.cil.oc2.fabric.gametest;
 
 import li.cil.oc2.api.bus.device.DeviceTypes;
+import li.cil.oc2.client.RenderCompat;
 import li.cil.oc2.client.model.FabricBusCableModel;
 import li.cil.oc2.client.model.FabricMonitorModel;
 import li.cil.oc2.client.renderer.MonitorGUIRenderer;
@@ -22,6 +23,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.world.TestWorldSave;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import org.lwjgl.glfw.GLFW;
 
 /** Real client/server acceptance: boot bundled Linux, deliver guest pixels, render GUIs and restore the running VM. */
 public final class FabricClientAcceptanceTest implements FabricClientGameTest {
@@ -142,6 +145,12 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
             context.waitForScreen(li.cil.oc2.client.gui.screen.computer.ComputerTerminalScreen.class);
             context.waitTicks(40);
             context.takeScreenshot("oc2r-fabric26-computer-terminal");
+            context.runOnClient(client -> {
+                GLFW.glfwSetClipboardString(client.getWindow().handle(), "echo PASTE_CTRL_V\r");
+                RenderCompat.currentScreen().keyPressed(
+                        new KeyEvent(GLFW.GLFW_KEY_V, 0, GLFW.GLFW_MOD_CONTROL));
+            });
+            waitForGuest(context, world.getServer(), "PASTE_CTRL_V", 1200);
             world.getServer().runOnServer(server -> server.getPlayerList().getPlayers().getFirst().closeContainer());
             context.setScreen(() -> null);
             world.getServer().runOnServer(server -> ((MonitorBlockEntity) server.overworld().getBlockEntity(MONITOR))
