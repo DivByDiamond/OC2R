@@ -7,12 +7,17 @@ their recorded immutable base and do not receive newly packaged applications.
 
 The tablet uses a 256×160 RGB565 framebuffer and absolute pointer input. Open
 the console, run `otablet --device`, then select Screen. The application shows
-real guest uptime and a local click counter with button/progress widgets;
-it does not report fabricated radio or energy telemetry. Q, Escape or right
-click returns to the shell. Console/Screen switching leaves the VM running.
-Short button transitions are queued across guest redraws, and framebuffer
-console painting is suspended while the application owns the display. Process
-exit, including SIGKILL, releases that ownership.
+a full-screen desktop with Clock, Notes and System windows, a dock for those
+windows plus Snake and Shell, and real guest uptime and `/proc/meminfo`
+values. Notes persist in `/users/tablet-notes.txt`; Snake runs the packaged
+`/bin/osnake` as a child process and returns to the desktop; Shell exits to
+the console. It does not report fabricated radio or energy telemetry. Q,
+Escape or right click returns to the shell. Console/Screen switching leaves
+the VM running. Short button transitions are queued across guest redraws, and
+framebuffer console painting is suspended while the application owns the
+display. Process exit, including SIGKILL, releases that ownership. `otablet`
+is built for ring 1 because the kernel currently permits file creation only
+in that ring; this is required for note persistence.
 
 The build includes OpenSBI jump firmware, the S-mode OnyxKernel, rebuilt
 init/login tools and shell, the RGB565 framebuffer diagnostic, and a raw
@@ -258,13 +263,13 @@ Logs are in `build/reports/terminal-qa/`.
 The 2026-11-09 image is built from these selected clean source revisions:
 
 - OnyxKernel: `7b2d6554e792ada9d28b6b2bdc286923cdba468f`.
-- OnyxApps: `1f3df669ac79e8a2ade37317329b032cc567269f`.
+- OnyxApps: `6a3ad99d76f5ff371a41b035451a8fec93a0a108`.
 - OnyxOS: `8c8d3fa` (records the exact component lock).
 - OnyxShell: `e25e912561f18fb2a7bfe52b56cfe6524d17f185`.
 - OnyxCompiller: `9f9ecb5a25378d7009937b2df94f1507cda25252`.
 - OnyxBoot: `9d572e3301d6f9711c3d0cdaafe8f7c1f0d2f19e`.
 - Kernel SHA-256: `34b38649d85c373b3194d96f8e8fcd34303b8c9d5b579cf5c07d58528476a95d`.
-- Root SHA-256: `ceded23f51ed030f0bb21b3238ff171894249605d13f66c73e880fe2afe7b9d6`.
+- Root SHA-256: `ffd874d2eeded1eb81d43df90820e1e48b92e5386b5578b0d0e9df3f63731e21`.
 
 All ten current OnyxApps programs are rebuilt. The seven OC2R tools are rebuilt
 from `scripts/demo/guest/`: netcfg, udpdemo, tcpdemo, tcpserve, udpserve,
@@ -272,7 +277,7 @@ tcpstream and oc2ctl. The previous stock root
 `f9371dbaf9da5ddf12adea6d0316962be3fcf3d016dc827e81f45d22cb60d71b`
 supplies only its otherwise missing `/bin/dnstest`, `/bin/oed` and `/bin/ohttp`
 binaries, retained byte-for-byte through later stock rebuilds. No previous user directory or account data is imported. The assembled
-filesystem uses 16,035,840 bytes and is padded to 16 MiB.
+filesystem uses 16,117,760 bytes and is padded to 16 MiB.
 
 Build the locked source image using OnyxOS `scripts/build-oc2r.sh`, then assemble
 the OC2R stock root outside the resource directory:

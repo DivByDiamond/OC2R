@@ -51,8 +51,11 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.waitTicks(30);
             context.runOnClient(client -> {
                 final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
-                screen.showGraphics(false);
+                hostTab(false);
                 screen.getMenu().setCaptureInputState(true);
+                hostClick(34, 173);
+                if (screen.getMenu().getCaptureInputState()) throw new AssertionError("Custom capture key did not release input");
+                hostClick(34, 173);
                 if (!screen.getMenu().getCaptureInputState()) {
                     throw new IllegalStateException("Tablet keyboard capture is unavailable");
                 }
@@ -63,32 +66,44 @@ public final class FabricTabletTest implements FabricClientGameTest {
             type(world.getServer(), "otablet --device\r");
             waitForGuest(context, world.getServer(), "OTABLET_READY 256x160");
             context.takeScreenshot("oc2r-tablet-console");
-            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(true));
+            context.runOnClient(client -> hostTab(true));
+            waitForGuest(context, world.getServer(), "OTABLET_DESKTOP_READY");
             context.waitFor(client -> {
-                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
-                final byte[] pixels = TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
-                final int offset = (102 * 256 + 18) * 2;
-                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x2457;
+                final byte[] pixels = framebuffer();
+                // The guest paints its mouse cursor at (0,0) until the first
+                // pointer event, so sample the header at its far edge.
+                return pixel(pixels, 0, 159) == 0x08e4 && pixel(pixels, 255, 0) == 0x2a09;
             }, 2400);
-            // Allow the guest's first row-by-row presentation to finish below the button.
             context.waitTicks(10);
-            context.takeScreenshot("oc2r-tablet-widgets");
-            context.runOnClient(client -> pointer(true));
-            context.waitTicks(2);
-            context.runOnClient(client -> pointer(false));
-            waitForGuest(context, world.getServer(), "OTABLET_CLICK=1");
-            context.waitFor(client -> {
-                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
-                final byte[] pixels = TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
-                final int offset = (70 * 256 + 16) * 2;
-                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x07e0
-                        && hasClickCounterOne(pixels);
-            }, 2400);
-            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(false));
-            context.takeScreenshot("oc2r-tablet-console-after-click");
-            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(true));
+            context.takeScreenshot("oc2r-tablet-desktop");
+            guestClick(context, world.getServer(), 108, 30, "OTABLET_ACTION=101");
+            guestClick(context, world.getServer(), 32, 148, "OTABLET_ACTION=1");
+            guestClick(context, world.getServer(), 80, 148, "OTABLET_ACTION=2");
+            for (final int key : new int[] {GLFW.GLFW_KEY_H, GLFW.GLFW_KEY_E, GLFW.GLFW_KEY_L,
+                    GLFW.GLFW_KEY_L, GLFW.GLFW_KEY_O}) {
+                context.runOnClient(client -> guestKey(key));
+                context.waitTicks(2);
+            }
+            guestClick(context, world.getServer(), 216, 119, "OTABLET_NOTES_SAVED=5");
+            context.waitTicks(30);
+            context.takeScreenshot("oc2r-tablet-notes");
+            guestClick(context, world.getServer(), 236, 28, "OTABLET_ACTION=102");
+            guestClick(context, world.getServer(), 80, 148, "OTABLET_ACTION=2");
+            context.waitFor(client -> notesContainHello(), 2400);
             context.waitTicks(10);
-            context.takeScreenshot("oc2r-tablet-widgets-after-click");
+            context.takeScreenshot("oc2r-tablet-notes-reopened");
+            guestClick(context, world.getServer(), 236, 28, "OTABLET_ACTION=102");
+            guestClick(context, world.getServer(), 176, 148, "OTABLET_APP_STARTED=osnake");
+            context.waitTicks(40);
+            context.takeScreenshot("oc2r-tablet-snake");
+            context.runOnClient(client -> guestKey(GLFW.GLFW_KEY_Q));
+            waitForGuest(context, world.getServer(), "OTABLET_APP_RETURN=osnake STATUS=0");
+            context.waitTicks(30);
+            context.runOnClient(client -> hostTab(false));
+            context.takeScreenshot("oc2r-tablet-console-after-app");
+            context.runOnClient(client -> hostTab(true));
+            context.waitTicks(10);
+            context.takeScreenshot("oc2r-tablet-desktop-after-app");
             world.getServer().runOnServer(server -> {
                 final var player = server.getPlayerList().getPlayers().getFirst();
                 final var machine = TabletManager.machineOf(server, TabletItem.getId(player.getMainHandItem()).orElseThrow());
@@ -98,7 +113,7 @@ public final class FabricTabletTest implements FabricClientGameTest {
                                 && rpc.getMethodGroups().stream().anyMatch(group -> group.getName().equals("sendRadioMessage")));
                 if (!found) throw new IllegalStateException("Messenger-compatible tablet radio is missing from the guest bus");
             });
-            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).getMenu().switchToInventory());
+            context.runOnClient(client -> hostClick(58, 173));
             context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletInventoryScreen, 100);
             context.runOnClient(client -> {
                 final var screen = (TabletInventoryScreen) RenderCompat.currentScreen();
@@ -109,17 +124,11 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.takeScreenshot("oc2r-tablet-inventory");
             context.runOnClient(client -> ((TabletInventoryScreen) RenderCompat.currentScreen()).getMenu().switchToTerminal());
             context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletTerminalScreen, 100);
-            context.runOnClient(client -> {
-                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
-                screen.showGraphics(true);
-                screen.getMenu().setCaptureInputState(true);
-                if (!CaptureKeyboardHook.handle(client.getWindow().handle(), GLFW.GLFW_KEY_Q, 0, GLFW.GLFW_PRESS, 0)
-                        || !CaptureKeyboardHook.handle(client.getWindow().handle(), GLFW.GLFW_KEY_Q, 0, GLFW.GLFW_RELEASE, 0)) {
-                    throw new AssertionError("Guest Q was not routed through captured VirtIO keyboard input");
-                }
-            });
-            waitForGuest(context, world.getServer(), "OTABLET_EXIT");
-            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(false));
+            context.runOnClient(client -> hostTab(true));
+            guestClick(context, world.getServer(), 224, 148, "OTABLET_EXIT");
+            type(world.getServer(), "cat /users/tablet-notes.txt\r");
+            waitForGuest(context, world.getServer(), "hello");
+            context.runOnClient(client -> hostTab(false));
             context.takeScreenshot("oc2r-tablet-console-after-guest-key");
             context.runOnClient(client -> {
                 final boolean captured = CaptureKeyboardHook.handle(client.getWindow().handle(),
@@ -131,31 +140,84 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.waitTicks(5);
         }
     }
-    private static boolean hasClickCounterOne(final byte[] pixels) {
-        final int[] glyph = {4, 12, 4, 4, 4, 4, 14};
-        // The uptime precedes the counter. Its decimal digit count moves the counter by six pixels.
-        for (int uptimeDigits = 1; uptimeDigits <= 10; uptimeDigits++) {
-            final int x = 168 + 6 * uptimeDigits;
-            boolean matches = true;
-            for (int row = 0; row < glyph.length; row++) {
-                for (int column = 0; column < 5; column++) {
-                    final int offset = ((50 + row) * 256 + x + column) * 2;
-                    final boolean white = (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0xffff;
-                    if (white != ((glyph[row] & (1 << (4 - column))) != 0)) matches = false;
-                }
-            }
-            if (matches) return true;
+    private static void hostTab(final boolean graphical) {
+        hostClick(graphical ? 140 : 218, -19);
+        if (((TabletTerminalScreen) RenderCompat.currentScreen()).isGraphical() != graphical) {
+            throw new AssertionError("The custom tablet display selector did not change views");
         }
-        return false;
     }
 
-    private static void pointer(final boolean down) {
+    private static void hostClick(final int x, final int y) {
         final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
         final var area = screen.viewport();
-        final var event = new MouseButtonEvent(area.x() + 30, area.y() + 98, new MouseButtonInfo(0, 0));
+        final var event = new MouseButtonEvent(area.x() + x, area.y() + y, new MouseButtonInfo(0, 0));
+        screen.mouseClicked(event, false);
+        screen.mouseReleased(event);
+    }
+
+    private static byte[] framebuffer() {
+        final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+        return TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
+    }
+
+    private static int pixel(final byte[] pixels, final int x, final int y) {
+        final int offset = (y * 256 + x) * 2;
+        return pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8;
+    }
+
+    private static boolean notesContainHello() {
+        final byte[] pixels = framebuffer();
+        final int[] glyph = {17, 17, 17, 31, 17, 17, 17};
+        for (int row = 0; row < glyph.length; row++) {
+            for (int column = 0; column < 5; column++) {
+                final boolean foreground = pixel(pixels, 20 + column, 45 + row) == 0x1987;
+                if (foreground != ((glyph[row] & (1 << (4 - column))) != 0)) return false;
+            }
+        }
+        return true;
+    }
+
+    private static void guestClick(final ClientGameTestContext context, final TestServerContext server,
+                                   final int x, final int y, final String marker) {
+        final long previous = markerCount(guestText(server), marker);
+        context.runOnClient(client -> pointer(x, y, true));
+        context.waitTicks(2);
+        context.runOnClient(client -> pointer(x, y, false));
+        for (int elapsed = 0; elapsed < 4800; elapsed += 5) {
+            if (markerCount(guestText(server), marker) > previous) return;
+            context.waitTicks(5);
+        }
+        throw new AssertionError("Guest action did not produce a new exact marker [" + marker + "]:\n" + guestText(server));
+    }
+
+    private static long markerCount(final String output, final String marker) {
+        return output.lines().map(String::strip).filter(marker::equals).count();
+    }
+
+    private static String guestText(final TestServerContext server) {
+        return server.computeOnServer(instance -> {
+            final var player = instance.getPlayerList().getPlayers().getFirst();
+            final var machine = TabletManager.machineOf(instance,
+                    TabletItem.getId(player.getMainHandItem()).orElseThrow());
+            return text(machine.terminal());
+        });
+    }
+
+    private static void guestKey(final int key) {
+        final var client = net.minecraft.client.Minecraft.getInstance();
+        if (!CaptureKeyboardHook.handle(client.getWindow().handle(), key, 0, GLFW.GLFW_PRESS, 0)
+                || !CaptureKeyboardHook.handle(client.getWindow().handle(), key, 0, GLFW.GLFW_RELEASE, 0)) {
+            throw new AssertionError("Native key was not delivered to the guest: " + key);
+        }
+    }
+
+    private static void pointer(final int x, final int y, final boolean down) {
+        final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+        final var area = screen.viewport();
+        final var event = new MouseButtonEvent(area.x() + x, area.y() + y, new MouseButtonInfo(0, 0));
         if (down) {
             // Older batched motion must not replay behind this immediate button edge.
-            screen.mouseMoved(area.x() + 220, area.y() + 150);
+            screen.mouseMoved(area.x() + 250, area.y() + 2);
             screen.mouseClicked(event, false);
         }
         else screen.mouseReleased(event);

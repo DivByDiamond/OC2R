@@ -7,11 +7,13 @@ import java.nio.ByteBuffer;
 import li.cil.oc2.common.container.tablet.TabletTerminalContainer;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import li.cil.oc2.common.vm.terminal.render.RendererView;
+//? if >=26.1 {
+/*import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
+*///?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 //? if >=26.1 {
-/*import li.cil.oc2.common.vm.terminal.render.TerminalRenderer;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+/*import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.joml.Matrix3x2f;
 *///?} else {
 import org.joml.Matrix4f;
