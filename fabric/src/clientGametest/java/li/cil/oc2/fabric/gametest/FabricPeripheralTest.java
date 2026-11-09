@@ -106,7 +106,9 @@ public final class FabricPeripheralTest implements FabricClientGameTest {
         final BlockPos cablePos = SENSOR.south(2);
         final BlockPos rearCable = SENSOR.south();
         level.setBlockAndUpdate(computerPos.below(), Blocks.CREATIVE_ENERGY.get().defaultBlockState());
-        level.setBlockAndUpdate(computerPos, Blocks.COMPUTER.get().defaultBlockState());
+        // The front face intentionally has no device-bus socket; keep it away from the rear cable.
+        level.setBlockAndUpdate(computerPos, Blocks.COMPUTER.get().defaultBlockState()
+                .setValue(li.cil.oc2.common.block.computer.ComputerBlock.FACING, Direction.SOUTH));
         level.setBlockAndUpdate(rearCable, Blocks.BUS_CABLE.get().defaultBlockState());
         level.setBlockAndUpdate(cablePos, Blocks.BUS_CABLE.get().defaultBlockState());
         li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, rearCable,
