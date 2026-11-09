@@ -1,17 +1,18 @@
 # Bundled OnyxOS images
 
-The default image was rebuilt on 2026-11-04 and now includes the `ochat` radio
-messenger (`ochat` CLI and `ochat-gui`). Existing private roots keep their old
-base and do not receive it; new computers do.
+The default image was rebuilt on 2026-11-09 with tablet graphics support.
+New computers and tablets receive `otablet --device`, the existing `ochat`
+applications, and rebuilt OC2R network/RPC tools. Existing private roots retain
+their recorded immutable base and do not receive newly packaged applications.
 
-The kernel was updated on 2026-10-28 from OnyxKernel `6506c16`, including
-font metrics, faster scaled console presentation, optional completed-frame
-publication and multiple native input queues. The userspace remains the
-2026-10-18 image with only its existing PSF font payload replaced. Only the
-current image is bundled; older roots are not kept in the jar. See the
-[display/input acceptance](roadmap/onyx-input-display-acceptance.md) for this
-update's exact scope and evidence. Historical network/RPC checks below refer
-to their stated earlier checkpoints.
+The tablet uses a 256×160 RGB565 framebuffer and absolute pointer input. Open
+the console, run `otablet --device`, then select Screen. The application shows
+real guest uptime and a local click counter with button/progress widgets;
+it does not report fabricated radio or energy telemetry. Q, Escape or right
+click returns to the shell. Console/Screen switching leaves the VM running.
+Short button transitions are queued across guest redraws, and framebuffer
+console painting is suspended while the application owns the display. Process
+exit, including SIGKILL, releases that ownership.
 
 The build includes OpenSBI jump firmware, the S-mode OnyxKernel, rebuilt
 init/login tools and shell, the RGB565 framebuffer diagnostic, and a raw
@@ -49,9 +50,10 @@ kernel tests, FDT regressions and the existing OnyxApps checks. Current-image
 validation and network/RPC evidence are recorded with the source revisions below;
 detailed development logs are in `build/reports/onyx-qa/`.
 
-Log in as `root` with an empty password. Four 16 MiB memory modules provide
-the tested 64 MiB configuration. This is a tested configuration, not a measured
-minimum for every application.
+Log in as `root`; a fresh root account reaches `osh$` without a password
+prompt. The tablet widget path is verified with exactly 16 MiB RAM. Other
+applications may require more memory; the earlier standalone baseline used
+64 MiB.
 
 ## Firmware-only boot and root storage
 
@@ -253,9 +255,50 @@ Logs are in `build/reports/terminal-qa/`.
 
 ## Verified source revisions
 
-The current kernel is OnyxKernel `6506c16` (following font `e912892` and
-atomic publication `2e512ad`). Existing userspace sources below are unchanged;
-the previous kernel recipe is retained as historical build provenance.
+The 2026-11-09 image is built from these selected clean source revisions:
+
+- OnyxKernel: `7b2d6554e792ada9d28b6b2bdc286923cdba468f`.
+- OnyxApps: `b2545f9c688ff524bac8a66098340e613bc7cf90`.
+- OnyxOS: `3a7f8e0` (records the exact component lock).
+- OnyxShell: `e25e912561f18fb2a7bfe52b56cfe6524d17f185`.
+- OnyxCompiller: `9f9ecb5a25378d7009937b2df94f1507cda25252`.
+- OnyxBoot: `9d572e3301d6f9711c3d0cdaafe8f7c1f0d2f19e`.
+- Kernel SHA-256: `34b38649d85c373b3194d96f8e8fcd34303b8c9d5b579cf5c07d58528476a95d`.
+- Root SHA-256: `b6358ebdc03e54c9bf57c0bb5bace3506bf4622b504b6ebc753a83248dca227a`.
+
+All ten current OnyxApps programs are rebuilt. The seven OC2R tools are rebuilt
+from `scripts/demo/guest/`: netcfg, udpdemo, tcpdemo, tcpserve, udpserve,
+tcpstream and oc2ctl. The previous stock root
+`f9371dbaf9da5ddf12adea6d0316962be3fcf3d016dc827e81f45d22cb60d71b`
+supplies only its otherwise missing `/bin/dnstest`, `/bin/oed` and `/bin/ohttp`
+binaries. No previous user directory or account data is imported. The assembled
+filesystem uses 16,035,840 bytes and is padded to 16 MiB.
+
+Build the locked source image using OnyxOS `scripts/build-oc2r.sh`, then assemble
+the OC2R stock root outside the resource directory:
+
+```sh
+bash scripts/demo/build-guest-tools.sh "$ONYX_REPOS/OnyxCompiller" "$TOOLS_OUTPUT"
+python3 scripts/demo/assemble-onyx-stock.py \
+  --fresh-manifest "$ONYX_OUTPUT/manifest.txt" --kernel "$ONYX_OUTPUT/onyx-kernel.bin" \
+  --previous-root "$PREVIOUS_STOCK_ROOT" --tools "$TOOLS_OUTPUT" \
+  --mkimage "$ONYX_REPOS/OnyxKernel/target/release/mkimage" --output "$CANDIDATE_OUTPUT"
+```
+
+The assembler retains only missing regular `/bin` files, verifies every selected
+binary against the packed filesystem, refuses payloads over 16 MiB, and writes
+an `assembly.json` inventory with hashes. Keep the preceding stock root outside
+the source tree when reproducing this overlay. Filesystem timestamps mean
+separate builds need not have identical image hashes.
+
+Actual Sedna 5.4 checks with exactly 16 MiB RAM verify login, guest RGB565
+widgets, a 40 ms absolute click overlapping redraw, cancellation on release
+outside, absence of console overwrite, Q exit and a responding shell. The
+assembled stock image also executes all seven rebuilt tools' usage/help paths.
+A separate QA image verifies SIGKILL of the actual widget process followed by
+successful framebuffer ownership reclamation. No host widgets are involved.
+
+Historical source checkpoints below predate this rebuild:
 
 - Previous OnyxKernel base: `dc3aa4b`, plus `onyx-console.patch`, `onyx-network.patch`,
   `onyx-rpc.patch`, `onyx-console-scale.patch`,
@@ -268,7 +311,7 @@ the previous kernel recipe is retained as historical build provenance.
 - OnyxShell: `636fef68547f3431fc9ed8eb3ddcd06900567e0a`.
 - OnyxOS: `888f69a5d7dccfdad382bc93641e8ea03ae6a8de`.
 - Kernel SHA-256: `1a108abad44ad30ae8d70d637704ba262f75212b163dde36e07a1a0211cbb90a`.
-- Current root image SHA-256: `81c28f41486d64d6258aed1121ed49f8925b131b9d878ecb1bf06cc2fdc31cff`.
+- Historical root image SHA-256: `81c28f41486d64d6258aed1121ed49f8925b131b9d878ecb1bf06cc2fdc31cff`.
 - Retained 2026-10-18 root SHA-256: `a03dc9a5bceaf7fe2e65b19c05eaefbf951a35dcfe0b3a272ce753d5cb349561`.
 - Retained legacy root SHA-256: `bcbc1f870be9b14967eec802e6021c1c6e934ac1748d893430c7d62261fab31b`.
 
