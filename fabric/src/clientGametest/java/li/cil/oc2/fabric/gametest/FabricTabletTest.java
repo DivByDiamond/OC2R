@@ -81,7 +81,8 @@ public final class FabricTabletTest implements FabricClientGameTest {
                 final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
                 final byte[] pixels = TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
                 final int offset = (70 * 256 + 16) * 2;
-                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x07e0;
+                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x07e0
+                        && hasClickCounterOne(pixels);
             }, 2400);
             context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(false));
             context.takeScreenshot("oc2r-tablet-console-after-click");
@@ -130,6 +131,24 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.waitTicks(5);
         }
     }
+    private static boolean hasClickCounterOne(final byte[] pixels) {
+        final int[] glyph = {4, 12, 4, 4, 4, 4, 14};
+        // The uptime precedes the counter. Its decimal digit count moves the counter by six pixels.
+        for (int uptimeDigits = 1; uptimeDigits <= 10; uptimeDigits++) {
+            final int x = 168 + 6 * uptimeDigits;
+            boolean matches = true;
+            for (int row = 0; row < glyph.length; row++) {
+                for (int column = 0; column < 5; column++) {
+                    final int offset = ((50 + row) * 256 + x + column) * 2;
+                    final boolean white = (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0xffff;
+                    if (white != ((glyph[row] & (1 << (4 - column))) != 0)) matches = false;
+                }
+            }
+            if (matches) return true;
+        }
+        return false;
+    }
+
     private static void pointer(final boolean down) {
         final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
         final var area = screen.viewport();
