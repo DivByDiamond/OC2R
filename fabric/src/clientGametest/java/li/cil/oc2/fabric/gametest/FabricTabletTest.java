@@ -70,6 +70,8 @@ public final class FabricTabletTest implements FabricClientGameTest {
                 final int offset = (102 * 256 + 18) * 2;
                 return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x2457;
             }, 2400);
+            // Allow the guest's first row-by-row presentation to finish below the button.
+            context.waitTicks(10);
             context.takeScreenshot("oc2r-tablet-widgets");
             context.runOnClient(client -> pointer(true));
             context.waitTicks(2);
