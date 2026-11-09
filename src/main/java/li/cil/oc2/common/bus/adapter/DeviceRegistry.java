@@ -33,14 +33,17 @@ public class DeviceRegistry {
     }
 
     void disposeDevices(final IEventSink eventSink) {
-        for (final RPCEventSource res : subscriptions) {
-            res.unsubscribe(eventSink);
-        }
+        clearSubscriptions(eventSink);
         unmountDevices();
         unmountedDevices.forEach(RPCDeviceList::dispose);
     }
 
-    void rebuild(final DeviceBusController controller) {
+    void clearSubscriptions(final IEventSink eventSink) {
+        for (final RPCEventSource source : subscriptions) source.unsubscribe(eventSink);
+        subscriptions.clear();
+    }
+
+    void rebuild(final DeviceBusController controller, final IEventSink eventSink) {
         final Map<UUID, List<RPCDevice>> devicesByIdentifier = new ConcurrentHashMap<>();
         for (final Device device : controller.getDevices()) {
             if (device instanceof final RPCDevice rpcDevice) {
@@ -82,6 +85,12 @@ public class DeviceRegistry {
         removedMountedDevices.removeAll(devices);
         mountedDevices.removeAll(removedMountedDevices);
         removedMountedDevices.forEach(RPCDeviceList::unmount);
+        for (final RPCDeviceList removed : removedMountedDevices) {
+            for (final RPCDevice device : removed.getDevices()) {
+                final RPCEventSource source = eventSource(device);
+                if (source != null && subscriptions.remove(source)) source.unsubscribe(eventSink);
+            }
+        }
 
         unmountedDevices.retainAll(devices);
     }
@@ -89,43 +98,43 @@ public class DeviceRegistry {
     public void subscribe(
             final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
-        if (devices != null) {
-            for (final RPCDevice device : devices.getDevices()) {
-                if (device instanceof final ObjectDevice od) {
-                    final RPCEventSource source = od.asEventSource();
-                    if (source != null) {
-                        source.subscribe(eventSink, deviceId);
-                        subscriptions.add(source);
-                        return;
-                    }
-                }
-                if (device instanceof final RPCEventSource source) {
-                    source.subscribe(eventSink, deviceId);
-                    subscriptions.add(source);
-                    return;
-                }
-            }
-            errorWriter.accept("device does not support subscriptions");
-        } else {
+        if (devices == null) {
             errorWriter.accept("unknown device");
+            return;
         }
+        for (final RPCDevice device : devices.getDevices()) {
+            final RPCEventSource source = eventSource(device);
+            if (source != null) {
+                source.subscribe(eventSink, deviceId);
+                if (!subscriptions.contains(source)) subscriptions.add(source);
+                return;
+            }
+        }
+        errorWriter.accept("device does not support subscriptions");
     }
 
     public void unsubscribe(
             final IEventSink eventSink, final UUID deviceId, final Consumer<String> errorWriter) {
         final RPCDeviceList devices = devicesById.get(deviceId);
-        if (devices != null) {
-            for (final RPCDevice device : devices.getDevices()) {
-                if (device instanceof final RPCEventSource source) {
-                    source.unsubscribe(eventSink);
-                    subscriptions.remove(source);
-                } else {
-                    errorWriter.accept("device does not support subscriptions");
-                }
-            }
-        } else {
+        if (devices == null) {
             errorWriter.accept("unknown device");
+            return;
         }
+        for (final RPCDevice device : devices.getDevices()) {
+            final RPCEventSource source = eventSource(device);
+            if (source != null) {
+                source.unsubscribe(eventSink);
+                subscriptions.remove(source);
+                return;
+            }
+        }
+        errorWriter.accept("device does not support subscriptions");
+    }
+
+    @javax.annotation.Nullable
+    private static RPCEventSource eventSource(final RPCDevice device) {
+        if (device instanceof final ObjectDevice object) return object.asEventSource();
+        return device instanceof final RPCEventSource source ? source : null;
     }
 
     private UUID selectIdentifierDeterministically(final List<UUID> identifiers) {

@@ -19,12 +19,17 @@ public final class DockBridges {
 
     private final Map<UUID, DockBridge> bridges = new LinkedHashMap<>();
 
-    /** Copied block data cannot move an identity to another dock while the first one is still loaded. */
-    public boolean register(final DockBridge bridge) {
+    /** Side-effect-free admission check before validating an enrollment invitation. */
+    public boolean canRegister(final DockBridge bridge) {
         final DockBridge previous = bridges.get(bridge.id());
         if (previous == bridge) return true; // NOPMD - same live dock
         if (previous != null && previous.valid() && !previous.position().equals(bridge.position())) return false;
-        if (previous == null && bridges.size() >= MAX_BRIDGES) return false;
+        return previous != null || bridges.size() < MAX_BRIDGES;
+    }
+
+    /** Copied block data cannot move an identity to another dock while the first one is still loaded. */
+    public boolean register(final DockBridge bridge) {
+        if (!canRegister(bridge)) return false;
         bridges.put(bridge.id(), bridge);
         return true;
     }
@@ -40,7 +45,7 @@ public final class DockBridges {
         final List<DockBridge> result = new ArrayList<>();
         for (final DockBridge bridge : bridges.values()) {
             if (bridge.id().equals(except) || !bridge.enrolled()) continue;
-            final var attachment = data.access(level, bridge.id(), bridge.credential(), bridge.x(), bridge.z());
+            final var attachment = data.bridgeAccess(level, bridge.id(), bridge.credential(), bridge.x(), bridge.z());
             if (attachment.isPresent() && attachment.get().tower().device().equals(tower)) result.add(bridge);
         }
         return result;

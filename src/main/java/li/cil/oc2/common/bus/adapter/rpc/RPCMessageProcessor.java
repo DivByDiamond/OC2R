@@ -1,6 +1,7 @@
 package li.cil.oc2.common.bus.adapter.rpc;
 
 import com.google.gson.Gson;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -79,6 +80,9 @@ public final class RPCMessageProcessor {
         }
     }
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP",
+            justification = "RPC processing shares the live adapter registry and message state.")
     public record GsonContext(
             Gson gson,
             DeviceRegistry deviceRegistry,

@@ -389,6 +389,20 @@ public final class OraEndpoint implements RadioServiceBroker.Endpoint {
                 "trusted-local-plaintext-no-tls");
     }
 
+    /** Ends guest activity without discarding enrollment or remembered service names. */
+    public void disconnect() {
+        if (session != null) {
+            session.close();
+            session = null;
+            final var broker = data().broker();
+            for (final String service : services) broker.unregister(id, service);
+        }
+        commands.clear();
+        commandBaselines.clear();
+        commandBindings.clear();
+        messages.clear();
+    }
+
     public void save(CompoundTag tag) {
         validateBinding();
         tag.putString("ora_endpoint", id.toString());

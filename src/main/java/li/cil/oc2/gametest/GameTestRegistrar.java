@@ -38,6 +38,8 @@ public final class GameTestRegistrar {
         MediaStationTests.class,
         MachineInterfaceTests.class,
         PeripheralTests.class,
+        PeripheralAnimationTests.class,
+        AccessPointRadioTests.class,
         MachineTransferTests.class,
         GpsTowerTests.class,
         RadioBridgeTests.class,

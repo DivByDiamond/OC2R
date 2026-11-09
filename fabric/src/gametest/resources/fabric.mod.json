@@ -18,6 +18,8 @@
       "li.cil.oc2.gametest.MediaStationTests",
       "li.cil.oc2.gametest.MachineInterfaceTests",
       "li.cil.oc2.gametest.PeripheralTests",
+      "li.cil.oc2.gametest.PeripheralAnimationTests",
+      "li.cil.oc2.gametest.AccessPointRadioTests",
       "li.cil.oc2.gametest.MachineTransferTests",
       "li.cil.oc2.gametest.GpsTowerTests",
       "li.cil.oc2.gametest.GpsRelativeCoordinateTests",

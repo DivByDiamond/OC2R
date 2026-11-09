@@ -44,6 +44,7 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     private final Lock pauseLock = new ReentrantLock();
     private volatile boolean isPaused;
     private boolean crmode;
+    private volatile boolean devicesMounted;
     @Serialized private ByteBuffer transmitBuffer;
     @Serialized private ByteBuffer receiveBuffer;
     @Serialized private volatile MethodInvocation synchronizedInvocation;
@@ -81,14 +82,18 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     }
 
     public void mountDevices() {
+        devicesMounted = true;
         deviceRegistry.mountDevices();
     }
 
     public void unmountDevices() {
+        devicesMounted = false;
+        deviceRegistry.clearSubscriptions(this);
         deviceRegistry.unmountDevices();
     }
 
     public void disposeDevices() {
+        devicesMounted = false;
         deviceRegistry.disposeDevices(this);
     }
 
@@ -111,7 +116,8 @@ public final class RPCDeviceBusAdapter implements Steppable, IEventSink {
     public void resume(final DeviceBusController controller, final boolean didDevicesChange) {
         isPaused = false;
         if (didDevicesChange) {
-            deviceRegistry.rebuild(controller);
+            deviceRegistry.rebuild(controller, this);
+            if (devicesMounted) deviceRegistry.mountDevices();
         }
     }
 

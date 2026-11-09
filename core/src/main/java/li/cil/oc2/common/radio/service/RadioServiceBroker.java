@@ -134,6 +134,8 @@ public final class RadioServiceBroker {
     private final Link link;
     private final LongSupplier nanos;
     private final Map<EndpointKey, Long> endpointGenerations = new HashMap<>();
+    private final Map<EndpointKey, Long> endpointRegistrations = new HashMap<>();
+    private long registrationSequence;
     private final Map<EndpointKey, Endpoint> endpoints = new HashMap<>();
     private final Map<EndpointKey, Map<String, Sample>> samples = new HashMap<>();
     private final Map<RequestKey, Command> requests = new LinkedHashMap<>();
@@ -176,15 +178,27 @@ public final class RadioServiceBroker {
         var key = new EndpointKey(device, service);
         if (!endpoints.containsKey(key) && endpoints.size() >= MAX_ENDPOINTS)
             throw new IllegalStateException("Endpoint capacity");
+        final long generation = registry.member(device).orElseThrow().generation();
+        // Identity of the live handler distinguishes reconnects from repeated registration.
+        if (endpoints.get(key) != endpoint) { // NOPMD
+            endpointRegistrations.put(key, ++registrationSequence);
+        }
         endpoints.put(key, Objects.requireNonNull(endpoint));
-        endpointGenerations.put(key, registry.member(device).orElseThrow().generation());
+        endpointGenerations.put(key, generation);
     }
 
     public void unregister(UUID device, String service) {
         var key = new EndpointKey(device, service);
         endpoints.remove(key);
         endpointGenerations.remove(key);
+        endpointRegistrations.remove(key);
         samples.remove(key);
+        requests.values().stream()
+                .filter(command -> command.target.equals(device) && command.message.service().equals(service))
+                .forEach(Command::disconnect);
+        List.copyOf(subscriptions.values()).stream()
+                .filter(subscription -> subscription.target.equals(device) && subscription.service.equals(service))
+                .forEach(subscription -> removeSubscription(subscription.id));
     }
 
     public void publish(UUID device, String service, String field, byte[] payload) {
@@ -286,6 +300,8 @@ public final class RadioServiceBroker {
                             payload);
             // A retry with the same request ID, for example after a reconnect, is delivered only once.
             var messageKey = new RequestKey(device, request);
+            final var destination = new EndpointKey(member.id(), service);
+            final Long registration = endpointRegistrations.get(destination);
             if (seenMessages.contains(messageKey, tick)) return;
             if (!link.send(
                     device,
@@ -300,6 +316,7 @@ public final class RadioServiceBroker {
                                 member.generation(),
                                 RadioRegistry.Permission.MESSAGE_SEND,
                                 service)) return;
+                        if (!Objects.equals(registration, endpointRegistrations.get(destination))) return;
                         var endpoint = endpoint(member.id(), service);
                         if (endpoint != null) endpoint.message(envelope);
                     })) throw new IllegalStateException("Transport unavailable");
