@@ -29,26 +29,14 @@ It is meant for small graphical tools: dashboards, a messenger, a calculator, a 
 simple programs written by players. Heavy work stays on PCs; the tablet talks to them over the
 [radio network](RADIO-NETWORK.md).
 
-## Hardware (planned)
+## Hardware and lifetime
 
-- **Processor slot.** One CPU item. The tablet caps the clock below a PC (the first target is a quarter
-  of the PC frequency) whatever CPU is inserted.
-- **Disk slot.** One hard drive or flash item holds the operating system and files. It is the only
-  part players insert and remove freely.
-- **RAM and screen.** Fixed when the tablet is crafted. The RAM tier follows the crafting ingredient and is stored
-  in the item. First targets: 256 x 160 pixel screen, 16 MiB of RAM for the basic craft.
-- **Power.** None. The tablet does not use energy.
+The current tablet accepts one CPU and one flash. RAM is fixed at 16 MiB and the CPU clock is
+limited to a quarter of the computer clock. It uses no energy. Hard drives and selectable RAM tiers
+remain planned.
 
-These numbers are starting values and may change after performance testing.
-
-## Running, state and lifetime (planned)
-
-- Every tablet has a UUID stored in the item. The machine state (memory, device state, terminal,
-  the writable layer of the root disk) is saved in world data under that UUID, the way a robot's state is saved.
-  The item itself stays small.
-- The machine runs only while the tablet is in a player's hand or its screen is open. Otherwise it is suspended
-  and its state is kept. Dropping the item, dying or logging out suspends it without losing data.
-- Background work while carried in the inventory is not part of the first version.
+Each tablet UUID identifies one saved machine. A live holder or an open screen keeps it running;
+after 40 ticks without either, it saves and stops. Carrying it in an inventory does not keep it running.
 
 ## Screen and input
 
@@ -90,13 +78,13 @@ Tower and dock coverage use the existing circular horizontal radii without heigh
 
 ## Reflashing
 
-The operating system lives on the disk or flash item, not in the tablet. To replace it:
+The operating system lives on the flash item. To replace it:
 
-1. Take the disk or flash out of the tablet.
+1. Take the flash out of the tablet.
 2. Put it in the flash writer. The writer offers the bundled OnyxOS and Minux images and a file chooser for your own image.
 3. Put it back into the tablet and turn the tablet on.
 
-A tablet without a disk does not boot. The default tablet comes with a flash carrying the tablet build of OnyxOS.
+A tablet without a flash does not boot. The default tablet comes with a flash carrying the tablet build of OnyxOS.
 
 ## Writing software for the tablet
 
