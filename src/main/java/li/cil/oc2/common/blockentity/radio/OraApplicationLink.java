@@ -121,6 +121,10 @@ final class OraApplicationLink implements RadioServiceBroker.Link {
     public boolean send(
             UUID source, UUID target, UUID packet, byte[] payload, long tick, Runnable delivery) {
         if (source.equals(target) || route(source, target).isEmpty()) return false;
+        // A permissions change advances enrollment immediately, before the next host tick.
+        // Refresh both TLS identities before a new pair snapshots their generations.
+        attach(endpoints.get(source));
+        attach(endpoints.get(target));
         var key = PairKey.of(source, target);
         var pair = pairs.get(key);
         if (pair != null && (!pair.valid() || pair.first.isClosed() || pair.second.isClosed())) {

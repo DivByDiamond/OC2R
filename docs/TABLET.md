@@ -2,8 +2,8 @@
 
 > **Status: first version in the game, terminal screen only.** The tablet item, its machine, the world-data
 > persistence and the terminal screen with keyboard capture exist. There is no framebuffer screen, no small
-> screen in hand, no radio attachment and no mouse pointer for the guest yet. Items marked "Planned" below
-> are targets. Progress is tracked in [roadmap/tablet-radio.md](roadmap/tablet-radio.md).
+> screen in hand and no mouse pointer for the guest yet. Radio enrollment and guest RPC are implemented.
+> Items marked "Planned" below are targets. Progress is tracked in [roadmap/tablet-radio.md](roadmap/tablet-radio.md).
 
 ## Implemented now
 
@@ -15,7 +15,9 @@
 - The machine runs only while the tablet is in a hand or its screen is open. Two seconds after that it is saved and
   released, so dropping, dying and logging out lose nothing. A server crash loses what happened since the last save.
 - The screen is the guest terminal. Keyboard input goes to the guest, released with `CaptureKeyBinding.RELEASE`.
-- The guest device bus is on `/dev/hvc0` like in a computer. No radio device is attached to it yet.
+- The guest device bus is on `/dev/hvc0` like in a computer. The built-in `tablet` device exposes radio RPC.
+  It also advertises the `gps_tower` compatibility type used by the bundled `ochat` discovery code;
+  this alias provides radio calls, not tower GPS functions.
 
 ## What it is
 
@@ -54,7 +56,7 @@ These numbers are starting values and may change after performance testing.
 - Input is released with `CaptureKeyBinding.RELEASE` (Right Ctrl by default, rebindable), the same single key
   as the monitor and keyboard capture. There is no second binding.
 
-## Network (planned)
+## Network
 
 The tablet is one more radio device. It attaches to an access point in range (tower 45 blocks,
 robot dock station 10 blocks), is admitted with an invitation that the network owner approves
@@ -65,6 +67,24 @@ Inside the guest the tablet uses the same device bus as a computer: the JSON RPC
 tablet applications can send messages, list devices and ping without new system software.
 To make a PC do something for a tablet, run a program on the PC and address it by its ORA address and
 service name; permissions (telemetry, command, message) are checked on every send and delivery.
+
+The device exposes `getRadioEndpointId`, `joinRadioNetwork`, `getRadioAddress`,
+`getRadioStatus`, messaging, service discovery, telemetry, commands and ping using the existing radio RPC contract.
+Approve an invitation for `getRadioEndpointId()` on a network administrator's PC, then call
+`joinRadioNetwork(invite, secret)` on the tablet. The administrator must grant the required scoped permissions.
+
+The current credential is stored in a server-only persistent item component, never in terminal updates or
+client item synchronization. Activating a suspended identity rotates the credential. A second held copy
+cannot use the active tablet's terminal, inventory or radio; older credential generations are rejected.
+A copy made after the latest rotation can claim an inactive identity first, at which point its new credential
+invalidates the other copy. Copies are not independent computers.
+
+Radio disconnects as soon as the item has no live holder, independently of the machine's two-second save grace.
+Transfer, death, logout and dimension changes release the session. Radio enrollment is dimension-scoped;
+roaming within the network keeps the ORA address, while another dimension cannot use the old enrollment. The local terminal stays available when revoked
+or outside the enrollment dimension. A successful new enrollment retires the previous dimension's credential,
+so a copy from the former network cannot reclaim the machine.
+Tower and dock coverage use the existing circular horizontal radii without height limits or chunk loading.
 
 ## Reflashing
 

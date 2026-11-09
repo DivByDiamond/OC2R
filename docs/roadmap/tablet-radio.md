@@ -1,7 +1,7 @@
 # Tablet UI and tower radio network
 
 Status: owner-approved direction, 2026-11-03. Sections 16, 48, 51 and 52 refer to this plan.
-Only checked items are implemented. The first tower Ethernet bridge is implemented in the working branch; the Minecraft tablet item and live tablet service are not implemented yet.
+The checklist records individual milestones; sections 9–12 describe earlier increments and their limitations at that time. The first tower Ethernet bridge is implemented in the working branch; the Minecraft tablet item, terminal and live radio attachment are implemented; framebuffer and mouse input remain open.
 
 ## 1. Current baseline
 
@@ -17,12 +17,12 @@ The reference tower defines the coordinate origin; ordinary data routes must not
 
 ## 2. Network hardware and compatibility
 
-- [x] The robot dock station (the existing charger block) is its own short-range access point (it attaches nearby clients and reaches the wider network through the nearest tower; it does not relay like a tower): it provides a 10-block horizontal client attachment radius for the robots and devices around it. There is no separate station block. Radius: `gameplay.robot_dock_range` (default 10). Implemented for robots; tablets do not exist yet.
+- [x] The robot dock station (the existing charger block) is its own short-range access point (it attaches nearby clients and reaches the wider network through the nearest tower; it does not relay like a tower): it provides a 10-block horizontal client attachment radius for the robots and devices around it. There is no separate station block. Radius: `gameplay.robot_dock_range` (default 10). Implemented for robots and tablets.
 - [x] A tower provides a 45-block horizontal client attachment radius and 45-block tower hops by default.
 - [x] Use circular X/Z coverage without height limits for both access-point types (dock station 10 blocks, tower 45 blocks).
 - [x] Connect a PC's existing Ethernet network to a dock station or tower using the existing blue network cable and compatible connectors (the dock is invited like any client and then bridges its connectors through the nearest tower in range).
-- [ ] Authorized robots and tablets attach wirelessly to an access point in range, with no new mandatory radio card/module item.
-- [ ] Clients roam between reachable access points of their own network; radii are not added together to extend attachment range.
+- [x] Authorized robots and tablets attach wirelessly to an access point in range, with no new mandatory radio card/module item.
+- [x] Clients roam between reachable access points of their own network; radii are not added together to extend attachment range.
 - [ ] Towers relay between each other. Walls do not attenuate the first implementation.
 - [ ] Reuse the existing Ethernet frame and guest TCP/UDP paths. Keep ordinary IP networking compatible.
 - [x] Radio data transport works independently of the GPS relative-coordinate reporting switch.
@@ -49,7 +49,7 @@ See the [Russian/English explanation](../RADIO-NETWORK.md). This is a custom rad
 - [ ] A service directory maps a radio address plus service name to an authorized endpoint and its compatible transport.
 - [x] Validate length, alphabet, namespace, lifecycle and malformed addresses before scheduling any traffic.
 
-The ORA codec and registry are implemented for tower bridge endpoints. The public send-to-ORA service and robot/tablet endpoint integration remain pending.
+The ORA registry and guest-facing message, telemetry, command and discovery RPC are connected to tower, robot and tablet endpoints.
 
 ## 4. Enrollment, identity and permissions
 
@@ -58,7 +58,7 @@ The ORA codec and registry are implemented for tower bridge endpoints. The publi
 - [x] Support separate telemetry-read, command-send and network-admin permissions, scoped to devices/services (`RadioRegistry.Permission`/`Scope`; the broker rechecks them on send, delivery, subscription and command completion).
 - [ ] Enforce network membership/routing and host operations on the server; the service endpoint separately authorizes subscriptions and commands before execution. Encrypted relays need not inspect application payloads.
 - [x] Allow individual revocation, reconnect, re-enrollment and key rotation without resetting other clients.
-- [x] Define item cloning, transfer, drop, death, logout and dimension-change behavior. Duplicated item data must not create a second authenticated identity. (Registry and API side only, `RadioClientLeases`; the tablet item that calls it does not exist yet.)
+- [x] Define item cloning, transfer, drop, death, logout and dimension-change behavior. Duplicated item data must not create a second authenticated identity. (Registry and API side only, `RadioClientLeases`; the tablet item enforces these leases and checks GUI access against the held credential.)
 - [x] Keep secrets out of logs, widget definitions, public discovery, addresses and telemetry payloads. (Radio layer: redacted string forms, status maps, ORA addresses and message envelopes carry no secrets; widget definitions do not exist yet.)
 - [ ] Rate-limit enrollment and failed authorization; return bounded, explicit errors.
 
@@ -130,7 +130,7 @@ Widget code stays in the Onyx repositories and runs inside the guest; there is n
   reuse that binding, do not add another.
 - [ ] Reflashing: take the disk or flash out of the tablet, write it in the flash writer (bundled images or a file), put it back.
   The default tablet ships with a flash carrying the tablet build of OnyxOS. A tablet without a disk does not boot.
-- [ ] The tablet attaches to a tower or dock station as a radio device, is admitted by an approved invitation and uses the
+- [x] The tablet attaches to a tower or dock station as a radio device, is admitted by an approved invitation and uses the
   guest device bus (`/dev/hvc0`) like computers do, so `ochat` and later tablet applications work unchanged.
 - [ ] Developer documentation for C applications, Lua scripts and replacement operating systems stays current in docs/TABLET.md.
 - [ ] A portable widget/state core separate from framebuffer, Minecraft GUI, network and clock adapters.
@@ -154,7 +154,7 @@ Widget code stays in the Onyx repositories and runs inside the guest; there is n
 5. Server scheduling, hop TTL, duplicate suppression, queue bounds, ping and timeout UI.
 6. Authenticated TLS-capable application transport and real PC telemetry/command service.
 7. Robot attachment/roaming and authoritative task results.
-8. Minecraft tablet item (mini computer with OnyxOS), screen and input, reflashing, and live radio binding. (Item, machine, persistence and terminal screen done; framebuffer and radio binding open.)
+8. Minecraft tablet item (mini computer with OnyxOS), screen and input, reflashing, and live radio binding. (Item, machine, persistence and terminal screen done; framebuffer and pointer input open.)
 9. Sandboxed script hooks, dashboard presets, persistence and multiplayer lifecycle checks.
 
 Test acceptance includes circular radius boundaries and extreme vertical separation; isolated networks; broken alternate routes;
@@ -219,10 +219,40 @@ Not done in this increment: tablets do not exist, so tablet roaming is untested;
 
 The dock station (charger) takes the blue cable through a normal network connector and bridges it into the radio. It owns an enrolled client identity, so a cabled but uninvited or revoked dock passes nothing; frames from its connectors enter through the nearest tower of its network within tower range and frames of the network are written to its connectors. It never relays between towers and loads no chunk.
 
-Credentials: device secrets are 256 random bits from `SecureRandom`, stored as hashes only. `RadioRegistry.rotateCredential` replaces one secret and advances that device's generation without touching other clients; a secret of an earlier generation, a revoked device or a rotated key never authenticates. Records that carry secrets redact them from their string form. `RadioClientLeases` defines the registry side of an item-borne identity: one active holder, a rotated secret on every activation (so duplicated item data holds a stale generation), suspension without loss for drop, death, logout, dimension change and transfer, and activation only in the enrollment dimension. Nothing here creates the tablet item.
+Credentials: device secrets are 256 random bits from `SecureRandom`, stored as hashes only. `RadioRegistry.rotateCredential` replaces one secret and advances that device's generation without touching other clients; a secret of an earlier generation, a revoked device or a rotated key never authenticates. Records that carry secrets redact them from their string form. `RadioClientLeases` defines the registry side of an item-borne identity: one active holder, a rotated secret on every activation (so duplicated item data holds a stale generation), suspension without loss for drop, death, logout, dimension change and transfer, and activation only in the enrollment dimension. The later tablet increment connects these rules to the item.
 
 Duplicates: `RadioFrameFilter` drops a byte-identical frame that comes back with a lower TTL inside a 5 tick window (bounded to 4096 entries). A repeated request ID returns the known command, also on a new session after a reconnect, and is never executed twice; the endpoint remembers received command IDs for 1200 ticks and a repeated `MESSAGE` is delivered once. The RPC reports ping as measured RTT (monotonic clock), hop count and nominal one-way estimate, and `getRadioTelemetryStatus` reports sample age with online, stale or offline state.
 
 Limits: the frame filter is a loop guard for byte-identical frames, not a general broadcast limiter, so the unchecked "bound broadcasts so a ring of towers cannot multiply traffic" item stays open. Wired loops that close synchronously were already stopped by the re-entrancy guard of the delivery tick. There is no GUI for any of these values.
 
 Verification: 98 core and 693 (NeoForge 1.21.1) or 702 (26.1.2, 26.2) mod unit tests pass on each node. Six new GameTests (`RadioDockEthernetTests`: cable bridging in both directions, uninvited and revoked docks, a wired tower-dock loop; `RadioIdentityTests`: rotation, revocation and re-enrollment without resetting other clients, ping and telemetry latency values, retried requests) pass in full suites of 102 (NeoForge 1.21.1), 104 (NeoForge 26.1.2 and 26.2) and 131 (Fabric 1.21.1) GameTests. Checkstyle, PMD and SpotBugs are at zero on the 1.21.1 node for the changed modules.
+
+## 13. Tablet radio attachment
+
+The tablet exposes radio RPC on its guest bus, enrolls through an owner-approved invitation and attaches
+to towers or dock stations using the existing access-point resolver. Roaming preserves its ORA address.
+Credentials rotate on activation and persist only in the server-side item component. The manager releases
+radio immediately when no valid holder remains; VM save grace does not keep a network session alive.
+Screen opening, terminal updates, input and menu validity verify the held credential, so a stale UUID clone
+cannot operate the authenticated original machine. Revocation disables network access without locking the local terminal.
+Successful enrollment in another dimension retires the previous credential hash, including a revoked one,
+so old-dimension item snapshots cannot reclaim the shared machine. A current copy can claim an inactive identity first;
+rotation then invalidates the other copy, rather than creating a second identity.
+
+Framebuffer, guest mouse input, live screen in hand, hard-drive support and crash-periodic VM saves remain
+separate work.
+
+The radio transport refreshes endpoint TLS identities before opening a pair after a permissions-generation
+change. This prevents the first message or ping from being discarded while the target waits for its next tick.
+The tablet terminal handles the shared keyboard/mouse release binding and receives native captured key
+events before vanilla shortcuts, with modifiers preserved on both loaders.
+
+Verification: 100 core tests per node; 713 mod unit tests on NeoForge 1.21.1 and 722 on each
+26.x node; complete NeoForge GameTest suites of 119 (1.21.1), 121 (26.1.2) and 121 (26.2), all passing.
+Fabric 1.21.1 main sources and the focused Fabric 26.2 client fixture compile. The opt-in client
+fixture (`-Pfabric.clientTests=true -Pfabric.tabletTests=true`) opens both tablet menus, checks CPU slot
+synchronization and messenger device discovery, and releases native keyboard capture through the
+shared binding. Its runtime screenshots remain a separate client acceptance check.
+
+NeoForge 1.21.1 Checkstyle (main/test), PMD (main/test) and SpotBugs main reports are at zero;
+core Checkstyle and PMD (main/test) are also at zero. SpotBugs reports no missing classes or analysis errors.

@@ -81,6 +81,38 @@ final class RadioClientLeasesTest {
     }
 
     @Test
+    void recognizingARevokedItemDoesNotAuthorizeNetworkAccessOrAnOldCopy() {
+        final var lease = leases.activate(item, enrollment.secret(), OVERWORLD);
+        registry.revoke(network.network(), network.adminSecret(), item);
+        assertTrue(registry.knowsIdentity(item));
+        assertTrue(registry.recognizesItemCredential(item, lease.secret()));
+        assertFalse(registry.recognizesItemCredential(item, enrollment.secret()));
+        assertTrue(registry.authenticate(item, lease.secret()).isEmpty());
+        assertThrows(SecurityException.class, () -> leases.activate(item, lease.secret(), OVERWORLD));
+    }
+
+    @Test
+    void enrollmentElsewhereRetiresOldCopiesEvenWhenThePreviousMembershipWasRevoked() {
+        final var original = leases.activate(item, enrollment.secret(), OVERWORLD);
+        leases.suspend(item, RadioClientLeases.Reason.DIMENSION_CHANGED);
+        registry.revoke(network.network(), network.adminSecret(), item);
+        final var other = new RadioRegistry();
+        final var otherNetwork = other.createNetwork();
+        final var invitation = other.invite(otherNetwork.network(), otherNetwork.adminSecret(),
+                "minecraft:the_nether", item, Set.of());
+        final var newEnrollment = other.enroll(invitation.invite(), invitation.secret());
+        final var newLeases = new RadioClientLeases(other);
+        final var current = newLeases.activate(item, newEnrollment.secret(), "minecraft:the_nether");
+        registry.retireItemCredential(item, original.secret());
+        newLeases.suspend(item, RadioClientLeases.Reason.DROPPED);
+        assertFalse(registry.recognizesItemCredential(item, original.secret()), "old dimension clone is stale");
+        assertTrue(registry.authenticate(item, original.secret()).isEmpty());
+        assertTrue(other.recognizesItemCredential(item, current.secret()), "current tablet keeps local access");
+        assertDoesNotThrow(() -> newLeases.activate(item, current.secret(), "minecraft:the_nether"));
+        assertThrows(SecurityException.class, () -> registry.retireItemCredential(item, original.secret()));
+    }
+
+    @Test
     void otherClientsAreNotAffectedByALease() {
         final UUID other = UUID.randomUUID();
         final var otherEnrollment = enroll(other);
