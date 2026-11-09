@@ -1,15 +1,20 @@
 package li.cil.oc2.client.gui.widget.tablet;
 
 import java.nio.ByteBuffer;
+//? if <26.1 {
 import li.cil.oc2.api.API;
+//?}
 import li.cil.oc2.client.renderer.stage.RenderInfo;
 import li.cil.oc2.common.tablet.TabletClientView;
+//? if <26.1 {
 import net.minecraft.client.Minecraft;
+//?}
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
 //? if >=26.1 {
 /*import net.minecraft.client.renderer.RenderPipelines;
-*///?}
+*///?} else {
+import net.minecraft.resources.ResourceLocation;
+//?}
 
 /** One disposable GPU texture owned by the open tablet screen. */
 public final class TabletFramebufferRenderer implements AutoCloseable {
@@ -25,7 +30,8 @@ public final class TabletFramebufferRenderer implements AutoCloseable {
         //?}
     }
 
-    public void render(final GuiGraphics graphics, final TabletClientView view, final TabletViewport viewport) {
+    public void render(final GuiGraphics graphics, final TabletClientView view,
+            final TabletViewport viewport) {
         if (version != view.frameVersion()) {
             frame.processFrame(256, 160, ByteBuffer.wrap(view.framebuffer()));
             version = view.frameVersion();
