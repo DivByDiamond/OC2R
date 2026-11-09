@@ -17,6 +17,7 @@ import li.cil.oc2.common.container.tablet.TabletTerminalContainer;
 import li.cil.oc2.common.item.tablet.TabletItem;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.tablet.TabletTerminalDiffMessage;
+import li.cil.oc2.common.tablet.radio.TabletHolder;
 import li.cil.oc2.common.vm.terminal.TerminalDiff;
 import li.cil.oc2.platform.event.CommonEvents;
 import net.minecraft.nbt.CompoundTag;
@@ -31,6 +32,7 @@ import org.apache.logging.log4j.Logger;
  * Runs the machines of tablets that are in a hand or have a screen open and suspends the rest.
  * Suspending writes the state to the world folder first, so dropping, dying or logging out loses nothing.
  */
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Each live stack needs its own holder reference.
 public final class TabletManager {
     private static final Logger LOGGER = LogManager.getLogger();
     // A short grace period keeps scrolling the hotbar from saving and restoring the whole machine.
@@ -61,19 +63,44 @@ public final class TabletManager {
     }
 
     public static void openTerminal(final ServerPlayer player, final UUID id) {
+        if (!bindHolder(player, id)) return;
         TabletTerminalContainer.open(player, id);
         sendInitialState(player, id);
     }
 
     public static void openInventory(final ServerPlayer player, final UUID id) {
+        if (!bindHolder(player, id)) return;
         TabletInventoryContainer.open(player, id);
         sendInitialState(player, id);
+    }
+
+    private static boolean bindHolder(final ServerPlayer player, final UUID id) {
+        final TabletMachine machine = machineOf(player.level().getServer(), id);
+        if (machine == null) return false;
+        for (final ItemStack stack : List.of(player.getMainHandItem(), player.getOffhandItem())) {
+            final TabletHolder holder = new TabletHolder(player, stack);
+            if (machine.radio().accepts(holder)) {
+                machine.radio().update(holder, player.level().getServer().getTickCount());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Authorizes screens, input and slots using the held item, not just its UUID. */
+    public static boolean canUse(final ServerPlayer player, final UUID id) {
+        final TabletMachine machine = machineOf(player.level().getServer(), id);
+        if (machine == null) return false;
+        for (final ItemStack stack : List.of(player.getMainHandItem(), player.getOffhandItem())) {
+            if (machine.radio().accepts(new TabletHolder(player, stack))) return true;
+        }
+        return false;
     }
 
     /** The machine of a tablet this player currently looks at, never one guessed from a packet. */
     public static Optional<TabletMachine> viewedMachine(final ServerPlayer player, final UUID id) {
         if (player.containerMenu instanceof final AbstractTabletContainer menu
-                && menu.tabletId().equals(id)) {
+                && menu.tabletId().equals(id) && canUse(player, id)) {
             return Optional.ofNullable(machineOf(player.level().getServer(), id));
         }
         return Optional.empty();
@@ -105,7 +132,7 @@ public final class TabletManager {
     }
 
     public static void addViewer(final ServerPlayer player, final UUID id) {
-        VIEWERS.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(player);
+        if (canUse(player, id)) VIEWERS.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(player);
     }
 
     public static void removeViewer(final ServerPlayer player, final UUID id) {
@@ -118,6 +145,7 @@ public final class TabletManager {
     }
 
     private static Collection<ServerPlayer> viewersOf(final UUID id) {
+        // Terminal diffs may be produced by the VM worker; authorization is reconciled on the server thread.
         return new CopyOnWriteArrayList<>(VIEWERS.getOrDefault(id, Set.of()));
     }
 
@@ -130,36 +158,60 @@ public final class TabletManager {
     }
 
     private static void tick(final MinecraftServer server) {
-        tickFor(server, activeIds(server));
+        tickHolders(server, activeHolders(server));
     }
 
     /** One manager tick for the given set of active tablets; tests drive it without real players. */
     public static void tickFor(final MinecraftServer server, final Set<UUID> active) {
+        final Map<UUID, TabletHolder> holders = activeHolders(server);
+        for (final UUID id : active) holders.putIfAbsent(id, null);
+        tickHolders(server, holders);
+    }
+
+    /**
+     * One manager tick; each active tablet maps to the player holding it, or null when only a screen
+     * names it. Only the first holder of an id counts, so a copy of the item gets no machine and no radio.
+     */
+    public static void tickHolders(final MinecraftServer server, final Map<UUID, TabletHolder> active) {
         final long now = server.getTickCount();
-        for (final UUID id : active) {
+        VIEWERS.forEach((id, players) -> players.removeIf(player -> !canUse(player, id)));
+        for (final Map.Entry<UUID, TabletHolder> held : active.entrySet()) {
+            final UUID id = held.getKey();
             final TabletMachine machine = machineOf(server, id);
             final Entry entry = MACHINES.get(id);
             if (machine == null || entry == null) continue;
+            final TabletHolder holder = held.getValue();
+            if (holder != null && !machine.radio().accepts(holder)) {
+                if (!machine.radio().holderStillPresent()) machine.radio().update(holder, now);
+                continue;
+            }
             entry.lastActive = now;
-            machine.tick();
+            machine.tick(holder, now);
         }
         for (final Map.Entry<UUID, Entry> e : MACHINES.entrySet()) {
             final Entry entry = e.getValue();
+            if (!active.containsKey(e.getKey())) entry.machine.radio().update(null, now);
             if (now - entry.lastActive > SUSPEND_GRACE_TICKS && now >= entry.retryAt) {
                 suspend(server, e.getKey(), entry, now);
             }
         }
     }
 
-    /** Ids of tablets held in a hand or shown on an open screen. */
-    static Set<UUID> activeIds(final MinecraftServer server) {
-        final Set<UUID> ids = ConcurrentHashMap.newKeySet();
+    /** Tablets held in a hand or shown on an open screen, with their holders. */
+    @SuppressWarnings("PMD.UseConcurrentHashMap") // Per-tick server-thread map; null denotes a headless screen.
+    static Map<UUID, TabletHolder> activeHolders(final MinecraftServer server) {
+        final Map<UUID, TabletHolder> ids = new java.util.LinkedHashMap<>();
         for (final ServerPlayer player : new ArrayList<>(server.getPlayerList().getPlayers())) {
             for (final ItemStack stack : List.of(player.getMainHandItem(), player.getOffhandItem())) {
-                TabletItem.getId(stack).ifPresent(ids::add);
+                TabletItem.getId(stack).ifPresent(id -> {
+                    final TabletMachine machine = machineOf(server, id);
+                    final TabletHolder holder = new TabletHolder(player, stack);
+                    if (machine != null && machine.radio().accepts(holder)) ids.putIfAbsent(id, holder);
+                });
             }
-            if (player.containerMenu instanceof final AbstractTabletContainer menu) {
-                ids.add(menu.tabletId());
+            if (player.containerMenu instanceof final AbstractTabletContainer menu
+                    && canUse(player, menu.tabletId())) {
+                ids.putIfAbsent(menu.tabletId(), null);
             }
         }
         return ids;

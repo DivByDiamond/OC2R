@@ -17,13 +17,13 @@ public abstract class CaptureKeyboardMixin {
     //? if >=26.1 {
 /*    @Inject(method = "keyPress", at = @At("HEAD"), cancellable = true)
     private void oc2r$capture(final long window, final int action, final KeyEvent event, final CallbackInfo ci) {
-        if (CaptureKeyboardHook.handle(window, event.key(), event.scancode(), action)) ci.cancel();
+        if (CaptureKeyboardHook.handle(window, event.key(), event.scancode(), action, event.modifiers())) ci.cancel();
     }
 *///?} else {
     @Inject(method = "keyPress", at = @At("HEAD"), cancellable = true)
     private void oc2r$capture(final long window, final int key, final int scan, final int action,
-            final int unusedModifiers, final CallbackInfo ci) {
-        if (CaptureKeyboardHook.handle(window, key, scan, action)) ci.cancel();
+            final int modifiers, final CallbackInfo ci) {
+        if (CaptureKeyboardHook.handle(window, key, scan, action, modifiers)) ci.cancel();
     }
     //?}
 }

@@ -481,7 +481,10 @@ tasks.named<ProcessResources>("processGametestResources") {
     inputs.property("machineAcceptance", machineAcceptance)
     val mediaAcceptance = providers.gradleProperty("fabric.mediaTests").orNull == "true"
     inputs.property("mediaAcceptance", mediaAcceptance)
+    val tabletAcceptance = providers.gradleProperty("fabric.tabletTests").orNull == "true"
+    inputs.property("tabletAcceptance", tabletAcceptance)
     val clientTestClass = when {
+        tabletAcceptance -> "FabricTabletTest"
         mediaAcceptance -> "FabricMediaStationTest"
         machineAcceptance -> "FabricMachineInterfaceTest"
         gpsAcceptance -> "FabricGpsTowerTest"

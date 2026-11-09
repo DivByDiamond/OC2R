@@ -391,6 +391,34 @@ public final class RadioRegistry {
                 : Optional.empty();
     }
 
+    /**
+     * Recognizes the current item credential for local possession checks, including revoked devices.
+     * This does not authorize any network operation; those must use {@link #authenticate(UUID, String)}.
+     */
+    public boolean recognizesItemCredential(final UUID device, final String secret) {
+        final Member member = members.get(device);
+        return member != null && matches(member.credentialHash(), secret);
+    }
+
+    /**
+     * Retires the previous dimension's item credential after successful enrollment elsewhere.
+     * The matching secret proves possession; the replacement is discarded and revocation is preserved.
+     */
+    public void retireItemCredential(final UUID device, final String previousSecret) {
+        final Member member = members.get(device);
+        if (member == null || !matches(member.credentialHash(), previousSecret)) {
+            throw new SecurityException("Authentication failed");
+        }
+        if (member.generation() == Long.MAX_VALUE) throw new IllegalStateException("Generation exhausted");
+        members.put(device, new Member(member.id(), member.network(), member.dimension(), member.number(),
+                member.generation() + 1, hash(secret()), member.scopes(), member.revoked()));
+    }
+
+    /** Whether an identity has ever enrolled here, including a revoked identity. */
+    public boolean knowsIdentity(final UUID device) {
+        return members.containsKey(device);
+    }
+
     /** Authenticates and also requires the credential to belong to the given enrollment generation. */
     public Optional<Member> authenticate(final UUID device, final String secret, final long generation) {
         return authenticate(device, secret).filter(member -> member.generation() == generation);

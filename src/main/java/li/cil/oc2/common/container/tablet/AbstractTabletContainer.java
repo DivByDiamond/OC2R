@@ -107,7 +107,9 @@ public abstract class AbstractTabletContainer extends AbstractMachineTerminalCon
 
     @Override
     public boolean stillValid(final Player player) {
-        return isHolding(player, tabletId);
+        return isHolding(player, tabletId)
+                && (!(player instanceof final ServerPlayer serverPlayer)
+                        || TabletManager.canUse(serverPlayer, tabletId));
     }
 
     /** Whether the player holds the tablet with this id in either hand. */

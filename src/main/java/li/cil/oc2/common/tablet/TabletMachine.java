@@ -4,11 +4,17 @@ import static li.cil.oc2.common.Constants.ITEMS_TAG_NAME;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
+import li.cil.oc2.common.radio.RadioClientLeases;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
+import li.cil.oc2.common.tablet.radio.TabletBusElement;
+import li.cil.oc2.common.tablet.radio.TabletHolder;
+import li.cil.oc2.common.tablet.radio.TabletRadio;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.Terminal;
@@ -25,12 +31,14 @@ public final class TabletMachine {
     private static final String STATE_TAG_NAME = "state";
     private static final String TERMINAL_TAG_NAME = "terminal";
     private static final String DEVICES_TAG_NAME = "devices";
+    private static final String RADIO_SERVICES_TAG_NAME = "radio_services";
 
     private final UUID id;
     private final ServerLevel level;
     private final Terminal terminal = new Terminal();
     private final TabletInventory inventory;
     private final TabletVirtualMachine virtualMachine;
+    private final TabletRadio radio;
 
     public TabletMachine(
             final UUID id,
@@ -39,8 +47,10 @@ public final class TabletMachine {
         this.id = id;
         this.level = level;
         inventory = new TabletInventory(level::registryAccess, false);
+        radio = new TabletRadio(id, level);
         final CommonDeviceBusController bus =
-                new CommonDeviceBusController(inventory.busElement, 0, id::getMostSignificantBits);
+                new CommonDeviceBusController(
+                        new TabletBusElement(inventory.busElement, radio, id), 0, id::getMostSignificantBits);
         virtualMachine = new TabletVirtualMachine(id, level, bus, terminal, inventory, viewers);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(level);
         inventory.setOnDeviceChanged(bus::scheduleBusScan);
@@ -62,8 +72,13 @@ public final class TabletMachine {
         return terminal;
     }
 
+    public TabletRadio radio() {
+        return radio;
+    }
+
     /** Called once per server tick while the tablet is in hand or its screen is open. */
-    public void tick() {
+    public void tick(@Nullable final TabletHolder holder, final long now) {
+        radio.update(holder, now);
         virtualMachine.tick();
     }
 
@@ -87,6 +102,7 @@ public final class TabletMachine {
         }
         inventory.saveItems(level.registryAccess(), NBTUtils.getOrCreateChildTag(tag, ITEMS_TAG_NAME));
         tag.put(DEVICES_TAG_NAME, inventory.saveDevices(level.registryAccess()));
+        tag.putString(RADIO_SERVICES_TAG_NAME, String.join("\n", radio.services()));
         return tag;
     }
 
@@ -98,10 +114,17 @@ public final class TabletMachine {
         inventory.loadItems(level.registryAccess(), NBTUtils.getChildTag(tag, ITEMS_TAG_NAME));
         inventory.loadDevices(level.registryAccess(), NBTUtils.getChildTag(tag, DEVICES_TAG_NAME));
         inventory.ensureFixedMemory();
+        //? if >=26.1 {
+        /*final String services = tag.getStringOr(RADIO_SERVICES_TAG_NAME, "");
+        *///?} else {
+        final String services = tag.getString(RADIO_SERVICES_TAG_NAME);
+        //?}
+        radio.restoreServices(services.isEmpty() ? java.util.List.of() : Arrays.asList(services.split("\n")));
     }
 
     /** Releases the machine after {@link #save()}; the state stays in the store. */
     public void suspend() {
+        radio.release(RadioClientLeases.Reason.DROPPED);
         virtualMachine.suspend();
         virtualMachine.dispose();
     }
