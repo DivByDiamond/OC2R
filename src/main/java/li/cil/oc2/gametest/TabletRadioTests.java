@@ -442,6 +442,39 @@ public final class TabletRadioTests {
         helper.succeed();
     }
 
+    @GameTest(template = WIDE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 400)
+    public static void droppedTabletImmediatelyCancelsIncomingCommandsAndClearsItsGuestInbox(final GameTestHelper helper) {
+        final Site site = new Site(helper);
+        final String ping = UUID.randomUUID().toString(), command = UUID.randomUUID().toString();
+        final List<RadioServiceBroker.Event> events = new ArrayList<>();
+        helper.startSequence().thenExecute(() -> {
+            site.moveTo(5);
+            site.tick();
+            site.enroll();
+            site.device().registerRadioService("chat");
+            site.grantPc("MESSAGE_SEND", "COMMAND_SEND");
+            site.device().pingRadio(site.pcAddress, ping);
+        }).thenWaitUntil(() -> {
+            events.addAll(site.device().pollRadioEvents());
+            TestSupport.assertTrue(helper, "tablet link is established", events.stream().anyMatch(event ->
+                    event.requestId().toString().equals(ping) && event.state() == RadioServiceBroker.State.COMPLETED));
+        }).thenExecute(() -> {
+            site.pc.sendRadioCommand(site.address, "chat", "work", command, "old", 100);
+            site.pc.sendRadioMessage(site.address, "chat", "text", UUID.randomUUID().toString(), "old inbox");
+        }).thenIdle(5).thenExecute(() -> {
+            site.tickIdle();
+            final var stopped = site.pc.pollRadioEvents();
+            TestSupport.assertTrue(helper, "drop disconnects incoming command without waiting for a broker tick",
+                    stopped.stream().anyMatch(event -> event.requestId().toString().equals(command)
+                            && event.state() == RadioServiceBroker.State.DISCONNECTED));
+            site.tick();
+            TestSupport.assertTrue(helper, "resumed tablet has no stale guest inbox", site.device().pollRadioMessages().isEmpty());
+            TestSupport.assertTrue(helper, "a pre-drop command cannot complete after resume",
+                    site.refused(() -> site.device().updateRadioCommand(command, "COMPLETED", "late")));
+            site.finish();
+        }).thenSucceed();
+    }
+
     private static boolean hasMethod(final RPCDevice rpc, final String name) {
         return rpc.getMethodGroups().stream().anyMatch(group -> group.getName().equals(name));
     }

@@ -1,9 +1,9 @@
 package li.cil.oc2.common.radio.service;
 
-import li.cil.oc2.common.radio.*;
-import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import li.cil.oc2.common.radio.*;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class RadioServiceBrokerTest {
@@ -37,6 +37,67 @@ final class RadioServiceBrokerTest {
     RadioServiceBroker.Session session(RadioRegistry.Permission... permissions) {
         var enrollment = enroll(source, permissions); enroll(target);
         return broker.connect(source, enrollment.secret());
+    }
+    @Test void unregisterCancelsTargetCommandsBeforeDeliveryEvenAfterImmediateReregistration() {
+        var session = session(RadioRegistry.Permission.COMMAND_SEND);
+        var executions = new AtomicLong();
+        var endpoint = new RadioServiceBroker.Endpoint() {
+            @Override public void command(RadioMessage message, RadioServiceBroker.Command command) {
+                executions.incrementAndGet();
+                command.completed(new byte[0]);
+            }
+        };
+        broker.register(target, STATUS, endpoint);
+        var command = session.command(registry.address(target), STATUS, "run", UUID.randomUUID(), new byte[0], 100);
+        broker.unregister(target, STATUS);
+        broker.register(target, STATUS, endpoint);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(RadioServiceBroker.State.DISCONNECTED, command.state());
+        assertEquals(0, executions.get());
+    }
+    @Test void unregisterDropsOldMessagesAcrossImmediateReregistration() {
+        var session = session(RadioRegistry.Permission.MESSAGE_SEND);
+        var received = new AtomicLong();
+        var endpoint = new RadioServiceBroker.Endpoint() {
+            @Override public void message(RadioMessage message) { received.incrementAndGet(); }
+        };
+        broker.register(target, STATUS, endpoint);
+        session.message(registry.address(target), STATUS, "text", UUID.randomUUID(), new byte[0]);
+        broker.unregister(target, STATUS);
+        broker.register(target, STATUS, endpoint);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(0, received.get());
+        session.message(registry.address(target), STATUS, "text", UUID.randomUUID(), new byte[0]);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(1, received.get());
+    }
+    @Test void unregisterCancelsTargetSubscriptionsAndTheirQueuedSamples() {
+        var session = session(RadioRegistry.Permission.TELEMETRY_READ);
+        var endpoint = new RadioServiceBroker.Endpoint() {};
+        broker.register(target, STATUS, endpoint);
+        session.subscribe(registry.address(target), STATUS, Set.of(ENERGY), 100);
+        broker.publish(target, STATUS, ENERGY, new byte[]{1});
+        broker.unregister(target, STATUS);
+        broker.register(target, STATUS, endpoint);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertTrue(session.poll().stream().noneMatch(event -> event.message() != null));
+        broker.publish(target, STATUS, ENERGY, new byte[]{2});
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertTrue(session.poll().stream().noneMatch(event -> event.message() != null));
+    }
+    @Test void sameHandlerGenerationRefreshPreservesMessagesSentAfterThePermissionChange() {
+        var session = session(RadioRegistry.Permission.MESSAGE_SEND);
+        var received = new AtomicLong();
+        var endpoint = new RadioServiceBroker.Endpoint() {
+            @Override public void message(RadioMessage message) { received.incrementAndGet(); }
+        };
+        broker.register(target, STATUS, endpoint);
+        registry.setScopes(network.network(), network.adminSecret(), target, Set.of());
+        // The sender sees the new enrollment immediately; the receiver refreshes on its next host tick.
+        session.message(registry.address(target), STATUS, "text", UUID.randomUUID(), new byte[0]);
+        broker.register(target, STATUS, endpoint);
+        while (!deliveries.isEmpty()) deliveries.remove().run();
+        assertEquals(1, received.get());
     }
     @Test void peersListOwnNetworkWithReachability() {
         var session = session(RadioRegistry.Permission.TELEMETRY_READ);

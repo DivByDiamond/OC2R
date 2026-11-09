@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import li.cil.oc2.api.bus.device.object.Callback;
+import li.cil.oc2.api.bus.device.object.LifecycleAwareDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.api.bus.device.rpc.IEventSink;
 import li.cil.oc2.api.bus.device.rpc.RPCEventSource;
@@ -20,8 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Samples only its own loaded block, at most once per second, and emits environmental changes. */
 public final class EnvironmentSensorBlockEntity extends ModBlockEntity
-        implements NamedDevice, TickableBlockEntity, RPCEventSource {
+        implements NamedDevice, TickableBlockEntity, RPCEventSource, LifecycleAwareDevice {
     public static final int SAMPLE_INTERVAL_TICKS = 20;
+    private final AtomicInteger activeMounts = new AtomicInteger();
     private final Map<IEventSink, UUID> subscribers = new ConcurrentHashMap<>();
     private Map<String, Object> sample = Map.of();
     private Map<String, Object> previousEnvironment = Map.of();
@@ -33,7 +36,21 @@ public final class EnvironmentSensorBlockEntity extends ModBlockEntity
 
     @Override
     public void serverTick() {
-        sampleIfDue();
+        if (level == null || !isValid()) return;
+        final boolean active = activeMounts.get() > 0;
+        if (getBlockState().getValue(EnvironmentSensorBlock.LIT) != active)
+            level.setBlock(worldPosition, getBlockState().setValue(EnvironmentSensorBlock.LIT, active), 3);
+        if (active) sampleIfDue();
+    }
+
+    @Override
+    public void onDeviceMounted() {
+        activeMounts.incrementAndGet();
+    }
+
+    @Override
+    public void onDeviceUnmounted() {
+        if (activeMounts.updateAndGet(count -> Math.max(0, count - 1)) == 0) subscribers.clear();
     }
 
     @Callback
@@ -85,8 +102,6 @@ public final class EnvironmentSensorBlockEntity extends ModBlockEntity
         next.put("sampledAt", now);
         sample = Map.copyOf(next);
         sampledAt = now;
-        if (!getBlockState().getValue(EnvironmentSensorBlock.LIT))
-            level.setBlock(worldPosition, getBlockState().setValue(EnvironmentSensorBlock.LIT, true), 3);
         if (!previousEnvironment.isEmpty() && !previousEnvironment.equals(environment)) {
             final JsonObject event = new JsonObject();
             event.addProperty("event", "environment_changed");
@@ -115,6 +130,7 @@ public final class EnvironmentSensorBlockEntity extends ModBlockEntity
     @Override
     protected void unloadServer(final boolean removed) {
         super.unloadServer(removed);
+        activeMounts.set(0);
         subscribers.clear();
     }
 }

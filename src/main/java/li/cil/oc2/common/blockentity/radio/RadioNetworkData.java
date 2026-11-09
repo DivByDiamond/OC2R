@@ -218,6 +218,20 @@ public final class RadioNetworkData extends SavedData {
                 z);
     }
 
+    /** Bridges uplink to a tower directly; another dock or access point cannot extend that reach. */
+    public java.util.Optional<RadioAccessPoints.Attachment> bridgeAccess(
+            final ServerLevel level,
+            final UUID endpoint,
+            final String credential,
+            final double x,
+            final double z) {
+        reconcile(level);
+        final var member = registry.authenticate(endpoint, credential);
+        if (member.isEmpty()) return java.util.Optional.empty();
+        return RadioAccessPoints.resolve(topology.nodes(), java.util.List.of(),
+                member.get().network(), member.get().dimension(), x, z);
+    }
+
     public void transmit(
             final ServerLevel level,
             final UUID source,
@@ -236,7 +250,7 @@ public final class RadioNetworkData extends SavedData {
     public void transmitFromBridge(
             final ServerLevel level, final DockBridge bridge, final byte[] frame, final int ttl) {
         if (delivering || !bridge.enrolled()) return;
-        access(level, bridge.id(), bridge.credential(), bridge.x(), bridge.z())
+        bridgeAccess(level, bridge.id(), bridge.credential(), bridge.x(), bridge.z())
                 .ifPresent(attachment -> flood(level, attachment.tower().device(), bridge.id(), frame, ttl));
     }
 

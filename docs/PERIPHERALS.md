@@ -2,14 +2,23 @@
 
 ## Wireless access point
 
-`oc2r:wireless_access_point` uses the supplied flat modem model. Place a normal network connector
-against its underside, then join it to another connector with the blue Ethernet cable. Ethernet
-is available only on the bottom face; the device bus may access the block from an adjacent cable interface.
-The indicator animates while it has an authenticated tower attachment.
+`oc2r:wireless_access_point` uses the supplied flat modem model. Connect an ordinary device-bus cable/interface
+below it to expose radio messages, telemetry and control RPC to a running computer. An adjacent side interface
+also works. Standard Ethernet uses a network connector against the underside and the blue network cable;
+its network-interface port is available only on the bottom face.
+The off texture is shown while disconnected. An authenticated tower attachment enables the three original on frames
+in their supplied order, at six ticks per frame, without interpolation.
 
 Read `getRadioEndpointId()` through the device bus. Issue an approved invitation for that endpoint
 from the network administrator's tower RPC, then call `joinRadioNetwork(invite, secret)` on the access point.
-`getRadioAddress()` and `getRadioStatus()` expose its address and connection state, without the credential.
+`getRadioAddress()` and `getRadioStatus()` expose its own address and connection state, without the credential.
+A running computer connected to the access point's device bus can register services, send and receive ORA messages,
+ping, discover devices, publish/subscribe telemetry and send/answer commands through the tower network. Permissions
+belong to the access point's enrolled identity, not the tower. The `gps_tower` radio discovery alias keeps `ochat`
+compatible; it does not add positioning hardware. Guest services disconnect and pending work is cancelled when the
+computer stops or its bus detaches, while wireless client coverage and the Ethernet bridge remain available.
+`getRadioStatus().guestOnline` distinguishes the guest service from infrastructure connectivity.
+Named services survive save/load but an offline guest cannot receive commands successfully.
 Enrollment, revocation, persistence, frame limits and duplicate suppression use the existing radio implementation.
 An unenrolled, revoked or duplicate loaded identity cannot bridge traffic or provide access-point coverage.
 
@@ -35,5 +44,8 @@ It appears as `environment_sensor` on `/dev/hvc0`.
   or temperature. Its payload contains `sampledAt`; call `getEnvironment()` for the new snapshot.
   Ordinary passage of time does not generate an event every second.
 
-Sampling reads only the sensor's own loaded block. Sampling and events stop when it unloads, and event subscriptions
-are cleared. The indicator lights after the first server sample. No neighboring chunks are loaded for measurements.
+Sampling reads only the sensor's own loaded block. Automatic sampling and the on indicator require a mounted device connection to a running VM.
+A nearby stopped computer or an unattached bus does not light the sensor. Its two supplied textures represent
+disconnected/off and mounted/on; no extra frames are invented. Direct diagnostic reads remain bounded to the
+same sampling interval. Sampling and events stop when it unloads, and event subscriptions are cleared when
+their controller disconnects. No neighboring chunks are loaded for measurements.

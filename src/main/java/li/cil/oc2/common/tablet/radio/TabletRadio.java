@@ -124,6 +124,7 @@ public final class TabletRadio {
     public void release(final RadioClientLeases.Reason reason) {
         if (!active) return;
         active = false;
+        endpoint.disconnect();
         if (leaseData != null) leaseData.leases().suspend(id, reason);
         leaseData = null;
         endpoint.identity(id, "");

@@ -77,10 +77,50 @@ public final class FabricPeripheralTest implements FabricClientGameTest {
                 }
             });
             context.takeScreenshot("oc2r-wireless-access-point-and-environment-sensor");
+            world.getServer().runOnServer(FabricPeripheralTest::activateDevices);
+            context.waitFor(client -> client.level.getBlockState(POINT).getValue(WirelessAccessPointBlock.LIT)
+                    && client.level.getBlockState(SENSOR).getValue(EnvironmentSensorBlock.LIT), 240);
+            context.waitTicks(12);
+            context.takeScreenshot("oc2r-peripherals-active-radio-pulse-and-sensor");
+            context.waitTicks(6);
+            context.takeScreenshot("oc2r-peripherals-active-radio-pulse-next-frame");
             world.getServer().runCommand("tp @a 1.4 -58.8 -2.8 27 -25");
             context.waitTicks(15);
             context.takeScreenshot("oc2r-wireless-access-point-bottom-connector");
         }
+    }
+
+    private static void activateDevices(final net.minecraft.server.MinecraftServer server) {
+        final var level = server.overworld();
+        final BlockPos towerPos = new BlockPos(8, -59, 0);
+        level.setBlockAndUpdate(towerPos.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        for (int part = 0; part < 5; part++)
+            level.setBlockAndUpdate(towerPos.above(part), Blocks.GPS_TOWER.get().defaultBlockState()
+                    .setValue(li.cil.oc2.common.block.gps.GpsTowerBlock.PART, part));
+        final var tower = (li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity) level.getBlockEntity(towerPos);
+        final var point = (li.cil.oc2.common.blockentity.network.WirelessAccessPointBlockEntity) level.getBlockEntity(POINT);
+        final String admin = tower.createRadioNetwork().get("adminSecret");
+        final var invitation = tower.issueRadioInvite(admin, point.getRadioEndpointId());
+        point.joinRadioNetwork(invitation.get("invite"), invitation.get("secret"));
+        final BlockPos computerPos = SENSOR.east(2);
+        final BlockPos cablePos = SENSOR.east();
+        level.setBlockAndUpdate(computerPos.below(), Blocks.CREATIVE_ENERGY.get().defaultBlockState());
+        level.setBlockAndUpdate(computerPos, Blocks.COMPUTER.get().defaultBlockState());
+        level.setBlockAndUpdate(cablePos, Blocks.BUS_CABLE.get().defaultBlockState());
+        li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, cablePos,
+                level.getBlockState(cablePos), Direction.WEST);
+        li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, cablePos,
+                level.getBlockState(cablePos), Direction.EAST);
+        final var computer = (li.cil.oc2.common.blockentity.computer.ComputerBlockEntity) level.getBlockEntity(computerPos);
+        final var devices = computer.getItemStackHandlers();
+        devices.getItemHandler(li.cil.oc2.api.bus.device.DeviceTypes.CPU).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.CPU_TIER_1.get()));
+        devices.getItemHandler(li.cil.oc2.api.bus.device.DeviceTypes.MEMORY).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.MEMORY_EXTRA_LARGE.get()));
+        devices.getItemHandler(li.cil.oc2.api.bus.device.DeviceTypes.FLASH_MEMORY).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.FLASH_MEMORY_ONYXOS.get()));
+        computer.energy.receiveEnergy(Integer.MAX_VALUE, false);
+        computer.virtualMachine.start();
     }
 
     private static void assertModel(final Minecraft client, final BlockState state, final String texture) {
@@ -107,7 +147,12 @@ public final class FabricPeripheralTest implements FabricClientGameTest {
                     }
                     final String name = quad.materialInfo().sprite().contents().name().toString();
                     if (name.contains("missingno")) throw new AssertionError("Missing texture for " + state);
-                    expectedTexture |= name.equals("oc2r:block/" + texture);
+                    if (name.equals("oc2r:block/" + texture)) {
+                        expectedTexture = true;
+                        final boolean animated = quad.materialInfo().sprite().contents().isAnimated();
+                        if (animated != texture.equals("wireless_access_point/on"))
+                            throw new AssertionError("Unexpected texture animation state for " + texture);
+                    }
                 }
             }
         }
