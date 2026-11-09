@@ -2,7 +2,10 @@ package li.cil.oc2.common.block.misc;
 
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import li.cil.oc2.api.bus.device.provider.SidedBlockDevice;
+import li.cil.oc2.common.block.cable.BusCableStateProperties;
 import li.cil.oc2.common.block.common.BlockCodecs;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.util.block.VoxelShapeUtils;
@@ -20,7 +23,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.*;
 
 /** A wall-mounted local environment probe exposed through the device bus. */
-public final class EnvironmentSensorBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public final class EnvironmentSensorBlock extends HorizontalDirectionalBlock implements EntityBlock, SidedBlockDevice {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     private static final VoxelShape NORTH_SHAPE = Block.box(5, 6, 12, 13, 11, 16);
     // This legacy helper rotates the north model toward west in world coordinates.
@@ -52,7 +55,12 @@ public final class EnvironmentSensorBlock extends HorizontalDirectionalBlock imp
             final BlockPos pos) {
         final Direction facing = state.getValue(FACING);
         final BlockPos support = pos.relative(facing.getOpposite());
-        return level.getBlockState(support).isFaceSturdy(level, support, facing);
+        final BlockState backing = level.getBlockState(support);
+        return backing.isFaceSturdy(level, support, facing)
+                || backing.is(Blocks.BUS_CABLE.get())
+                        && (backing.getValue(BusCableStateProperties.HAS_CABLE)
+                                || BusCableStateProperties.getConnectionType(backing, facing)
+                                        == li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
     }
 
     @Override
@@ -67,6 +75,11 @@ public final class EnvironmentSensorBlock extends HorizontalDirectionalBlock imp
     //?}
         return side == state.getValue(FACING).getOpposite() && !state.canSurvive(level, pos)
                 ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : state;
+    }
+
+    @Override
+    public boolean canConnectDevice(final BlockState state, @Nullable final Direction side) {
+        return side == state.getValue(FACING).getOpposite();
     }
 
     @Override

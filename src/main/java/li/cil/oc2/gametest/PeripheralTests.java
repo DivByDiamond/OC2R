@@ -146,23 +146,22 @@ public final class PeripheralTests {
     }
 
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 200)
-    public static void sensorWallPlacementWorksWithSideBusAndDropsWithoutSupport(final GameTestHelper helper) {
+    public static void sensorRearPlacementWorksWithRearBusAndDropsWithoutSupport(final GameTestHelper helper) {
         final var player = TestSupport.fakePlayer(helper);
         TestSupport.placePower(helper, player);
         final var computer = ComputerFixture.place(helper, player);
         TestSupport.place(helper, player, new ItemStack(Items.BUS_CABLE.get()), TestSupport.CABLE_POS);
         TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.WEST);
-        helper.setBlock(TestSupport.DEVICE_POS.south(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
         TestSupport.useOn(helper, player, new ItemStack(Items.ENVIRONMENT_SENSOR.get()),
-                TestSupport.DEVICE_POS.south(), Direction.NORTH);
+                TestSupport.CABLE_POS, Direction.EAST);
         TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.EAST);
-        helper.startSequence().thenWaitUntil(() -> TestSupport.assertTrue(helper, "sensor RPC discovered through side bus",
+        helper.startSequence().thenWaitUntil(() -> TestSupport.assertTrue(helper, "sensor RPC discovered through rear bus",
                 computer.devices().stream().anyMatch(device -> device instanceof final li.cil.oc2.api.bus.device.rpc.RPCDevice rpc
                         && rpc.getTypeNames().contains("environment_sensor")
                         && rpc.getMethodGroups().stream().anyMatch(group -> group.getName().equals("getEnvironment")))))
-                .thenExecute(() -> helper.setBlock(TestSupport.DEVICE_POS.south(),
+                .thenExecute(() -> helper.setBlock(TestSupport.CABLE_POS,
                         net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()))
-                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "sensor cannot float without wall",
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "sensor cannot float without rear support",
                         helper.getBlockState(TestSupport.DEVICE_POS).isAir()))
                 .thenSucceed();
     }
@@ -189,6 +188,42 @@ public final class PeripheralTests {
                 default -> false;
             };
             TestSupport.assertTrue(helper, "selection box meets backing wall for " + facing, touchingWall);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void sensorRearSocketsRejectOtherFacesInAllFourDirections(final GameTestHelper helper) {
+        final var player = TestSupport.fakePlayer(helper);
+        final var provider = new li.cil.oc2.common.bus.device.rpc.block.BlockEntityObjectDeviceProvider();
+        int index = 0;
+        for (final Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            final BlockPos pos = new BlockPos(5 + 5 * index++, 3, 8);
+            final Direction rear = facing.getOpposite();
+            final BlockPos backing = pos.relative(rear);
+            helper.setBlock(backing, Blocks.BUS_CABLE.get().defaultBlockState());
+            TestSupport.useOn(helper, player, new ItemStack(Items.ENVIRONMENT_SENSOR.get()), backing, facing);
+            TestSupport.assertTrue(helper, "sensor mounts on its rear cable facing " + facing,
+                    helper.getBlockState(pos).is(Blocks.ENVIRONMENT_SENSOR.get()));
+            final BlockPos absolute = helper.absolutePos(pos);
+            for (final Direction side : Direction.values()) {
+                final boolean exposed = provider.getDevice(li.cil.oc2.common.bus.device.util.Devices.makeQuery(
+                        helper.getLevel(), absolute, side)).isPresent();
+                TestSupport.assertTrue(helper, "RPC exposed only through rear " + facing + "/" + side,
+                        exposed == (side == rear));
+                final BlockPos cable = pos.relative(side);
+                if (side != rear) helper.setBlock(cable, Blocks.BUS_CABLE.get().defaultBlockState());
+                final boolean connected = li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(
+                        helper.getLevel(), helper.absolutePos(cable), helper.getBlockState(cable), side.getOpposite());
+                TestSupport.assertTrue(helper, "interface accepts only rear socket " + facing + "/" + side,
+                        connected == (side == rear));
+                if (side != rear) TestSupport.assertTrue(helper, "wrong-side cable has no connection beam",
+                        li.cil.oc2.common.block.cable.BusCableStateProperties.getConnectionType(
+                                helper.getBlockState(cable), side.getOpposite())
+                                == li.cil.oc2.common.block.types.ConnectionType.NONE);
+            }
+            TestSupport.assertTrue(helper, "unsided RPC cannot bypass rear socket", provider.getDevice(
+                    li.cil.oc2.common.bus.device.util.Devices.makeQuery(helper.getLevel(), absolute, null)).isEmpty());
         }
         helper.succeed();
     }

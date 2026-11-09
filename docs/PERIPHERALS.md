@@ -32,7 +32,10 @@ continue to work through the authenticated bridge.
 ## Environment sensor
 
 `oc2r:environment_sensor` uses the supplied wall-panel geometry and rotates horizontally. Its rear
-is against the wall; connect a device-bus cable/interface to any exposed adjacent side. No network card is required.
+is against the support: mount it directly on the outward face of a device-bus cable and add an interface
+on that cable face. Only the sensor's rear accepts RPC; front, side, top, bottom and unsided queries do not.
+A solid wall can also support a disconnected decorative sensor. Existing paid side interfaces remain
+physical cable parts after upgrading, but no longer expose the sensor; move them to its rear. No network card is required.
 It appears as `environment_sensor` on `/dev/hvc0`.
 
 - `getEnvironment()` returns a read-only snapshot of the local biome ID, biome temperature, sky light,

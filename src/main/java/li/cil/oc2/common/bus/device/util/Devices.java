@@ -13,6 +13,7 @@ import li.cil.oc2.api.bus.device.provider.BlockDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.BlockDeviceQuery;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceProvider;
 import li.cil.oc2.api.bus.device.provider.ItemDeviceQuery;
+import li.cil.oc2.api.bus.device.provider.SidedBlockDevice;
 import li.cil.oc2.common.bus.device.DeviceGroup;
 import li.cil.oc2.common.bus.device.provider.Providers;
 import li.cil.oc2.common.bus.device.util.info.BlockDeviceInfo;
@@ -61,6 +62,11 @@ public final class Devices {
         if (!query.getLevel().hasChunk(queryChunk.x, queryChunk.z)) {
         //?}
             return Optional.empty();
+        }
+
+        if (!SidedBlockDevice.permits(
+                query.getLevel().getBlockState(query.getQueryPosition()), query.getQuerySide())) {
+            return Optional.of(List.of());
         }
 
         final Registry<BlockDeviceProvider> registry = Providers.blockDeviceProviderRegistry();

@@ -84,9 +84,9 @@ public final class FabricPeripheralTest implements FabricClientGameTest {
             context.takeScreenshot("oc2r-peripherals-active-radio-pulse-and-sensor");
             context.waitTicks(6);
             context.takeScreenshot("oc2r-peripherals-active-radio-pulse-next-frame");
-            world.getServer().runCommand("tp @a 1.4 -58.8 -2.8 27 -25");
+            world.getServer().runCommand("tp @a 4.2 -56.2 4.0 145 12");
             context.waitTicks(15);
-            context.takeScreenshot("oc2r-wireless-access-point-bottom-connector");
+            context.takeScreenshot("oc2r-environment-sensor-rear-connection");
         }
     }
 
@@ -102,15 +102,20 @@ public final class FabricPeripheralTest implements FabricClientGameTest {
         final String admin = tower.createRadioNetwork().get("adminSecret");
         final var invitation = tower.issueRadioInvite(admin, point.getRadioEndpointId());
         point.joinRadioNetwork(invitation.get("invite"), invitation.get("secret"));
-        final BlockPos computerPos = SENSOR.east(2);
-        final BlockPos cablePos = SENSOR.east();
+        final BlockPos computerPos = SENSOR.south(3);
+        final BlockPos cablePos = SENSOR.south(2);
+        final BlockPos rearCable = SENSOR.south();
         level.setBlockAndUpdate(computerPos.below(), Blocks.CREATIVE_ENERGY.get().defaultBlockState());
         level.setBlockAndUpdate(computerPos, Blocks.COMPUTER.get().defaultBlockState());
+        level.setBlockAndUpdate(rearCable, Blocks.BUS_CABLE.get().defaultBlockState());
         level.setBlockAndUpdate(cablePos, Blocks.BUS_CABLE.get().defaultBlockState());
+        li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, rearCable,
+                level.getBlockState(rearCable), Direction.NORTH);
         li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, cablePos,
-                level.getBlockState(cablePos), Direction.WEST);
-        li.cil.oc2.common.block.cable.BusCableStateProperties.addInterface(level, cablePos,
-                level.getBlockState(cablePos), Direction.EAST);
+                level.getBlockState(cablePos), Direction.SOUTH);
+        for (final BlockPos pos : List.of(rearCable, cablePos))
+            level.setBlockAndUpdate(pos, li.cil.oc2.common.block.cable.BusCableStateProperties.recomputeConnections(
+                    level, pos, level.getBlockState(pos)));
         final var computer = (li.cil.oc2.common.blockentity.computer.ComputerBlockEntity) level.getBlockEntity(computerPos);
         final var devices = computer.getItemStackHandlers();
         devices.getItemHandler(li.cil.oc2.api.bus.device.DeviceTypes.CPU).orElseThrow()

@@ -33,8 +33,8 @@ public final class PeripheralAnimationTests {
         TestSupport.place(helper, player, new ItemStack(Items.BUS_CABLE.get()), TestSupport.CABLE_POS);
         TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.WEST);
         final BlockPos sensor = TestSupport.DEVICE_POS;
-        helper.setBlock(sensor.south(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
-        helper.setBlock(sensor, Blocks.ENVIRONMENT_SENSOR.get().defaultBlockState());
+        TestSupport.useOn(helper, player, new ItemStack(Items.ENVIRONMENT_SENSOR.get()),
+                TestSupport.CABLE_POS, Direction.EAST);
         helper.startSequence().thenIdle(25)
                 .thenExecute(() -> {
                     TestSupport.assertTrue(helper, "unconnected sensor stays off after sampling interval", !lit(helper, sensor));
@@ -46,6 +46,19 @@ public final class PeripheralAnimationTests {
                     TestSupport.connectInterface(helper, TestSupport.CABLE_POS, Direction.EAST);
                 })
                 .thenWaitUntil(() -> TestSupport.assertTrue(helper, "hot-plug lights the mounted sensor", lit(helper, sensor)))
+                .thenExecute(() -> {
+                    helper.setBlock(sensor.east(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+                    helper.setBlock(sensor, helper.getBlockState(sensor).setValue(EnvironmentSensorBlock.FACING, Direction.WEST));
+                })
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "rotated front cannot retain cached rear RPC", !lit(helper, sensor)))
+                .thenExecute(() -> {
+                    TestSupport.assertTrue(helper, "paid interface remains installed after sensor rotates away",
+                            li.cil.oc2.common.block.cable.BusCableStateProperties.getConnectionType(
+                                    helper.getBlockState(TestSupport.CABLE_POS), Direction.EAST)
+                                    == li.cil.oc2.common.block.types.ConnectionType.INTERFACE);
+                    helper.setBlock(sensor, helper.getBlockState(sensor).setValue(EnvironmentSensorBlock.FACING, Direction.EAST));
+                })
+                .thenWaitUntil(() -> TestSupport.assertTrue(helper, "returning rear to cable restores mount", lit(helper, sensor)))
                 .thenExecute(computer::stop)
                 .thenWaitUntil(() -> TestSupport.assertTrue(helper, "stopping VM turns sensor off", !lit(helper, sensor)))
                 .thenExecute(computer::start)
@@ -58,7 +71,8 @@ public final class PeripheralAnimationTests {
     }
 
     private static boolean lit(final GameTestHelper helper, final BlockPos pos) {
-        return helper.getBlockState(pos).getValue(EnvironmentSensorBlock.LIT);
+        final var state = helper.getBlockState(pos);
+        return state.is(Blocks.ENVIRONMENT_SENSOR.get()) && state.getValue(EnvironmentSensorBlock.LIT);
     }
 
     private PeripheralAnimationTests() {}
