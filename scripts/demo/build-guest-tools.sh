@@ -8,3 +8,6 @@ for tool in netcfg udpdemo tcpdemo tcpserve udpserve tcpstream; do
   "$compiler_root/onyxcc" --ring1 -I "$compiler_root/include/sys" -I "$repo_root/scripts/demo/guest" \
     -o "$output_dir/$tool.onx" "$repo_root/scripts/demo/guest/$tool.c"
 done
+"$compiler_root/onyxcc" --ring1 -I "$compiler_root/include/sys" -I "$repo_root/scripts/demo/guest" \
+  -o "$output_dir/oc2ctl.onx" "$repo_root/scripts/demo/guest/oc2ctl.c" \
+  "$repo_root/scripts/demo/guest/oc2rpc.c"
