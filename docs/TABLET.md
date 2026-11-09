@@ -1,9 +1,8 @@
 # Tablet
 
-> **Status: first version in the game, terminal screen only.** The tablet item, its machine, the world-data
-> persistence and the terminal screen with keyboard capture exist. There is no framebuffer screen, no small
-> screen in hand and no mouse pointer for the guest yet. Radio enrollment and guest RPC are implemented.
-> Items marked "Planned" below are targets. Progress is tracked in [roadmap/tablet-radio.md](roadmap/tablet-radio.md).
+> **Status: terminal and guest graphics are implemented.** The built-in 256 × 160 screen displays
+> the guest framebuffer. Screen and Console tabs share the same running machine. A live screen
+> on the held item remains planned. Radio enrollment and guest RPC are implemented.
 
 ## Implemented now
 
@@ -14,7 +13,10 @@
 - The machine state is written to `<world>/data/oc2r_tablets/<uuid>.dat` under the id stored in the item.
 - The machine runs only while the tablet is in a hand or its screen is open. Two seconds after that it is saved and
   released, so dropping, dying and logging out lose nothing. A server crash loses what happened since the last save.
-- The screen is the guest terminal. Keyboard input goes to the guest, released with `CaptureKeyBinding.RELEASE`.
+- Screen displays a fixed 256 × 160 RGB565 guest framebuffer; Console displays the UART terminal.
+  Switching views keeps the running application and machine. Graphics use absolute pointer coordinates
+  and evdev keyboard input; Console keeps the existing UART keyboard path. Input is released with
+  `CaptureKeyBinding.RELEASE`. Closing the screen, changing views or losing focus releases held input.
 - The guest device bus is on `/dev/hvc0` like in a computer. The built-in `tablet` device exposes radio RPC.
   It also advertises the `gps_tower` compatibility type used by the bundled `ochat` discovery code;
   this alias provides radio calls, not tower GPS functions.
@@ -48,11 +50,11 @@ These numbers are starting values and may change after performance testing.
   and its state is kept. Dropping the item, dying or logging out suspends it without losing data.
 - Background work while carried in the inventory is not part of the first version.
 
-## Screen and input (planned)
+## Screen and input
 
-- Held in hand, the tablet shows a small live copy of its screen.
-- Right click opens the large screen. All keys of a QWERTY keyboard and the mouse go to the guest, so any program can read
-  typing, shortcuts and clicks.
+- A live screen on the item held in hand remains planned.
+- Right click opens the tablet screen. Screen routes QWERTY keys and mouse clicks to the built-in
+  VirtIO input device; Console routes typing to the UART terminal. Both views use the same VM.
 - Input is released with `CaptureKeyBinding.RELEASE` (Right Ctrl by default, rebindable), the same single key
   as the monitor and keyboard capture. There is no second binding.
 
@@ -97,6 +99,18 @@ The operating system lives on the disk or flash item, not in the tablet. To repl
 A tablet without a disk does not boot. The default tablet comes with a flash carrying the tablet build of OnyxOS.
 
 ## Writing software for the tablet
+
+### Trying the graphical screen
+
+In Console, log in as `root` and run `otablet --device`. Select Screen to see the guest-rendered
+widgets. The counter button changes the counter and progress bar; Console shows `OTABLET_CLICK=1`.
+Switching views leaves the application running. Return to Screen and press Q, Escape or right click
+to exit the demo. Existing saved flash images need the updated OnyxOS build for this demo.
+
+The built-in display is a `simple-framebuffer` FDT device: 256 × 160 pixels, RGB565 little endian,
+512-byte stride. The frame-present extension matches monitors. The built-in VirtIO input device
+advertises absolute X/Y ranges 0–255 / 0–159, Linux evdev keyboard codes and three pointer buttons.
+Framebuffer pixels and input device state are saved with the tablet machine.
 
 ### C programs for OnyxOS
 

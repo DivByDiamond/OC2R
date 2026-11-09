@@ -16,13 +16,19 @@ public final class TabletBusElement extends AbstractDeviceBusElement {
     private final DeviceBusElement items;
     private final Device device;
     private final UUID deviceId;
+    private final Device display;
+    private final UUID displayId;
 
-    public TabletBusElement(final DeviceBusElement items, final TabletRadio radio, final UUID deviceId) {
+    public TabletBusElement(final DeviceBusElement items, final TabletRadio radio,
+            final UUID deviceId, final Device display) {
         super();
         this.items = items;
         // Existing ochat discovers the radio RPC through this compatibility type.
         this.device = new ObjectDevice(new TabletDevice(radio), "tablet", "gps_tower");
         this.deviceId = deviceId;
+        this.display = display;
+        this.displayId = UUID.nameUUIDFromBytes(
+                (deviceId + ":display").getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     }
 
     @Override
@@ -32,11 +38,12 @@ public final class TabletBusElement extends AbstractDeviceBusElement {
 
     @Override
     public Collection<Device> getLocalDevices() {
-        return List.of(device);
+        return List.of(device, display);
     }
 
     @Override
     public Optional<UUID> getDeviceIdentifier(final Device other) {
+        if (other.equals(display)) return Optional.of(displayId);
         return other.equals(device) ? Optional.of(deviceId) : super.getDeviceIdentifier(other);
     }
 }

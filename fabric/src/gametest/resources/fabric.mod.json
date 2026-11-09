@@ -36,6 +36,7 @@
       "li.cil.oc2.gametest.RedstoneInterfaceTests",
       "li.cil.oc2.gametest.RegistrationTests",
       "li.cil.oc2.gametest.TabletTests",
+      "li.cil.oc2.gametest.TabletDisplayTests",
       "li.cil.oc2.gametest.TabletRadioTests",
       "li.cil.oc2.gametest.TerminalTests",
       "li.cil.oc2.gametest.RobotTests",

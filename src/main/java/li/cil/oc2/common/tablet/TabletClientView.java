@@ -27,6 +27,11 @@ public final class TabletClientView implements VirtualMachine {
     private static final Map<UUID, Counted> VIEWS = new ConcurrentHashMap<>();
 
     private final Terminal terminal = new Terminal();
+    private byte[] partialFrame;
+    private int nextChunk;
+    private final li.cil.oc2.common.vm.video.DeltaFrameCodec video = new li.cil.oc2.common.vm.video.DeltaFrameCodec();
+    private byte[] framebuffer = new byte[li.cil.oc2.common.tablet.display.TabletDisplayDevice.FRAME_BYTES];
+    private int frameVersion;
     private BusState busState = BusState.SCAN_PENDING;
     private VMRunState runState = VMRunState.STOPPED;
     @Nullable private Component bootError = Component.literal("");
@@ -54,6 +59,31 @@ public final class TabletClientView implements VirtualMachine {
     /** The view of an open screen, empty if no menu is open for the tablet. */
     public static Optional<TabletClientView> find(final UUID id) {
         return Optional.ofNullable(VIEWS.get(id)).map(counted -> counted.view);
+    }
+
+    public int frameVersion() { return frameVersion; }
+
+    public byte[] framebuffer() { return framebuffer.clone(); }
+
+    public void acceptFrame(final int size, final int index, final int count, final byte[] data) {
+        final int chunk = li.cil.oc2.common.network.message.tablet.TabletFramebufferMessage.MAX_CHUNK_SIZE;
+        if (size <= 0 || size > li.cil.oc2.common.network.message.tablet.TabletFramebufferMessage.MAX_FRAME_SIZE
+                || count != (size + chunk - 1) / chunk || index < 0 || index >= count
+                || data.length != Math.min(chunk, size - index * chunk)) return;
+        if (index == 0) {
+            partialFrame = new byte[size];
+            nextChunk = 0;
+        }
+        if (partialFrame == null || partialFrame.length != size || nextChunk != index) return;
+        System.arraycopy(data, 0, partialFrame, index * chunk, data.length);
+        nextChunk++;
+        if (nextChunk == count) {
+            video.decode(partialFrame, 256, 160).ifPresent(pixels -> {
+                framebuffer = pixels;
+                frameVersion++;
+            });
+            partialFrame = null;
+        }
     }
 
     public Terminal terminal() {

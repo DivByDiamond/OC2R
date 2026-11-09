@@ -136,6 +136,8 @@ public final class TabletManager {
     }
 
     public static void removeViewer(final ServerPlayer player, final UUID id) {
+        final Entry entry = MACHINES.get(id);
+        if (entry != null) entry.machine.display().releaseInput();
         VIEWERS.computeIfPresent(
                 id,
                 (k, set) -> {
@@ -152,6 +154,7 @@ public final class TabletManager {
     private static void sendInitialState(final ServerPlayer player, final UUID id) {
         final TabletMachine machine = machineOf(player.level().getServer(), id);
         if (machine == null) return;
+        machine.requestFrame();
         machine.virtualMachine().sendState(player);
         NetworkMessages.sendToClient(
                 new TabletTerminalDiffMessage(id, TerminalDiff.captureFull(machine.terminal())), player);
@@ -190,7 +193,10 @@ public final class TabletManager {
         }
         for (final Map.Entry<UUID, Entry> e : MACHINES.entrySet()) {
             final Entry entry = e.getValue();
-            if (!active.containsKey(e.getKey())) entry.machine.radio().update(null, now);
+            if (!active.containsKey(e.getKey())) {
+                entry.machine.radio().update(null, now);
+                entry.machine.display().releaseInput();
+            }
             if (now - entry.lastActive > SUSPEND_GRACE_TICKS && now >= entry.retryAt) {
                 suspend(server, e.getKey(), entry, now);
             }
