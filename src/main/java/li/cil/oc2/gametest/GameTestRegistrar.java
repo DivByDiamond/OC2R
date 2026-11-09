@@ -57,6 +57,7 @@ public final class GameTestRegistrar {
         RedstoneInterfaceTests.class,
         RegistrationTests.class,
         TabletTests.class,
+        TabletDisplayTests.class,
         TabletRadioTests.class,
         RobotCarryTests.class,
         RobotTests.class,

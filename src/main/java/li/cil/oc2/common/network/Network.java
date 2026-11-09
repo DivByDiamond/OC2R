@@ -40,7 +40,9 @@ import li.cil.oc2.common.network.message.robot.terminal.OpenRobotTerminalMessage
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalDiffMessage;
 import li.cil.oc2.common.network.message.robot.terminal.RobotTerminalInputMessage;
 import li.cil.oc2.common.network.message.tablet.TabletActionMessage;
+import li.cil.oc2.common.network.message.tablet.TabletFramebufferMessage;
 import li.cil.oc2.common.network.message.tablet.TabletInputMessage;
+import li.cil.oc2.common.network.message.tablet.TabletPointerMessage;
 import li.cil.oc2.common.network.message.tablet.TabletStateMessage;
 import li.cil.oc2.common.network.message.tablet.TabletTerminalDiffMessage;
 import li.cil.oc2.platform.MessageRegistrar;
@@ -127,6 +129,10 @@ public final class Network {
                 OpenRobotTerminalMessage::handleMessage);
 
         // Tablet
+        bridge.registerClientbound(TabletFramebufferMessage.TYPE, TabletFramebufferMessage.STREAM_CODEC,
+                TabletFramebufferMessage::handleMessage);
+        bridge.registerServerbound(TabletPointerMessage.TYPE, TabletPointerMessage.STREAM_CODEC,
+                TabletPointerMessage::handleMessage);
         bridge.registerClientbound(TabletTerminalDiffMessage.TYPE,
                 TabletTerminalDiffMessage.STREAM_CODEC,
                 TabletTerminalDiffMessage::handleMessage);

@@ -10,6 +10,11 @@ import li.cil.oc2.client.input.CaptureKeyboardHook;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.tablet.TabletItem;
 import li.cil.oc2.common.tablet.TabletManager;
+import li.cil.oc2.common.tablet.TabletClientView;
+import li.cil.oc2.common.vm.terminal.Terminal;
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.minecraft.world.InteractionHand;
@@ -41,15 +46,46 @@ public final class FabricTabletTest implements FabricClientGameTest {
                 TabletManager.openTerminal(player, id);
             });
             context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletTerminalScreen, 200);
+            context.runOnClient(client -> GLFW.glfwFocusWindow(client.getWindow().handle()));
+            context.waitFor(client -> client.isWindowActive(), 200);
             context.waitTicks(30);
             context.runOnClient(client -> {
                 final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+                screen.showGraphics(false);
                 screen.getMenu().setCaptureInputState(true);
                 if (!screen.getMenu().getCaptureInputState()) {
                     throw new IllegalStateException("Tablet keyboard capture is unavailable");
                 }
             });
-            context.takeScreenshot("oc2r-tablet-terminal");
+            waitForGuest(context, world.getServer(), "login: ");
+            type(world.getServer(), "root\r");
+            waitForGuest(context, world.getServer(), "osh$ ");
+            type(world.getServer(), "otablet --device\r");
+            waitForGuest(context, world.getServer(), "OTABLET_READY 256x160");
+            context.takeScreenshot("oc2r-tablet-console");
+            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(true));
+            context.waitFor(client -> {
+                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+                final byte[] pixels = TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
+                final int offset = (102 * 256 + 18) * 2;
+                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x2457;
+            }, 2400);
+            context.takeScreenshot("oc2r-tablet-widgets");
+            context.runOnClient(client -> pointer(true));
+            context.waitTicks(2);
+            context.runOnClient(client -> pointer(false));
+            waitForGuest(context, world.getServer(), "OTABLET_CLICK=1");
+            context.waitFor(client -> {
+                final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+                final byte[] pixels = TabletClientView.find(screen.getMenu().tabletId()).orElseThrow().framebuffer();
+                final int offset = (70 * 256 + 16) * 2;
+                return (pixels[offset] & 255 | (pixels[offset + 1] & 255) << 8) == 0x07e0;
+            }, 2400);
+            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(false));
+            context.takeScreenshot("oc2r-tablet-console-after-click");
+            context.runOnClient(client -> ((TabletTerminalScreen) RenderCompat.currentScreen()).showGraphics(true));
+            context.waitTicks(10);
+            context.takeScreenshot("oc2r-tablet-widgets-after-click");
             world.getServer().runOnServer(server -> {
                 final var player = server.getPlayerList().getPlayers().getFirst();
                 final var machine = TabletManager.machineOf(server, TabletItem.getId(player.getMainHandItem()).orElseThrow());
@@ -80,4 +116,52 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.waitTicks(5);
         }
     }
+    private static void pointer(final boolean down) {
+        final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+        final var area = screen.viewport();
+        final var event = new MouseButtonEvent(area.x() + 30, area.y() + 98, new MouseButtonInfo(0, 0));
+        if (down) {
+            // Older batched motion must not replay behind this immediate button edge.
+            screen.mouseMoved(area.x() + 220, area.y() + 150);
+            screen.mouseClicked(event, false);
+        }
+        else screen.mouseReleased(event);
+    }
+
+    private static void type(final TestServerContext server, final String text) {
+        server.runOnServer(instance -> {
+            final var player = instance.getPlayerList().getPlayers().getFirst();
+            TabletManager.machineOf(instance, TabletItem.getId(player.getMainHandItem()).orElseThrow())
+                    .terminal().io.putInput(text);
+        });
+    }
+
+    private static void waitForGuest(final ClientGameTestContext context, final TestServerContext server,
+                                     final String expected) {
+        String actual = "";
+        for (int elapsed = 0; elapsed < 4800; elapsed += 5) {
+            actual = server.computeOnServer(instance -> {
+                final var player = instance.getPlayerList().getPlayers().getFirst();
+                final var machine = TabletManager.machineOf(instance,
+                        TabletItem.getId(player.getMainHandItem()).orElseThrow());
+                return text(machine.terminal());
+            });
+            if (actual.contains(expected)) return;
+            context.waitTicks(5);
+        }
+        throw new AssertionError("Tablet guest did not produce [" + expected + "]:\n" + actual);
+    }
+
+    private static String text(final Terminal terminal) {
+        synchronized (terminal) {
+            final int start = Math.max(0, terminal.lastRowToDisplayMax - terminal.height) * terminal.width;
+            final StringBuilder text = new StringBuilder();
+            for (int index = start; index < Math.min(terminal.buffer.length, start + terminal.width * terminal.height); index++) {
+                text.appendCodePoint(terminal.buffer[index] > 0 ? terminal.buffer[index] : 32);
+                if ((index + 1) % terminal.width == 0) text.append('\n');
+            }
+            return text.toString();
+        }
+    }
+
 }

@@ -222,5 +222,9 @@
   "block.oc2r.gps_tower": "GPS-вышка",
   "block.oc2r.gps_tower.desc": "Опорная GPS-вышка высотой пять блоков. Для установки нужны четыре свободных блока сверху.",
   "block.oc2r.machine_interface": "Машинный интерфейс",
-  "block.oc2r.media_station": "Медиастанция"
+  "block.oc2r.media_station": "Медиастанция",
+  "gui.oc2r.tablet.screen": "Экран",
+  "gui.oc2r.tablet.console": "Консоль",
+  "gui.oc2r.tablet.release": "%s — отпустить ввод",
+  "gui.oc2r.tablet.off": "Питание выключено"
 }

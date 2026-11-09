@@ -10,14 +10,18 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import li.cil.oc2.common.bus.controller.CommonDeviceBusController;
+import li.cil.oc2.common.network.NetworkMessages;
+import li.cil.oc2.common.network.message.tablet.TabletFramebufferMessage;
 import li.cil.oc2.common.radio.RadioClientLeases;
 import li.cil.oc2.common.serialization.nbt.util.NBTSerialization;
+import li.cil.oc2.common.tablet.display.TabletDisplayDevice;
 import li.cil.oc2.common.tablet.radio.TabletBusElement;
 import li.cil.oc2.common.tablet.radio.TabletHolder;
 import li.cil.oc2.common.tablet.radio.TabletRadio;
 import li.cil.oc2.common.util.nbt.NBTUtils;
 import li.cil.oc2.common.vm.VMRunState;
 import li.cil.oc2.common.vm.terminal.Terminal;
+import li.cil.oc2.common.vm.video.DeltaFrameCodec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,6 +43,11 @@ public final class TabletMachine {
     private final TabletInventory inventory;
     private final TabletVirtualMachine virtualMachine;
     private final TabletRadio radio;
+    private final TabletDisplayDevice display = new TabletDisplayDevice();
+    private final DeltaFrameCodec videoCodec = new DeltaFrameCodec();
+    private final Supplier<Collection<ServerPlayer>> viewers;
+    private final ByteBuffer videoFrame = ByteBuffer.allocate(TabletDisplayDevice.FRAME_BYTES);
+    private boolean forceFrame = true;
 
     public TabletMachine(
             final UUID id,
@@ -46,11 +55,12 @@ public final class TabletMachine {
             final Supplier<Collection<ServerPlayer>> viewers) {
         this.id = id;
         this.level = level;
+        this.viewers = viewers;
         inventory = new TabletInventory(level::registryAccess, false);
         radio = new TabletRadio(id, level);
         final CommonDeviceBusController bus =
                 new CommonDeviceBusController(
-                        new TabletBusElement(inventory.busElement, radio, id), 0, id::getMostSignificantBits);
+                        new TabletBusElement(inventory.busElement, radio, id, display), 0, id::getMostSignificantBits);
         virtualMachine = new TabletVirtualMachine(id, level, bus, terminal, inventory, viewers);
         virtualMachine.state.builtinDevices.rtcMinecraft.setLevel(level);
         inventory.setOnDeviceChanged(bus::scheduleBusScan);
@@ -76,10 +86,36 @@ public final class TabletMachine {
         return radio;
     }
 
+    public TabletDisplayDevice display() { return display; }
+
+    public void requestFrame() { forceFrame = true; }
+
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Each bounded chunk needs its own immutable payload.
+    private void sendFrame(final long now) {
+        if (now % 4 != 0) return;
+        final Collection<ServerPlayer> watching = viewers.get();
+        if (watching.isEmpty() || !display.copyFrame(videoFrame, forceFrame)) return;
+        if (forceFrame) videoCodec.requestKeyframe();
+        forceFrame = false;
+        final byte[] encoded = videoCodec.encode(
+                videoFrame.array(), TabletDisplayDevice.WIDTH, TabletDisplayDevice.HEIGHT);
+        final int size = TabletFramebufferMessage.MAX_CHUNK_SIZE;
+        final int count = (encoded.length + size - 1) / size;
+        for (int index = 0; index < count; index++) {
+            final byte[] part = Arrays.copyOfRange(
+                    encoded, index * size, Math.min(encoded.length, (index + 1) * size));
+            final TabletFramebufferMessage message = new TabletFramebufferMessage(
+                    id, encoded.length, index, count, part);
+            for (final ServerPlayer player : watching) NetworkMessages.sendToClient(message, player);
+        }
+    }
+
     /** Called once per server tick while the tablet is in hand or its screen is open. */
     public void tick(@Nullable final TabletHolder holder, final long now) {
         radio.update(holder, now);
+        if (holder == null) display.releaseInput();
         virtualMachine.tick();
+        sendFrame(now);
     }
 
     /** Guest keyboard bytes coming from the open screen. */
@@ -95,6 +131,7 @@ public final class TabletMachine {
 
     /** Writes memory, devices and terminal; the worker thread is joined first. */
     public CompoundTag save() {
+        display.releaseInput();
         final CompoundTag tag = new CompoundTag();
         tag.put(STATE_TAG_NAME, virtualMachine.serialize());
         if (virtualMachine.getRunState() != VMRunState.STOPPED) {
@@ -102,6 +139,7 @@ public final class TabletMachine {
         }
         inventory.saveItems(level.registryAccess(), NBTUtils.getOrCreateChildTag(tag, ITEMS_TAG_NAME));
         tag.put(DEVICES_TAG_NAME, inventory.saveDevices(level.registryAccess()));
+        tag.put("display", display.serializeNBT(level.registryAccess()));
         tag.putString(RADIO_SERVICES_TAG_NAME, String.join("\n", radio.services()));
         return tag;
     }
@@ -114,6 +152,7 @@ public final class TabletMachine {
         inventory.loadItems(level.registryAccess(), NBTUtils.getChildTag(tag, ITEMS_TAG_NAME));
         inventory.loadDevices(level.registryAccess(), NBTUtils.getChildTag(tag, DEVICES_TAG_NAME));
         inventory.ensureFixedMemory();
+        display.deserializeNBT(level.registryAccess(), NBTUtils.getChildTag(tag, "display"));
         //? if >=26.1 {
         /*final String services = tag.getStringOr(RADIO_SERVICES_TAG_NAME, "");
         *///?} else {
