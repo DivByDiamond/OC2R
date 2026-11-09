@@ -323,8 +323,8 @@ also returns cleanly to the shell. A two-board/two-NIC guest fixture verifies UD
 and TCP request/reply, an 8 KiB TCP stream across receive-window reopening, and
 routing to the Internet NIC. Raw VirtIO RPC verifies a fragmented 6 KiB device
 list, discovery and invocation. Those checks describe that checkpoint, rather
-than a rerun of every fixture against each later root-image repack. The separate current-image HTTP check is
-recorded below. Minecraft integration evidence is recorded separately.
+than a rerun of every fixture against each later root-image repack. The separate historical HTTP check is
+recorded below; it was not repeated for the tablet-image repack. Minecraft integration evidence is recorded separately.
 
 Real Minecraft 26.1.2 checks cover flash-only Onyx boot, login and file operations,
 three independent outputs, monitor GUI, separate Minux/Onyx root writes through
@@ -336,7 +336,7 @@ A separate HTTP reader regression reproduces the old busy poll after orderly
 EOF and checks a close-delimited response body after the fix. A fresh RV64
 client booted from the previous candidate also fetched an HTTP response from
 another real VirtIO-networked guest, saved it and printed the exact
-`HTTP-MOCK-PASS` body. In Minecraft 26.1.2, the current kernel then fetched
+`HTTP-MOCK-PASS` body. In that Minecraft 26.1.2 checkpoint, the kernel then fetched
 `http://<demo-server>:18080/oc2r` through the host adapter, wrote the 53-byte
 body to the relative path `internet.txt`, and `cat internet.txt` printed both
 expected lines. The same world verified TCP echo between Onyx guests over the

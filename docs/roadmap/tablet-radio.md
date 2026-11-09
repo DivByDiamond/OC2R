@@ -239,8 +239,8 @@ Successful enrollment in another dimension retires the previous credential hash,
 so old-dimension item snapshots cannot reclaim the shared machine. A current copy can claim an inactive identity first;
 rotation then invalidates the other copy, rather than creating a second identity.
 
-Framebuffer, guest mouse input, live screen in hand, hard-drive support and crash-periodic VM saves remain
-separate work.
+Framebuffer and guest mouse input were added in section 15. A live screen in hand, hard-drive support
+and crash-periodic VM saves remain separate work.
 
 The radio transport refreshes endpoint TLS identities before opening a pair after a permissions-generation
 change. This prevents the first message or ping from being discarded while the target waits for its next tick.
@@ -276,3 +276,32 @@ versions (six platform targets). Feature Checkstyle, PMD and SpotBugs checks wer
 The updated real Fabric 26.1.2 peripheral scene also passed client acceptance. All 16 orientation/on-off
 model states had the expected baked sprites and bounds. Two live captures six ticks apart confirmed
 that the access point's three-frame pulse advanced; the connected, mounted sensor indicator was lit.
+
+## 15. Rear sensor socket and tablet graphics
+
+Source revision `aa5b3763` adds the sensor rear-only bus socket and a built-in 256×160 RGB565 tablet
+framebuffer with absolute pointer and keyboard input. The compact Screen/Console views share one VM;
+switching views, losing focus and closing the screen release held input. Display pixels and device addresses
+survive machine snapshots. Old side interfaces retain their physical parts but cannot expose the sensor.
+
+The bundled Onyx kernel adds graphics ownership, axis-preserving pointer decoding and queued button edges.
+`otablet --device` renders a real local uptime, click counter and progress bar. Its font includes numeric glyphs.
+The stock root retains every previous `/bin` program and rebuilds seven OC2R network/RPC tools; existing
+private roots keep their recorded immutable base and receive no automatic application replacement.
+
+| NeoForge version | Core unit tests | Mod unit tests | GameTests |
+| --- | ---: | ---: | ---: |
+| 1.21.1 | 104 | 726 | 137 |
+| 26.1.2 | 104 | 735 | 139 |
+| 26.2 | 104 | 735 | 139 |
+
+Fabric 1.21.1 passed 166/166 GameTests. Feature Checkstyle, PMD and SpotBugs main reports were at zero.
+The real Fabric 26.1.2 peripheral client verified all 16 model states, live animation and a working rear
+sensor cable. The final tablet client booted the packaged image at 16 MiB, ran the widgets, delivered a
+100 ms native pointer click and verified the complete rendered digit `1`, green progress and
+`OTABLET_CLICK=1`. Console/Screen switching and inventory navigation preserved the application;
+captured VirtIO Q produced `OTABLET_EXIT` and a usable shell, then the common release key closed capture.
+
+Independent 16 MiB Sedna checks verified a 40 ms click during repaint, outside-release cancellation,
+seven rebuilt tool entrypoints and graphics ownership cleanup after killing the actual widget process.
+These client and guest checks do not claim a live display on the held item or periodic crash recovery.

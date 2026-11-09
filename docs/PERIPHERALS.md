@@ -63,3 +63,9 @@ Integrated verification at source revision `92319182` passed 134/136/136 NeoForg
 163/163 Fabric 1.21.1 GameTests, with zero failures. Core and mod unit tests, all six platform compile
 targets and the feature static-analysis checks also passed; see the
 [integrated acceptance matrix](roadmap/tablet-radio.md#14-integrated-acceptance) for counts.
+
+
+The rear-socket follow-up at `aa5b3763` passed 137/139/139 NeoForge GameTests and 166/166 Fabric
+1.21.1 GameTests. A fresh real Fabric 26.1.2 client scene confirmed the sensor mounted through its rear
+interface, with the computer facing away from the cable so its device-bus side remained available.
+See [tablet graphics acceptance](roadmap/tablet-radio.md#15-rear-sensor-socket-and-tablet-graphics).
