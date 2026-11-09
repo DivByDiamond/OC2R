@@ -258,20 +258,20 @@ Logs are in `build/reports/terminal-qa/`.
 The 2026-11-09 image is built from these selected clean source revisions:
 
 - OnyxKernel: `7b2d6554e792ada9d28b6b2bdc286923cdba468f`.
-- OnyxApps: `b2545f9c688ff524bac8a66098340e613bc7cf90`.
-- OnyxOS: `3a7f8e0` (records the exact component lock).
+- OnyxApps: `1f3df669ac79e8a2ade37317329b032cc567269f`.
+- OnyxOS: `8c8d3fa` (records the exact component lock).
 - OnyxShell: `e25e912561f18fb2a7bfe52b56cfe6524d17f185`.
 - OnyxCompiller: `9f9ecb5a25378d7009937b2df94f1507cda25252`.
 - OnyxBoot: `9d572e3301d6f9711c3d0cdaafe8f7c1f0d2f19e`.
 - Kernel SHA-256: `34b38649d85c373b3194d96f8e8fcd34303b8c9d5b579cf5c07d58528476a95d`.
-- Root SHA-256: `b6358ebdc03e54c9bf57c0bb5bace3506bf4622b504b6ebc753a83248dca227a`.
+- Root SHA-256: `ceded23f51ed030f0bb21b3238ff171894249605d13f66c73e880fe2afe7b9d6`.
 
 All ten current OnyxApps programs are rebuilt. The seven OC2R tools are rebuilt
 from `scripts/demo/guest/`: netcfg, udpdemo, tcpdemo, tcpserve, udpserve,
 tcpstream and oc2ctl. The previous stock root
 `f9371dbaf9da5ddf12adea6d0316962be3fcf3d016dc827e81f45d22cb60d71b`
 supplies only its otherwise missing `/bin/dnstest`, `/bin/oed` and `/bin/ohttp`
-binaries. No previous user directory or account data is imported. The assembled
+binaries, retained byte-for-byte through later stock rebuilds. No previous user directory or account data is imported. The assembled
 filesystem uses 16,035,840 bytes and is padded to 16 MiB.
 
 Build the locked source image using OnyxOS `scripts/build-oc2r.sh`, then assemble
@@ -294,7 +294,7 @@ separate builds need not have identical image hashes.
 Actual Sedna 5.4 checks with exactly 16 MiB RAM verify login, guest RGB565
 widgets, a 40 ms absolute click overlapping redraw, cancellation on release
 outside, absence of console overwrite, Q exit and a responding shell. The
-assembled stock image also executes all seven rebuilt tools' usage/help paths.
+assembled stock image also verifies the actual counter digit glyph and executes all seven rebuilt tools' usage/help paths.
 A separate QA image verifies SIGKILL of the actual widget process followed by
 successful framebuffer ownership reclamation. No host widgets are involved.
 
