@@ -17,8 +17,9 @@ class BundledRedstoneCallbacksTest {
         assertEquals((byte) 200, BundledRedstoneCallbacks.getBundledOutput(Direction.EAST, state)[5]);
         // A bundled cable asks the block entity by world direction.
         assertEquals((byte) 200, state.getBundledSignal(Direction.EAST)[5]);
+        final byte[] silent = new byte[16];
         for (final Direction other : Direction.values()) {
-            if (other != Direction.EAST) assertArrayEquals(new byte[16], state.getBundledSignal(other));
+            if (other != Direction.EAST) assertArrayEquals(silent, state.getBundledSignal(other));
         }
     }
 

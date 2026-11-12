@@ -6,7 +6,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.UUID;
 import li.cil.oc2.common.network.message.tablet.TabletFramebufferMessage;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,12 +14,23 @@ import li.cil.oc2.common.vm.video.DeltaFrameCodec;
 import org.junit.jupiter.api.Test;
 
 class TabletFramebufferTransferTest {
+    /** Fixed-seed noise that every tile of the frame changes, so the encoder cannot skip anything. */
+    private static void fillPseudoRandom(final byte[] target, final long seed) {
+        long state = seed * 0x9E3779B97F4A7C15L + 1;
+        for (int i = 0; i < target.length; i++) {
+            state ^= state << 13;
+            state ^= state >>> 7;
+            state ^= state << 17;
+            target[i] = (byte) (state >>> 24);
+        }
+    }
+
     @Test void randomKeyframeAndChangedTilesReachTheClientWithoutLoss() {
         final UUID id = UUID.randomUUID();
         final TabletClientView view = TabletClientView.acquire(id);
         try {
             final byte[] pixels = new byte[TabletDisplayDevice.FRAME_BYTES];
-            new Random(42).nextBytes(pixels);
+            fillPseudoRandom(pixels, 42);
             final DeltaFrameCodec encoder = new DeltaFrameCodec();
             deliver(view, encoder.encode(pixels, 256, 160));
             assertArrayEquals(pixels, view.framebuffer());
