@@ -86,10 +86,12 @@ Session types:
 
 ### Requirements
 
-1. **VXLAN enabled** in the common config (`vxlan.enable` / hub block set up) — the internet
-   card silently does nothing without it (a WARN is logged at startup since 0.1.1).
-2. **Internet card enabled** in the common config (`internetCardEnabled = true`).
-3. An **internet card** (PCI) installed into the computer.
+1. **Internet card enabled** in the common config (`internetCardEnabled = true`). The internet
+   card and the internet gateway reach the internet directly from the server; they do **not**
+   need the VXLAN tunnel (`vxlan.enable`), which is a separate feature. Older notes that said
+   otherwise were wrong, and enabling VXLAN only opens a UDP port for nothing.
+2. An **internet card** (PCI) installed into the computer, or an **internet gateway** block on
+   the connector network.
 
 ### Addressing
 
@@ -116,42 +118,30 @@ ping 1.1.1.1
 - `allowedHosts` — inverse mode: if non-empty, only these may be reached.
 - Only one of the two lists may be non-empty.
 
+### Limits and lifetimes
+
+Idle times differ by kind, because a DNS lookup takes a new source port every time while an SSH
+session may stay quiet for a long while:
+
+| Option | Default | Applies to |
+|--------|---------|------------|
+| `defaultSessionLifetimeMs` | 60 s | connections that are being opened or closed |
+| `tcpEstablishedLifetimeMs` | 1 h | established TCP connections |
+| `datagramSessionLifetimeMs` | 15 s | UDP exchanges (DNS and the like) |
+| `defaultSessionsNumberPerCardLimit` | 32 | TCP connections per card |
+| `datagramSessionsNumberPerCardLimit` | 64 | UDP exchanges per card; the oldest is dropped when full |
+
+An existing config file keeps the values it already has (the old per-card limit was 10), so raise
+it by hand on a server that was set up earlier.
+
 ### Diagnostics
 
 | Symptom | Likely cause |
 |---------|--------------|
-| `ping` always fails, network otherwise fine | On dedicated servers without `CAP_NET_ROOT`/root, the JVM-level ICMP fallback reports false negatives; a WARN is logged once |
-| Large DNS responses time out | Now answered with ICMP frag-needed (MTU 1500); older builds dropped fragments silently |
-| Connection hangs, no error | TTL exhausted mid-path → now answered with ICMP Time Exceeded |
-| Port unreachable replies come from `0.0.0.0` | Fixed in 0.1.1 — they now carry the unreachable host's address |
-
-## VXLAN Tunneling
-
-`VxlanBlockEntity` and `TunnelManager` provide outer-network connectivity via VXLAN:
-
-- UDP-based tunneling
-- Uses native `oc2rnet` library for ICMP+UDP (platform-specific: `.so`, `.dylib`, `.dll`)
-- Falls back to JVM implementation if native lib unavailable
-- Background thread for packet reception
-- Multiple tunnel interfaces by VNI (VXLAN Network Identifier)
-
-### Native Library
-
-Prebuilt binaries in `src/main/resources/natives/`:
-
-| Platform | File |
-|----------|------|
-| Linux x86_64 | `liboc2rnet-linux-x86_64.so` |
-| Linux ARM64 | `liboc2rnet-linux-arm64.so` |
-| macOS x86_64 | `liboc2rnet-x86_64.dylib` |
-| macOS ARM64 | `liboc2rnet-arm64.dylib` |
-| Windows x86_64 | `oc2rnet-x86_64.dll` |
-| Windows ARM64 | `oc2rnet-arm64.dll` |
-| Android ARM64 | `liboc2rnet-android-arm64.so` |
-| Android x86_64 | `liboc2rnet-android-x86_64.so` |
-
-## Related
-
-- [Architecture](ARCHITECTURE.md) — threading model
-- [Device Types](DEVICES.md) — network interface card device
-- [Source Structure](SRC_STRUCTURE.md) — code layout
+| `ping` fails, network otherwise fine | The native raw-socket ping needs root or `CAP_NET_RAW`. Without it the server runs the system `ping` command, so it must be installed on the server; as a last resort the JVM tries TCP port 7, which most hosts do not answer |
+| First DNS lookup always timed out, later ones worked | Fixed: the datagram that opened a UDP exchange was dropped |
+| Large DNS answers fail | An answer that does not fit into one frame (about 1470 bytes) is cut and flagged as truncated, so the resolver retries over TCP; other oversized UDP is dropped. Guests need a TCP-capable resolver |
+| Idle SSH or long-poll connections die after a minute | Fixed: established connections now live for `tcpEstablishedLifetimeMs` |
+| Network stops after a burst of lookups | Fixed: UDP exchanges no longer share the connection limit |
+| DHCP client reports an address conflict | Fixed: the card ignores address probes and announcements |
+| Connection hangs, no error | TTL exhausted mid-path: answered with ICMP Time Exceeded |

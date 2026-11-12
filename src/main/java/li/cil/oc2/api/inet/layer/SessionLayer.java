@@ -21,5 +21,11 @@ public interface SessionLayer extends InternetDeviceLifecycle {
     interface Receiver {
         @Nullable
         ByteBuffer receive(Session session);
+
+        /**
+         * Takes back the session handed to {@link #receive}: nothing is delivered for it. Used when the data that
+         * made a session ready turns out not to be deliverable, so that no empty message is built from it.
+         */
+        default void cancel() {}
     }
 }

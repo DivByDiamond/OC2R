@@ -7,9 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import li.cil.oc2.api.inet.layer.SessionLayer;
+import li.cil.oc2.api.inet.session.Session;
 import li.cil.oc2.common.config.Config;
 import li.cil.oc2.common.inet.session.SessionBase;
 import li.cil.oc2.common.inet.session.SessionDiscriminator;
+import li.cil.oc2.common.inet.session.datagram.DatagramSessionBase;
+import li.cil.oc2.common.inet.session.datagram.DatagramSessionDiscriminator;
+import li.cil.oc2.common.inet.session.echo.EchoSessionDiscriminator;
 import li.cil.oc2.common.inet.session.stream.StreamSessionImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,30 +68,67 @@ public final class SessionManager {
     }
 
     /**
-     * Expires every session whose last update is older than the configured lifetime.
-     * Expired sessions are removed from the registry, notified via {@code expire()},
-     * and closed towards the peer. Because keys are ordered by time, this stops at
-     * the first entry that is still young enough.
+     * How long a session may sit idle before it is expired. A UDP exchange (a DNS lookup takes a new source port
+     * every time) lives briefly, an established TCP connection very long, and anything still opening or closing
+     * gets the default.
+     */
+    private static long lifetimeMs(final SessionBase session) {
+        if (session instanceof DatagramSessionBase) {
+            return Config.datagramSessionLifetimeMs;
+        }
+        if (session instanceof final StreamSessionImpl stream
+                && stream.getState() == Session.States.ESTABLISHED && !stream.isClosed()) {
+            return Config.tcpEstablishedLifetimeMs;
+        }
+        return Config.defaultSessionLifetimeMs;
+    }
+
+    /**
+     * Expires every session that has been idle for longer than its own lifetime, see {@link #lifetimeMs}.
+     * Expired sessions are removed from the registry, notified via {@code expire()}, and closed towards the
+     * peer. The queue is ordered by last update, so the walk stops at the first entry that is younger than the
+     * shortest lifetime in use; older entries with a longer lifetime are skipped.
      */
     public void processSessionExpirationQueue() {
         if (expirationQueue.isEmpty()) {
             return;
         }
-        final Instant expireTime =
-                now().minus(Config.defaultSessionLifetimeMs, ChronoUnit.MILLIS);
+        final Instant current = now();
+        final long shortest = Math.min(Config.defaultSessionLifetimeMs, Config.datagramSessionLifetimeMs);
+        final Instant youngestToCheck = current.minus(shortest, ChronoUnit.MILLIS);
         final Iterator<Map.Entry<Instant, SessionBase>> iterator =
                 expirationQueue.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Instant, SessionBase> entry = iterator.next();
-            if (entry.getKey().compareTo(expireTime) < 0) {
-                final SessionBase session = entry.getValue();
+            if (entry.getKey().compareTo(youngestToCheck) >= 0) {
+                return;
+            }
+            final SessionBase session = entry.getValue();
+            if (entry.getKey().compareTo(current.minus(lifetimeMs(session), ChronoUnit.MILLIS)) < 0) {
                 iterator.remove();
-                removeRegistered(session);
-                --allSessionCount;
-                LOGGER.trace("Expired session {}", session.getDiscriminator());
-                session.expire();
-                sessionLayer.sendSession(session, null);
-            } else {
+                expire(session);
+            }
+        }
+    }
+
+    /** Drops a session that is already out of the expiration queue and tells its layer. */
+    private void expire(final SessionBase session) {
+        removeRegistered(session);
+        --allSessionCount;
+        LOGGER.trace("Expired session {}", session.getDiscriminator());
+        session.expire();
+        sessionLayer.sendSession(session, null);
+    }
+
+    /** Makes room for a new UDP exchange by expiring the oldest one, like a NAT table that is full. */
+    private void evictOldestDatagramSession() {
+        final Iterator<Map.Entry<Instant, SessionBase>> iterator =
+                expirationQueue.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final SessionBase session = iterator.next().getValue();
+            if (session instanceof DatagramSessionBase) {
+                iterator.remove();
+                expire(session);
                 return;
             }
         }
@@ -151,7 +192,12 @@ public final class SessionManager {
         if (session != null) {
             return session;
         }
-        if (sessions.size() >= Config.defaultSessionsNumberPerCardLimit) {
+        final boolean datagram = isDatagram(discriminator);
+        if (datagram) {
+            while (count(true) >= Config.datagramSessionsNumberPerCardLimit) {
+                evictOldestDatagramSession();
+            }
+        } else if (count(false) >= Config.defaultSessionsNumberPerCardLimit) {
             LOGGER.warn("Session count per card limit has reached");
             return null;
         }
@@ -165,6 +211,22 @@ public final class SessionManager {
         sessions.put(discriminator, newSession);
         updateSession(newSession);
         return newSession;
+    }
+
+    private static boolean isDatagram(final SessionDiscriminator<?> discriminator) {
+        return discriminator instanceof DatagramSessionDiscriminator
+                || discriminator instanceof EchoSessionDiscriminator;
+    }
+
+    /** Number of registered sessions of one kind: UDP and ping exchanges, or connections. */
+    private int count(final boolean datagram) {
+        int result = 0;
+        for (final SessionDiscriminator<?> key : sessions.keySet()) {
+            if (isDatagram(key) == datagram) {
+                ++result;
+            }
+        }
+        return result;
     }
 
     /**

@@ -113,7 +113,10 @@ public final class Config {
     public static volatile int bindPort = 4789;
     public static volatile boolean internetCardEnabled = false;
     public static volatile int defaultSessionLifetimeMs = 60 * 1000;
-    public static volatile int defaultSessionsNumberPerCardLimit = 10;
+    public static volatile int tcpEstablishedLifetimeMs = 60 * 60 * 1000;
+    public static volatile int datagramSessionLifetimeMs = 15 * 1000;
+    public static volatile int datagramSessionsNumberPerCardLimit = 64;
+    public static volatile int defaultSessionsNumberPerCardLimit = 32;
     public static volatile int defaultSessionsNumberLimit = 100;
     public static volatile int defaultEchoRequestTimeoutMs = 1000;
     public static volatile List<String> deniedHosts =

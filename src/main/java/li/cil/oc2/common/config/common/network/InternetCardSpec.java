@@ -1,5 +1,6 @@
 package li.cil.oc2.common.config.common.network;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +12,9 @@ public class InternetCardSpec {
 
     public final ModConfigSpec.BooleanValue internetCardEnabled;
     public final ModConfigSpec.IntValue defaultSessionLifetimeMs;
+    public final ModConfigSpec.IntValue tcpEstablishedLifetimeMs;
+    public final ModConfigSpec.IntValue datagramSessionLifetimeMs;
+    public final ModConfigSpec.IntValue datagramSessionsNumberPerCardLimit;
     public final ModConfigSpec.IntValue defaultSessionsNumberPerCardLimit;
     public final ModConfigSpec.IntValue defaultSessionsNumberLimit;
     public final ModConfigSpec.IntValue defaultEchoRequestTimeoutMs;
@@ -24,19 +28,47 @@ public class InternetCardSpec {
     public InternetCardSpec(ModConfigSpec.Builder builder) {
         internetCardEnabled =
                 builder.comment(
-                                "Whether to enable the internet card.",
-                                        "VXLAN must also be enabled, otherwise the internet card"
-                                                + " will not work")
+                                "Whether to enable the internet card and the internet gateway.",
+                                "They reach the internet directly from the server and do not need"
+                                        + " the VXLAN tunnel, which is a separate feature")
                         .define("internetCardEnabled", false);
 
         defaultSessionLifetimeMs =
-                builder.comment("Default lifetime of sessions in milliseconds")
+                builder.comment(
+                                "Lifetime in milliseconds of a session that is idle, for connections"
+                                        + " that are being opened or closed")
                         .defineInRange("defaultSessionLifetimeMs", 60 * 1000, 0, Integer.MAX_VALUE);
 
-        defaultSessionsNumberPerCardLimit =
-                builder.comment("Number of sessions (connections) allowed per internet card")
+        tcpEstablishedLifetimeMs =
+                builder.comment(
+                                "Idle lifetime in milliseconds of an established TCP connection.",
+                                "Much longer than the default because a quiet SSH session or a"
+                                        + " long poll must not be dropped; NAT gateways use one to"
+                                        + " two hours")
                         .defineInRange(
-                                "defaultSessionsNumberPerCardLimit", 10, 0, Integer.MAX_VALUE);
+                                "tcpEstablishedLifetimeMs", 60 * 60 * 1000, 0, Integer.MAX_VALUE);
+
+        datagramSessionLifetimeMs =
+                builder.comment(
+                                "Idle lifetime in milliseconds of a UDP exchange such as a DNS"
+                                        + " lookup, which gets a fresh source port every time")
+                        .defineInRange("datagramSessionLifetimeMs", 15 * 1000, 0, Integer.MAX_VALUE);
+
+        datagramSessionsNumberPerCardLimit =
+                builder.comment(
+                                "Number of UDP exchanges tracked per internet card.",
+                                "They are counted apart from connections; when the limit is reached"
+                                        + " the oldest exchange is dropped instead of refusing the new"
+                                        + " one")
+                        .defineInRange(
+                                "datagramSessionsNumberPerCardLimit", 64, 1, Integer.MAX_VALUE);
+
+        defaultSessionsNumberPerCardLimit =
+                builder.comment(
+                                "Number of connections allowed per internet card; UDP exchanges"
+                                        + " are limited separately")
+                        .defineInRange(
+                                "defaultSessionsNumberPerCardLimit", 32, 0, Integer.MAX_VALUE);
 
         defaultSessionsNumberLimit =
                 builder.comment(
@@ -108,9 +140,15 @@ public class InternetCardSpec {
                 builder.defineInRange("tcpRetransmissionTimeoutMs", 2000, 1, Integer.MAX_VALUE);
     }
 
+    @SuppressFBWarnings(
+            value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+            justification = "The spec copies the loaded values into the process-wide configuration.")
     public void loadValues() {
         Config.internetCardEnabled = internetCardEnabled.get();
         Config.defaultSessionLifetimeMs = defaultSessionLifetimeMs.get();
+        Config.tcpEstablishedLifetimeMs = tcpEstablishedLifetimeMs.get();
+        Config.datagramSessionLifetimeMs = datagramSessionLifetimeMs.get();
+        Config.datagramSessionsNumberPerCardLimit = datagramSessionsNumberPerCardLimit.get();
         Config.defaultSessionsNumberPerCardLimit = defaultSessionsNumberPerCardLimit.get();
         Config.defaultSessionsNumberLimit = defaultSessionsNumberLimit.get();
         Config.defaultEchoRequestTimeoutMs = defaultEchoRequestTimeoutMs.get();

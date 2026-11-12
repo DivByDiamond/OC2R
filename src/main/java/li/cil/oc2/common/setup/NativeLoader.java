@@ -12,7 +12,6 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import joptsimple.util.InetAddressConverter;
 import li.cil.oc2.common.config.Config;
-import li.cil.oc2.common.inet.layer.impl.DefaultSessionLayer;
 import org.apache.logging.log4j.LogManager;
 
 public final class NativeLoader {
@@ -113,7 +112,7 @@ public final class NativeLoader {
             dataToSend[i] = (byte) garbageGenerator.nextInt(0, 255);
         }
         byte[] data =
-                DefaultSessionLayer.sendICMP(
+                li.cil.oc2.common.inet.DefaultSessionLayer.sendICMP(
                         address.getAddress(),
                         dataToSend,
                         64,

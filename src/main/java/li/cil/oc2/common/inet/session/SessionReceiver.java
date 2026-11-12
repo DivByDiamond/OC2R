@@ -40,6 +40,11 @@ public final class SessionReceiver implements SessionLayer.Receiver {
         return buffer;
     }
 
+    @Override
+    public void cancel() {
+        session = null;
+    }
+
     @Nullable
     @Override
     public ByteBuffer receive(final Session session) {

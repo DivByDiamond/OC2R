@@ -6,9 +6,9 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import li.cil.oc2.api.inet.*;
 import li.cil.oc2.api.inet.layer.SessionLayer;
 import li.cil.oc2.api.inet.session.DatagramSession;
@@ -37,8 +37,16 @@ import org.jetbrains.annotations.Nullable;
 public final class DefaultSessionLayer implements SessionLayer {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final AtomicReference<EchoResponse> echoResponse = new AtomicReference<>(null);
+    private final Queue<EchoResponse> echoResponse = EchoHandler.newResponseQueue();
 
+    // Largest UDP payload; only the internet thread reads datagrams, so one buffer per layer is enough.
+    private static final int MAX_DATAGRAM_SIZE = 65535;
+    private static final int DNS_PORT = 53;
+    private static final int DNS_HEADER_SIZE = 12;
+    private static final int DNS_FLAGS_OFFSET = 2;
+    private static final byte DNS_TRUNCATED = 0x02;
+
+    private final ByteBuffer datagramScratch = ByteBuffer.allocate(MAX_DATAGRAM_SIZE);
     private final ReadySessions readySessions = new ReadySessions();
 
     /**
@@ -130,9 +138,10 @@ public final class DefaultSessionLayer implements SessionLayer {
         LOGGER.trace("Datagram received");
         final DatagramChannel channel = SessionChannelHelper.getChannel(datagramSession);
         try {
-            final ByteBuffer datagram = receiver.receive(datagramSession);
-            assert datagram != null;
-            final SocketAddress address = channel.receive(datagram);
+            // Read into a buffer of the largest UDP size first. The room in a frame is about 1470 bytes and the
+            // channel silently discards what does not fit, which delivered half a DNS answer to the guest.
+            datagramScratch.clear();
+            final SocketAddress address = channel.receive(datagramScratch);
             if (address == null) {
                 return false;
             }
@@ -142,11 +151,42 @@ public final class DefaultSessionLayer implements SessionLayer {
                 // datagrams that did not come from the session's expected destination.
                 return false;
             }
+            datagramScratch.flip();
+            final ByteBuffer datagram = receiver.receive(datagramSession);
+            assert datagram != null;
+            if (!placeDatagram(datagram, datagramSession)) {
+                receiver.cancel();
+                return false;
+            }
             datagram.flip();
             return true;
         } catch (final IOException exception) {
             LOGGER.error("Trying to read datagram socket", exception);
         }
+        return false;
+    }
+
+    /**
+     * Copies the received datagram into the frame. One that does not fit cannot be delivered without IP
+     * fragmentation. A DNS answer is cut and flagged as truncated, which makes the resolver ask again over TCP;
+     * anything else is dropped, since half a datagram is useless to every protocol.
+     */
+    private boolean placeDatagram(final ByteBuffer frame, final DatagramSession session) {
+        final int length = datagramScratch.remaining();
+        if (length <= frame.remaining()) {
+            frame.put(datagramScratch);
+            return true;
+        }
+        if (session.getDestination().getPort() == DNS_PORT && frame.remaining() >= DNS_HEADER_SIZE) {
+            final int room = frame.remaining();
+            final int start = frame.position();
+            datagramScratch.limit(datagramScratch.position() + room);
+            frame.put(datagramScratch);
+            frame.put(start + DNS_FLAGS_OFFSET, (byte) (frame.get(start + DNS_FLAGS_OFFSET) | DNS_TRUNCATED));
+            LOGGER.trace("DNS answer of {} bytes truncated to {}", length, room);
+            return true;
+        }
+        LOGGER.trace("Dropped a datagram of {} bytes that does not fit into a frame", length);
         return false;
     }
 
@@ -202,8 +242,6 @@ public final class DefaultSessionLayer implements SessionLayer {
         }
     }
 
-    public static native byte @Nullable [] sendICMP(byte[] ip, byte[] data, int size, int timeout);
-
     @Override
     public void sendSession(final Session session, @Nullable final ByteBuffer data) {
         if (EchoHandler.handleEchoSession(session, data, echoResponse)) {
@@ -227,6 +265,12 @@ public final class DefaultSessionLayer implements SessionLayer {
                             socketManager.createDatagramChannel(session, readySessions);
                     session.setAttachment(channel);
                     LOGGER.trace("Open datagram socket {}", session.getDestination());
+                    // The datagram that opens the exchange has to go out as well. It used to be dropped, so
+                    // every first query of a flow, a DNS lookup with its fresh source port, got no answer
+                    // until the guest's resolver gave up waiting and asked again.
+                    if (data != null) {
+                        channel.send(data, session.getDestination());
+                    }
                 }
                 case ESTABLISHED -> {
                     LOGGER.trace("Send datagram");

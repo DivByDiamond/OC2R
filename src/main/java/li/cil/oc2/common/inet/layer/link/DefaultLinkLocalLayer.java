@@ -194,11 +194,7 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             LOGGER.trace("ARP message received");
             final var arpData = ArpProtocol.readRequest(frame, srcMacPrefix, srcMacAddress);
             if (arpData != null) {
-                cardIpAddress = arpData.senderIpAddress();
-                myIpV4Address = arpData.targetIpAddress();
-                cardMacPrefix = arpData.senderMacPrefix();
-                cardMacAddress = arpData.senderMacAddress();
-                needArpResponse = true;
+                handleArpRequest(arpData);
             }
         } else {
             LOGGER.trace("Network message received");
@@ -212,6 +208,30 @@ public final class DefaultLinkLocalLayer implements LinkLocalLayer {
             }
             networkLayer.sendPacket(protocol, frame);
         }
+    }
+
+    /**
+     * Only a real request for the gateway makes the card answer and claim addresses.
+     *
+     * <p>Address conflict detection (RFC 5227), done by DHCP clients, systemd-networkd and NetworkManager, asks
+     * about the guest's own address with sender 0.0.0.0 and announces it with sender equal to target. Answering
+     * the probe would tell the guest that somebody else owns its address, and taking 0.0.0.0 as the guest's
+     * address would make the anti-spoofing check drop everything it sends afterwards.
+     */
+    private void handleArpRequest(final ArpProtocol.ArpRequestData request) {
+        if (request.senderIpAddress() == 0) {
+            LOGGER.trace("ARP probe ignored");
+            return;
+        }
+        cardIpAddress = request.senderIpAddress();
+        cardMacPrefix = request.senderMacPrefix();
+        cardMacAddress = request.senderMacAddress();
+        if (request.senderIpAddress() == request.targetIpAddress()) {
+            LOGGER.trace("ARP announcement noted");
+            return;
+        }
+        myIpV4Address = request.targetIpAddress();
+        needArpResponse = true;
     }
 
     /**
