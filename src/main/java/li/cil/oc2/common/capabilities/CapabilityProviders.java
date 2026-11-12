@@ -38,6 +38,7 @@ public final class CapabilityProviders {
         ProjectorCapabilities.registerCapabilities(registrar);
         BusCableCapabilities.registerCapabilities(registrar);
         NetworkConnectorLifecycle.registerCapabilities(registrar);
+        li.cil.oc2.common.blockentity.network.switches.NetworkSwitchBlockEntity.registerCapabilities(registrar);
         NetworkHubBlockEntity.registerCapabilities(registrar);
         li.cil.oc2.common.blockentity.gps.GpsTowerBlockEntity.registerRadioCapabilities(registrar);
         VxlanBlockEntity.registerCapabilities(registrar);

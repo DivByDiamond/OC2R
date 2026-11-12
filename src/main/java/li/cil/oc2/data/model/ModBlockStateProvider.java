@@ -43,6 +43,8 @@ public final class ModBlockStateProvider extends BlockStateProvider {
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/network_connector");
     private static final ResourceLocation NETWORK_HUB_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/network_hub");
+    private static final ResourceLocation NETWORK_SWITCH_MODEL =
+            ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/network_switch");
     private static final ResourceLocation PROJECTOR_MODEL =
             ResourceLocation.fromNamespaceAndPath(API.MOD_ID, "block/projector");
     private static final ResourceLocation REDSTONE_INTERFACE_MODEL =
@@ -88,7 +90,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         getVariantBuilder(Blocks.GPS_TOWER.get()).forAllStates(this::gpsTowerModel);
         itemModels().withExistingParent("gps_tower", "oc2r:block/gps_tower_inventory");
         horizontalBlock(Blocks.NETWORK_HUB, Items.NETWORK_HUB, NETWORK_HUB_MODEL);
-        // horizontalBlock(Blocks.NETWORK_SWITCH, Items.NETWORK_SWITCH, NETWORK_HUB_MODEL);
+        horizontalBlock(Blocks.NETWORK_SWITCH, Items.NETWORK_SWITCH, NETWORK_SWITCH_MODEL);
         horizontalBlock(Blocks.PROJECTOR, Items.PROJECTOR, PROJECTOR_MODEL);
         horizontalBlock(
                 Blocks.REDSTONE_INTERFACE, Items.REDSTONE_INTERFACE, REDSTONE_INTERFACE_MODEL);

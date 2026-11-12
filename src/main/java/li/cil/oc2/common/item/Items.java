@@ -54,7 +54,7 @@ public final class Items {
     public static final ItemHolder<Item> MEDIA_STATION = register(Blocks.MEDIA_STATION);
     public static final ItemHolder<Item> MACHINE_INTERFACE = register(Blocks.MACHINE_INTERFACE);
     public static final ItemHolder<Item> GPS_TOWER = register(Blocks.GPS_TOWER, GpsTowerItem::new);
-    // public static final ItemHolder<Item> NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH);
+    public static final ItemHolder<Item> NETWORK_SWITCH = register(Blocks.NETWORK_SWITCH);
     public static final ItemHolder<Item> PROJECTOR = register(Blocks.PROJECTOR);
     public static final ItemHolder<Item> REDSTONE_INTERFACE = register(Blocks.REDSTONE_INTERFACE);
     public static final ItemHolder<Item> VXLAN_HUB = register(Blocks.VXLAN_HUB);

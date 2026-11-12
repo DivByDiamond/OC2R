@@ -20,11 +20,10 @@ class ModernModelDefinitionsTest {
     void allRegisteredItemModelsKeepTheirExistingTexturesAndDisplayTransforms() throws Exception {
         final Map<String, JsonObject> generated = ModernModelDefinitions.create();
         try (var paths = Files.list(ASSETS.resolve("models/item"))) {
-            final Set<String> existing = paths.map(ModernModelDefinitionsTest::fileName)
-                    .filter(name -> !"network_switch.json".equals(name)).collect(Collectors.toSet());
+            final Set<String> existing = paths.map(ModernModelDefinitionsTest::fileName).collect(Collectors.toSet());
             final Set<String> actual = generated.keySet().stream().filter(name -> name.startsWith("models/item/"))
                     .map(name -> name.substring("models/item/".length())).collect(Collectors.toSet());
-            assertEquals(existing, actual, "The network switch has no registered item; every other model must be generated");
+            assertEquals(existing, actual, "Every item model must be generated");
             for (final String name : existing) {
                 assertEquals(normalizeModel(read("models/item/" + name)),
                         normalizeModel(generated.get("models/item/" + name).deepCopy()), name);

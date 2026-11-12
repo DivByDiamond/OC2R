@@ -4,6 +4,7 @@
     "oc2r:bus_cable",
     "oc2r:network_connector",
     "oc2r:network_hub",
+    "oc2r:network_switch",
     "oc2r:redstone_interface",
     "oc2r:media_station",
     "oc2r:charger",

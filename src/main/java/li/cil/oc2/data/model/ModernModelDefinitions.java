@@ -79,9 +79,7 @@ public final class ModernModelDefinitions {
         }
         for (final String name : List.of("transistor", "circuit_board")) flat(result, name,
                 "components/materials/" + name);
-        for (final String name : HORIZONTAL_BLOCKS) {
-            if (!"network_switch".equals(name)) result.put(name, single(PARENT, "oc2r:block/" + name));
-        }
+        for (final String name : HORIZONTAL_BLOCKS) result.put(name, single(PARENT, "oc2r:block/" + name));
         for (final String name : SIMPLE) result.put(name, single(PARENT, "oc2r:block/" + name));
         for (final String name : List.of("wireless_access_point", "environment_sensor"))
             result.put(name, peripheralItem(name));

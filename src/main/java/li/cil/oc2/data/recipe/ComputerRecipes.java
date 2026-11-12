@@ -68,6 +68,19 @@ final class ComputerRecipes {
                         ModRecipesProvider.inventoryChange(Items.NETWORK_CONNECTOR.get()))
                 .save(consumer);
 
+        RecipeBuilders.shaped(RecipeCategory.MISC, Items.NETWORK_SWITCH.get())
+                .pattern("ICI")
+                .pattern("TBT")
+                .pattern("ICI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('C', Items.NETWORK_CONNECTOR.get())
+                .define('T', Items.TRANSISTOR.get())
+                .define('B', Items.CIRCUIT_BOARD.get())
+                .unlockedBy(
+                        "has_network_connector",
+                        ModRecipesProvider.inventoryChange(Items.NETWORK_CONNECTOR.get()))
+                .save(consumer);
+
         RecipeBuilders.shaped(RecipeCategory.MISC, Items.MEDIA_STATION.get())
                 .pattern("ICI").pattern("DFD").pattern("IBI")
                 .define('I', Tags.Items.INGOTS_IRON)

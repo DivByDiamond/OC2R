@@ -14,6 +14,8 @@
   "block.oc2r.network_connector.desc": "Transmits network packets via Network Cables.",
   "block.oc2r.network_hub": "Network Hub",
   "block.oc2r.network_hub.desc": "Distributes network packets among all attached Network Connectors.",
+  "block.oc2r.network_switch": "Network Switch",
+  "block.oc2r.network_switch.desc": "Forwards network packets only to the port where the destination was last seen, and floods them to the others when it is not known yet.",
   "block.oc2r.redstone_interface": "Redstone Interface",
   "block.oc2r.redstone_interface.desc": "Emits and reads redstone signals.",
   "block.oc2r.charger": "Charger",

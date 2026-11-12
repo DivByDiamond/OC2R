@@ -19,6 +19,8 @@
   "block.oc2r.network_connector.desc": "Передает пакеты через сетевые кабели.",
   "block.oc2r.network_hub": "Сетевой концентратор",
   "block.oc2r.network_hub.desc": "Передает пакеты на все подключенные к нему сетевые разъемы.",
+  "block.oc2r.network_switch": "Сетевой коммутатор",
+  "block.oc2r.network_switch.desc": "Передает пакеты только на тот порт, где недавно видели получателя, а если он неизвестен, рассылает на все остальные.",
   "block.oc2r.projector": "Проектор",
   "block.oc2r.projector.desc": "Проецирует изображения на поверхности перед ним.",
   "block.oc2r.redstone_interface": "Красный интерфейс",

@@ -12,6 +12,7 @@
 - [Монитор](monitor.md)
 - [Сетевой разъем](network_connector.md)
 - [Сетевой концентратор](network_hub.md)
+- [Сетевой коммутатор](network_switch.md)
 - [Проектор](projector.md)
 - [Красный интерфейс](redstone_interface.md)
 - [Динамик](speaker.md)

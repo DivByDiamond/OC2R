@@ -108,7 +108,7 @@ public final class ItemGroup {
                                                 output.accept(Items.RAW_SILICON_WAFER.get());
                                                 output.accept(Items.TRANSISTOR.get());
                                                 output.accept(Items.CIRCUIT_BOARD.get());
-                                                // output.accept(Items.NETWORK_SWITCH.get());
+                                                output.accept(Items.NETWORK_SWITCH.get());
                                                 output.accept(Items.VXLAN_HUB.get());
                                                 output.accept(Items.PCI_CARD_CAGE.get());
                                                 output.accept(Items.INTERNET_GATEWAY.get());

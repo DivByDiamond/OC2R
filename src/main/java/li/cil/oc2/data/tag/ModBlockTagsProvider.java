@@ -45,6 +45,7 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(BUS_CABLE.key())
                 .add(NETWORK_CONNECTOR.key())
                 .add(NETWORK_HUB.key())
+                .add(NETWORK_SWITCH.key())
                 .add(REDSTONE_INTERFACE.key())
                 .add(CHARGER.key())
                 .add(PROJECTOR.key())
@@ -62,6 +63,7 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                         BUS_CABLE.get(),
                         NETWORK_CONNECTOR.get(),
                         NETWORK_HUB.get(),
+                        NETWORK_SWITCH.get(),
                         REDSTONE_INTERFACE.get(),
                         CHARGER.get(),
                         PROJECTOR.get(),

@@ -2,7 +2,7 @@
 
 Connect [network connectors](block/network_connector.md) with [network cables](item/network_cable.md), and install a [network interface card](item/network_interface_card.md) in each computer. Connectors attach to the computer's non-front faces. The card's configuration enables or disables its individual sides.
 
-Connectors relay frames between cable links. Use a [hub](block/network_hub.md) for branches. Avoid loops: forwarded frames consume a finite hop budget, but cycles can still create duplicates before that budget expires.
+Connectors relay frames between cable links. Use a [hub](block/network_hub.md) or a [switch](block/network_switch.md) for branches; the switch sends traffic only where the destination was seen. Avoid loops: forwarded frames consume a finite hop budget, but cycles can still create duplicates before that budget expires.
 
 ## Linux setup
 

@@ -65,8 +65,7 @@ public final class ModLootTableProvider extends LootTableProvider {
             dropSelf(Blocks.PROJECTOR.get());
             dropSelf(Blocks.REDSTONE_INTERFACE.get());
             dropSelf(Blocks.MONITOR.get());
-            // This block has no registered item; generating a self-drop would encode air.
-            add(Blocks.NETWORK_SWITCH.get(), LootTable.lootTable());
+            dropSelf(Blocks.NETWORK_SWITCH.get());
             dropSelf(Blocks.VXLAN_HUB.get());
             dropSelf(Blocks.PCI_CARD_CAGE.get());
             dropSelf(Blocks.INTERNET_GATEWAY.get());

@@ -11,6 +11,7 @@ import li.cil.oc2.api.bus.device.object.DocumentedDevice;
 import li.cil.oc2.api.bus.device.object.NamedDevice;
 import li.cil.oc2.api.capabilities.NetworkInterface;
 import li.cil.oc2.common.Constants;
+import li.cil.oc2.common.block.common.Blocks;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.ModBlockEntity;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
@@ -18,6 +19,7 @@ import li.cil.oc2.common.blockentity.network.switches.host.LuaHostEntry;
 import li.cil.oc2.common.blockentity.network.switches.port.PortSettings;
 import li.cil.oc2.common.capabilities.Capabilities;
 import li.cil.oc2.platform.BlockCapabilityCache;
+import li.cil.oc2.platform.CapabilityRegistrar;
 import li.cil.oc2.platform.Platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -66,6 +68,15 @@ public final class NetworkSwitchBlockEntity extends ModBlockEntity
                             this::handleNeighborChanged);
         }
         adjacentBlockCaches = caches;
+    }
+
+    /** Every face of a switch is a port: a connector that touches it reaches the switch through this. */
+    public static void registerCapabilities(final CapabilityRegistrar registrar) {
+        registrar.registerBlock(
+                Capabilities.NetworkInterface.BLOCK,
+                (level, pos, state, be, side) ->
+                        be instanceof final NetworkSwitchBlockEntity self ? self : null,
+                Blocks.NETWORK_SWITCH.get());
     }
 
     @Override
