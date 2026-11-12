@@ -64,6 +64,7 @@ public final class GameTestRegistrar {
         HardwareTierTests.class,
         NetworkSwitchTests.class,
         PciCardCageTests.class,
+        DiskTests.class,
         ScannerModuleTests.class,
         TerminalTests.class);
 
