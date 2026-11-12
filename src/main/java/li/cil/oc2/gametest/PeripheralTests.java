@@ -72,6 +72,24 @@ public final class PeripheralTests {
                 .thenSucceed();
     }
 
+    /**
+     * Whether the access point at this position is among the docks that cover it. Chargers of tests running
+     * next to this one are docks as well, so the result is checked for the point's own position only.
+     */
+    private static boolean covers(final GameTestHelper helper, final BlockPos point, final UUID network) {
+        return DockStations.near(helper.getLevel(), point.getX(), point.getZ(), network).stream()
+                .anyMatch(dock -> dock.x() == point.getX() + 0.5 && dock.y() == point.getY() + 0.5
+                        && dock.z() == point.getZ() + 0.5);
+    }
+
+    /**
+     * Four slots inside the 9x9x9 test box, each with room for a block on all six sides. Positions outside
+     * the box belong to the neighbouring tests, whose distance depends on the loader and the version.
+     */
+    private static BlockPos sensorSlot(final int index) {
+        return new BlockPos(index % 2 == 0 ? 1 : 7, 3, index < 2 ? 1 : 7);
+    }
+
     @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
     public static void accessPointCoverageRequiresItsOwnEnrollment(final GameTestHelper helper) {
         final var tower = RadioBridgeTests.tower(helper, TOWER);
@@ -80,14 +98,12 @@ public final class PeripheralTests {
         helper.setBlock(POINT, Blocks.WIRELESS_ACCESS_POINT.get().defaultBlockState());
         final var point = TestSupport.blockEntity(helper, POINT, WirelessAccessPointBlockEntity.class);
         final var absolute = helper.absolutePos(POINT);
-        TestSupport.assertTrue(helper, "unenrolled point is absent", DockStations.near(helper.getLevel(),
-                absolute.getX(), absolute.getZ(), id).isEmpty());
+        TestSupport.assertTrue(helper, "unenrolled point is absent", !covers(helper, absolute, id));
         final var invite = tower.issueRadioInvite(network.get("adminSecret"), point.getRadioEndpointId());
         point.joinRadioNetwork(invite.get("invite"), invite.get("secret"));
-        TestSupport.assertTrue(helper, "enrolled point covers its network", !DockStations.near(helper.getLevel(),
-                absolute.getX(), absolute.getZ(), id).isEmpty());
-        TestSupport.assertTrue(helper, "point does not cover unrelated network", DockStations.near(helper.getLevel(),
-                absolute.getX(), absolute.getZ(), UUID.randomUUID()).isEmpty());
+        TestSupport.assertTrue(helper, "enrolled point covers its network", covers(helper, absolute, id));
+        TestSupport.assertTrue(helper, "point does not cover unrelated network",
+                !covers(helper, absolute, UUID.randomUUID()));
         helper.succeed();
     }
 
@@ -171,7 +187,7 @@ public final class PeripheralTests {
         final var player = TestSupport.fakePlayer(helper);
         int index = 0;
         for (final Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
-            final BlockPos pos = new BlockPos(5 + 5 * index++, 3, 8);
+            final BlockPos pos = sensorSlot(index++);
             final BlockPos wall = pos.relative(facing.getOpposite());
             helper.setBlock(wall, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
             TestSupport.useOn(helper, player, new ItemStack(Items.ENVIRONMENT_SENSOR.get()), wall, facing);
@@ -198,7 +214,7 @@ public final class PeripheralTests {
         final var provider = new li.cil.oc2.common.bus.device.rpc.block.BlockEntityObjectDeviceProvider();
         int index = 0;
         for (final Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
-            final BlockPos pos = new BlockPos(5 + 5 * index++, 3, 8);
+            final BlockPos pos = sensorSlot(index++);
             final Direction rear = facing.getOpposite();
             final BlockPos backing = pos.relative(rear);
             helper.setBlock(backing, Blocks.BUS_CABLE.get().defaultBlockState());

@@ -42,7 +42,10 @@
       "li.cil.oc2.gametest.RobotTests",
       "li.cil.oc2.gametest.FlashWriterTests",
       "li.cil.oc2.gametest.RobotCarryTests",
-      "li.cil.oc2.gametest.ScannerModuleTests"
+      "li.cil.oc2.gametest.ScannerModuleTests",
+      "li.cil.oc2.gametest.HardwareTierTests",
+      "li.cil.oc2.gametest.NetworkSwitchTests",
+      "li.cil.oc2.gametest.PciCardCageTests"
     ]
   },
   "depends": {
