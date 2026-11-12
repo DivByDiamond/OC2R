@@ -1,5 +1,6 @@
 package li.cil.oc2.common.vxlan;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -56,14 +57,17 @@ public class TunnelManager {
     @Nullable private volatile Selector selector;
     private static TunnelManager managerInstance;
     private final InetAddress remoteHost;
-    private final short remotePort;
+    private final int remotePort;
     private final InetAddress bindHost;
-    private final short bindPort;
+    private final int bindPort;
     private final InetSocketAddress cachedRemoteAddress;
     private byte[] sendBuffer = new byte[0];
 
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "InetAddress is immutable; the manager keeps the configured addresses")
     public TunnelManager(
-            InetAddress bindHost, short bindPort, InetAddress remoteHost, short remotePort)
+            InetAddress bindHost, int bindPort, InetAddress remoteHost, int remotePort)
             throws SocketException {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
@@ -81,8 +85,8 @@ public class TunnelManager {
         try {
             managerInstance =
                     new TunnelManager(
-                            InetAddress.getByName(Config.bindHost), (short) Config.bindPort,
-                            InetAddress.getByName(Config.remoteHost), (short) Config.remotePort);
+                            InetAddress.getByName(Config.bindHost), Config.bindPort,
+                            InetAddress.getByName(Config.remoteHost), Config.remotePort);
         } catch (SocketException | UnknownHostException e) {
             LOGGER.error("Failed to bind to configured address", e);
         }
