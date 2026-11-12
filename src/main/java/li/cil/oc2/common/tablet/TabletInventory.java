@@ -10,8 +10,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Device slots of a tablet: a fixed memory module, one processor and one flash. Memory is part of
- * the craft and has no player facing slot; processor and flash are the only parts players swap.
+ * Device slots of a tablet: a fixed memory module, one processor, one flash and one hard drive.
+ * Memory is part of the craft and has no player facing slot; the other three are swapped by players.
  */
 public final class TabletInventory extends AbstractVMItemStackHandlers {
     private final boolean clientSide;
@@ -23,7 +23,9 @@ public final class TabletInventory extends AbstractVMItemStackHandlers {
                 provider,
                 new GroupDefinition(DeviceTypes.MEMORY, 1),
                 new GroupDefinition(DeviceTypes.CPU, 1),
-                new GroupDefinition(DeviceTypes.FLASH_MEMORY, 1));
+                new GroupDefinition(DeviceTypes.FLASH_MEMORY, 1),
+                // Added last: default device addresses follow the group order, so older tablets keep theirs.
+                new GroupDefinition(DeviceTypes.HARD_DRIVE, 1));
         this.clientSide = clientSide;
     }
 

@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
 /**
  * Runs the machines of tablets that are in a hand or have a screen open and suspends the rest.
  * Suspending writes the state to the world folder first, so dropping, dying or logging out loses nothing.
+ * A running machine is also written every {@link #CHECKPOINT_TICKS}, so a server crash costs at most
+ * that much guest time instead of everything since the tablet was last put away.
  */
 @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Each live stack needs its own holder reference.
 public final class TabletManager {
@@ -38,6 +40,8 @@ public final class TabletManager {
     // A short grace period keeps scrolling the hotbar from saving and restoring the whole machine.
     static final int SUSPEND_GRACE_TICKS = 40;
     private static final int SAVE_RETRY_TICKS = 200;
+    // The vanilla autosave period: a crashed world and its tablets roll back by about the same amount.
+    static final int CHECKPOINT_TICKS = 6000;
 
     private static final Map<UUID, Entry> MACHINES = new ConcurrentHashMap<>();
     private static final Map<UUID, Set<ServerPlayer>> VIEWERS = new ConcurrentHashMap<>();
@@ -47,10 +51,12 @@ public final class TabletManager {
         final TabletMachine machine;
         long lastActive;
         long retryAt;
+        long savedAt;
 
         Entry(final TabletMachine machine, final long now) {
             this.machine = machine;
             this.lastActive = now;
+            this.savedAt = now;
         }
     }
 
@@ -199,6 +205,8 @@ public final class TabletManager {
             }
             if (now - entry.lastActive > SUSPEND_GRACE_TICKS && now >= entry.retryAt) {
                 suspend(server, e.getKey(), entry, now);
+            } else if (checkpointDue(now, entry.savedAt, entry.retryAt)) {
+                checkpoint(server, e.getKey(), entry, now);
             }
         }
     }
@@ -236,11 +244,42 @@ public final class TabletManager {
         entry.machine.suspend();
     }
 
+    /** Whether a running machine last written at {@code savedAt} should be written again. */
+    static boolean checkpointDue(final long now, final long savedAt, final long retryAt) {
+        return now - savedAt >= CHECKPOINT_TICKS && now >= retryAt;
+    }
+
+    private static void checkpoint(
+            final MinecraftServer server, final UUID id, final Entry entry, final long now) {
+        try {
+            storeOf(server).save(id, entry.machine.checkpoint());
+            entry.savedAt = now;
+        } catch (final IOException | RuntimeException e) {
+            LOGGER.error("Cannot checkpoint tablet {}; the previous saved state is kept", id, e);
+            entry.retryAt = now + SAVE_RETRY_TICKS;
+        }
+    }
+
+    /** Writes a live machine now without releasing it; used by tests in place of waiting for the period. */
+    public static boolean checkpointNow(final MinecraftServer server, final UUID id) {
+        final Entry entry = MACHINES.get(id);
+        if (entry == null) return false;
+        final long now = server.getTickCount();
+        checkpoint(server, id, entry, now);
+        return entry.savedAt == now;
+    }
+
     private static void suspendAll(final MinecraftServer server) {
         final long now = server.getTickCount();
         for (final Map.Entry<UUID, Entry> e : MACHINES.entrySet()) {
             suspend(server, e.getKey(), e.getValue(), now);
         }
+    }
+
+    /** Drops the live machine as a crash would: nothing is written, the stored state stays. Used by tests. */
+    public static void crash(final UUID id) {
+        final Entry entry = MACHINES.remove(id);
+        if (entry != null) entry.machine.suspend();
     }
 
     /** Drops the machine and its saved state without saving; used by tests to leave no files behind. */

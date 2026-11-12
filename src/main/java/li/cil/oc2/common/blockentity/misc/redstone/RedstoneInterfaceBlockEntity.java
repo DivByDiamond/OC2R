@@ -129,7 +129,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
         if (side == null) {
             throw new IllegalArgumentException();
         }
-        return BundledRedstoneCallbacks.getBundledInput(level, getBlockPos(), side);
+        return BundledRedstoneCallbacks.getBundledInput(level, getBlockPos(), global(side));
     }
 
     @Callback(name = GET_BUNDLED_OUTPUT)
@@ -140,7 +140,7 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
         if (side == null) {
             throw new IllegalArgumentException();
         }
-        return BundledRedstoneCallbacks.getBundledOutput(side, state);
+        return BundledRedstoneCallbacks.getBundledOutput(global(side), state);
     }
 
     @Callback(name = SET_BUNDLED_OUTPUT)
@@ -154,11 +154,9 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
         if (side == null) {
             throw new IllegalArgumentException();
         }
-        if (BundledRedstoneCallbacks.setBundledOutput(side, value, color, state)) {
-            final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
-            if (direction != null) {
-                notifyNeighbor(direction);
-            }
+        final Direction direction = global(side);
+        if (BundledRedstoneCallbacks.setBundledOutput(direction, value, color, state)) {
+            notifyNeighbor(direction);
             setChanged();
         }
     }
@@ -172,11 +170,9 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
         if (side == null) {
             throw new IllegalArgumentException();
         }
-        if (BundledRedstoneCallbacks.setBundledOutputs(side, values, state)) {
-            final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
-            if (direction != null) {
-                notifyNeighbor(direction);
-            }
+        final Direction direction = global(side);
+        if (BundledRedstoneCallbacks.setBundledOutputs(direction, values, state)) {
+            notifyNeighbor(direction);
             setChanged();
         }
     }
@@ -189,6 +185,12 @@ public final class RedstoneInterfaceBlockEntity extends ModBlockEntity
     @Override
     public void getDeviceDocumentation(final DeviceVisitor visitor) {
         RedstoneInterfaceDocs.getDeviceDocumentation(visitor);
+    }
+
+    /** The world direction of a block-relative side; a bundled cable asks by world direction. */
+    private Direction global(final Side side) {
+        final Direction direction = HorizontalBlockUtils.toGlobal(getBlockState(), side);
+        return direction == null ? side.getDirection() : direction;
     }
 
     private void notifyNeighbor(final Direction direction) {

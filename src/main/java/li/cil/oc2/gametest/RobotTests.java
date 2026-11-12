@@ -193,6 +193,46 @@ public final class RobotTests {
         }
     }
 
+    /** Picking a robot up must not wipe what its guest wrote to the private root disk. */
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE)
+    public static void pickedUpRobotKeepsItsMachineStateOnce(final GameTestHelper helper) {
+        final Robot source = newRootSnapshotRobot(helper);
+        final Robot placed = newRootSnapshotRobot(helper);
+        final Robot copy = newRootSnapshotRobot(helper);
+        final var store = li.cil.oc2.common.entity.robot.state.RobotSerializer.machineStore(helper.getLevel().getServer());
+        final long offset = 64 * 1024L - 7;
+        final byte[] expected = "oc2r-picked-up-robot-root".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        try {
+            try (var output = source.getVirtualMachine().state.builtinDevices.rootFilesystem.getOutputStream(offset)) {
+                output.write(expected);
+            }
+            final net.minecraft.world.item.ItemStack stack =
+                    new net.minecraft.world.item.ItemStack(li.cil.oc2.common.item.Items.ROBOT.get());
+            source.exportToItemStack(stack);
+            final java.util.UUID id = stack.get(li.cil.oc2.common.components.DataComponents.ROBOT_STATE_ID.get());
+            TestSupport.assertNotNull(helper, id, "state id on the item");
+            TestSupport.assertTrue(helper, "the machine state is in the world folder", store.exists(id));
+
+            placed.importFromItemStack(stack);
+            TestSupport.assertTrue(helper, "the placed robot has the private disk bytes of the picked up one",
+                    java.util.Arrays.equals(expected, readRootMarker(
+                            placed.getVirtualMachine().state.builtinDevices.rootFilesystem, offset, expected.length)));
+            TestSupport.assertTrue(helper, "the stored state is consumed by the first placement", !store.exists(id));
+
+            copy.importFromItemStack(stack);
+            TestSupport.assertTrue(helper, "a copy of the item starts with a fresh disk",
+                    !java.util.Arrays.equals(expected, readRootMarker(
+                            copy.getVirtualMachine().state.builtinDevices.rootFilesystem, offset, expected.length)));
+            helper.succeed();
+        } catch (final java.io.IOException failure) {
+            throw TestSupport.failure(helper, "robot item roundtrip failed: " + failure);
+        } finally {
+            source.getVirtualMachine().dispose();
+            placed.getVirtualMachine().dispose();
+            copy.getVirtualMachine().dispose();
+        }
+    }
+
     private static Robot newRootSnapshotRobot(final GameTestHelper helper) {
         //? if >=26.1 {
         /*final Robot robot = Entities.ROBOT.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);

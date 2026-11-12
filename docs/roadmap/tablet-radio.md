@@ -239,8 +239,8 @@ Successful enrollment in another dimension retires the previous credential hash,
 so old-dimension item snapshots cannot reclaim the shared machine. A current copy can claim an inactive identity first;
 rotation then invalidates the other copy, rather than creating a second identity.
 
-Framebuffer and guest mouse input were added in section 15. A live screen in hand, hard-drive support
-and crash-periodic VM saves remain separate work.
+Framebuffer and guest mouse input were added in section 15. Hard-drive support and crash-periodic VM saves
+remain separate work; a live screen in hand was dropped by the owner on 2026-11-11.
 
 The radio transport refreshes endpoint TLS identities before opening a pair after a permissions-generation
 change. This prevents the first message or ping from being discarded while the target waits for its next tick.

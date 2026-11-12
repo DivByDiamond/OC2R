@@ -54,9 +54,9 @@ public final class FabricTabletTest implements FabricClientGameTest {
                 final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
                 hostTab(false);
                 screen.getMenu().setCaptureInputState(true);
-                hostClick(34, 173);
+                hostClick(SIDEBAR_X, CAPTURE_Y);
                 if (screen.getMenu().getCaptureInputState()) throw new AssertionError("Custom capture key did not release input");
-                hostClick(34, 173);
+                hostClick(SIDEBAR_X, CAPTURE_Y);
                 if (!screen.getMenu().getCaptureInputState()) {
                     throw new IllegalStateException("Tablet keyboard capture is unavailable");
                 }
@@ -121,14 +121,10 @@ public final class FabricTabletTest implements FabricClientGameTest {
                                 && rpc.getMethodGroups().stream().anyMatch(group -> group.getName().equals("sendRadioMessage")));
                 if (!found) throw new IllegalStateException("Messenger-compatible tablet radio is missing from the guest bus");
             });
-            context.runOnClient(client -> hostClick(58, 173));
-            context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletInventoryScreen, 100);
-            context.runOnClient(client -> {
-                final var screen = (TabletInventoryScreen) RenderCompat.currentScreen();
-                if (!screen.getMenu().getSlot(0).getItem().is(Items.CPU_TIER_1.get())) {
-                    throw new IllegalStateException("Tablet CPU slot was not synchronized");
-                }
-            });
+            context.runOnClient(client -> hostClick(SIDEBAR_X, INVENTORY_Y));
+            // The slot contents arrive in their own packet after the screen opens.
+            context.waitFor(client -> RenderCompat.currentScreen() instanceof final TabletInventoryScreen screen
+                    && screen.getMenu().getSlot(0).getItem().is(Items.CPU_TIER_1.get()), 100);
             context.takeScreenshot("oc2r-tablet-inventory");
             context.runOnClient(client -> ((TabletInventoryScreen) RenderCompat.currentScreen()).getMenu().switchToTerminal());
             context.waitFor(client -> RenderCompat.currentScreen() instanceof TabletTerminalScreen, 100);
@@ -155,10 +151,17 @@ public final class FabricTabletTest implements FabricClientGameTest {
             context.waitTicks(5);
         }
     }
+    // Centres of the sidebar buttons relative to the viewport: power, capture, inventory, display.
+    private static final int SIDEBAR_X = -17;
+    private static final int CAPTURE_Y = 24;
+    private static final int INVENTORY_Y = 38;
+    private static final int DISPLAY_Y = 52;
+
     private static void hostTab(final boolean graphical) {
-        hostClick(graphical ? 140 : 218, -19);
-        if (((TabletTerminalScreen) RenderCompat.currentScreen()).isGraphical() != graphical) {
-            throw new AssertionError("The custom tablet display selector did not change views");
+        final var screen = (TabletTerminalScreen) RenderCompat.currentScreen();
+        if (screen.isGraphical() != graphical) hostClick(SIDEBAR_X, DISPLAY_Y);
+        if (screen.isGraphical() != graphical) {
+            throw new AssertionError("The tablet display button did not change views");
         }
     }
 

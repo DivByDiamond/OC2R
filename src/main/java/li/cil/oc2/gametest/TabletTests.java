@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import li.cil.oc2.api.API;
 import li.cil.oc2.api.bus.device.DeviceTypes;
+import li.cil.oc2.common.bus.device.vm.item.storage.HardDriveDevice;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.item.tablet.TabletItem;
 import li.cil.oc2.common.tablet.TabletMachine;
@@ -129,6 +130,98 @@ public final class TabletTests {
                 })
                 .thenExecute(() -> forget(helper, id))
                 .thenSucceed();
+    }
+
+    /** A server crash never runs the suspend path; the periodic checkpoint is all that is left. */
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 600)
+    public static void runningTabletIsCheckpointedAndSurvivesACrash(final GameTestHelper helper) {
+        final UUID id = UUID.randomUUID();
+        final MinecraftServer server = server(helper);
+        final TabletMachine first = TabletManager.machineOf(server, id);
+        TestSupport.assertNotNull(helper, first, "machine");
+        first.inventory().getItemHandler(DeviceTypes.CPU).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.CPU_TIER_INF.get()));
+        first.virtualMachine().start();
+
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    TabletManager.tickFor(server, Set.of(id));
+                    TestSupport.assertTrue(helper, "the guest is running",
+                            first.virtualMachine().getRunState() == VMRunState.RUNNING);
+                })
+                .thenExecute(() -> {
+                    TestSupport.assertTrue(helper, "a running tablet has no file before its first checkpoint",
+                            !TabletManager.storeOf(server).exists(id));
+                    TestSupport.assertTrue(helper, "the checkpoint was written", TabletManager.checkpointNow(server, id));
+                    TestSupport.assertTrue(helper, "its state is in the world folder",
+                            TabletManager.storeOf(server).exists(id));
+                    TestSupport.assertTrue(helper, "the machine was not released", TabletManager.isLive(id));
+                })
+                .thenExecuteFor(10, () -> TabletManager.tickFor(server, Set.of(id)))
+                .thenExecute(() -> {
+                    TestSupport.assertTrue(helper, "the guest keeps running after a checkpoint",
+                            first.virtualMachine().getRunState() == VMRunState.RUNNING);
+                    TabletManager.crash(id);
+                    TestSupport.assertTrue(helper, "the crashed machine is gone", !TabletManager.isLive(id));
+                    final TabletMachine restored = TabletManager.machineOf(server, id);
+                    TestSupport.assertNotNull(helper, restored, "restored machine");
+                    TestSupport.assertTrue(helper, "a new machine object was built", restored != first);
+                    TestSupport.assertTrue(helper, "the processor came back from the checkpoint", restored.inventory()
+                            .getItemHandler(DeviceTypes.CPU).orElseThrow().getStackInSlot(0).is(Items.CPU_TIER_INF.get()));
+                })
+                .thenWaitUntil(() -> {
+                    TabletManager.tickFor(server, Set.of(id));
+                    TestSupport.assertTrue(helper, "the restored guest runs again",
+                            TabletManager.machineOf(server, id).virtualMachine().getRunState() == VMRunState.RUNNING);
+                })
+                .thenExecute(() -> forget(helper, id))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TestSupport.TEMPLATE, templateNamespace = TestSupport.TEMPLATE_NAMESPACE, timeoutTicks = 600)
+    public static void tabletMountsAHardDriveAndKeepsItAcrossSuspend(final GameTestHelper helper) {
+        final UUID id = UUID.randomUUID();
+        final MinecraftServer server = server(helper);
+        final TabletMachine first = TabletManager.machineOf(server, id);
+        TestSupport.assertNotNull(helper, first, "machine");
+        TestSupport.assertTrue(helper, "a new tablet has no hard drive", first.inventory()
+                .getItemHandler(DeviceTypes.HARD_DRIVE).orElseThrow().getStackInSlot(0).isEmpty());
+        first.inventory().getItemHandler(DeviceTypes.CPU).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.CPU_TIER_INF.get()));
+        first.inventory().getItemHandler(DeviceTypes.HARD_DRIVE).orElseThrow()
+                .setStackInSlot(0, new ItemStack(Items.HARD_DRIVE_SMALL.get()));
+        first.virtualMachine().start();
+
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    TabletManager.tickFor(server, Set.of(id));
+                    TestSupport.assertTrue(helper, "the guest runs with a hard drive",
+                            first.virtualMachine().getRunState() == VMRunState.RUNNING);
+                    TestSupport.assertTrue(helper, "the hard drive is a device of the guest", hasHardDrive(first));
+                })
+                .thenExecuteFor(GRACE, () -> TabletManager.tickFor(server, Set.of()))
+                .thenExecute(() -> {
+                    TestSupport.assertTrue(helper, "the machine was released", !TabletManager.isLive(id));
+                    final TabletMachine resumed = TabletManager.machineOf(server, id);
+                    TestSupport.assertNotNull(helper, resumed, "resumed machine");
+                    TestSupport.assertTrue(helper, "the hard drive survived", resumed.inventory()
+                            .getItemHandler(DeviceTypes.HARD_DRIVE).orElseThrow().getStackInSlot(0)
+                            .is(Items.HARD_DRIVE_SMALL.get()));
+                })
+                .thenWaitUntil(() -> {
+                    TabletManager.tickFor(server, Set.of(id));
+                    final TabletMachine resumed = TabletManager.machineOf(server, id);
+                    TestSupport.assertTrue(helper, "the resumed guest runs again",
+                            resumed.virtualMachine().getRunState() == VMRunState.RUNNING);
+                    TestSupport.assertTrue(helper, "the hard drive is mounted again", hasHardDrive(resumed));
+                })
+                .thenExecute(() -> forget(helper, id))
+                .thenSucceed();
+    }
+
+    private static boolean hasHardDrive(final TabletMachine machine) {
+        return machine.virtualMachine().busController.getDevices().stream()
+                .anyMatch(HardDriveDevice.class::isInstance);
     }
 
     // --------------------------------------------------------------------- //

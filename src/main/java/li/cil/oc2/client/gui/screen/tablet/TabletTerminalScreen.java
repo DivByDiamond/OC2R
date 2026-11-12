@@ -1,9 +1,13 @@
 package li.cil.oc2.client.gui.screen.tablet;
 
 import java.util.BitSet;
+import li.cil.oc2.client.gui.Sprites;
 import li.cil.oc2.client.gui.screen.common.AbstractModContainerScreen;
 import li.cil.oc2.client.gui.screen.misc.KeyCodeMapping;
-import li.cil.oc2.client.gui.widget.tablet.TabletControl;
+import li.cil.oc2.client.gui.screen.widget.InputCaptureButton;
+import li.cil.oc2.client.gui.screen.widget.InventoryButton;
+import li.cil.oc2.client.gui.screen.widget.PowerButton;
+import li.cil.oc2.client.gui.widget.tablet.TabletDisplayButton;
 import li.cil.oc2.client.gui.widget.tablet.TabletFramebufferRenderer;
 import li.cil.oc2.client.gui.widget.tablet.TabletViewport;
 import li.cil.oc2.client.gui.widget.terminal.TabletConsoleViewport;
@@ -13,7 +17,6 @@ import li.cil.oc2.common.container.tablet.TabletTerminalContainer;
 import li.cil.oc2.common.network.NetworkMessages;
 import li.cil.oc2.common.network.message.tablet.TabletPointerMessage;
 import li.cil.oc2.common.tablet.TabletClientView;
-import li.cil.oc2.common.vm.PowerAction;
 import net.minecraft.client.gui.GuiGraphics;
 //? if >=26.1 {
 /*import net.minecraft.client.input.CharacterEvent;
@@ -24,10 +27,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.lwjgl.glfw.GLFW;
 
-/** One compact tablet with independent guest graphics and UART views of the same running machine. */
+/**
+ * The tablet in the mod's usual screen frame and control sidebar, with independent guest graphics
+ * and UART views of the same running machine.
+ */
 public final class TabletTerminalScreen extends AbstractModContainerScreen<TabletTerminalContainer> {
-    private static final int PANEL_WIDTH = 296;
-    private static final int PANEL_HEIGHT = 224;
+    private static final int FRAME = 8;
+    private static final int CONTROLS_TOP = 8;
+    private static final int BUTTON_PITCH = 14;
     private static boolean preferGraphics = true;
     private final TabletConsoleViewport console;
     private final BitSet heldKeys = new BitSet();
@@ -38,11 +45,11 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
 
     public TabletTerminalScreen(final TabletTerminalContainer menu, final Inventory inventory, final Component title) {
         //? if >=26.1 {
-        /*super(menu, inventory, title, PANEL_WIDTH, PANEL_HEIGHT);
+        /*super(menu, inventory, title, Sprites.TABLET_SCREEN.width, Sprites.TABLET_SCREEN.height);
         *///?} else {
         super(menu, inventory, title);
-        imageWidth = PANEL_WIDTH;
-        imageHeight = PANEL_HEIGHT;
+        imageWidth = Sprites.TABLET_SCREEN.width;
+        imageHeight = Sprites.TABLET_SCREEN.height;
         //?}
         console = new TabletConsoleViewport(menu);
         graphical = preferGraphics;
@@ -50,31 +57,21 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
 
     @Override public void init() {
         super.init();
-        addRenderableWidget(new TabletControl(leftPos + 124, topPos + 8, 72, 22,
-                Component.translatable("gui.oc2r.tablet.screen"), TabletControl.Kind.TAB,
-                () -> showGraphics(true), this::isGraphical));
-        addRenderableWidget(new TabletControl(leftPos + 200, topPos + 8, 76, 22,
-                Component.translatable("gui.oc2r.tablet.console"), TabletControl.Kind.TAB,
-                () -> showGraphics(false), () -> !graphical));
-        final TabletControl power = addRenderableWidget(new TabletControl(leftPos + 20, topPos + 203, 20, 16,
-                Component.translatable(Constants.COMPUTER_SCREEN_POWER_CAPTION), TabletControl.Kind.POWER,
-                () -> menu.sendPowerActionToServer(powerAction()), () -> menu.getVirtualMachine().isRunning()));
-        power.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
-                Component.translatable(Constants.COMPUTER_SCREEN_POWER_ON).append("\n")
-                        .append(Component.translatable(Constants.COMPUTER_SCREEN_POWER_SHUTDOWN)).append("\n")
-                        .append(Component.translatable(Constants.COMPUTER_SCREEN_POWER_REBOOT)).append("\n")
-                        .append(Component.translatable(Constants.COMPUTER_SCREEN_POWER_POWER_OFF))));
-        addRenderableWidget(new TabletControl(leftPos + 44, topPos + 203, 20, 16,
-                Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_CAPTION), TabletControl.Kind.CAPTURE,
-                menu::toggleCaptureInputState, menu::getCaptureInputState));
-        addRenderableWidget(new TabletControl(leftPos + 68, topPos + 203, 20, 16,
-                Component.translatable(Constants.MACHINE_OPEN_INVENTORY_CAPTION), TabletControl.Kind.INVENTORY,
-                menu::switchToInventory, () -> false));
+        final int x = leftPos - Sprites.SIDEBAR_4.width + 4;
+        final int y = topPos + CONTROLS_TOP + 4;
+        addRenderableWidget(new PowerButton(x, y, menu));
+        addRenderableWidget(new InputCaptureButton(x, y + BUTTON_PITCH, menu).withTooltip(
+                Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_CAPTION),
+                Component.translatable(Constants.TERMINAL_CAPTURE_INPUT_DESCRIPTION),
+                Component.translatable("gui.oc2r.tablet.release",
+                        CaptureKeyBinding.RELEASE.getTranslatedKeyMessage())));
+        addRenderableWidget(new InventoryButton(x, y + BUTTON_PITCH * 2, menu));
+        addRenderableWidget(new TabletDisplayButton(x, y + BUTTON_PITCH * 3, this));
     }
 
     public boolean isGraphical() { return graphical; }
 
-    public TabletViewport viewport() { return new TabletViewport(leftPos + 20, topPos + 38, 256, 160); }
+    public TabletViewport viewport() { return new TabletViewport(leftPos + FRAME, topPos + FRAME, 256, 160); }
 
     /** Changes only the client viewport; no guest power, process or terminal state is touched. */
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
@@ -83,18 +80,6 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
         releaseInput();
         graphical = value;
         preferGraphics = value;
-    }
-
-    private PowerAction powerAction() {
-        if (!menu.getVirtualMachine().isRunning()) return PowerAction.START;
-        //? if >=26.1 {
-        /*if (net.minecraft.client.Minecraft.getInstance().hasControlDown()) return PowerAction.POWER_OFF;
-        if (net.minecraft.client.Minecraft.getInstance().hasShiftDown()) return PowerAction.REBOOT;
-        *///?} else {
-        if (hasControlDown()) return PowerAction.POWER_OFF;
-        if (hasShiftDown()) return PowerAction.REBOOT;
-        //?}
-        return PowerAction.SHUTDOWN;
     }
 
     @Override public void containerTick() {
@@ -110,25 +95,9 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
 
     @Override protected void renderBg(final GuiGraphics graphics,
             final float partialTick, final int mouseX, final int mouseY) {
-        // A narrow metal lip, inset face and screw heads make the controls part of one device.
-        graphics.fill(leftPos + 4, topPos - 2, leftPos + PANEL_WIDTH - 4, topPos + PANEL_HEIGHT + 2, 0xFF405866);
-        graphics.fill(leftPos - 2, topPos + 4, leftPos + PANEL_WIDTH + 2, topPos + PANEL_HEIGHT - 4, 0xFF405866);
-        graphics.fill(leftPos, topPos + 2, leftPos + PANEL_WIDTH, topPos + PANEL_HEIGHT - 2, 0xFF17232D);
-        graphics.fill(leftPos + 3, topPos + 1, leftPos + PANEL_WIDTH - 3, topPos + 2, 0xFF71858D);
-        graphics.fill(leftPos + 17, topPos + 35, leftPos + 279, topPos + 201, 0xFF405866);
-        graphics.fill(leftPos + 18, topPos + 36, leftPos + 278, topPos + 200, 0xFF080F14);
-        graphics.fill(leftPos + 20, topPos + 38, leftPos + 276, topPos + 198, 0xFF080F14);
-        text(graphics, Component.literal("OC2R"), leftPos + 20, topPos + 9, 0xFFE6E5D8);
-        text(graphics, title, leftPos + 20, topPos + 21, 0xFF99AFB8);
-        graphics.fill(leftPos + 103, topPos + 12, leftPos + 106, topPos + 15,
-                menu.getVirtualMachine().isRunning() ? 0xFFE5B66F : 0xFF405866);
-        for (int slot = 0; slot < 5; slot++) {
-            graphics.fill(leftPos + 284, topPos + 88 + slot * 7, leftPos + 287, topPos + 92 + slot * 7, 0xFF080F14);
-        }
-        screw(graphics, leftPos + 7, topPos + 7);
-        screw(graphics, leftPos + 286, topPos + 7);
-        screw(graphics, leftPos + 7, topPos + 213);
-        screw(graphics, leftPos + 286, topPos + 213);
+        Sprites.SIDEBAR_4.draw(graphics, leftPos - Sprites.SIDEBAR_4.width, topPos + CONTROLS_TOP);
+        Sprites.TABLET_SCREEN.draw(graphics, leftPos, topPos);
+        if (menu.getCaptureInputState()) Sprites.TABLET_FOCUSED.draw(graphics, leftPos, topPos);
     }
 
     @Override protected void renderFg(final GuiGraphics graphics,
@@ -142,18 +111,9 @@ public final class TabletTerminalScreen extends AbstractModContainerScreen<Table
         }
         final Component error = menu.getVirtualMachine().getError();
         if (error != null && !error.getString().isEmpty())
-            text(graphics, error, area.x() + 6, area.y() + 6, 0xFFFFB58A);
+            text(graphics, error, area.x() + 6, area.y() + 6, 0xFFFF5555);
         else if (!menu.getVirtualMachine().isRunning()) text(graphics, Component.translatable("gui.oc2r.tablet.off"),
-                area.x() + 6, area.y() + 6, 0xFFB6CBD2);
-        final Component release = Component.translatable("gui.oc2r.tablet.release",
-                CaptureKeyBinding.RELEASE.getTranslatedKeyMessage());
-        text(graphics, Component.literal(font.plainSubstrByWidth(release.getString(), 178)),
-                leftPos + 98, topPos + 207, 0xFF99AFB8);
-    }
-
-    private static void screw(final GuiGraphics graphics, final int x, final int y) {
-        graphics.fill(x, y, x + 3, y + 3, 0xFF405866);
-        graphics.fill(x + 1, y + 1, x + 3, y + 2, 0xFF080F14);
+                area.x() + 6, area.y() + 6, 0xFFAAAAAA);
     }
 
     private void text(final GuiGraphics graphics, final Component text,

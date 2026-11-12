@@ -9,6 +9,8 @@ public final class Sprites {
     public static final Sprite ROBOT_CONTAINER = new Sprite(ROBOT_CONTAINER_TEXTURE);
     public static final Sprite TERMINAL_SCREEN = new Sprite(TERMINAL_SCREEN_TEXTURE);
     public static final Sprite MONITOR_SCREEN = new Sprite(MONITOR_SCREEN_TEXTURE);
+    public static final Sprite TABLET_SCREEN = new Sprite(TABLET_SCREEN_TEXTURE);
+    public static final Sprite TABLET_CONTAINER = new Sprite(TABLET_CONTAINER_TEXTURE);
     public static final Sprite BUS_INTERFACE_SCREEN = new Sprite(BUS_INTERFACE_SCREEN_TEXTURE);
     public static final Sprite NETWORK_INTERFACE_CARD_SCREEN =
             new Sprite(NETWORK_INTERFACE_CARD_SCREEN_TEXTURE);
@@ -16,6 +18,7 @@ public final class Sprites {
 
     public static final Sprite MONITOR_FOCUSED = new Sprite(MONITOR_FOCUSED_TEXTURE);
     public static final Sprite TERMINAL_FOCUSED = new Sprite(TERMINAL_FOCUSED_TEXTURE);
+    public static final Sprite TABLET_FOCUSED = new Sprite(TABLET_FOCUSED_TEXTURE);
     public static final Sprite SLOT_SELECTION = new Sprite(SLOT_SELECTION_TEXTURE, 18, 18, 0, 0);
     public static final Sprite INFO_ICON = new Sprite(INFO_ICON_TEXTURE);
     public static final Sprite WARN_ICON = new Sprite(WARN_ICON_TEXTURE);
@@ -24,6 +27,7 @@ public final class Sprites {
     public static final Sprite MONITOR_SIDEBAR_1 = new Sprite(MONITOR_SIDEBAR_1_TEXTURE);
     public static final Sprite SIDEBAR_2 = new Sprite(SIDEBAR_2_TEXTURE);
     public static final Sprite SIDEBAR_3 = new Sprite(SIDEBAR_3_TEXTURE);
+    public static final Sprite SIDEBAR_4 = new Sprite(SIDEBAR_4_TEXTURE);
 
     public static final Sprite ENERGY_BASE = new Sprite(ENERGY_TEXTURE, 12, 26, 0, 0);
     public static final Sprite ENERGY_BAR = new Sprite(ENERGY_TEXTURE, 12, 26, 12, 0);
@@ -37,6 +41,11 @@ public final class Sprites {
     public static final Sprite POWER_BUTTON_BASE = new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 15, 1);
     public static final Sprite POWER_BUTTON_PRESSED =
             new Sprite(POWER_BUTTON_TEXTURE, 12, 12, 29, 1);
+
+    public static final Sprite DISPLAY_BUTTON_ACTIVE = new Sprite(DISPLAY_BUTTON_TEXTURE, 12, 12, 1, 1);
+    public static final Sprite DISPLAY_BUTTON_BASE = new Sprite(DISPLAY_BUTTON_TEXTURE, 12, 12, 15, 1);
+    public static final Sprite DISPLAY_BUTTON_PRESSED =
+            new Sprite(DISPLAY_BUTTON_TEXTURE, 12, 12, 29, 1);
 
     public static final Sprite INVENTORY_BUTTON_INACTIVE =
             new Sprite(INVENTORY_BUTTON_TEXTURE, 12, 12, 1, 1);

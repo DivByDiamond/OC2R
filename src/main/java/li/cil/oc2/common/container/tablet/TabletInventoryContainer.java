@@ -17,10 +17,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 
-/** The two parts a player may swap: processor and flash. Memory is fixed and has no slot. */
+/** The parts a player may swap: processor, flash and hard drive. Memory is fixed and has no slot. */
 public final class TabletInventoryContainer extends AbstractTabletContainer {
-    public static final int CPU_X = 62;
-    public static final int FLASH_X = 98;
+    public static final int CPU_X = 44;
+    public static final int FLASH_X = 80;
+    public static final int HARD_DRIVE_X = 116;
     public static final int SLOTS_Y = 24;
     public static final int PLAYER_INVENTORY_Y = 62;
 
@@ -66,6 +67,9 @@ public final class TabletInventoryContainer extends AbstractTabletContainer {
         inventory
                 .getItemHandler(DeviceTypes.FLASH_MEMORY)
                 .ifPresent(handler -> addSlot(slot(handler, DeviceTypes.FLASH_MEMORY, FLASH_X)));
+        inventory
+                .getItemHandler(DeviceTypes.HARD_DRIVE)
+                .ifPresent(handler -> addSlot(slot(handler, DeviceTypes.HARD_DRIVE, HARD_DRIVE_X)));
     }
 
     private static Slot slot(final ItemHandler handler, final li.cil.oc2.api.bus.device.DeviceType type, final int x) {

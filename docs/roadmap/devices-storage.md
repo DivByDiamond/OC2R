@@ -46,7 +46,7 @@ Part of the tablet item family with two modes sharing one item base: this UART m
 
 Done: new CPU tiers (50/100/200/400/1000 MHz), config `cpuFrequencyTier1/2/3/4` in `GameplaySpec`, `Config.vmTimeQuotaMs` instead of hard-coded 25 ms, `cycleLimit` cap (at most 2 ticks ahead), updated crafts.
 
-- [ ] Build + in-game check (different CPUs, energy/performance balance): see [qa-checklist.md](qa-checklist.md#from-section-24).
+- [~] Build + check (different CPUs): clock per tier verified 2026-11-12; energy/performance balance still open, see [qa-checklist.md](qa-checklist.md#from-section-24).
 - [ ] CPU governors (named in the section title, no separate item existed): decide whether to implement.
 
 ## 25. Flash Builder: GUI, repository manifest, custom image

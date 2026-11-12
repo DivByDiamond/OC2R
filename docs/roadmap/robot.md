@@ -2,17 +2,21 @@
 
 ## 28. Robot fixes
 
-Audit result: the robot is a fully implemented working feature (port of OC2), but with thread races, leaks and item bugs. All items stay open (unverified), the first one with a note.
+Audit result: the robot is a fully implemented working feature (port of OC2). The five bug items below were re-checked against the code on 2026-11-12; three were already fixed, two were fixed then.
 
-- [ ] **Thread race in `RobotActionProcessor`**: `addAction()` is called from the VM thread (`@Callback(synchronize=false)` in `RobotDevice`), while `tick()` on the server thread reads an `ArrayDeque`
-  without a lock (`queue.poll()`, the `action` field is not volatile). Possible queue corruption. Fix: wrap the queue in a lock (like `results`) or use `ConcurrentLinkedDeque`.
-  Note: the section 37 audit says it seems to be locked already; **needs manual check**, then close or fix.
-- [ ] **`RobotBlockCollider.collideWithWorld()` breaks blocks every tick** without checking whether the robot is moving: a stuck/intersecting robot keeps chewing terrain, including on bounce.
-  Fix: break only when there is active movement in that direction.
-- [ ] **`RobotEventHandler` leak**: `register()` on the first server tick, `unregister()` only on chunk/world unload. On `discard()`/pickup-as-item the listeners are not removed. Fix: unregister in `Robot.remove()`.
-- [ ] **`BlockOperationsModuleDevice.place()` does not consume the item**: `itemStack.copy()` goes into `BlockPlaceContext`; if the block is placed without `consumesAction()` the inventory item is not extracted.
-  Fix: consume based on the `place` result.
-- [ ] **`exportToItemStack` loses VM/terminal state**: picking the robot up as an item stores only items + energy, the running program/memory is lost (asymmetric with the entity `save()`). Decide: document or serialize VM state into the item.
+- [x] **Thread race in `RobotActionProcessor`** (checked 2026-11-12): already fixed. Every access to the queue, the current action, the results and
+  `lastActionId` goes through one `ReentrantLock` (`addAction()` from the VM thread, `tick()` on the server thread, serialization); no field is read outside it.
+- [x] **`RobotBlockCollider.collideWithWorld()` chews terrain** (2026-11-12): the earlier guard only asked whether any action was queued, so a robot that
+  turned, had queued work or overlapped a block behind it still broke blocks. It now clears only blocks that touch the half of its box facing a move in
+  progress; after a bounce the old obstacle is behind it. Covered by `RobotBlockColliderTest`.
+- [x] **`RobotEventHandler` leak** (checked 2026-11-12): already fixed. `Robot.remove()` unregisters the listeners and disposes the VM for every destroying
+  removal (`discard()`, pickup as an item, kill). Not covered: a dimension change does not call `remove()`, the old entity's listeners stay until its chunk unloads.
+- [x] **`BlockOperationsModuleDevice.place()` does not consume the item** (checked 2026-11-12): already fixed. The slot is probed with a simulated extract and
+  one item is extracted after `place` reports `consumesAction()`.
+- [x] **`exportToItemStack` loses VM/terminal state** (2026-11-12): memory, the private root disk, the terminal and device state are far too large for an item,
+  so picking a robot up writes them to `<world>/data/oc2r_robots/<uuid>.dat` and the item carries the id (`robot_state_id` component). Placing the item
+  restores the machine once and deletes the file; a copied item finds nothing and starts fresh, exactly as before. The movement queue is not carried over.
+  Covered by `RobotTests.pickedUpRobotKeepsItsMachineStateOnce`. Files of robot items that are destroyed are not collected.
 - [ ] The robot is an `Entity`, not a `LivingEntity`: no HP/damage/gravity (`setNoGravity(true)`: break the block under it and it hovers). Either deliberate design or add gravity + HP (task V2).
 - [ ] Movement is only allowed while the VM runs (`addAction` checks `isRunning()`): manual control without an OS is impossible.
 - [ ] The item render is static: `RobotWithoutLevelRenderer` does not call the in-hand animation.
@@ -40,7 +44,7 @@ How it should work:
 Pros: this is the most visible automation feature in the mod; programs written once work on any robot; clear energy cost stops infinite-mining exploits.
 
 Tasks:
-- [ ] First close the open items of [section 28](#28-robot-fixes) (thread race in `RobotActionProcessor`, collider chewing terrain, event handler leak, `place()` item use, export losing VM state).
+- [x] First close the open items of [section 28](#28-robot-fixes) (thread race in `RobotActionProcessor`, collider chewing terrain, event handler leak, `place()` item use, export losing VM state): closed 2026-11-12.
 - [ ] Decide gravity and HP ([section 28](#28-robot-fixes) V2) since a robot that hovers when the floor is broken changes how programs behave.
 - [ ] Tool slot and dig using the tool; protection/claim checks through a fake player.
 - [ ] Energy and fuel model, charger integration, a `getFuel`/`getFuelLimit` pair on both faces.

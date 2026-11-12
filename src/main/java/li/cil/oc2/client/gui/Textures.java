@@ -14,6 +14,10 @@ public final class Textures {
                             li.cil.oc2.common.Constants.TERMINAL_SCREEN_HEIGHT);
     public static final Texture MONITOR_SCREEN_TEXTURE =
             new Texture("textures/gui/widget/monitor_screen.png", 265, 208);
+    public static final Texture TABLET_SCREEN_TEXTURE =
+            new Texture("textures/gui/widget/tablet_screen.png", 272, 176);
+    public static final Texture TABLET_CONTAINER_TEXTURE =
+            new Texture("textures/gui/widget/tablet_container.png", 176, 144);
     public static final Texture BUS_INTERFACE_SCREEN_TEXTURE =
             new Texture("textures/gui/widget/bus_interface_screen.png", 240, 30);
     public static final Texture NETWORK_INTERFACE_CARD_SCREEN_TEXTURE =
@@ -25,6 +29,8 @@ public final class Textures {
             new Texture("textures/gui/overlay/monitor_focused.png", 265, 208);
     public static final Texture TERMINAL_FOCUSED_TEXTURE =
             new Texture("textures/gui/overlay/terminal_focused.png", 336, 208);
+    public static final Texture TABLET_FOCUSED_TEXTURE =
+            new Texture("textures/gui/overlay/tablet_focused.png", 272, 176);
     public static final Texture SLOT_SELECTION_TEXTURE =
             new Texture("textures/gui/overlay/slot_selection.png", 18, 270);
     public static final Texture INFO_ICON_TEXTURE =
@@ -46,6 +52,8 @@ public final class Textures {
             new Texture("textures/gui/widget/sidebar_2.png", 19, 34);
     public static final Texture SIDEBAR_3_TEXTURE =
             new Texture("textures/gui/widget/sidebar_3.png", 19, 48);
+    public static final Texture SIDEBAR_4_TEXTURE =
+            new Texture("textures/gui/widget/sidebar_4.png", 19, 62);
 
     public static final Texture CONFIRM_BUTTON_TEXTURE =
             new Texture("textures/gui/widget/confirm_button.png", 27, 14);
@@ -57,6 +65,8 @@ public final class Textures {
             new Texture("textures/gui/widget/power_button.png", 42, 14);
     public static final Texture INPUT_BUTTON_TEXTURE =
             new Texture("textures/gui/widget/input_button.png", 42, 14);
+    public static final Texture DISPLAY_BUTTON_TEXTURE =
+            new Texture("textures/gui/widget/display_button.png", 42, 14);
     public static final Texture INVENTORY_BUTTON_TEXTURE =
             new Texture("textures/gui/widget/inventory_button.png", 28, 14);
     public static final Texture NETWORK_TUNNEL_LINK_BUTTON_TEXTURE =

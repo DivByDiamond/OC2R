@@ -29,7 +29,7 @@ provider is already size-independent (`fb.getWidth()/getHeight()`, stride = widt
 - [x] Hard-coded 640x480 removed: server (`MonitorVideoController`) and client (`RenderInfo` recreates the DynamicTexture by frame size,
   `MonitorTextRenderer`/`MonitorDisplayWidget` use the last frame resolution).
 - [x] Without a GPU the UART terminal still works.
-- [ ] Build + in-game check (monitor with GPU T1..T4, black without GPU): see [qa-checklist.md](qa-checklist.md#from-section-23).
+- [x] Build + check (monitor with GPU T1..T4, black without GPU): server GameTests of 2026-11-12, see [qa-checklist.md](qa-checklist.md#from-section-23).
 
 The former "merge blocker" banner is dropped: the base branch is 1.21.1 now; only in-game verification remains.
 

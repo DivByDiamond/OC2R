@@ -1,18 +1,19 @@
 # Tablet
 
 > **Status: terminal and guest graphics are implemented.** The built-in 256 × 160 screen displays
-> the guest framebuffer. Screen and Console tabs share the same running machine. A live screen
-> on the held item remains planned. Radio enrollment and guest RPC are implemented.
+> the guest framebuffer. The graphical screen and the console share the same running machine and are
+> switched by a sidebar button. Radio enrollment and guest RPC are implemented.
 
 ## Implemented now
 
 - Item `oc2r:tablet` (stack of one) with a crafting recipe; right click opens the screen.
-- One processor slot and one flash slot, edited from the inventory button of the screen. A new tablet comes with
+- One processor slot, one flash slot and one hard drive slot, edited from the inventory button of the screen. A new tablet comes with
   16 MiB of memory (no slot) and an OnyxOS flash. Without a flash it reports a missing firmware and does not boot.
 - The processor clock is capped to a quarter of the computer clock whatever processor is inserted. No energy use.
 - The machine state is written to `<world>/data/oc2r_tablets/<uuid>.dat` under the id stored in the item.
 - The machine runs only while the tablet is in a hand or its screen is open. Two seconds after that it is saved and
-  released, so dropping, dying and logging out lose nothing. A server crash loses what happened since the last save.
+  released, so dropping, dying and logging out lose nothing. A running machine is also written every five
+  minutes, so a server crash loses at most that much guest time.
 - Screen displays a fixed 256 × 160 RGB565 guest framebuffer; Console displays the UART terminal.
   Switching views keeps the running application and machine. Graphics use absolute pointer coordinates
   and evdev keyboard input; Console keeps the existing UART keyboard path. Input is released with
@@ -31,16 +32,17 @@ simple programs written by players. Heavy work stays on PCs; the tablet talks to
 
 ## Hardware and lifetime
 
-The current tablet accepts one CPU and one flash. RAM is fixed at 16 MiB and the CPU clock is
-limited to a quarter of the computer clock. It uses no energy. Hard drives and selectable RAM tiers
-remain planned.
+The current tablet accepts one CPU, one flash and one optional hard drive. RAM is fixed at 16 MiB and the CPU clock is
+limited to a quarter of the computer clock. It uses no energy. Selectable RAM tiers remain planned.
 
 Each tablet UUID identifies one saved machine. A live holder or an open screen keeps it running;
 after 40 ticks without either, it saves and stops. Carrying it in an inventory does not keep it running.
 
 ## Screen and input
 
-- A live screen on the item held in hand remains planned.
+- The tablet screen uses the same frame and control sidebar as the computer and the monitor: power,
+  input capture, inventory and a display button that switches between the graphical screen and the console.
+- A live screen on the item held in hand is not planned.
 - Right click opens the tablet screen. Screen routes QWERTY keys and mouse clicks to the built-in
   VirtIO input device; Console routes typing to the UART terminal. Both views use the same VM.
 - Input is released with `CaptureKeyBinding.RELEASE` (Right Ctrl by default, rebindable), the same single key

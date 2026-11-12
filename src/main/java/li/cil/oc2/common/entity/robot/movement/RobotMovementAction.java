@@ -104,6 +104,11 @@ public final class RobotMovementAction extends AbstractRobotAction {
         }
     }
 
+    /** From the robot to where this move currently takes it; zero before initialization and on arrival. */
+    public Vec3 heading(final Robot robot) {
+        return targetPos == null ? Vec3.ZERO : targetPos.subtract(robot.position());
+    }
+
     @Override
     public void initialize(final Robot robot) {
         if (origin == null || start == null || target == null) {

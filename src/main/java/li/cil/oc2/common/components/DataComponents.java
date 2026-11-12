@@ -17,6 +17,17 @@ public class DataComponents {
                             .persistent(RestrictedContainer.CODEC)
                             .build());
 
+    /** Names the machine state a robot left in world data when it was picked up as an item. */
+    public static final Supplier<DataComponentType<UUID>> ROBOT_STATE_ID =
+            Platform.registries().register(
+                    "minecraft:data_component_type",
+                    API.MOD_ID,
+                    "robot_state_id",
+                    () -> DataComponentType.<UUID>builder()
+                            .persistent(UUIDUtil.CODEC)
+                            .networkSynchronized(UUIDUtil.STREAM_CODEC)
+                            .build());
+
     /** Identity of a tablet; its machine state is stored in world data under this id. */
     public static final Supplier<DataComponentType<UUID>> TABLET_ID =
             Platform.registries().register(

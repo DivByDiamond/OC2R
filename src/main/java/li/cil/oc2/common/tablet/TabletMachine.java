@@ -129,9 +129,17 @@ public final class TabletMachine {
         inventory.installDefaultFlash();
     }
 
-    /** Writes memory, devices and terminal; the worker thread is joined first. */
+    /** Writes memory, devices and terminal before the machine is released; held guest input is let go. */
     public CompoundTag save() {
         display.releaseInput();
+        return checkpoint();
+    }
+
+    /**
+     * Writes memory, devices and terminal of a machine that keeps running. The worker thread is joined
+     * first and continues with the next tick; keys a player holds right now stay held.
+     */
+    public CompoundTag checkpoint() {
         final CompoundTag tag = new CompoundTag();
         tag.put(STATE_TAG_NAME, virtualMachine.serialize());
         if (virtualMachine.getRunState() != VMRunState.STOPPED) {

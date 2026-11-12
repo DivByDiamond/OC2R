@@ -61,6 +61,9 @@ public final class GameTestRegistrar {
         TabletRadioTests.class,
         RobotCarryTests.class,
         RobotTests.class,
+        HardwareTierTests.class,
+        NetworkSwitchTests.class,
+        PciCardCageTests.class,
         ScannerModuleTests.class,
         TerminalTests.class);
 
