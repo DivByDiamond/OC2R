@@ -398,7 +398,8 @@ val sharedGameTestSources = tasks.register<Sync>("sharedGameTestSources") {
     from(rootProject.file(if (modernFabric)
         "versions/$minecraft_version/build/generated/stonecutter/main/java/li/cil/oc2/gametest"
         else "src/main/java/li/cil/oc2/gametest")) {
-        exclude("GameTestResultReporter.java", "GameTestRegistrar.java")
+        // ProjectRed is NeoForge-only, so its bundled cable tests have no Fabric counterpart.
+        exclude("GameTestResultReporter.java", "GameTestRegistrar.java", "ProjectRedBundledTests.java")
         filter { line: String ->
             when {
                 line.contains("GameTestHolder") || line.contains("PrefixGameTestTemplate") -> ""

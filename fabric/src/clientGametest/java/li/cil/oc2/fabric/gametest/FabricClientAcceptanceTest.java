@@ -16,6 +16,7 @@ import li.cil.oc2.common.blockentity.projector.ProjectorBlockEntity;
 import li.cil.oc2.common.entity.Entities;
 import li.cil.oc2.common.item.Items;
 import li.cil.oc2.common.vm.VMRunState;
+import li.cil.oc2.common.vm.video.VideoCodec;
 import li.cil.oc2.common.vm.handler.VMItemStackHandlers;
 import li.cil.oc2.common.vm.terminal.Terminal;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -173,6 +174,31 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
                     new BlockPos(4, -59, 5), net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState()));
             context.waitTicks(40);
             context.takeScreenshot("oc2r-fabric26-projector-chest-occluder");
+            // Every codec must carry a changed guest picture to the client, including switches between codecs.
+            final int originalCodec = li.cil.oc2.common.config.Config.videoCodec;
+            try {
+                final int[][] palettes = {
+                        {0x07E0, 0x001F}, {0xFFE0, 0x07FF}, {0xF81F, 0x0000}, {0x07E0, 0xF800}};
+                final VideoCodec[] codecs = {VideoCodec.RAW, VideoCodec.H264, VideoCodec.DELTA, VideoCodec.H264};
+                for (int i = 0; i < codecs.length; i++) {
+                    li.cil.oc2.common.config.Config.videoCodec = codecs[i].id;
+                    drawFramebuffers(context, world.getServer(), palettes[i][0], palettes[i][1], i);
+                    final int colorA = palettes[i][0];
+                    final int colorB = palettes[i][1];
+                    try {
+                        context.waitFor(client -> monitorShows(client, colorA, colorB), 600);
+                    } catch (final AssertionError failure) {
+                        final String seen = context.computeOnClient(client -> monitorPixels(client));
+                        throw new AssertionError("Codec " + codecs[i] + " did not deliver the guest picture; wanted "
+                                + Integer.toHexString(colorA) + "/" + Integer.toHexString(colorB)
+                                + ", client sees " + seen, failure);
+                    }
+                    org.apache.logging.log4j.LogManager.getLogger("OC2RClientAcceptance").info(
+                            "Monitor shows the guest picture through codec {}", codecs[i]);
+                }
+            } finally {
+                li.cil.oc2.common.config.Config.videoCodec = originalCodec;
+            }
             for (final String fixture : new String[]{"upstream-cursor-80", "upstream-colors-80"}) {
                 replayVttest(context, world.getServer(), fixture);
             }
@@ -196,9 +222,70 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
             context.waitTicks(80);
             type(world.getServer(), "printf 'RAM=%s DISK=' \"$OC2R_RAM_TOKEN\"; cat /root/oc2r-fabric26-marker\r");
             waitForGuest(context, world.getServer(), "RAM=fabric26_live DISK=fabric26_disk", 1800);
-            context.waitFor(FabricClientAcceptanceTest::monitorReceivedGuestFrame, 1200);
+            // The last codec round left green and red tiles on the guest framebuffers.
+            context.waitFor(client -> monitorShows(client, 0x07E0, 0xF800), 1200);
             context.takeScreenshot("oc2r-fabric26-restored-world");
         }
+    }
+
+    private static void drawFramebuffers(final ClientGameTestContext context, final TestServerContext server,
+                                         final int colorA, final int colorB, final int round) {
+        type(server, "lua -e 'local a,b=" + (colorA & 0xFF) + "," + (colorA >>> 8) + ";local c,d=" + (colorB & 0xFF)
+                + "," + (colorB >>> 8) + ";for n=0,1 do local p=\"/sys/class/graphics/fb\"..n; "
+                + "local s=io.open(p..\"/virtual_size\"); if s then local w,h=s:read(\"*a\"):match(\"(%d+),(%d+)\"); "
+                + "s:close(); local f=assert(io.open(\"/dev/fb\"..n,\"wb\")); "
+                + "w,h=tonumber(w),tonumber(h); for y=0,h-1 do local row={}; "
+                + "for x=0,w-1 do row[#row+1]=((math.floor(x/8)+math.floor(y/8))%2==0) "
+                + "and string.char(a,b) or string.char(c,d) end; f:write(table.concat(row)) end; "
+                + "f:close() end end'; echo OC2R_FB_$((1+1))_" + round + "\r");
+        waitForGuest(context, server, "OC2R_FB_2_" + round, 1200);
+    }
+
+    /** True once the client monitor texture shows the two tile colors (RGB565) within lossy-codec tolerance. */
+    private static boolean monitorShows(final Minecraft client, final int colorA, final int colorB) {
+        if (client.level == null || !(client.level.getBlockEntity(MONITOR) instanceof final MonitorBlockEntity monitor)
+                || !monitor.isMounted() || !monitor.hasPower()) return false;
+        final MonitorGUIRenderer gui = (MonitorGUIRenderer) monitor.getMonitor();
+        final var view = gui.getRenderer(monitor);
+        try {
+            final var location = view.getTexture();
+            if (location == null) return false;
+            final var texture = client.getTextureManager().getTexture(location);
+            if (!(texture instanceof final DynamicTexture dynamic) || dynamic.getPixels() == null) return false;
+            final var pixels = dynamic.getPixels();
+            if (pixels.getWidth() != 320 || pixels.getHeight() != 200) return false;
+            return closeTo(pixels.getPixel(12, 12), colorA) && closeTo(pixels.getPixel(12, 148), colorB);
+        } finally {
+            gui.releaseRenderer(view);
+        }
+    }
+
+    private static String monitorPixels(final Minecraft client) {
+        if (client.level == null || !(client.level.getBlockEntity(MONITOR) instanceof final MonitorBlockEntity monitor)) {
+            return "no monitor";
+        }
+        final MonitorGUIRenderer gui = (MonitorGUIRenderer) monitor.getMonitor();
+        final var view = gui.getRenderer(monitor);
+        try {
+            final var location = view.getTexture();
+            if (location == null) return "no texture";
+            final var texture = client.getTextureManager().getTexture(location);
+            if (!(texture instanceof final DynamicTexture dynamic) || dynamic.getPixels() == null) return "no pixels";
+            final var pixels = dynamic.getPixels();
+            return pixels.getWidth() + "x" + pixels.getHeight() + " a=" + Integer.toHexString(pixels.getPixel(12, 12))
+                    + " b=" + Integer.toHexString(pixels.getPixel(12, 148));
+        } finally {
+            gui.releaseRenderer(view);
+        }
+    }
+
+    private static boolean closeTo(final int argb, final int rgb565) {
+        final int red = ((rgb565 >> 11) & 0x1F) * 255 / 31;
+        final int green = ((rgb565 >> 5) & 0x3F) * 255 / 63;
+        final int blue = (rgb565 & 0x1F) * 255 / 31;
+        return Math.abs(((argb >> 16) & 0xFF) - red) <= 48
+                && Math.abs(((argb >> 8) & 0xFF) - green) <= 48
+                && Math.abs((argb & 0xFF) - blue) <= 48;
     }
 
     private static void placeLongWire(final TestServerContext server) {

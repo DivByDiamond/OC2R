@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FrameCodec {
     private static final int KEY_INTERVAL = 100;
+    private static final int MACROBLOCK = 16;
     private static final int ENCODER_BUFFER_SIZE = 4 * 1024 * 1024;
 
     @SuppressWarnings("ArrayRecordComponent")
@@ -94,9 +95,12 @@ public class FrameCodec {
             if (h264Decoder == null) {
                 h264Decoder = new H264Decoder();
             }
-            final Picture yuv = Picture.create(width, height, ColorSpace.YUV420J);
+            // The decoder writes whole 16x16 macroblocks, so a size such as 320x200 needs padded planes.
+            final int paddedWidth = (width + MACROBLOCK - 1) / MACROBLOCK * MACROBLOCK;
+            final int paddedHeight = (height + MACROBLOCK - 1) / MACROBLOCK * MACROBLOCK;
+            final Picture yuv = Picture.create(paddedWidth, paddedHeight, ColorSpace.YUV420J);
             h264Decoder.decodeFrame(ByteBuffer.wrap(data), yuv.getData());
-            return Optional.of(convertYuvToRgb565(yuv, width, height));
+            return Optional.of(convertYuvToRgb565(yuv, width, height, paddedWidth));
         } catch (final Exception ignored) {
             return Optional.empty();
         }
@@ -137,7 +141,7 @@ public class FrameCodec {
      * chroma plane indexing.
      */
     private static byte[] convertYuvToRgb565(
-            final Picture yuv, final int width, final int height) {
+            final Picture yuv, final int width, final int height, final int stride) {
         final byte[] y = yuv.getPlaneData(0);
         final byte[] u = yuv.getPlaneData(1);
         final byte[] v = yuv.getPlaneData(2);
@@ -147,10 +151,11 @@ public class FrameCodec {
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 final int index = row * width + col;
-                final int uIndex = row / 2 * (width / 2) + col / 2;
+                final int lumaIndex = row * stride + col;
+                final int uIndex = row / 2 * (stride / 2) + col / 2;
                 final byte cb = u[uIndex];
                 final byte cr = v[uIndex];
-                Yuv420jToRgb.YUVJtoRGB(y[index], cb, cr, tmp, 0);
+                Yuv420jToRgb.YUVJtoRGB(y[lumaIndex], cb, cr, tmp, 0);
                 final int r = (tmp[0] + 128) & 0xFF;
                 final int g = (tmp[1] + 128) & 0xFF;
                 final int b = (tmp[2] + 128) & 0xFF;

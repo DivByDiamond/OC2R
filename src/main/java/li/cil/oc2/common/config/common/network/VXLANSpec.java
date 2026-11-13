@@ -21,8 +21,8 @@ public class VXLANSpec {
     public VXLANSpec(ModConfigSpec.Builder builder) {
         enable =
                 builder.comment(
-                                "Whether to enable VXLAN support, must be on for the internet card"
-                                        + " to work")
+                                "Whether to enable VXLAN support for the VXLAN hub block. The internet"
+                                        + " card does not need it")
                         .define("enable", false);
 
         remoteHost =
