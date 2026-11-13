@@ -35,6 +35,7 @@ class TunnelManagerTest {
 
     private DatagramSocket peer;
     private DatagramSocket stranger;
+    private DatagramSocket samePeerOtherPort;
     private TunnelManager manager;
     private Thread loop;
     private final BlockingQueue<byte[]> inbound = new ArrayBlockingQueue<>(8);
@@ -49,8 +50,9 @@ class TunnelManagerTest {
         for (int i = 0; i < FRAME.length; i++) FRAME[i] = (byte) (i * 7 + 1);
         // Ports above 32767 are the ones a 16 bit signed type cannot hold; the configuration allows up to 65535.
         peer = socketAbove(40000);
-        stranger = socketAbove(peer.getLocalPort() + 1);
-        try (DatagramSocket probe = socketAbove(stranger.getLocalPort() + 1)) {
+        stranger = new DatagramSocket(new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 0));
+        samePeerOtherPort = socketAbove(peer.getLocalPort() + 1);
+        try (DatagramSocket probe = socketAbove(samePeerOtherPort.getLocalPort() + 1)) {
             bindPort = probe.getLocalPort();
         }
         assertTrue(bindPort > Short.MAX_VALUE && peer.getLocalPort() > Short.MAX_VALUE);
@@ -74,6 +76,7 @@ class TunnelManagerTest {
         manager.shutdown();
         peer.close();
         stranger.close();
+        samePeerOtherPort.close();
         Config.enable = previousEnable;
     }
 
@@ -90,9 +93,16 @@ class TunnelManagerTest {
     }
 
     @Test
-    void aFrameFromAnotherHostOrPortIsDroppedByTheConnectedSocket() throws Exception {
+    void aFrameFromAnotherHostIsDropped() throws Exception {
         stranger.send(new DatagramPacket(datagram(VNI, FRAME), 8 + FRAME.length, LOOPBACK, bindPort));
         assertNull(inbound.poll(300, TimeUnit.MILLISECONDS));
+    }
+
+    /** The Linux kernel VXLAN driver chooses the UDP source port per flow, so any port of the peer must work. */
+    @Test
+    void aFrameFromTheSameHostOnAnotherPortIsAccepted() throws Exception {
+        samePeerOtherPort.send(new DatagramPacket(datagram(VNI, FRAME), 8 + FRAME.length, LOOPBACK, bindPort));
+        assertArrayEquals(FRAME, inbound.poll(2, TimeUnit.SECONDS));
     }
 
     @Test

@@ -69,6 +69,11 @@ public final class VxlanBlockEntity extends ModBlockEntity
         super(BlockEntities.VXLAN_HUB.get(), pos, state);
     }
 
+    /** The VNI a peer must use to reach this hub. */
+    public int getVni() {
+        return vti;
+    }
+
     public void handleNeighborChanged() {
         adjacentInterfaces.handleNeighborChanged();
     }

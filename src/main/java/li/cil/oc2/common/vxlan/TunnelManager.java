@@ -57,7 +57,6 @@ public class TunnelManager {
     @Nullable private volatile Selector selector;
     private static TunnelManager managerInstance;
     private final InetAddress remoteHost;
-    private final int remotePort;
     private final InetAddress bindHost;
     private final int bindPort;
     private final InetSocketAddress cachedRemoteAddress;
@@ -70,7 +69,6 @@ public class TunnelManager {
             InetAddress bindHost, int bindPort, InetAddress remoteHost, int remotePort)
             throws SocketException {
         this.remoteHost = remoteHost;
-        this.remotePort = remotePort;
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         // The remote endpoint is a constant for the manager's lifetime; constructing the
@@ -127,11 +125,10 @@ public class TunnelManager {
         // block on the selector below instead of the channel itself.
         datagramChannel.configureBlocking(false);
         datagramChannel.bind(new InetSocketAddress(bindHost, bindPort));
-        // Connected channel = kernel-level source filtering: datagrams from any address
-        // other than the configured remote endpoint are dropped before we ever see them,
-        // so arbitrary internet hosts cannot inject frames into the virtual network
-        // (docs/roadmap/network-inet.md §39 C1).
-        datagramChannel.connect(new InetSocketAddress(remoteHost, remotePort));
+        // Deliberately not connect()ed: the Linux kernel VXLAN driver picks the UDP source port per
+        // flow (and ignores a fixed "srcport N N"), so a connected channel would drop real peers.
+        // Arbitrary internet hosts are still kept out by the source address check in listen(); the
+        // random per-hub VNI is the second gate.
         final Selector datagramSelector = Selector.open();
         datagramChannel.register(datagramSelector, SelectionKey.OP_READ);
         channel = datagramChannel;
@@ -160,6 +157,9 @@ public class TunnelManager {
                         (InetSocketAddress) datagramChannel.receive(buffer);
                 if (sender == null) {
                     break;
+                }
+                if (!remoteHost.equals(sender.getAddress())) {
+                    continue;
                 }
                 buffer.flip();
                 handleDatagram(buffer);

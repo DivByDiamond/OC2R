@@ -158,6 +158,8 @@
   "manual.oc2r.home": "Home",
   "manual.oc2r.blocks": "Blocks",
   "manual.oc2r.items": "Items",
+  "message.oc2r.vxlan_hub.info": "VXLAN hub, VNI %1$d. On the peer: ip link add vx0 type vxlan id %1$d remote <server address> dstport %2$d local <peer address>",
+  "message.oc2r.vxlan_hub.disabled": "VXLAN is switched off in the server config (vxlan.enable), so this hub reaches no outside network.",
   "message.oc2r.connector.link_started": "Cable attached. Use it on another connector to link, or on a linked one to remove the link.",
   "message.oc2r.connector.connected": "Connectors linked.",
   "message.oc2r.connector.disconnected": "Link removed, cable recovered.",

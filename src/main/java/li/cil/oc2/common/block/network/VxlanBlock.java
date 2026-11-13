@@ -2,12 +2,18 @@ package li.cil.oc2.common.block.network;
 
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import li.cil.oc2.common.Constants;
 import li.cil.oc2.common.block.common.BlockCodecs;
 import li.cil.oc2.common.blockentity.BlockEntities;
 import li.cil.oc2.common.blockentity.TickableBlockEntity;
 import li.cil.oc2.common.blockentity.network.vxlan.VxlanBlockEntity;
+import li.cil.oc2.common.config.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.BlockHitResult;
 
 public final class VxlanBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public VxlanBlock() {
@@ -66,6 +73,20 @@ public final class VxlanBlock extends HorizontalDirectionalBlock implements Enti
         if (blockEntity instanceof final VxlanBlockEntity vxlanEntity) {
             vxlanEntity.handleNeighborChanged();
         }
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos,
+                                                final Player player, final BlockHitResult hit) {
+        if (level.getBlockEntity(pos) instanceof final VxlanBlockEntity hub) {
+            if (!level.isClientSide() && player instanceof final ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(Component.translatable(
+                        Config.enable ? Constants.VXLAN_HUB_INFO : Constants.VXLAN_HUB_DISABLED,
+                        hub.getVni(), Config.bindPort));
+            }
+            return InteractionResult.SUCCESS;
+        }
+        return super.useWithoutItem(state, level, pos, player, hit);
     }
 
     // EntityBlock

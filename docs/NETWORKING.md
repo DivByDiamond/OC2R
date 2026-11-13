@@ -145,3 +145,18 @@ it by hand on a server that was set up earlier.
 | Network stops after a burst of lookups | Fixed: UDP exchanges no longer share the connection limit |
 | DHCP client reports an address conflict | Fixed: the card ignores address probes and announcements |
 | Connection hangs, no error | TTL exhausted mid-path: answered with ICMP Time Exceeded |
+
+## VXLAN hub
+
+The hub bridges a connector network to a UDP tunnel (`vxlan.enable`, off by default). One tunnel per server is bound to
+`bindHost:bindPort` and talks to one peer, `remoteHost:remotePort`. Datagrams are accepted from the peer's address on
+any source port, because the Linux VXLAN driver picks the source port per flow; the random per-hub VNI is the second
+gate. Right-click a hub with an empty hand to see its VNI. On a Linux peer:
+
+```sh
+ip link add vx0 type vxlan id <VNI> remote <server> dstport 4789 local <peer address>
+ip addr add 10.0.0.1/24 dev vx0 && ip link set vx0 up
+```
+
+Do not expose the port to the open internet: frames are not encrypted. The bundled OnyxOS guest has `ping` and
+`tcpserve` but no `sshd`.

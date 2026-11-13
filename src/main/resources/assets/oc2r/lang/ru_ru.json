@@ -216,6 +216,8 @@
   "item.oc2r.internet_card.desc": "Предоставляет доступ к интернет-адаптеру сервера.",
   "message.oc2r.connector.connected": "Разъёмы соединены.",
   "message.oc2r.connector.disconnected": "Соединение удалено, кабель возвращён.",
+  "message.oc2r.vxlan_hub.info": "VXLAN-хаб, VNI %1$d. На стороне ПК: ip link add vx0 type vxlan id %1$d remote <адрес сервера> dstport %2$d local <адрес ПК>",
+  "message.oc2r.vxlan_hub.disabled": "VXLAN выключен в конфиге сервера (vxlan.enable): этот хаб не выходит во внешнюю сеть.",
   "message.oc2r.connector.link_started": "Кабель прикреплён. Используйте его на другом разъёме для соединения или на соединённом для удаления связи.",
   "tooltip.oc2r.internet.disabled": "Доступ в интернет отключён. Администратор может включить его в настройках мода и ограничить доступные адреса. Подключения выполняются через реальный сервер.",
   "tooltip.oc2r.internet.energy_per_packet": "Расход энергии на отправку пакета: %s",

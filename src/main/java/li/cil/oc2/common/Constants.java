@@ -82,6 +82,9 @@ public final class Constants {
     public static final String CONNECTOR_CONNECTED = key("message.{mod}.connector.connected");
     public static final String CONNECTOR_DISCONNECTED = key("message.{mod}.connector.disconnected");
 
+    public static final String VXLAN_HUB_INFO = key("message.{mod}.vxlan_hub.info");
+    public static final String VXLAN_HUB_DISABLED = key("message.{mod}.vxlan_hub.disabled");
+
     /** Size of the terminal screen texture; menus need it to place their slots on the server too. */
     public static final int TERMINAL_SCREEN_WIDTH = 336;
 
