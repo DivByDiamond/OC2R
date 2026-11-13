@@ -190,6 +190,7 @@ public final class VxlanBlockEntity extends ModBlockEntity
         final TunnelManager manager = TunnelManager.instance();
         if (manager != null) {
             adjacentInterfaces.setTunnelInterface(manager.registerVti(vti, packetQueue));
+            LOGGER.info("VXLAN hub at {} uses VNI {}", getBlockPos(), vti);
             warnedUnregisteredUpstream = false;
         } else {
             LOGGER.warn("VXLAN tunnel manager unavailable: VTI={} stays unregistered", vti);
