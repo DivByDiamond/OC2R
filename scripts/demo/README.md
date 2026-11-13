@@ -10,9 +10,8 @@ shell) or applied to a private OnyxKernel checkout (patches).
 | `guest/` | the guest tools (`netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve`, `tcpstream`, `oc2ctl`) and the native RPC library |
 | `qa/` | host harnesses that boot real RV64 guests in Sedna (`NetworkPair.java`) |
 | `tests/` | host fixtures and the RPC regression test (`test_rpc.py`) |
-| `*.patch` | Onyx kernel, compiler, libc and OnyxApps patches |
 | `build-*.sh`, `rebuild-onyx-userspace.sh`, `run-network-pair.sh` | the manual build and run steps |
-| `README-Onyx-*.md` | the per-topic documentation (network, console, build) |
+| `README-Onyx-network.md` | the guest network documentation |
 
 The guest tools take every address and port as an argument: `netcfg set NIC IP
 MASK GATEWAY DNS`, `udpdemo call IP PORT MESSAGE`, `tcpdemo IP PORT MESSAGE`.
@@ -110,7 +109,7 @@ local file when the arena uses another segment.
 
 The topic documentation uses the placeholders of that table: see
 [README-Onyx-network.md](README-Onyx-network.md) for the guest commands of the
-network demo and [README-Onyx-build.md](README-Onyx-build.md) for the kernel,
+network demo and [docs/ONYXOS.md](../../docs/ONYXOS.md) for the kernel,
 userspace and image rebuild.
 
 ### Known gap: the LAN pair harness still hardcodes its addresses

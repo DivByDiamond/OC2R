@@ -29,8 +29,7 @@ The manual license is packaged by both loaders. A separately installed Markdown
 Manual mod is neither required nor used by OC2R.
 
 The missing OC2R monospace atlas is restored from the existing bundled Monocraft
-font. `scripts/generate-manual-font.py` reproduces it with Pillow; the original
-font's OFL license remains in `assets/oc2r/fonts/LICENSE`. A resource regression
+font; the original font's OFL license remains in `assets/oc2r/fonts/LICENSE`. A resource regression
 test checks the atlas dimensions and every printable ASCII glyph.
 
 ## Verified targets (2026-10-18)

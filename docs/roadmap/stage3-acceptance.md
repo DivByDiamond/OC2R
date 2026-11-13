@@ -86,8 +86,7 @@ zero-sized structure. At a chunk boundary, its computed bounds included an
 unforced neighbouring chunk (ticket level 32, rather than entity-ticking level
 31). The test's own tick timeout never started. Forcing precisely that missing
 chunk allowed the stalled test to finish immediately. The fixture is now valid
-Java Edition NBT with 9x9x9 air blocks, reproducible with
-`python3 scripts/generate-gametest-structure.py`. `GameTestStructureTest` checks
+Java Edition NBT with 9x9x9 air blocks. `GameTestStructureTest` checks
 it with Minecraft's own NBT reader and failed against the original malformed
 file before passing with the repaired resource. Test logs and live diagnostic
 snapshots are under ignored `build/fabric-hang-investigation/`.

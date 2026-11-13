@@ -8,14 +8,9 @@ authority; these scripts only shorten the feedback loop.
 |---|---|
 | `cs-classpath.sh [node]` | Resolves the classpath the local Checkstyle runner needs (the Checkstyle tool plus the compile classpath of the Gradle node) and writes it to `build/cs-scan/cs_cp.txt`. The cache lives inside the repository, so the script works on every checkout. Run it once after a change of the Minecraft version or of the Checkstyle version. |
 | `cs-scan.sh [--strict] <label> <dir> [<dir> ...]` | Runs Checkstyle 10.21.0 with `config/checkstyle/checkstyle.xml` over a directory without compiling. Writes `build/cs-scan/<label>.xml` and prints a summary. Same tool version and config as Gradle, so the numbers match the Gradle report exactly. Without `--strict` the script always exits with 0 (it is a report, not a gate); with `--strict` it exits with 1 when a violation was found, which makes it usable in a CI step. |
-| `remaining.py --report <xml>...` | Lists the files that still violate a rule, per variant report. |
 | `variant-view.py --version 26.1.2 <file>` | Resolves a shared-tree file for one Minecraft version (conditionals + Stonecutter replacements) so a single file can be checked without Gradle. `--check <generated-tree>` compares the result with the Gradle-generated tree. |
-| `fix-import-order.py` | Sorts the import blocks of the shared tree so that every variant passes the rule. Handles files whose import region has no `if/else` branch pair; the rest are reported as skipped. |
-| `analyse-imports.py` | Prints, per file and per variant, the import order the variant sees and the order Checkstyle expects, so a reordering can be derived instead of guessed. |
-| `classify-import-violations.py --report <xml> --variant <dir>` | Splits the remaining import-order violations of a report into the ones that sit inside a Stonecutter conditional block (they need a different position per version) and the plain ones (sortable in place). |
 | `check-file.sh <shared-file>` | Checks one shared-tree file against the lint rules of every version: resolves it for 1.21.1, 26.1.2 and 26.2, compares the resolution with the generated tree and runs Checkstyle on each. |
 | `spotbugs-report.py <report.xml>...` | Reports the SpotBugs findings that the checked-in baseline does not cover (the actionable list), the duplicate `instanceHash` entries inside the baseline and the baseline entries that no longer occur. It never writes to the baseline: the project fixes a finding or suppresses it at its site with a justification (see commit `f5a4a17b`). |
-| `import_order.py` | Shared helper module (not a tool): the Checkstyle import comparator and the import parser that skips `/* ... */` blocks. `fix-import-order.py` and `analyse-imports.py` use it, so the tool that reports and the tool that fixes agree on what "sorted" means. |
 
 ## The rule
 
@@ -73,8 +68,7 @@ block that is sorted in one version can be unsorted in another.
   out there and plain in the 26.x trees.
 
 The imports inside a commented-out block are not imports for the linted
-version, so every tool of this directory skips them (see
-`import_order.visible_imports`).
+version, so the tools of this directory skip them.
 
 ## Rules for editing
 
@@ -84,8 +78,7 @@ version, so every tool of this directory skips them (see
    split the block into several blocks with the same condition. A block is
    commented out as a whole, so every part needs its own `/*` and `*///?}`.
 3. An `if/else` pair must stay adjacent: the `else` branch has to follow its
-   `if` branch directly. Such files are not handled by `fix-import-order.py`
-   and need manual work.
+   `if` branch directly. Such files need manual work.
 4. `net.minecraft.resources.ResourceKey` and `net.minecraft.resources.ResourceLocation`
    cannot be sorted in both versions: 1.21.1 wants `ResourceKey` first,
    26.x wants `Identifier` first. There is no order that satisfies both, and

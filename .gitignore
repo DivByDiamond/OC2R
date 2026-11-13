@@ -54,3 +54,6 @@ scripts/demo/demo-endpoints.local.sh
 # staging directory the publish workflow creates on the runner (see
 # .github/workflows/publish.yml, "Collect release artifacts")
 dist/
+
+# Local-only helper scripts that are not part of the project
+/scripts/local/
