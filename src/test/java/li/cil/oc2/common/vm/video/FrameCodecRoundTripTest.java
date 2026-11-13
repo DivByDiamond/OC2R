@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /** What a watcher decodes must be the picture the guest drew, for every codec and across codec switches. */
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // each round trip needs fresh codec state
 class FrameCodecRoundTripTest {
     private static final int WIDTH = 320;
     private static final int HEIGHT = 200;
