@@ -173,6 +173,17 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
                     new BlockPos(4, -59, 5), net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState()));
             context.waitTicks(40);
             context.takeScreenshot("oc2r-fabric26-projector-chest-occluder");
+            for (final String fixture : new String[]{"upstream-cursor-80", "upstream-colors-80"}) {
+                replayVttest(context, world.getServer(), fixture);
+            }
+            placeLongWire(world.getServer());
+            context.waitTicks(40);
+            world.getServer().runCommand("gamemode spectator @a");
+            world.getServer().runCommand("tp @a 7 -58 13 0 5");
+            context.waitTicks(20);
+            context.takeScreenshot("oc2r-fabric26-wire-sag");
+            world.getServer().runCommand("gamemode creative @a");
+            world.getServer().runCommand("tp @a 2.5 -58 -5 0 10");
             world.getServer().runOnServer(server -> {
                 if (computer(server).virtualMachine.getRunState() != VMRunState.RUNNING) {
                     throw new AssertionError("Guest stopped before save");
@@ -188,6 +199,86 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
             context.waitFor(FabricClientAcceptanceTest::monitorReceivedGuestFrame, 1200);
             context.takeScreenshot("oc2r-fabric26-restored-world");
         }
+    }
+
+    private static void placeLongWire(final TestServerContext server) {
+        server.runOnServer(instance -> {
+            final ServerLevel level = instance.overworld();
+            final var state = Blocks.NETWORK_CONNECTOR.get().defaultBlockState()
+                    .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR);
+            final BlockPos a = new BlockPos(0, -59, 20);
+            final BlockPos b = new BlockPos(14, -59, 20);
+            for (final BlockPos pos : new BlockPos[]{a, b}) {
+                level.setBlockAndUpdate(pos.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+                level.setBlockAndUpdate(pos, state);
+            }
+            final var result = NetworkConnectorBlockEntity.connect(
+                    (NetworkConnectorBlockEntity) level.getBlockEntity(a),
+                    (NetworkConnectorBlockEntity) level.getBlockEntity(b));
+            if (result != li.cil.oc2.common.blockentity.network.connector.interfaces.ConnectionResult.SUCCESS) {
+                throw new AssertionError("Long wire was not connected: " + result);
+            }
+        });
+    }
+
+    /** Feeds a recorded vttest stream through the real guest tty and compares the host terminal with the golden. */
+    private static void replayVttest(final ClientGameTestContext context, final TestServerContext server,
+                                     final String fixture) {
+        final java.nio.file.Path root = fixtureRoot().resolve(fixture);
+        final byte[] stream;
+        final java.util.List<String> expected;
+        try {
+            stream = java.nio.file.Files.readAllBytes(root.resolve("stream.bin"));
+            expected = java.nio.file.Files.readAllLines(root.resolve("screen.expected"));
+        } catch (final java.io.IOException e) {
+            throw new AssertionError("Cannot read vttest fixture " + fixture, e);
+        }
+        type(server, "stty -echo -opost; PS1=; rm -f /tmp/vt.bin\r");
+        context.waitTicks(20);
+        final int chunk = 48;
+        for (int offset = 0; offset < stream.length; offset += chunk) {
+            final StringBuilder line = new StringBuilder("printf '");
+            for (int i = offset; i < Math.min(stream.length, offset + chunk); i++) {
+                line.append(String.format("\\%03o", stream[i] & 0xFF));
+            }
+            line.append("' >>/tmp/vt.bin\r");
+            type(server, line.toString());
+            if ((offset / chunk) % 8 == 7) context.waitTicks(4);
+        }
+        // Let the guest finish consuming the typed input, then replay the file raw onto the terminal.
+        context.waitTicks(100);
+        type(server, "clear; cat /tmp/vt.bin\r");
+        String previous = "";
+        int stable = 0;
+        for (int elapsed = 0; elapsed < 1200 && stable < 6; elapsed += 10) {
+            context.waitTicks(10);
+            final String now = server.computeOnServer(instance -> screen(computer(instance).terminalManager.getTerminal()));
+            stable = now.equals(previous) && elapsed > 20 ? stable + 1 : 0;
+            previous = now;
+        }
+        final String[] actual = previous.split("\n", -1);
+        final StringBuilder diff = new StringBuilder();
+        for (int row = 0; row < expected.size(); row++) {
+            final String want = expected.get(row).stripTrailing();
+            final String got = row < actual.length ? actual[row].stripTrailing() : "";
+            if (!want.equals(got)) diff.append("row ").append(row).append(": want [").append(want)
+                    .append("] got [").append(got).append("]\n");
+        }
+        type(server, "stty echo opost; PS1='# '\r");
+        context.waitTicks(20);
+        if (!diff.isEmpty()) throw new AssertionError("vttest " + fixture + " differs in the real guest:\n" + diff);
+        org.apache.logging.log4j.LogManager.getLogger("OC2RClientAcceptance").info(
+                "vttest {} matches the golden screen in the real guest", fixture);
+    }
+
+    private static java.nio.file.Path fixtureRoot() {
+        java.nio.file.Path dir = java.nio.file.Path.of("").toAbsolutePath();
+        while (dir != null) {
+            final java.nio.file.Path candidate = dir.resolve("src/test/resources/vttest");
+            if (java.nio.file.Files.isDirectory(candidate)) return candidate;
+            dir = dir.getParent();
+        }
+        throw new AssertionError("vttest fixtures not found above the working directory");
     }
 
     private static ComputerBlockEntity computer(final MinecraftServer server) {

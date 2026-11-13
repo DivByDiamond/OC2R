@@ -9,7 +9,7 @@ Source: [12](video-gpu.md#12-multi-monitor-fragment-model)
 ### From section 19
 Source: [19](terminal.md#19-terminal-diff-instead-of-raw-uart-on-the-client)
 - [ ] (computer/robot GUI scrolling and GUI scaling verified on both 26.x versions, see stage3-acceptance.md; still open: two clients, vim/less, mouse in mc, bell) Computer GUI and robot GUI, two clients near one computer (tracking-chunk broadcast), scrollback with the mouse, alt-screen applications (vim/less), mouse in mc/midnight, bell.
-- [ ] Run vttest inside the guest (the server parser was not touched, but confirm after the dirty-routing refactor).
+- [x] (2026-11-13: client game test replays upstream-cursor-80 and upstream-colors-80 through the real guest tty, screens match the goldens) Run vttest inside the guest (the server parser was not touched, but confirm after the dirty-routing refactor).
 
 ### From section 21
 Source: [21](done.md#21-sound-tone-generator-pcm-streaming-speaker-block) (checked in v0.1.0+383c4ec)
@@ -45,9 +45,9 @@ Source: [34](cables-bus-energy.md#34-manual-in-game-testing-wires-and-screens)
 - [ ] (merge/split and terminal text verified on 26.x; the idle CPU check is still open) **Monitor**: frame rendering must not chew CPU without changes (`dirtyLines.clear()` fix); terminal text renders correctly; monitor multiblock (merge/split/break) works.
 - [ ] **Speaker**: the new Charger-style texture/model shows correctly from all sides.
 
-- [ ] Network wires: check the blue color and the sag on long (up to 16 block) wires in game (see network-overhaul.md)
+- [x] (2026-11-13: 14-block wire is blue and sags, screenshot in the client game test) Network wires: check the blue color and the sag on long (up to 16 block) wires in game (see network-overhaul.md)
 
 
 ### Notes from the 2026-11-12 acceptance pass
 - **Bundled redstone bug**: the interface stored bundled output by the block-relative side but a ProjectRed cable asks by world direction, so on any interface not facing north a cable read the wrong face. Storage, reads and writes now use the world direction like the plain redstone output does (`BundledRedstoneCallbacksTest`). ProjectRed has no 26.x build and was not available in the test world, so the cable side itself is still unchecked in game.
-- **Still open from this list**: disks (hot-swap, persistence, cleanup), codecs (`raw`/`h264`/`delta` traffic), wire sag, vttest in the guest, cable/energy chain, monitor idle CPU. These need long real-client runs or external mods.
+- **Still open from this list**: disks (hot-swap, persistence, cleanup), codecs (`raw`/`h264`/`delta` traffic), cable/energy chain, monitor idle CPU. These need long real-client runs or external mods.
