@@ -5,9 +5,8 @@ The demo image includes `oc2ctl` and its reusable C library
 real OC2R device bus through raw `/dev/hvc0`. This channel is independent of
 Ethernet and the UART terminal. No host command executes robot actions.
 
-The Onyx kernel changes are retained in `scripts/demo/onyx-rpc.patch`, based on
-OnyxKernel `dc3aa4bdfaa8d86d1b241d0056248685b1feac48`. Apply alongside the console
-and networking patches when rebuilding the combined demo kernel.
+The Onyx kernel side of the transport lives in the OnyxKernel repository; the
+bundled image already contains it.
 
 The driver negotiates modern VirtIO VERSION_1, deliberately leaves multiport
 disabled, and selects four queue entries, matching Sedna's console maximum.
@@ -67,21 +66,16 @@ Two independent upstream issues were reproduced in actual Onyx execution:
 
 - `materialize(VAL_LVAL)` emitted raw ADDI for structure member offsets. A
   field at offset 32768 resolved to offset zero. The isolated repair uses the
-  existing `rv_addi_imm` expansion. Patch:
-  `scripts/demo/onyxcc-large-member.patch`.
+  existing `rv_addi_imm` expansion. Fixed in OnyxCompiler.
 - The first `puts`/`fputs`/`fwrite` could run before `streams_init`, leaving
   stdout's buffer capacity zero. `fwrite` then looped forever with zero
   progress. Adding diagnostic printf hid the failure because printf initialized
   streams. The repair initializes streams in fwrite, fread and fgetc, covering
-  the corresponding puts/getchar entry paths. Patch:
-  `scripts/demo/onyx-libc-stdio-init.patch`.
+  the corresponding puts/getchar entry paths. Fixed in the OnyxCompiler libc.
 
-These patches target OnyxCompiler `f9f78d88d6ecd16aee1ef4ab00cee291265d9428`.
-Use an isolated checkout; do not modify the owning working tree implicitly.
+Build the guest tools with the OnyxCompiler from the Onyx tree:
 
 ```sh
-git -C /path/to/isolated/OnyxCompiler apply /path/to/oc2r/scripts/demo/onyxcc-large-member.patch
-git -C /path/to/isolated/OnyxCompiler apply /path/to/oc2r/scripts/demo/onyx-libc-stdio-init.patch
 make -C /path/to/isolated/OnyxCompiler onyxcc
 /path/to/isolated/OnyxCompiler/onyxcc --ring1 \
   -I scripts/demo/guest -o /tmp/oc2ctl.onx \
