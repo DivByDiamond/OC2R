@@ -36,7 +36,7 @@ if not file then
     os.exit(1)
 end
 
-local CHUNK = 4096 -- 4096 bytes are about 0.7 seconds of audio at 48000 Hz
+local CHUNK = 900 -- the bus drops a message over 4096 bytes and a byte costs up to four of them; 900 bytes are about 0.15 seconds at 48000 Hz
 
 local function toBytes(chunk)
     local bytes = {}
