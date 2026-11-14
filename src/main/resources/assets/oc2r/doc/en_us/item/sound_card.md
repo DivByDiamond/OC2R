@@ -40,6 +40,6 @@ Convert any audio file on your PC with ffmpeg, then bring it into the guest with
 
 *ffmpeg -i song.mp3 -ac 1 -ar 48000 -f dfpwm song.dfpwm*
 
-The default Linux image has a player: *play.lua song.dfpwm* (or *play.lua -r 32000 song.dfpwm* for a file recorded at another rate).
+The default Linux image has a terminal player: *play.lua song.dfpwm* (or *play.lua -r 32000 song.dfpwm* for a file recorded at another rate). Without a file name it lists the *.dfpwm* files of the current directory (or of the directory you give). Keys: Space pauses, Left and Right seek about 5 seconds, *r* restarts, *q* stops. Seeking works on 8192-byte block boundaries and the decoder keeps its state, so the sound may start with a click after a seek; audio already queued (up to about a second) plays out first. *play.lua --simple song.dfpwm* plays one file without an interface, for sessions without a terminal. *play.lua --help* lists everything.
 
 *findSound* returns at most 25 matching names. The effect cooldown applies to *playSound*. For an external bus device with tone/PCM support, see the [speaker](../block/speaker.md).
