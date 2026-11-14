@@ -17,7 +17,7 @@ make -B -C "$apps_checkout" ONYXCC="$compiler_path"
 "$compiler_path" --ring1 -I "$apps_checkout/apps/ohttp" -o "$apps_checkout/build/ohttp.onx" \
     "$apps_checkout/apps/ohttp/http/response.c" "$apps_checkout/apps/ohttp/net/connect.c" \
     "$apps_checkout/apps/ohttp/net/request.c" "$apps_checkout/apps/ohttp/main.c"
-for tool in netcfg udpdemo udpserve tcpdemo tcpserve tcpstream; do
+for tool in netcfg udpdemo udpserve tcpdemo tcpserve tcpstream rshd; do
     "$compiler_path" --ring1 -I "$(dirname "$compiler_path")/include/sys" -I "$repo_root/scripts/demo/guest" \
         -o "$tools_output/$tool.onx" "$repo_root/scripts/demo/guest/$tool.c"
 done

@@ -9,7 +9,9 @@ import struct
 import subprocess
 
 CAPACITY = 16 * 1024 * 1024
-TOOLS = ('netcfg', 'udpdemo', 'tcpdemo', 'tcpserve', 'udpserve', 'tcpstream', 'oc2ctl')
+TOOLS = ('netcfg', 'udpdemo', 'tcpdemo', 'tcpserve', 'udpserve', 'tcpstream', 'oc2ctl', 'rshd')
+# Tools that init starts from /service; they stay disabled until /etc/init/<name>.enabled exists.
+SERVICES = ('rshd',)
 
 
 class OnyxImage:
@@ -64,10 +66,29 @@ class OnyxImage:
                     result[name] = inode
         return result
 
-    def binaries(self):
+    def tree(self, target):
+        """Write every directory and regular file of the image under target; return manifest lines."""
+        lines = []
+
+        def walk(number, path):
+            for name, inode in sorted(self.directory(number).items()):
+                mode, content = self.inode(inode)
+                guest = f'{path}/{name}'
+                if mode & 0o170000 == 0o040000:
+                    lines.append(f'dir {guest}')
+                    walk(inode, guest)
+                elif mode & 0o170000 == 0o100000:
+                    host = target / guest.strip('/').replace('/', '__')
+                    host.write_bytes(content)
+                    lines.append(f'file {host} {guest}')
+
+        walk(self.root, '')
+        return lines
+
+    def binaries(self, folder='bin'):
         root = self.directory(self.root)
         return {name: self.inode(inode)[1]
-                for name, inode in self.directory(root['bin']).items()
+                for name, inode in self.directory(root[folder]).items()
                 if self.inode(inode)[0] & 0o170000 == 0o100000}
 
 
@@ -77,7 +98,11 @@ def digest(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--fresh-manifest', type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--fresh-manifest', type=Path,
+                        help='manifest written by OnyxOS scripts/build-oc2r.sh')
+    source.add_argument('--reuse-previous-root', action='store_true',
+                        help='start from every directory and file of --previous-root, not from a fresh build')
     parser.add_argument('--previous-root', type=Path, required=True)
     parser.add_argument('--kernel', type=Path, required=True)
     parser.add_argument('--tools', type=Path, required=True)
@@ -86,7 +111,12 @@ def main():
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    lines = args.fresh_manifest.read_text().splitlines()
+    if args.reuse_previous_root:
+        reused = output / 'previous-root'
+        reused.mkdir(exist_ok=True)
+        lines = OnyxImage(args.previous_root).tree(reused)
+    else:
+        lines = args.fresh_manifest.read_text().splitlines()
     binaries = {}
     for line in lines:
         fields = line.split()
@@ -117,6 +147,10 @@ def main():
             raise ValueError(f'missing rebuilt tool: {path}')
         binaries[name] = path
         lines.append(f'file {path} /bin/{name}')
+    lines = [line for line in lines if not (
+        line.startswith('file ') and line.split()[-1] in {f'/service/{name}' for name in SERVICES})]
+    for name in SERVICES:
+        lines.append(f'file {binaries[name]} /service/{name}')
     manifest = output / 'manifest.txt'
     manifest.write_text('\n'.join(lines) + '\n')
     image = output / 'onyxfs.img'
@@ -132,8 +166,12 @@ def main():
             raise ValueError(f'packed binary mismatch: {name}')
     if not set(previous) <= set(packed):
         raise ValueError('previous packaged /bin tool was lost')
+    packed_services = OnyxImage(image).binaries('service')
+    for name in SERVICES:
+        if packed_services.get(name) != binaries[name].read_bytes():
+            raise ValueError(f'packed service mismatch: {name}')
     shutil.copyfile(args.kernel, output / 'onyx-kernel.bin')
-    report = {'retained_bin': retained, 'bin': sorted(packed), 'payload_bytes': payload_size,
+    report = {'retained_bin': retained, 'bin': sorted(packed), 'service': sorted(packed_services), 'payload_bytes': payload_size,
               'capacity_bytes': CAPACITY, 'previous_root_sha256': digest(args.previous_root),
               'kernel_sha256': digest(output / 'onyx-kernel.bin'), 'root_sha256': digest(image)}
     (output / 'assembly.json').write_text(json.dumps(report, indent=2) + '\n')

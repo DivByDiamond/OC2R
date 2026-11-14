@@ -66,7 +66,8 @@ public final class GameTestRegistrar {
         PciCardCageTests.class,
         DiskTests.class,
         ScannerModuleTests.class,
-        TerminalTests.class);
+        TerminalTests.class,
+        RemoteShellTests.class);
 
     @SubscribeEvent
     public static void onRegisterGameTests(final RegisterGameTestsEvent event) {

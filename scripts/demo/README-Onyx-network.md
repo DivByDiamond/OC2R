@@ -31,8 +31,8 @@ socket compatibility with POSIX are not implemented.
 bash scripts/demo/build-guest-tools.sh /path/to/OnyxCompiller /tmp/oc2r-guest-tools
 ```
 
-Install the resulting `netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve` and `tcpstream`
-as `/bin/*` with the host OnyxFS image builder. The build script uses `--ring1`,
+Install the resulting `netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve`, `tcpstream` and `rshd`
+as `/bin/*` with the host OnyxFS image builder (`rshd` also as `/service/rshd`, see `docs/ONYXOS.md`). The build script uses `--ring1`,
 which is required by Onyx spawn privileges; use the compiler/libc patches beside
 the RPC tools when rebuilding with the current OnyxCC. Do not modify a mounted image.
 The shell accepts `run /bin/netcfg list`; examples below omit that prefix.

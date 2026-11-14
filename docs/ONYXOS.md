@@ -183,7 +183,7 @@ framebuffer path does not require the RPC library.
 ## Native network and device tools
 
 New root images include `netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve`,
-`tcpstream`, and `oc2ctl`. Their source is in `scripts/demo/guest/` and they are
+`tcpstream`, `oc2ctl` and `rshd` (the remote shell, see below). Their source is in `scripts/demo/guest/` and they are
 built with `--ring1` for the required privileged operations. Existing private
 roots retain their files and base image; updating the mod does not silently
 replace those roots or install tools over user data.
@@ -210,6 +210,62 @@ its previous `puts`/`fputs`/`fwrite` paths could use uninitialized standard
 streams and hang on their first output. A compiler fix also materializes large
 structure-member offsets correctly. Merely replacing a compiler or libc file
 would not repair already compiled applications.
+
+## Remote shell (`rshd`)
+
+The guest has no sshd and no TLS, so a PC cannot get a real SSH session. `rshd` is the smallest
+substitute: a TCP listener on the guest's own stack that gives a plain `nc`/`ncat`/`socat` client a
+line shell. It is a ring-1 tool built like `tcpserve` (`scripts/demo/guest/rshd.c`).
+
+```text
+rshd PORT PASSWORD          start in the background and return the prompt (prints the pid); needs memory for two copies
+rshd PORT --no-password     the same without a password check; the log line says NO PASSWORD
+rshd -f PORT PASSWORD       stay in the foreground (takes the console; this is what fits a 16 MiB computer)
+rshd                        foreground, reads /etc/rshd.conf ("PORT PASSWORD", one line)
+```
+
+A client connects, answers `Password: `, and then sees `osh$ `. Every line it sends is run by
+`/bin/osh` (builtins, `/bin` programs, redirection and pipes, all with the output returned over the
+socket); `exit`, `quit`, `logout`, Ctrl-D or closing the connection ends the session and the service
+waits for the next client. `cd` is remembered between lines. Three wrong passwords drop the
+connection, with a one-second delay after each. Lines are limited to 250 characters, the output of one
+command to 32 KiB (the command is killed beyond that) and its run time to 120 seconds.
+
+To start it at boot, enable the init service that ships in the image (disabled by default):
+
+```text
+echo 2323 mysecret > /etc/rshd.conf
+echo on > /etc/init/rshd.enabled
+```
+
+then restart the computer. init starts `/service/rshd` as root and the console shows
+`[init] + service rshd` and `rshd: listening on TCP port 2323`. Only images built from this change
+have `/service/rshd` and a kernel whose `mkdir` keeps `/etc/init` (see below); an existing private
+root keeps its own files, and copying `/bin/rshd` there by hand does not work because the shell's
+`cp` cannot write files above 45056 bytes.
+
+What it does **not** protect: nothing is encrypted. The password, every command and all output cross
+the network in clear text, and the password also shows in the shell history and in the `rshd`
+argument list. Whoever knows the password has a root-ring shell in the guest. Do not expose the
+port to untrusted networks; the VXLAN hub is meant for a private peer. Limits that follow from the
+guest stack: one session at a time (a client that connects and stays silent holds the service until
+it disconnects, because `net_recv` blocks with no timeout), no terminal (no history, tab completion
+or full-screen programs; a program that reads standard input sees end of file), and no encryption or
+host key to check. Over `nc` the password is echoed by your own terminal; use `stty -echo` first.
+
+Memory: each `rshd` image is about 420 KB. On a 16 MiB computer (the largest memory item) the background
+start fails with `cannot start /bin/rshd (-12)`, because the launcher and the service would both be resident;
+use `rshd -f` or the boot service. While the service runs there, shell builtins (`echo`, `ls`, `cat`, `cd`,
+`pwd`, `cp`, ...) work, but programs from `/bin` fail with `osh: spawn: Out of memory`; they need a guest
+with more memory (verified with 64 MiB). The shell's own `cmd &` is not an alternative: in this osh it faults
+for external programs.
+
+Using it needed three kernel fixes, committed in OnyxKernel: `spawn` now passes the standard-stream
+bindings to the child (`51963a4`, otherwise the output of external programs went to the console),
+`O_APPEND` writes at the end of the file on every write (`49bc246`) and `mkdir` of an existing name
+answers `EEXIST` instead of replacing the directory (`302e484`; init's own `mkdir /etc/init` used to
+erase the service enable markers on every boot). The matching kernel is the packaged
+`onyx-kernel.bin`; there is no patch file, the source is OnyxKernel `main`.
 
 ## Input
 
@@ -259,6 +315,29 @@ rate guarantee inside Minecraft or measurements of the later scaled candidate.
 Logs are in `build/reports/terminal-qa/`.
 
 ## Verified source revisions
+
+### 2026-11-13 image (remote shell)
+
+- Kernel: OnyxKernel `302e484` (the three fixes above on top of `7ea63bf`), built with
+  `cargo kbuild --features smode` and `objcopy -O binary`. SHA-256
+  `559bd5bede66e7d832a00984e338bada41fda716567578f59132ae7b30116b65`.
+- Root: SHA-256 `b4447b921c796065267af306f302d43232e93514c41cbd7ccac16581e2057fde`. It is the previous stock root
+  (`e1963b0d...`) with `/bin/rshd` and `/service/rshd` added, assembled with
+  `assemble-onyx-stock.py --reuse-previous-root`; every other file, including the seven older tools, the shell,
+  login and init, is byte-for-byte the previous one (a rebuild of those tools with the current OnyxCompiler gives
+  different bytes, so they were not rebuilt). `rshd` was built by `build-guest-tools.sh` with OnyxCompiller `bd14e5d`.
+  The payload is 15,962,112 bytes of the 16 MiB.
+- Checked: OnyxKernel unit tests (70 + 3 + 288 passed), strict clippy for host and riscv64, QEMU guests (login,
+  `rshd` background start, sessions through `ncat`, wrong passwords, long lines, a 33 KiB output cut at the limit,
+  boot service after a reboot, 16 MiB and 64 MiB RAM), the real guest in Sedna behind the production
+  `TunnelManager` and a Linux kernel `vxlan` device (`scripts/demo/run-vxlan-shell.sh`: ping 3/3, `ncat` session),
+  and the whole NeoForge 1.21.1 game test suite including `RemoteShellTests`.
+- Not checked: Fabric and 26.x game tests and the client acceptance test with this image, the hub block entity
+  with a Linux peer (the in-game test uses a Java peer over the same datagrams), the real hub from a real
+  server reached by a PC outside a namespace, any other host than the development machine.
+
+### Earlier images
+
 
 The 2026-11-09 image is built from these selected clean source revisions:
 

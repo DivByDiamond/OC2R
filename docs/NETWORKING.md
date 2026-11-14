@@ -158,5 +158,32 @@ ip link add vx0 type vxlan id <VNI> remote <server> dstport 4789 local <peer add
 ip addr add 10.0.0.1/24 dev vx0 && ip link set vx0 up
 ```
 
-Do not expose the port to the open internet: frames are not encrypted. The bundled OnyxOS guest has `ping` and
-`tcpserve` but no `sshd`.
+Do not expose the port to the open internet: frames are not encrypted. The bundled OnyxOS guest has `ping`,
+`tcpserve` and the `rshd` remote shell but no `sshd`.
+
+### A shell in the guest from a PC
+
+The hub side has no DHCP, so the guest is configured by hand. Put a network interface card (all sides enabled) in a
+computer with the OnyxOS flash and wire it to the hub like this: a network
+connector is placed against the computer, linked by network cable to a second connector, and that one is placed
+against the hub (a hub only floods frames; connectors are what poll a computer's card and attach to the block behind them). Right-click the hub to read its VNI and set `vxlan.enable=true` and `remoteHost=<PC address>` in the server config.
+In the guest (log in as `root`):
+
+```text
+netcfg list
+netcfg set 0 192.168.77.2 255.255.255.0 0.0.0.0 0.0.0.0
+rshd 2323 mysecret
+```
+
+On the PC, with the VNI from the hub:
+
+```sh
+ip link add vx0 type vxlan id <VNI> remote <server> dstport 4789 local <PC address>
+ip addr add 192.168.77.1/24 dev vx0 && ip link set vx0 up
+ping 192.168.77.2
+ncat 192.168.77.2 2323        # or nc, socat; answer the password, then type shell lines
+```
+
+`rshd` is a plain line shell: one session at a time, no terminal and no encryption (see `docs/ONYXOS.md`), so the password
+and everything typed travel in clear text through the tunnel. `scripts/demo/run-vxlan-shell.sh` repeats this setup
+without root in network namespaces against the real `TunnelManager`.

@@ -191,9 +191,13 @@ public final class ComputerFixture {
             // freshly shrunk buffer.
             final int width = terminal.width;
             final int height = terminal.height;
+            // The main buffer keeps scrollback; the visible screen is its last `height` rows
+            // (see Terminal#lineAttrOfScreenRow).
+            final boolean alt = terminal.currentPrivateModeState.isAltBufferEnabled();
+            final int first = alt ? 0 : Math.max(0, terminal.lastRowToDisplayMax - height);
             for (int row = 0; row < height; row++) {
                 for (int col = 0; col < width; col++) {
-                    final int index = row * width + col;
+                    final int index = (first + row) * width + col;
                     final int value = index < terminal.buffer.length ? terminal.buffer[index] : 0;
                     text.append(value == 0 ? ' ' : (value < 0x20 || value > 0x7E) ? '?' : (char) value);
                 }
