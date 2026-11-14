@@ -462,6 +462,7 @@ jobs:
           # ("stdio.h: No such file or directory"), which is what the syntax check does.
           [ -f /usr/include/stdio.h ] || missing+=(libc6-dev)
           command -v python3 >/dev/null 2>&1 || missing+=(python3)
+          command -v lua5.4 >/dev/null 2>&1 || missing+=(lua5.4)
           if [ "${#missing[@]}" -gt 0 ]; then
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends "${missing[@]}"
@@ -484,6 +485,9 @@ jobs:
 
       - name: Run the demo RPC test
         run: bash scripts/demo/run-checks.sh python
+
+      - name: Run the Linux music player test
+        run: bash scripts/demo/run-checks.sh lua
 
       - name: Compile the demo Java harnesses
         run: bash scripts/demo/run-checks.sh java

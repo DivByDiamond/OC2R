@@ -8,6 +8,7 @@
 #   bash scripts/demo/run-checks.sh shell      # bash -n over the demo shell scripts
 #   bash scripts/demo/run-checks.sh c          # syntax-only compile of the C sources
 #   bash scripts/demo/run-checks.sh python     # the guest RPC test
+#   bash scripts/demo/run-checks.sh lua        # the Linux music player test (play.lua)
 #   bash scripts/demo/run-checks.sh java       # compile the demo Java harnesses
 #   bash scripts/demo/run-checks.sh endpoints  # the hardcoded-endpoint gate
 #
@@ -87,6 +88,24 @@ check_python() {
     python3 "$demo_dir/tests/test_rpc.py"
 }
 
+check_lua() {
+    local lua_bin=""
+    local candidate
+    for candidate in lua5.4 lua; do
+        if command -v "$candidate" >/dev/null 2>&1; then
+            lua_bin=$candidate
+            break
+        fi
+    done
+    if [ -z "$lua_bin" ] || ! command -v python3 >/dev/null 2>&1 || ! command -v stty >/dev/null 2>&1; then
+        echo "run-checks: lua, python3 and stty are required for the music player test" >&2
+        return 1
+    fi
+    # Scripted terminal and stubbed devices module, then the same script in a real pseudo terminal.
+    "$lua_bin" "$demo_dir/tests/test_play.lua"
+    python3 "$demo_dir/tests/test_play_tty.py"
+}
+
 check_java() {
     if ! command -v javac >/dev/null 2>&1; then
         echo "run-checks: javac not found -- cannot compile the demo Java harnesses" >&2
@@ -137,17 +156,19 @@ case "${1:-all}" in
     shell) check_shell ;;
     c) check_c ;;
     python) check_python ;;
+    lua) check_lua ;;
     java) check_java ;;
     endpoints) check_endpoints ;;
     all)
         check_shell
         check_c
         check_python
+        check_lua
         check_java
         check_endpoints
         ;;
     *)
-        echo "Usage: $0 [all|shell|c|python|java|endpoints]" >&2
+        echo "Usage: $0 [all|shell|c|python|lua|java|endpoints]" >&2
         exit 2
         ;;
 esac
