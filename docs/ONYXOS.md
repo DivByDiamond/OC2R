@@ -183,7 +183,7 @@ framebuffer path does not require the RPC library.
 ## Native network and device tools
 
 New root images include `netcfg`, `udpdemo`, `udpserve`, `tcpdemo`, `tcpserve`,
-`tcpstream`, `oc2ctl` and `rshd` (the remote shell, see below). Their source is in `scripts/demo/guest/` and they are
+`tcpstream`, `oc2ctl`, `play` (the music player, see below) and `rshd` (the remote shell, see below). Their source is in `scripts/demo/guest/` and they are
 built with `--ring1` for the required privileged operations. Existing private
 roots retain their files and base image; updating the mod does not silently
 replace those roots or install tools over user data.
@@ -267,6 +267,34 @@ answers `EEXIST` instead of replacing the directory (`302e484`; init's own `mkdi
 erase the service enable markers on every boot). The matching kernel is the packaged
 `onyx-kernel.bin`; there is no patch file, the source is OnyxKernel `main`.
 
+## Music player (`play`)
+
+`play` (`scripts/demo/guest/play.c`, linked with `oc2rpc.c`, built with `--ring1` like `oc2ctl`) streams a DFPWM
+file to a speaker or a sound card through `/dev/hvc0`:
+
+```text
+play [-r RATE] FILE.dfpwm   play one file (RATE 8000-48000, default 48000; it must match how the file was made)
+play [-r RATE] [DIRECTORY]  list the .dfpwm files of DIRECTORY, the current directory, or /usr/share/music, and pick one
+```
+
+The screen shows the file name, the rate, a progress bar, elapsed and total time (total is the file size times eight
+divided by the rate) and PLAYING, PAUSED or FINISHED. Keys: Space or `p` pause and resume, `r` start over, `b` back to
+the list, `q` or Ctrl-C quit; in the list Up/Down (or `k`/`j`) move, Enter plays. It uses what the terminal really has:
+termios with `ECHO`, `ICANON` and `ISIG` off and `VMIN=0`, so `read` returns at once, and plain ANSI (home, clear, erase
+to end of line, reverse video). It needs no TLS, no heap and no extra privilege beyond opening `/dev/hvc0`; memory is
+one 32 KiB RPC buffer plus small fixed tables (the binary is about 450 KB).
+
+Limits that shape it. The host discards a guest bus message longer than 4096 bytes and a JSON byte costs up to four
+characters, so every `writeDfpwm` call carries 900 bytes (0.15 s at 48 kHz). The player keeps about one second queued
+(`getBufferedMs`) and waits when the call answers `false`; audio already queued cannot be cancelled, so pause and restart
+are heard up to a second late. The elapsed time is the sent time minus the queue, so it follows what has really played.
+A child process does not inherit the shell's `cd`, which is why the list falls back to `/usr/share/music`. The image
+ships a three-second test tune there. A user cannot add files larger than the free space of the 16 MiB root (about
+0.3 MB remain), so bring longer music in on a disk or through the file card.
+
+Two things found while building it. OnyxCC reads `"\033"` as NUL followed by `33` (its lexer returns NUL for any escape
+starting with `0`), so the source uses `\x1b`. The `oc2_call` limit of 8191 bytes is not the real limit; the host's 4096 is.
+
 ## Input
 
 The computer terminal uses UART input. Native keyboard/mouse input uses VirtIO
@@ -314,6 +342,22 @@ rate guarantee inside Minecraft or measurements of the later scaled candidate.
 Logs are in `build/reports/terminal-qa/`.
 
 ## Verified source revisions
+
+### 2026-11-14 image (OnyxFS large files, music player)
+
+- Kernel: OnyxKernel `83c07b1` (the L7 fix: OnyxFS files grow past ten blocks, truncate and are rewritten, on top of
+  `302e484`). SHA-256 `8307ef4306848861cd2ddea3377d52ea51569c7c217d494164d7ec49c067947f`, built with
+  `cargo kbuild --features smode` and `riscv64-elf-objcopy -O binary`.
+- Root: SHA-256 `5a084cf48f875a9b8c5ac5be498366576ffca36058b2f8d525be76f0b84eda85`. It is the previous root
+  (`b4447b92...`) with `/bin/play` and `/usr/share/music/demo.dfpwm` added by `assemble-onyx-stock.py
+  --reuse-previous-root --data demo.dfpwm=/usr/share/music/demo.dfpwm`; the other files, including the eight earlier tools, are
+  byte for byte the previous ones. `play` was built with OnyxCompiller `bd14e5d`. Payload 16,445,440 of 16,777,216 bytes.
+- Checked in QEMU (virt, 256 MiB) with a host-side peer on a virtio console standing in for the device bus: `play` starts,
+  draws the list and the player, sends 900-byte `writeDfpwm` calls (largest message 3.3 KB) with unsigned byte values and
+  the rate, honours `false`, pauses, resumes, restarts, quits and restores the terminal; `cp` of 150 KB and 650 KB files (the
+  latter twice, overwriting) gives identical SHA-256 sums; `rshd` background start and sessions with `ncat`-style client.
+- Not checked: a real Minecraft speaker or sound card (the peer is a mock; nothing was heard), the framebuffer console
+  and the Sedna keyboard path for the keys, a tablet with 16 MiB of RAM, game tests with this image.
 
 ### 2026-11-13 image (remote shell)
 
