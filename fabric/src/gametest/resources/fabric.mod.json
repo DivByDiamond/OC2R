@@ -46,7 +46,8 @@
       "li.cil.oc2.gametest.HardwareTierTests",
       "li.cil.oc2.gametest.NetworkSwitchTests",
       "li.cil.oc2.gametest.PciCardCageTests",
-      "li.cil.oc2.gametest.DiskTests"
+      "li.cil.oc2.gametest.DiskTests",
+      "li.cil.oc2.gametest.RemoteShellTests"
     ]
   },
   "depends": {
