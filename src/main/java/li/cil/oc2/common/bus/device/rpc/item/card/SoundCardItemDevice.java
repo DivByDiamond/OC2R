@@ -11,6 +11,8 @@ import li.cil.oc2.api.bus.device.object.Callback;
 import li.cil.oc2.api.bus.device.object.Parameter;
 import li.cil.oc2.common.bus.device.rpc.item.AbstractItemRPCDevice;
 import li.cil.oc2.common.config.Config;
+import li.cil.oc2.common.util.sound.AudioPlayback;
+import li.cil.oc2.common.util.sound.DfpwmDecoder;
 import li.cil.oc2.common.util.sound.SoundClientMessages;
 import li.cil.oc2.common.util.tick.TickUtils;
 import li.cil.oc2.common.util.world.BlockLocation;
@@ -36,6 +38,7 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
     private static final int PCM_CHUNK_SIZE = 4096;
 
     private final Supplier<Optional<BlockLocation>> location;
+    private final AudioPlayback playback = new AudioPlayback();
     private long gameTimeCooldownExpiresAt;
     // PCM token bucket; starts full so short bursts right after mounting work.
     private long pcmBudgetBytes = Config.soundCardPcmBytesPerSecond;
@@ -162,6 +165,7 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
                     "PCM byte rate limit exceeded, slow down or write less per call");
         }
         pcmBudgetBytes -= data.length;
+        playback.notePcm(data.length);
         location.get()
                 .ifPresent(
                         loc -> {
@@ -187,6 +191,65 @@ public final class SoundCardItemDevice extends AbstractItemRPCDevice {
                                                 }
                                             });
                         });
+    }
+
+    /**
+     * Plays DFPWM audio recorded at 48 kHz.
+     *
+     * @return {@code true} if the data was queued, {@code false} if about two seconds are already queued
+     */
+    @Callback
+    public boolean writeDfpwm(@Parameter("data") final byte[] data) {
+        return writeDfpwm(data, 48000);
+    }
+
+    /**
+     * Plays DFPWM audio (one bit per sample, least significant bit first) recorded at the given rate.
+     *
+     * @param sampleRate the rate of the recording, from 8000 to 48000 Hz
+     * @return {@code true} if the data was queued, {@code false} if the queue is full
+     */
+    @Callback
+    public boolean writeDfpwm(
+            @Parameter("data") final byte[] data,
+            @Parameter("sampleRate") final int sampleRate) {
+        if (sampleRate < DfpwmDecoder.MIN_SOURCE_RATE || sampleRate > DfpwmDecoder.MAX_SOURCE_RATE) {
+            throw new IllegalArgumentException("sampleRate must be between >= 8000 and <= 48000");
+        }
+        final byte[] pcm = playback.decodeDfpwm(data, sampleRate);
+        if (pcm.length == 0) {
+            return false;
+        }
+        location.get()
+                .ifPresent(
+                        loc ->
+                                loc.tryGetLevel()
+                                        .ifPresent(
+                                                level -> {
+                                                    if (!(level instanceof final Level lvl)) {
+                                                        return;
+                                                    }
+                                                    for (int offset = 0;
+                                                            offset < pcm.length;
+                                                            offset += PCM_CHUNK_SIZE) {
+                                                        final int length =
+                                                                Math.min(
+                                                                        PCM_CHUNK_SIZE,
+                                                                        pcm.length - offset);
+                                                        SoundClientMessages.sendPcm(
+                                                                lvl,
+                                                                loc.blockPos(),
+                                                                Arrays.copyOfRange(
+                                                                        pcm, offset, offset + length));
+                                                    }
+                                                }));
+        return true;
+    }
+
+    /** Milliseconds of audio queued ahead of the playback position. */
+    @Callback
+    public int getBufferedMs() {
+        return playback.bufferedMs();
     }
 
     /**

@@ -11,3 +11,6 @@ done
 "$compiler_root/onyxcc" --ring1 -I "$compiler_root/include/sys" -I "$repo_root/scripts/demo/guest" \
   -o "$output_dir/oc2ctl.onx" "$repo_root/scripts/demo/guest/oc2ctl.c" \
   "$repo_root/scripts/demo/guest/oc2rpc.c"
+"$compiler_root/onyxcc" --ring1 -I "$compiler_root/include/sys" -I "$repo_root/scripts/demo/guest" \
+  -o "$output_dir/play.onx" "$repo_root/scripts/demo/guest/play.c" \
+  "$repo_root/scripts/demo/guest/oc2rpc.c"
