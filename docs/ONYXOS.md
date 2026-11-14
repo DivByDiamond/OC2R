@@ -304,9 +304,8 @@ delay: reducing the VM's 1,000-cycle service interval made the measured guest
 slower and was rejected. Heavy TUI redraws still execute inside the emulated
 CPU and consume its time quota.
 
-The original geometry fix is `scripts/demo/onyx-console.patch`; its
-console-only build is described in `scripts/demo/README-Onyx-console.md`. The
-later scaling candidate and full rebuild recipe are described separately below. Standalone RV64 tests with a
+The original geometry fix was developed as a patch against OnyxKernel and is now part
+of the OnyxKernel history. The later scaling candidate and rebuild notes are described below. Standalone RV64 tests with a
 1920×1080 primary framebuffer reproduced an `otop` footer on row 66 before the
 geometry fix and row 23 afterwards. In one controlled comparison of the
 original unscaled viewport against full-frame presentation, framebuffer stores fell from 1,036,928 to 123,008 and the first frame
@@ -384,14 +383,12 @@ successful framebuffer ownership reclamation. No host widgets are involved.
 
 Historical source checkpoints below predate this rebuild:
 
-- Previous OnyxKernel base: `dc3aa4b`, plus `onyx-console.patch`, `onyx-network.patch`,
-  `onyx-rpc.patch`, `onyx-console-scale.patch`,
-  `onyx-login-passwordless.patch`, and `onyx-open-relative.patch` under
-  `scripts/demo/`. The base follows the original
+- Previous OnyxKernel base: `dc3aa4b`, plus the console, network, RPC transport, console-scale,
+  passwordless-login and relative-open patches (all merged into OnyxKernel since). The base follows the original
   OC2R boot/framebuffer fixes in `1f39a22309d5f38a87f314b2a9a8aa898c440b4f`.
-- OnyxApps: `ef5d9cd8d1a7116670d32af4b4441ac89da7a9b3`, all seven C apps rebuilt; `ohttp` adds `onyx-ohttp-eof.patch` and is built with `--ring1` to create its output file.
+- OnyxApps: `ef5d9cd8d1a7116670d32af4b4441ac89da7a9b3`, all seven C apps rebuilt; `ohttp` carried an end-of-file fix (the app has since been removed) and was built with `--ring1` to create its output file.
 - OnyxCompiller: `f9f78d88d6ecd16aee1ef4ab00cee291265d9428`, plus
-  `onyxcc-large-member.patch` and `onyx-libc-stdio-init.patch`.
+  the large-member and libc stream-initialisation fixes (merged into OnyxCompiller since).
 - OnyxShell: `636fef68547f3431fc9ed8eb3ddcd06900567e0a`.
 - OnyxOS: `888f69a5d7dccfdad382bc93641e8ea03ae6a8de`.
 - Kernel SHA-256: `1a108abad44ad30ae8d70d637704ba262f75212b163dde36e07a1a0211cbb90a`.
@@ -434,10 +431,8 @@ with data, empty EOF, and a full buffer with a later EOF), then passed together
 with nine `EstablishedStateTest` cases. This verifies buffer preservation and
 FIN ordering in unit tests; it is not a Minecraft HTTP acceptance result.
 
-The console-scale/login/relative-open candidate adds
-`onyx-console-scale.patch`, `onyx-login-passwordless.patch`, and
-`onyx-open-relative.patch` after the three original kernel patches.
-Its build and guest validation are described in
-`scripts/demo/README-Onyx-console-scale.md`; installed checksums above identify
+The console-scale/login/relative-open candidate added the console-scale,
+passwordless-login and relative-open changes after the three original kernel changes.
+Installed checksums above identify
 which kernel/root pair is currently packaged. Do not infer that an existing
 saved root acquired a rebuilt login binary from a mod update.

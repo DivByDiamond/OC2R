@@ -59,7 +59,7 @@ devices over `/dev/hvc0`; examples: `redstone_blink.c`, `note_block_player.c`,
 
 ### Pinning the version
 
-- `gradle.properties` → `sedna_buildroot_version=0.2.10`
+- `gradle.properties` → `sedna_buildroot_version=0.2.12`
 - `build.gradle.kts` → `implementation("li.cil.sedna:sedna-buildroot:${sedna_buildroot_version}")`
 - `scripts/download-libs.sh` → downloads the jar from
   `https://fnuecke.github.io/maven` into `libs/`

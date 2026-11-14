@@ -1,9 +1,8 @@
 # Onyx guest IPv4 networking
 
-Base kernel: `dc3aa4bdfaa8d86d1b241d0056248685b1feac48` from the owning
-OnyxKernel repository. Apply `onyx-network.patch` to an isolated copy; the
-external source repository stays unchanged. It composes with
-[the console patch](README-Onyx-console.md) and the RPC transport patch.
+The network stack described here lives in the OnyxKernel repository (originally
+developed on base `dc3aa4bdfaa8d86d1b241d0056248685b1feac48` as a patch set that
+has since been merged there).
 
 The stack retains up to eight VirtIO NICs with independent queues and polls
 all configured interfaces. IPv4 longest-prefix routing selects a local subnet
