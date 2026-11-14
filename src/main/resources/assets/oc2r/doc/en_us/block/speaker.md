@@ -5,4 +5,6 @@ Connect the speaker through a bus interface and cable. Its RPC device name is *s
 
 *beep(frequency,duration)* and its alias *playTone* accept 20–20000 Hz and 20–5000 milliseconds. *write(data)* accepts numeric byte arrays containing 44100 Hz, mono, signed 16-bit little-endian PCM. See the [sound card](../item/sound_card.md) for the PCM format and RPC throughput limitations.
 
+*write(data)* and *writeDfpwm* return *false* when the speaker is full; see *Playing music* in the [sound card](../item/sound_card.md) page for DFPWM, *getBufferedMs* and the ffmpeg command.
+
 The speaker does not offer the sound card's *playSound* or *findSound* methods.

@@ -7,6 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ### Added
 
+- **Speaker and sound card**: DFPWM music. `writeDfpwm(data[, sampleRate])` decodes DFPWM chunks (any rate from 8000 to 48000 Hz, resampled to 44.1 kHz), `getBufferedMs()` reports the queued audio, and the speaker's raw PCM `write` and `writeDfpwm` now return `false` instead of flooding the clients when about two seconds are already queued. The Linux image gains `play.lua FILE.dfpwm`.
 - **Tablet**: a pocket computer item running OnyxOS with a graphical screen, a console, an optional hard drive, radio access to towers and access points, and its own state saved every five minutes while it runs, so a server crash costs at most that much guest time. Its screen uses the same frame and control sidebar as the computer and the monitor.
 - **Network switch**: the switch block is now craftable (two network connectors, two transistors, a circuit board and iron) and works: it learns the address of each port, forwards to the learned port and floods unknown addresses, and its host table and port settings are on the device bus.
 - **GPS tower**: a five-block positioning multiblock placed with one item, with placement clearance checks, a shared outline and dismantling when any part breaks; exposes position and dimension to connected computers.
