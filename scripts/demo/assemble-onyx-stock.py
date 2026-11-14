@@ -9,7 +9,7 @@ import struct
 import subprocess
 
 CAPACITY = 16 * 1024 * 1024
-TOOLS = ('netcfg', 'udpdemo', 'tcpdemo', 'tcpserve', 'udpserve', 'tcpstream', 'oc2ctl', 'rshd')
+TOOLS = ('netcfg', 'udpdemo', 'tcpdemo', 'tcpserve', 'udpserve', 'tcpstream', 'oc2ctl', 'rshd', 'play')
 # Tools that init starts from /service; they stay disabled until /etc/init/<name>.enabled exists.
 SERVICES = ('rshd',)
 
@@ -85,6 +85,12 @@ class OnyxImage:
         walk(self.root, '')
         return lines
 
+    def file(self, path):
+        number = self.root
+        for part in path.strip('/').split('/'):
+            number = self.directory(number)[part]
+        return self.inode(number)[1]
+
     def binaries(self, folder='bin'):
         root = self.directory(self.root)
         return {name: self.inode(inode)[1]
@@ -108,6 +114,8 @@ def main():
     parser.add_argument('--tools', type=Path, required=True)
     parser.add_argument('--mkimage', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--data', action='append', default=[], metavar='HOST_FILE=/GUEST/PATH',
+                        help='add one data file (mkimage creates missing parent directories); may be repeated')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -151,6 +159,14 @@ def main():
         line.startswith('file ') and line.split()[-1] in {f'/service/{name}' for name in SERVICES})]
     for name in SERVICES:
         lines.append(f'file {binaries[name]} /service/{name}')
+    data_files = {}
+    for entry in args.data:
+        host, _, guest = entry.partition('=')
+        if not guest.startswith('/') or not Path(host).is_file():
+            raise ValueError(f'invalid --data entry: {entry}')
+        lines = [line for line in lines if not (line.startswith('file ') and line.split()[-1] == guest)]
+        lines.append(f'file {Path(host).resolve()} {guest}')
+        data_files[guest] = Path(host).read_bytes()
     manifest = output / 'manifest.txt'
     manifest.write_text('\n'.join(lines) + '\n')
     image = output / 'onyxfs.img'
@@ -170,6 +186,9 @@ def main():
     for name in SERVICES:
         if packed_services.get(name) != binaries[name].read_bytes():
             raise ValueError(f'packed service mismatch: {name}')
+    for guest, content in data_files.items():
+        if OnyxImage(image).file(guest) != content:
+            raise ValueError(f'packed data file mismatch: {guest}')
     shutil.copyfile(args.kernel, output / 'onyx-kernel.bin')
     report = {'retained_bin': retained, 'bin': sorted(packed), 'service': sorted(packed_services), 'payload_bytes': payload_size,
               'capacity_bytes': CAPACITY, 'previous_root_sha256': digest(args.previous_root),
