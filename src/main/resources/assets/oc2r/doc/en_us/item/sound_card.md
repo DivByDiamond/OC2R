@@ -40,6 +40,8 @@ Convert any audio file on your PC with ffmpeg, then bring it into the guest with
 
 *ffmpeg -i song.mp3 -ac 1 -ar 48000 -f dfpwm song.dfpwm*
 
-The default Linux image has a player: *play.lua song.dfpwm* (or *play.lua -r 32000 song.dfpwm* for a file recorded at another rate).
+The default Linux image has a player: *play.lua song.dfpwm* (or *play.lua -r 32000 song.dfpwm* for a file recorded at another rate). The bus accepts a guest message of at most 4096 bytes and a byte costs up to four characters of JSON, so send about 900 bytes per call even though the method itself takes up to 8192.
+
+OnyxOS has its own player, *play*, with a terminal screen showing the file name, a progress bar, elapsed and total time and the play/pause state. *play song.dfpwm* or *play -r 32000 song.dfpwm* plays a file; *play* alone lists the *.dfpwm* files of the current directory (or of */usr/share/music* when there are none) and lets you pick one with the arrow keys and Enter. Keys: Space or *p* pauses and resumes, *r* starts over, *b* returns to the list, *q* or Ctrl-C quits. It keeps about a second of audio queued, so a pause or a restart takes up to a second to be heard. The OnyxOS image ships a three-second test tune, */usr/share/music/demo.dfpwm*. Only images built for this version contain *play*; an existing private root keeps its own files.
 
 *findSound* returns at most 25 matching names. The effect cooldown applies to *playSound*. For an external bus device with tone/PCM support, see the [speaker](../block/speaker.md).

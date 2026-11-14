@@ -7,4 +7,6 @@ Connect the speaker through a bus interface and cable. Its RPC device name is *s
 
 *write(data)* and *writeDfpwm* return *false* when the speaker is full; see *Playing music* in the [sound card](../item/sound_card.md) page for DFPWM, *getBufferedMs* and the ffmpeg command.
 
+On OnyxOS the *play* command plays a *.dfpwm* file on a speaker or a sound card; its keys are described on the [sound card](../item/sound_card.md) page.
+
 The speaker does not offer the sound card's *playSound* or *findSound* methods.
