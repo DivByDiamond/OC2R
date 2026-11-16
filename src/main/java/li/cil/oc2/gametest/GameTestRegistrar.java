@@ -67,7 +67,8 @@ public final class GameTestRegistrar {
         DiskTests.class,
         ScannerModuleTests.class,
         TerminalTests.class,
-        RemoteShellTests.class);
+        RemoteShellTests.class,
+        OnyxFsCrashTests.class);
 
     @SubscribeEvent
     public static void onRegisterGameTests(final RegisterGameTestsEvent event) {
