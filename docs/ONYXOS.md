@@ -343,6 +343,26 @@ Logs are in `build/reports/terminal-qa/`.
 
 ## Verified source revisions
 
+### 2026-11-18 kernel (OnyxFS undo journal)
+
+- Kernel: OnyxKernel `295ec83` (the full-block undo journal of `cf6ca42`, see its `docs/ONYXFS_JOURNAL.md`), built with
+  `cargo kbuild --features smode` and `riscv64-elf-objcopy -O binary`. SHA-256
+  `04d73830847647a7f9832bc001bfd49325084e2824ee08278bc9e0fefb9d821d`, 408,512 bytes. The root image is unchanged
+  (`5a084cf4...`).
+- Checked by the game test `OnyxFsCrashTests` on the real guest in OC2R: a twelve step workload (mkdir, copy of a
+  multi-block file, renames, unlink of a file with an indirect block, overwrite) writes 75,720 sectors; the built-in root disk
+  is cut after a chosen number of 512-byte sectors, the stopped computer is saved and loaded into a cold computer, the guest
+  boots again, and the volume is judged by an OnyxFS reader on the host and by guest commands. All 48 sector-aligned cut
+  points passed. The guest never sent a flush (`flushes=0`).
+- Torn sectors (only the first part of one 512-byte sector reaches the disk) were run against the journal header sector. A
+  tear after one byte passed; tears after 256, 508 and 511 bytes leave a header whose checksum does not match, and the
+  next boot cannot mount the root (`no bootable filesystem`, `open /bin/init failed`). The tear run did not finish all
+  points: it stopped at the Gradle task timeout after ten of twelve. Sedna writes each virtio request as one whole
+  sector, so this state cannot come from a power cut inside OC2R; it matters for storage that can tear sectors.
+- Run: `JAVA_TOOL_OPTIONS="-Doc2.onyxfs.cuts=4 -Doc2.onyxfs.torn=0 -Doc2.onyxfs.slice=N/3" ./gradlew
+  :fabric:26.2:runGameTest` for N 0 to 2, then `-Doc2.onyxfs.cuts=1 -Doc2.onyxfs.torn=1 -Doc2.onyxfs.slice=1/2`; the report
+  is `onyxfs-crash-report.txt` (or `-Doc2.onyxfs.report`). Without properties the test runs one point.
+
 ### 2026-11-14 image (OnyxFS large files, music player)
 
 - Kernel: OnyxKernel `83c07b1` (the L7 fix: OnyxFS files grow past ten blocks, truncate and are rewritten, on top of
