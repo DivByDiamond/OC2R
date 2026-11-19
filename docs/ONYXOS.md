@@ -363,6 +363,15 @@ Logs are in `build/reports/terminal-qa/`.
   :fabric:26.2:runGameTest` for N 0 to 2, then `-Doc2.onyxfs.cuts=1 -Doc2.onyxfs.torn=1 -Doc2.onyxfs.slice=1/2`; the report
   is `onyxfs-crash-report.txt` (or `-Doc2.onyxfs.report`). Without properties the test runs one point.
 
+### 2026-11-19 image (current source pins, shell update)
+
+- Kernel: OnyxKernel `79f0c6c` — documentation-only commits over the shipped `295ec83` undo-journal kernel (README syncs and the USB HID joystick plans); the kernel code is unchanged, the fresh `cargo kbuild --features smode` + `objcopy -O binary` build differs from the shipped `04d73830...` only because Rust builds are not bit-reproducible. SHA-256 `d3cc8b58c8a9009c7c81566c2395198996c7ed4ab7d0d5540ce6f54e80fca6f0`, 408,304 bytes.
+- Root: SHA-256 `29f4d5e327975119ccb0c8d701408386ebc74d1e7e7964f8f5d895e8298bf0ef`. It is the previous stock root (`5a084cf4...`) with only `/bin/osh` replaced; the fresh `osh.onx` comes from OnyxShell `82f0daa`, which includes the 2026-11-15 unused-code cleanup. Assembled with `assemble-onyx-stock.py --reuse-previous-root --data osh.onx=/bin/osh`; every other file, including the transport tools, `play`, `rshd` and the retained `dnstest`/`oed`/`ohttp`, is byte-for-byte the previous one. Payload 16,449,536 of 16,777,216 bytes.
+- Component lock: built isolated through OnyxOS `.vent/repos` checkouts at the `Onyx.lock.json` revisions (kernel `79f0c6c`, OnyxBoot `fcfb066`, OnyxShell `82f0daa`, OnyxCompiller `b00e4b1`, OnyxApps `9da4b49`), after refreshing the lock with `scripts/dependencies.py update`.
+- Checked by the whole NeoForge 1.21.1 game test suite with this image (163 tests, 0 failures), including `OnyxFsCrashTests` on the real guest and `RemoteShellTests`.
+- Not checked: Fabric and 26.x game tests with this image (CI runs them), a QEMU boot of the bootloader chain (`fw_jump.bin` and OnyxBoot are unchanged) and the client acceptance.
+- A full fresh rebuild with the current OnyxCompiller (`b00e4b1`, the file-scope compound literals / GNU designators / address-constants era) grows every `.onx` by ~12.4 KB and no longer fits the 16 MiB base (17.9 MB assembled); the stock root therefore stays byte-stable and only changed pieces are replaced. On the way, `assemble-onyx-stock.py` learned to verify a `--data`-replaced `/bin` entry against the replacement file instead of the reused previous-root copy (the packed-binary check the shell swap surfaced).
+
 ### 2026-11-14 image (OnyxFS large files, music player)
 
 - Kernel: OnyxKernel `83c07b1` (the L7 fix: OnyxFS files grow past ten blocks, truncate and are rewritten, on top of

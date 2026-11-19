@@ -167,6 +167,10 @@ def main():
         lines = [line for line in lines if not (line.startswith('file ') and line.split()[-1] == guest)]
         lines.append(f'file {Path(host).resolve()} {guest}')
         data_files[guest] = Path(host).read_bytes()
+        if guest.startswith('/bin/'):
+            # The /bin verification below compares against this map; a replaced tool
+            # must verify against the replacement, not the reused previous-root copy.
+            binaries[guest[5:]] = Path(host)
     manifest = output / 'manifest.txt'
     manifest.write_text('\n'.join(lines) + '\n')
     image = output / 'onyxfs.img'
