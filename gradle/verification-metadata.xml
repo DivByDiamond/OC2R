@@ -7,6 +7,8 @@
          <trust group="loom" name="mappings"/>
          <trust group="net.minecraft" name="minecraft-merged-.*" regex="true"/>
          <trust group="remapped\..*" regex="true"/>
+         <!-- IDE syncs resolve -sources.jar, which the generated metadata does not cover -->
+         <trust group=".*" name=".*" version=".*" file=".*-sources\.jar" regex="true"/>
       </trusted-artifacts>
    </configuration>
    <components>
