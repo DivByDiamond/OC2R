@@ -84,6 +84,13 @@ Section 29 (world sync fixes), audit result: 3 real bugs + many duplicates. Clos
 - [x] **Redstone Interface side index** (`setRedstoneOutput`/`getRedstoneOutput` used the world index while the world reader converts world->local via `HorizontalBlockUtils.toLocal`): fixed in commit `ec49a41` ("redstone FACING rotation"), see [41.2 fixed items](#412-fixed-items). The note and the "check all 4 faces" line of section 34 are closed.
 - [x] PMD warning zeroing (423 pre-existing): PMD zeroed (423 -> 0), see [section 33](quality.md#33-code-documentation-and-nopmd-review) for the NOPMD follow-up.
 
+### 34 closed items
+
+The 2026-11-19 acceptance pass (game tests, all real servers):
+- [x] **Cable energy buffers were not persisted** (`BusCableBlockEntity.saveAdditional` never wrote `CableEnergyStorage`): chunk unloads and world restarts silently dropped the energy held by the network, while [CABLE-SYSTEM.md](../CABLE-SYSTEM.md) documents each cable's buffer as "saved with that block entity like any other stateful block". The buffer is now saved under an `energy` tag (`CableEnergyStorage.serializeNBT`/`deserializeNBT`, mirroring the computer's `FixedEnergyStorage`) and restored on load. Found by the new `EnergyChainTests` acceptance tests: `energyChainFeedsTheLastConsumer` (a creative-energy source, four chained cables, a computer at the far end — the consumer fills through the chain) and `cableEnergySurvivesSaveAndReload` (the middle cable's stored energy survives a synchronous save → chunk-unload seam → recreate-from-NBT reload, and the reloaded network keeps feeding the consumer). Note: the last cable of a chain is a pass-through — its redistributed share is pushed to the consumer in the same distribution pass, so its buffer is legitimately near zero most of the time.
+  Verified: NeoForge 1.21.1 (163 tests, 0 failures), NeoForge 26.1.2 (161, 0), Fabric 26.1.2 (both tests passing). The IC2 EU bridge is not covered: IC2 has no 26.x build.
+- Open QA boxes of section 34 live in [qa-checklist.md](qa-checklist.md#from-section-34).
+
 ### 36 closed items
 
 Second VT100 audit (2026-08-23, branch 1.21.1; 74 files; findings verified by reading sources; blocker B1 confirmed by manual trace). Open items: [terminal.md](terminal.md#36-vt100-terminal-audit-no-2).

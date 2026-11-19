@@ -250,8 +250,77 @@ public final class FabricSpeakerTest implements FabricClientGameTest {
                     + ", new buffer received " + second.buffer.size()
                     + " bytes, total read=" + totalRead());
             if (hooks.size() != streamsBefore + 1) throw new AssertionError("no new stream after idle");
+
+            // Phase 5: the Charger-style model and texture, seen from all sides. The
+            // screenshots land in the run directory for review; the model check is
+            // the automated part (full cube, no missing textures, front/side/top).
+            context.runOnClient(FabricSpeakerTest::assertSpeakerModel);
+            for (final String[] view : VIEWS) {
+                world.getServer().runCommand("tp @a " + view[1]);
+                context.waitTicks(15);
+                context.takeScreenshot("oc2r-speaker-" + view[0]);
+            }
             context.runOnClient(client -> SoundClientManager.stopAll());
         }
+    }
+
+    /** Camera poses around the speaker at (0, -59, 0): name and absolute tp arguments. */
+    private static final String[][] VIEWS = {
+            {"north", "0.5 -58.3 -2.5 0 5"},
+            {"east", "2.5 -58.3 0.5 90 5"},
+            {"south", "0.5 -58.3 2.5 180 5"},
+            {"west", "-2.5 -58.3 0.5 -90 5"},
+            {"top", "0.5 -57.2 0.6 0 80"},
+    };
+
+    // ---- model ----
+
+    private static void assertSpeakerModel(final net.minecraft.client.Minecraft client) {
+        final net.minecraft.world.level.block.state.BlockState state =
+                Blocks.SPEAKER.get().defaultBlockState();
+        final var model = client.getModelManager().getBlockStateModelSet().get(state);
+        final var parts = new java.util.ArrayList<net.minecraft.client.renderer.block.dispatch.BlockStateModelPart>();
+        model.collectParts(net.minecraft.util.RandomSource.create(0), parts);
+        int quads = 0;
+        boolean front = false, side = false, top = false;
+        final double[] min = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
+        final double[] max = {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        final java.util.List<net.minecraft.core.Direction> sides =
+                new java.util.ArrayList<>(java.util.List.of(net.minecraft.core.Direction.values()));
+        sides.add(null);
+        for (final var part : parts) {
+            for (final net.minecraft.core.Direction facing : sides) {
+                for (final var quad : part.getQuads(facing)) {
+                    quads++;
+                    for (int vertex = 0; vertex < 4; vertex++) {
+                        final var position = quad.position(vertex);
+                        final double[] xyz = {position.x(), position.y(), position.z()};
+                        for (int axis = 0; axis < 3; axis++) {
+                            min[axis] = Math.min(min[axis], xyz[axis]);
+                            max[axis] = Math.max(max[axis], xyz[axis]);
+                        }
+                    }
+                    final String name = quad.materialInfo().sprite().contents().name().toString();
+                    if (name.contains("missingno")) throw new AssertionError("Missing texture for speaker");
+                    front |= name.equals("oc2r:block/speaker/front");
+                    side |= name.equals("oc2r:block/speaker/side");
+                    top |= name.equals("oc2r:block/speaker/top");
+                }
+            }
+        }
+        // A plain full cube: the model must agree with the block's collision/selection shape.
+        final var shape = state.getShape(client.level, SPEAKER).bounds();
+        final double[] expectedMin = {shape.minX, shape.minY, shape.minZ};
+        final double[] expectedMax = {shape.maxX, shape.maxY, shape.maxZ};
+        for (int axis = 0; axis < 3; axis++) {
+            if (Math.abs(min[axis] - expectedMin[axis]) > 0.00001
+                    || Math.abs(max[axis] - expectedMax[axis]) > 0.00001)
+                throw new AssertionError("Speaker model and selection box disagree on axis " + axis);
+        }
+        if (quads < 6 || !front || !side || !top)
+            throw new AssertionError("Incomplete speaker model: " + quads + " quads, front="
+                    + front + ", side=" + side + ", top=" + top);
+        log("phase5 speaker model OK: " + quads + " quads, full cube, front/side/top textures present");
     }
 
     // ---- server side ----

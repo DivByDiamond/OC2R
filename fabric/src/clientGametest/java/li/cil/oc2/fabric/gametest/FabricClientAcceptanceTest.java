@@ -225,6 +225,113 @@ public final class FabricClientAcceptanceTest implements FabricClientGameTest {
             // The last codec round left green and red tiles on the guest framebuffers.
             context.waitFor(client -> monitorShows(client, 0x07E0, 0xF800), 1200);
             context.takeScreenshot("oc2r-fabric26-restored-world");
+            // The restored guest has settled, so this is the idle case from the QA checklist:
+            // the monitor must not keep re-encoding settled content. A blinking fbcon cursor is
+            // legitimate idle traffic; identical or large frames are not.
+            assertMonitorIdle(context, 200);
+        }
+    }
+
+    /** Idle traffic budget: a cursor-cell repaint is tens of bytes; a settled frame is 128000. */
+    private static final int MAX_IDLE_FRAME_CHANGE_BYTES = 1024;
+
+    /**
+     * Watches the frames the client's monitor texture receives over {@code ticks} after the
+     * restored guest has settled. Idle traffic must be bounded to genuine guest changes: the
+     * server may deliver the blinking fbcon cursor (observed: a 16-byte cursor-cell toggle
+     * every ~4 ticks), but a frame that is byte-identical to its predecessor, or changes big
+     * enough to be a re-encode of settled content, means the dirty-line tracking is lying and
+     * the network keeps encoding nothing (the section 34 "monitor idle CPU" acceptance).
+     */
+    private static void assertMonitorIdle(final ClientGameTestContext context, final int ticks) {
+        final java.util.concurrent.atomic.AtomicInteger frames = new java.util.concurrent.atomic.AtomicInteger();
+        final java.util.concurrent.atomic.AtomicInteger identicalFrames = new java.util.concurrent.atomic.AtomicInteger();
+        final java.util.concurrent.atomic.AtomicReference<li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer> original =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        final java.util.List<String> frameLog = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        final java.util.concurrent.atomic.AtomicLong changedBytes = new java.util.concurrent.atomic.AtomicLong();
+        context.runOnClient(client -> {
+            if (client.level == null
+                    || !(client.level.getBlockEntity(MONITOR) instanceof final MonitorBlockEntity monitor)) {
+                throw new AssertionError("no monitor for the idle check");
+            }
+            final li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer consumer = frameConsumerOf(monitor);
+            if (consumer == null) throw new AssertionError("monitor is not being rendered; no frame consumer");
+            original.set(consumer);
+            final byte[][] previous = {null};
+            final int[] previousSize = {0};
+            monitor.video.setFrameConsumer((width, height, data) -> {
+                final int index = frames.incrementAndGet();
+                final byte[] current = new byte[data.remaining()];
+                data.duplicate().get(current);
+                if (previous[0] == null || previousSize[0] != current.length) {
+                    frameLog.add("frame " + index + ": " + width + "x" + height + ", " + current.length
+                            + " bytes, first in window");
+                } else {
+                    int differing = 0;
+                    int firstDiff = -1;
+                    for (int i = 0; i < current.length; i++) {
+                        if (current[i] != previous[0][i]) {
+                            differing++;
+                            if (firstDiff < 0) firstDiff = i;
+                        }
+                    }
+                    if (differing == 0) {
+                        // A single repaint of an unchanged cursor glyph is benign; a run of
+                        // identical frames is the settled-content-re-encoding bug we guard against.
+                        identicalFrames.incrementAndGet();
+                        frameLog.add("frame " + index + ": identical to its predecessor");
+                    } else {
+                        changedBytes.addAndGet(differing);
+                        frameLog.add("frame " + index + ": " + differing + " of " + current.length
+                                + " bytes differ, firstDiffByte=" + firstDiff);
+                    }
+                    if (differing > MAX_IDLE_FRAME_CHANGE_BYTES) {
+                        throw new AssertionError("frame " + index + " changes " + differing
+                                + " bytes at " + firstDiff + "; idle traffic must stay bounded to cursor-sized updates");
+                    }
+                }
+                previous[0] = current;
+                previousSize[0] = current.length;
+                consumer.processFrame(width, height, data);
+            });
+        });
+        context.waitTicks(ticks);
+        context.runOnClient(client -> {
+            if (client.level == null
+                    || !(client.level.getBlockEntity(MONITOR) instanceof final MonitorBlockEntity monitor)) {
+                return;
+            }
+            monitor.video.setFrameConsumer(original.get());
+        });
+        final int received = frames.get();
+        final long totalChanged = changedBytes.get();
+        final int identical = identicalFrames.get();
+        System.out.println("MONITORIDLE received " + received + " frames in " + ticks
+                + " idle ticks, changed bytes total " + totalChanged + ", identical frames " + identical);
+        frameLog.forEach(line -> System.out.println("MONITORIDLE " + line));
+        // The observed baseline is a blinking guest cursor: one 16-byte cell toggle every
+        // ~4 ticks. Anything near a whole-frame rate or size is re-encoding of settled content.
+        if (identical > 2) {
+            throw new AssertionError("Monitor re-delivered " + identical + " frames identical to their"
+                    + " predecessors over " + ticks + " ticks; settled content must not be re-encoded");
+        }
+        if (totalChanged > (long) ticks * MAX_IDLE_FRAME_CHANGE_BYTES) {
+            throw new AssertionError("Monitor idle traffic changed " + totalChanged + " bytes over " + ticks
+                    + " ticks; a settled framebuffer must not keep re-encoding");
+        }
+    }
+
+    private static li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer frameConsumerOf(
+            final MonitorBlockEntity monitor) {
+        try {
+            final java.lang.reflect.Field field =
+                    li.cil.oc2.common.blockentity.monitor.video.MonitorVideoController.class
+                            .getDeclaredField("frameConsumer");
+            field.setAccessible(true);
+            return (li.cil.oc2.common.blockentity.monitor.misc.FrameConsumer) field.get(monitor.video);
+        } catch (final ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
         }
     }
 
