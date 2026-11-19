@@ -887,7 +887,7 @@ public final class OnyxFsCrashTests {
                 final OnyxFsImage image = image();
                 return ", journal=" + image.journalCount() + " " + image.journalProblems()
                     + " anomalies=" + newAnomalies(image);
-            } catch (final RuntimeException failure) {
+            } catch (final RuntimeException failure) { // NOPMD: the unreadable-disk message is returned into the failure report, not swallowed
                 return ", disk unreadable: " + failure.getMessage();
             }
         }
