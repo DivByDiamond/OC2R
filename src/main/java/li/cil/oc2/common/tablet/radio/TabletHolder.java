@@ -10,6 +10,10 @@ import net.minecraft.world.item.ItemStack;
 public record TabletHolder(ServerPlayer player, ItemStack stack) {
     /** The level the player is in, which decides the radio dimension of the tablet. */
     public ServerLevel level() {
+        //? if >=26.1 {
+        /*return player.level(); // On 26.x Entity.level() is already typed as the level the player is on.
+        *///?} else {
         return (ServerLevel) player.level();
+        //?}
     }
 }

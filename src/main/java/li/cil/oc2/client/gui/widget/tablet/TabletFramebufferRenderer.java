@@ -24,11 +24,13 @@ public final class TabletFramebufferRenderer implements AutoCloseable {
     //?}
     private int version = -1;
 
+    // The explicit constructor exists for the 1.21 texture registration; on 26.x the
+    // compiler-generated one is used instead (PMD UnnecessaryConstructor).
+    //? if <26.1 {
     public TabletFramebufferRenderer() {
-        //? if <26.1 {
         Minecraft.getInstance().getTextureManager().register(texture, frame.getTexture());
-        //?}
     }
+    //?}
 
     public void render(final GuiGraphics graphics, final TabletClientView view,
             final TabletViewport viewport) {

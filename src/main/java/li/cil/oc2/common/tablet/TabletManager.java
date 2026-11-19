@@ -81,12 +81,14 @@ public final class TabletManager {
     }
 
     private static boolean bindHolder(final ServerPlayer player, final UUID id) {
-        final TabletMachine machine = machineOf(player.level().getServer(), id);
+        final MinecraftServer server = player.level().getServer();
+        if (server == null) return false;
+        final TabletMachine machine = machineOf(server, id);
         if (machine == null) return false;
         for (final ItemStack stack : List.of(player.getMainHandItem(), player.getOffhandItem())) {
             final TabletHolder holder = new TabletHolder(player, stack);
             if (machine.radio().accepts(holder)) {
-                machine.radio().update(holder, player.level().getServer().getTickCount());
+                machine.radio().update(holder, server.getTickCount());
                 return true;
             }
         }

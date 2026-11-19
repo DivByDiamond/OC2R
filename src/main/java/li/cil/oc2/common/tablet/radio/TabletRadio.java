@@ -11,6 +11,7 @@ import li.cil.oc2.common.blockentity.radio.OraEndpoint;
 import li.cil.oc2.common.blockentity.radio.RadioNetworkData;
 import li.cil.oc2.common.components.DataComponents;
 import li.cil.oc2.common.radio.RadioClientLeases;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -60,7 +61,11 @@ public final class TabletRadio {
         }
         final String secret = candidate.stack().getOrDefault(DataComponents.TABLET_RADIO_SECRET.get(), "");
         boolean known = false;
-        for (final ServerLevel dimension : candidate.level().getServer().getAllLevels()) {
+        final MinecraftServer server = candidate.level().getServer();
+        //? if >=26.1 {
+        /*if (server == null) return false; // On 26.x ServerLevel.getServer() is @Nullable again.
+        *///?}
+        for (final ServerLevel dimension : server.getAllLevels()) {
             final var registry = RadioNetworkData.get(dimension).registry();
             known |= registry.knowsIdentity(id);
             if (registry.recognizesItemCredential(id, secret)) return true;
@@ -144,12 +149,17 @@ public final class TabletRadio {
             throw refused;
         }
         if (!previous.isEmpty()) {
-            for (final ServerLevel dimension : level.getServer().getAllLevels()) {
-                if (dimension == level) continue;
-                final RadioNetworkData old = RadioNetworkData.get(dimension);
-                if (old.registry().recognizesItemCredential(id, previous)) {
-                    old.registry().retireItemCredential(id, previous);
-                    old.setDirty();
+            // A held tablet always lives on a server; the guard only satisfies the nullable
+            // getServer contract by skipping the cross-dimension cleanup on a broken state.
+            final MinecraftServer server = level.getServer();
+            if (server != null) {
+                for (final ServerLevel dimension : server.getAllLevels()) {
+                    if (dimension == level) continue;
+                    final RadioNetworkData old = RadioNetworkData.get(dimension);
+                    if (old.registry().recognizesItemCredential(id, previous)) {
+                        old.registry().retireItemCredential(id, previous);
+                        old.setDirty();
+                    }
                 }
             }
         }
