@@ -36,6 +36,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
     private static final String INTERFACE_NAMES_TAG_NAME = "interfaceNames";
     private static final String FACADE_TAG_NAME = "facade";
     private static final String FACE_OVERRIDES_TAG_NAME = "faceOverrides";
+    private static final String ENERGY_TAG_NAME = "energy";
 
     public final BusCableBusElement busElement = new BusCableBusElement(this);
     public final CableEnergyStorage energy = new CableEnergyStorage();
@@ -170,6 +171,7 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         faceOverrides.save(tag, FACE_OVERRIDES_TAG_NAME);
         tag.put(INTERFACE_NAMES_TAG_NAME, (ListTag) interfaceNameManager.serialize());
         tag.put(FACADE_TAG_NAME, facadeManager.serialize());
+        tag.put(ENERGY_TAG_NAME, energy.serializeNBT(registries));
     }
 
     @Override
@@ -181,6 +183,11 @@ public final class BusCableBlockEntity extends ModBlockEntity implements Tickabl
         busElement.loadAdditional(tag.getCompound(BUS_ELEMENT_TAG_NAME), registries);
         //?}
         faceOverrides.load(tag, FACE_OVERRIDES_TAG_NAME);
+        //? if >=26.1 {
+        /*energy.deserializeNBT(registries, tag.getCompoundOrEmpty(ENERGY_TAG_NAME));
+        *///?} else {
+        energy.deserializeNBT(registries, tag.getCompound(ENERGY_TAG_NAME));
+        //?}
         interfaceNameManager.deserialize(
                 //? if >=26.1 {
                 /*tag.getListOrEmpty(INTERFACE_NAMES_TAG_NAME));
